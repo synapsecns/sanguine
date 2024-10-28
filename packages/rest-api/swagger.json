@@ -130,7 +130,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["Synapse Bridge REST API"]
       }
     },
     "/bridge": {
@@ -375,7 +376,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["Synapse Bridge REST API"]
       }
     },
     "/bridgeTxInfo": {
@@ -546,7 +548,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["Synapse Bridge REST API"]
       }
     },
     "/bridgeTxStatus": {
@@ -697,7 +700,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["Synapse Bridge REST API"]
       }
     },
     "/destinationTokens": {
@@ -821,7 +825,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["Synapse Bridge REST API"]
       }
     },
     "/destinationTx": {
@@ -1037,7 +1042,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["Synapse Bridge REST API"]
       }
     },
     "/": {
@@ -1151,7 +1157,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["Synapse Bridge REST API"]
       }
     },
     "/swap": {
@@ -1309,7 +1316,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["Synapse Bridge REST API"]
       }
     },
     "/swapTxInfo": {
@@ -1457,7 +1465,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["Synapse Bridge REST API"]
       }
     },
     "/synapseTxId": {
@@ -1566,7 +1575,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["Synapse Bridge REST API"]
       }
     },
     "/tokenlist": {
@@ -1690,7 +1700,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["Synapse Bridge REST API"]
       }
     },
     "/conflicting-proofs": {
@@ -1771,7 +1782,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["RFQ Indexer API"]
       }
     },
     "/disputes": {
@@ -1852,7 +1864,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["RFQ Indexer API"]
       }
     },
     "/invalid-relays": {
@@ -1933,7 +1946,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["RFQ Indexer API"]
       }
     },
     "/pending-transactions/missing-claim": {
@@ -2014,7 +2028,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["RFQ Indexer API"]
       }
     },
     "/pending-transactions/missing-proof": {
@@ -2073,7 +2088,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["RFQ Indexer API"]
       }
     },
     "/pending-transactions/missing-relay": {
@@ -2129,7 +2145,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["RFQ Indexer API"]
       }
     },
     "/pending-transactions/exceed-deadline": {
@@ -2185,7 +2202,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["RFQ Indexer API"]
       }
     },
     "/refunded-and-relayed": {
@@ -2266,7 +2284,8 @@
               }
             }
           }
-        }
+        },
+        "tags": ["RFQ Indexer API"]
       }
     },
     "/transaction-id/{transactionId}": {
@@ -2355,12 +2374,13 @@
               }
             }
           }
-        }
+        },
+        "tags": ["RFQ Indexer API"]
       }
     },
     "/ack": {
       "put": {
-        "tags": ["ack"],
+        "tags": ["RFQ API"],
         "summary": "Relay ack",
         "description": "cache an ack request to synchronize relayer actions.",
         "requestBody": {
@@ -2393,7 +2413,7 @@
     },
     "/bulk_quotes": {
       "put": {
-        "tags": ["quotes"],
+        "tags": ["RFQ API"],
         "summary": "Upsert quotes",
         "description": "upsert bulk quotes from relayer.",
         "requestBody": {
@@ -2426,7 +2446,7 @@
     },
     "/contracts": {
       "get": {
-        "tags": ["quotes"],
+        "tags": ["RFQ API"],
         "summary": "Get contract addresses",
         "description": "get quotes from all relayers.",
         "responses": {
@@ -2456,7 +2476,7 @@
     },
     "/open_quote_requests": {
       "get": {
-        "tags": ["quotes"],
+        "tags": ["RFQ API"],
         "summary": "Get open quote requests",
         "description": "Get all open quote requests that are currently in Received or Pending status.",
         "responses": {
@@ -2486,7 +2506,7 @@
     },
     "/quotes": {
       "get": {
-        "tags": ["quotes"],
+        "tags": ["RFQ API"],
         "summary": "Get quotes",
         "description": "get quotes from all relayers.",
         "parameters": [
@@ -2561,7 +2581,7 @@
         }
       },
       "put": {
-        "tags": ["quotes"],
+        "tags": ["RFQ API"],
         "summary": "Upsert quote",
         "description": "upsert a quote from relayer.",
         "requestBody": {
@@ -2594,7 +2614,7 @@
     },
     "/rfq": {
       "put": {
-        "tags": ["quotes"],
+        "tags": ["RFQ API"],
         "summary": "Handle user quote request",
         "description": "Handle user quote request and return the best quote available.",
         "requestBody": {
@@ -2633,7 +2653,7 @@
     },
     "/rfq_stream": {
       "get": {
-        "tags": ["quotes"],
+        "tags": ["RFQ API"],
         "summary": "Handle WebSocket connection for active quote requests",
         "description": "Establish a WebSocket connection to receive active quote requests.",
         "responses": {
