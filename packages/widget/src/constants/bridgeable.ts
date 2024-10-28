@@ -1450,20 +1450,3 @@ export const WLD: BridgeableToken = {
   imgUrl:
     'https://synapse-interface-worldchain.sanguine-fe.pages.dev/_next/static/media/worldchain.62d1dfd2.svg',
 }
-
-export const BNB: BridgeableToken = {
-  priorityRank: 300,
-  addresses: {
-    [CHAINS.BNBCHAIN.id]: ZeroAddress,
-  },
-  decimals: {
-    [CHAINS.BNBCHAIN.id]: 18,
-  },
-  symbol: 'BNB',
-  name: 'BNB',
-  swapableType: 'BNB',
-  color: 'yellow',
-  routeSymbol: 'BNB',
-  imgUrl:
-    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/bnb.5948fe5e.svg',
-}
