@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+// solhint-disable no-inline-assembly
 library ZapDataV1 {
     /// @notice Version of the Zap Data struct.
     uint16 internal constant VERSION = 1;
@@ -64,19 +65,53 @@ library ZapDataV1 {
     }
 
     /// @notice Extracts the version from the encoded Zap Data.
-    function version(bytes calldata encodedZapData) internal pure returns (uint16) {
-        // TODO: implement
+    function version(bytes calldata encodedZapData) internal pure returns (uint16 version_) {
+        // Load 32 bytes from the start and shift it 240 bits to the right to get the highest 16 bits.
+        assembly {
+            version_ := shr(240, calldataload(encodedZapData.offset))
+        }
     }
 
     /// @notice Extracts the target address from the encoded Zap Data.
-    function target(bytes calldata encodedZapData) internal pure returns (address) {
-        // TODO: implement
+    function target(bytes calldata encodedZapData) internal pure returns (address target_) {
+        // Load 32 bytes from the offset and shift it 96 bits to the right to get the highest 160 bits.
+        assembly {
+            target_ := shr(96, calldataload(add(encodedZapData.offset, OFFSET_TARGET)))
+        }
     }
 
     /// @notice Extracts the payload from the encoded Zap Data. Replaces the token amount with the provided value,
     /// if it was present in the original data (if amountPosition is not AMOUNT_NOT_PRESENT).
     /// @dev This payload will be used as a calldata for the target contract.
     function payload(bytes calldata encodedZapData, uint256 amount) internal pure returns (bytes memory) {
-        // TODO: implement
+        // The original payload is located at encodedZapData[OFFSET_PAYLOAD:].
+        uint16 amountPosition = _amountPosition(encodedZapData);
+        // If the amount was not present in the original payload, return the payload as is.
+        if (amountPosition == AMOUNT_NOT_PRESENT) {
+            return encodedZapData[OFFSET_PAYLOAD:];
+        }
+        // Calculate the start and end indexes of the amount in ZapData from its position within the payload.
+        // Note: we use inclusive start and exclusive end indexes for easier slicing of the ZapData.
+        uint256 amountStartIndexIncl = OFFSET_PAYLOAD + amountPosition;
+        uint256 amountEndIndexExcl = amountStartIndexIncl + 32;
+        // Check that the amount is within the ZapData.
+        if (amountEndIndexExcl > encodedZapData.length) revert ZapDataV1__InvalidEncoding();
+        // Otherwise we need to replace the amount in the payload with the provided value.
+        return abi.encodePacked(
+            // Copy the original payload up to the amount
+            encodedZapData[OFFSET_PAYLOAD:amountStartIndexIncl],
+            // Replace the originally encoded amount with the provided value
+            amount,
+            // Copy the rest of the payload after the amount
+            encodedZapData[amountEndIndexExcl:]
+        );
+    }
+
+    /// @notice Extracts the amount position from the encoded Zap Data.
+    function _amountPosition(bytes calldata encodedZapData) private pure returns (uint16 amountPosition) {
+        // Load 32 bytes from the offset and shift it 240 bits to the right to get the highest 16 bits.
+        assembly {
+            amountPosition := shr(240, calldataload(add(encodedZapData.offset, OFFSET_AMOUNT_POSITION)))
+        }
     }
 }
