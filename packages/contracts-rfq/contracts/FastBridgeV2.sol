@@ -211,7 +211,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
                 deadline: params.deadline,
                 nonce: senderNonces[params.sender]++, // increment nonce on every bridge
                 exclusivityRelayer: paramsV2.quoteRelayer,
-                // We checked exclusivityEndTime to be in range (0 .. params.deadline] above, so can safely cast
+                // We checked exclusivityEndTime to be in range (0 .. params.deadline) above, so can safely cast
                 exclusivityEndTime: uint256(exclusivityEndTime),
                 callValue: paramsV2.callValue,
                 callParams: paramsV2.callParams
@@ -448,7 +448,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (paramsV2.callValue != 0 && params.destToken == UniversalTokenLib.ETH_ADDRESS) {
             revert NativeTokenCallValueNotSupported();
         }
-        // exclusivityEndTime must be in range (0 .. params.deadline]
+        // exclusivityEndTime must be in range (0 .. params.deadline)
         if (exclusivityEndTime < 0 || exclusivityEndTime > int256(params.deadline)) {
             revert ExclusivityParamsIncorrect();
         }
