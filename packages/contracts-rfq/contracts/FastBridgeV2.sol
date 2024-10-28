@@ -12,8 +12,10 @@ import {IFastBridgeV2} from "./interfaces/IFastBridgeV2.sol";
 import {IFastBridgeV2Errors} from "./interfaces/IFastBridgeV2Errors.sol";
 import {IZapRecipient} from "./interfaces/IZapRecipient.sol";
 
+import {MulticallTarget} from "./utils/MulticallTarget.sol";
+
 /// @notice FastBridgeV2 is a contract for bridging tokens across chains.
-contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
+contract FastBridgeV2 is Admin, MulticallTarget, IFastBridgeV2, IFastBridgeV2Errors {
     using BridgeTransactionV2Lib for bytes;
     using SafeERC20 for IERC20;
 
