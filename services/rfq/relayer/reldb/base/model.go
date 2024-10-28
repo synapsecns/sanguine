@@ -84,7 +84,7 @@ type RequestForQuote struct {
 	// this is not effected by the message.sender nonce.
 	OriginNonce int `gorm:"index"`
 	// Status is the current status of the event
-	Status reldb.QuoteRequestStatus
+	Status reldb.QuoteRequestStatus `gorm:"column:status;index:idx_rfq_status_name"`
 	// BlockNumber is the block number of the event
 	BlockNumber uint64
 	// RawRequest is the raw request, hex encoded.
