@@ -24,22 +24,29 @@ library ZapDataV1 {
     error ZapDataV1__UnsupportedVersion(uint16 version);
 
     /// @notice Validates the encodedZapData to be a tightly packed encoded payload for ZapData struct.
-    /// @dev Checks that all the required fields are present, version is correct and amount position is valid.
+    /// @dev Checks that all the required fields are present and the version is correct.
     function validateV1(bytes calldata encodedZapData) internal pure {
-        // TODO: implement
+        // Check the minimum length: must at least include all static fields.
+        if (encodedZapData.length < OFFSET_PAYLOAD) revert ZapDataV1__InvalidEncoding();
+        // Once we validated the length, we can be sure that the version field is present.
+        uint16 version_ = version(encodedZapData);
+        if (version_ != VERSION) revert ZapDataV1__UnsupportedVersion(version_);
     }
 
     /// @notice Encodes the ZapData struct by tightly packing the fields.
-    /// Note: we don't know the exact amount that will be used for the Zap at the time of encoding,
-    /// so we provide the reference index where the amount is encoded within `payload_`. This allows up to
-    /// hot-swap the amount in the payload, when the Zap is performed.
+    /// Note: we don't know the exact amount of tokens that will be used for the Zap at the time of encoding,
+    /// so we provide the reference index where the token amount is encoded within `payload_`. This allows up to
+    /// hot-swap the token amount in the payload, when the Zap is performed.
     /// @dev `abi.decode` will not work as a result of the tightly packed fields. Use `decodeZapData` instead.
-    /// @param amountPosition_  Position (start index) where the amount is encoded within `payload_`.
-    ///                         This will usually be `4 + 32 * n`, where `n` is the position of the amount in
+    /// @param amountPosition_  Position (start index) where the token amount is encoded within `payload_`.
+    ///                         This will usually be `4 + 32 * n`, where `n` is the position of the token amount in
     ///                         the list of parameters of the target function (starting from 0).
-    ///                         Or `AMOUNT_NOT_PRESENT` if the amount is not encoded within `payload_`.
+    ///                         Or `AMOUNT_NOT_PRESENT` if the token amount is not encoded within `payload_`.
     /// @param target_          Address of the target contract.
-    /// @param payload_         Payload to be used as a calldata for the `target_` contract call.
+    /// @param payload_         ABI-encoded calldata to be used for the `target_` contract call.
+    ///                         If the target function has the token amount as an argument, any placeholder amount value
+    ///                         can be used for the original ABI encoding of `payload_`. The placeholder amount will
+    ///                         be replaced with the actual amount, when the Zap Data is decoded.
     function encodeV1(
         uint16 amountPosition_,
         address target_,
@@ -49,7 +56,11 @@ library ZapDataV1 {
         pure
         returns (bytes memory encodedZapData)
     {
-        // TODO: implement
+        // Amount is encoded in [amountPosition_ .. amountPosition_ + 32), which should be within the payload.
+        if (amountPosition_ != AMOUNT_NOT_PRESENT && (uint256(amountPosition_) + 32 > payload_.length)) {
+            revert ZapDataV1__InvalidEncoding();
+        }
+        return abi.encodePacked(VERSION, amountPosition_, target_, payload_);
     }
 
     /// @notice Extracts the version from the encoded Zap Data.
@@ -62,8 +73,8 @@ library ZapDataV1 {
         // TODO: implement
     }
 
-    /// @notice Extracts the payload from the encoded Zap Data. Replaces the amount with the provided value,
-    /// if it was present in the original data (amountPosition is not AMOUNT_NOT_PRESENT).
+    /// @notice Extracts the payload from the encoded Zap Data. Replaces the token amount with the provided value,
+    /// if it was present in the original data (if amountPosition is not AMOUNT_NOT_PRESENT).
     /// @dev This payload will be used as a calldata for the target contract.
     function payload(bytes calldata encodedZapData, uint256 amount) internal pure returns (bytes memory) {
         // TODO: implement
