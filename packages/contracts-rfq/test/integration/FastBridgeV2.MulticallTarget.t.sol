@@ -15,7 +15,7 @@ contract FastBridgeV2MulticallTargetTest is MulticallTargetIntegrationTest {
 
     function getEncodedBridgeTx(IFastBridge.BridgeTransaction memory bridgeTx)
         public
-        view
+        pure
         override
         returns (bytes memory)
     {
@@ -31,7 +31,6 @@ contract FastBridgeV2MulticallTargetTest is MulticallTargetIntegrationTest {
         bridgeTxV2.originFeeAmount = bridgeTx.originFeeAmount;
         bridgeTxV2.deadline = bridgeTx.deadline;
         bridgeTxV2.nonce = bridgeTx.nonce;
-        bridgeTxV2.exclusivityEndTime = block.timestamp;
         return BridgeTransactionV2Lib.encodeV2(bridgeTxV2);
     }
 }
