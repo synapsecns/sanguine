@@ -1454,7 +1454,7 @@ export const WLD: BridgeableToken = {
 export const BNB: BridgeableToken = {
   priorityRank: 300,
   addresses: {
-    [CHAINS.BNBCHAIN.id]: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+    [CHAINS.BNBCHAIN.id]: ZeroAddress,
   },
   decimals: {
     [CHAINS.BNBCHAIN.id]: 18,
