@@ -5,19 +5,20 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 import {BridgeTransactionV2Lib} from "./libs/BridgeTransactionV2.sol";
-import {UniversalTokenLib} from "./libs/UniversalToken.sol";
 
 import {Admin} from "./Admin.sol";
 import {IFastBridge} from "./interfaces/IFastBridge.sol";
 import {IFastBridgeV2} from "./interfaces/IFastBridgeV2.sol";
 import {IFastBridgeV2Errors} from "./interfaces/IFastBridgeV2Errors.sol";
-import {IFastBridgeRecipient} from "./interfaces/IFastBridgeRecipient.sol";
+import {IZapRecipient} from "./interfaces/IZapRecipient.sol";
 
 /// @notice FastBridgeV2 is a contract for bridging tokens across chains.
 contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     using BridgeTransactionV2Lib for bytes;
     using SafeERC20 for IERC20;
-    using UniversalTokenLib for address;
+
+    /// @notice Address reserved for native gas token (ETH on Ethereum and most L2s, AVAX on Avalanche, etc)
+    address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     /// @notice Dispute period for relayed transactions
     uint256 public constant DISPUTE_PERIOD = 30 minutes;
@@ -28,8 +29,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// @notice Minimum deadline period to relay a requested bridge transaction
     uint256 public constant MIN_DEADLINE_PERIOD = 30 minutes;
 
-    /// @notice Maximum length of accepted callParams
-    uint256 public constant MAX_CALL_PARAMS_LENGTH = 2 ** 16 - 1;
+    /// @notice Maximum length of accepted zapData
+    uint256 public constant MAX_ZAP_DATA_LENGTH = 2 ** 16 - 1;
 
     /// @notice Status of the bridge tx on origin chain
     mapping(bytes32 => BridgeTxDetails) public bridgeTxDetails;
@@ -56,8 +57,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
                 quoteRelayer: address(0),
                 quoteExclusivitySeconds: 0,
                 quoteId: bytes(""),
-                callValue: 0,
-                callParams: bytes("")
+                zapNative: 0,
+                zapData: bytes("")
             })
         });
     }
@@ -124,7 +125,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         // Emit the event before any external calls
         emit BridgeDepositRefunded(transactionId, to, token, amount);
         // Complete the user refund as the last transaction action
-        if (token == UniversalTokenLib.ETH_ADDRESS) {
+        if (token == NATIVE_GAS_TOKEN) {
             Address.sendValue(payable(to), amount);
         } else {
             IERC20(token).safeTransfer(to, amount);
@@ -142,13 +143,13 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @inheritdoc IFastBridge
     /// @dev This method is added to achieve backwards compatibility with decoding requests into V1 structs:
-    /// - `callValue` is partially reported as a zero/non-zero flag
-    /// - `callParams` is ignored
+    /// - `zapNative` is partially reported as a zero/non-zero flag
+    /// - `zapData` is ignored
     /// In order to process all kinds of requests use getBridgeTransactionV2 instead.
     function getBridgeTransaction(bytes calldata request) external view returns (BridgeTransaction memory) {
         // Try decoding into V2 struct first. This will revert if V1 struct is passed
         try this.getBridgeTransactionV2(request) returns (BridgeTransactionV2 memory txV2) {
-            // Note: we entirely ignore the callParams field, as it was not present in V1
+            // Note: we entirely ignore the zapData field, as it was not present in V1
             return BridgeTransaction({
                 originChainId: txV2.originChainId,
                 destChainId: txV2.destChainId,
@@ -159,7 +160,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
                 originAmount: txV2.originAmount,
                 destAmount: txV2.destAmount,
                 originFeeAmount: txV2.originFeeAmount,
-                sendChainGas: txV2.callValue != 0,
+                sendChainGas: txV2.zapNative != 0,
                 deadline: txV2.deadline,
                 nonce: txV2.nonce
             });
@@ -213,8 +214,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
                 exclusivityRelayer: paramsV2.quoteRelayer,
                 // We checked exclusivityEndTime to be in range [0 .. params.deadline] above, so can safely cast
                 exclusivityEndTime: uint256(exclusivityEndTime),
-                callValue: paramsV2.callValue,
-                callParams: paramsV2.callParams
+                zapNative: paramsV2.zapNative,
+                zapData: paramsV2.zapData
             })
         );
         bytes32 transactionId = keccak256(request);
@@ -229,7 +230,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             destToken: params.destToken,
             originAmount: originAmount,
             destAmount: params.destAmount,
-            sendChainGas: paramsV2.callValue != 0
+            sendChainGas: paramsV2.zapNative != 0
         });
         emit BridgeQuoteDetails(transactionId, paramsV2.quoteId);
     }
@@ -243,11 +244,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         bridgeRelayDetails[transactionId] =
             BridgeRelay({blockNumber: uint48(block.number), blockTimestamp: uint48(block.timestamp), relayer: relayer});
 
-        // transfer tokens to recipient on destination chain and do an arbitrary call if requested
+        // transfer tokens to recipient on destination chain and trigger Zap if requested
         address to = request.destRecipient();
         address token = request.destToken();
         uint256 amount = request.destAmount();
-        uint256 callValue = request.callValue();
+        uint256 zapNative = request.zapNative();
 
         // Emit the event before any external calls
         emit BridgeRelayed({
@@ -259,33 +260,44 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             destToken: token,
             originAmount: request.originAmount(),
             destAmount: amount,
-            chainGasAmount: callValue
+            chainGasAmount: zapNative
         });
 
         // All state changes have been done at this point, can proceed to the external calls.
         // This follows the checks-effects-interactions pattern to mitigate potential reentrancy attacks.
-        if (token == UniversalTokenLib.ETH_ADDRESS) {
-            // For ETH non-zero callValue is not allowed
-            if (callValue != 0) revert NativeTokenCallValueNotSupported();
+        if (token == NATIVE_GAS_TOKEN) {
+            // For the native gas token, additional zapNative is not allowed
+            if (zapNative != 0) revert ZapNativeNotSupported();
             // Check that the correct msg.value was sent
             if (msg.value != amount) revert MsgValueIncorrect();
+            // Don't do a native transfer yet: we will handle it alongside the Zap below
         } else {
             // For ERC20s, we check that the correct msg.value was sent
-            if (msg.value != callValue) revert MsgValueIncorrect();
+            if (msg.value != zapNative) revert MsgValueIncorrect();
             // We need to transfer the tokens from the Relayer to the recipient first before performing an
-            // optional post-transfer arbitrary call.
+            // optional post-transfer Zap.
             IERC20(token).safeTransferFrom(msg.sender, to, amount);
         }
+        // At this point we have done:
+        // - Transferred the requested amount of ERC20 tokens to the recipient.
+        // At this point we have confirmed:
+        // - For ERC20s: msg.value matches the requested zapNative amount.
+        // - For the native gas token: msg.value matches the requested destAmount.
+        // Remaining optional things to do:
+        // - Forward the full msg.value to the recipient (if non-zero).
+        // - Trigger a Zap (if zapData is present).
+        bytes calldata zapData = request.zapData();
+        if (zapData.length != 0) {
+            // Zap Data is present: Zap has been requested by the recipient. Trigger it forwarding the full msg.value.
 
-        bytes calldata callParams = request.callParams();
-        if (callParams.length != 0) {
-            // Arbitrary call requested, perform it while supplying full msg.value to the recipient
             // Note: if token has a fee on transfers, the recipient will have received less than `amount`.
             // This is a very niche edge case and should be handled by the recipient contract.
-            _checkedCallRecipient({recipient: to, token: token, amount: amount, callParams: callParams});
+            _triggerZapWithChecks({recipient: to, token: token, amount: amount, zapData: zapData});
         } else if (msg.value != 0) {
-            // No arbitrary call requested, but msg.value was sent. This is either a relay with ETH,
-            // or a non-zero callValue request with an ERC20. In both cases, transfer the ETH to the recipient.
+            // Zap Data is missing, but msg.value was sent. This could happen in two different cases:
+            // - Relay with the native gas token is happening.
+            // - Relay with ERC20 is happening, with a `zapNative > 0` request.
+            // In both cases, we need to transfer the full msg.value to the recipient.
             Address.sendValue(payable(to), msg.value);
         }
     }
@@ -342,7 +354,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         // Emit the event before any external calls
         emit BridgeDepositClaimed(transactionId, proofRelayer, to, token, amount);
         // Complete the relayer claim as the last transaction action
-        if (token == UniversalTokenLib.ETH_ADDRESS) {
+        if (token == NATIVE_GAS_TOKEN) {
             Address.sendValue(payable(to), amount);
         } else {
             IERC20(token).safeTransfer(to, amount);
@@ -372,16 +384,17 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// claimed by the relayer who completed the relay on destination chain, or refunded back to the user,
     /// should no one complete the relay.
     function _takeBridgedUserAsset(address token, uint256 amount) internal returns (uint256 amountTaken) {
-        if (token == UniversalTokenLib.ETH_ADDRESS) {
-            // For ETH we just need to check that the supplied msg.value is correct.
+        if (token == NATIVE_GAS_TOKEN) {
+            // For the native gas token, we just need to check that the supplied msg.value is correct.
             // Supplied `msg.value` is already in FastBridgeV2 custody.
             if (amount != msg.value) revert MsgValueIncorrect();
             amountTaken = msg.value;
         } else {
             // For ERC20s, token is explicitly transferred from the user to FastBridgeV2.
             // We don't allow non-zero `msg.value` to avoid extra funds from being stuck in FastBridgeV2.
-            token.assertIsContract();
             if (msg.value != 0) revert MsgValueIncorrect();
+            // Throw an explicit error if the provided token address is not a contract
+            if (token.code.length == 0) revert TokenNotContract();
             amountTaken = IERC20(token).balanceOf(address(this));
             IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
             // Use the balance difference as the amount taken in case of fee on transfer tokens.
@@ -389,26 +402,22 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         }
     }
 
-    /// @notice Calls the Recipient's hook function with the specified callParams and performs
+    /// @notice Calls the Recipient's hook function with the specified zapData and performs
     /// all the necessary checks for the returned value.
-    function _checkedCallRecipient(
-        address recipient,
-        address token,
-        uint256 amount,
-        bytes calldata callParams
-    )
-        internal
-    {
-        bytes memory hookData =
-            abi.encodeCall(IFastBridgeRecipient.fastBridgeTransferReceived, (token, amount, callParams));
+    function _triggerZapWithChecks(address recipient, address token, uint256 amount, bytes calldata zapData) internal {
         // This will bubble any revert messages from the hook function
-        bytes memory returnData = Address.functionCallWithValue({target: recipient, data: hookData, value: msg.value});
+        bytes memory returnData = Address.functionCallWithValue({
+            target: recipient,
+            data: abi.encodeCall(IZapRecipient.zap, (token, amount, zapData)),
+            // Note: see `relay()` for reasoning behind passing msg.value
+            value: msg.value
+        });
         // Explicit revert if no return data at all
         if (returnData.length == 0) revert RecipientNoReturnValue();
         // Check that exactly a single return value was returned
         if (returnData.length != 32) revert RecipientIncorrectReturnValue();
         // Return value should be abi-encoded hook function selector
-        if (bytes32(returnData) != bytes32(IFastBridgeRecipient.fastBridgeTransferReceived.selector)) {
+        if (bytes32(returnData) != bytes32(IZapRecipient.zap.selector)) {
             revert RecipientIncorrectReturnValue();
         }
     }
@@ -444,9 +453,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
         if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
         // Check V2 params
-        if (paramsV2.callParams.length > MAX_CALL_PARAMS_LENGTH) revert CallParamsLengthAboveMax();
-        if (paramsV2.callValue != 0 && params.destToken == UniversalTokenLib.ETH_ADDRESS) {
-            revert NativeTokenCallValueNotSupported();
+        if (paramsV2.zapData.length > MAX_ZAP_DATA_LENGTH) revert ZapDataLengthAboveMax();
+        if (paramsV2.zapNative != 0 && params.destToken == NATIVE_GAS_TOKEN) {
+            revert ZapNativeNotSupported();
         }
         // exclusivityEndTime must be in range [0 .. params.deadline]
         if (exclusivityEndTime < 0 || exclusivityEndTime > int256(params.deadline)) {
