@@ -2,6 +2,7 @@
 # 2024-01-01
 block_timestamp = 1_704_067_200
 evm_version = "paris"
+optimizer_runs = 1_000_000
 src = 'contracts'
 out = 'out'
 libs = ["lib", "node_modules"]
