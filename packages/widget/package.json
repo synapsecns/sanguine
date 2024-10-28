@@ -46,6 +46,7 @@
     "react-dom": ">=17.0.1"
   },
   "devDependencies": {
+    "@codecov/rollup-plugin": "^0.0.1-beta.10",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
@@ -64,7 +65,6 @@
     "typescript": "^5.3.2"
   },
   "dependencies": {
-    "@codecov/rollup-plugin": "^0.0.1-beta.10",
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/units": "^5.7.0",
     "@reduxjs/toolkit": "^2.0.1",
