@@ -11,7 +11,7 @@ import { normalizeNativeTokenAddress } from '../middleware/normalizeNativeTokenA
 import { validSwapTokens } from '../validations/validSwapTokens'
 import { validSwapChain } from '../validations/validSwapChain'
 
-const router = express.Router()
+const router: express.Router = express.Router()
 
 /**
  * @openapi

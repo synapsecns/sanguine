@@ -6,7 +6,7 @@ import { bridgeTxStatusController } from '../controllers/bridgeTxStatusControlle
 import { CHAINS_ARRAY } from '../constants/chains'
 import { VALID_BRIDGE_MODULES } from '../constants'
 
-const router = express.Router()
+const router: express.Router = express.Router()
 
 /**
  * @openapi
