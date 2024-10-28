@@ -177,7 +177,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @inheritdoc IFastBridgeV2
     function bridge(BridgeParams memory params, BridgeParamsV2 memory paramsV2) public payable {
-        int256 exclusivityEndTime = int256(block.timestamp) + paramsV2.quoteExclusivitySeconds;
+        int256 exclusivityEndTime = 0;
+        // if relayer exclusivity is not intended for this bridge, set exclusivityEndTime to static zero
+        // otherwise, set exclusivity to expire at the current block ts offset by quoteExclusivitySeconds
+        if (paramsV2.quoteRelayer != address(0)) {
+            exclusivityEndTime = int256(block.timestamp) + paramsV2.quoteExclusivitySeconds;
+        }
         _validateBridgeParams(params, paramsV2, exclusivityEndTime);
 
         // transfer tokens to bridge contract
@@ -206,7 +211,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
                 deadline: params.deadline,
                 nonce: senderNonces[params.sender]++, // increment nonce on every bridge
                 exclusivityRelayer: paramsV2.quoteRelayer,
-                // We checked exclusivityEndTime to be in range (0 .. params.deadline] above, so can safely cast
+                // We checked exclusivityEndTime to be in range [0 .. params.deadline] above, so can safely cast
                 exclusivityEndTime: uint256(exclusivityEndTime),
                 callValue: paramsV2.callValue,
                 callParams: paramsV2.callParams
@@ -443,8 +448,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (paramsV2.callValue != 0 && params.destToken == UniversalTokenLib.ETH_ADDRESS) {
             revert NativeTokenCallValueNotSupported();
         }
-        // exclusivityEndTime must be in range (0 .. params.deadline]
-        if (exclusivityEndTime <= 0 || exclusivityEndTime > int256(params.deadline)) {
+        // exclusivityEndTime must be in range [0 .. params.deadline]
+        if (exclusivityEndTime < 0 || exclusivityEndTime > int256(params.deadline)) {
             revert ExclusivityParamsIncorrect();
         }
     }
