@@ -1275,7 +1275,7 @@ export const BNB = new Token({
   priorityRank: 300,
   visibilityRank: 300,
   addresses: {
-    [CHAINS.BNB.id]: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+    [CHAINS.BNB.id]: zeroAddress,
   },
   decimals: {
     [CHAINS.BNB.id]: 18,
