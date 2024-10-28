@@ -302,7 +302,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 					return nil
 				},
 				retry.WithMaxAttempts(5),
-				retry.WithMaxTotalTime(30*time.Second),
+				retry.WithMaxAttemptTime(30*time.Second),
 			)
 			if err != nil {
 				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
