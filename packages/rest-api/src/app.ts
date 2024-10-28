@@ -4,7 +4,12 @@ import swaggerUi from 'swagger-ui-express'
 import { specs } from './swagger'
 import routes from './routes'
 import { logger } from './middleware/logger'
-import { isRFQAPIRequest, isRFQIndexerRequest, rfqApiProxy, rfqIndexerProxy} from './utils/isGatewayRoute'
+import {
+  isRFQAPIRequest,
+  isRFQIndexerRequest,
+  rfqApiProxy,
+  rfqIndexerProxy,
+} from './utils/isGatewayRoute'
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -36,15 +41,15 @@ app.use((req, res, next) => {
     return originalJson.call(this, body)
   }
 
-   if (isRFQAPIRequest(originalPath)) {
-    return rfqApiProxy(req, res, next);
+  if (isRFQAPIRequest(originalPath)) {
+    return rfqApiProxy(req, res, next)
   }
 
   if (isRFQIndexerRequest(originalPath)) {
-    return rfqIndexerProxy(req, res, next);
+    return rfqIndexerProxy(req, res, next)
   }
 
-  return next();
+  return next()
 })
 
 app.listen(port, () => {
