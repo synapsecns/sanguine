@@ -2,8 +2,11 @@
 pragma solidity 0.8.24;
 
 import {IZapRecipient} from "../interfaces/IZapRecipient.sol";
+import {ZapDataV1} from "../libs/ZapDataV1.sol";
 
 contract TokenZap is IZapRecipient {
+    using ZapDataV1 for bytes;
+
     error TokenZap__AmountIncorrect();
     error TokenZap__PayloadLengthAboveMax();
 
@@ -41,10 +44,17 @@ contract TokenZap is IZapRecipient {
         uint256 amountPosition
     )
         external
-        view
+        pure
         returns (bytes memory)
     {
-        // TODO: implement
+        if (payload.length > ZapDataV1.AMOUNT_NOT_PRESENT) {
+            revert TokenZap__PayloadLengthAboveMax();
+        }
+        if (amountPosition >= payload.length) {
+            amountPosition = ZapDataV1.AMOUNT_NOT_PRESENT;
+        }
+        // At this point we checked that both amountPosition and payload.length fit in uint16
+        return ZapDataV1.encodeV1(uint16(amountPosition), target, payload);
     }
 
     /// @notice Decodes the ZapData for a Zap action. Replaces the placeholder amount with the actual amount,
@@ -56,9 +66,11 @@ contract TokenZap is IZapRecipient {
         uint256 amount
     )
         external
-        view
+        pure
         returns (address target, bytes memory payload)
     {
-        // TODO: implement
+        zapData.validateV1();
+        target = zapData.target();
+        payload = zapData.payload(amount);
     }
 }
