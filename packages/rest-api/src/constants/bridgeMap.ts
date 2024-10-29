@@ -522,6 +522,13 @@ export const BRIDGE_MAP = {
       destination: ['JUMP'],
       swappable: [],
     },
+    '0x2170Ed0880ac9A755fd29B2688956BD959F933F8': {
+      decimals: 18,
+      symbol: 'ETH',
+      origin: ['RFQ.ETH'],
+      destination: [],
+      swappable: [],
+    },
     '0x23b891e5C62E0955ae2bD185990103928Ab817b3': {
       decimals: 18,
       symbol: 'nUSD',

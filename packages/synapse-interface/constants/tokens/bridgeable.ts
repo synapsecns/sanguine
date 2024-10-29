@@ -713,6 +713,7 @@ export const ETH = new Token({
     [CHAINS.SCROLL.id]: zeroAddress,
     [CHAINS.LINEA.id]: zeroAddress,
     [CHAINS.WORLDCHAIN.id]: zeroAddress,
+    [CHAINS.BNB.id]: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
   },
   decimals: 18,
   symbol: 'ETH',
