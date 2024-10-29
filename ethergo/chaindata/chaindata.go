@@ -162,6 +162,11 @@ var ChainMetadataList = []ChainMetadata{
 		ChainName: "scroll",
 		Explorer:  "https://scrollscan.com",
 	},
+	{
+		ChainID:   59144,
+		ChainName: "linea",
+		Explorer:  "https://lineascan.build/",
+	},
 }
 
 // ChainNameToChainID converts the chain name to the chain id.
