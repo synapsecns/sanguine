@@ -167,6 +167,11 @@ var ChainMetadataList = []ChainMetadata{
 		ChainName: "linea",
 		Explorer:  "https://lineascan.build",
 	},
+	{
+		ChainID:   480,
+		ChainName: "world chain",
+		Explorer:  "https://worldscan.org",
+	},
 }
 
 // ChainNameToChainID converts the chain name to the chain id.
