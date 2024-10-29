@@ -50,10 +50,10 @@ contract TokenZapTest is Test {
         return tokenZap.encodeZapData(address(vault), originalPayload, originalPayload.length);
     }
 
-    function checkERC20HappyPath(bytes memory zapData) public {
+    function checkERC20HappyPath(bytes memory zapData, uint256 msgValue) public {
         // Transfer tokens to the zap contract first
         erc20.transfer(address(tokenZap), AMOUNT);
-        bytes4 returnValue = tokenZap.zap(address(erc20), AMOUNT, zapData);
+        bytes4 returnValue = tokenZap.zap{value: msgValue}(address(erc20), AMOUNT, zapData);
         assertEq(returnValue, tokenZap.zap.selector);
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, address(erc20)), AMOUNT);
@@ -61,13 +61,41 @@ contract TokenZapTest is Test {
 
     function test_zap_erc20_placeholderZero() public {
         bytes memory zapData = getZapData(getVaultPayload(address(erc20), 0));
-        checkERC20HappyPath(zapData);
+        checkERC20HappyPath(zapData, 0);
     }
 
     function test_zap_erc20_placeholderNonZero() public {
         // Use the approximate amount of tokens as placeholder
         bytes memory zapData = getZapData(getVaultPayload(address(erc20), 1 ether));
-        checkERC20HappyPath(zapData);
+        checkERC20HappyPath(zapData, 0);
+    }
+
+    function test_zap_erc20_placeholderZero_withMsgValue() public {
+        bytes memory zapData = getZapData(getVaultPayload(address(erc20), 0));
+        checkERC20HappyPath(zapData, 123_456);
+        // Should forward the msg.value to the vault
+        assertEq(address(vault).balance, 123_456);
+    }
+
+    function test_zap_erc20_placeholderNonZero_withMsgValue() public {
+        bytes memory zapData = getZapData(getVaultPayload(address(erc20), 1 ether));
+        checkERC20HappyPath(zapData, 123_456);
+        // Should forward the msg.value to the vault
+        assertEq(address(vault).balance, 123_456);
+    }
+
+    function test_zap_erc20_placeholderZero_extraTokens() public {
+        // Mint some extra tokens to the zap contract
+        erc20.mint(address(tokenZap), AMOUNT);
+        // Should not affect the zap
+        test_zap_erc20_placeholderZero();
+    }
+
+    function test_zap_erc20_placeholderNonZero_extraTokens() public {
+        // Mint some extra tokens to the zap contract
+        erc20.mint(address(tokenZap), AMOUNT);
+        // Should not affect the zap
+        test_zap_erc20_placeholderNonZero();
     }
 
     function checkNativeHappyPath(bytes memory zapData) public {
@@ -93,6 +121,27 @@ contract TokenZapTest is Test {
         checkNativeHappyPath(zapData);
     }
 
+    function test_zap_native_placeholderZero_extraNative() public {
+        // Mint some extra native tokens to the zap contract
+        deal(address(tokenZap), AMOUNT);
+        // Should not affect the zap
+        test_zap_native_placeholderZero();
+    }
+
+    function test_zap_native_placeholderNonZero_extraNative() public {
+        // Mint some extra native tokens to the zap contract
+        deal(address(tokenZap), AMOUNT);
+        // Should not affect the zap
+        test_zap_native_placeholderNonZero();
+    }
+
+    function test_zap_native_noAmount_extraNative() public {
+        // Mint some extra native tokens to the zap contract
+        deal(address(tokenZap), AMOUNT);
+        // Should not affect the zap
+        test_zap_native_noAmount();
+    }
+
     function test_encodeZapData_roundtrip(address token, uint256 placeholderAmount, uint256 amount) public view {
         bytes memory originalPayload = getVaultPayload(token, placeholderAmount);
         bytes memory expectedPayload = getVaultPayload(token, amount);
@@ -116,6 +165,14 @@ contract TokenZapTest is Test {
     }
 
     // ══════════════════════════════════════════════════ REVERTS ══════════════════════════════════════════════════════
+
+    function test_zap_erc20_revert_notEnoughTokens() public {
+        bytes memory zapData = getZapData(getVaultPayload(address(erc20), 0));
+        // Transfer tokens to the zap contract first, but not enough
+        erc20.transfer(address(tokenZap), AMOUNT - 1);
+        vm.expectRevert();
+        tokenZap.zap(address(erc20), AMOUNT, zapData);
+    }
 
     function test_zap_erc20_revert_targetReverted() public {
         bytes memory zapData = getZapData(getVaultPayloadWithRevert());
