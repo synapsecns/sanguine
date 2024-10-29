@@ -11,7 +11,7 @@ Bounties are allocated on an ad hoc basis, and depend on the legitimacy, risk le
 All bug disclosures should be disclosed privately to a member of Synapse Labs. This can be done in the following ways:
 
 1. Open up a ticket in the Synapse Discord
-2. Email {_______}
+2. Reach out to a core team member privately on Telegram
 
 ## The Wrong Way to Disclose
 
@@ -23,7 +23,7 @@ Please exercise prudence when disclosing a bug. The following actions are the wr
 
 ## Other Vulnerabilities
 
-For vulnerabilities in any of our websites, email servers, or other non-critical infrastructure, please email Synapse Labs at {_____}. We and Labs appreciate detailed instructions outlining the vulnerability.
+For vulnerabilities in any of our websites, email servers, or other non-critical infrastructure, please reach out through one of the channels above. We and Labs appreciate detailed instructions outlining the vulnerability.
 
 ## Other Terms
 
