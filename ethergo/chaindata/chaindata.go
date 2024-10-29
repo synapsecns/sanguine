@@ -165,7 +165,7 @@ var ChainMetadataList = []ChainMetadata{
 	{
 		ChainID:   59144,
 		ChainName: "linea",
-		Explorer:  "https://lineascan.build/",
+		Explorer:  "https://lineascan.build",
 	},
 }
 
