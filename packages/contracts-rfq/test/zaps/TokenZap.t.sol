@@ -42,9 +42,11 @@ contract TokenZapTest is Test {
         return tokenZap.encodeZapData(address(vault), originalPayload, 4 + 32 * 2);
     }
 
-    function checkERC20HappyPath(bytes memory originalPayload) public {
-        bytes memory zapData = getZapData(originalPayload);
+    function getZapDataNoAmount(bytes memory originalPayload) public view returns (bytes memory) {
+        return tokenZap.encodeZapData(address(vault), originalPayload, originalPayload.length);
+    }
 
+    function checkERC20HappyPath(bytes memory zapData) public {
         // Transfer tokens to the zap contract first
         erc20.transfer(address(tokenZap), AMOUNT);
         bytes4 returnValue = tokenZap.zap(address(erc20), AMOUNT, zapData);
@@ -54,19 +56,17 @@ contract TokenZapTest is Test {
     }
 
     function test_zap_erc20_placeholderZero() public {
-        bytes memory originalPayload = getVaultPayload(address(erc20), 0);
-        checkERC20HappyPath(originalPayload);
+        bytes memory zapData = getZapData(getVaultPayload(address(erc20), 0));
+        checkERC20HappyPath(zapData);
     }
 
     function test_zap_erc20_placeholderNonZero() public {
         // Use the approximate amount of tokens as placeholder
-        bytes memory originalPayload = getVaultPayload(address(erc20), 1 ether);
-        checkERC20HappyPath(originalPayload);
+        bytes memory zapData = getZapData(getVaultPayload(address(erc20), 1 ether));
+        checkERC20HappyPath(zapData);
     }
 
-    function checkNativeHappyPath(bytes memory originalPayload) public {
-        bytes memory zapData = getZapData(originalPayload);
-
+    function checkNativeHappyPath(bytes memory zapData) public {
         bytes4 returnValue = tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapData);
         assertEq(returnValue, tokenZap.zap.selector);
         // Check that the vault registered the deposit
@@ -74,19 +74,19 @@ contract TokenZapTest is Test {
     }
 
     function test_zap_native_placeholderZero() public {
-        bytes memory originalPayload = getVaultPayload(nativeGasToken, 0);
-        checkNativeHappyPath(originalPayload);
+        bytes memory zapData = getZapData(getVaultPayload(nativeGasToken, 0));
+        checkNativeHappyPath(zapData);
     }
 
     function test_zap_native_placeholderNonZero() public {
         // Use the approximate amount of tokens as placeholder
-        bytes memory originalPayload = getVaultPayload(nativeGasToken, 1 ether);
-        checkNativeHappyPath(originalPayload);
+        bytes memory zapData = getZapData(getVaultPayload(nativeGasToken, 1 ether));
+        checkNativeHappyPath(zapData);
     }
 
     function test_zap_native_noAmount() public {
-        bytes memory originalPayload = getVaultPayloadNoAmount();
-        checkNativeHappyPath(originalPayload);
+        bytes memory zapData = getZapDataNoAmount(getVaultPayloadNoAmount());
+        checkNativeHappyPath(zapData);
     }
 
     function test_encodeZapData_roundtrip(address token, uint256 placeholderAmount, uint256 amount) public view {
