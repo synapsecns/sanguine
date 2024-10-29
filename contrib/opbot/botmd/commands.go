@@ -223,7 +223,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 	}
 }
 
-// nolint: gocognit, cyclop.
+// nolint: gocognit, cyclop, gosec.
 func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 	return &slacker.CommandDefinition{
 		Command:     "refund <tx>",
