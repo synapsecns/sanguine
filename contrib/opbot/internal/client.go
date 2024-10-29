@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	getRFQRoute = "/api/transaction-id/%s"
+	getRFQRoute = "/transaction-id/%s"
 )
 
 // RFQClient is the interface for the RFQ client.
