@@ -37,6 +37,10 @@ contract TokenZapTest is Test {
         return abi.encodeCall(vault.depositNative, (user));
     }
 
+    function getVaultPayloadWithRevert() public view returns (bytes memory) {
+        return abi.encodeCall(vault.depositWithRevert, ());
+    }
+
     function getZapData(bytes memory originalPayload) public view returns (bytes memory) {
         // Amount is the third argument of the deposit function
         return tokenZap.encodeZapData(address(vault), originalPayload, 4 + 32 * 2);
@@ -112,6 +116,20 @@ contract TokenZapTest is Test {
     }
 
     // ══════════════════════════════════════════════════ REVERTS ══════════════════════════════════════════════════════
+
+    function test_zap_erc20_revert_targetReverted() public {
+        bytes memory zapData = getZapData(getVaultPayloadWithRevert());
+        // Transfer tokens to the zap contract first
+        erc20.transfer(address(tokenZap), AMOUNT);
+        vm.expectRevert(VaultManyArguments.VaultManyArguments__SomeError.selector);
+        tokenZap.zap(address(erc20), AMOUNT, zapData);
+    }
+
+    function test_zap_native_revert_targetReverted() public {
+        bytes memory zapData = getZapData(getVaultPayloadWithRevert());
+        vm.expectRevert(VaultManyArguments.VaultManyArguments__SomeError.selector);
+        tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapData);
+    }
 
     function test_zap_native_revert_msgValueLowerThanExpected() public {
         bytes memory originalPayload = getVaultPayload(nativeGasToken, 0);

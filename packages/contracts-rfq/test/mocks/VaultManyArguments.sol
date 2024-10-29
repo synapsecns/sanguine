@@ -5,7 +5,7 @@ import {VaultMock} from "./VaultMock.sol";
 
 /// @notice Vault mock for testing purposes. DO NOT USE IN PRODUCTION.
 contract VaultManyArguments is VaultMock {
-    error VaultManyArguments__InvalidBytes();
+    error VaultManyArguments__SomeError();
 
     function deposit(
         address token,
@@ -27,7 +27,11 @@ contract VaultManyArguments is VaultMock {
         _deposit(user, NATIVE_GAS_TOKEN, msg.value);
     }
 
+    function depositWithRevert() external payable {
+        revert VaultManyArguments__SomeError();
+    }
+
     function _validateBytes(address addr, bytes memory encoded) internal pure {
-        if (keccak256(abi.encode(addr)) != keccak256(encoded)) revert VaultManyArguments__InvalidBytes();
+        if (keccak256(abi.encode(addr)) != keccak256(encoded)) revert VaultManyArguments__SomeError();
     }
 }
