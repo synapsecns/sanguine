@@ -4,8 +4,14 @@ pragma solidity 0.8.24;
 import {IZapRecipient} from "../interfaces/IZapRecipient.sol";
 import {ZapDataV1} from "../libs/ZapDataV1.sol";
 
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
 contract TokenZap is IZapRecipient {
+    using SafeERC20 for IERC20;
     using ZapDataV1 for bytes;
+
+    address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     error TokenZap__AmountIncorrect();
     error TokenZap__PayloadLengthAboveMax();
@@ -20,7 +26,25 @@ contract TokenZap is IZapRecipient {
     /// @param zapData      Encoded Zap Data containing the target address and calldata for the Zap action.
     /// @return selector    Selector of this function to signal the caller about the success of the Zap action.
     function zap(address token, uint256 amount, bytes calldata zapData) external payable returns (bytes4) {
-        // TODO: implement
+        // Check that the ZapData is valid before decoding it
+        zapData.validateV1();
+        address target = zapData.target();
+        // Approve the target contract to spend the token. TokenZap does not custody any tokens outside of the
+        // zap action, so we can approve the arbitrary target contract.
+        if (token == NATIVE_GAS_TOKEN) {
+            // No approvals are needed for the native gas token, just check that the amount is correct
+            if (msg.value != amount) revert TokenZap__AmountIncorrect();
+        } else {
+            // Issue the approval only if the current allowance is less than the required amount
+            if (IERC20(token).allowance(address(this), target) < amount) {
+                IERC20(token).forceApprove(target, type(uint256).max);
+            }
+        }
+        // Perform the Zap action, forwarding full msg.value to the target contract
+        // Note: this will bubble up any revert from the target contract
+        bytes memory payload = zapData.payload(amount);
+        Address.functionCallWithValue({target: target, data: payload, value: msg.value});
+        return this.zap.selector;
     }
 
     /// @notice Encodes the ZapData for a Zap action.
@@ -65,7 +89,7 @@ contract TokenZap is IZapRecipient {
         bytes calldata zapData,
         uint256 amount
     )
-        external
+        public
         pure
         returns (address target, bytes memory payload)
     {
