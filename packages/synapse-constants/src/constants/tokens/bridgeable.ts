@@ -750,6 +750,7 @@ export const ETH = new Token({
     [CHAINS.SCROLL.id]: nullAddress,
     [CHAINS.LINEA.id]: nullAddress,
     [CHAINS.WORLDCHAIN.id]: nullAddress,
+    [CHAINS.BNB.id]: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
   },
   decimals: 18,
   symbol: 'ETH',

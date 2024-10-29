@@ -2,7 +2,7 @@ import express from 'express'
 
 import { indexController } from '../controllers/indexController'
 
-const router = express.Router()
+const router: express.Router = express.Router()
 
 /**
  * @openapi

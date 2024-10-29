@@ -48,8 +48,9 @@ The RFQ API expects the signatures to have V values as 0/1 rather than 27/28. Th
 
 ### API Urls
 
-- Mainnet: `rfq-api.omnirpc.io`
-- Testnet: `rfq-api-testnet.omnirpc.io`
+ - Mainnet: `api.synapseprotocol.com/quotes`
+ - Testnet: `rfq-api-testnet.omnirpc.io`
+ - 
 
 ## Running the API:
 

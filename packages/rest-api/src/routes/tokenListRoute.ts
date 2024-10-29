@@ -2,7 +2,7 @@ import express from 'express'
 
 import { tokenListController } from '../controllers/tokenListController'
 
-const router = express.Router()
+const router: express.Router = express.Router()
 
 /**
  * @openapi
