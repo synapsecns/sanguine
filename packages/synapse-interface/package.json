@@ -22,6 +22,8 @@
     "build:slither": " ",
     "graphql:generate": "graphql-codegen --config codegen.ts",
     "maps:generate": "node scripts/generateMaps.js",
+    "spellcheck": "cspell \"**/*.{tsx,jsx,md,mdx}\" --show-suggestions",
+    "ci:spellcheck": "cspell \"**/*.{tsx,jsx,md,mdx}\" --no-progress --show-suggestions",
     "test": "echo 'No jest tests defined.'"
   },
   "dependencies": {
@@ -100,6 +102,7 @@
   "license": "ISC",
   "keywords": [],
   "devDependencies": {
+    "cspell": "^8.15.4",
     "@depay/web3-mock": "^14.0.0",
     "@graphql-codegen/cli": "5.0.2",
     "@graphql-codegen/client-preset": "4.3.3",

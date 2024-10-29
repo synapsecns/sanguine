@@ -37,7 +37,7 @@
     "New": "新",
     "Gas token": "Gas代币",
     "Not bridgeable": "不可桥接",
-    "Succesfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "成功发起从 {originChainName} 的 {fromToken} 到 {destinationChainName} 的 {toToken} 的桥接",
+    "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "成功发起从 {originChainName} 的 {fromToken} 到 {destinationChainName} 的 {toToken} 的桥接",
     "Slippage": "滑点",
     "Router": "路由器",
     "Powered by Synapse": "由Synapse提供支持",

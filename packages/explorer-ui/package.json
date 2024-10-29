@@ -56,6 +56,8 @@
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "lint:fix": "npm run lint -- --fix",
+    "spellcheck": "cspell \"**/*.{tsx,jsx,md,mdx}\" --show-suggestions",
+    "ci:spellcheck": "cspell \"**/*.{tsx,jsx,md,mdx}\" --no-progress --show-suggestions",
     "lint:check": "eslint . --max-warnings=0"
   },
   "browserslist": {
@@ -72,6 +74,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.7",
+    "cspell": "^8.15.4",
     "@codecov/webpack-plugin": "^0.0.1-beta.10",
     "@storybook/addon-actions": "^6.5.15",
     "@storybook/addon-essentials": "^6.5.15",
