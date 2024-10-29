@@ -4,7 +4,7 @@ The RFQ Indexer API is a service designed to provide access to indexed RFQ bridg
 
 ## API-docs
 
-[`https://triumphant-magic-production.up.railway.app/api-docs/`](https://triumphant-magic-production.up.railway.app/api-docs/)
+[`api.synapseprotocol.com/api-docs/`](https://api.synapseprotocol.com/api-docs/)
 
 ## Key Features
 1. **Real-Time and Historical Data** Indexes from a specified start block up to real-time events.

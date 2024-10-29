@@ -5,7 +5,7 @@ import { showFirstValidationError } from '../middleware/showFirstValidationError
 import { synapseTxIdController } from '../controllers/synapseTxIdController'
 import { VALID_BRIDGE_MODULES } from '../constants'
 
-const router = express.Router()
+const router: express.Router = express.Router()
 
 /**
  * @openapi
