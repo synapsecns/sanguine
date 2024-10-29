@@ -15,7 +15,8 @@
     "test:coverage": " ",
     "build:go": " ",
     "build:slither": " ",
-    "ci:spellcheck": "cspell \"**/*.{md,mdx}\" --show-suggestions",
+    "spellcheck": "cspell \"**/*.{md,mdx}\" --show-suggestions",
+    "ci:spellcheck": "cspell \"**/*.{md,mdx}\" --no-progress --show-suggestions",
     "write-heading-ids": "docusaurus write-heading-ids",
     "typecheck": "tsc"
   },

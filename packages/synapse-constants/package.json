@@ -20,7 +20,6 @@
   "scripts": {
     "test:coverage": "echo 'No tests defined.'",
     "ci:lint": " ",
-    "ci:spellcheck": " ",
     "build:go": " ",
     "build:slither": " ",
     "lint": " ",

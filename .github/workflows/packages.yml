@@ -42,7 +42,7 @@ jobs:
         run: npx lerna exec npm run ci:lint --parallel
 
       - name: Run spellcheck # Run spellcheck of all packages
-        run: npx lerna exec npm run ci:spellcheck --parallel
+        run: npx lerna exec npm run ci:spellcheck --parallel -- --if-present
 
   test:
     runs-on: ubuntu-latest

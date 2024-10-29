@@ -28,7 +28,8 @@
     "prepare": "tsdx build",
     "preinstall": "command -v tsdx >/dev/null 2>&1 && tsdx build || echo 'tsdx not found'",
     "size": "size-limit",
-    "ci:spellcheck": "cspell \"README.md\" --show-suggestions",
+    "spellcheck": "cspell \"README.md\" --show-suggestions",
+    "ci:spellcheck": "cspell \"README.md\" --no-progress --show-suggestions",
     "analyze": "size-limit --why",
     "build:go": " ",
     "build:slither": " "

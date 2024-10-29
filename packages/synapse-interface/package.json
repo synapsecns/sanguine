@@ -22,7 +22,8 @@
     "build:slither": " ",
     "graphql:generate": "graphql-codegen --config codegen.ts",
     "maps:generate": "node scripts/generateMaps.js",
-    "ci:spellcheck": "cspell \"**/*.{tsx,jsx,md,mdx}\" --show-suggestions",
+    "spellcheck": "cspell \"**/*.{tsx,jsx,md,mdx}\" --show-suggestions",
+    "ci:spellcheck": "cspell \"**/*.{tsx,jsx,md,mdx}\" --no-progress --show-suggestions",
     "test": "echo 'No jest tests defined.'"
   },
   "dependencies": {
