@@ -401,6 +401,7 @@ const dailyVolumeBridgeMvPt1 = `
        results[81457]               AS blast,
        results[534352]              AS scroll,
 	   results[59144]               AS linea,
+	   results[480]                 AS worldchain,
        arraySum(mapValues(results)) AS total
          FROM (SELECT date, maxMap(map(chain_id, total)) AS results
       FROM (SELECT coalesce(toString(b.date), toString(s.date))   AS date,
@@ -445,6 +446,7 @@ const dailyVolumeBridge = `
        results[81457]               AS blast,
        results[534352]              AS scroll,
 	   results[59144]               AS linea,
+	   results[480]                 AS worldchain,
        arraySum(mapValues(results)) AS total
          FROM (SELECT date, maxMap(map(chain_id, total)) AS results
       FROM (SELECT coalesce(toString(b.date), toString(s.date))   AS date,
@@ -541,6 +543,7 @@ SELECT date,
        results[81457]               AS blast,
        results[534352]              AS scroll,
 	   results[59144]               AS linea,
+	   results[480]                 AS worldchain,
        arraySum(mapValues(results)) AS total
 FROM (SELECT date, maxMap(map(chain_id, total)) AS results
       FROM (SELECT coalesce(toString(b.date), toString(s.date), toString(m.date)) AS date,
@@ -643,6 +646,7 @@ SELECT date,
        results[81457]               AS blast,
        results[534352]              AS scroll,
 	   results[59144]               AS linea,
+	   results[480]                 AS worldchain,
        arraySum(mapValues(results)) AS total
 FROM (
          SELECT date,
@@ -674,6 +678,7 @@ SELECT date,
        results[81457]               AS blast,
        results[534352]              AS scroll,
 	   results[59144]               AS linea,
+	   results[480]                 AS worldchain,
        arraySum(mapValues(results)) AS total
 FROM (
          SELECT date,
@@ -706,6 +711,7 @@ SELECT date,
        results[81457]               AS blast,
        results[534352]              AS scroll,
 	   results[59144]               AS linea,
+	   results[480]                 AS worldchain,
        arraySum(mapValues(results)) AS total
 FROM (
          SELECT date,
