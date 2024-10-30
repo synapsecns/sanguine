@@ -22,6 +22,7 @@ library ZapDataV1 {
     // forgefmt: disable-end
 
     error ZapDataV1__InvalidEncoding();
+    error ZapDataV1__TargetZeroAddress();
     error ZapDataV1__UnsupportedVersion(uint16 version);
 
     /// @notice Validates the encodedZapData to be a tightly packed encoded payload for ZapData struct.
@@ -57,6 +58,7 @@ library ZapDataV1 {
         pure
         returns (bytes memory encodedZapData)
     {
+        if (target_ == address(0)) revert ZapDataV1__TargetZeroAddress();
         // Amount is encoded in [amountPosition_ .. amountPosition_ + 32), which should be within the payload.
         if (amountPosition_ != AMOUNT_NOT_PRESENT && (uint256(amountPosition_) + 32 > payload_.length)) {
             revert ZapDataV1__InvalidEncoding();

@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
+import {ZapDataV1} from "../../contracts/libs/ZapDataV1.sol";
 import {TokenZapV1} from "../../contracts/zaps/TokenZapV1.sol";
+
 import {VaultManyArguments} from "../mocks/VaultManyArguments.sol";
 import {MockERC20} from "../MockERC20.sol";
 
@@ -208,5 +210,12 @@ contract TokenZapV1Test is Test {
         bytes memory tooLongPayload = new bytes(2 ** 16);
         vm.expectRevert(TokenZapV1.TokenZapV1__PayloadLengthAboveMax.selector);
         tokenZap.encodeZapData(address(vault), tooLongPayload, 0);
+    }
+
+    function test_encodeZapData_revert_targetZeroAddress() public {
+        bytes memory payload = getVaultPayloadNoAmount();
+
+        vm.expectRevert(ZapDataV1.ZapDataV1__TargetZeroAddress.selector);
+        tokenZap.encodeZapData(address(0), payload, payload.length);
     }
 }

@@ -69,6 +69,11 @@ contract ZapDataV1Test is Test {
         assertEq(zapData, encodeZapData(EXPECTED_VERSION, amountPosition, target, payload));
     }
 
+    function test_encodeV1_revert_targetZeroAddress() public {
+        vm.expectRevert(ZapDataV1.ZapDataV1__TargetZeroAddress.selector);
+        harness.encodeV1(type(uint16).max, address(0), "");
+    }
+
     function test_encodeDecodeV1_revert_invalidAmountPosition(
         address target,
         uint16 amountPosition,
