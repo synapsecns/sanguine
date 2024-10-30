@@ -34,7 +34,7 @@ contract TokenZapV1Test is Test {
     }
 
     function getVaultPayloadNoAmount() public view returns (bytes memory) {
-        return abi.encodeCall(vault.depositNative, (user));
+        return abi.encodeCall(vault.depositNoAmount, (user));
     }
 
     function getVaultPayloadWithRevert() public view returns (bytes memory) {

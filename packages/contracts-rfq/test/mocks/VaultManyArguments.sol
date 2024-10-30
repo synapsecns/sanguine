@@ -23,7 +23,7 @@ contract VaultManyArguments is VaultMock {
         _deposit(user, token, amount);
     }
 
-    function depositNative(address user) external payable {
+    function depositNoAmount(address user) external payable {
         _deposit(user, NATIVE_GAS_TOKEN, msg.value);
     }
 
