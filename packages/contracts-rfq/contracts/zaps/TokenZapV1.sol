@@ -7,14 +7,14 @@ import {ZapDataV1} from "../libs/ZapDataV1.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract TokenZap is IZapRecipient {
+contract TokenZapV1 is IZapRecipient {
     using SafeERC20 for IERC20;
     using ZapDataV1 for bytes;
 
     address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    error TokenZap__AmountIncorrect();
-    error TokenZap__PayloadLengthAboveMax();
+    error TokenZapV1__AmountIncorrect();
+    error TokenZapV1__PayloadLengthAboveMax();
 
     /// @notice Performs a Zap action using the specified token and amount. This amount must be previously
     /// transferred to this contract (or supplied as msg.value if the token is native gas token).
@@ -29,11 +29,11 @@ contract TokenZap is IZapRecipient {
         // Check that the ZapData is valid before decoding it
         zapData.validateV1();
         address target = zapData.target();
-        // Approve the target contract to spend the token. TokenZap does not custody any tokens outside of the
+        // Approve the target contract to spend the token. TokenZapV1 does not custody any tokens outside of the
         // zap action, so we can approve the arbitrary target contract.
         if (token == NATIVE_GAS_TOKEN) {
             // No approvals are needed for the native gas token, just check that the amount is correct
-            if (msg.value != amount) revert TokenZap__AmountIncorrect();
+            if (msg.value != amount) revert TokenZapV1__AmountIncorrect();
         } else {
             // Issue the approval only if the current allowance is less than the required amount
             if (IERC20(token).allowance(address(this), target) < amount) {
@@ -72,7 +72,7 @@ contract TokenZap is IZapRecipient {
         returns (bytes memory)
     {
         if (payload.length > ZapDataV1.AMOUNT_NOT_PRESENT) {
-            revert TokenZap__PayloadLengthAboveMax();
+            revert TokenZapV1__PayloadLengthAboveMax();
         }
         if (amountPosition >= payload.length) {
             amountPosition = ZapDataV1.AMOUNT_NOT_PRESENT;

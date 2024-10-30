@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {TokenZap} from "../../contracts/zaps/TokenZap.sol";
+import {TokenZapV1} from "../../contracts/zaps/TokenZapV1.sol";
 import {VaultManyArguments} from "../mocks/VaultManyArguments.sol";
 import {MockERC20} from "../MockERC20.sol";
 
 import {Test} from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase, ordering
-contract TokenZapTest is Test {
+contract TokenZapV1Test is Test {
     uint256 internal constant AMOUNT = 0.987 ether;
 
-    TokenZap internal tokenZap;
+    TokenZapV1 internal tokenZap;
     VaultManyArguments internal vault;
     MockERC20 internal erc20;
 
@@ -19,7 +19,7 @@ contract TokenZapTest is Test {
     address internal nativeGasToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     function setUp() public {
-        tokenZap = new TokenZap();
+        tokenZap = new TokenZapV1();
         vault = new VaultManyArguments();
         erc20 = new MockERC20("TKN", 18);
 
@@ -192,7 +192,7 @@ contract TokenZapTest is Test {
         bytes memory originalPayload = getVaultPayload(nativeGasToken, 0);
         bytes memory zapData = getZapData(originalPayload);
 
-        vm.expectRevert(TokenZap.TokenZap__AmountIncorrect.selector);
+        vm.expectRevert(TokenZapV1.TokenZapV1__AmountIncorrect.selector);
         tokenZap.zap{value: 1 ether - 1 wei}(nativeGasToken, 1 ether, zapData);
     }
 
@@ -200,13 +200,13 @@ contract TokenZapTest is Test {
         bytes memory originalPayload = getVaultPayload(nativeGasToken, 0);
         bytes memory zapData = getZapData(originalPayload);
 
-        vm.expectRevert(TokenZap.TokenZap__AmountIncorrect.selector);
+        vm.expectRevert(TokenZapV1.TokenZapV1__AmountIncorrect.selector);
         tokenZap.zap{value: 1 ether + 1 wei}(nativeGasToken, 1 ether, zapData);
     }
 
     function test_encodeZapData_revert_payloadLengthAboveMax() public {
         bytes memory tooLongPayload = new bytes(2 ** 16);
-        vm.expectRevert(TokenZap.TokenZap__PayloadLengthAboveMax.selector);
+        vm.expectRevert(TokenZapV1.TokenZapV1__PayloadLengthAboveMax.selector);
         tokenZap.encodeZapData(address(vault), tooLongPayload, 0);
     }
 }
