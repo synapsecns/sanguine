@@ -383,7 +383,7 @@ const StateManagedBridge = () => {
         <div>
           <div>
             {t(
-              'Succesfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}',
+              'Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}',
               {
                 fromToken: fromToken?.symbol,
                 originChainName: originChainName,

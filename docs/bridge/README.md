@@ -4,7 +4,7 @@ This website is built using [Docusaurus](https://docusaurus.io/), a modern stati
 
 ## Generating API Docs
 
-<!--TODO: needs to be done from ci to ensure regenration is done.-->
+<!--TODO: needs to be done from ci to ensure regeneration is done.-->
 
 `yarn docusaurus gen-api-docs all`.
 
