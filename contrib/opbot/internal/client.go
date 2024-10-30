@@ -10,7 +10,6 @@ import (
 	"github.com/go-http-utils/headers"
 	"github.com/go-resty/resty/v2"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 )
 
 const (
@@ -24,26 +23,19 @@ type RFQClient interface {
 }
 
 type rfqClientImpl struct {
-	client         *resty.Client
-	relayerClients []relapi.RelayerClient
+	client *resty.Client
 }
 
 // NewRFQClient creates a new RFQClient.
-func NewRFQClient(handler metrics.Handler, indexerURL string, relayerURLs []string) RFQClient {
+func NewRFQClient(handler metrics.Handler, indexerURL string) RFQClient {
 	client := resty.New()
 	client.SetBaseURL(indexerURL)
 	client.SetHeader(headers.UserAgent, "rfq-client")
 
 	otelresty.TraceClient(client, otelresty.WithTracerProvider(handler.GetTracerProvider()))
 
-	var relayerClients []relapi.RelayerClient
-	for _, url := range relayerURLs {
-		relayerClients = append(relayerClients, relapi.NewRelayerClient(handler, url))
-	}
-
 	return &rfqClientImpl{
-		client:         client,
-		relayerClients: relayerClients,
+		client: client,
 	}
 }
 

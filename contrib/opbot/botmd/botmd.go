@@ -48,7 +48,7 @@ func NewBot(handler metrics.Handler, cfg config.Config) *Bot {
 		cfg:       cfg,
 		server:    server,
 		logger:    experimentalLogger.MakeWrappedSugaredLogger(sugaredLogger),
-		rfqClient: internal.NewRFQClient(handler, cfg.RFQIndexerAPIURL, cfg.RelayerURLS),
+		rfqClient: internal.NewRFQClient(handler, cfg.RFQIndexerAPIURL),
 	}
 
 	// you should be able to run opbot even without signoz.

@@ -227,7 +227,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 	return &slacker.CommandDefinition{
 		Command:     "refund <tx>",
-		Description: "refund a quote request",
+		Description: "TESTING TESTING a quote request",
 		Examples:    []string{"refund 0x1234"},
 		Handler: func(ctx *slacker.CommandContext) {
 			tx := stripLinks(ctx.Request().Param("tx"))
@@ -279,7 +279,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				ctx.Context(),
 				big.NewInt(int64(rawRequest.Bridge.OriginChainID)),
 				func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-					tx, err = fastBridgeContract.Refund(transactor, common.Hex2Bytes(rawRequest.Bridge.Request))
+					tx, err = fastBridgeContract.Refund(transactor, common.Hex2Bytes(rawRequest.Bridge.Request[2:]))
 					if err != nil {
 						return nil, fmt.Errorf("error submitting refund: %w", err)
 					}
