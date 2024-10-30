@@ -142,7 +142,8 @@ func (b *BackfillSuite) TestBackfill() {
 	redeemLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 2)
 	Nil(b.T(), err)
 
-	bridgeTx, err = bridgeRef.TestWithdraw(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), [32]byte{byte(gofakeit.Uint64())})
+	baseNum := gofakeit.Uint32()
+	bridgeTx, err = bridgeRef.TestWithdraw(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(baseNum)), big.NewInt(int64(float64(baseNum)*0.01)), [32]byte{byte(gofakeit.Uint64())})
 	Nil(b.T(), err)
 	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(2)), 3)
 	withdrawLog, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 2)
@@ -203,7 +204,7 @@ func (b *BackfillSuite) TestBackfill() {
 	redeemV1Log, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 3)
 	Nil(b.T(), err)
 
-	bridgeTx, err = bridgeV1Ref.TestWithdraw(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())), [32]byte{byte(gofakeit.Uint64())})
+	bridgeTx, err = bridgeV1Ref.TestWithdraw(transactOpts.TransactOpts, common.BigToAddress(big.NewInt(gofakeit.Int64())), common.HexToAddress(testTokens[0].TokenAddress), big.NewInt(int64(baseNum)), big.NewInt(int64(float64(baseNum)*0.01)), [32]byte{byte(gofakeit.Uint64())})
 	Nil(b.T(), err)
 	b.storeEthTx(bridgeTx, testChainID, big.NewInt(int64(3)), 3)
 	withdrawV1Log, err := b.storeTestLog(bridgeTx, uint32(testChainID.Uint64()), 3)
