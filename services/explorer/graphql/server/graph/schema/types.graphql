@@ -9,6 +9,7 @@ type BridgeTransaction {
   kappa:        String
   pending:      Boolean
   swapSuccess:  Boolean
+  bridgeModule: String
 }
 """
 PartialInfo is a transaction that occurred on one chain.

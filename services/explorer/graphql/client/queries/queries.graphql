@@ -49,6 +49,7 @@ query GetBridgeTransactions($chainIDTo: [Int],$chainIDFrom: [Int], $addressTo: S
     kappa
     pending
     swapSuccess
+    bridgeModule
   }
 }
 

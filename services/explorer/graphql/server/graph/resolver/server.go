@@ -79,11 +79,12 @@ type ComplexityRoot struct {
 	}
 
 	BridgeTransaction struct {
-		FromInfo    func(childComplexity int) int
-		Kappa       func(childComplexity int) int
-		Pending     func(childComplexity int) int
-		SwapSuccess func(childComplexity int) int
-		ToInfo      func(childComplexity int) int
+		BridgeModule func(childComplexity int) int
+		FromInfo     func(childComplexity int) int
+		Kappa        func(childComplexity int) int
+		Pending      func(childComplexity int) int
+		SwapSuccess  func(childComplexity int) int
+		ToInfo       func(childComplexity int) int
 	}
 
 	BridgeWatcherTx struct {
@@ -408,6 +409,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BlockHeight.Type(childComplexity), true
+
+	case "BridgeTransaction.bridgeModule":
+		if e.complexity.BridgeTransaction.BridgeModule == nil {
+			break
+		}
+
+		return e.complexity.BridgeTransaction.BridgeModule(childComplexity), true
 
 	case "BridgeTransaction.fromInfo":
 		if e.complexity.BridgeTransaction.FromInfo == nil {
@@ -1501,6 +1509,7 @@ type BridgeTransaction {
   kappa:        String
   pending:      Boolean
   swapSuccess:  Boolean
+  bridgeModule: String
 }
 """
 PartialInfo is a transaction that occurred on one chain.
@@ -3576,6 +3585,47 @@ func (ec *executionContext) fieldContext_BridgeTransaction_swapSuccess(ctx conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BridgeTransaction_bridgeModule(ctx context.Context, field graphql.CollectedField, obj *model.BridgeTransaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BridgeTransaction_bridgeModule(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BridgeModule, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BridgeTransaction_bridgeModule(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BridgeTransaction",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6846,6 +6896,8 @@ func (ec *executionContext) fieldContext_Query_bridgeTransactions(ctx context.Co
 				return ec.fieldContext_BridgeTransaction_pending(ctx, field)
 			case "swapSuccess":
 				return ec.fieldContext_BridgeTransaction_swapSuccess(ctx, field)
+			case "bridgeModule":
+				return ec.fieldContext_BridgeTransaction_bridgeModule(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BridgeTransaction", field.Name)
 		},
@@ -10324,6 +10376,8 @@ func (ec *executionContext) _BridgeTransaction(ctx context.Context, sel ast.Sele
 			out.Values[i] = ec._BridgeTransaction_pending(ctx, field, obj)
 		case "swapSuccess":
 			out.Values[i] = ec._BridgeTransaction_swapSuccess(ctx, field, obj)
+		case "bridgeModule":
+			out.Values[i] = ec._BridgeTransaction_bridgeModule(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

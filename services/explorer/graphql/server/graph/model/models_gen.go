@@ -52,11 +52,12 @@ type BlockHeight struct {
 // to and from transactions. If a `from` transaction does not have a corresponding
 // `to` transaction, `pending` will be true.
 type BridgeTransaction struct {
-	FromInfo    *PartialInfo `json:"fromInfo,omitempty"`
-	ToInfo      *PartialInfo `json:"toInfo,omitempty"`
-	Kappa       *string      `json:"kappa,omitempty"`
-	Pending     *bool        `json:"pending,omitempty"`
-	SwapSuccess *bool        `json:"swapSuccess,omitempty"`
+	FromInfo     *PartialInfo `json:"fromInfo,omitempty"`
+	ToInfo       *PartialInfo `json:"toInfo,omitempty"`
+	Kappa        *string      `json:"kappa,omitempty"`
+	Pending      *bool        `json:"pending,omitempty"`
+	SwapSuccess  *bool        `json:"swapSuccess,omitempty"`
+	BridgeModule *string      `json:"bridgeModule,omitempty"`
 }
 
 // BridgeWatcherTx represents a single sided bridge transaction specifically for the bridge watcher.

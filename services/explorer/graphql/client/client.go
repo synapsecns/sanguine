@@ -62,9 +62,10 @@ type GetBridgeTransactions struct {
 			Time           *int     "json:\"time\" graphql:\"time\""
 			FormattedTime  *string  "json:\"formattedTime\" graphql:\"formattedTime\""
 		} "json:\"toInfo\" graphql:\"toInfo\""
-		Kappa       *string "json:\"kappa\" graphql:\"kappa\""
-		Pending     *bool   "json:\"pending\" graphql:\"pending\""
-		SwapSuccess *bool   "json:\"swapSuccess\" graphql:\"swapSuccess\""
+		Kappa        *string "json:\"kappa\" graphql:\"kappa\""
+		Pending      *bool   "json:\"pending\" graphql:\"pending\""
+		SwapSuccess  *bool   "json:\"swapSuccess\" graphql:\"swapSuccess\""
+		BridgeModule *string "json:\"bridgeModule\" graphql:\"bridgeModule\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetCountByChainID struct {
@@ -306,6 +307,7 @@ const GetBridgeTransactionsDocument = `query GetBridgeTransactions ($chainIDTo: 
 		kappa
 		pending
 		swapSuccess
+		bridgeModule
 	}
 }
 `
