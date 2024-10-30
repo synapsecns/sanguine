@@ -1777,12 +1777,14 @@ func bwBridgeMVToBWTxOrigin(bridgeEvent *sql.HybridBridgeEvent, txType model.Bri
 		Time:               &timestamp,
 		FormattedTime:      &timeStampFormatted,
 	}
+	bridgeModule := getBridgeModule(int(bridgeEvent.FEventType))
 	result := &model.BridgeWatcherTx{
-		BridgeTx:    &bridgeTx,
-		Pending:     &isPending,
-		Type:        &txType,
-		Kappa:       &kappa,
-		KappaStatus: &kappaStatus,
+		BridgeTx:     &bridgeTx,
+		Pending:      &isPending,
+		Type:         &txType,
+		Kappa:        &kappa,
+		KappaStatus:  &kappaStatus,
+		BridgeModule: &bridgeModule,
 	}
 	return result, nil
 }
@@ -1825,12 +1827,14 @@ func bwBridgeMVToBWTxDestination(bridgeEvent *sql.HybridBridgeEvent, txType mode
 		Time:               &timestamp,
 		FormattedTime:      &timeStampFormatted,
 	}
+	bridgeModule := getBridgeModule(int(bridgeEvent.TEventType))
 	result := &model.BridgeWatcherTx{
-		BridgeTx:    &bridgeTx,
-		Pending:     &isPending,
-		Type:        &txType,
-		Kappa:       &kappa,
-		KappaStatus: &kappaStatus,
+		BridgeTx:     &bridgeTx,
+		Pending:      &isPending,
+		Type:         &txType,
+		Kappa:        &kappa,
+		KappaStatus:  &kappaStatus,
+		BridgeModule: &bridgeModule,
 	}
 	return result, nil
 }

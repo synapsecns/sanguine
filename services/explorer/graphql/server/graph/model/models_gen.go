@@ -62,11 +62,12 @@ type BridgeTransaction struct {
 
 // BridgeWatcherTx represents a single sided bridge transaction specifically for the bridge watcher.
 type BridgeWatcherTx struct {
-	BridgeTx    *PartialInfo  `json:"bridgeTx,omitempty"`
-	Pending     *bool         `json:"pending,omitempty"`
-	Type        *BridgeTxType `json:"type,omitempty"`
-	Kappa       *string       `json:"kappa,omitempty"`
-	KappaStatus *KappaStatus  `json:"kappaStatus,omitempty"`
+	BridgeTx     *PartialInfo  `json:"bridgeTx,omitempty"`
+	Pending      *bool         `json:"pending,omitempty"`
+	Type         *BridgeTxType `json:"type,omitempty"`
+	Kappa        *string       `json:"kappa,omitempty"`
+	KappaStatus  *KappaStatus  `json:"kappaStatus,omitempty"`
+	BridgeModule *string       `json:"bridgeModule,omitempty"`
 }
 
 type ContractQuery struct {

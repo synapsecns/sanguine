@@ -88,11 +88,12 @@ type ComplexityRoot struct {
 	}
 
 	BridgeWatcherTx struct {
-		BridgeTx    func(childComplexity int) int
-		Kappa       func(childComplexity int) int
-		KappaStatus func(childComplexity int) int
-		Pending     func(childComplexity int) int
-		Type        func(childComplexity int) int
+		BridgeModule func(childComplexity int) int
+		BridgeTx     func(childComplexity int) int
+		Kappa        func(childComplexity int) int
+		KappaStatus  func(childComplexity int) int
+		Pending      func(childComplexity int) int
+		Type         func(childComplexity int) int
 	}
 
 	DateResult struct {
@@ -451,6 +452,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BridgeTransaction.ToInfo(childComplexity), true
+
+	case "BridgeWatcherTx.bridgeModule":
+		if e.complexity.BridgeWatcherTx.BridgeModule == nil {
+			break
+		}
+
+		return e.complexity.BridgeWatcherTx.BridgeModule(childComplexity), true
 
 	case "BridgeWatcherTx.bridgeTx":
 		if e.complexity.BridgeWatcherTx.BridgeTx == nil {
@@ -1544,6 +1552,7 @@ type BridgeWatcherTx {
   type:  BridgeTxType
   kappa:        String
   kappaStatus: KappaStatus
+  bridgeModule: String
 }
 """
 DateResult is a given statistic for a given date.
@@ -3861,6 +3870,47 @@ func (ec *executionContext) fieldContext_BridgeWatcherTx_kappaStatus(ctx context
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type KappaStatus does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BridgeWatcherTx_bridgeModule(ctx context.Context, field graphql.CollectedField, obj *model.BridgeWatcherTx) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BridgeWatcherTx_bridgeModule(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BridgeModule, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BridgeWatcherTx_bridgeModule(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BridgeWatcherTx",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -7558,6 +7608,8 @@ func (ec *executionContext) fieldContext_Query_getOriginBridgeTx(ctx context.Con
 				return ec.fieldContext_BridgeWatcherTx_kappa(ctx, field)
 			case "kappaStatus":
 				return ec.fieldContext_BridgeWatcherTx_kappaStatus(ctx, field)
+			case "bridgeModule":
+				return ec.fieldContext_BridgeWatcherTx_bridgeModule(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BridgeWatcherTx", field.Name)
 		},
@@ -7622,6 +7674,8 @@ func (ec *executionContext) fieldContext_Query_getDestinationBridgeTx(ctx contex
 				return ec.fieldContext_BridgeWatcherTx_kappa(ctx, field)
 			case "kappaStatus":
 				return ec.fieldContext_BridgeWatcherTx_kappaStatus(ctx, field)
+			case "bridgeModule":
+				return ec.fieldContext_BridgeWatcherTx_bridgeModule(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BridgeWatcherTx", field.Name)
 		},
@@ -10422,6 +10476,8 @@ func (ec *executionContext) _BridgeWatcherTx(ctx context.Context, sel ast.Select
 			out.Values[i] = ec._BridgeWatcherTx_kappa(ctx, field, obj)
 		case "kappaStatus":
 			out.Values[i] = ec._BridgeWatcherTx_kappaStatus(ctx, field, obj)
+		case "bridgeModule":
+			out.Values[i] = ec._BridgeWatcherTx_bridgeModule(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
