@@ -7,6 +7,14 @@ import {ZapDataV1} from "../libs/ZapDataV1.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+/// @notice TokenZapV1 enables atomic token operations called "Zaps". A Zap executes a predefined action with tokens
+/// on behalf of a user, such as depositing into a vault or performing a token swap.
+/// The contract supports both ERC20 tokens and the chain's native gas token (e.g. ETH).
+/// @dev For security and efficiency, TokenZapV1 requires tokens to be pre-transferred to the contract before executing
+/// a Zap, rather than using transferFrom. For native tokens, the amount must be sent as msg.value.
+/// IMPORTANT: This contract is stateless and does not custody assets between Zaps. Any tokens left in the contract
+/// can be claimed by anyone. To prevent loss of funds, ensure that Zaps either consume the entire token amount
+/// or revert the transaction.
 contract TokenZapV1 is IZapRecipient {
     using SafeERC20 for IERC20;
     using ZapDataV1 for bytes;
@@ -26,24 +34,28 @@ contract TokenZapV1 is IZapRecipient {
     /// @param zapData      Encoded Zap Data containing the target address and calldata for the Zap action.
     /// @return selector    Selector of this function to signal the caller about the success of the Zap action.
     function zap(address token, uint256 amount, bytes calldata zapData) external payable returns (bytes4) {
-        // Check that the ZapData is valid before decoding it
+        // Validate the ZapData format and extract target address
         zapData.validateV1();
         address target = zapData.target();
-        // Approve the target contract to spend the token. TokenZapV1 does not custody any tokens outside of the
-        // zap action, so we can approve the arbitrary target contract.
         if (token == NATIVE_GAS_TOKEN) {
-            // No approvals are needed for the native gas token, just check that the amount is correct
+            // For native gas token (e.g. ETH), verify msg.value matches expected amount.
+            // No approval needed since native token doesn't use allowances.
             if (msg.value != amount) revert TokenZapV1__AmountIncorrect();
         } else {
-            // Issue the approval only if the current allowance is less than the required amount
+            // For ERC20 tokens, grant unlimited approval to target if current allowance insufficient.
+            // This is safe since contract doesn't custody tokens between zaps.
             if (IERC20(token).allowance(address(this), target) < amount) {
                 IERC20(token).forceApprove(target, type(uint256).max);
             }
+            // Note: Balance check omitted as target contract will revert if insufficient funds
         }
-        // Perform the Zap action, forwarding full msg.value to the target contract
-        // Note: this will bubble up any revert from the target contract
+        // Construct the payload for the target contract call with the Zap action.
+        // The payload is modified to replace the placeholder amount with the actual amount.
         bytes memory payload = zapData.payload(amount);
+        // Perform the Zap action, forwarding full msg.value to the target contract.
+        // Note: this will bubble up any revert from the target contract.
         Address.functionCallWithValue({target: target, data: payload, value: msg.value});
+        // Return function selector to indicate successful execution
         return this.zap.selector;
     }
 
@@ -74,10 +86,13 @@ contract TokenZapV1 is IZapRecipient {
         if (payload.length > ZapDataV1.AMOUNT_NOT_PRESENT) {
             revert TokenZapV1__PayloadLengthAboveMax();
         }
+        // External integrations do not need to understand the specific `AMOUNT_NOT_PRESENT` semantics.
+        // Therefore, they can specify any value greater than or equal to `payload.length` to indicate
+        // that the amount is not present in the payload.
         if (amountPosition >= payload.length) {
             amountPosition = ZapDataV1.AMOUNT_NOT_PRESENT;
         }
-        // At this point we checked that both amountPosition and payload.length fit in uint16
+        // At this point we checked that both `amountPosition` and `payload.length` fit in uint16.
         return ZapDataV1.encodeV1(uint16(amountPosition), target, payload);
     }
 
