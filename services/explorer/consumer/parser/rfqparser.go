@@ -108,7 +108,7 @@ func (p *RFQParser) MatureLogs(ctx context.Context, rfqEvent *model.RFQEvent, iF
 	}
 
 	// If we have a timestamp, populate the following attributes of rfqEvent.
-	// This logic will have to be generalized as we support more tokens (need to programatically find coingecko id based on token address)
+	// This logic will have to be generalized as we support more tokens (we need to programatically find coingecko id based on token address)
 	timeStampBig := uint64(*timeStamp)
 	rfqEvent.TimeStamp = &timeStampBig
 
