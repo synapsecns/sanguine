@@ -108,6 +108,7 @@ func (p *RFQParser) MatureLogs(ctx context.Context, rfqEvent *model.RFQEvent, iF
 	}
 
 	// If we have a timestamp, populate the following attributes of rfqEvent.
+	// This logic will have to be generalized as we support more tokens (need to programatically find coingecko id based on token address)
 	timeStampBig := uint64(*timeStamp)
 	rfqEvent.TimeStamp = &timeStampBig
 
@@ -115,7 +116,7 @@ func (p *RFQParser) MatureLogs(ctx context.Context, rfqEvent *model.RFQEvent, iF
 	tokenAddressStr := common.HexToAddress(rfqEvent.OriginToken).Hex()
 	const ethAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 
-	if strings.EqualFold(tokenAddressStr, ethAddress) {
+	if strings.EqualFold(tokenAddressStr, ethAddress) || strings.EqualFold(tokenAddressStr, "0x2170Ed0880ac9A755fd29B2688956BD959F933F8") {
 		rfqEvent.TokenSymbol = "ETH"
 		rfqEvent.TokenDecimal = new(uint8)
 		*rfqEvent.TokenDecimal = 18
@@ -124,7 +125,7 @@ func (p *RFQParser) MatureLogs(ctx context.Context, rfqEvent *model.RFQEvent, iF
 		rfqEvent.TokenSymbol = "WLD"
 		rfqEvent.TokenDecimal = new(uint8)
 		*rfqEvent.TokenDecimal = 18
-		curCoinGeckoID = "worldchain"
+		curCoinGeckoID = "worldcoin"
 	} else {
 		// Assuming any other token is USDC
 		rfqEvent.TokenSymbol = "USDC"

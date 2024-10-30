@@ -626,7 +626,7 @@ func (b *BackfillSuite) receiveCircleTokenParity(log *types.Log, parser *parser.
 			TxHash:          log.TxHash.String(),
 			EventType:       cctpTypes.CircleRequestFulfilledEvent.Int(),
 			RequestID:       common.Bytes2Hex(parsedLog.RequestID[:]),
-			OriginChainID:   big.NewInt(domainToChain[parsedLog.OriginDomain]),
+			OriginChainID:   big.NewInt(int64(domainToChain[parsedLog.OriginDomain])),
 			MintToken:       mintToken,
 			Amount:          parsedLog.Amount,
 			Recipient:       recipient,
@@ -878,7 +878,7 @@ func (b *BackfillSuite) withdrawParity(log *types.Log, parser *parser.BridgePars
 				BlockNumber:     log.BlockNumber,
 				TxHash:          log.TxHash.String(),
 				Token:           parsedLog.Token.String(),
-				Amount:          parsedLog.Amount,
+				Amount:          new(big.Int).Sub(parsedLog.Amount, parsedLog.Fee),
 
 				Recipient: recipient,
 				Fee:       parsedLog.Fee,
@@ -911,7 +911,7 @@ func (b *BackfillSuite) withdrawParity(log *types.Log, parser *parser.BridgePars
 			BlockNumber:     log.BlockNumber,
 			TxHash:          log.TxHash.String(),
 			Token:           parsedLog.Token.String(),
-			Amount:          parsedLog.Amount,
+			Amount:          new(big.Int).Sub(parsedLog.Amount, parsedLog.Fee),
 
 			Recipient: recipient,
 			Fee:       parsedLog.Fee,
