@@ -626,7 +626,7 @@ func (b *BackfillSuite) receiveCircleTokenParity(log *types.Log, parser *parser.
 			TxHash:          log.TxHash.String(),
 			EventType:       cctpTypes.CircleRequestFulfilledEvent.Int(),
 			RequestID:       common.Bytes2Hex(parsedLog.RequestID[:]),
-			OriginChainID:   big.NewInt(int64(domainToChain[parsedLog.OriginDomain])),
+			OriginChainID:   big.NewInt(domainToChain[parsedLog.OriginDomain]),
 			MintToken:       mintToken,
 			Amount:          parsedLog.Amount,
 			Recipient:       recipient,
