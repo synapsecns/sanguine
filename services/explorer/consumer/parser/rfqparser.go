@@ -76,10 +76,26 @@ func (p *RFQParser) ParseLog(log ethTypes.Log, chainID uint32) (*model.RFQEvent,
 				return nil, fmt.Errorf("could not parse fastbridge bridge relayed: %w", err)
 			}
 			return iFace, nil
-
+		case fastbridge.Topic(rfqTypes.BridgeRefundedEvent):
+			iFace, err := p.Filterer.ParseBridgeDepositRefunded(log)
+			if err != nil {
+				return nil, fmt.Errorf("could not parse fastbridge bridge refunded: %w", err)
+			}
+			return iFace, nil
+		case fastbridge.Topic(rfqTypes.BridgeProvenEvent):
+			iFace, err := p.Filterer.ParseBridgeProofProvided(log)
+			if err != nil {
+				return nil, fmt.Errorf("could not parse fastbridge bridge proven: %w", err)
+			}
+			return iFace, nil
+		case fastbridge.Topic(rfqTypes.BridgeClaimedEvent):
+			iFace, err := p.Filterer.ParseBridgeDepositClaimed(log)
+			if err != nil {
+				return nil, fmt.Errorf("could not parse fastbridge bridge claimed: %w", err)
+			}
+			return iFace, nil
 		default:
 			logger.Warnf("ErrUnknownTopic in rfq: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
-
 			return nil, fmt.Errorf(ErrUnknownTopic)
 		}
 	}(log)
@@ -233,6 +249,14 @@ func eventToRFQEvent(event rfqTypes.EventLog, chainID uint32) model.RFQEvent {
 }
 
 func rfqEventToBridgeEvent(rfqEvent model.RFQEvent) model.BridgeEvent {
+	// Only convert BridgeRequestedEvent and BridgeRelayedEvent to bridge events
+	// Exclude BridgeDepositRefunded, BridgeProofProvided, and BridgeDepositClaimed
+	eventType := rfqEvent.EventType
+	if eventType != rfqTypes.BridgeRequestedEvent.Int() &&
+		eventType != rfqTypes.BridgeRelayedEvent.Int() {
+		return model.BridgeEvent{}
+	}
+
 	bridgeType := bridgeTypes.BridgeRequestedEvent
 	token := rfqEvent.OriginToken
 	amount := rfqEvent.OriginAmount
