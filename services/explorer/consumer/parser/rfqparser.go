@@ -142,7 +142,7 @@ func (p *RFQParser) MatureLogs(ctx context.Context, rfqEvent *model.RFQEvent, iF
 		rfqEvent.TokenSymbol = "WLD"
 		rfqEvent.TokenDecimal = new(uint8)
 		*rfqEvent.TokenDecimal = 18
-		curCoinGeckoID = "worldcoin"
+		curCoinGeckoID = "worldcoin-wld"
 	default:
 		rfqEvent.TokenSymbol = "USDC"
 		rfqEvent.TokenDecimal = new(uint8)
