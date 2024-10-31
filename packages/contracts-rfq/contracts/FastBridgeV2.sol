@@ -89,7 +89,7 @@ contract FastBridgeV2 is Admin, MulticallTarget, IFastBridgeV2, IFastBridgeV2Err
         // Aggregate the read operations from the same storage slot
         address disputedRelayer = $.proofRelayer;
         BridgeStatus status = $.status;
-        uint40 proofBlockTimestamp = $.proofBlockTimestamp;
+        uint56 proofBlockTimestamp = $.proofBlockTimestamp;
         // Can only dispute a RELAYER_PROVED transaction within the dispute period
         if (status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
         if (_timeSince(proofBlockTimestamp) > DISPUTE_PERIOD) {
@@ -314,7 +314,7 @@ contract FastBridgeV2 is Admin, MulticallTarget, IFastBridgeV2, IFastBridgeV2Err
         // Update status to RELAYER_PROVED and store the proof details
         // Note: these are storage writes
         $.status = BridgeStatus.RELAYER_PROVED;
-        $.proofBlockTimestamp = uint40(block.timestamp);
+        $.proofBlockTimestamp = uint56(block.timestamp);
         $.proofRelayer = relayer;
 
         emit BridgeProofProvided(transactionId, relayer, destTxHash);
@@ -328,7 +328,7 @@ contract FastBridgeV2 is Admin, MulticallTarget, IFastBridgeV2, IFastBridgeV2Err
         // Aggregate the read operations from the same storage slot
         address proofRelayer = $.proofRelayer;
         BridgeStatus status = $.status;
-        uint40 proofBlockTimestamp = $.proofBlockTimestamp;
+        uint56 proofBlockTimestamp = $.proofBlockTimestamp;
 
         // Can only claim a RELAYER_PROVED transaction after the dispute period
         if (status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
@@ -425,14 +425,14 @@ contract FastBridgeV2 is Admin, MulticallTarget, IFastBridgeV2, IFastBridgeV2Err
     }
 
     /// @notice Calculates time since proof submitted
-    /// @dev proof.timestamp stores casted uint40(block.timestamp) block timestamps for gas optimization
-    ///      _timeSince(proof) can accomodate rollover case when block.timestamp > type(uint40).max but
-    ///      proof.timestamp < type(uint40).max via unchecked statement
+    /// @dev proof.timestamp stores casted uint56(block.timestamp) block timestamps for gas optimization
+    ///      _timeSince(proof) can accomodate rollover case when block.timestamp > type(uint56).max but
+    ///      proof.timestamp < type(uint56).max via unchecked statement
     /// @param proofBlockTimestamp The bridge proof block timestamp
     /// @return delta Time delta since proof submitted
-    function _timeSince(uint40 proofBlockTimestamp) internal view returns (uint256 delta) {
+    function _timeSince(uint56 proofBlockTimestamp) internal view returns (uint256 delta) {
         unchecked {
-            delta = uint40(block.timestamp) - proofBlockTimestamp;
+            delta = uint56(block.timestamp) - proofBlockTimestamp;
         }
     }
 
