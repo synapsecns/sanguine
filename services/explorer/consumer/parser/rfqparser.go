@@ -24,7 +24,7 @@ import (
 
 const ethCoinGeckoID = "ethereum"
 
-// RFQParser parsers rfq logs.
+// RFQParser parsers all rfq logs.
 type RFQParser struct {
 	// consumerDB is the database to store parsed data in
 	consumerDB db.ConsumerDB
