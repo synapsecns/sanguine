@@ -100,7 +100,6 @@ contract FastBridgeV2 is Admin, MulticallTarget, IFastBridgeV2, IFastBridgeV2Err
         $.status = BridgeStatus.REQUESTED;
         $.proofRelayer = address(0);
         $.proofBlockTimestamp = 0;
-        $.proofBlockNumber = 0;
 
         emit BridgeProofDisputed(transactionId, disputedRelayer);
     }
@@ -314,7 +313,6 @@ contract FastBridgeV2 is Admin, MulticallTarget, IFastBridgeV2, IFastBridgeV2Err
         // Note: these are storage writes
         $.status = BridgeStatus.RELAYER_PROVED;
         $.proofBlockTimestamp = uint40(block.timestamp);
-        $.proofBlockNumber = uint48(block.number);
         $.proofRelayer = relayer;
 
         emit BridgeProofProvided(transactionId, relayer, destTxHash);
