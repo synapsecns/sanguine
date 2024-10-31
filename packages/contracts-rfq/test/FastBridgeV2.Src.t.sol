@@ -96,9 +96,10 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
 
     function checkStatusAndProofAfterBridge(bytes32 txId) public view {
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
-        (IFastBridgeV2.BridgeStatus status, uint256 proofBlockTimestamp, address proofRelayer) =
+        (IFastBridgeV2.BridgeStatus status, uint32 destChainId, uint256 proofBlockTimestamp, address proofRelayer) =
             fastBridge.bridgeTxDetails(txId);
         assertEq(status, IFastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(destChainId, DST_CHAIN_ID);
         assertEq(proofBlockTimestamp, 0);
         assertEq(proofRelayer, address(0));
         (proofBlockTimestamp, proofRelayer) = fastBridge.bridgeProofs(txId);
@@ -283,9 +284,10 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
 
     function checkStatusAndProofAfterProve(bytes32 txId, address relayer) public view {
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.RELAYER_PROVED);
-        (IFastBridgeV2.BridgeStatus status, uint256 proofBlockTimestamp, address proofRelayer) =
+        (IFastBridgeV2.BridgeStatus status, uint32 destChainId, uint256 proofBlockTimestamp, address proofRelayer) =
             fastBridge.bridgeTxDetails(txId);
         assertEq(status, IFastBridgeV2.BridgeStatus.RELAYER_PROVED);
+        assertEq(destChainId, DST_CHAIN_ID);
         assertEq(proofBlockTimestamp, block.timestamp);
         assertEq(proofRelayer, relayer);
         (proofBlockTimestamp, proofRelayer) = fastBridge.bridgeProofs(txId);
@@ -470,9 +472,10 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
 
     function checkStatusAndProofAfterClaim(bytes32 txId, address relayer, uint256 expectedProofTS) public view {
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
-        (IFastBridgeV2.BridgeStatus status, uint256 proofBlockTimestamp, address proofRelayer) =
+        (IFastBridgeV2.BridgeStatus status, uint32 destChainId, uint256 proofBlockTimestamp, address proofRelayer) =
             fastBridge.bridgeTxDetails(txId);
         assertEq(status, IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        assertEq(destChainId, DST_CHAIN_ID);
         assertEq(proofBlockTimestamp, expectedProofTS);
         assertEq(proofRelayer, relayer);
         (proofBlockTimestamp, proofRelayer) = fastBridge.bridgeProofs(txId);
@@ -803,9 +806,10 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
 
     function checkStatusAndProofAfterRefund(bytes32 txId) public view {
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
-        (IFastBridgeV2.BridgeStatus status, uint256 proofBlockTimestamp, address proofRelayer) =
+        (IFastBridgeV2.BridgeStatus status, uint32 destChainId, uint256 proofBlockTimestamp, address proofRelayer) =
             fastBridge.bridgeTxDetails(txId);
         assertEq(status, IFastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(destChainId, DST_CHAIN_ID);
         assertEq(proofBlockTimestamp, 0);
         assertEq(proofRelayer, address(0));
         (proofBlockTimestamp, proofRelayer) = fastBridge.bridgeProofs(txId);

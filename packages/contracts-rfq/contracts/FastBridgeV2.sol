@@ -220,7 +220,9 @@ contract FastBridgeV2 is Admin, MulticallTarget, IFastBridgeV2, IFastBridgeV2Err
             })
         );
         bytes32 transactionId = keccak256(request);
+        // Note: the tx status will be updated throughout the tx lifecycle, while destChainId is set once here
         bridgeTxDetails[transactionId].status = BridgeStatus.REQUESTED;
+        bridgeTxDetails[transactionId].destChainId = params.dstChainId;
 
         emit BridgeRequested({
             transactionId: transactionId,
