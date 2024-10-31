@@ -3,6 +3,7 @@ package parser
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -88,7 +89,7 @@ func (p *RFQParser) ParseLog(log ethTypes.Log, chainID uint32) (*model.RFQEvent,
 
 		logger.Warnf("ErrUnknownTopic in rfq: %s %s chain: %d address: %s",
 			log.TxHash, logTopic.String(), chainID, log.Address.Hex())
-		return nil, fmt.Errorf(ErrUnknownTopic)
+		return nil, errors.New("unknown topic")
 	}(log)
 
 	if err != nil {
