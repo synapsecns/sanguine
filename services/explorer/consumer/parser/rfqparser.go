@@ -63,41 +63,32 @@ func (p *RFQParser) ParserType() string {
 func (p *RFQParser) ParseLog(log ethTypes.Log, chainID uint32) (*model.RFQEvent, rfqTypes.EventLog, error) {
 	logTopic := log.Topics[0]
 	iFace, err := func(log ethTypes.Log) (rfqTypes.EventLog, error) {
-		switch logTopic {
-		case fastbridge.Topic(rfqTypes.BridgeRequestedEvent):
-			iFace, err := p.Filterer.ParseBridgeRequested(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not parse fastbridge bridge requested : %w", err)
-			}
-			return iFace, nil
-		case fastbridge.Topic(rfqTypes.BridgeRelayedEvent):
-			iFace, err := p.Filterer.ParseBridgeRelayed(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not parse fastbridge bridge relayed: %w", err)
-			}
-			return iFace, nil
-		case fastbridge.Topic(rfqTypes.BridgeRefundedEvent):
-			iFace, err := p.Filterer.ParseBridgeDepositRefunded(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not parse fastbridge bridge refunded: %w", err)
-			}
-			return iFace, nil
-		case fastbridge.Topic(rfqTypes.BridgeProvenEvent):
-			iFace, err := p.Filterer.ParseBridgeProofProvided(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not parse fastbridge bridge proven: %w", err)
-			}
-			return iFace, nil
-		case fastbridge.Topic(rfqTypes.BridgeClaimedEvent):
-			iFace, err := p.Filterer.ParseBridgeDepositClaimed(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not parse fastbridge bridge claimed: %w", err)
-			}
-			return iFace, nil
-		default:
-			logger.Warnf("ErrUnknownTopic in rfq: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
-			return nil, fmt.Errorf(ErrUnknownTopic)
+		// Get the topic hash safely
+		bridgeRequestedTopic, err := fastbridge.Topic(rfqTypes.BridgeRequestedEvent)
+		if err == nil && logTopic == bridgeRequestedTopic {
+			return p.Filterer.ParseBridgeRequested(log)
 		}
+
+		bridgeRelayedTopic, err := fastbridge.Topic(rfqTypes.BridgeRelayedEvent)
+		if err == nil && logTopic == bridgeRelayedTopic {
+			return p.Filterer.ParseBridgeRelayed(log)
+		}
+		bridgeProofProvidedTopic, err := fastbridge.Topic(rfqTypes.BridgeProvenEvent)
+		if err == nil && logTopic == bridgeProofProvidedTopic {
+			return p.Filterer.ParseBridgeProofProvided(log)
+		}
+		bridgeDepositClaimedTopic, err := fastbridge.Topic(rfqTypes.BridgeClaimedEvent)
+		if err == nil && logTopic == bridgeDepositClaimedTopic {
+			return p.Filterer.ParseBridgeDepositClaimed(log)
+		}
+		bridgeDepositRefundedTopic, err := fastbridge.Topic(rfqTypes.BridgeRefundedEvent)
+		if err == nil && logTopic == bridgeDepositRefundedTopic {
+			return p.Filterer.ParseBridgeDepositRefunded(log)
+		}
+
+		logger.Warnf("ErrUnknownTopic in rfq: %s %s chain: %d address: %s",
+			log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+		return nil, fmt.Errorf(ErrUnknownTopic)
 	}(log)
 
 	if err != nil {
