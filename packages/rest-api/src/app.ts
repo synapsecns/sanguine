@@ -56,7 +56,7 @@ app.listen(port, () => {
   logger.info(`Server is listening on port ${port}`)
 })
 
-app.get('/swagger.json', (_req, res) => {
+app.get('/openapi.json', (_req, res) => {
   res.json(specs)
 })
 
