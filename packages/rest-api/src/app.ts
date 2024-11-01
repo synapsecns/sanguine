@@ -57,8 +57,8 @@ app.listen(port, () => {
 })
 
 app.get('/swagger.json', (_req, res) => {
-  res.json(specs);
-});
+  res.json(specs)
+})
 
 app.use(
   '/api-docs',
