@@ -82,7 +82,8 @@ flags:
       - packages/widget/
     carryforward: true
   restclient:
-    path: contrib/restclient/
+    paths:
+      - contrib/restclient/
     carryforward: true
 
 ignore:
