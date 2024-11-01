@@ -82,15 +82,18 @@ If you need to make a new go module, here are the steps to follow:
     ```go
     module github.com/synapsecns/sanguine/path/to/your/module
 
-    go 1.21 // or whatever the version is in go.work
+    go 1.22.1
+
+    toolchain go1.22.4 // or whatever the version is in go.work
    ```
 
    Any local dependencies should use replaces like this:
     ```go
     module github.com/synapsecns/sanguine/path/to/your/module
 
-    go 1.21 // or whatever the version is in go.work
+    go 1.22.1
 
+    toolchain go1.22.4 // or whatever the version is in go.work
    require (
         github.com/synapsecns/sanguine/core v0.0.1
    )
