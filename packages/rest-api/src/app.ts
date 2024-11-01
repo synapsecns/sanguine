@@ -56,6 +56,10 @@ app.listen(port, () => {
   logger.info(`Server is listening on port ${port}`)
 })
 
+app.get('/swagger.json', (_req, res) => {
+  res.json(specs)
+})
+
 app.use(
   '/api-docs',
   (_req, res, next) => {
