@@ -10,6 +10,8 @@ Get read-only data from on-chain Synapse contracts, and generate Bridge and Swap
 
 [`api.synapseprotocol.com/api-docs`](https://api.synapseprotocol.com/api-docs)
 
+**Note:** The OpenAPI 3.0 specification is available at `https://api.synapseprotocol.com/openapi.json` for client generation.
+
 ## Previous versions
 
 | Date                   | Description                                                                                                                                                        |
