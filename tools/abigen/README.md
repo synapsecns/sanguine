@@ -145,4 +145,4 @@ For a detailed guide on fixing this issue, refer to [this blog post](https://rom
 
 ### Future Plans
 
-To mitigate these issues, we plan to implement a fallback mechanism that downloads `solc` directly, bypassing the need for Docker-based solutions on incompatible architectures.
+To mitigate these issues, we plan to implement a fallback mechanism that downloads `solc` directly, bypassing the need for Docker-based solutions on incompatible architectures. For more details on this planned improvement, see [issue #3366](https://github.com/synapsecns/sanguine/issues/3366).
