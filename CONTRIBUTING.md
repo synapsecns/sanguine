@@ -187,6 +187,10 @@ If you need to make a new go module, here are the steps to follow:
 
 For the most part, we follow the [uber style guide](https://github.com/uber-go/guide/blob/master/style.md).
 
+### macOS and Docker-based Tools
+
+If you're using a Mac with Apple Silicon (M1/M2/M3), you might encounter issues with Docker-based tools that use AMD64 images. This is particularly relevant for tools like our `abigen` utility. Please see our [abigen README](./tools/abigen/README.md#note-on-macos-and-rosetta) for details on how to resolve Rosetta-related issues and our plans for future improvements.
+
 ### Testing
 
 We often use the [testsuite](https://pkg.go.dev/github.com/synapsecns/sanguine/core/testsuite) lib to create a test suite. You don't need this, as it adds a lot of overhead, but if you need a context you should us it. This library contains two  methods:
