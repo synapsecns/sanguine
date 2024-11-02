@@ -101,6 +101,9 @@ const router: express.Router = express.Router()
  *                     type: string
  *                   bridgeFeeFormatted:
  *                     type: string
+ *                   txData:
+ *                     type: string
+ *                     description: Encoded transaction calldata for the bridge function
  *             example:
  *               - id: "01920c87-7f14-7cdf-90e1-e13b2d4af55f"
  *                 feeAmount:
@@ -147,6 +150,7 @@ const router: express.Router = express.Router()
  *                 destChainId: 42161
  *                 maxAmountOutStr: "999046.695719"
  *                 bridgeFeeFormatted: "400"
+ *                 txData: "0x3f4c16de000000000000000000000000..."
  *       400:
  *         description: Invalid input
  *         content:
