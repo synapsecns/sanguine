@@ -237,7 +237,6 @@ func (g *Guard) startChainIndexers(ctx context.Context) (err error) {
 
 //nolint:cyclop
 func (g Guard) runChainIndexer(ctx context.Context, chainID int, listeners map[int]listener.ContractListener) (err error) {
-
 	chainListener := listeners[chainID]
 
 	parser, err := fastbridgev2.NewParser(chainListener.Address())
