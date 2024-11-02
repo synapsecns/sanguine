@@ -124,7 +124,7 @@ func init() {
 
 5. Golang native `sol-merger`. Currently, this package relies on [`sol-merger`](https://github.com/RyuuGan/sol-merger). This package handles C3 linearization (removing duplicate abstracts, etc) and dependency resolution in the way that go native solidity flatteners (e.g. [flattener](https://github.com/DaveAppleton/SolidityFlattery/blob/master/flat.go)) don't yet. It'd be nice to be able to  do this in `abigen` so we could skip the merge step.
 6. Consider generating a `doc.go` if one doesn't exist documenting the package
-7. Better vyper support
+7. Better [vyper](https://vyperlang.org/) support
 
 ### Note on macOS and Rosetta
 
