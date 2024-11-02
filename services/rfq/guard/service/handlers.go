@@ -23,7 +23,7 @@ import (
 
 var maxRPCRetryTime = 15 * time.Second
 
-func (g *Guard) handleBridgeRequestedLog(parentCtx context.Context, req *fastbridge.FastBridgeBridgeRequested, chainID int) (err error) {
+func (g *Guard) handleBridgeRequestedLog(parentCtx context.Context, req *fastbridgev2.FastBridgeV2BridgeRequested, chainID int) (err error) {
 	ctx, span := g.metrics.Tracer().Start(parentCtx, "handleBridgeRequestedLog-guard", trace.WithAttributes(
 		attribute.Int(metrics.Origin, chainID),
 		attribute.String("transaction_id", hexutil.Encode(req.TransactionId[:])),
@@ -68,7 +68,7 @@ func (g *Guard) handleBridgeRequestedLog(parentCtx context.Context, req *fastbri
 }
 
 //nolint:gosec
-func (g *Guard) handleProofProvidedLog(parentCtx context.Context, event *fastbridge.FastBridgeBridgeProofProvided, chainID int) (err error) {
+func (g *Guard) handleProofProvidedLog(parentCtx context.Context, event *fastbridgev2.FastBridgeV2BridgeProofProvided, chainID int) (err error) {
 	ctx, span := g.metrics.Tracer().Start(parentCtx, "handleProofProvidedLog-guard", trace.WithAttributes(
 		attribute.Int(metrics.Origin, chainID),
 		attribute.String("transaction_id", hexutil.Encode(event.TransactionId[:])),
@@ -95,7 +95,7 @@ func (g *Guard) handleProofProvidedLog(parentCtx context.Context, event *fastbri
 	return nil
 }
 
-func (g *Guard) handleProofDisputedLog(parentCtx context.Context, event *fastbridge.FastBridgeBridgeProofDisputed) (err error) {
+func (g *Guard) handleProofDisputedLog(parentCtx context.Context, event *fastbridgev2.FastBridgeV2BridgeProofDisputed) (err error) {
 	ctx, span := g.metrics.Tracer().Start(parentCtx, "handleProofDisputedLog-guard", trace.WithAttributes(
 		attribute.String("transaction_id", hexutil.Encode(event.TransactionId[:])),
 	))
@@ -211,6 +211,7 @@ func (g *Guard) disputeV2(ctx context.Context, proven *guarddb.PendingProven, br
 
 //nolint:cyclop
 func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven, bridgeRequest *guarddb.BridgeRequest) (bool, error) {
+
 	// get the receipt for this tx on dest chain
 	chainClient, err := g.client.GetChainClient(ctx, int(bridgeRequest.Transaction.DestChainId))
 	if err != nil {
@@ -225,33 +226,35 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 		return false, fmt.Errorf("could not get receipt: %w", err)
 	}
 
-	var valid bool
+	var rfqContractAddr string
+
 	if g.isV2Address(int(bridgeRequest.Transaction.OriginChainId), proven.FastBridgeAddress) {
-		valid, err = g.isProveValidV2(ctx, proven, bridgeRequest, receipt)
+		rfqContractAddr, err = g.cfg.GetRFQAddressV2(int(bridgeRequest.Transaction.DestChainId))
 		if err != nil {
-			return false, fmt.Errorf("could not check prove validity v2: %w", err)
+			return false, fmt.Errorf("could not get rfq address v2: %w", err)
 		}
 	} else {
-		valid, err = g.isProveValidV1(ctx, proven, bridgeRequest, receipt)
+		v1addr, err := g.cfg.GetRFQAddressV1(int(bridgeRequest.Transaction.DestChainId))
 		if err != nil {
-			return false, fmt.Errorf("could not check prove validity v1: %w", err)
+			return false, fmt.Errorf("could not get rfq address v1: %w", err)
 		}
+		rfqContractAddr = *v1addr
+	}
+
+	var valid bool
+	valid, err = g.isProveValidParse(ctx, proven, bridgeRequest, receipt, rfqContractAddr)
+
+	if err != nil {
+		return false, fmt.Errorf("could not parse proof for validity: %w", err)
 	}
 
 	return valid, nil
 }
 
-func (g *Guard) isProveValidV1(ctx context.Context, proven *guarddb.PendingProven, bridgeRequest *guarddb.BridgeRequest, receipt *types.Receipt) (bool, error) {
+func (g *Guard) isProveValidParse(ctx context.Context, proven *guarddb.PendingProven, bridgeRequest *guarddb.BridgeRequest, receipt *types.Receipt, rfqContractAddr string) (bool, error) {
 	span := trace.SpanFromContext(ctx)
 
-	rfqAddr, err := g.cfg.GetRFQAddressV1(int(bridgeRequest.Transaction.DestChainId))
-	if err != nil {
-		return false, fmt.Errorf("could not get rfq address v1: %w", err)
-	}
-	if rfqAddr == nil {
-		return false, errors.New("rfq address v1 is nil")
-	}
-	parser, err := fastbridge.NewParser(common.HexToAddress(*rfqAddr))
+	parser, err := fastbridgev2.NewParser(common.HexToAddress(rfqContractAddr))
 	if err != nil {
 		return false, fmt.Errorf("could not get parser: %w", err)
 	}
@@ -262,58 +265,8 @@ func (g *Guard) isProveValidV1(ctx context.Context, proven *guarddb.PendingProve
 			continue
 		}
 
-		if log.Address != common.HexToAddress(*rfqAddr) {
-			span.AddEvent(fmt.Sprintf("log address %s does not match rfq address %s", log.Address.Hex(), *rfqAddr))
-			continue
-		}
-
-		event, ok := parsedEvent.(*fastbridge.FastBridgeBridgeRelayed)
-		if !ok {
-			span.AddEvent("event is not a BridgeRelayed event")
-			continue
-		}
-
-		if event.Relayer != proven.RelayerAddress {
-			span.AddEvent(fmt.Sprintf("relayer address %s does not match prover address %s", event.Relayer.Hex(), proven.RelayerAddress.Hex()))
-			continue
-		}
-
-		details := relayDetails{
-			TransactionID: event.TransactionId,
-			OriginAmount:  event.OriginAmount,
-			DestAmount:    event.DestAmount,
-			OriginChainID: event.OriginChainId,
-			To:            event.To,
-			OriginToken:   event.OriginToken,
-			DestToken:     event.DestToken,
-		}
-
-		return relayMatchesBridgeRequest(details, bridgeRequest), nil
-	}
-
-	return false, nil
-}
-
-func (g *Guard) isProveValidV2(ctx context.Context, proven *guarddb.PendingProven, bridgeRequest *guarddb.BridgeRequest, receipt *types.Receipt) (bool, error) {
-	span := trace.SpanFromContext(ctx)
-
-	rfqAddr, err := g.cfg.GetRFQAddressV2(int(bridgeRequest.Transaction.DestChainId))
-	if err != nil {
-		return false, fmt.Errorf("could not get rfq address v2: %w", err)
-	}
-	parser, err := fastbridgev2.NewParser(common.HexToAddress(rfqAddr))
-	if err != nil {
-		return false, fmt.Errorf("could not get parser: %w", err)
-	}
-
-	for _, log := range receipt.Logs {
-		_, parsedEvent, ok := parser.ParseEvent(*log)
-		if !ok {
-			continue
-		}
-
-		if log.Address != common.HexToAddress(rfqAddr) {
-			span.AddEvent(fmt.Sprintf("log address %s does not match rfq address %s", log.Address.Hex(), rfqAddr))
+		if log.Address != common.HexToAddress(rfqContractAddr) {
+			span.AddEvent(fmt.Sprintf("log address %s does not match rfq address %s", log.Address.Hex(), rfqContractAddr))
 			continue
 		}
 
