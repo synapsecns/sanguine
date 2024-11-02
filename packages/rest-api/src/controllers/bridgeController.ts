@@ -1,10 +1,15 @@
 import { validationResult } from 'express-validator'
 import { parseUnits } from '@ethersproject/units'
+import { defaultAbiCoder, Interface } from '@ethersproject/abi'
 
 import { formatBNToString } from '../utils/formatBNToString'
 import { Synapse } from '../services/synapseService'
 import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 import { logger } from '../middleware/logger'
+
+const BRIDGE_INTERFACE = new Interface([
+  'function bridge(address to, uint256 chainId, address token, uint256 amount, tuple(address routerAdapter, address tokenOut, uint256 minAmountOut, uint256 deadline, bytes rawParams) originQuery, tuple(address routerAdapter, address tokenOut, uint256 minAmountOut, uint256 deadline, bytes rawParams) destQuery) external payable',
+])
 
 export const bridgeController = async (req, res) => {
   const errors = validationResult(req)
@@ -42,6 +47,28 @@ export const bridgeController = async (req, res) => {
         fromChain.toString(),
         quote.originQuery.tokenOut
       )
+
+      const txData = BRIDGE_INTERFACE.encodeFunctionData('bridge', [
+        originUserAddress,
+        Number(toChain),
+        fromToken,
+        amountInWei,
+        [
+          quote.originQuery.routerAdapter,
+          quote.originQuery.tokenOut,
+          quote.originQuery.minAmountOut,
+          quote.originQuery.deadline,
+          quote.originQuery.rawParams
+        ],
+        [
+          quote.destQuery.routerAdapter,
+          quote.destQuery.tokenOut,
+          quote.destQuery.minAmountOut,
+          quote.destQuery.deadline,
+          quote.destQuery.rawParams
+        ]
+      ])
+
       return {
         ...quote,
         maxAmountOutStr: formatBNToString(
@@ -52,6 +79,7 @@ export const bridgeController = async (req, res) => {
           quote.feeAmount,
           originQueryTokenOutInfo.decimals
         ),
+        txData,
       }
     })
 

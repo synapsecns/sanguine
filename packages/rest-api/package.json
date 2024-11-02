@@ -15,9 +15,11 @@
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
     "test": "jest",
-    "test:coverage": "jest --collect-coverage"
+    "test:coverage": "jest --collect-coverage",
+    "generate-swagger": "swagger-jsdoc -d swagger.config.js -o swagger.json"
   },
   "dependencies": {
+    "@ethersproject/abi": "^5.7.0",
     "@ethersproject/address": "^5.7.0",
     "@ethersproject/bignumber": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
