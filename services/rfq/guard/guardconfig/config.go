@@ -77,10 +77,10 @@ func (c Config) Validate() (err error) {
 		}
 		addrV2, err := c.GetRFQAddressV2(chainID)
 		if err != nil {
-			return fmt.Errorf("could not get v1 rfq address: %w", err)
+			return fmt.Errorf("could not get v2 rfq address: %w", err)
 		}
 		if !common.IsHexAddress(addrV2) {
-			return fmt.Errorf("invalid rfq v1 address: %s", addrV2)
+			return fmt.Errorf("invalid rfq v2 address: %s", addrV2)
 		}
 	}
 
