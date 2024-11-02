@@ -238,6 +238,9 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 		if err != nil {
 			return false, fmt.Errorf("could not get rfq address v1: %w", err)
 		}
+		if v1addr == nil {
+			return false, fmt.Errorf("rfq address v1 is nil")
+		}
 		rfqContractAddr = *v1addr
 	}
 
