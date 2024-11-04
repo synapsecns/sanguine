@@ -24,3 +24,18 @@ rfq-indexer
 │   ├── package.json : Indexer dependencies and scripts
 │   ├── README.md : Indexer documentation
 </pre>
+
+
+## Example Usage
+
+This example demonstrates how to retrieve details for a specific transaction using the RFQ Indexer API.
+
+## Basic Example
+To query information for a specific transaction, use the following `curl` command:
+
+```bash
+curl -X 'GET' 'http://api.synapseprotocol.com/transaction-id/{transaction-id}' -H 'accept: application/json'
+```
+Replace {transaction-id} with the actual transaction ID. This request will return details such as transaction status, timestamps, and associated events in JSON format.
+
+For complete API documentation, including additional endpoints and query parameters, please refer to the [API Documentation](http://api.synapseprotocol.com/api-docs).

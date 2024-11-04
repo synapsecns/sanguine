@@ -37,7 +37,7 @@
     "New": "جديد",
     "Gas token": "رمز الغاز",
     "Not bridgeable": "غير قابل للجسر",
-    "Succesfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "تم بدء الجسر بنجاح من {fromToken} على {originChainName} إلى {toToken} على {destinationChainName}",
+    "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "تم بدء الجسر بنجاح من {fromToken} على {originChainName} إلى {toToken} على {destinationChainName}",
     "Slippage": "الانزلاق",
     "Router": "الموجه",
     "Powered by Synapse": "مدعوم من سينابس",

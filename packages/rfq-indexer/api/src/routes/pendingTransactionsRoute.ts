@@ -17,7 +17,7 @@ const router = express.Router()
  *     description: Retrieves a list of transactions that have been deposited, relayed, and proven, but not yet claimed
  *     responses:
  *       200:
- *         description: Successful response
+ *         description: Successful response (may be an empty array)
  *         content:
  *           application/json:
  *             schema:
@@ -46,15 +46,6 @@ const router = express.Router()
  *                   BridgeDispute:
  *                     type: object
  *                     description: Dispute information (if available)
- *       404:
- *         description: No pending transactions missing claim found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  *       500:
  *         description: Server error
  *         content:
@@ -75,7 +66,7 @@ router.get('/missing-claim', pendingTransactionsMissingClaimController)
  *     description: Retrieves a list of transactions that have been deposited and relayed, but not yet proven
  *     responses:
  *       200:
- *         description: Successful response
+*         description: Successful response (may be an empty array)
  *         content:
  *           application/json:
  *             schema:
@@ -87,15 +78,6 @@ router.get('/missing-claim', pendingTransactionsMissingClaimController)
  *                     type: object
  *                   relay:
  *                     type: object
- *       404:
- *         description: No pending transactions missing proof found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  *       500:
  *         description: Server error
  *         content:
@@ -116,7 +98,7 @@ router.get('/missing-proof', pendingTransactionsMissingProofController)
  *     description: Retrieves a list of transactions that have been deposited, but not yet relayed or refunded
  *     responses:
  *       200:
- *         description: Successful response
+ *         description: Successful response (may be an empty array)
  *         content:
  *           application/json:
  *             schema:
@@ -126,15 +108,6 @@ router.get('/missing-proof', pendingTransactionsMissingProofController)
  *                 properties:
  *                   deposit:
  *                     type: object
- *       404:
- *         description: No pending transactions missing relay found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  *       500:
  *         description: Server error
  *         content:
@@ -155,7 +128,7 @@ router.get('/missing-relay', pendingTransactionsMissingRelayController)
  *     description: Retrieves a list of transactions that have been deposited, but not yet relayed or refunded and have exceeded the deadline
  *     responses:
  *       200:
- *         description: Successful response
+ *         description: Successful response (may be an empty array)
  *         content:
  *           application/json:
  *             schema:
@@ -165,15 +138,6 @@ router.get('/missing-relay', pendingTransactionsMissingRelayController)
  *                 properties:
  *                   deposit:
  *                     type: object
- *       404:
- *         description: No pending transactionst that exceed the deadline found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  *       500:
  *         description: Server error
  *         content:

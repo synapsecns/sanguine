@@ -10,7 +10,7 @@ import { isTokenSupportedOnChain } from '../utils/isTokenSupportedOnChain'
 import { checksumAddresses } from '../middleware/checksumAddresses'
 import { normalizeNativeTokenAddress } from '../middleware/normalizeNativeTokenAddress'
 
-const router = express.Router()
+const router: express.Router = express.Router()
 
 /**
  * @openapi
@@ -110,8 +110,6 @@ const router = express.Router()
  *               type: object
  *               properties:
  *                 error:
- *                   type: string
- *                 details:
  *                   type: string
  */
 router.get(

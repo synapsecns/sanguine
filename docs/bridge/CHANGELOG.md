@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.5.1...@synapsecns/bridge-docs@0.5.2) (2024-11-01)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
+## [0.5.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.5.0...@synapsecns/bridge-docs@0.5.1) (2024-10-29)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
+# [0.5.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.4.5...@synapsecns/bridge-docs@0.5.0) (2024-10-29)
+
+
+### Features
+
+* **rest-api:** API gateway for rfq-indexer API and rfq API + swagger merge [SLT-339] ([#3323](https://github.com/synapsecns/sanguine/issues/3323)) ([6bdb316](https://github.com/synapsecns/sanguine/commit/6bdb316ab06f6764a9771d27c896070099257abf))
+
+
+
+
+
+## [0.4.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.4.4...@synapsecns/bridge-docs@0.4.5) (2024-10-21)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
 ## [0.4.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.4.3...@synapsecns/bridge-docs@0.4.4) (2024-10-15)
 
 **Note:** Version bump only for package @synapsecns/bridge-docs
