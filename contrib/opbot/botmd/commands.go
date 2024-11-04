@@ -310,7 +310,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
-			fastBridgeContractOrigin, fastBridgeContractDest, err := b.makeFastBridge(ctx.Context(), rawRequest)
+			fastBridgeContractOrigin, err := b.makeFastBridge(ctx.Context(), rawRequest.OriginChainID)
 			if err != nil {
 				_, err := ctx.Response().Reply(err.Error())
 				if err != nil {
@@ -329,6 +329,15 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 			}
 			if isScreened {
 				_, err := ctx.Response().Reply("address cannot be refunded")
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+
+			fastBridgeContractDest, err := b.makeFastBridge(ctx.Context(), rawRequest.DestChainID)
+			if err != nil {
+				_, err := ctx.Response().Reply(err.Error())
 				if err != nil {
 					log.Println(err)
 				}
@@ -392,41 +401,34 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 	}
 }
 
-// returns origin and dest fast bridge contracts
-func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestResponse) (*fastbridge.FastBridge, *fastbridge.FastBridge, error) {
+func (b *Bot) makeFastBridge(ctx context.Context, chainID uint32) (*fastbridge.FastBridge, error) {
 	client, err := rfqClient.NewUnauthenticatedClient(b.handler, b.cfg.RFQApiURL)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error creating rfq client: %w", err)
+		return nil, fmt.Errorf("error creating rfq client: %w", err)
 	}
 
 	contracts, err := client.GetRFQContracts(ctx)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error fetching rfq contracts: %w", err)
+		return nil, fmt.Errorf("error fetching rfq contracts: %w", err)
 	}
 
-	var fastBridges [2]*fastbridge.FastBridge
-	chainIDs := []uint32{req.OriginChainID, req.DestChainID}
-
-	for i, chainID := range chainIDs {
-		chainClient, err := b.rpcClient.GetChainClient(ctx, int(chainID))
-		if err != nil {
-			return nil, nil, fmt.Errorf("error getting chain client for chain ID %d: %w", chainID, err)
-		}
-
-		contractAddress, ok := contracts.Contracts[chainID]
-		if !ok {
-			return nil, nil, fmt.Errorf("contract address not found for chain ID %d", chainID)
-		}
-
-		fastBridgeHandle, err := fastbridge.NewFastBridge(common.HexToAddress(contractAddress), chainClient)
-		if err != nil {
-			return nil, nil, fmt.Errorf("error creating fast bridge for chain ID %d: %w", chainID, err)
-		}
-
-		fastBridges[i] = fastBridgeHandle
+	chainClient, err := b.rpcClient.GetChainClient(ctx, int(chainID))
+	if err != nil {
+		return nil, fmt.Errorf("error getting chain client for chain ID %d: %w", chainID, err)
 	}
 
-	return fastBridges[0], fastBridges[1], nil
+	contractAddress, ok := contracts.Contracts[chainID]
+	if !ok {
+		return nil, fmt.Errorf("contract address not found for chain ID %d", chainID)
+	}
+
+	fastBridgeHandle, err := fastbridge.NewFastBridge(common.HexToAddress(contractAddress), chainClient)
+	if err != nil {
+		return nil, fmt.Errorf("error creating fast bridge for chain ID %d: %w", chainID, err)
+	}
+
+	return fastBridgeHandle, nil
+
 }
 
 func getTxAge(ctx context.Context, client client.EVM, res *relapi.GetQuoteRequestResponse) string {
