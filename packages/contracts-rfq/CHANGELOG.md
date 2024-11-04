@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.12.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.11.0...@synapsecns/contracts-rfq@0.12.0) (2024-11-04)
+
+
+### Features
+
+* **contracts-rfq:** save destination chain ID for requested bridges [SLT-423] ([#3356](https://github.com/synapsecns/sanguine/issues/3356)) ([5e11d4d](https://github.com/synapsecns/sanguine/commit/5e11d4d19d8e90f6aee8452f87e65302c4138e06))
+
+
+
+
+
 # [0.11.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.9.4...@synapsecns/contracts-rfq@0.11.0) (2024-10-28)
 
 
