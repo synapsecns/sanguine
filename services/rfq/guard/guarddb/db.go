@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/synapsecns/sanguine/ethergo/listener/db"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/dbcommon"
@@ -53,7 +53,7 @@ type Service interface {
 // BridgeRequest is the bridge request object.
 type BridgeRequest struct {
 	TransactionID [32]byte
-	Transaction   fastbridge.IFastBridgeBridgeTransaction
+	Transaction   fastbridgev2.IFastBridgeBridgeTransaction
 	RawRequest    []byte
 }
 

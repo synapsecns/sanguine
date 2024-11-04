@@ -14,7 +14,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/retry"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb"
 	"go.opentelemetry.io/otel/attribute"
@@ -37,14 +36,14 @@ func (g *Guard) handleBridgeRequestedLog(parentCtx context.Context, req *fastbri
 		return fmt.Errorf("could not get correct omnirpc client: %w", err)
 	}
 
-	fastBridge, err := fastbridge.NewFastBridgeRef(req.Raw.Address, originClient)
+	fastBridgev2, err := fastbridgev2.NewFastBridgeV2Ref(req.Raw.Address, originClient)
 	if err != nil {
 		return fmt.Errorf("could not get correct fast bridge: %w", err)
 	}
 
-	var bridgeTx fastbridge.IFastBridgeBridgeTransaction
+	var bridgeTx fastbridgev2.IFastBridgeBridgeTransaction
 	call := func(ctx context.Context) error {
-		bridgeTx, err = fastBridge.GetBridgeTransaction(&bind.CallOpts{Context: ctx}, req.Request)
+		bridgeTx, err = fastBridgev2.GetBridgeTransaction(&bind.CallOpts{Context: ctx}, req.Request)
 		if err != nil {
 			return fmt.Errorf("could not get bridge transaction: %w", err)
 		}
