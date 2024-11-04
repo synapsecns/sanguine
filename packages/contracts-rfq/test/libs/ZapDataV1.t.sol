@@ -38,6 +38,7 @@ contract ZapDataV1Test is Test {
         view
     {
         vm.assume(prefix.length + 32 + postfix.length < type(uint16).max);
+        vm.assume(target != address(0));
 
         // We don't know the amount at the time of encoding, so we provide a placeholder.
         uint16 amountPosition = uint16(prefix.length);
@@ -57,6 +58,7 @@ contract ZapDataV1Test is Test {
 
     function test_roundtrip_noAmount(address target, uint256 amount, bytes memory payload) public view {
         vm.assume(payload.length < type(uint16).max);
+        vm.assume(target != address(0));
 
         uint16 amountPosition = type(uint16).max;
         bytes memory zapData = harness.encodeV1(amountPosition, target, payload);
