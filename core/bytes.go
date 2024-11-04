@@ -25,3 +25,11 @@ func BytesToJSONString(bz []byte) (string, error) {
 
 	return string(formattedJSON), nil
 }
+func BytesToArray(bz []byte) ([32]byte, error) {
+	var bytes [32]byte
+	if len(bz) != 32 {
+		return bytes, fmt.Errorf("invalid length of bytes: %d", len(bz))
+	}
+	copy(bytes[:], bz)
+	return bytes, nil
+}

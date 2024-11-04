@@ -21,6 +21,7 @@ import (
 	"github.com/slack-go/slack"
 	"github.com/slack-io/slacker"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/chaindata"
 	"github.com/synapsecns/sanguine/ethergo/client"
@@ -343,8 +344,15 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				}
 				return
 			}
-
-			isRelayed, err := fastBridgeContractDest.BridgeRelays(nil, [32]byte(common.Hex2Bytes(rawRequest.TxID)))
+			txBz, err := core.BytesToArray(common.Hex2Bytes(rawRequest.TxID))
+			if err != nil {
+				_, err := ctx.Response().Reply("error converting tx id")
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+			isRelayed, err := fastBridgeContractDest.BridgeRelays(nil, txBz)
 			if err != nil {
 				_, err := ctx.Response().Reply("error fetching bridge relays")
 				if err != nil {
