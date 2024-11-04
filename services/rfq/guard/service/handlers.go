@@ -294,9 +294,13 @@ func (g *Guard) isProveValidParse(ctx context.Context, proven *guarddb.PendingPr
 			DestToken:     event.DestToken,
 		}
 
-		return relayMatchesBridgeRequest(details, bridgeRequest), nil
+		// if we find a relay that matches the bridge, then we can return true. otherwise continue looking through any remaining logs.
+		if relayMatchesBridgeRequest(details, bridgeRequest) {
+			return true, nil
+		}
 	}
 
+	// if we have reached this point, then every log has been examined & none found suitable to validate the proof
 	return false, nil
 }
 
