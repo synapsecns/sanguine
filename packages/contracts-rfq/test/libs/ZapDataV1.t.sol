@@ -85,6 +85,7 @@ contract ZapDataV1Test is Test {
         public
     {
         vm.assume(payload.length < type(uint16).max);
+        vm.assume(target != address(0));
         // Make sure that (amountPosition + 32) is outside the bounds of the payload.
         uint16 incorrectMin = payload.length > 31 ? uint16(payload.length) - 31 : 0;
         uint16 incorrectMax = type(uint16).max - 1;
