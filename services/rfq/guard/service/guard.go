@@ -210,7 +210,7 @@ func (g *Guard) startChainIndexers(ctx context.Context) (err error) {
 		}
 		if v1Addr != nil {
 			group.Go(func() error {
-				err := g.runChainIndexer(ctx, chainID, g.listenersV1)
+				err := g.runChainIndexer(ctx, chainID, g.listenersV1[chainID])
 				if err != nil {
 					return fmt.Errorf("could not runChainIndexer chain indexer for chain %d [v1]: %w", chainID, err)
 				}
@@ -219,7 +219,7 @@ func (g *Guard) startChainIndexers(ctx context.Context) (err error) {
 		}
 
 		group.Go(func() error {
-			err := g.runChainIndexer(ctx, chainID, g.listenersV2)
+			err := g.runChainIndexer(ctx, chainID, g.listenersV2[chainID])
 			if err != nil {
 				return fmt.Errorf("could not runChainIndexer chain indexer for chain %d [v2]: %w", chainID, err)
 			}
@@ -236,9 +236,7 @@ func (g *Guard) startChainIndexers(ctx context.Context) (err error) {
 }
 
 //nolint:cyclop
-func (g Guard) runChainIndexer(ctx context.Context, chainID int, listeners map[int]listener.ContractListener) (err error) {
-	chainListener := listeners[chainID]
-
+func (g Guard) runChainIndexer(ctx context.Context, chainID int, chainListener listener.ContractListener) (err error) {
 	parser, err := fastbridgev2.NewParser(chainListener.Address())
 	if err != nil {
 		return fmt.Errorf("could not parse: %w", err)

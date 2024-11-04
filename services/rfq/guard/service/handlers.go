@@ -245,16 +245,16 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 	}
 
 	var valid bool
-	valid, err = g.isProveValidParse(ctx, proven, bridgeRequest, receipt, rfqContractAddr)
+	valid, err = g.parseProvenTransaction(ctx, proven, bridgeRequest, receipt, rfqContractAddr)
 
 	if err != nil {
-		return false, fmt.Errorf("could not parse proof for validity: %w", err)
+		return false, fmt.Errorf("could not parse proven transaction for validity: %w", err)
 	}
 
 	return valid, nil
 }
 
-func (g *Guard) isProveValidParse(ctx context.Context, proven *guarddb.PendingProven, bridgeRequest *guarddb.BridgeRequest, receipt *types.Receipt, rfqContractAddr string) (bool, error) {
+func (g *Guard) parseProvenTransaction(ctx context.Context, proven *guarddb.PendingProven, bridgeRequest *guarddb.BridgeRequest, receipt *types.Receipt, rfqContractAddr string) (bool, error) {
 	span := trace.SpanFromContext(ctx)
 
 	parser, err := fastbridgev2.NewParser(common.HexToAddress(rfqContractAddr))
