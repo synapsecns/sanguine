@@ -14,8 +14,8 @@ interface IFastBridgeV2 is IFastBridge {
 
     struct BridgeTxDetails {
         BridgeStatus status;
-        uint40 proofBlockTimestamp;
-        uint48 proofBlockNumber;
+        uint32 destChainId;
+        uint56 proofBlockTimestamp;
         address proofRelayer;
     }
 
