@@ -14,7 +14,7 @@ contract FastBridgeMulticallTargetTest is MulticallTargetIntegrationTest {
 
     function getEncodedBridgeTx(IFastBridge.BridgeTransaction memory bridgeTx)
         public
-        view
+        pure
         override
         returns (bytes memory)
     {
