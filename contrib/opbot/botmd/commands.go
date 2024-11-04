@@ -4,7 +4,6 @@ package botmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"math/big"
@@ -311,7 +310,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
-			fastBridgeContract, err := b.makeFastBridge(ctx.Context(), rawRequest)
+			fastBridgeContractOrigin, fastBridgeContractDest, err := b.makeFastBridge(ctx.Context(), rawRequest)
 			if err != nil {
 				_, err := ctx.Response().Reply(err.Error())
 				if err != nil {
@@ -336,7 +335,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
-			isRelayed, err := fastBridgeContract.BridgeRelays(nil, [32]byte(common.Hex2Bytes(rawRequest.TxID)))
+			isRelayed, err := fastBridgeContractDest.BridgeRelays(nil, [32]byte(common.Hex2Bytes(rawRequest.TxID)))
 			if err != nil {
 				_, err := ctx.Response().Reply("error fetching bridge relays")
 				if err != nil {
@@ -353,7 +352,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 			}
 
 			nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(rawRequest.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-				tx, err = fastBridgeContract.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
+				tx, err = fastBridgeContractOrigin.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
 				if err != nil {
 					return nil, fmt.Errorf("error submitting refund: %w", err)
 				}
@@ -393,32 +392,41 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 	}
 }
 
-func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestResponse) (*fastbridge.FastBridge, error) {
+// returns origin and dest fast bridge contracts
+func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestResponse) (*fastbridge.FastBridge, *fastbridge.FastBridge, error) {
 	client, err := rfqClient.NewUnauthenticatedClient(b.handler, b.cfg.RFQApiURL)
 	if err != nil {
-		return nil, fmt.Errorf("error creating rfq client: %w", err)
+		return nil, nil, fmt.Errorf("error creating rfq client: %w", err)
 	}
 
 	contracts, err := client.GetRFQContracts(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("error fetching rfq contracts: %w", err)
+		return nil, nil, fmt.Errorf("error fetching rfq contracts: %w", err)
 	}
 
-	chainClient, err := b.rpcClient.GetChainClient(ctx, int(req.OriginChainID))
-	if err != nil {
-		return nil, fmt.Errorf("error getting chain client: %w", err)
+	var fastBridges [2]*fastbridge.FastBridge
+	chainIDs := []uint32{req.OriginChainID, req.DestChainID}
+
+	for i, chainID := range chainIDs {
+		chainClient, err := b.rpcClient.GetChainClient(ctx, int(chainID))
+		if err != nil {
+			return nil, nil, fmt.Errorf("error getting chain client for chain ID %d: %w", chainID, err)
+		}
+
+		contractAddress, ok := contracts.Contracts[chainID]
+		if !ok {
+			return nil, nil, fmt.Errorf("contract address not found for chain ID %d", chainID)
+		}
+
+		fastBridgeHandle, err := fastbridge.NewFastBridge(common.HexToAddress(contractAddress), chainClient)
+		if err != nil {
+			return nil, nil, fmt.Errorf("error creating fast bridge for chain ID %d: %w", chainID, err)
+		}
+
+		fastBridges[i] = fastBridgeHandle
 	}
 
-	contractAddress, ok := contracts.Contracts[req.OriginChainID]
-	if !ok {
-		return nil, errors.New("contract address not found")
-	}
-
-	fastBridgeHandle, err := fastbridge.NewFastBridge(common.HexToAddress(contractAddress), chainClient)
-	if err != nil {
-		return nil, fmt.Errorf("error creating fast bridge: %w", err)
-	}
-	return fastBridgeHandle, nil
+	return fastBridges[0], fastBridges[1], nil
 }
 
 func getTxAge(ctx context.Context, client client.EVM, res *relapi.GetQuoteRequestResponse) string {
