@@ -133,4 +133,51 @@ describe('Swap Route with Real Synapse Service', () => {
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty('field', 'amount')
   }, 10_000)
+
+  it('should return swap quote with callData when address is provided', async () => {
+    const response = await request(app).get('/swap').query({
+      chain: '1',
+      fromToken: USDC.addresses[1],
+      toToken: DAI.addresses[1],
+      amount: '1000',
+      address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+    })
+
+    expect(response.status).toBe(200)
+    expect(response.body).toHaveProperty('maxAmountOut')
+    expect(response.body).toHaveProperty('routerAddress')
+    expect(response.body).toHaveProperty('query')
+    expect(response.body).toHaveProperty('callData')
+    expect(response.body.callData).toHaveProperty('to')
+    expect(response.body.callData).toHaveProperty('data')
+    expect(response.body.callData).toHaveProperty('value')
+  }, 10_000)
+
+  it('should return swap quote without callData when address is not provided', async () => {
+    const response = await request(app).get('/swap').query({
+      chain: '1',
+      fromToken: USDC.addresses[1],
+      toToken: DAI.addresses[1],
+      amount: '1000',
+    })
+
+    expect(response.status).toBe(200)
+    expect(response.body).toHaveProperty('maxAmountOut')
+    expect(response.body).toHaveProperty('routerAddress')
+    expect(response.body).toHaveProperty('query')
+    expect(response.body.callData).toBeNull()
+  }, 10_000)
+
+  it('should return 400 for invalid address', async () => {
+    const response = await request(app).get('/swap').query({
+      chain: '1',
+      fromToken: USDC.addresses[1],
+      toToken: DAI.addresses[1],
+      amount: '1000',
+      address: 'invalid_address',
+    })
+
+    expect(response.status).toBe(400)
+    expect(response.body.error).toHaveProperty('message', 'Invalid address')
+  }, 10_000)
 })

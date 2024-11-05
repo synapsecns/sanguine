@@ -1,5 +1,6 @@
 import express from 'express'
 import { check } from 'express-validator'
+import { isAddress } from 'ethers/lib/utils'
 
 import { showFirstValidationError } from '../middleware/showFirstValidationError'
 import { swapController } from '../controllers/swapController'
@@ -44,6 +45,12 @@ const router: express.Router = express.Router()
  *         schema:
  *           type: number
  *         description: The amount of tokens to swap
+ *       - in: query
+ *         name: address
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Optional. The address that will perform the swap. If provided, returns transaction data.
  *     responses:
  *       200:
  *         description: Successful response
@@ -74,6 +81,16 @@ const router: express.Router = express.Router()
  *                     rawParams:
  *                       type: string
  *                       description: Raw parameters for the swap
+ *                     callData:
+ *                       type: object
+ *                       nullable: true
+ *                       properties:
+ *                         to:
+ *                           type: string
+ *                         data:
+ *                           type: string
+ *                         value:
+ *                           type: string
  *             example:
  *               routerAddress: "0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a"
  *               maxAmountOut: "999.746386"
@@ -176,6 +193,10 @@ router.get(
         return validSwapTokens(chain, fromToken, toToken)
       })
       .withMessage('Swap not supported for given tokens'),
+    check('address')
+      .optional()
+      .custom((value) => isAddress(value))
+      .withMessage('Invalid address'),
   ],
   showFirstValidationError,
   swapController
