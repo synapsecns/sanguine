@@ -80,6 +80,9 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) (*B
 		return nil, fmt.Errorf("failed to build command args: %w", err)
 	}
 
+	// this will silently fail if executing from a non-linux/amd64 architecture.
+	// you will see "connection" issues downstream as the container is not created.
+	// to solve - install qemu to enable docker emulation: apt-get install qemu qemu-user-static qemu-user binfmt-support
 	runOptions := &dockertest.RunOptions{
 		Repository: "ghcr.io/foundry-rs/foundry",
 		Tag:        "nightly-1bac1b3d79243cea755800bf396c30a3d74741bf",

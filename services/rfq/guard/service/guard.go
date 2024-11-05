@@ -82,7 +82,7 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 			if err != nil {
 				return nil, fmt.Errorf("could not get deploy block: %w", err)
 			}
-			chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(*rfqAddrV1), uint64(startBlock.Int64()), metricHandler, listener.WithName("guardListenerLegacy"))
+			chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(*rfqAddrV1), uint64(startBlock.Int64()), metricHandler, listener.WithName("guard"))
 			if err != nil {
 				return nil, fmt.Errorf("could not get chain listener: %w", err)
 			}
@@ -107,7 +107,7 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 		if err != nil {
 			return nil, fmt.Errorf("could not get deploy block: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddrV2), uint64(startBlock.Int64()), metricHandler, listener.WithName("guard"))
+		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddrV2), uint64(startBlock.Int64()), metricHandler, listener.WithName("guardV2"))
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
