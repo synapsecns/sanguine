@@ -869,6 +869,7 @@ func (b *BackfillSuite) withdrawParity(log *types.Log, parser *parser.BridgePars
 			String: common.Bytes2Hex(parsedLog.Kappa[:]),
 			Valid:  true,
 		}
+		amountMinusFee := new(big.Int).Sub(parsedLog.Amount, parsedLog.Fee)
 		var count int64
 		events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 			Where(&sql.BridgeEvent{
@@ -878,7 +879,7 @@ func (b *BackfillSuite) withdrawParity(log *types.Log, parser *parser.BridgePars
 				BlockNumber:     log.BlockNumber,
 				TxHash:          log.TxHash.String(),
 				Token:           parsedLog.Token.String(),
-				Amount:          parsedLog.Amount,
+				Amount:          amountMinusFee,
 
 				Recipient: recipient,
 				Fee:       parsedLog.Fee,
@@ -902,6 +903,7 @@ func (b *BackfillSuite) withdrawParity(log *types.Log, parser *parser.BridgePars
 		String: common.Bytes2Hex(parsedLog.Kappa[:]),
 		Valid:  true,
 	}
+	amountMinusFee := new(big.Int).Sub(parsedLog.Amount, parsedLog.Fee)
 	var count int64
 	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.BridgeEvent{}).
 		Where(&sql.BridgeEvent{
@@ -911,7 +913,7 @@ func (b *BackfillSuite) withdrawParity(log *types.Log, parser *parser.BridgePars
 			BlockNumber:     log.BlockNumber,
 			TxHash:          log.TxHash.String(),
 			Token:           parsedLog.Token.String(),
-			Amount:          parsedLog.Amount,
+			Amount:          amountMinusFee,
 
 			Recipient: recipient,
 			Fee:       parsedLog.Fee,
