@@ -354,7 +354,7 @@ export const MOONBEAM: Chain = {
   explorerName: 'Moonbeam Explorer',
   explorerImg:
     'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/moonbeam.284ab9b4.svg',
-  color: 'teal',
+  color: 'purple',
 }
 
 export const MOONRIVER: Chain = {
@@ -376,7 +376,7 @@ export const MOONRIVER: Chain = {
   explorerName: 'Moonriver Explorer',
   explorerImg:
     'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/moonriver.3fb35010.svg',
-  color: 'purple',
+  color: 'lime',
 }
 
 export const DOGE: Chain = {
