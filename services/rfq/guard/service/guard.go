@@ -116,7 +116,6 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 	}
 
 	// build submitter from config if one is not supplied
-	//
 	if txSubmitter == nil {
 		sg, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
 		if err != nil {
