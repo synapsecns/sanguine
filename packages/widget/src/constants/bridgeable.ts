@@ -848,7 +848,7 @@ export const MOVR: BridgeableToken = {
   priorityRank: 300,
   routeSymbol: 'MOVR',
   imgUrl:
-    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/movr.3fb35010.svg',
+    'https://adf1cceb.sanguine-fe.pages.dev/_next/static/media/movr.b86510af.svg',
 }
 
 export const AVAX: BridgeableToken = {
@@ -890,7 +890,7 @@ export const WMOVR: BridgeableToken = {
   priorityRank: 350,
   routeSymbol: 'WMOVR',
   imgUrl:
-    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/movr.3fb35010.svg',
+    'https://adf1cceb.sanguine-fe.pages.dev/_next/static/media/movr.b86510af.svg',
 }
 
 export const WAVAX: BridgeableToken = {

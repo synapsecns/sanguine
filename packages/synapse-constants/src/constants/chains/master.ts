@@ -341,7 +341,7 @@ export const MOONBEAM: Chain = {
   chainSymbol: 'MOONBEAM',
   name: 'Moonbeam',
   chainImg:
-    'https://35774ffb.sanguine.pages.dev/_next/static/media/moonbeam.96172536.svg',
+    'https://adf1cceb.sanguine-fe.pages.dev/_next/static/media/moonbeam.63f34507.svg',
   layer: 1,
   codeName: 'moonbeam',
   blockTime: 12000,
@@ -363,7 +363,7 @@ export const MOONRIVER: Chain = {
   chainSymbol: 'MOONRIVER',
   name: 'Moonriver',
   chainImg:
-    'https://35774ffb.sanguine.pages.dev/_next/static/media/moonriver.4fc56100.svg',
+    'https://adf1cceb.sanguine-fe.pages.dev/_next/static/media/moonriver.275d190a.svg',
   layer: 1,
   codeName: 'moonriver',
   blockTime: 12000,

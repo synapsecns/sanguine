@@ -327,7 +327,7 @@ export const MOONBEAM: Chain = {
   explorerName: 'Moonbeam Explorer',
   blockTime: 12000,
   imgUrl:
-    'https://35774ffb.sanguine.pages.dev/_next/static/media/moonbeam.96172536.svg',
+    'https://adf1cceb.sanguine-fe.pages.dev/_next/static/media/moonbeam.63f34507.svg',
   networkName: 'Moonbeam',
   networkUrl: 'https://rpc.api.moonbeam.network',
   nativeCurrency: {
@@ -348,7 +348,7 @@ export const MOONRIVER: Chain = {
   explorerName: 'Moonriver Explorer',
   blockTime: 12000,
   imgUrl:
-    'https://35774ffb.sanguine.pages.dev/_next/static/media/moonriver.4fc56100.svg',
+    'https://adf1cceb.sanguine-fe.pages.dev/_next/static/media/moonriver.275d190a.svg',
   networkName: 'Moonriver',
   networkUrl: 'https://rpc.api.moonriver.moonbeam.network',
   nativeCurrency: {
