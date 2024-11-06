@@ -783,7 +783,7 @@ export const MOVR = new Token({
   logo: 'https://adf1cceb.sanguine-fe.pages.dev/_next/static/media/movr.b86510af.svg',
   isNative: true,
   swapableType: 'MOVR',
-  color: 'purple',
+  color: 'lime',
   priorityRank: 3,
   routeSymbol: 'MOVR',
   coingeckoId: 'moonriver',
@@ -819,7 +819,7 @@ export const WMOVR = new Token({
   name: 'Wrapped MOVR',
   logo: 'https://adf1cceb.sanguine-fe.pages.dev/_next/static/media/movr.b86510af.svg',
   swapableType: 'MOVR',
-  color: 'purple',
+  color: 'lime',
   priorityRank: 3,
   routeSymbol: 'WMOVR',
 })

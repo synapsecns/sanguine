@@ -844,7 +844,7 @@ export const MOVR: BridgeableToken = {
   symbol: 'MOVR',
   name: 'MOVR',
   swapableType: 'MOVR',
-  color: 'purple',
+  color: 'lime',
   priorityRank: 300,
   routeSymbol: 'MOVR',
   imgUrl:
@@ -886,7 +886,7 @@ export const WMOVR: BridgeableToken = {
   symbol: 'MOVR',
   name: 'Wrapped MOVR',
   swapableType: 'MOVR',
-  color: 'purple',
+  color: 'lime',
   priorityRank: 350,
   routeSymbol: 'WMOVR',
   imgUrl:
