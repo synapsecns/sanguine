@@ -1,3 +1,6 @@
+import { BigNumber } from '@ethersproject/bignumber'
+
+import { Ticker } from './ticker'
 import {
   FastBridgeQuote,
   FastBridgeQuoteAPI,
@@ -6,6 +9,36 @@ import {
 
 const API_URL = 'https://rfq-api.omnirpc.io'
 const API_TIMEOUT = 2000
+
+export type PutRFQRequestAPI = {
+  user_address: string
+  // TODO: make integrator_id required
+  integrator_id?: string
+  quote_types: string[]
+  data: {
+    origin_chain_id: number
+    dest_chain_id: number
+    origin_token_addr: string
+    dest_token_addr: string
+    origin_amount: string
+    expiration_window: number
+  }
+}
+
+export type PutRFQResponseAPI = {
+  success: boolean
+  reason?: string
+  quote_type?: string
+  quote_id?: string
+  dest_amount?: string
+  relayer_address?: string
+}
+
+export type Quote = {
+  destAmount: BigNumber
+  relayerAddress: string
+  quoteID?: string
+}
 
 const fetchWithTimeout = async (
   url: string,
@@ -48,3 +81,15 @@ export const getAllQuotes = async (): Promise<FastBridgeQuote[]> => {
     return []
   }
 }
+
+/**
+ * Hits Quoter API /rfq endpoint to get the best quote for a given ticker and origin amount.
+ *
+ * @returns A promise that resolves to the best quote.
+ * Will return null if the request fails or times out.
+ */
+export const getBestRFQQuote = async (
+  ticker: Ticker,
+  originAmount: BigNumber,
+  originUserAddress?: string
+): Promise<Quote | null> => {}
