@@ -53,7 +53,7 @@ func (b *Bot) requiresSignoz(definition *slacker.CommandDefinition) *slacker.Com
 func (b *Bot) traceCommand() *slacker.CommandDefinition {
 	return b.requiresSignoz(&slacker.CommandDefinition{
 		Command:     "trace {tags} {order}",
-		Description: "find a transaction in signoz",
+		Description: "testing testing",
 		Examples: []string{
 			"trace transaction_id:0x1234@serviceName:rfq",
 			"trace transaction_id:0x1234@serviceName:rfq a",
@@ -345,26 +345,32 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 			})
 			if err != nil {
 				log.Printf("error submitting refund: %v\n", err)
+				_, err := ctx.Response().Reply("error submitting refund")
+				if err != nil {
+					log.Println(err)
+				}
 				return
 			}
 
 			var status submitter.SubmissionStatus
+
 			err = retry.WithBackoff(
 				ctx.Context(),
 				func(ctx context.Context) error {
 					status, err = b.submitter.GetSubmissionStatus(ctx, big.NewInt(int64(rawRequest.OriginChainID)), nonce)
-					if err != nil || !status.HasTx() {
-						b.logger.Errorf(ctx, "error fetching quote request: %v", err)
+					if err != nil {
 						return fmt.Errorf("error fetching quote request: %w", err)
+					} else if !status.HasTx() {
+						return errors.New("no transaction hash found yet")
 					}
 					return nil
 				},
-				retry.WithMaxAttempts(5),
-				retry.WithMaxAttemptTime(30*time.Second),
+				retry.WithMaxTotalTime(1*time.Minute),
 			)
+
 			if err != nil {
 				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
-				_, err := ctx.Response().Reply(fmt.Sprintf("error fetching explorer link to refund, but nonce is %d", nonce))
+				_, err := ctx.Response().Reply(fmt.Sprintf("refund submitted with nonce %d", nonce))
 				log.Printf("error fetching quote request: %v\n", err)
 				return
 			}
