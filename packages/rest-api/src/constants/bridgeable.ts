@@ -808,6 +808,7 @@ export const ETH: BridgeableToken = {
     [CHAINS.SCROLL.id]: NativeTokenAddress,
     [CHAINS.LINEA.id]: NativeTokenAddress,
     [CHAINS.WORLDCHAIN.id]: NativeTokenAddress,
+    [CHAINS.BNBCHAIN.id]: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
   },
   decimals: {
     [CHAINS.ETHEREUM.id]: 18,
@@ -821,6 +822,7 @@ export const ETH: BridgeableToken = {
     [CHAINS.SCROLL.id]: 18,
     [CHAINS.LINEA.id]: 18,
     [CHAINS.WORLDCHAIN.id]: 18,
+    [CHAINS.BNBCHAIN.id]: 18,
   },
   symbol: 'ETH',
   name: 'Ethereum',

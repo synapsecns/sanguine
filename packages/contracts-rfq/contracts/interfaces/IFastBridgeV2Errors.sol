@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 interface IFastBridgeV2Errors {
     error AmountIncorrect();
-    error CallParamsLengthAboveMax();
     error ChainIncorrect();
     error ExclusivityParamsIncorrect();
     error MsgValueIncorrect();
-    error NativeTokenCallValueNotSupported();
     error SenderIncorrect();
     error StatusIncorrect();
+    error TokenNotContract();
+    error ZapDataLengthAboveMax();
+    error ZapNativeNotSupported();
     error ZeroAddress();
 
     error RecipientIncorrectReturnValue();

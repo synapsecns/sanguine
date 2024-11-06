@@ -39,6 +39,7 @@ contract FastBridgeMock is IFastBridge, Admin {
     }
 
     function mockBridgeRequest(bytes32 transactionId, address sender, BridgeParams memory params) external {
+        sender;
         uint256 originFeeAmount = (params.originAmount * protocolFeeRate) / FEE_BPS;
         params.originAmount -= originFeeAmount;
 
@@ -73,6 +74,7 @@ contract FastBridgeMock is IFastBridge, Admin {
     }
 
     function mockBridgeRequestRaw(bytes32 transactionId, address sender, bytes memory request) external {
+        sender;
         BridgeTransaction memory transaction = getBridgeTransaction(request);
         emit BridgeRequested(
             transactionId,
@@ -105,31 +107,31 @@ contract FastBridgeMock is IFastBridge, Admin {
         );
     }
 
-    function bridge(BridgeParams memory params) external payable {
+    function bridge(BridgeParams memory) external payable {
         revert("not implemented");
     }
 
-    function relay(bytes memory request) external payable {
+    function relay(bytes memory) external payable {
         revert("not implemented");
     }
 
-    function prove(bytes memory request, bytes32 destTxHash) external {
+    function prove(bytes memory, bytes32) external pure {
         revert("not implemented");
     }
 
-    function canClaim(bytes32 transactionid, address relayer) external view returns (bool) {
+    function canClaim(bytes32, address) external pure returns (bool) {
         revert("not implemented");
     }
 
-    function claim(bytes memory request, address to) external {
+    function claim(bytes memory, address) external pure {
         revert("not implemented");
     }
 
-    function dispute(bytes32 transactionId) external {
+    function dispute(bytes32) external pure {
         revert("not implemented");
     }
 
-    function refund(bytes memory request) external {
+    function refund(bytes memory) external pure {
         revert("not implemented");
     }
 }

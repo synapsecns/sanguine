@@ -12,7 +12,7 @@ const router = express.Router()
  *     description: Retrieves a list of all active disputes
  *     responses:
  *       200:
- *         description: Successful response
+ *         description: Successful response (may be an empty array)
  *         content:
  *           application/json:
  *             schema:
@@ -41,15 +41,6 @@ const router = express.Router()
  *                   BridgeDispute:
  *                     type: object
  *                     description: Dispute information (if available)
- *       200:
- *         description: No disputes found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  *       500:
  *         description: Server error
  *         content:

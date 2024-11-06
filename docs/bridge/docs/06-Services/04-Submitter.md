@@ -49,7 +49,7 @@ submitter_config:
       # wait before bumping a transaction.
       bump_interval_seconds: 120
       # GasBumpPercentages is the percentage to bump the gas price by.
-      # This is applied to the greatrer of the chainprice or the last price.
+      # This is applied to the greater of the chainprice or the last price.
       gas_bump_percentage: 10
       # GasEstimate is the gas estimate to use for transactions if
       # dynamic gas estimation is enabled.
@@ -80,9 +80,9 @@ Please see [here](https://pkg.go.dev/github.com/synapsecns/sanguine/ethergo@v0.9
 
 Suppose you want to run our interchain Executor, which, from a high-level, listens for an event on a certain chain and calls a function on a smart contract deployed on another remote chain, namely the `Execute()` function. This is an event-driven architecture, which Submitter thrives in.
 
-The Executor naturally uses the Submitter because we want to asynchronously listen for events, process them, and fire off the respective transaction since many of the triggering events can happen simultanously.
+The Executor naturally uses the Submitter because we want to asynchronously listen for events, process them, and fire off the respective transaction since many of the triggering events can happen simultaneously.
 
-You will need a couple things in order to use the Transaciton submitter that signs with your own private key, config values, and more.
+You will need a couple things in order to use the Transaction submitter that signs with your own private key, config values, and more.
 
 Firstly, you will create a signer. For this example, our signer will just be a text file `signer.txt` with a private key. You may also use GCP or the other supported signer types (link here).
 
