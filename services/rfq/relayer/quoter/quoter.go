@@ -364,6 +364,12 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 	}
 	span.SetAttributes(attribute.String("request_id", rfqRequest.RequestID))
 
+	depositAmount := new(big.Int)
+	depositAmount, ok := depositAmount.SetString(rfqRequest.Data.OriginAmount, 10) // base 10 for decimal
+	if !ok {
+		return nil, fmt.Errorf("invalid rfq request deposit amount: %s", rfqRequest.Data.OriginAmount)
+	}
+
 	quoteInput := QuoteInput{
 		OriginChainID:   rfqRequest.Data.OriginChainID,
 		DestChainID:     rfqRequest.Data.DestChainID,
@@ -371,6 +377,7 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 		DestTokenAddr:   common.HexToAddress(rfqRequest.Data.DestTokenAddr),
 		OriginBalance:   inv[rfqRequest.Data.OriginChainID][common.HexToAddress(rfqRequest.Data.OriginTokenAddr)],
 		DestBalance:     inv[rfqRequest.Data.DestChainID][common.HexToAddress(rfqRequest.Data.DestTokenAddr)],
+		DepositAmount:   depositAmount,
 	}
 
 	rawQuote, err := m.generateQuote(ctx, quoteInput)
@@ -540,6 +547,7 @@ func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address
 						OriginBalance:   originBalance,
 						DestBalance:     balance,
 						DestRFQAddr:     destRFQAddr.Hex(),
+						DepositAmount:   nil,
 					}
 
 					quote, quoteErr := m.generateQuote(gctx, input)
@@ -576,6 +584,7 @@ type QuoteInput struct {
 	DestTokenAddr   common.Address
 	OriginBalance   *big.Int
 	DestBalance     *big.Int
+	DepositAmount   *big.Int
 	DestRFQAddr     string
 }
 
@@ -762,6 +771,20 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 	quoteAmount, err = m.deductGasCost(ctx, quoteAmount, input.DestTokenAddr, input.DestChainID)
 	if err != nil {
 		return nil, fmt.Errorf("error deducting gas cost: %w", err)
+	}
+
+	// If input included a depositAmount, and our calculated quoteAmount is sufficient to cover it,
+	// then clip to the depositAmount. Otherwise return 0 to indicate inability to cover the requested amount.
+	if input.DepositAmount != nil {
+		if quoteAmount.Cmp(input.DepositAmount) >= 0 {
+			quoteAmount = input.DepositAmount
+		} else {
+			span.AddEvent("quote amount insufficient to cover deposit amount", trace.WithAttributes(
+				attribute.String("quote_amount", quoteAmount.String()),
+				attribute.String("deposit_amount", input.DepositAmount.String()),
+			))
+			quoteAmount = big.NewInt(0)
+		}
 	}
 
 	return quoteAmount, nil
