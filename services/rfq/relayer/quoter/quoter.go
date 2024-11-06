@@ -364,8 +364,7 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 	}
 	span.SetAttributes(attribute.String("request_id", rfqRequest.RequestID))
 
-	depositAmount := new(big.Int)
-	depositAmount, ok := depositAmount.SetString(rfqRequest.Data.OriginAmount, 10) // base 10 for decimal
+	depositAmount, ok := new(big.Int).SetString(rfqRequest.Data.OriginAmount, 10)
 	if !ok {
 		return nil, fmt.Errorf("invalid rfq request deposit amount: %s", rfqRequest.Data.OriginAmount)
 	}
