@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb"
 )
 
@@ -168,7 +168,7 @@ func (b BridgeRequestModel) ToBridgeRequest() (*guarddb.BridgeRequest, error) {
 	return &guarddb.BridgeRequest{
 		TransactionID: transactionID,
 		RawRequest:    req,
-		Transaction: fastbridge.IFastBridgeBridgeTransaction{
+		Transaction: fastbridgev2.IFastBridgeBridgeTransaction{
 			OriginChainId: b.OriginChainID,
 			DestChainId:   b.DestChainID,
 			OriginSender:  common.HexToAddress(b.OriginSender),

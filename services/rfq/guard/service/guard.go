@@ -107,7 +107,7 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 		if err != nil {
 			return nil, fmt.Errorf("could not get deploy block: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddrV2), uint64(startBlock.Int64()), metricHandler, listener.WithName("guard"))
+		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddrV2), uint64(startBlock.Int64()), metricHandler, listener.WithName("guardV2"))
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
@@ -210,7 +210,7 @@ func (g *Guard) startChainIndexers(ctx context.Context) (err error) {
 		}
 		if v1Addr != nil {
 			group.Go(func() error {
-				err := g.runChainIndexerV1(ctx, chainID)
+				err := g.runChainIndexer(ctx, chainID, g.listenersV1[chainID])
 				if err != nil {
 					return fmt.Errorf("could not runChainIndexer chain indexer for chain %d [v1]: %w", chainID, err)
 				}
@@ -219,7 +219,7 @@ func (g *Guard) startChainIndexers(ctx context.Context) (err error) {
 		}
 
 		group.Go(func() error {
-			err := g.runChainIndexerV2(ctx, chainID)
+			err := g.runChainIndexer(ctx, chainID, g.listenersV2[chainID])
 			if err != nil {
 				return fmt.Errorf("could not runChainIndexer chain indexer for chain %d [v2]: %w", chainID, err)
 			}
@@ -236,66 +236,7 @@ func (g *Guard) startChainIndexers(ctx context.Context) (err error) {
 }
 
 //nolint:cyclop
-func (g Guard) runChainIndexerV1(ctx context.Context, chainID int) (err error) {
-	chainListener := g.listenersV1[chainID]
-
-	parser, err := fastbridge.NewParser(chainListener.Address())
-	if err != nil {
-		return fmt.Errorf("could not parse: %w", err)
-	}
-
-	err = chainListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
-		et, parsedEvent, ok := parser.ParseEvent(log)
-		// handle unknown event
-		if !ok {
-			if len(log.Topics) != 0 {
-				logger.Warnf("unknown event %s", log.Topics[0])
-			}
-			return nil
-		}
-
-		ctx, span := g.metrics.Tracer().Start(parentCtx, fmt.Sprintf("handleLog-%s", et), trace.WithAttributes(
-			attribute.String(metrics.TxHash, log.TxHash.String()),
-			attribute.Int(metrics.Origin, chainID),
-			attribute.String(metrics.Contract, log.Address.String()),
-			attribute.String("block_hash", log.BlockHash.String()),
-			attribute.Int64("block_number", int64(log.BlockNumber)),
-		))
-
-		defer func() {
-			metrics.EndSpanWithErr(span, err)
-		}()
-
-		switch event := parsedEvent.(type) {
-		case *fastbridge.FastBridgeBridgeRequested:
-			err = g.handleBridgeRequestedLog(ctx, event, chainID)
-			if err != nil {
-				return fmt.Errorf("could not handle request: %w", err)
-			}
-		case *fastbridge.FastBridgeBridgeProofProvided:
-			err = g.handleProofProvidedLog(ctx, event, chainID)
-			if err != nil {
-				return fmt.Errorf("could not handle request: %w", err)
-			}
-		case *fastbridge.FastBridgeBridgeProofDisputed:
-			err = g.handleProofDisputedLog(ctx, event)
-			if err != nil {
-				return fmt.Errorf("could not handle request: %w", err)
-			}
-		}
-
-		return nil
-	})
-	if err != nil {
-		return fmt.Errorf("listener failed: %w", err)
-	}
-	return nil
-}
-
-//nolint:cyclop,gosec
-func (g Guard) runChainIndexerV2(ctx context.Context, chainID int) (err error) {
-	chainListener := g.listenersV2[chainID]
-
+func (g Guard) runChainIndexer(ctx context.Context, chainID int, chainListener listener.ContractListener) (err error) {
 	parser, err := fastbridgev2.NewParser(chainListener.Address())
 	if err != nil {
 		return fmt.Errorf("could not parse: %w", err)
@@ -325,40 +266,17 @@ func (g Guard) runChainIndexerV2(ctx context.Context, chainID int) (err error) {
 
 		switch event := parsedEvent.(type) {
 		case *fastbridgev2.FastBridgeV2BridgeRequested:
-			v1Event := &fastbridge.FastBridgeBridgeRequested{
-				TransactionId: event.TransactionId,
-				Sender:        event.Sender,
-				Request:       event.Request,
-				DestChainId:   event.DestChainId,
-				OriginToken:   event.OriginToken,
-				DestToken:     event.DestToken,
-				DestAmount:    event.DestAmount,
-				SendChainGas:  event.SendChainGas,
-				Raw:           event.Raw,
-			}
-			err = g.handleBridgeRequestedLog(ctx, v1Event, chainID)
+			err = g.handleBridgeRequestedLog(ctx, event, chainID)
 			if err != nil {
 				return fmt.Errorf("could not handle request: %w", err)
 			}
-		// following events match ABIs exactly, so no need to differentiate
 		case *fastbridgev2.FastBridgeV2BridgeProofProvided:
-			v1Event := &fastbridge.FastBridgeBridgeProofProvided{
-				TransactionId:   event.TransactionId,
-				Relayer:         event.Relayer,
-				TransactionHash: event.TransactionHash,
-				Raw:             event.Raw,
-			}
-			err = g.handleProofProvidedLog(ctx, v1Event, chainID)
+			err = g.handleProofProvidedLog(ctx, event, chainID)
 			if err != nil {
 				return fmt.Errorf("could not handle request: %w", err)
 			}
 		case *fastbridgev2.FastBridgeV2BridgeProofDisputed:
-			v1Event := &fastbridge.FastBridgeBridgeProofDisputed{
-				TransactionId: event.TransactionId,
-				Relayer:       event.Relayer,
-				Raw:           event.Raw,
-			}
-			err = g.handleProofDisputedLog(ctx, v1Event)
+			err = g.handleProofDisputedLog(ctx, event)
 			if err != nil {
 				return fmt.Errorf("could not handle request: %w", err)
 			}
