@@ -6,6 +6,7 @@ import (
 
 	"github.com/slack-io/slacker"
 	"github.com/synapsecns/sanguine/contrib/opbot/config"
+	"github.com/synapsecns/sanguine/contrib/opbot/internal"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
 	screenerClient "github.com/synapsecns/sanguine/contrib/screener-api/client"
 	"github.com/synapsecns/sanguine/core/dbcommon"
@@ -29,6 +30,7 @@ type Bot struct {
 	signozClient  *signoz.Client
 	signozEnabled bool
 	rpcClient     omnirpcClient.RPCClient
+	rfqClient     internal.RFQClient
 	signer        signer.Signer
 	submitter     submitter.TransactionSubmitter
 	screener      screenerClient.ScreenerClient
@@ -42,10 +44,11 @@ func NewBot(handler metrics.Handler, cfg config.Config) *Bot {
 	sugaredLogger := otelzap.New(experimentalLogger.MakeZapLogger()).Sugar()
 
 	bot := Bot{
-		handler: handler,
-		cfg:     cfg,
-		server:  server,
-		logger:  experimentalLogger.MakeWrappedSugaredLogger(sugaredLogger),
+		handler:   handler,
+		cfg:       cfg,
+		server:    server,
+		logger:    experimentalLogger.MakeWrappedSugaredLogger(sugaredLogger),
+		rfqClient: internal.NewRFQClient(handler, cfg.RFQIndexerAPIURL),
 	}
 
 	// you should be able to run opbot even without signoz.

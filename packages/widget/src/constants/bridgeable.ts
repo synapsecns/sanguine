@@ -844,11 +844,11 @@ export const MOVR: BridgeableToken = {
   symbol: 'MOVR',
   name: 'MOVR',
   swapableType: 'MOVR',
-  color: 'purple',
+  color: 'lime',
   priorityRank: 300,
   routeSymbol: 'MOVR',
   imgUrl:
-    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/movr.3fb35010.svg',
+    'https://adf1cceb.sanguine-fe.pages.dev/_next/static/media/movr.b86510af.svg',
 }
 
 export const AVAX: BridgeableToken = {
@@ -886,11 +886,11 @@ export const WMOVR: BridgeableToken = {
   symbol: 'MOVR',
   name: 'Wrapped MOVR',
   swapableType: 'MOVR',
-  color: 'purple',
+  color: 'lime',
   priorityRank: 350,
   routeSymbol: 'WMOVR',
   imgUrl:
-    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/movr.3fb35010.svg',
+    'https://adf1cceb.sanguine-fe.pages.dev/_next/static/media/movr.b86510af.svg',
 }
 
 export const WAVAX: BridgeableToken = {

@@ -435,7 +435,7 @@ export const MOONBEAM: Chain = {
   explorerUrl: 'https://moonbeam.moonscan.io',
   explorerName: 'Moonbeam Explorer',
   explorerImg: moonbeamImg,
-  color: 'teal',
+  color: 'purple',
 }
 
 export const MOONRIVER: Chain = {
@@ -460,7 +460,7 @@ export const MOONRIVER: Chain = {
   explorerUrl: 'https://moonriver.moonscan.io',
   explorerName: 'Moonriver Explorer',
   explorerImg: moonriverImg,
-  color: 'purple',
+  color: 'lime',
 }
 
 export const DOGE: Chain = {
