@@ -1,7 +1,7 @@
 import { validationResult } from 'express-validator'
+import { parseUnits } from '@ethersproject/units'
 
 import { formatBNToString } from '../utils/formatBNToString'
-import { formatAndValidateAmount } from '../utils/formatAmounts'
 import { Synapse } from '../services/synapseService'
 import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 import { logger } from '../middleware/logger'
@@ -24,10 +24,7 @@ export const bridgeController = async (req, res) => {
     const fromTokenInfo = tokenAddressToToken(fromChain.toString(), fromToken)
     const toTokenInfo = tokenAddressToToken(toChain.toString(), toToken)
 
-    const amountInWei = formatAndValidateAmount(
-      amount.toString(),
-      fromTokenInfo.decimals
-    )
+    const amountInWei = parseUnits(amount.toString(), fromTokenInfo.decimals)
 
     const resp = await Synapse.allBridgeQuotes(
       Number(fromChain),
