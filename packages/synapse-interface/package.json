@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.40.12",
+  "version": "0.40.16",
   "private": true,
   "engines": {
     "node": ">=18.18.0"
@@ -22,6 +22,8 @@
     "build:slither": " ",
     "graphql:generate": "graphql-codegen --config codegen.ts",
     "maps:generate": "node scripts/generateMaps.js",
+    "spellcheck": "cspell \"**/*.{tsx,jsx,md,mdx}\" --show-suggestions",
+    "ci:spellcheck": "cspell \"**/*.{tsx,jsx,md,mdx}\" --no-progress --show-suggestions",
     "test": "echo 'No jest tests defined.'"
   },
   "dependencies": {
@@ -38,7 +40,7 @@
     "@reduxjs/toolkit": "^1.9.5",
     "@rtk-query/graphql-request-base-query": "^2.2.0",
     "@segment/analytics-next": "^1.53.0",
-    "@synapsecns/sdk-router": "^0.11.4",
+    "@synapsecns/sdk-router": "^0.11.5",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.9",
@@ -110,6 +112,7 @@
     "@types/react-dom": "^18.2.22",
     "@types/redux-persist": "^4.3.1",
     "autoprefixer": "^10.4.7",
+    "cspell": "^8.15.4",
     "dayjs": "^1.11.7",
     "eslint": "^8.37.0",
     "eslint-config-next": "^13.5.6",

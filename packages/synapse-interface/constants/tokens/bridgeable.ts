@@ -713,6 +713,7 @@ export const ETH = new Token({
     [CHAINS.SCROLL.id]: zeroAddress,
     [CHAINS.LINEA.id]: zeroAddress,
     [CHAINS.WORLDCHAIN.id]: zeroAddress,
+    [CHAINS.BNB.id]: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
   },
   decimals: 18,
   symbol: 'ETH',
@@ -737,7 +738,7 @@ export const MOVR = new Token({
   logo: movrLogo,
   isNative: true,
   swapableType: 'MOVR',
-  color: 'purple',
+  color: 'lime',
   priorityRank: 300,
   routeSymbol: 'MOVR',
 })
@@ -771,7 +772,7 @@ export const WMOVR = new Token({
   name: 'Wrapped MOVR',
   logo: movrLogo,
   swapableType: 'MOVR',
-  color: 'purple',
+  color: 'lime',
   priorityRank: 350,
   routeSymbol: 'WMOVR',
 })

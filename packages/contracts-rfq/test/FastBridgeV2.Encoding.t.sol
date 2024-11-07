@@ -50,13 +50,13 @@ contract FastBridgeV2EncodingTest is FastBridgeV2Test {
     }
 
     /// @notice We expect all the V1 fields except for `sendChainGas` to match.
-    /// `sendChainGas` is replaced with `callValue` in V2, therefore we expect non-zero `callValue`
+    /// `sendChainGas` is replaced with `zapNative` in V2, therefore we expect non-zero `zapNative`
     /// to match `sendChainGas = true` in V1
     function test_getBridgeTransaction_supportsV2(IFastBridgeV2.BridgeTransactionV2 memory bridgeTxV2) public view {
         bytes memory request = BridgeTransactionV2Lib.encodeV2(bridgeTxV2);
         IFastBridge.BridgeTransaction memory decodedTx = fastBridge.getBridgeTransaction(request);
         IFastBridge.BridgeTransaction memory expectedTx = extractV1(bridgeTxV2);
-        expectedTx.sendChainGas = bridgeTxV2.callValue > 0;
+        expectedTx.sendChainGas = bridgeTxV2.zapNative > 0;
         assertEq(decodedTx, expectedTx);
     }
 

@@ -85,6 +85,7 @@ func NewWithExperimentalLogger(ctx context.Context, logger logger.ExperimentalLo
 	return server
 }
 
+// CorsEnabled is used to enable cors on the server. It can be set to false to disable cors.
 // TODO: this is an anti-pattern and needs to be replaced by an option asap.
 var CorsEnabled = true
 

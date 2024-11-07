@@ -31,7 +31,7 @@ export const AnnouncementBanner = ({
 
   useEffect(() => {
     if (hasMounted && isStarted && !isComplete) {
-      const storedShowBanner = localStorage.getItem('showAnnoucementBanner')
+      const storedShowBanner = localStorage.getItem('showAnnouncementBanner')
       const storedBannerId = localStorage.getItem('bannerId')
 
       setShowBanner(
@@ -46,7 +46,7 @@ export const AnnouncementBanner = ({
 
   useEffect(() => {
     if (hasMounted && isStarted && !isComplete) {
-      localStorage.setItem('showAnnoucementBanner', showBanner.toString())
+      localStorage.setItem('showAnnouncementBanner', showBanner.toString())
       localStorage.setItem('bannerId', bannerId)
     }
   }, [showBanner, hasMounted])

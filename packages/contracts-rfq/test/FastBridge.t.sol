@@ -60,9 +60,9 @@ contract FastBridgeTest is Test {
         internal
         virtual
     {
-        (uint96 timestamp, address relayer) = fastBridge.bridgeProofs(transactionId);
-        assertEq(timestamp, uint96(expectedTimestamp));
-        assertEq(relayer, expectedRelayer);
+        (uint96 proofTimestamp, address proofRelayer) = fastBridge.bridgeProofs(transactionId);
+        assertEq(proofTimestamp, uint96(expectedTimestamp));
+        assertEq(proofRelayer, expectedRelayer);
     }
 
     function _getBridgeRequestAndId(

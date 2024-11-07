@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.3...@synapsecns/rest-api@1.8.4) (2024-11-01)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.8.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.2...@synapsecns/rest-api@1.8.3) (2024-11-01)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.8.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.1...@synapsecns/rest-api@1.8.2) (2024-11-01)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.8.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.0...@synapsecns/rest-api@1.8.1) (2024-10-29)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+# [1.8.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.7.1...@synapsecns/rest-api@1.8.0) (2024-10-29)
+
+
+### Features
+
+* **rest-api:** API gateway for rfq-indexer API and rfq API + swagger merge [SLT-339] ([#3323](https://github.com/synapsecns/sanguine/issues/3323)) ([6bdb316](https://github.com/synapsecns/sanguine/commit/6bdb316ab06f6764a9771d27c896070099257abf))
+
+
+
+
+
 ## [1.7.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.7.0...@synapsecns/rest-api@1.7.1) (2024-10-22)
 
 **Note:** Version bump only for package @synapsecns/rest-api

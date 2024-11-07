@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.24;
+pragma solidity ^0.8.20;
 
 import {IFastBridgeV2} from "../interfaces/IFastBridgeV2.sol";
 
@@ -22,8 +22,8 @@ library BridgeTransactionV2Lib {
     // uint256  nonce                   [218 .. 250)
     // address  exclusivityRelayer      [250 .. 270)
     // uint256  exclusivityEndTime      [270 .. 302)
-    // uint256  callValue               [302 .. 334)
-    // bytes    callParams              [334 .. ***)
+    // uint256  zapNative               [302 .. 334)
+    // bytes    zapData                 [334 .. ***)
 
     // forgefmt: disable-start
     uint256 private constant OFFSET_ORIGIN_CHAIN_ID      = 2;
@@ -39,8 +39,8 @@ library BridgeTransactionV2Lib {
     uint256 private constant OFFSET_NONCE                = 218;
     uint256 private constant OFFSET_EXCLUSIVITY_RELAYER  = 250;
     uint256 private constant OFFSET_EXCLUSIVITY_END_TIME = 270;
-    uint256 private constant OFFSET_CALL_VALUE           = 302;
-    uint256 private constant OFFSET_CALL_PARAMS          = 334;
+    uint256 private constant OFFSET_ZAP_NATIVE           = 302;
+    uint256 private constant OFFSET_ZAP_DATA             = 334;
     // forgefmt: disable-end
 
     error BridgeTransactionV2__InvalidEncodedTx();
@@ -50,7 +50,7 @@ library BridgeTransactionV2Lib {
     /// @dev Checks the minimum length and the version, use this function before decoding any of the fields.
     function validateV2(bytes calldata encodedTx) internal pure {
         // Check the minimum length: must at least include all static fields.
-        if (encodedTx.length < OFFSET_CALL_PARAMS) revert BridgeTransactionV2__InvalidEncodedTx();
+        if (encodedTx.length < OFFSET_ZAP_DATA) revert BridgeTransactionV2__InvalidEncodedTx();
         // Once we validated the length, we can be sure that the version field is present.
         uint16 version_ = version(encodedTx);
         if (version_ != VERSION) revert BridgeTransactionV2__UnsupportedVersion(version_);
@@ -80,9 +80,9 @@ library BridgeTransactionV2Lib {
             // New V2 fields: exclusivity
             bridgeTx.exclusivityRelayer,
             bridgeTx.exclusivityEndTime,
-            // New V2 fields: arbitrary call
-            bridgeTx.callValue,
-            bridgeTx.callParams
+            // New V2 fields: Zap
+            bridgeTx.zapNative,
+            bridgeTx.zapData
         );
     }
 
@@ -103,12 +103,12 @@ library BridgeTransactionV2Lib {
         bridgeTx.originAmount = originAmount(encodedTx);
         bridgeTx.destAmount = destAmount(encodedTx);
         bridgeTx.originFeeAmount = originFeeAmount(encodedTx);
-        bridgeTx.callValue = callValue(encodedTx);
         bridgeTx.deadline = deadline(encodedTx);
         bridgeTx.nonce = nonce(encodedTx);
         bridgeTx.exclusivityRelayer = exclusivityRelayer(encodedTx);
         bridgeTx.exclusivityEndTime = exclusivityEndTime(encodedTx);
-        bridgeTx.callParams = callParams(encodedTx);
+        bridgeTx.zapNative = zapNative(encodedTx);
+        bridgeTx.zapData = zapData(encodedTx);
     }
 
     /// @notice Extracts the version from the encoded transaction.
@@ -223,16 +223,16 @@ library BridgeTransactionV2Lib {
         }
     }
 
-    /// @notice Extracts the call value from the encoded transaction.
-    function callValue(bytes calldata encodedTx) internal pure returns (uint256 callValue_) {
+    /// @notice Extracts the Zap's native value from the encoded transaction.
+    function zapNative(bytes calldata encodedTx) internal pure returns (uint256 zapNative_) {
         // Load 32 bytes from the offset. No shift is applied, as we need the full 256 bits.
         assembly {
-            callValue_ := calldataload(add(encodedTx.offset, OFFSET_CALL_VALUE))
+            zapNative_ := calldataload(add(encodedTx.offset, OFFSET_ZAP_NATIVE))
         }
     }
 
-    /// @notice Extracts the call params from the encoded transaction.
-    function callParams(bytes calldata encodedTx) internal pure returns (bytes calldata callParams_) {
-        callParams_ = encodedTx[OFFSET_CALL_PARAMS:];
+    /// @notice Extracts the Zap's data from the encoded transaction.
+    function zapData(bytes calldata encodedTx) internal pure returns (bytes calldata zapData_) {
+        zapData_ = encodedTx[OFFSET_ZAP_DATA:];
     }
 }

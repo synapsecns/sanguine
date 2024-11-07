@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/explorer-ui",
-  "version": "0.5.1",
+  "version": "0.5.7",
   "private": true,
   "engines": {
     "node": ">=18.17.0"
@@ -17,7 +17,7 @@
     "@mui/x-date-pickers": "^5.0.17",
     "@next/third-parties": "^14.2.14",
     "@popperjs/core": "^2.11.5",
-    "@synapsecns/synapse-constants": "^1.8.0",
+    "@synapsecns/synapse-constants": "^1.8.2",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.2.0",
     "@testing-library/user-event": "^13.5.0",
@@ -56,6 +56,8 @@
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "lint:fix": "npm run lint -- --fix",
+    "spellcheck": "cspell \"**/*.{tsx,jsx,md,mdx}\" --show-suggestions",
+    "ci:spellcheck": "cspell \"**/*.{tsx,jsx,md,mdx}\" --no-progress --show-suggestions",
     "lint:check": "eslint . --max-warnings=0"
   },
   "browserslist": {
@@ -83,6 +85,7 @@
     "@storybook/testing-library": "^0.0.13",
     "autoprefixer": "^10.4.7",
     "babel-loader": "^8.3.0",
+    "cspell": "^8.15.4",
     "postcss": "^8.4.13",
     "tailwindcss": "^3.0.24",
     "ts-loader": "^9.5.1"
