@@ -306,8 +306,9 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
-			nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(rawRequest.Bridge.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-				tx, err = fastBridgeContractOrigin.Refund(transactor, common.Hex2Bytes(rawRequest.Bridge.Request))
+			nonce, err := b.submitter.SubmitTransaction(
+				ctx.Context(), big.NewInt(int64(rawRequest.Bridge.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+				tx, err = fastBridgeContractOrigin.Refund(transactor, common.Hex2Bytes(rawRequest.Bridge.Request[2:]))
 				if err != nil {
 					return nil, fmt.Errorf("error submitting refund: %w", err)
 				}
