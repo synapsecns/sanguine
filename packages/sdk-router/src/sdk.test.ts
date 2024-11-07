@@ -48,7 +48,8 @@ import * as operations from './operations'
 // Override fetch to exclude RFQ from tests
 global.fetch = jest.fn(() =>
   Promise.resolve({
-    json: () => Promise.resolve({}),
+    ok: true,
+    json: () => Promise.resolve([]),
   })
 ) as any
 
