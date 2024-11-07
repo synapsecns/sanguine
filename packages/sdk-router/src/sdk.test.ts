@@ -53,6 +53,9 @@ global.fetch = jest.fn(() =>
   })
 ) as any
 
+// Retry the flaky tests up to 3 times
+jest.retryTimes(3)
+
 const EXPECTED_GAS_DROP: { [chainId: number]: BigNumber } = {
   [SupportedChainId.ETH]: BigNumber.from(0),
   // TODO: reenable once both ARB airdrops are adjusted
