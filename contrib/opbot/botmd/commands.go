@@ -282,7 +282,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				}
 				return
 			}
-			txBz, err := core.BytesToArray(common.Hex2Bytes(rawRequest.Bridge.TransactionID))
+			txBz, err := core.BytesToArray(common.Hex2Bytes(rawRequest.Bridge.TransactionID[2:]))
 			if err != nil {
 				_, err := ctx.Response().Reply("error converting tx id")
 				if err != nil {
@@ -307,13 +307,15 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 			}
 
 			nonce, err := b.submitter.SubmitTransaction(
-				ctx.Context(), big.NewInt(int64(rawRequest.Bridge.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-				tx, err = fastBridgeContractOrigin.Refund(transactor, common.Hex2Bytes(rawRequest.Bridge.Request[2:]))
-				if err != nil {
-					return nil, fmt.Errorf("error submitting refund: %w", err)
-				}
-				return tx, nil
-			})
+				ctx.Context(),
+				big.NewInt(int64(rawRequest.Bridge.OriginChainID)),
+				func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+					tx, err = fastBridgeContractOrigin.Refund(transactor, common.Hex2Bytes(rawRequest.Bridge.Request[2:]))
+					if err != nil {
+						return nil, fmt.Errorf("error submitting refund: %w", err)
+					}
+					return tx, nil
+				})
 			if err != nil {
 				log.Printf("error submitting refund: %v\n", err)
 				return
