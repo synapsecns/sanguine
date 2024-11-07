@@ -249,6 +249,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
+			//nolint: gosec
 			fastBridgeContractOrigin, err := b.makeFastBridge(ctx.Context(), uint32(rawRequest.Bridge.OriginChainID))
 			if err != nil {
 				_, err := ctx.Response().Reply(err.Error())
@@ -274,6 +275,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
+			//nolint:gosec
 			fastBridgeContractDest, err := b.makeFastBridge(ctx.Context(), uint32(rawRequest.Bridge.DestChainID))
 			if err != nil {
 				_, err := ctx.Response().Reply(err.Error())
