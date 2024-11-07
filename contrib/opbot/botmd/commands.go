@@ -227,7 +227,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 	return &slacker.CommandDefinition{
 		Command:     "refund <tx>",
-		Description: "TESTING TESTING a quote request",
+		Description: "refund a quote request",
 		Examples:    []string{"refund 0x1234"},
 		Handler: func(ctx *slacker.CommandContext) {
 			tx := stripLinks(ctx.Request().Param("tx"))
@@ -313,6 +313,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
+			//nolint: gosec
 			_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted: %s", toTXSlackLink(status.TxHash().String(), uint32(rawRequest.Bridge.OriginChainID))))
 			if err != nil {
 				log.Println(err)
@@ -332,11 +333,12 @@ func (b *Bot) makeFastBridge(ctx context.Context, req *internal.GetRFQByTxIDResp
 		return nil, fmt.Errorf("error fetching rfq contracts: %w", err)
 	}
 
-	chainClient, err := b.rpcClient.GetChainClient(ctx, int(req.Bridge.OriginChainID))
+	chainClient, err := b.rpcClient.GetChainClient(ctx, req.Bridge.OriginChainID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting chain client: %w", err)
 	}
 
+	//nolint: gosec
 	contractAddress, ok := contracts.Contracts[uint32(req.Bridge.OriginChainID)]
 	if !ok {
 		return nil, errors.New("contract address not found")
