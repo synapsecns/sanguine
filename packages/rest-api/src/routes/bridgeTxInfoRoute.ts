@@ -175,13 +175,9 @@ router.get(
         )
         return validateDecimals(value, fromTokenInfo.decimals)
       })
-      .withMessage((_value, { req }) => {
-        const fromTokenInfo = tokenAddressToToken(
-          req.query.fromChain,
-          req.query.fromToken
-        )
-        return `Amount has too many decimals, maximum allowed for this token is ${fromTokenInfo.decimals}`
-      }),
+      .withMessage(
+        'Amount has too many decimals, beyond the maximum allowed for this token'
+      ),
     check('destAddress')
       .exists()
       .withMessage('destAddress is required')

@@ -89,4 +89,20 @@ describe('Swap TX Info Route with Real Synapse Service', () => {
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty('field', 'amount')
   }, 10_000)
+
+  it('should return 400 for amount with too many decimals', async () => {
+    const response = await request(app).get('/swapTxInfo').query({
+      chain: '1',
+      fromToken: USDC.addresses[1],
+      toToken: DAI.addresses[1],
+      amount: '1000.123456789', // Assuming USDC has 6 decimals
+      address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+    })
+
+    expect(response.status).toBe(400)
+    expect(response.body.error).toHaveProperty(
+      'message',
+      expect.stringContaining('Amount has too many decimals')
+    )
+  }, 10000)
 })
