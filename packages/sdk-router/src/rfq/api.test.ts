@@ -76,6 +76,10 @@ describe('getAllQuotes', () => {
   })
 
   describe('Returns an empty array', () => {
+    beforeAll(() => {
+      console.error = jest.fn()
+    })
+
     it('when the response is not ok', async () => {
       fetchMock.mockResponseOnce(JSON.stringify(quotesAPI), { status: 500 })
       const result = await getAllQuotes()
