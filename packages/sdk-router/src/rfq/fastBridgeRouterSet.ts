@@ -20,6 +20,7 @@ import {
 import { FastBridgeRouter } from './fastBridgeRouter'
 import { ChainProvider } from '../router'
 import { ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
+import { isSameAddress } from '../utils/addressUtils'
 import { FastBridgeQuote, applyQuote } from './quote'
 import { marshallTicker } from './ticker'
 import { getAllQuotes } from './api'
@@ -299,13 +300,12 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
         (quote) =>
           quote.ticker.originToken.chainId === originChainId &&
           quote.ticker.destToken.chainId === destChainId &&
-          quote.ticker.destToken.token &&
-          quote.ticker.destToken.token.toLowerCase() === tokenOut.toLowerCase()
+          isSameAddress(quote.ticker.destToken.token, tokenOut)
       )
       .filter(
         (quote) =>
-          quote.originFastBridge.toLowerCase() === originFB.toLowerCase() &&
-          quote.destFastBridge.toLowerCase() === destFB.toLowerCase()
+          isSameAddress(quote.originFastBridge, originFB) &&
+          isSameAddress(quote.destFastBridge, destFB)
       )
       .filter((quote) => {
         const age = Date.now() - quote.updatedAt
