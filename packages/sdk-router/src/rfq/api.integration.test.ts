@@ -30,32 +30,48 @@ describe('Integration test: getBestRFQQuote', () => {
   }
   const userAddress = '0x0000000000000000000000000000000000007331'
 
-  it('ARB ETH -> OP ETH; 1337 wei => no quote returned', async () => {
-    const result = await getBestRFQQuote(
-      ticker,
-      parseFixed('1337'),
-      userAddress
-    )
-    expect(result).toBeNull()
+  describe('Cases where a quote is returned', () => {
+    it('ARB ETH -> OP ETH; 0.01 ETH', async () => {
+      const result = await getBestRFQQuote(
+        ticker,
+        parseFixed('0.01', 18),
+        userAddress
+      )
+      expect(result).not.toBeNull()
+      expect(result?.destAmount.gt(0)).toBe(true)
+      expect(result?.relayerAddress).toBeDefined()
+    })
   })
 
-  it('ARB ETH -> OP ETH; 0.01 ETH => quote returned', async () => {
-    const result = await getBestRFQQuote(
-      ticker,
-      parseFixed('0.01', 18),
-      userAddress
-    )
-    expect(result).not.toBeNull()
-    expect(result?.destAmount.gt(0)).toBe(true)
-    expect(result?.relayerAddress).toBeDefined()
-  })
+  describe('Cases where no quote is returned', () => {
+    beforeEach(() => {
+      jest.spyOn(console, 'error').mockImplementation(() => {
+        // Do nothing
+      })
+    })
 
-  it('ARB ETH -> OP ETH; 10**36 wei => no quote returned', async () => {
-    const result = await getBestRFQQuote(
-      ticker,
-      parseFixed('1', 36),
-      userAddress
-    )
-    expect(result).toBeNull()
+    afterEach(() => {
+      jest.restoreAllMocks()
+    })
+
+    it('ARB ETH -> OP ETH; 1337 wei', async () => {
+      const result = await getBestRFQQuote(
+        ticker,
+        parseFixed('1337'),
+        userAddress
+      )
+      expect(result).toBeNull()
+      expect(console.error).toHaveBeenCalled()
+    })
+
+    it('ARB ETH -> OP ETH; 10**36 wei', async () => {
+      const result = await getBestRFQQuote(
+        ticker,
+        parseFixed('1', 36),
+        userAddress
+      )
+      expect(result).toBeNull()
+      expect(console.error).toHaveBeenCalled()
+    })
   })
 })

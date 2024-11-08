@@ -183,22 +183,35 @@ describe('getBestRFQQuote', () => {
   })
 
   describe('Returns null', () => {
+    beforeEach(() => {
+      jest.spyOn(console, 'error').mockImplementation(() => {
+        // Do nothing
+      })
+    })
+
+    afterEach(() => {
+      jest.restoreAllMocks()
+    })
+
     it('when the user address is not provided', async () => {
       fetchMock.mockResponseOnce(JSON.stringify(quoteFound))
       const result = await getBestRFQQuote(ticker, bigAmount)
       expect(result).toBeNull()
+      expect(console.error).toHaveBeenCalled()
     })
 
     it('when the response is not ok', async () => {
       fetchMock.mockResponseOnce(JSON.stringify(quoteFound), { status: 500 })
       const result = await getBestRFQQuote(ticker, bigAmount, userAddress)
       expect(result).toBeNull()
+      expect(console.error).toHaveBeenCalled()
     })
 
     it('when the response success is false', async () => {
       fetchMock.mockResponseOnce(JSON.stringify(noQuotesFound))
       const result = await getBestRFQQuote(ticker, bigAmount, userAddress)
       expect(result).toBeNull()
+      expect(console.error).toHaveBeenCalled()
     })
 
     it('when the response takes too long to return', async () => {
@@ -207,6 +220,7 @@ describe('getBestRFQQuote', () => {
       )
       const result = await getBestRFQQuote(ticker, bigAmount, userAddress)
       expect(result).toBeNull()
+      expect(console.error).toHaveBeenCalled()
     })
 
     it('when the response does not contain dest amount', async () => {
@@ -217,6 +231,7 @@ describe('getBestRFQQuote', () => {
       fetchMock.mockResponseOnce(JSON.stringify(responseWithoutDestAmount))
       const result = await getBestRFQQuote(ticker, bigAmount, userAddress)
       expect(result).toBeNull()
+      expect(console.error).toHaveBeenCalled()
     })
 
     it('when the response does not contain relayer address', async () => {
@@ -227,6 +242,7 @@ describe('getBestRFQQuote', () => {
       fetchMock.mockResponseOnce(JSON.stringify(responseWithoutRelayerAddress))
       const result = await getBestRFQQuote(ticker, bigAmount, userAddress)
       expect(result).toBeNull()
+      expect(console.error).toHaveBeenCalled()
     })
 
     it('when the response dest amount is zero', async () => {
@@ -234,6 +250,7 @@ describe('getBestRFQQuote', () => {
       fetchMock.mockResponseOnce(JSON.stringify(responseWithZeroDestAmount))
       const result = await getBestRFQQuote(ticker, bigAmount, userAddress)
       expect(result).toBeNull()
+      expect(console.error).toHaveBeenCalled()
     })
   })
 })
