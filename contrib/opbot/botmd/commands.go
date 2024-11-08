@@ -4,7 +4,6 @@ package botmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"math/big"
@@ -20,8 +19,8 @@ import (
 	"github.com/hako/durafmt"
 	"github.com/slack-go/slack"
 	"github.com/slack-io/slacker"
-	"github.com/synapsecns/sanguine/contrib/opbot/internal"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/chaindata"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
@@ -250,7 +249,8 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
-			fastBridgeContract, err := b.makeFastBridge(ctx.Context(), rawRequest)
+			//nolint: gosec
+			fastBridgeContractOrigin, err := b.makeFastBridge(ctx.Context(), uint32(rawRequest.Bridge.OriginChainID))
 			if err != nil {
 				_, err := ctx.Response().Reply(err.Error())
 				if err != nil {
@@ -275,11 +275,44 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
+			//nolint:gosec
+			fastBridgeContractDest, err := b.makeFastBridge(ctx.Context(), uint32(rawRequest.Bridge.DestChainID))
+			if err != nil {
+				_, err := ctx.Response().Reply(err.Error())
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+			txBz, err := core.BytesToArray(common.Hex2Bytes(rawRequest.Bridge.TransactionID[2:]))
+			if err != nil {
+				_, err := ctx.Response().Reply("error converting tx id")
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+			isRelayed, err := fastBridgeContractDest.BridgeRelays(nil, txBz)
+			if err != nil {
+				_, err := ctx.Response().Reply("error fetching bridge relays")
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+			if isRelayed {
+				_, err := ctx.Response().Reply("transaction has already been relayed")
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+
 			nonce, err := b.submitter.SubmitTransaction(
 				ctx.Context(),
 				big.NewInt(int64(rawRequest.Bridge.OriginChainID)),
 				func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-					tx, err = fastBridgeContract.Refund(transactor, common.Hex2Bytes(rawRequest.Bridge.Request[2:]))
+					tx, err = fastBridgeContractOrigin.Refund(transactor, common.Hex2Bytes(rawRequest.Bridge.Request[2:]))
 					if err != nil {
 						return nil, fmt.Errorf("error submitting refund: %w", err)
 					}
@@ -322,7 +355,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 	}
 }
 
-func (b *Bot) makeFastBridge(ctx context.Context, req *internal.GetRFQByTxIDResponse) (*fastbridge.FastBridge, error) {
+func (b *Bot) makeFastBridge(ctx context.Context, chainID uint32) (*fastbridge.FastBridge, error) {
 	client, err := rfqClient.NewUnauthenticatedClient(b.handler, b.cfg.RFQApiURL)
 	if err != nil {
 		return nil, fmt.Errorf("error creating rfq client: %w", err)
@@ -333,22 +366,23 @@ func (b *Bot) makeFastBridge(ctx context.Context, req *internal.GetRFQByTxIDResp
 		return nil, fmt.Errorf("error fetching rfq contracts: %w", err)
 	}
 
-	chainClient, err := b.rpcClient.GetChainClient(ctx, req.Bridge.OriginChainID)
+	chainClient, err := b.rpcClient.GetChainClient(ctx, int(chainID))
 	if err != nil {
-		return nil, fmt.Errorf("error getting chain client: %w", err)
+		return nil, fmt.Errorf("error getting chain client for chain ID %d: %w", chainID, err)
 	}
 
-	//nolint: gosec
-	contractAddress, ok := contracts.Contracts[uint32(req.Bridge.OriginChainID)]
+	contractAddress, ok := contracts.Contracts[chainID]
 	if !ok {
-		return nil, errors.New("contract address not found")
+		return nil, fmt.Errorf("no contract address for chain ID")
 	}
 
 	fastBridgeHandle, err := fastbridge.NewFastBridge(common.HexToAddress(contractAddress), chainClient)
 	if err != nil {
-		return nil, fmt.Errorf("error creating fast bridge: %w", err)
+		return nil, fmt.Errorf("error creating fast bridge for chain ID %d: %w", chainID, err)
 	}
+
 	return fastBridgeHandle, nil
+
 }
 
 func toExplorerSlackLink(ogHash string) string {
