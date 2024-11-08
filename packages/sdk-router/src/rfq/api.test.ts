@@ -179,6 +179,12 @@ describe('getBestRelayerQuote', () => {
       expect(result).toEqual(quote)
     })
 
+    it('when the user address is not provided', async () => {
+      fetchMock.mockResponseOnce(JSON.stringify(quoteFound))
+      const result = await getBestRelayerQuote(ticker, bigAmount)
+      expect(result).toEqual(quote)
+    })
+
     it('when the response does not contain quote ID', async () => {
       const responseWithoutID = { ...quoteFound, quote_id: undefined }
       const quoteWithoutID = { ...quote, quoteID: undefined }
@@ -197,13 +203,6 @@ describe('getBestRelayerQuote', () => {
 
     afterEach(() => {
       jest.restoreAllMocks()
-    })
-
-    it('when the user address is not provided', async () => {
-      fetchMock.mockResponseOnce(JSON.stringify(quoteFound))
-      const result = await getBestRelayerQuote(ticker, bigAmount)
-      expect(result).toEqual(quoteZero)
-      expect(console.error).toHaveBeenCalled()
     })
 
     it('when the response is not ok', async () => {

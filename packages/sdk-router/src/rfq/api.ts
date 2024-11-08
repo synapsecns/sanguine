@@ -12,7 +12,7 @@ const API_TIMEOUT = 2000
 const EXPIRATION_WINDOW = 1000
 
 export type PutRFQRequestAPI = {
-  user_address: string
+  user_address?: string
   // TODO: make integrator_id required
   integrator_id?: string
   quote_types: string[]
@@ -99,10 +99,6 @@ export const getBestRelayerQuote = async (
   originAmount: BigNumber,
   originUserAddress?: string
 ): Promise<RelayerQuote> => {
-  if (!originUserAddress) {
-    console.error('No origin user address provided')
-    return ZeroQuote
-  }
   try {
     const rfqRequest: PutRFQRequestAPI = {
       user_address: originUserAddress,
