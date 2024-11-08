@@ -1,6 +1,6 @@
 import { parseFixed } from '@ethersproject/bignumber'
 
-import { getAllQuotes, getBestRFQQuote } from './api'
+import { getAllQuotes, getBestRFQQuote, Quote } from './api'
 import { Ticker } from './ticker'
 import { ETH_NATIVE_TOKEN_ADDRESS } from '../utils/handleNativeToken'
 
@@ -30,20 +30,23 @@ describe('Integration test: getBestRFQQuote', () => {
   }
   const userAddress = '0x0000000000000000000000000000000000007331'
 
-  describe('Cases where a quote is returned', () => {
+  describe('Cases where a non-zero quote is returned', () => {
     it('ARB ETH -> OP ETH; 0.01 ETH', async () => {
       const result = await getBestRFQQuote(
         ticker,
         parseFixed('0.01', 18),
         userAddress
       )
-      expect(result).not.toBeNull()
       expect(result?.destAmount.gt(0)).toBe(true)
       expect(result?.relayerAddress).toBeDefined()
     })
   })
 
-  describe('Cases where no quote is returned', () => {
+  describe('Cases where a zero quote is returned', () => {
+    const quoteZero: Quote = {
+      destAmount: parseFixed('0'),
+    }
+
     beforeEach(() => {
       jest.spyOn(console, 'error').mockImplementation(() => {
         // Do nothing
@@ -60,7 +63,7 @@ describe('Integration test: getBestRFQQuote', () => {
         parseFixed('1337'),
         userAddress
       )
-      expect(result).toBeNull()
+      expect(result).toEqual(quoteZero)
       expect(console.error).toHaveBeenCalled()
     })
 
@@ -70,7 +73,7 @@ describe('Integration test: getBestRFQQuote', () => {
         parseFixed('1', 36),
         userAddress
       )
-      expect(result).toBeNull()
+      expect(result).toEqual(quoteZero)
       expect(console.error).toHaveBeenCalled()
     })
   })

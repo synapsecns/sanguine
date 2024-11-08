@@ -147,6 +147,10 @@ describe('getBestRFQQuote', () => {
     quoteID,
   }
 
+  const quoteZero: Quote = {
+    destAmount: parseFixed('0'),
+  }
+
   beforeEach(() => {
     fetchMock.enableMocks()
   })
@@ -155,11 +159,10 @@ describe('getBestRFQQuote', () => {
     fetchMock.resetMocks()
   })
 
-  describe('Returns a quote', () => {
+  describe('Returns a non-zero quote', () => {
     it('when the response is ok', async () => {
       fetchMock.mockResponseOnce(JSON.stringify(quoteFound))
       const result = await getBestRFQQuote(ticker, bigAmount, userAddress)
-      expect(result).not.toBeNull()
       expect(result).toEqual(quote)
     })
 
@@ -168,7 +171,6 @@ describe('getBestRFQQuote', () => {
         delayedAPIPromise(JSON.stringify(quoteFound), OK_RESPONSE_TIME)
       )
       const result = await getBestRFQQuote(ticker, bigAmount, userAddress)
-      expect(result).not.toBeNull()
       expect(result).toEqual(quote)
     })
 
@@ -177,12 +179,11 @@ describe('getBestRFQQuote', () => {
       const quoteWithoutID = { ...quote, quoteID: undefined }
       fetchMock.mockResponseOnce(JSON.stringify(responseWithoutID))
       const result = await getBestRFQQuote(ticker, bigAmount, userAddress)
-      expect(result).not.toBeNull()
       expect(result).toEqual(quoteWithoutID)
     })
   })
 
-  describe('Returns null', () => {
+  describe('Returns a zero quote', () => {
     beforeEach(() => {
       jest.spyOn(console, 'error').mockImplementation(() => {
         // Do nothing
@@ -196,21 +197,21 @@ describe('getBestRFQQuote', () => {
     it('when the user address is not provided', async () => {
       fetchMock.mockResponseOnce(JSON.stringify(quoteFound))
       const result = await getBestRFQQuote(ticker, bigAmount)
-      expect(result).toBeNull()
+      expect(result).toEqual(quoteZero)
       expect(console.error).toHaveBeenCalled()
     })
 
     it('when the response is not ok', async () => {
       fetchMock.mockResponseOnce(JSON.stringify(quoteFound), { status: 500 })
       const result = await getBestRFQQuote(ticker, bigAmount, userAddress)
-      expect(result).toBeNull()
+      expect(result).toEqual(quoteZero)
       expect(console.error).toHaveBeenCalled()
     })
 
     it('when the response success is false', async () => {
       fetchMock.mockResponseOnce(JSON.stringify(noQuotesFound))
       const result = await getBestRFQQuote(ticker, bigAmount, userAddress)
-      expect(result).toBeNull()
+      expect(result).toEqual(quoteZero)
       expect(console.error).toHaveBeenCalled()
     })
 
@@ -219,7 +220,7 @@ describe('getBestRFQQuote', () => {
         delayedAPIPromise(JSON.stringify(quoteFound), SLOW_RESPONSE_TIME)
       )
       const result = await getBestRFQQuote(ticker, bigAmount, userAddress)
-      expect(result).toBeNull()
+      expect(result).toEqual(quoteZero)
       expect(console.error).toHaveBeenCalled()
     })
 
@@ -230,7 +231,7 @@ describe('getBestRFQQuote', () => {
       }
       fetchMock.mockResponseOnce(JSON.stringify(responseWithoutDestAmount))
       const result = await getBestRFQQuote(ticker, bigAmount, userAddress)
-      expect(result).toBeNull()
+      expect(result).toEqual(quoteZero)
       expect(console.error).toHaveBeenCalled()
     })
 
@@ -241,7 +242,7 @@ describe('getBestRFQQuote', () => {
       }
       fetchMock.mockResponseOnce(JSON.stringify(responseWithoutRelayerAddress))
       const result = await getBestRFQQuote(ticker, bigAmount, userAddress)
-      expect(result).toBeNull()
+      expect(result).toEqual(quoteZero)
       expect(console.error).toHaveBeenCalled()
     })
 
@@ -249,7 +250,7 @@ describe('getBestRFQQuote', () => {
       const responseWithZeroDestAmount = { ...quoteFound, dest_amount: '0' }
       fetchMock.mockResponseOnce(JSON.stringify(responseWithZeroDestAmount))
       const result = await getBestRFQQuote(ticker, bigAmount, userAddress)
-      expect(result).toBeNull()
+      expect(result).toEqual(quoteZero)
       expect(console.error).toHaveBeenCalled()
     })
   })

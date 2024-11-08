@@ -37,8 +37,12 @@ export type PutRFQResponseAPI = {
 
 export type Quote = {
   destAmount: BigNumber
-  relayerAddress: string
+  relayerAddress?: string
   quoteID?: string
+}
+
+const ZeroQuote: Quote = {
+  destAmount: BigNumber.from(0),
 }
 
 const fetchWithTimeout = async (
@@ -88,16 +92,16 @@ export const getAllQuotes = async (): Promise<FastBridgeQuote[]> => {
  * Hits Quoter API /rfq PUT endpoint to get the best quote for a given ticker and origin amount.
  *
  * @returns A promise that resolves to the best quote.
- * Will return null if the request fails or times out.
+ * Will return a zero quote if the request fails or times out.
  */
 export const getBestRFQQuote = async (
   ticker: Ticker,
   originAmount: BigNumber,
   originUserAddress?: string
-): Promise<Quote | null> => {
+): Promise<Quote> => {
   if (!originUserAddress) {
     console.error('No origin user address provided')
-    return null
+    return ZeroQuote
   }
   try {
     const rfqRequest: PutRFQRequestAPI = {
@@ -120,7 +124,7 @@ export const getBestRFQQuote = async (
     })
     if (!response.ok) {
       console.error('Error fetching quote:', response.statusText)
-      return null
+      return ZeroQuote
     }
     // Check that response is successful, contains non-zero dest amount, and has a relayer address
     const rfqResponse: PutRFQResponseAPI = await response.json()
@@ -129,19 +133,19 @@ export const getBestRFQQuote = async (
         'No RFQ quote returned:',
         rfqResponse.reason ?? 'Unknown reason'
       )
-      return null
+      return ZeroQuote
     }
     if (!rfqResponse.dest_amount || !rfqResponse.relayer_address) {
       console.error(
         'Error fetching quote: missing dest_amount or relayer_address in response:',
         rfqResponse
       )
-      return null
+      return ZeroQuote
     }
     const destAmount = BigNumber.from(rfqResponse.dest_amount)
     if (destAmount.lte(0)) {
       console.error('No RFQ quote returned')
-      return null
+      return ZeroQuote
     }
     return {
       destAmount,
@@ -150,6 +154,6 @@ export const getBestRFQQuote = async (
     }
   } catch (error) {
     console.error('Error fetching quote:', error)
-    return null
+    return ZeroQuote
   }
 }
