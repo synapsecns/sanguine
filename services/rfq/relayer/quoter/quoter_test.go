@@ -202,6 +202,248 @@ func (s *QuoterSuite) TestIsProfitable() {
 	s.False(s.manager.IsProfitable(s.GetTestContext(), quote))
 }
 
+func (s *QuoterSuite) TestGetOriginAmountActiveQuotes() {
+	origin := int(s.origin)
+	dest := int(s.destination)
+	address := common.HexToAddress("0x0b2c639c533813f4aa9d7837caf62653d097ff85")
+	originAddr := common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
+	balance := big.NewInt(1000_000_000)     // 1000 USDC
+	depositAmount := big.NewInt(50_000_000) // 50 USDC
+
+	type quoteParams struct {
+		quotePct       float64
+		quoteOffset    float64
+		minQuoteAmount string
+		maxBalance     string
+		maxQuoteAmount string
+	}
+
+	setQuoteParams := func(params quoteParams) {
+		s.config.BaseChainConfig.QuotePct = &params.quotePct
+		destTokenCfg := s.config.Chains[dest].Tokens["USDC"]
+		destTokenCfg.MinQuoteAmount = params.minQuoteAmount
+		destTokenCfg.MaxRelayAmount = params.maxQuoteAmount
+		originTokenCfg := s.config.Chains[origin].Tokens["USDC"]
+		originTokenCfg.QuoteOffsetBps = params.quoteOffset
+		originTokenCfg.MaxBalance = &params.maxBalance
+		originTokenCfg.MaxRelayAmount = params.maxQuoteAmount
+		s.config.Chains[dest].Tokens["USDC"] = destTokenCfg
+		s.config.Chains[origin].Tokens["USDC"] = originTokenCfg
+		s.manager.SetConfig(s.config)
+	}
+
+	input := quoter.QuoteInput{
+		OriginChainID:   origin,
+		DestChainID:     dest,
+		OriginTokenAddr: originAddr,
+		DestTokenAddr:   address,
+		OriginBalance:   balance,
+		DestBalance:     balance,
+		DepositAmount:   depositAmount,
+	}
+
+	// Set default quote params; should return the depositAmount.
+	quoteAmount, err := s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount := depositAmount
+	s.Equal(expectedAmount, quoteAmount)
+
+	// Set QuotePct to 50 with MinQuoteAmount of 0; should still be 100% of deposit amount
+	// IE: we're only willing to use 50% of our balance, but deposit amount is well below that.
+	setQuoteParams(quoteParams{
+		quotePct:       50,
+		quoteOffset:    0,
+		minQuoteAmount: "0",
+		maxBalance:     "0",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = depositAmount
+	s.Equal(expectedAmount, quoteAmount)
+
+	// Set QuotePct to 1 with MinQuoteAmount of 0;
+	//should return zero even though we can partially cover -- because deposit amount is all-or-nothing.
+	// IE: we're only willing to use 1% of our balance, which does not cover deposit amount.
+	setQuoteParams(quoteParams{
+		quotePct:       1,
+		quoteOffset:    0,
+		minQuoteAmount: "0",
+		maxBalance:     "0",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(0)
+	s.Equal(expectedAmount, quoteAmount)
+
+	// Set QuotePct to 5 with MinQuoteAmount of 0;
+	// should the deposit amount because 5% of 1K is just enough to cover.
+	setQuoteParams(quoteParams{
+		quotePct:       5,
+		quoteOffset:    0,
+		minQuoteAmount: "0",
+		maxBalance:     "0",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = depositAmount
+	s.Equal(expectedAmount, quoteAmount)
+
+	// Set QuotePct to 5 with MinQuoteAmount of 0;
+	// should return the deposit amount because 5% of 1K balance is just enough to cover.
+	setQuoteParams(quoteParams{
+		quotePct:       5,
+		quoteOffset:    0,
+		minQuoteAmount: "500",
+		maxBalance:     "0",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = depositAmount
+	s.Equal(expectedAmount, quoteAmount)
+
+	// Set QuotePct to 25 with MinQuoteAmount of 500;
+	// minQuoteAmt ceiling = 500
+	// quotePct 25% * 1000 = 250
+	// output s/b depositAmount becase it does not exceed either
+	setQuoteParams(quoteParams{
+		quotePct:       25,
+		quoteOffset:    0,
+		minQuoteAmount: "500",
+		maxBalance:     "0",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = depositAmount
+	s.Equal(expectedAmount, quoteAmount)
+
+	// test minQuoteAmount ceiling *overriding* quotePct ceiling
+	// output s/b depositAmount even though quotePct amount wont cover it, due to override
+	setQuoteParams(quoteParams{
+		quotePct:       1,
+		quoteOffset:    0,
+		minQuoteAmount: "500",
+		maxBalance:     "0",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = depositAmount
+	s.Equal(expectedAmount, quoteAmount)
+
+	// test quotePct ceiling *overriding* minQuoteAmount ceiling
+	// output s/b depositAmount even though minQuoteAmount amount wont cover it, due to override
+	setQuoteParams(quoteParams{
+		quotePct:       25,
+		quoteOffset:    0,
+		minQuoteAmount: "5",
+		maxBalance:     "0",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = depositAmount
+	s.Equal(expectedAmount, quoteAmount)
+
+	// test depositAmount below both the quotePct ceiling and minQuoteAmount ceiling
+	// output s/b 0 as neither ceiling setting accomodates the deposit amount
+	setQuoteParams(quoteParams{
+		quotePct:       1,
+		quoteOffset:    0,
+		minQuoteAmount: "5",
+		maxBalance:     "0",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(0)
+	s.Equal(expectedAmount, quoteAmount)
+
+	// Ceiling params much higher than deposit amount, should still return deposit amount exactly
+	setQuoteParams(quoteParams{
+		quotePct:       100,
+		quoteOffset:    0,
+		minQuoteAmount: "0",
+		maxBalance:     "0",
+		maxQuoteAmount: "500",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = depositAmount
+	s.Equal(expectedAmount, quoteAmount)
+
+	// Set QuotePct to 25 with MinQuoteAmount of 1500 and MaxBalance of 1200;
+	// effective ceiling is 200 due to maxBalance only allowing 200 more units on origin.
+	// Since depositAmt is below this, output s/b deposit amount
+	setQuoteParams(quoteParams{
+		quotePct:       25,
+		quoteOffset:    0,
+		minQuoteAmount: "1500",
+		maxBalance:     "1200",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = depositAmount
+	s.Equal(expectedAmount, quoteAmount)
+
+	// Set QuotePct to 25 with MinQuoteAmount of 1500 and MaxBalance of 1025;
+	// effective ceiling is 200 due to maxBalance only allowing 25 more units on origin.
+	// Since depositAmt is above this ceiling, output s/b zero
+	setQuoteParams(quoteParams{
+		quotePct:       25,
+		quoteOffset:    0,
+		minQuoteAmount: "1500",
+		maxBalance:     "1025",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(0)
+	s.Equal(expectedAmount, quoteAmount)
+
+	// Toggle insufficient gas; should be 0.
+	s.setGasSufficiency(false)
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(0)
+	s.Equal(expectedAmount, quoteAmount)
+
+	input.DepositAmount = new(big.Int).Add(balance, balance)
+	// depositAmount beyond our balance.
+	// output s/b zero even with generous limits
+	setQuoteParams(quoteParams{
+		quotePct:       100,
+		quoteOffset:    0,
+		minQuoteAmount: "1500",
+		maxBalance:     "2000",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(0)
+	s.Equal(expectedAmount, quoteAmount)
+
+	input.DepositAmount = big.NewInt(0)
+	// depositAmount set to zero. output s/b zero
+	setQuoteParams(quoteParams{
+		quotePct:       100,
+		quoteOffset:    0,
+		minQuoteAmount: "1500",
+		maxBalance:     "2000",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(0)
+	s.Equal(expectedAmount, quoteAmount)
+
+	input.DepositAmount = big.NewInt(-55000000)
+	// depositAmount set to negative. output s/b zero
+	setQuoteParams(quoteParams{
+		quotePct:       100,
+		quoteOffset:    0,
+		minQuoteAmount: "1500",
+		maxBalance:     "2000",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(0)
+	s.Equal(expectedAmount, quoteAmount)
+}
+
 func (s *QuoterSuite) TestGetOriginAmount() {
 	origin := int(s.origin)
 	dest := int(s.destination)
