@@ -35,13 +35,13 @@ export type PutRFQResponseAPI = {
   relayer_address?: string
 }
 
-export type Quote = {
+export type RelayerQuote = {
   destAmount: BigNumber
   relayerAddress?: string
   quoteID?: string
 }
 
-const ZeroQuote: Quote = {
+const ZeroQuote: RelayerQuote = {
   destAmount: BigNumber.from(0),
 }
 
@@ -94,11 +94,11 @@ export const getAllQuotes = async (): Promise<FastBridgeQuote[]> => {
  * @returns A promise that resolves to the best quote.
  * Will return a zero quote if the request fails or times out.
  */
-export const getBestRFQQuote = async (
+export const getBestRelayerQuote = async (
   ticker: Ticker,
   originAmount: BigNumber,
   originUserAddress?: string
-): Promise<Quote> => {
+): Promise<RelayerQuote> => {
   if (!originUserAddress) {
     console.error('No origin user address provided')
     return ZeroQuote

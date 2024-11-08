@@ -22,7 +22,7 @@ import { ChainProvider } from '../router'
 import { ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
 import { isSameAddress } from '../utils/addressUtils'
 import { marshallTicker, Ticker } from './ticker'
-import { getAllQuotes, getBestRFQQuote } from './api'
+import { getAllQuotes, getBestRelayerQuote } from './api'
 
 export class FastBridgeRouterSet extends SynapseModuleSet {
   static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
@@ -120,7 +120,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
       filteredTickers.map(async ({ ticker, originQuery }) => ({
         ticker,
         originQuery,
-        quote: await getBestRFQQuote(
+        quote: await getBestRelayerQuote(
           ticker,
           // Get the quote for the proceeds of the origin swap with protocol fee applied
           this.applyProtocolFeeRate(originQuery.minAmountOut, protocolFeeRate),

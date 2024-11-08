@@ -1,6 +1,6 @@
 import { parseFixed } from '@ethersproject/bignumber'
 
-import { getAllQuotes, getBestRFQQuote, Quote } from './api'
+import { getAllQuotes, getBestRelayerQuote, RelayerQuote } from './api'
 import { Ticker } from './ticker'
 import { ETH_NATIVE_TOKEN_ADDRESS } from '../utils/handleNativeToken'
 
@@ -17,7 +17,7 @@ describe('Integration test: getAllQuotes', () => {
   })
 })
 
-describe('Integration test: getBestRFQQuote', () => {
+describe('Integration test: getBestRelayerQuote', () => {
   const ticker: Ticker = {
     originToken: {
       chainId: 42161,
@@ -32,7 +32,7 @@ describe('Integration test: getBestRFQQuote', () => {
 
   describe('Cases where a non-zero quote is returned', () => {
     it('ARB ETH -> OP ETH; 0.01 ETH', async () => {
-      const result = await getBestRFQQuote(
+      const result = await getBestRelayerQuote(
         ticker,
         parseFixed('0.01', 18),
         userAddress
@@ -43,7 +43,7 @@ describe('Integration test: getBestRFQQuote', () => {
   })
 
   describe('Cases where a zero quote is returned', () => {
-    const quoteZero: Quote = {
+    const quoteZero: RelayerQuote = {
       destAmount: parseFixed('0'),
     }
 
@@ -58,7 +58,7 @@ describe('Integration test: getBestRFQQuote', () => {
     })
 
     it('ARB ETH -> OP ETH; 1337 wei', async () => {
-      const result = await getBestRFQQuote(
+      const result = await getBestRelayerQuote(
         ticker,
         parseFixed('1337'),
         userAddress
@@ -68,7 +68,7 @@ describe('Integration test: getBestRFQQuote', () => {
     })
 
     it('ARB ETH -> OP ETH; 10**36 wei', async () => {
-      const result = await getBestRFQQuote(
+      const result = await getBestRelayerQuote(
         ticker,
         parseFixed('1', 36),
         userAddress
