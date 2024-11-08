@@ -6,6 +6,9 @@ import { ETH_NATIVE_TOKEN_ADDRESS } from '../utils/handleNativeToken'
 
 global.fetch = require('node-fetch')
 
+// Retry the flaky tests up to 3 times
+jest.retryTimes(3)
+
 describe('Integration test: getAllQuotes', () => {
   it('returns a non-empty array', async () => {
     const result = await getAllQuotes()

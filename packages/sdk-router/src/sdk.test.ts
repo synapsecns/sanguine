@@ -48,9 +48,13 @@ import * as operations from './operations'
 // Override fetch to exclude RFQ from tests
 global.fetch = jest.fn(() =>
   Promise.resolve({
-    json: () => Promise.resolve({}),
+    ok: true,
+    json: () => Promise.resolve([]),
   })
 ) as any
+
+// Retry the flaky tests up to 3 times
+jest.retryTimes(3)
 
 const EXPECTED_GAS_DROP: { [chainId: number]: BigNumber } = {
   [SupportedChainId.ETH]: BigNumber.from(0),

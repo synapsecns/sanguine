@@ -341,7 +341,7 @@ export const MOONBEAM: Chain = {
   chainSymbol: 'MOONBEAM',
   name: 'Moonbeam',
   chainImg:
-    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/moonbeam.284ab9b4.svg',
+    'https://adf1cceb.sanguine-fe.pages.dev/_next/static/media/moonbeam.63f34507.svg',
   layer: 1,
   codeName: 'moonbeam',
   blockTime: 12000,
@@ -354,7 +354,7 @@ export const MOONBEAM: Chain = {
   explorerName: 'Moonbeam Explorer',
   explorerImg:
     'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/moonbeam.284ab9b4.svg',
-  color: 'teal',
+  color: 'purple',
 }
 
 export const MOONRIVER: Chain = {
@@ -363,7 +363,7 @@ export const MOONRIVER: Chain = {
   chainSymbol: 'MOONRIVER',
   name: 'Moonriver',
   chainImg:
-    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/moonriver.3fb35010.svg',
+    'https://adf1cceb.sanguine-fe.pages.dev/_next/static/media/moonriver.275d190a.svg',
   layer: 1,
   codeName: 'moonriver',
   blockTime: 12000,
@@ -376,7 +376,7 @@ export const MOONRIVER: Chain = {
   explorerName: 'Moonriver Explorer',
   explorerImg:
     'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/moonriver.3fb35010.svg',
-  color: 'purple',
+  color: 'lime',
 }
 
 export const DOGE: Chain = {
