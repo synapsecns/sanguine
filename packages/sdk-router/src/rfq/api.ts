@@ -125,7 +125,10 @@ export const getBestRFQQuote = async (
     // Check that response is successful, contains non-zero dest amount, and has a relayer address
     const rfqResponse: PutRFQResponseAPI = await response.json()
     if (!rfqResponse.success) {
-      console.log(rfqResponse.reason ?? 'No RFQ quote returned')
+      console.error(
+        'No RFQ quote returned:',
+        rfqResponse.reason ?? 'Unknown reason'
+      )
       return null
     }
     if (!rfqResponse.dest_amount || !rfqResponse.relayer_address) {
@@ -137,7 +140,7 @@ export const getBestRFQQuote = async (
     }
     const destAmount = BigNumber.from(rfqResponse.dest_amount)
     if (destAmount.lte(0)) {
-      console.log('No RFQ quote returned')
+      console.error('No RFQ quote returned')
       return null
     }
     return {
