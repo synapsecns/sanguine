@@ -125,6 +125,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
           // Get the quote for the proceeds of the origin swap with protocol fee applied
           this.applyProtocolFeeRate(originQuery.minAmountOut, protocolFeeRate),
           originUserAddress
+          // TODO: pass MAX_QUOTE_AGE here once supported by the API
         ),
       }))
     )
@@ -309,6 +310,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
           isSameAddress(quote.originFastBridge, originFB) &&
           isSameAddress(quote.destFastBridge, destFB) &&
           isSameAddress(quote.ticker.destToken.token, tokenOut)
+        // TODO: don't filter by age here
         const age = Date.now() - quote.updatedAt
         const isValidAge =
           0 <= age && age < FastBridgeRouterSet.MAX_QUOTE_AGE_MILLISECONDS

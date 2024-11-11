@@ -8,7 +8,16 @@ import {
 } from './quote'
 
 const API_URL = 'https://rfq-api.omnirpc.io'
+
+/**
+ * The timeout duration for API requests in milliseconds. If a request takes longer than this, it will be aborted.
+ */
 const API_TIMEOUT = 2000
+
+/**
+ * The expiration window for active quotes in milliseconds to be used by the RFQ API.
+ * Relayers will have to respond with a quote within this time window.
+ */
 const EXPIRATION_WINDOW = 1000
 
 export type PutRFQRequestAPI = {
@@ -110,7 +119,6 @@ export const getBestRelayerQuote = async (
         origin_token_addr: ticker.originToken.token,
         dest_token_addr: ticker.destToken.token,
         origin_amount: originAmount.toString(),
-        // TODO: should this be configurable?
         expiration_window: EXPIRATION_WINDOW,
       },
     }
