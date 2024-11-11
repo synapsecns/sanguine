@@ -4,6 +4,12 @@ import swaggerUi from 'swagger-ui-express'
 import { specs } from './swagger'
 import routes from './routes'
 import { logger } from './middleware/logger'
+import {
+  isRFQAPIRequest,
+  isRFQIndexerRequest,
+  rfqApiProxy,
+  rfqIndexerProxy,
+} from './utils/isGatewayRoute'
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -20,7 +26,6 @@ app.use((req, res, next) => {
   })
 
   const originalPath = req.path
-
   const originalJson = res.json
   res.json = function (body) {
     logger.info({
@@ -36,11 +41,30 @@ app.use((req, res, next) => {
     return originalJson.call(this, body)
   }
 
-  next()
+  if (isRFQAPIRequest(originalPath)) {
+    return rfqApiProxy(req, res, next)
+  }
+
+  if (isRFQIndexerRequest(originalPath)) {
+    return rfqIndexerProxy(req, res, next)
+  }
+
+  return next()
 })
 
 app.listen(port, () => {
   logger.info(`Server is listening on port ${port}`)
+})
+
+app.get('/openapi.json', (_req, res) => {
+  res.set(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, proxy-revalidate'
+  )
+  res.set('Pragma', 'no-cache')
+  res.set('Expires', '0')
+  res.set('Surrogate-Control', 'no-store')
+  res.json(specs)
 })
 
 app.use(

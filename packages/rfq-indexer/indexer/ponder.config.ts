@@ -13,6 +13,7 @@ const blastChainId = 81457
 const scrollChainId = 534352
 const lineaChainId = 59144
 const bnbChainId = 56
+const worldchainChainId = 480
 
 const configByChainId = {
   [1]: {
@@ -68,6 +69,12 @@ const configByChainId = {
     chainName: 'bnb',
     FastBridgeV2Address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',
     FastBridgeV2StartBlock: 40497843, // first block and new block
+  },
+  [480]: {
+    transport: http(process.env.WORLDCHAIN_MAINNET_RPC),
+    chainName: 'worldchain',
+    FastBridgeV2Address: '0x05C62156C7C47E76223A560210EA648De5e6B53B',
+    FastBridgeV2StartBlock: 4598830, // first block and new block
   },
   disableCache: true,
 }
@@ -137,6 +144,14 @@ export const networkDetails = {
       startBlock: configByChainId[bnbChainId].FastBridgeV2StartBlock,
     },
   },
+  [worldchainChainId]: {
+    name: configByChainId[worldchainChainId].chainName,
+    FastBridgeV2: {
+      address: configByChainId[worldchainChainId].FastBridgeV2Address,
+      abi: FastBridgeV2Abi,
+      startBlock: configByChainId[worldchainChainId].FastBridgeV2StartBlock,
+    },
+  },
 } as Record<number, AddressConfig>
 
 const config = createConfig({
@@ -181,6 +196,11 @@ const config = createConfig({
       transport: configByChainId[bnbChainId].transport,
       //   disableCache: configByChainId.disableCache,
     },
+    [configByChainId[worldchainChainId].chainName]: {
+      chainId: worldchainChainId,
+      transport: configByChainId[worldchainChainId].transport,
+      //   disableCache: configByChainId.disableCache,
+    },
   },
   contracts: {
     FastBridgeV2: {
@@ -216,6 +236,11 @@ const config = createConfig({
         [configByChainId[bnbChainId].chainName]: {
           address: networkDetails[bnbChainId]?.FastBridgeV2.address,
           startBlock: networkDetails[bnbChainId]?.FastBridgeV2.startBlock,
+        },
+        [configByChainId[worldchainChainId].chainName]: {
+          address: networkDetails[worldchainChainId]?.FastBridgeV2.address,
+          startBlock:
+            networkDetails[worldchainChainId]?.FastBridgeV2.startBlock,
         },
       },
       abi: FastBridgeV2Abi,

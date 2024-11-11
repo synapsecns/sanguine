@@ -4,7 +4,7 @@ import { check } from 'express-validator'
 import { showFirstValidationError } from '../middleware/showFirstValidationError'
 import { destinationTxController } from '../controllers/destinationTxController'
 
-const router = express.Router()
+const router: express.Router = express.Router()
 
 /**
  * @openapi

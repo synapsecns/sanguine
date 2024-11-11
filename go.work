@@ -6,6 +6,7 @@ use (
 	./contrib/git-changes-action
 	./contrib/opbot
 	./contrib/promexporter
+	./contrib/restclient
 	./contrib/screener-api
 	./core
 	./ethergo

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.4;
 
 import {IFastBridge} from "./IFastBridge.sol";
 
@@ -14,8 +14,8 @@ interface IFastBridgeV2 is IFastBridge {
 
     struct BridgeTxDetails {
         BridgeStatus status;
-        uint40 proofBlockTimestamp;
-        uint48 proofBlockNumber;
+        uint32 destChainId;
+        uint56 proofBlockTimestamp;
         address proofRelayer;
     }
 

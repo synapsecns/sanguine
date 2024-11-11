@@ -81,30 +81,31 @@ type DateResult struct {
 
 // DateResult is a given statistic for a given date.
 type DateResultByChain struct {
-	Date      *string  `json:"date,omitempty"`
-	Ethereum  *float64 `json:"ethereum,omitempty"`
-	Optimism  *float64 `json:"optimism,omitempty"`
-	Cronos    *float64 `json:"cronos,omitempty"`
-	Bsc       *float64 `json:"bsc,omitempty"`
-	Polygon   *float64 `json:"polygon,omitempty"`
-	Fantom    *float64 `json:"fantom,omitempty"`
-	Boba      *float64 `json:"boba,omitempty"`
-	Metis     *float64 `json:"metis,omitempty"`
-	Moonbeam  *float64 `json:"moonbeam,omitempty"`
-	Moonriver *float64 `json:"moonriver,omitempty"`
-	Klaytn    *float64 `json:"klaytn,omitempty"`
-	Arbitrum  *float64 `json:"arbitrum,omitempty"`
-	Avalanche *float64 `json:"avalanche,omitempty"`
-	Dfk       *float64 `json:"dfk,omitempty"`
-	Aurora    *float64 `json:"aurora,omitempty"`
-	Harmony   *float64 `json:"harmony,omitempty"`
-	Canto     *float64 `json:"canto,omitempty"`
-	Dogechain *float64 `json:"dogechain,omitempty"`
-	Base      *float64 `json:"base,omitempty"`
-	Blast     *float64 `json:"blast,omitempty"`
-	Scroll    *float64 `json:"scroll,omitempty"`
-	Linea     *float64 `json:"linea,omitempty"`
-	Total     *float64 `json:"total,omitempty"`
+	Date       *string  `json:"date,omitempty"`
+	Ethereum   *float64 `json:"ethereum,omitempty"`
+	Optimism   *float64 `json:"optimism,omitempty"`
+	Cronos     *float64 `json:"cronos,omitempty"`
+	Bsc        *float64 `json:"bsc,omitempty"`
+	Polygon    *float64 `json:"polygon,omitempty"`
+	Fantom     *float64 `json:"fantom,omitempty"`
+	Boba       *float64 `json:"boba,omitempty"`
+	Metis      *float64 `json:"metis,omitempty"`
+	Moonbeam   *float64 `json:"moonbeam,omitempty"`
+	Moonriver  *float64 `json:"moonriver,omitempty"`
+	Klaytn     *float64 `json:"klaytn,omitempty"`
+	Arbitrum   *float64 `json:"arbitrum,omitempty"`
+	Avalanche  *float64 `json:"avalanche,omitempty"`
+	Dfk        *float64 `json:"dfk,omitempty"`
+	Aurora     *float64 `json:"aurora,omitempty"`
+	Harmony    *float64 `json:"harmony,omitempty"`
+	Canto      *float64 `json:"canto,omitempty"`
+	Dogechain  *float64 `json:"dogechain,omitempty"`
+	Base       *float64 `json:"base,omitempty"`
+	Blast      *float64 `json:"blast,omitempty"`
+	Scroll     *float64 `json:"scroll,omitempty"`
+	Linea      *float64 `json:"linea,omitempty"`
+	Worldchain *float64 `json:"worldchain,omitempty"`
+	Total      *float64 `json:"total,omitempty"`
 }
 
 type HeroType struct {

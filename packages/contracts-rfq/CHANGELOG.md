@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.12.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.12.0...@synapsecns/contracts-rfq@0.12.1) (2024-11-11)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+# [0.12.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.11.0...@synapsecns/contracts-rfq@0.12.0) (2024-11-04)
+
+
+### Features
+
+* **contracts-rfq:** save destination chain ID for requested bridges [SLT-423] ([#3356](https://github.com/synapsecns/sanguine/issues/3356)) ([5e11d4d](https://github.com/synapsecns/sanguine/commit/5e11d4d19d8e90f6aee8452f87e65302c4138e06))
+
+
+
+
+
+# [0.11.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.9.4...@synapsecns/contracts-rfq@0.11.0) (2024-10-28)
+
+
+### Bug Fixes
+
+* **contracts-rfq:** skip version to unbrick lerna ([#3348](https://github.com/synapsecns/sanguine/issues/3348)) ([e939e4e](https://github.com/synapsecns/sanguine/commit/e939e4e50d047cc433fc1c3ddfffa53da7897a11))
+
+
+### Features
+
+* **contracts-rfq:** Multicall in FastBridgeV2 [SLT-369] ([#3315](https://github.com/synapsecns/sanguine/issues/3315)) ([1daa5f4](https://github.com/synapsecns/sanguine/commit/1daa5f45951aa7841c220f9ce3c1023231c7dcba)), closes [#3335](https://github.com/synapsecns/sanguine/issues/3335)
+
+
+
+
+
 ## [0.9.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.9.3...@synapsecns/contracts-rfq@0.9.4) (2024-10-28)
 
 **Note:** Version bump only for package @synapsecns/contracts-rfq
