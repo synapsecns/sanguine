@@ -5,8 +5,9 @@ import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions
 
 import {UniversalTokenLib} from "./libs/UniversalToken.sol";
 import {IAdminV2} from "./interfaces/IAdminV2.sol";
+import {IAdminV2Errors} from "./interfaces/IAdminV2Errors.sol";
 
-contract AdminV2 is IAdminV2, AccessControlEnumerable {
+contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     using UniversalTokenLib for address;
 
     bytes32 public constant RELAYER_ROLE = keccak256("RELAYER_ROLE");
@@ -33,11 +34,11 @@ contract AdminV2 is IAdminV2, AccessControlEnumerable {
 
     constructor(address _owner) {
         _grantRole(DEFAULT_ADMIN_ROLE, _owner);
-        // TODO: set default cancel delay
+        _setCancelDelay(DEFAULT_CANCEL_DELAY);
     }
 
     function setCancelDelay(uint256 newCancelDelay) external onlyRole(GOVERNOR_ROLE) {
-        // TODO: implement
+        _setCancelDelay(newCancelDelay);
     }
 
     function setProtocolFeeRate(uint256 newFeeRate) external onlyRole(GOVERNOR_ROLE) {
@@ -60,5 +61,13 @@ contract AdminV2 is IAdminV2, AccessControlEnumerable {
         uint256 oldChainGasAmount = chainGasAmount;
         chainGasAmount = newChainGasAmount;
         emit ChainGasAmountUpdated(oldChainGasAmount, newChainGasAmount);
+    }
+
+    /// @notice Internal function to set the cancel delay. Security checks are performed outside of this function.
+    function _setCancelDelay(uint256 newCancelDelay) private {
+        if (newCancelDelay < MIN_CANCEL_DELAY) revert CancelDelayBelowMin();
+        uint256 oldCancelDelay = cancelDelay;
+        cancelDelay = newCancelDelay;
+        emit CancelDelayUpdated(oldCancelDelay, newCancelDelay);
     }
 }

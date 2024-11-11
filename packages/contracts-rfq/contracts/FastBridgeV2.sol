@@ -25,9 +25,6 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     /// @notice Dispute period for relayed transactions
     uint256 public constant DISPUTE_PERIOD = 30 minutes;
 
-    /// @notice Delay for a transaction after which it could be permisionlessly cancelled
-    uint256 public constant CANCEL_DELAY = 7 days;
-
     /// @notice Minimum deadline period to relay a requested bridge transaction
     uint256 public constant MIN_DEADLINE_PERIOD = 30 minutes;
 
@@ -348,8 +345,8 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         // Can only cancel a REQUESTED transaction after its deadline expires
         if ($.status != BridgeStatus.REQUESTED) revert StatusIncorrect();
         uint256 deadline = request.deadline();
-        // Permissionless cancel is only allowed after CANCEL_DELAY on top of the deadline
-        if (!hasRole(CANCELER_ROLE, msg.sender)) deadline += CANCEL_DELAY;
+        // Permissionless cancel is only allowed after `cancelDelay` on top of the deadline
+        if (!hasRole(CANCELER_ROLE, msg.sender)) deadline += cancelDelay;
         if (block.timestamp <= deadline) revert DeadlineNotExceeded();
         // Update status to REFUNDED and return the full amount (collateral + protocol fees) to the original sender.
         // The protocol fees are only updated when the transaction is claimed, so we don't need to update them here.
