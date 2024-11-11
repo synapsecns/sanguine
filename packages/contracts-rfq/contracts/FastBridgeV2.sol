@@ -25,8 +25,8 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     /// @notice Dispute period for relayed transactions
     uint256 public constant DISPUTE_PERIOD = 30 minutes;
 
-    /// @notice Delay for a transaction after which it could be permisionlessly refunded
-    uint256 public constant REFUND_DELAY = 7 days;
+    /// @notice Delay for a transaction after which it could be permisionlessly cancelled
+    uint256 public constant CANCEL_DELAY = 7 days;
 
     /// @notice Minimum deadline period to relay a requested bridge transaction
     uint256 public constant MIN_DEADLINE_PERIOD = 30 minutes;
@@ -104,33 +104,10 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         emit BridgeProofDisputed(transactionId, disputedRelayer);
     }
 
+    /// Note: this function is deprecated and will be removed in a future version.
     /// @inheritdoc IFastBridge
     function refund(bytes calldata request) external {
-        request.validateV2();
-        bytes32 transactionId = keccak256(request);
-        BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
-        // Can only refund a REQUESTED transaction after its deadline expires
-        if ($.status != BridgeStatus.REQUESTED) revert StatusIncorrect();
-        uint256 deadline = request.deadline();
-        // Permissionless refund is only allowed after REFUND_DELAY on top of the deadline
-        if (!hasRole(REFUNDER_ROLE, msg.sender)) deadline += REFUND_DELAY;
-        if (block.timestamp <= deadline) revert DeadlineNotExceeded();
-        // Update status to REFUNDED and return the full amount (collateral + protocol fees) to the original sender.
-        // The protocol fees are only updated when the transaction is claimed, so we don't need to update them here.
-        // Note: this is a storage write
-        $.status = BridgeStatus.REFUNDED;
-
-        address to = request.originSender();
-        address token = request.originToken();
-        uint256 amount = request.originAmount() + request.originFeeAmount();
-        // Emit the event before any external calls
-        emit BridgeDepositRefunded(transactionId, to, token, amount);
-        // Complete the user refund as the last transaction action
-        if (token == NATIVE_GAS_TOKEN) {
-            Address.sendValue(payable(to), amount);
-        } else {
-            IERC20(token).safeTransfer(to, amount);
-        }
+        cancel(request);
     }
 
     /// @inheritdoc IFastBridge
@@ -364,6 +341,35 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     }
 
     /// @inheritdoc IFastBridgeV2
+    function cancel(bytes calldata request) public {
+        request.validateV2();
+        bytes32 transactionId = keccak256(request);
+        BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
+        // Can only cancel a REQUESTED transaction after its deadline expires
+        if ($.status != BridgeStatus.REQUESTED) revert StatusIncorrect();
+        uint256 deadline = request.deadline();
+        // Permissionless cancel is only allowed after CANCEL_DELAY on top of the deadline
+        if (!hasRole(CANCELER_ROLE, msg.sender)) deadline += CANCEL_DELAY;
+        if (block.timestamp <= deadline) revert DeadlineNotExceeded();
+        // Update status to REFUNDED and return the full amount (collateral + protocol fees) to the original sender.
+        // The protocol fees are only updated when the transaction is claimed, so we don't need to update them here.
+        // Note: this is a storage write
+        $.status = BridgeStatus.REFUNDED;
+
+        address to = request.originSender();
+        address token = request.originToken();
+        uint256 amount = request.originAmount() + request.originFeeAmount();
+        // Emit the event before any external calls
+        emit BridgeDepositRefunded(transactionId, to, token, amount);
+        // Complete the user cancel as the last transaction action
+        if (token == NATIVE_GAS_TOKEN) {
+            Address.sendValue(payable(to), amount);
+        } else {
+            IERC20(token).safeTransfer(to, amount);
+        }
+    }
+
+    /// @inheritdoc IFastBridgeV2
     function bridgeStatuses(bytes32 transactionId) public view returns (BridgeStatus status) {
         return bridgeTxDetails[transactionId].status;
     }
@@ -383,8 +389,8 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     }
 
     /// @notice Takes the bridged asset from the user into FastBridgeV2 custody. It will be later
-    /// claimed by the relayer who completed the relay on destination chain, or refunded back to the user,
-    /// should no one complete the relay.
+    /// claimed by the relayer who completed the relay on destination chain, or transferred back to the user
+    /// via the cancel function should no one complete the relay.
     function _takeBridgedUserAsset(address token, uint256 amount) internal returns (uint256 amountTaken) {
         if (token == NATIVE_GAS_TOKEN) {
             // For the native gas token, we just need to check that the supplied msg.value is correct.
