@@ -16,6 +16,8 @@ contract AdminV2 is IAdminV2, AccessControlEnumerable {
 
     uint256 public constant FEE_BPS = 1e6;
     uint256 public constant FEE_RATE_MAX = 0.01e6; // max 1% on origin amount
+    uint256 public constant MIN_CANCEL_DELAY = 1 hours;
+    uint256 public constant DEFAULT_CANCEL_DELAY = 1 days;
 
     /// @notice Protocol fee rate taken on origin amount deposited in origin chain
     uint256 public protocolFeeRate;
@@ -23,11 +25,19 @@ contract AdminV2 is IAdminV2, AccessControlEnumerable {
     /// @notice Protocol fee amounts accumulated
     mapping(address => uint256) public protocolFees;
 
+    /// @notice Delay for a transaction after which it could be permisionlessly cancelled
+    uint256 public cancelDelay;
+
     /// @notice Chain gas amount to forward as rebate if requested
     uint256 public chainGasAmount;
 
     constructor(address _owner) {
         _grantRole(DEFAULT_ADMIN_ROLE, _owner);
+        // TODO: set default cancel delay
+    }
+
+    function setCancelDelay(uint256 newCancelDelay) external onlyRole(GOVERNOR_ROLE) {
+        // TODO: implement
     }
 
     function setProtocolFeeRate(uint256 newFeeRate) external onlyRole(GOVERNOR_ROLE) {
