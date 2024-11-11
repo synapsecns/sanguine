@@ -262,7 +262,7 @@ func (s *QuoterSuite) TestGetOriginAmountActiveQuotes() {
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 1 with MinQuoteAmount of 0;
-	//should return zero even though we can partially cover -- because deposit amount is all-or-nothing.
+	// should return zero even though we can partially cover -- because deposit amount is all-or-nothing.
 	// IE: we're only willing to use 1% of our balance, which does not cover deposit amount.
 	setQuoteParams(quoteParams{
 		quotePct:       1,
@@ -343,7 +343,7 @@ func (s *QuoterSuite) TestGetOriginAmountActiveQuotes() {
 	s.Equal(expectedAmount, quoteAmount)
 
 	// test depositAmount below both the quotePct ceiling and minQuoteAmount ceiling
-	// output s/b 0 as neither ceiling setting accomodates the deposit amount
+	// output s/b 0 as neither ceiling setting accommodates the deposit amount
 	setQuoteParams(quoteParams{
 		quotePct:       1,
 		quoteOffset:    0,
