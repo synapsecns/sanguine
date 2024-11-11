@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {Address} from "@openzeppelin/contracts/utils/Address.sol";
-
 import {BridgeTransactionV2Lib} from "./libs/BridgeTransactionV2.sol";
 
 import {AdminV2} from "./AdminV2.sol";
@@ -14,13 +11,13 @@ import {IZapRecipient} from "./interfaces/IZapRecipient.sol";
 
 import {MulticallTarget} from "./utils/MulticallTarget.sol";
 
+import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+
 /// @notice FastBridgeV2 is a contract for bridging tokens across chains.
 contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2Errors {
     using BridgeTransactionV2Lib for bytes;
     using SafeERC20 for IERC20;
-
-    /// @notice Address reserved for native gas token (ETH on Ethereum and most L2s, AVAX on Avalanche, etc)
-    address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     /// @notice Dispute period for relayed transactions
     uint256 public constant DISPUTE_PERIOD = 30 minutes;

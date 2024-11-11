@@ -1,14 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
-
-import {UniversalTokenLib} from "./libs/UniversalToken.sol";
 import {IAdminV2} from "./interfaces/IAdminV2.sol";
 import {IAdminV2Errors} from "./interfaces/IAdminV2Errors.sol";
 
+import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
+import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+
 contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
-    using UniversalTokenLib for address;
+    using SafeERC20 for IERC20;
+
+    /// @notice Address reserved for native gas token (ETH on Ethereum and most L2s, AVAX on Avalanche, etc)
+    address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     bytes32 public constant RELAYER_ROLE = keccak256("RELAYER_ROLE");
     bytes32 public constant CANCELER_ROLE = keccak256("CANCELER_ROLE");
@@ -54,7 +58,11 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
         if (feeAmount == 0) return; // skip if no accumulated fees
 
         protocolFees[token] = 0;
-        token.universalTransfer(recipient, feeAmount);
+        if (token == NATIVE_GAS_TOKEN) {
+            Address.sendValue(payable(recipient), feeAmount);
+        } else {
+            IERC20(token).safeTransfer(recipient, feeAmount);
+        }
         emit FeesSwept(token, recipient, feeAmount);
     }
 
