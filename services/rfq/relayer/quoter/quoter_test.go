@@ -233,13 +233,13 @@ func (s *QuoterSuite) TestGetOriginAmountActiveQuotes() {
 	}
 
 	input := quoter.QuoteInput{
-		OriginChainID:   origin,
-		DestChainID:     dest,
-		OriginTokenAddr: originAddr,
-		DestTokenAddr:   address,
-		OriginBalance:   balance,
-		DestBalance:     balance,
-		DepositAmount:   depositAmount,
+		OriginChainID:     origin,
+		DestChainID:       dest,
+		OriginTokenAddr:   originAddr,
+		DestTokenAddr:     address,
+		OriginBalance:     balance,
+		DestBalance:       balance,
+		OriginAmountExact: depositAmount,
 	}
 
 	// Set default quote params; should return the depositAmount.
@@ -403,7 +403,7 @@ func (s *QuoterSuite) TestGetOriginAmountActiveQuotes() {
 	expectedAmount = big.NewInt(0)
 	s.Equal(expectedAmount, quoteAmount)
 
-	input.DepositAmount = new(big.Int).Add(balance, balance)
+	input.OriginAmountExact = new(big.Int).Add(balance, balance)
 	// depositAmount beyond our balance.
 	// output s/b zero even with generous limits
 	setQuoteParams(quoteParams{
@@ -417,7 +417,7 @@ func (s *QuoterSuite) TestGetOriginAmountActiveQuotes() {
 	expectedAmount = big.NewInt(0)
 	s.Equal(expectedAmount, quoteAmount)
 
-	input.DepositAmount = big.NewInt(0)
+	input.OriginAmountExact = big.NewInt(0)
 	// depositAmount set to zero. output s/b zero
 	setQuoteParams(quoteParams{
 		quotePct:       100,
@@ -430,7 +430,7 @@ func (s *QuoterSuite) TestGetOriginAmountActiveQuotes() {
 	expectedAmount = big.NewInt(0)
 	s.Equal(expectedAmount, quoteAmount)
 
-	input.DepositAmount = big.NewInt(-55000000)
+	input.OriginAmountExact = big.NewInt(-55000000)
 	// depositAmount set to negative. output s/b zero
 	setQuoteParams(quoteParams{
 		quotePct:       100,
