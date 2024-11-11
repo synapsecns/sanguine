@@ -6,7 +6,7 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 import {BridgeTransactionV2Lib} from "./libs/BridgeTransactionV2.sol";
 
-import {Admin} from "./Admin.sol";
+import {AdminV2} from "./AdminV2.sol";
 import {IFastBridge} from "./interfaces/IFastBridge.sol";
 import {IFastBridgeV2} from "./interfaces/IFastBridgeV2.sol";
 import {IFastBridgeV2Errors} from "./interfaces/IFastBridgeV2Errors.sol";
@@ -15,7 +15,7 @@ import {IZapRecipient} from "./interfaces/IZapRecipient.sol";
 import {MulticallTarget} from "./utils/MulticallTarget.sol";
 
 /// @notice FastBridgeV2 is a contract for bridging tokens across chains.
-contract FastBridgeV2 is Admin, MulticallTarget, IFastBridgeV2, IFastBridgeV2Errors {
+contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2Errors {
     using BridgeTransactionV2Lib for bytes;
     using SafeERC20 for IERC20;
 
@@ -47,7 +47,7 @@ contract FastBridgeV2 is Admin, MulticallTarget, IFastBridgeV2, IFastBridgeV2Err
     /// @notice the block the contract was deployed at
     uint256 public immutable deployBlock;
 
-    constructor(address _owner) Admin(_owner) {
+    constructor(address _owner) AdminV2(_owner) {
         deployBlock = block.number;
     }
 
