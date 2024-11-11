@@ -1,16 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {IAdminV2Errors} from "../contracts/interfaces/IAdminV2Errors.sol";
+
 import {FastBridgeV2, FastBridgeV2Test} from "./FastBridgeV2.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
-contract FastBridgeV2ManagementTest is FastBridgeV2Test {
+contract FastBridgeV2ManagementTest is FastBridgeV2Test, IAdminV2Errors {
     uint256 public constant FEE_RATE_MAX = 1e4; // 1%
     bytes32 public constant GOVERNOR_ROLE = keccak256("GOVERNOR_ROLE");
+
+    uint256 public constant MIN_CANCEL_DELAY = 1 hours;
+    uint256 public constant DEFAULT_CANCEL_DELAY = 1 days;
 
     address public admin = makeAddr("Admin");
     address public governorA = makeAddr("Governor A");
 
+    event CancelDelayUpdated(uint256 oldCancelDelay, uint256 newCancelDelay);
     event FeeRateUpdated(uint256 oldFeeRate, uint256 newFeeRate);
     event FeesSwept(address token, address recipient, uint256 amount);
     event ChainGasAmountUpdated(uint256 oldChainGasAmount, uint256 newChainGasAmount);
@@ -33,6 +39,11 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
     function setGovernor(address caller, address newGovernor) public {
         vm.prank(caller);
         fastBridge.grantRole(GOVERNOR_ROLE, newGovernor);
+    }
+
+    function setCancelDelay(address caller, uint256 newCancelDelay) public {
+        vm.prank(caller);
+        fastBridge.setCancelDelay(newCancelDelay);
     }
 
     function setProtocolFeeRate(address caller, uint256 newFeeRate) public {
@@ -60,6 +71,38 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         vm.assume(caller != admin);
         expectUnauthorized(caller, fastBridge.DEFAULT_ADMIN_ROLE());
         setGovernor(caller, governorA);
+    }
+
+    function test_defaultCancelDelay() public view {
+        assertEq(fastBridge.cancelDelay(), DEFAULT_CANCEL_DELAY);
+    }
+
+    // ═════════════════════════════════════════════ SET CANCEL DELAY ══════════════════════════════════════════════════
+
+    function test_setCancelDelay() public {
+        vm.expectEmit(address(fastBridge));
+        emit CancelDelayUpdated(DEFAULT_CANCEL_DELAY, 4 days);
+        setCancelDelay(governor, 4 days);
+        assertEq(fastBridge.cancelDelay(), 4 days);
+    }
+
+    function test_setCancelDelay_twice() public {
+        test_setCancelDelay();
+        vm.expectEmit(address(fastBridge));
+        emit CancelDelayUpdated(4 days, 8 days);
+        setCancelDelay(governor, 8 days);
+        assertEq(fastBridge.cancelDelay(), 8 days);
+    }
+
+    function test_setCancelDelay_revertBelowMin() public {
+        vm.expectRevert(IAdminV2Errors.CancelDelayBelowMin.selector);
+        setCancelDelay(governor, MIN_CANCEL_DELAY - 1);
+    }
+
+    function test_setCancelDelay_revertNotGovernor(address caller) public {
+        vm.assume(caller != governor);
+        expectUnauthorized(caller, fastBridge.GOVERNOR_ROLE());
+        setCancelDelay(caller, 4 days);
     }
 
     // ═══════════════════════════════════════════ SET PROTOCOL FEE RATE ═══════════════════════════════════════════════

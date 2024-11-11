@@ -9,7 +9,8 @@ import {FastBridgeV2, FastBridgeV2Test, IFastBridge, IFastBridgeV2} from "./Fast
 abstract contract FastBridgeV2SrcBaseTest is FastBridgeV2Test {
     uint256 public constant MIN_DEADLINE = 30 minutes;
     uint256 public constant CLAIM_DELAY = 30 minutes;
-    uint256 public constant PERMISSIONLESS_CANCEL_DELAY = 7 days;
+    // Use a value different from the default to ensure it's being set correctly.
+    uint256 public constant PERMISSIONLESS_CANCEL_DELAY = 13.37 hours;
 
     uint256 public constant LEFTOVER_BALANCE = 10 ether;
     uint256 public constant INITIAL_PROTOCOL_FEES_TOKEN = 456_789;
@@ -29,6 +30,9 @@ abstract contract FastBridgeV2SrcBaseTest is FastBridgeV2Test {
         fastBridge.grantRole(fastBridge.RELAYER_ROLE(), relayerB);
         fastBridge.grantRole(fastBridge.GUARD_ROLE(), guard);
         fastBridge.grantRole(fastBridge.CANCELER_ROLE(), canceler);
+
+        fastBridge.grantRole(fastBridge.GOVERNOR_ROLE(), address(this));
+        fastBridge.setCancelDelay(PERMISSIONLESS_CANCEL_DELAY);
     }
 
     function mintTokens() public virtual override {
