@@ -123,7 +123,7 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test, IAdminV2Errors {
     }
 
     function test_setProtocolFeeRate_revert_tooHigh() public {
-        vm.expectRevert("newFeeRate > max");
+        vm.expectRevert(IAdminV2Errors.FeeRateAboveMax.selector);
         setProtocolFeeRate(governor, FEE_RATE_MAX + 1);
     }
 

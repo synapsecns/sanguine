@@ -42,7 +42,7 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     }
 
     function setProtocolFeeRate(uint256 newFeeRate) external onlyRole(GOVERNOR_ROLE) {
-        require(newFeeRate <= FEE_RATE_MAX, "newFeeRate > max");
+        if (newFeeRate > FEE_RATE_MAX) revert FeeRateAboveMax();
         uint256 oldFeeRate = protocolFeeRate;
         protocolFeeRate = newFeeRate;
         emit FeeRateUpdated(oldFeeRate, newFeeRate);
