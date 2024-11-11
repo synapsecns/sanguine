@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {IAdmin} from "../contracts/interfaces/IAdmin.sol";
 import {IAdminV2Errors} from "../contracts/interfaces/IAdminV2Errors.sol";
 
 import {FastBridgeV2, FastBridgeV2Test} from "./FastBridgeV2.t.sol";
@@ -19,7 +20,6 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test, IAdminV2Errors {
     event CancelDelayUpdated(uint256 oldCancelDelay, uint256 newCancelDelay);
     event FeeRateUpdated(uint256 oldFeeRate, uint256 newFeeRate);
     event FeesSwept(address token, address recipient, uint256 amount);
-    event ChainGasAmountUpdated(uint256 oldChainGasAmount, uint256 newChainGasAmount);
 
     function deployFastBridge() public override returns (FastBridgeV2) {
         return new FastBridgeV2(admin);
@@ -54,11 +54,6 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test, IAdminV2Errors {
     function sweepProtocolFees(address caller, address token, address recipient) public {
         vm.prank(caller);
         fastBridge.sweepProtocolFees(token, recipient);
-    }
-
-    function setChainGasAmount(address caller, uint256 newChainGasAmount) public {
-        vm.prank(caller);
-        fastBridge.setChainGasAmount(newChainGasAmount);
     }
 
     function test_grantGovernorRole() public {
@@ -161,24 +156,14 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test, IAdminV2Errors {
 
     // ═══════════════════════════════════════════ SET CHAIN GAS AMOUNT ════════════════════════════════════════════════
 
-    function test_setChainGasAmount() public {
-        vm.expectEmit(address(fastBridge));
-        emit ChainGasAmountUpdated(0, 123);
-        setChainGasAmount(governor, 123);
-        assertEq(fastBridge.chainGasAmount(), 123);
+    function test_chainGasAmountZero() public view {
+        assertEq(fastBridge.chainGasAmount(), 0);
     }
 
-    function test_setChainGasAmount_twice() public {
-        test_setChainGasAmount();
-        vm.expectEmit(address(fastBridge));
-        emit ChainGasAmountUpdated(123, 456);
-        setChainGasAmount(governor, 456);
-        assertEq(fastBridge.chainGasAmount(), 456);
-    }
-
-    function test_setChainGasAmount_revertNotGovernor(address caller) public {
-        vm.assume(caller != governor);
-        expectUnauthorized(caller, fastBridge.GOVERNOR_ROLE());
-        setChainGasAmount(caller, 123);
+    function test_setChainGasAmount_revert() public {
+        // Generic revert: this function should not be in the V2 interface
+        vm.expectRevert();
+        vm.prank(governor);
+        IAdmin(address(fastBridge)).setChainGasAmount(123);
     }
 }
