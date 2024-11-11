@@ -29,8 +29,9 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     /// @notice Delay for a transaction after which it could be permisionlessly cancelled
     uint256 public cancelDelay;
 
-    /// @notice Chain gas amount to forward as rebate if requested
-    uint256 public chainGasAmount;
+    /// @notice This is deprecated and should not be used.
+    /// @dev Use ZapNative V2 requests instead.
+    uint256 public immutable chainGasAmount = 0;
 
     constructor(address _owner) {
         _grantRole(DEFAULT_ADMIN_ROLE, _owner);
@@ -55,12 +56,6 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
         protocolFees[token] = 0;
         token.universalTransfer(recipient, feeAmount);
         emit FeesSwept(token, recipient, feeAmount);
-    }
-
-    function setChainGasAmount(uint256 newChainGasAmount) external onlyRole(GOVERNOR_ROLE) {
-        uint256 oldChainGasAmount = chainGasAmount;
-        chainGasAmount = newChainGasAmount;
-        emit ChainGasAmountUpdated(oldChainGasAmount, newChainGasAmount);
     }
 
     /// @notice Internal function to set the cancel delay. Security checks are performed outside of this function.
