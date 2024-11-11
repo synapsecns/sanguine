@@ -125,6 +125,9 @@ export const getBestRelayerQuote = async (
     const response = await fetchWithTimeout(`${API_URL}/rfq`, API_TIMEOUT, {
       method: 'PUT',
       body: JSON.stringify(rfqRequest),
+      headers: {
+        'Content-Type': 'application/json',
+      },
     })
     if (!response.ok) {
       console.error('Error fetching quote:', response.statusText)
