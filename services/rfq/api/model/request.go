@@ -57,6 +57,8 @@ type QuoteData struct {
 	DestTokenAddr    string  `json:"dest_token_addr"`
 	OriginAmount     string  `json:"origin_amount"`
 	ExpirationWindow int64   `json:"expiration_window"`
+	ZapData          string  `json:"zap_data"`
+	ZapNative        string  `json:"zap_native"`
 	DestAmount       *string `json:"dest_amount"`
 	RelayerAddress   *string `json:"relayer_address"`
 	QuoteID          *string `json:"quote_id"`
