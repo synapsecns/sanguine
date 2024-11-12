@@ -364,13 +364,19 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 	}
 	span.SetAttributes(attribute.String("request_id", rfqRequest.RequestID))
 
+	originAmountExact, ok := new(big.Int).SetString(rfqRequest.Data.OriginAmountExact, 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid rfq request deposit amount: %s", rfqRequest.Data.OriginAmountExact)
+	}
+
 	quoteInput := QuoteInput{
-		OriginChainID:   rfqRequest.Data.OriginChainID,
-		DestChainID:     rfqRequest.Data.DestChainID,
-		OriginTokenAddr: common.HexToAddress(rfqRequest.Data.OriginTokenAddr),
-		DestTokenAddr:   common.HexToAddress(rfqRequest.Data.DestTokenAddr),
-		OriginBalance:   inv[rfqRequest.Data.OriginChainID][common.HexToAddress(rfqRequest.Data.OriginTokenAddr)],
-		DestBalance:     inv[rfqRequest.Data.DestChainID][common.HexToAddress(rfqRequest.Data.DestTokenAddr)],
+		OriginChainID:     rfqRequest.Data.OriginChainID,
+		DestChainID:       rfqRequest.Data.DestChainID,
+		OriginTokenAddr:   common.HexToAddress(rfqRequest.Data.OriginTokenAddr),
+		DestTokenAddr:     common.HexToAddress(rfqRequest.Data.DestTokenAddr),
+		OriginBalance:     inv[rfqRequest.Data.OriginChainID][common.HexToAddress(rfqRequest.Data.OriginTokenAddr)],
+		DestBalance:       inv[rfqRequest.Data.DestChainID][common.HexToAddress(rfqRequest.Data.DestTokenAddr)],
+		OriginAmountExact: originAmountExact,
 	}
 
 	rawQuote, err := m.generateQuote(ctx, quoteInput)
@@ -533,13 +539,14 @@ func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address
 
 				g.Go(func() error {
 					input := QuoteInput{
-						OriginChainID:   origin,
-						DestChainID:     chainID,
-						OriginTokenAddr: originTokenAddr,
-						DestTokenAddr:   address,
-						OriginBalance:   originBalance,
-						DestBalance:     balance,
-						DestRFQAddr:     destRFQAddr.Hex(),
+						OriginChainID:     origin,
+						DestChainID:       chainID,
+						OriginTokenAddr:   originTokenAddr,
+						DestTokenAddr:     address,
+						OriginBalance:     originBalance,
+						DestBalance:       balance,
+						DestRFQAddr:       destRFQAddr.Hex(),
+						OriginAmountExact: nil, // OriginAmountExact is only used for Active Quotes
 					}
 
 					quote, quoteErr := m.generateQuote(gctx, input)
@@ -570,13 +577,14 @@ func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address
 
 // QuoteInput is a wrapper struct for input arguments to generateQuote.
 type QuoteInput struct {
-	OriginChainID   int
-	DestChainID     int
-	OriginTokenAddr common.Address
-	DestTokenAddr   common.Address
-	OriginBalance   *big.Int
-	DestBalance     *big.Int
-	DestRFQAddr     string
+	OriginChainID     int
+	DestChainID       int
+	OriginTokenAddr   common.Address
+	DestTokenAddr     common.Address
+	OriginBalance     *big.Int
+	DestBalance       *big.Int
+	OriginAmountExact *big.Int
+	DestRFQAddr       string
 }
 
 func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *model.PutRelayerQuoteRequest, err error) {
@@ -699,7 +707,7 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 		return big.NewInt(0), nil
 	}
 
-	// Apply the quotePct
+	// quotePct is the maximum percentage of our total balance on the destination chain that we are willing to quote.
 	quotePct, err := m.config.GetQuotePct(input.DestChainID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote pct: %w", err)
@@ -707,7 +715,9 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 	balanceFlt := new(big.Float).SetInt(input.DestBalance)
 	quoteAmount, _ = new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(quotePct/100)).Int(nil)
 
-	// Clip the quoteAmount by the minQuoteAmount
+	// minQuoteAmount is more like a minimum quote *ceiling*
+	// If the quoteAmount is less than the minQuoteAmount, override it & set to the minQuoteAmount.
+	// IE: If set, we will offer quotes *at least* up-to-and-including this amount for the given DestChain+Token combo.
 	minQuoteAmount := m.config.GetMinQuoteAmount(input.DestChainID, input.DestTokenAddr)
 	if quoteAmount.Cmp(minQuoteAmount) < 0 {
 		span.AddEvent("quote amount less than min quote amount", trace.WithAttributes(
@@ -717,7 +727,10 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 		quoteAmount = minQuoteAmount
 	}
 
-	// Clip the quoteAmount by the max origin balance
+	// At this point, quoteAmount will be the *higher* of the output values from these modifiers:  quotePct vs minQuoteAmount
+
+	// Clip the quoteAmount by the max origin balance.
+	// This is the maximum balance that we are willing to accumulate on the origin chain.
 	maxBalance := m.config.GetMaxBalance(input.OriginChainID, input.OriginTokenAddr)
 	if maxBalance != nil && input.OriginBalance != nil {
 		quotableBalance := new(big.Int).Sub(maxBalance, input.OriginBalance)
@@ -740,6 +753,7 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 	}
 
 	// Clip the quoteAmount by the dest balance
+	// IE: if the calculated ceiling at this point exceeds the actual balance on the account, set ceiling to the actual balance.
 	if quoteAmount.Cmp(input.DestBalance) > 0 {
 		span.AddEvent("quote amount greater than destination balance", trace.WithAttributes(
 			attribute.String("quote_amount", quoteAmount.String()),
@@ -749,6 +763,7 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 	}
 
 	// Clip the quoteAmount by the maxQuoteAmount
+	// IE: If the calculated ceiling at this point exceeds the arbitrary maximum ceiling, set to the maxQuoteAmount setting
 	maxQuoteAmount := m.config.GetMaxRelayAmount(input.DestChainID, input.DestTokenAddr)
 	if maxQuoteAmount != nil && quoteAmount.Cmp(maxQuoteAmount) > 0 {
 		span.AddEvent("quote amount greater than max quote amount", trace.WithAttributes(
@@ -759,9 +774,25 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 	}
 
 	// Deduct gas cost from the quote amount, if necessary
+	// IE: Regardless of all prior ceiling considerations, we will still reserve enough for gas when appropriate.
 	quoteAmount, err = m.deductGasCost(ctx, quoteAmount, input.DestTokenAddr, input.DestChainID)
 	if err != nil {
 		return nil, fmt.Errorf("error deducting gas cost: %w", err)
+	}
+
+	// If input included a OriginAmountExact, and our calculated ceiling at this point is sufficient to cover it,
+	// then clip to the OriginAmountExact to indicate ability to cover that exact amount, as requested.
+	// Otherwise return 0 to indicate inability to cover the requested amount.
+	if input.OriginAmountExact != nil {
+		if quoteAmount.Cmp(input.OriginAmountExact) >= 0 {
+			quoteAmount = input.OriginAmountExact
+		} else {
+			span.AddEvent("quote amount insufficient to cover deposit amount", trace.WithAttributes(
+				attribute.String("quote_amount", quoteAmount.String()),
+				attribute.String("origin_amount_exact", input.OriginAmountExact.String()),
+			))
+			quoteAmount = big.NewInt(0)
+		}
 	}
 
 	return quoteAmount, nil
