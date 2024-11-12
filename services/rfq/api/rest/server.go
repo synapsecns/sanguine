@@ -35,6 +35,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/docs"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 )
 
@@ -51,15 +52,17 @@ func getCurrentVersion() (string, error) {
 // QuoterAPIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
 // It is used to initialize and run the API server.
 type QuoterAPIServer struct {
-	cfg                 config.Config
-	db                  db.APIDB
-	engine              *gin.Engine
-	upgrader            websocket.Upgrader
-	omnirpcClient       omniClient.RPCClient
-	handler             metrics.Handler
-	meter               metric.Meter
-	fastBridgeContracts map[uint32]*fastbridge.FastBridge
-	roleCache           map[uint32]*ttlcache.Cache[string, bool]
+	cfg                   config.Config
+	db                    db.APIDB
+	engine                *gin.Engine
+	upgrader              websocket.Upgrader
+	omnirpcClient         omniClient.RPCClient
+	handler               metrics.Handler
+	meter                 metric.Meter
+	fastBridgeContractsV1 map[uint32]*fastbridge.FastBridge
+	fastBridgeContractsV2 map[uint32]*fastbridgev2.FastBridgeV2
+	roleCacheV1           map[uint32]*ttlcache.Cache[string, bool]
+	roleCacheV2           map[uint32]*ttlcache.Cache[string, bool]
 	// relayAckCache contains a set of transactionID values that reflect
 	// transactions that have been acked for relay
 	relayAckCache *ttlcache.Cache[string, string]
@@ -96,24 +99,47 @@ func NewAPI(
 
 	docs.SwaggerInfo.Title = "RFQ Quoter API"
 
-	// TODO: allow role checking for v2 vs v1 contracts; for now default to v1
-	fastBridgeContracts := make(map[uint32]*fastbridge.FastBridge)
-	roles := make(map[uint32]*ttlcache.Cache[string, bool])
+	fastBridgeContractsV1 := make(map[uint32]*fastbridge.FastBridge)
+	rolesV1 := make(map[uint32]*ttlcache.Cache[string, bool])
 	for chainID, contract := range cfg.FastBridgeContractsV1 {
 		chainClient, err := omniRPCClient.GetChainClient(ctx, int(chainID))
 		if err != nil {
 			return nil, fmt.Errorf("could not create omnirpc client: %w", err)
 		}
-		fastBridgeContracts[chainID], err = fastbridge.NewFastBridge(common.HexToAddress(contract), chainClient)
+		fastBridgeContractsV1[chainID], err = fastbridge.NewFastBridge(common.HexToAddress(contract), chainClient)
 		if err != nil {
 			return nil, fmt.Errorf("could not create bridge contract: %w", err)
 		}
 
 		// create the roles cache
-		roles[chainID] = ttlcache.New[string, bool](
+		rolesV1[chainID] = ttlcache.New[string, bool](
 			ttlcache.WithTTL[string, bool](cacheInterval),
 		)
-		roleCache := roles[chainID]
+		roleCache := rolesV1[chainID]
+		go roleCache.Start()
+		go func() {
+			<-ctx.Done()
+			roleCache.Stop()
+		}()
+	}
+
+	fastBridgeContractsV2 := make(map[uint32]*fastbridgev2.FastBridgeV2)
+	rolesV2 := make(map[uint32]*ttlcache.Cache[string, bool])
+	for chainID, contract := range cfg.FastBridgeContractsV2 {
+		chainClient, err := omniRPCClient.GetChainClient(ctx, int(chainID))
+		if err != nil {
+			return nil, fmt.Errorf("could not create omnirpc client: %w", err)
+		}
+		fastBridgeContractsV2[chainID], err = fastbridgev2.NewFastBridgeV2(common.HexToAddress(contract), chainClient)
+		if err != nil {
+			return nil, fmt.Errorf("could not create bridge contract: %w", err)
+		}
+
+		// create the roles cache
+		rolesV2[chainID] = ttlcache.New[string, bool](
+			ttlcache.WithTTL[string, bool](cacheInterval),
+		)
+		roleCache := rolesV2[chainID]
 		go roleCache.Start()
 		go func() {
 			<-ctx.Done()
@@ -133,17 +159,19 @@ func NewAPI(
 	}()
 
 	q := &QuoterAPIServer{
-		cfg:                 cfg,
-		db:                  store,
-		omnirpcClient:       omniRPCClient,
-		handler:             handler,
-		meter:               handler.Meter(meterName),
-		fastBridgeContracts: fastBridgeContracts,
-		roleCache:           roles,
-		relayAckCache:       relayAckCache,
-		ackMux:              sync.Mutex{},
-		wsClients:           xsync.NewMapOf[WsClient](),
-		pubSubManager:       NewPubSubManager(),
+		cfg:                   cfg,
+		db:                    store,
+		omnirpcClient:         omniRPCClient,
+		handler:               handler,
+		meter:                 handler.Meter(meterName),
+		fastBridgeContractsV1: fastBridgeContractsV1,
+		fastBridgeContractsV2: fastBridgeContractsV2,
+		roleCacheV1:           rolesV1,
+		roleCacheV2:           rolesV2,
+		relayAckCache:         relayAckCache,
+		ackMux:                sync.Mutex{},
+		wsClients:             xsync.NewMapOf[WsClient](),
+		pubSubManager:         NewPubSubManager(),
 	}
 
 	// Prometheus metrics setup
@@ -248,6 +276,7 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var loggedRequest interface{}
+		var useV1 bool
 		var err error
 		destChainIDs := []uint32{}
 
@@ -260,6 +289,7 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 				destChainIDs = append(destChainIDs, uint32(req.DestChainID))
 				loggedRequest = &req
 			}
+			useV1 = true
 		case BulkQuotesRoute:
 			var req model.PutBulkQuotesRequest
 			err = c.BindJSON(&req)
@@ -269,6 +299,7 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 				}
 				loggedRequest = &req
 			}
+			useV1 = true
 		case AckRoute:
 			var req model.PutAckRequest
 			err = c.BindJSON(&req)
@@ -276,6 +307,7 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 				destChainIDs = append(destChainIDs, uint32(req.DestChainID))
 				loggedRequest = &req
 			}
+			useV1 = true
 		case RFQRoute, RFQStreamRoute:
 			chainsHeader := c.GetHeader(ChainsHeader)
 			if chainsHeader != "" {
@@ -299,7 +331,7 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 		// Authenticate and fetch the address from the request
 		var addressRecovered *common.Address
 		for _, destChainID := range destChainIDs {
-			addr, err := r.checkRole(c, destChainID)
+			addr, err := r.checkRole(c, destChainID, useV1)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 				c.Abort()
@@ -322,11 +354,28 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (addressRecovered common.Address, err error) {
-	bridge, ok := r.fastBridgeContracts[destChainID]
-	if !ok {
-		err = fmt.Errorf("dest chain id not supported: %d", destChainID)
-		return addressRecovered, err
+type roleContract interface {
+	HasRole(opts *bind.CallOpts, role [32]byte, account common.Address) (bool, error)
+}
+
+func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32, useV1 bool) (addressRecovered common.Address, err error) {
+	var bridge roleContract
+	var roleCache *ttlcache.Cache[string, bool]
+	var ok bool
+	if useV1 {
+		bridge, ok = r.fastBridgeContractsV1[destChainID]
+		if !ok {
+			err = fmt.Errorf("dest chain id not supported: %d", destChainID)
+			return addressRecovered, err
+		}
+		roleCache = r.roleCacheV1[destChainID]
+	} else {
+		bridge, ok = r.fastBridgeContractsV2[destChainID]
+		if !ok {
+			err = fmt.Errorf("dest chain id not supported: %d", destChainID)
+			return addressRecovered, err
+		}
+		roleCache = r.roleCacheV2[destChainID]
 	}
 
 	ops := &bind.CallOpts{Context: c}
@@ -341,7 +390,7 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (address
 	}
 
 	// Check and update cache
-	cachedRoleItem := r.roleCache[destChainID].Get(addressRecovered.Hex())
+	cachedRoleItem := roleCache.Get(addressRecovered.Hex())
 	var hasRole bool
 
 	if cachedRoleItem == nil || cachedRoleItem.IsExpired() {
@@ -351,7 +400,7 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (address
 			return addressRecovered, fmt.Errorf("unable to check relayer role on-chain: %w", err)
 		}
 		// Update cache
-		r.roleCache[destChainID].Set(addressRecovered.Hex(), hasRole, cacheInterval)
+		roleCache.Set(addressRecovered.Hex(), hasRole, cacheInterval)
 	} else {
 		// Use cached value
 		hasRole = cachedRoleItem.Value()
