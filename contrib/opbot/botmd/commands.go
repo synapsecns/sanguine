@@ -393,7 +393,8 @@ func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestRes
 		return nil, fmt.Errorf("error getting chain client: %w", err)
 	}
 
-	contractAddress, ok := contracts.Contracts[req.OriginChainID]
+	// TODO: handle v2 contract if specified
+	contractAddress, ok := contracts.ContractsV1[req.OriginChainID]
 	if !ok {
 		return nil, errors.New("contract address not found")
 	}
