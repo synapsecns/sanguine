@@ -9,6 +9,8 @@ import { isTokenAddress } from '../utils/isTokenAddress'
 import { isTokenSupportedOnChain } from '../utils/isTokenSupportedOnChain'
 import { checksumAddresses } from '../middleware/checksumAddresses'
 import { normalizeNativeTokenAddress } from '../middleware/normalizeNativeTokenAddress'
+import { validateDecimals } from '../validations/validateDecimals'
+import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 
 const router: express.Router = express.Router()
 
@@ -141,7 +143,20 @@ router.get(
         isTokenSupportedOnChain(value, req.query.chain as string)
       )
       .withMessage('Token not supported on specified chain'),
-    check('amount').isNumeric().exists().withMessage('amount is required'),
+    check('amount')
+      .isNumeric()
+      .exists()
+      .withMessage('amount is required')
+      .custom((value, { req }) => {
+        const fromTokenInfo = tokenAddressToToken(
+          req.query.chain,
+          req.query.fromToken
+        )
+        return validateDecimals(value, fromTokenInfo.decimals)
+      })
+      .withMessage(
+        'Amount has too many decimals, beyond the maximum allowed for this token'
+      ),
     check('address')
       .exists()
       .withMessage('address is required')
