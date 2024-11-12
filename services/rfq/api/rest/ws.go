@@ -235,7 +235,9 @@ func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err er
 		}
 	case SendQuoteOp:
 		err = c.handleSendQuote(ctx, rfqMsg.Content)
-		logger.Errorf("error handling send quote: %v", err)
+		if err != nil {
+			logger.Errorf("error handling send quote: %v", err)
+		}
 	default:
 		logger.Errorf("received unexpected operation from relayer: %s", rfqMsg.Op)
 		return nil

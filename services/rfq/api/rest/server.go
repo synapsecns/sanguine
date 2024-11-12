@@ -541,7 +541,7 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 		}
 	}
 	if !isZapQuote(&req) {
-		passiveQuote, err := r.handlePassiveRFQ(ctx, &req)
+		passiveQuote, err = r.handlePassiveRFQ(ctx, &req)
 		if err != nil {
 			logger.Error("Error handling passive RFQ", "error", err)
 		}
