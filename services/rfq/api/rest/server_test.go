@@ -536,5 +536,6 @@ func (c *ServerSuite) TestContracts() {
 	contracts, err := client.GetRFQContracts(c.GetTestContext())
 	c.Require().NoError(err)
 
-	c.Require().Len(contracts.Contracts, 2)
+	c.Require().Len(contracts.ContractsV1, 2)
+	c.Require().Len(contracts.ContractsV2, 2)
 }

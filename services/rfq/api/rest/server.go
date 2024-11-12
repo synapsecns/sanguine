@@ -95,14 +95,15 @@ func NewAPI(
 
 	docs.SwaggerInfo.Title = "RFQ Quoter API"
 
-	bridges := make(map[uint32]*fastbridge.FastBridge)
+	// TODO: allow role checking for v2 vs v1 contracts; for now default to v1
+	fastBridgeContracts := make(map[uint32]*fastbridge.FastBridge)
 	roles := make(map[uint32]*ttlcache.Cache[string, bool])
-	for chainID, bridge := range cfg.Bridges {
+	for chainID, contract := range cfg.FastBridgeContractsV1 {
 		chainClient, err := omniRPCClient.GetChainClient(ctx, int(chainID))
 		if err != nil {
 			return nil, fmt.Errorf("could not create omnirpc client: %w", err)
 		}
-		bridges[chainID], err = fastbridge.NewFastBridge(common.HexToAddress(bridge), chainClient)
+		fastBridgeContracts[chainID], err = fastbridge.NewFastBridge(common.HexToAddress(contract), chainClient)
 		if err != nil {
 			return nil, fmt.Errorf("could not create bridge contract: %w", err)
 		}
@@ -136,7 +137,7 @@ func NewAPI(
 		omnirpcClient:       omniRPCClient,
 		handler:             handler,
 		meter:               handler.Meter(meterName),
-		fastBridgeContracts: bridges,
+		fastBridgeContracts: fastBridgeContracts,
 		roleCache:           roles,
 		relayAckCache:       relayAckCache,
 		ackMux:              sync.Mutex{},
