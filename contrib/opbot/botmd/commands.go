@@ -347,17 +347,16 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
 				_, err := ctx.Response().Reply(fmt.Sprintf("refund submitted with nonce %d", nonce))
 				if err != nil {
-					b.logger.Errorf(ctx, "error fetching quote request: %v", err)
+					b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
 				}
 				return
 			}
 
-			_, err = ctx.Response().Reply(
-				fmt.Sprintf(
-					"refund submitted. txHash: %s",
-					toTXSlackLink(status.TxHash.String(), uint32(rawRequest.Bridge.OriginChainID)),
-				),
-			)
+			//nolint: gosec
+			_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted: %s", toTXSlackLink(status.TxHash().String(), uint32(rawRequest.Bridge.OriginChainID))))
+			if err != nil {
+				log.Println(err)
+			}
 
 		},
 	}
