@@ -4,7 +4,6 @@ package botmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"math/big"
@@ -51,7 +50,7 @@ func (b *Bot) requiresSignoz(definition *slacker.CommandDefinition) *slacker.Com
 func (b *Bot) traceCommand() *slacker.CommandDefinition {
 	return b.requiresSignoz(&slacker.CommandDefinition{
 		Command:     "trace {tags} {order}",
-		Description: "testing testing",
+		Description: "find a transaction in signoz",
 		Examples: []string{
 			"trace transaction_id:0x1234@serviceName:rfq",
 			"trace transaction_id:0x1234@serviceName:rfq a",
@@ -337,7 +336,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 						b.logger.Errorf(ctx, "error fetching quote request: %v", err)
 						return fmt.Errorf("error fetching quote request: %w", err)
 					} else if !status.HasTx() {
-						return errors.New("no transaction hash found yet")
+						return fmt.Errorf("no transaction hash found yet")
 					}
 					return nil
 				},
@@ -348,7 +347,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
 				_, err := ctx.Response().Reply(fmt.Sprintf("refund submitted with nonce %d", nonce))
 				if err != nil {
-					log.Printf("error fetching quote request: %v\n", err)
+					b.logger.Errorf(ctx, "error fetching quote request: %v", err)
 				}
 				return
 			}
