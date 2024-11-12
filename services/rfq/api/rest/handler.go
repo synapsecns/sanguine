@@ -301,12 +301,10 @@ func dbActiveQuoteRequestToModel(dbQuote *db.ActiveQuoteRequest) *model.GetOpenQ
 // @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
 // @Router /contracts [get].
 func (h *Handler) GetContracts(c *gin.Context) {
-	// Convert quotes from db model to api model
-	contracts := make(map[uint32]string)
-	for chainID, address := range h.cfg.Bridges {
-		contracts[chainID] = address
-	}
-	c.JSON(http.StatusOK, model.GetContractsResponse{Contracts: contracts})
+	c.JSON(http.StatusOK, model.GetContractsResponse{
+		ContractsV1: h.cfg.FastBridgeContractsV1,
+		ContractsV2: h.cfg.FastBridgeContractsV2,
+	})
 }
 
 func filterQuoteAge(cfg config.Config, dbQuotes []*db.Quote) []*db.Quote {
