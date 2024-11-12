@@ -62,7 +62,7 @@ export function LandingPageWrapper({ children }: { children: any }) {
           bannerId="2024-10-10-rfq"
           bannerContent="Synapse now supports World Chain! Bridge to & from in 10 seconds"
           startDate={new Date('2024-10-09T18:45:09+00:00')}
-          endDate={new Date('2024-11-15T18:45:09+00:00')}
+          endDate={new Date('2024-11-10T18:45:09+00:00')}
         />
         <MaintenanceBanners />
         <LandingNav />
