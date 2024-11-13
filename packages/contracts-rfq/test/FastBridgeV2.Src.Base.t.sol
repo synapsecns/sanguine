@@ -26,8 +26,8 @@ abstract contract FastBridgeV2SrcBaseTest is FastBridgeV2Test {
     }
 
     function configureFastBridge() public virtual override {
-        fastBridge.grantRole(fastBridge.RELAYER_ROLE(), relayerA);
-        fastBridge.grantRole(fastBridge.RELAYER_ROLE(), relayerB);
+        fastBridge.grantRole(fastBridge.PROVER_ROLE(), relayerA);
+        fastBridge.grantRole(fastBridge.PROVER_ROLE(), relayerB);
         fastBridge.grantRole(fastBridge.GUARD_ROLE(), guard);
         fastBridge.grantRole(fastBridge.CANCELER_ROLE(), canceler);
 

@@ -277,7 +277,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     }
 
     /// @inheritdoc IFastBridgeV2
-    function prove(bytes32 transactionId, bytes32 destTxHash, address relayer) public onlyRole(RELAYER_ROLE) {
+    function prove(bytes32 transactionId, bytes32 destTxHash, address relayer) public onlyRole(PROVER_ROLE) {
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
 
         // Can only prove a REQUESTED transaction
