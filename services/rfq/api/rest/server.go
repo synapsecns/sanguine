@@ -548,9 +548,19 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 		span.SetAttributes(attribute.String("passive_quote_dest_amount", *passiveQuote.DestAmount))
 	}
 	quote := getBestQuote(activeQuote, passiveQuote)
+	quoteType := quoteTypeActive
+	if activeQuote == nil {
+		quoteType = quoteTypePassive
+	}
 
-	// construct the response
-	var resp model.PutRFQResponse
+	// build and return the response
+	resp := getQuoteResponse(ctx, quote, quoteType)
+	c.JSON(http.StatusOK, resp)
+}
+
+func getQuoteResponse(ctx context.Context, quote *model.QuoteData, quoteType string) (resp model.PutRFQResponse) {
+	span := trace.SpanFromContext(ctx)
+
 	destAmount := big.NewInt(0)
 	if quote != nil && quote.DestAmount != nil {
 		amt, ok := destAmount.SetString(*quote.DestAmount, 10)
@@ -565,10 +575,6 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 			Reason:  "no quotes found",
 		}
 	} else {
-		quoteType := quoteTypeActive
-		if activeQuote == nil {
-			quoteType = quoteTypePassive
-		}
 		span.SetAttributes(
 			attribute.String("quote_type", quoteType),
 			attribute.String("quote_dest_amount", *quote.DestAmount),
@@ -581,7 +587,8 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 			RelayerAddress: *quote.RelayerAddress,
 		}
 	}
-	c.JSON(http.StatusOK, resp)
+
+	return resp
 }
 
 func (r *QuoterAPIServer) recordLatestQuoteAge(ctx context.Context, observer metric.Observer) (err error) {
