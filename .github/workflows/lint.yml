@@ -31,7 +31,7 @@ jobs:
       - name: jsonc-syntax-check
         uses: stevieb9/jsonc-syntax-check@1.02
         with:
-          pattern: ".vscode/*.json"
+          pattern: .vscode/*.json'
 
 
       - name: yaml-lint
