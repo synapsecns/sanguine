@@ -225,6 +225,7 @@ func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.P
 	if err != nil {
 		return nil, fmt.Errorf("failed to get quotes: %w", err)
 	}
+	quotes = filterQuoteAge(r.cfg, quotes)
 
 	originAmount, ok := new(big.Int).SetString(request.Data.OriginAmountExact, 10)
 	if !ok {
