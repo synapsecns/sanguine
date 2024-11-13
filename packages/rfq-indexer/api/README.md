@@ -2,11 +2,10 @@
 
 This API provides access to the indexed bridge event data.
 
-To make requests, use:  https://triumphant-magic-production.up.railway.app , and Swagger docs can be found [here](https://triumphant-magic-production.up.railway.app/api-docs)
+To make requests, use: https://api.synapseprotocol.com
+Swagger docs can be found [here](https://api.synapseprotocol.com/api-docs)
 
 ## API Calls
-
-
 All API calls can be viewed in Swagger:
 
 [Swagger Documentation](http://localhost:3001/api-docs)

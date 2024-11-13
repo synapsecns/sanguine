@@ -79,12 +79,12 @@ type SubscriptionParams struct {
 
 // GetOpenQuoteRequestsResponse represents a response to a GET /open_quote_requests request.
 type GetOpenQuoteRequestsResponse struct {
-	UserAddress      string    `json:"user_address"`
-	OriginChainID    uint64    `json:"origin_chain_id"`
-	OriginTokenAddr  string    `json:"origin_token"`
-	DestChainID      uint64    `json:"dest_chain_id"`
-	DestTokenAddr    string    `json:"dest_token"`
-	OriginAmount     string    `json:"origin_amount"`
-	ExpirationWindow int       `json:"expiration_window"`
-	CreatedAt        time.Time `json:"created_at"`
+	UserAddress       string    `json:"user_address"`
+	OriginChainID     uint64    `json:"origin_chain_id"`
+	OriginTokenAddr   string    `json:"origin_token"`
+	DestChainID       uint64    `json:"dest_chain_id"`
+	DestTokenAddr     string    `json:"dest_token"`
+	OriginAmountExact string    `json:"origin_amount_exact"`
+	ExpirationWindow  int       `json:"expiration_window"`
+	CreatedAt         time.Time `json:"created_at"`
 }

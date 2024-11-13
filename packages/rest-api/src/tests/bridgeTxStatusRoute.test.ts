@@ -64,6 +64,20 @@ describe('Get Bridge TX Status Route', () => {
     expect(response.body.error).toHaveProperty('field', 'synapseTxId')
   }, 10000)
 
+  it('should return 400 for invalid synapseTxId', async () => {
+    const response = await request(app).get('/bridgeTxStatus').query({
+      destChainId: '1',
+      bridgeModule: 'SynapseRFQ',
+      synapseTxId: "'0x1234' OR '1'='1'",
+    })
+
+    expect(response.status).toBe(400)
+    expect(response.body.error).toHaveProperty(
+      'message',
+      'synapseTxId must be valid hex string'
+    )
+  }, 10000)
+
   it('should return 400 for missing destChainId', async () => {
     const response = await request(app).get('/bridgeTxStatus').query({
       bridgeModule: 'bridge',

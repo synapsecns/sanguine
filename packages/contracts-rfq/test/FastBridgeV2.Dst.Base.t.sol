@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {BridgeTransactionV2Lib} from "../contracts/libs/BridgeTransactionV2.sol";
+
 import {FastBridgeV2, FastBridgeV2Test, IFastBridgeV2} from "./FastBridgeV2.t.sol";
 
 // solhint-disable func-name-mixedcase, no-empty-blocks
@@ -33,7 +35,7 @@ contract FastBridgeV2DstBaseTest is FastBridgeV2Test {
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     function relay(address caller, uint256 msgValue, IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public {
-        bytes memory request = abi.encode(bridgeTx);
+        bytes memory request = BridgeTransactionV2Lib.encodeV2(bridgeTx);
         vm.prank({msgSender: caller, txOrigin: caller});
         fastBridge.relay{value: msgValue}(request);
     }
@@ -46,7 +48,7 @@ contract FastBridgeV2DstBaseTest is FastBridgeV2Test {
     )
         public
     {
-        bytes memory request = abi.encode(bridgeTx);
+        bytes memory request = BridgeTransactionV2Lib.encodeV2(bridgeTx);
         vm.prank({msgSender: caller, txOrigin: caller});
         fastBridge.relay{value: msgValue}(request, relayer);
     }

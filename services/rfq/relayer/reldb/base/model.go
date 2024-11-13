@@ -96,7 +96,7 @@ type RequestForQuote struct {
 	// SendChainGas is whether the relay should send gas to the destination chain
 	SendChainGas bool
 	// Status is the current status of the event
-	Status reldb.QuoteRequestStatus
+	Status reldb.QuoteRequestStatus `gorm:"column:status;index:idx_rfq_status_name"`
 	// BlockNumber is the block number of the event
 	BlockNumber uint64
 	// RawRequest is the raw request, hex encoded.

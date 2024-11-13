@@ -10,7 +10,7 @@ import { normalizeNativeTokenAddress } from '../middleware/normalizeNativeTokenA
 import { checksumAddresses } from '../middleware/checksumAddresses'
 import { validateRouteExists } from '../validations/validateRouteExists'
 
-const router = express.Router()
+const router: express.Router = express.Router()
 
 /**
  * @openapi
@@ -92,8 +92,6 @@ const router = express.Router()
  *               type: object
  *               properties:
  *                 error:
- *                   type: string
- *                 details:
  *                   type: string
  */
 router.get(
