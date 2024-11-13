@@ -14,6 +14,7 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     /// @notice Address reserved for native gas token (ETH on Ethereum and most L2s, AVAX on Avalanche, etc)
     address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
+    bytes32 public constant RELAYER_ROLE = keccak256("RELAYER_ROLE");
     bytes32 public constant PROVER_ROLE = keccak256("PROVER_ROLE");
     bytes32 public constant CANCELER_ROLE = keccak256("CANCELER_ROLE");
     bytes32 public constant GUARD_ROLE = keccak256("GUARD_ROLE");
