@@ -4,6 +4,7 @@ package rest
 import (
 	"context"
 	"encoding/json"
+	"math/big"
 
 	"fmt"
 	"net/http"
@@ -550,7 +551,14 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 
 	// construct the response
 	var resp model.PutRFQResponse
-	if quote == nil {
+	destAmount := big.NewInt(0)
+	if quote != nil && quote.DestAmount != nil {
+		amt, ok := destAmount.SetString(*quote.DestAmount, 10)
+		if ok {
+			destAmount = amt
+		}
+	}
+	if quote == nil || destAmount.Cmp(big.NewInt(0)) <= 0 {
 		span.AddEvent("no quotes found")
 		resp = model.PutRFQResponse{
 			Success: false,
