@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/big"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/shopspring/decimal"
 	apiClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
 	"github.com/synapsecns/sanguine/services/rfq/api/rest"
@@ -388,6 +390,75 @@ func (c *ServerSuite) TestFilterQuoteAge() {
 	// verify old quote is filtered out
 	c.Equal(1, len(filteredQuotes))
 	c.Equal(quotes[1], filteredQuotes[0])
+}
+
+func (c *ServerSuite) TestGetPassiveQuote() {
+	userRequestAmount := big.NewInt(1_000_000)
+
+	passiveQuotes := []*db.Quote{
+		{
+			RelayerAddr:     "0x1",
+			OriginChainID:   uint64(c.originChainID),
+			OriginTokenAddr: originTokenAddr,
+			DestChainID:     uint64(c.destChainID),
+			DestTokenAddr:   destTokenAddr,
+			DestAmount:      decimal.NewFromBigInt(new(big.Int).Sub(userRequestAmount, big.NewInt(104)), 0),
+			MaxOriginAmount: decimal.NewFromBigInt(userRequestAmount, 0),
+			FixedFee:        decimal.NewFromInt(1000),
+			UpdatedAt:       time.Now(),
+		},
+		{
+			RelayerAddr:     "0x2",
+			OriginChainID:   uint64(c.originChainID),
+			OriginTokenAddr: originTokenAddr,
+			DestChainID:     uint64(c.destChainID),
+			DestTokenAddr:   destTokenAddr,
+			DestAmount:      decimal.NewFromBigInt(new(big.Int).Sub(userRequestAmount, big.NewInt(103)), 0),
+			MaxOriginAmount: decimal.NewFromBigInt(userRequestAmount, 0),
+			FixedFee:        decimal.NewFromInt(1000),
+			UpdatedAt:       time.Now().Add(-time.Minute),
+		},
+		{
+			RelayerAddr:     "0x3",
+			OriginChainID:   uint64(c.originChainID),
+			OriginTokenAddr: originTokenAddr,
+			DestChainID:     uint64(c.destChainID),
+			DestTokenAddr:   destTokenAddr,
+			DestAmount:      decimal.NewFromBigInt(new(big.Int).Sub(userRequestAmount, big.NewInt(102)), 0),
+			MaxOriginAmount: decimal.NewFromBigInt(userRequestAmount, 0),
+			FixedFee:        decimal.NewFromInt(1000),
+			UpdatedAt:       time.Now().Add(-time.Minute * 15),
+		},
+		{
+			RelayerAddr:     "0x4",
+			OriginChainID:   uint64(c.originChainID),
+			OriginTokenAddr: originTokenAddr,
+			DestChainID:     uint64(c.destChainID),
+			DestTokenAddr:   destTokenAddr,
+			DestAmount:      decimal.NewFromBigInt(new(big.Int).Sub(userRequestAmount, big.NewInt(101)), 0),
+			MaxOriginAmount: decimal.NewFromBigInt(userRequestAmount, 0),
+			FixedFee:        decimal.NewFromInt(1000),
+			UpdatedAt:       time.Now().Add(-time.Hour),
+		},
+	}
+
+	userQuoteReq := &model.PutRFQRequest{
+		Data: model.QuoteData{
+			OriginChainID:     c.originChainID,
+			OriginTokenAddr:   originTokenAddr,
+			DestChainID:       c.destChainID,
+			DestTokenAddr:     destTokenAddr,
+			OriginAmountExact: userRequestAmount.String(),
+			ExpirationWindow:  0,
+		},
+		QuoteTypes: []string{"active", "passive"},
+	}
+
+	// get the best passive quote; this should be the one with highest dest amount, but within the MaxQuoteAge window
+	quote, err := rest.GetPassiveQuote(c.cfg, passiveQuotes, userQuoteReq)
+	c.Require().NoError(err)
+	c.Assert().Equal("998897", *quote.DestAmount)
+	c.Assert().Equal(passiveQuotes[1].RelayerAddr, *quote.RelayerAddress)
 }
 
 func (c *ServerSuite) TestPutAck() {
