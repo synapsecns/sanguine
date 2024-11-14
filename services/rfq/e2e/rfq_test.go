@@ -413,8 +413,6 @@ func (i *IntegrationSuite) TestZap() {
 	realRFQAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(rfqAmount), destUSDC.ContractHandle())
 	i.NoError(err)
 
-	fmt.Printf("omnirpc url: %v\n", i.destBackend.RPCAddress())
-
 	// add initial usdc to relayer on destination
 	tx, err := destUSDCHandle.MintPublic(opts.TransactOpts, i.relayerWallet.Address(), realStartAmount)
 	i.Nil(err)
