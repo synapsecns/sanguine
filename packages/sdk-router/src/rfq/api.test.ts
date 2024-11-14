@@ -76,16 +76,28 @@ describe('getAllQuotes', () => {
   })
 
   describe('Returns an empty array', () => {
+    beforeEach(() => {
+      jest.spyOn(console, 'error').mockImplementation(() => {
+        // Do nothing
+      })
+    })
+
+    afterEach(() => {
+      jest.restoreAllMocks()
+    })
+
     it('when the response is not ok', async () => {
       fetchMock.mockResponseOnce(JSON.stringify(quotesAPI), { status: 500 })
       const result = await getAllQuotes()
       expect(result).toEqual([])
+      expect(console.error).toHaveBeenCalled()
     })
 
     it('when fetch throws an error', async () => {
       fetchMock.mockRejectOnce(new Error('Error fetching quotes'))
       const result = await getAllQuotes()
       expect(result).toEqual([])
+      expect(console.error).toHaveBeenCalled()
     })
 
     it('when the response takes too long to return', async () => {
@@ -94,6 +106,7 @@ describe('getAllQuotes', () => {
       )
       const result = await getAllQuotes()
       expect(result).toEqual([])
+      expect(console.error).toHaveBeenCalled()
     })
   })
 })

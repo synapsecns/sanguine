@@ -327,7 +327,7 @@ export const MOONBEAM: Chain = {
   explorerName: 'Moonbeam Explorer',
   blockTime: 12000,
   imgUrl:
-    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/moonbeam.284ab9b4.svg',
+    'https://adf1cceb.sanguine-fe.pages.dev/_next/static/media/moonbeam.63f34507.svg',
   networkName: 'Moonbeam',
   networkUrl: 'https://rpc.api.moonbeam.network',
   nativeCurrency: {
@@ -348,7 +348,7 @@ export const MOONRIVER: Chain = {
   explorerName: 'Moonriver Explorer',
   blockTime: 12000,
   imgUrl:
-    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/moonriver.3fb35010.svg',
+    'https://adf1cceb.sanguine-fe.pages.dev/_next/static/media/moonriver.275d190a.svg',
   networkName: 'Moonriver',
   networkUrl: 'https://rpc.api.moonriver.moonbeam.network',
   nativeCurrency: {
@@ -464,6 +464,27 @@ export const LINEA: Chain = {
   },
 }
 
+export const WORLDCHAIN: Chain = {
+  id: 480,
+  name: 'World Chain',
+  rpcUrls: {
+    primary: 'https://worldchain-mainnet.g.alchemy.com/public',
+    fallback: 'https://worldchain-mainnet.g.alchemy.com/public',
+  },
+  explorerUrl: 'https://worldchain-mainnet.explorer.alchemy.com',
+  explorerName: 'World Chain Explorer',
+  blockTime: 3000,
+  imgUrl:
+    'https://synapse-interface-worldchain.sanguine-fe.pages.dev/_next/static/media/worldchain.62d1dfd2.svg',
+  networkName: 'World Chain',
+  networkUrl: 'https://worldchain-mainnet.g.alchemy.com/public',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+}
+
 export const CHAINS = {
   ETHEREUM,
   ARBITRUM,
@@ -487,6 +508,7 @@ export const CHAINS = {
   BLAST,
   SCROLL,
   LINEA,
+  WORLDCHAIN,
 }
 
 export const CHAINS_ARRAY = Object.values(CHAINS)

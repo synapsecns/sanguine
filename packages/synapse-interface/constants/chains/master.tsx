@@ -20,6 +20,7 @@ import optimismImg from '@assets/chains/optimism.svg'
 import polygonImg from '@assets/chains/polygon.svg'
 import scrollImg from '@assets/chains/scroll.svg'
 import lineaImg from '@assets/chains/linea.svg'
+import worldchainImg from '@assets/chains/worldchain.svg'
 
 import ethExplorerImg from '@assets/explorer/etherscan.svg'
 import arbitrumExplorerImg from '@assets/explorer/arbiscan.svg'
@@ -161,7 +162,7 @@ export const CANTO: Chain = {
 }
 
 export const OPTIMISM: Chain = {
-  priorityRank: 80,
+  priorityRank: 91,
   id: 10,
   chainSymbol: 'OPTIMISM',
   name: 'Optimism',
@@ -434,7 +435,7 @@ export const MOONBEAM: Chain = {
   explorerUrl: 'https://moonbeam.moonscan.io',
   explorerName: 'Moonbeam Explorer',
   explorerImg: moonbeamImg,
-  color: 'teal',
+  color: 'purple',
 }
 
 export const MOONRIVER: Chain = {
@@ -459,7 +460,7 @@ export const MOONRIVER: Chain = {
   explorerUrl: 'https://moonriver.moonscan.io',
   explorerName: 'Moonriver Explorer',
   explorerImg: moonriverImg,
-  color: 'purple',
+  color: 'lime',
 }
 
 export const DOGE: Chain = {
@@ -562,7 +563,6 @@ export const SCROLL: Chain = {
     icon: scrollImg,
   },
   color: 'orange',
-  isNew: true,
 }
 
 export const LINEA: Chain = {
@@ -586,6 +586,33 @@ export const LINEA: Chain = {
     decimals: 18,
     address: zeroAddress,
     icon: lineaImg,
+  },
+  color: 'black',
+  isNew: false,
+}
+
+export const WORLDCHAIN: Chain = {
+  priorityRank: 99,
+  id: 480,
+  chainSymbol: 'WORLDCHAIN',
+  name: 'World Chain',
+  chainImg: worldchainImg,
+  layer: 2,
+  rpcUrls: {
+    primary:
+      'https://worldchain-mainnet.g.alchemy.com/v2/kThJADa4Pb6x6kTS--MoMQRI7d3OliUH',
+    fallback: 'https://worldchain-mainnet.g.alchemy.com/public',
+  },
+  explorerUrl: 'https://worldchain-mainnet.explorer.alchemy.com',
+  explorerName: 'World Chain Explorer',
+  explorerImg: worldchainImg,
+  blockTime: 3000,
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+    address: zeroAddress,
+    icon: ethImg,
   },
   color: 'black',
   isNew: true,

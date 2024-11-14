@@ -21,3 +21,5 @@ contrib/opbot/generated/* linguist-generated
 # svg should be treated as a binary https://git.io/JE2VK
 *.svg    binary
 *.sol linguist-language=Solidity
+
+.vscode/*.json linguist-language=jsonc

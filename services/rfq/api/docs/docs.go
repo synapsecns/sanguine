@@ -347,7 +347,7 @@ const docTemplate = `{
                 "expiration_window": {
                     "type": "integer"
                 },
-                "origin_amount": {
+                "origin_amount_exact": {
                     "type": "string"
                 },
                 "origin_chain_id": {
@@ -511,7 +511,7 @@ const docTemplate = `{
                 "expiration_window": {
                     "type": "integer"
                 },
-                "origin_amount": {
+                "origin_amount_exact": {
                     "type": "string"
                 },
                 "origin_chain_id": {

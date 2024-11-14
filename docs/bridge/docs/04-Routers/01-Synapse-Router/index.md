@@ -25,12 +25,9 @@ Swaps to/from an intermediate token return an empty query.
 
 Determining an optimal route with minimal slippage and maximum output is not trivial. Synapse Router condenses this complexity into a [`Query`](https://github.com/synapsecns/synapse-contracts/blob/7bc3a579c08838d7f4c3e62954135901abb16183/contracts/bridge/libraries/BridgeStructs.sol#L12-L18), or data structure of generic swap instructions that return a `token`, and an `amountReceived`.
 
-
-
-Given a bridgable token, a `Query` identifies on-chain “swaps” which allow the Bridge to identify the route(s) for an origin and intermediate token swap on the origin chain, and subsequent token swap on the destination chain.
+Given a bridgeable token, a `Query` identifies on-chain “swaps” which allow the Bridge to identify the route(s) for an origin and intermediate token swap on the origin chain, and subsequent token swap on the destination chain.
 
 Origin and destination queries are taken from the `getOriginAmountOut()` and `getDestinationAmountOut()` supporting functions, which are called for each transaction, from which your application can decide its preferred route.
-
 
 <!-- See the Example Page for further information (and arguments) that the functions above require. It is imperative that the program uses the functions here to construct Queries instead of manually doing so -- this guarantees that the transaction won't be reverted for misconfigured parameters.  -->
 
@@ -59,21 +56,21 @@ let requests = symbols.map((value, index) => {
   let request: DestRequest = {
     symbol: value,
     amountIn: originQueries[index].minAmountOut,
-  };
-  return request;
-});
+  }
+  return request
+})
 ```
 
 **4. Get `destQuery` list**
 
-Call `getDestinationAmoutOut()` with your `destRequest` list and output token to receive a `Query` list for the destination chain.
+Call `getDestinationAmountOut()` with your `destRequest` list and output token to receive a `Query` list for the destination chain.
 
 **5. select `originQuery` and `destQuery`**
 
 Determine which `originQuery` and `destQuery` to use. This simple example selects the origin and destination pair with the highest output:
 
 ```js
-let destQuery = maxBy(destQueries, (query) => query.minAmountOut);
+let destQuery = maxBy(destQueries, (query) => query.minAmountOut)
 let selectedIndex = destQueries.indexOf(destQuery)
 let originQuery = originQueries[selectedIndex]
 ```
@@ -221,22 +218,22 @@ function synapseBridge(
   // - tokenIn, tokenOut, amountIn
   // - SynapseRouter deployments
   // - User settings for maximum slippage and deadline
-  // - User address on origin and destinaion chain (might be equal or different)
+  // - User address on origin and destination chain (might be equal or different)
 
   // Beware: below is a TypeScript pseudocode.
 
-  // 0. Fetch deployments of SynapseRouter on origin and destiantion chains
+  // 0. Fetch deployments of SynapseRouter on origin and destination chains
   let routerOrigin = getSynapseRouter(originChainId);
   let routerDest = getSynapseRouter(destChainId);
 
   // 1. Determine the set of bridge tokens that could enable "receive tokenOut on destination chain"
-  // For that we pefrorm a static call to SynapseRouter on destination chain
+  // For that we perform a static call to SynapseRouter on destination chain
   let bridgeTokens = routerDest.getConnectedBridgeTokens(tokenOut);
   // Then we get the list of bridge token symbols
   let symbols = bridgeTokens.map((token) => token.symbol);
 
   // 2. Get the list of Queries with possible swap instructions for origin chain
-  // For that we pefrorm a static call to SynapseRouter on origin chain
+  // For that we perform a static call to SynapseRouter on origin chain
   // This gets us the quotes from tokenIn to every bridge token (one quote per bridge token in the list)
   let originQueries = routerOrigin.getOriginAmountOut(
     tokenIn,
@@ -245,7 +242,7 @@ function synapseBridge(
   );
 
   // 3. Get the list of Queries with possible swap instructions for destination chain
-  // First, we form a list of "destiantion requests" by merging
+  // First, we form a list of "destination requests" by merging
   // list of token symbols with list of quotes obtained in step 2.
   let requests = symbols.map((value, index) => {
     let request: DestRequest = {
@@ -259,8 +256,8 @@ function synapseBridge(
   // These quotes will take into account the fee for bridging the token to destination chain
   let destQueries = routerDest.getDestinationAmountOut(requests, tokenOut);
 
-  // 4. Pick a pair of originQueries[i], destQueries[i] to pefrom the cross-chain swap
-  // In this example we are picking the pair that yeilds the best overall quote
+  // 4. Pick a pair of originQueries[i], destQueries[i] to perform the cross-chain swap
+  // In this example we are picking the pair that yields the best overall quote
   let destQuery = maxBy(destQueries, (query) => query.minAmountOut);
   let selectedIndex = destQueries.indexOf(destQuery)
   let originQuery = originQueries[selectedIndex]
@@ -284,7 +281,7 @@ function synapseBridge(
       // tokenIn.approve(routerOrigin, amountIn)
     }
   }
-  // Perform a call to Synapse Router with all the derevied parameters
+  // Perform a call to Synapse Router with all the derived parameters
   // Use previously determined msg.value for this call
   // (WETH wrapping is done by the Synapse Router)
   routerOrigin.bridge{value: amountETH}(

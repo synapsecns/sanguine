@@ -3,8 +3,6 @@ package metrics
 import (
 	"context"
 	"fmt"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/synapsecns/sanguine/core"
@@ -30,6 +28,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
+	"net/http"
 )
 
 const pyroscopeEndpoint = internal.PyroscopeEndpoint
@@ -44,7 +43,8 @@ type baseHandler struct {
 	tracer      trace.Tracer
 	name        string
 	propagator  propagation.TextMapPropagator
-	meter       MeterProvider
+	// Deprecated: will be removed in a future version
+	meter MeterProvider
 	// handler is an integrated handler for everything exported over http. This includes prometheus
 	// or http-based sampling methods for other providers.
 	handler http.Handler
@@ -77,6 +77,8 @@ func (b *baseHandler) Start(ctx context.Context) error {
 	)
 	otel.SetMeterProvider(b.meter)
 	b.handler = promhttp.Handler()
+
+	newStandardMetrics(ctx, b)
 
 	go func() {
 		<-ctx.Done()

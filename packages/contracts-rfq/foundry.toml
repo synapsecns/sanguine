@@ -12,6 +12,7 @@ fs_permissions = [
 ]
 
 [fmt]
+ignore = ["contracts/legacy/**/*.sol"]
 line_length = 120
 multiline_func_header = 'all'
 number_underscore = 'thousands'
@@ -25,6 +26,7 @@ linea = "${LINEA_RPC}"
 mainnet = "${MAINNET_RPC}"
 optimism = "${OPTIMISM_RPC}"
 scroll = "${SCROLL_RPC}"
+worldchain = "${WORLDCHAIN_RPC}"
 
 # Testnets
 arb_sepolia = "${ARB_SEPOLIA_RPC}"
@@ -44,6 +46,7 @@ linea = { key = "${LINEA_VERIFIER_KEY}", url = "${LINEA_VERIFIER_URL}" }
 mainnet = { key = "${MAINNET_VERIFIER_KEY}", url = "${MAINNET_VERIFIER_URL}" }
 optimism = { key = "${OPTIMISM_VERIFIER_KEY}", url = "${OPTIMISM_VERIFIER_URL}" }
 scroll = { key = "${SCROLL_VERIFIER_KEY}", url = "${SCROLL_VERIFIER_URL}" }
+worldchain = { key = "${WORLDCHAIN_VERIFIER_KEY}", url = "${WORLDCHAIN_VERIFIER_URL}" }
 
 # Testnets
 arb_sepolia = { key = "${ARB_SEPOLIA_VERIFIER_KEY}", url = "${ARB_SEPOLIA_VERIFIER_URL}" }

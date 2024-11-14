@@ -21,15 +21,16 @@ import {
   linea,
 } from '@wagmi/core/chains'
 
-import { dfk, dogechain } from '@/constants/chains/extraWagmiChains'
+import { dfk, dogechain, worldchain } from '@/constants/chains/extraWagmiChains'
 import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const supportedChains = [
   mainnet,
+  worldchain,
+  optimism,
   arbitrum,
   avalanche,
   base,
-  optimism,
   scroll,
   linea,
   blast,

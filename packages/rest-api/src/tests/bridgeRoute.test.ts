@@ -173,4 +173,20 @@ describe('Bridge Route with Real Synapse Service', () => {
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty('field', 'amount')
   })
+
+  it('should return 400 for amount with too many decimals', async () => {
+    const response = await request(app).get('/bridge').query({
+      fromChain: '1',
+      toChain: '10',
+      fromToken: USDC.addresses[1],
+      toToken: USDC.addresses[10],
+      amount: '1000.123456789', // Assuming USDC has 6 decimals
+    })
+
+    expect(response.status).toBe(400)
+    expect(response.body.error).toHaveProperty(
+      'message',
+      expect.stringContaining('Amount has too many decimals')
+    )
+  }, 15000)
 })
