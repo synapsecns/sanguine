@@ -93,7 +93,6 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 		if err != nil {
 			return nil, fmt.Errorf("could not relay: %w", err)
 		}
-		fmt.Printf("submitted relay tx: %v\n", tx.Hash().Hex())
 
 		return tx, nil
 	})
