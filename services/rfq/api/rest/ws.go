@@ -198,6 +198,8 @@ func (c *wsClient) sendRelayerRequest(ctx context.Context, req *model.WsRFQReque
 
 // handleRelayerMessage handles messages from the relayer.
 // An error returned will result in the websocket connection being closed.
+//
+//nolint:cyclop
 func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err error) {
 	_, span := c.handler.Tracer().Start(ctx, "handleRelayerMessage", trace.WithAttributes(
 		attribute.String("relayer_address", c.relayerAddr),
@@ -235,7 +237,9 @@ func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err er
 		}
 	case SendQuoteOp:
 		err = c.handleSendQuote(ctx, rfqMsg.Content)
-		logger.Errorf("error handling send quote: %v", err)
+		if err != nil {
+			logger.Errorf("error handling send quote: %v", err)
+		}
 	default:
 		logger.Errorf("received unexpected operation from relayer: %s", rfqMsg.Op)
 		return nil
