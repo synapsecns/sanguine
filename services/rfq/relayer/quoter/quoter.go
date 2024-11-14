@@ -21,6 +21,7 @@ import (
 
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -378,6 +379,18 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 		OriginBalance:     inv[rfqRequest.Data.OriginChainID][common.HexToAddress(rfqRequest.Data.OriginTokenAddr)],
 		DestBalance:       inv[rfqRequest.Data.DestChainID][common.HexToAddress(rfqRequest.Data.DestTokenAddr)],
 		OriginAmountExact: originAmountExact,
+	}
+	if rfqRequest.Data.ZapNative != "" || rfqRequest.Data.ZapData != "" {
+		zapNative, ok := new(big.Int).SetString(rfqRequest.Data.ZapNative, 10)
+		if !ok {
+			return nil, fmt.Errorf("invalid zap native amount: %s", rfqRequest.Data.ZapNative)
+		}
+		quoteInput.QuoteRequest = &reldb.QuoteRequest{
+			Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
+				ZapNative: zapNative,
+				ZapData:   []byte(rfqRequest.Data.ZapData),
+			},
+		}
 	}
 
 	rawQuote, err := m.generateQuote(ctx, quoteInput)
