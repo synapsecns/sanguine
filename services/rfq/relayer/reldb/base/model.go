@@ -78,8 +78,8 @@ type RequestForQuote struct {
 	DestAmount decimal.Decimal `gorm:"index"`
 	// OriginFeeAmount is the origin fee amount
 	OriginFeeAmount decimal.Decimal
-	// CallValue is the call value
-	CallValue decimal.Decimal
+	// ZapNative is the zap native value
+	ZapNative decimal.Decimal
 	// DestTxHash is the destination tx hash
 	DestTxHash sql.NullString
 	// Deadline is the deadline for the relay
@@ -91,12 +91,12 @@ type RequestForQuote struct {
 	ExclusivityRelayer string
 	// ExclusivityEndTime is the exclusivity end time
 	ExclusivityEndTime time.Time
-	// CallParams is the call params
-	CallParams []byte
+	// ZapData is the zap data
+	ZapData []byte
 	// SendChainGas is whether the relay should send gas to the destination chain
 	SendChainGas bool
 	// Status is the current status of the event
-	Status reldb.QuoteRequestStatus
+	Status reldb.QuoteRequestStatus `gorm:"column:status;index:idx_rfq_status_name"`
 	// BlockNumber is the block number of the event
 	BlockNumber uint64
 	// RawRequest is the raw request, hex encoded.
@@ -148,8 +148,8 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 		DestAmountOriginal:   request.Transaction.DestAmount.String(),
 		DestAmount:           decimal.NewFromBigInt(request.Transaction.DestAmount, int32(request.DestTokenDecimals)),
 		OriginFeeAmount:      decimal.NewFromBigInt(request.Transaction.OriginFeeAmount, int32(request.OriginTokenDecimals)),
-		CallValue:            decimal.NewFromBigInt(request.Transaction.CallValue, int32(nativeTokenDecimals)),
-		CallParams:           request.Transaction.CallParams,
+		ZapNative:            decimal.NewFromBigInt(request.Transaction.ZapNative, int32(nativeTokenDecimals)),
+		ZapData:              request.Transaction.ZapData,
 		Deadline:             time.Unix(int64(request.Transaction.Deadline.Uint64()), 0),
 		OriginNonce:          int(request.Transaction.Nonce.Uint64()),
 		SendChainGas:         request.TransactionV1.SendChainGas,
@@ -239,10 +239,10 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 			OriginAmount:       new(big.Int).Div(r.OriginAmount.BigInt(), big.NewInt(int64(math.Pow10(int(r.OriginTokenDecimals))))),
 			DestAmount:         new(big.Int).Div(r.DestAmount.BigInt(), big.NewInt(int64(math.Pow10(int(r.DestTokenDecimals))))),
 			OriginFeeAmount:    new(big.Int).Div(r.OriginFeeAmount.BigInt(), big.NewInt(int64(math.Pow10(int(r.OriginTokenDecimals))))),
-			CallValue:          new(big.Int).Div(r.CallValue.BigInt(), big.NewInt(int64(math.Pow10(int(nativeTokenDecimals))))),
+			ZapNative:          new(big.Int).Div(r.ZapNative.BigInt(), big.NewInt(int64(math.Pow10(int(nativeTokenDecimals))))),
+			ZapData:            r.ZapData,
 			ExclusivityRelayer: common.HexToAddress(r.ExclusivityRelayer),
 			ExclusivityEndTime: big.NewInt(r.ExclusivityEndTime.Unix()),
-			CallParams:         r.CallParams,
 			Deadline:           big.NewInt(r.Deadline.Unix()),
 			Nonce:              big.NewInt(int64(r.OriginNonce)),
 		},

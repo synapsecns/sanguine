@@ -37,7 +37,7 @@
     "New": "New",
     "Gas token": "Gas token",
     "Not bridgeable": "Not bridgeable",
-    "Succesfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "Succesfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}",
+    "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}",
     "Slippage": "Slippage",
     "Router": "Router",
     "Powered by Synapse": "Powered by Synapse",

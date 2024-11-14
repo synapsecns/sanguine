@@ -38,6 +38,8 @@ type Config struct {
 	ScreenerURL string `yaml:"screener_url"`
 	// Database is the database config.
 	Database DatabaseConfig `yaml:"database"`
+	// RFQIndexerAPIURL is the URL of the RFQ indexer API.
+	RFQIndexerAPIURL string `yaml:"rfq_indexer_api_url"`
 }
 
 // DatabaseConfig represents the configuration for the database.

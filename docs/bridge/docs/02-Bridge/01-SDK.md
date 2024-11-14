@@ -34,7 +34,7 @@ Requires either the `npm` or `yarn` package manager.
 
 The SDK package relies on the `@ethersproject` and `ethers` dependencies, installed from `npm`.
 
-To begin constructing bridge-related transactions, first set up your environment wiht your providers, and format them, along with the `chainIds` you will be using, to set up a `SynapseSDK` instance.
+To begin constructing bridge-related transactions, first set up your environment with your providers, and format them, along with the `chainIds` you will be using, to set up a `SynapseSDK` instance.
 
 #### Ethers v5
 

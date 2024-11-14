@@ -12,7 +12,7 @@ import tokenListRoute from './tokenListRoute'
 import destinationTokensRoute from './destinationTokensRoute'
 import bridgeLimitsRoute from './bridgeLimitsRoute'
 
-const router = express.Router()
+const router: express.Router = express.Router()
 
 router.use('/', indexRoute)
 router.use('/swap', swapRoute)

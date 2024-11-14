@@ -48,7 +48,7 @@ export const CopyTitle = ({
         <span
           className={
             'transition-all ease-in-out text-white text-xs pl-1 pt-[10px]' +
-            (copy ? ' visible opacity-[1]' : ' invisible opaciyt-[0]')
+            (copy ? ' visible opacity-[1]' : ' invisible opacity-[0]')
           }
         >
           copied

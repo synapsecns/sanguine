@@ -37,7 +37,7 @@
     "New": "Yeni",
     "Gas token": "Gaz tokeni",
     "Not bridgeable": "Köprülenemez",
-    "Succesfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "{originChainName}'deki {fromToken}'dan {destinationChainName}'deki {toToken}'a köprü başarıyla başlatıldı",
+    "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "{originChainName}'deki {fromToken}'dan {destinationChainName}'deki {toToken}'a köprü başarıyla başlatıldı",
     "Slippage": "Kayma",
     "Router": "Yönlendirici",
     "Powered by Synapse": "Synapse tarafından desteklenmektedir",
