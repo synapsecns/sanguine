@@ -397,6 +397,17 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 	if err != nil {
 		return nil, fmt.Errorf("error generating quote: %w", err)
 	}
+
+	// adjust dest amount by fixed fee
+	destAmountBigInt, ok := new(big.Int).SetString(rawQuote.DestAmount, 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid dest amount: %s", rawQuote.DestAmount)
+	}
+	fixedFeeBigInt, ok := new(big.Int).SetString(rawQuote.FixedFee, 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid fixed fee: %s", rawQuote.FixedFee)
+	}
+	rawQuote.DestAmount = new(big.Int).Sub(destAmountBigInt, fixedFeeBigInt).String()
 	span.SetAttributes(attribute.String("dest_amount", rawQuote.DestAmount))
 
 	rfqResp := model.WsRFQResponse{
