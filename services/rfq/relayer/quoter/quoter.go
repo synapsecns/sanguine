@@ -407,7 +407,11 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 	if !ok {
 		return nil, fmt.Errorf("invalid fixed fee: %s", rawQuote.FixedFee)
 	}
-	rawQuote.DestAmount = new(big.Int).Sub(destAmountBigInt, fixedFeeBigInt).String()
+	destAmountAdj := new(big.Int).Sub(destAmountBigInt, fixedFeeBigInt)
+	if destAmountAdj.Sign() < 0 {
+		destAmountAdj = big.NewInt(0)
+	}
+	rawQuote.DestAmount = destAmountAdj.String()
 	span.SetAttributes(attribute.String("dest_amount", rawQuote.DestAmount))
 
 	rfqResp := model.WsRFQResponse{
