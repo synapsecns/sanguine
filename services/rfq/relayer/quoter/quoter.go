@@ -21,6 +21,7 @@ import (
 
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -337,7 +338,7 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 
 // getActiveRFQ handles an active RFQ message.
 //
-//nolint:nilnil
+//nolint:nilnil,cyclop
 func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMessage) (resp *model.ActiveRFQMessage, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "generateActiveRFQ", trace.WithAttributes(
 		attribute.String("op", msg.Op),
@@ -379,11 +380,38 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 		DestBalance:       inv[rfqRequest.Data.DestChainID][common.HexToAddress(rfqRequest.Data.DestTokenAddr)],
 		OriginAmountExact: originAmountExact,
 	}
+	if rfqRequest.Data.ZapNative != "" || rfqRequest.Data.ZapData != "" {
+		zapNative, ok := new(big.Int).SetString(rfqRequest.Data.ZapNative, 10)
+		if !ok {
+			return nil, fmt.Errorf("invalid zap native amount: %s", rfqRequest.Data.ZapNative)
+		}
+		quoteInput.QuoteRequest = &reldb.QuoteRequest{
+			Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
+				ZapNative: zapNative,
+				ZapData:   []byte(rfqRequest.Data.ZapData),
+			},
+		}
+	}
 
 	rawQuote, err := m.generateQuote(ctx, quoteInput)
 	if err != nil {
 		return nil, fmt.Errorf("error generating quote: %w", err)
 	}
+
+	// adjust dest amount by fixed fee
+	destAmountBigInt, ok := new(big.Int).SetString(rawQuote.DestAmount, 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid dest amount: %s", rawQuote.DestAmount)
+	}
+	fixedFeeBigInt, ok := new(big.Int).SetString(rawQuote.FixedFee, 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid fixed fee: %s", rawQuote.FixedFee)
+	}
+	destAmountAdj := new(big.Int).Sub(destAmountBigInt, fixedFeeBigInt)
+	if destAmountAdj.Sign() < 0 {
+		destAmountAdj = big.NewInt(0)
+	}
+	rawQuote.DestAmount = destAmountAdj.String()
 	span.SetAttributes(attribute.String("dest_amount", rawQuote.DestAmount))
 
 	rfqResp := model.WsRFQResponse{
