@@ -338,7 +338,7 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 
 // getActiveRFQ handles an active RFQ message.
 //
-//nolint:nilnil
+//nolint:nilnil,cyclop
 func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMessage) (resp *model.ActiveRFQMessage, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "generateActiveRFQ", trace.WithAttributes(
 		attribute.String("op", msg.Op),
