@@ -29,120 +29,120 @@ var (
 	_ = abi.ConvertType
 )
 
-// IFastBridgeRecipientMetaData contains all meta data concerning the IFastBridgeRecipient contract.
-var IFastBridgeRecipientMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"callParams\",\"type\":\"bytes\"}],\"name\":\"fastBridgeTransferReceived\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
+// IZapRecipientMetaData contains all meta data concerning the IZapRecipient contract.
+var IZapRecipientMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"zapData\",\"type\":\"bytes\"}],\"name\":\"zap\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
-		"461e0c21": "fastBridgeTransferReceived(address,uint256,bytes)",
+		"e85e13dd": "zap(address,uint256,bytes)",
 	},
 }
 
-// IFastBridgeRecipientABI is the input ABI used to generate the binding from.
-// Deprecated: Use IFastBridgeRecipientMetaData.ABI instead.
-var IFastBridgeRecipientABI = IFastBridgeRecipientMetaData.ABI
+// IZapRecipientABI is the input ABI used to generate the binding from.
+// Deprecated: Use IZapRecipientMetaData.ABI instead.
+var IZapRecipientABI = IZapRecipientMetaData.ABI
 
-// Deprecated: Use IFastBridgeRecipientMetaData.Sigs instead.
-// IFastBridgeRecipientFuncSigs maps the 4-byte function signature to its string representation.
-var IFastBridgeRecipientFuncSigs = IFastBridgeRecipientMetaData.Sigs
+// Deprecated: Use IZapRecipientMetaData.Sigs instead.
+// IZapRecipientFuncSigs maps the 4-byte function signature to its string representation.
+var IZapRecipientFuncSigs = IZapRecipientMetaData.Sigs
 
-// IFastBridgeRecipient is an auto generated Go binding around an Ethereum contract.
-type IFastBridgeRecipient struct {
-	IFastBridgeRecipientCaller     // Read-only binding to the contract
-	IFastBridgeRecipientTransactor // Write-only binding to the contract
-	IFastBridgeRecipientFilterer   // Log filterer for contract events
+// IZapRecipient is an auto generated Go binding around an Ethereum contract.
+type IZapRecipient struct {
+	IZapRecipientCaller     // Read-only binding to the contract
+	IZapRecipientTransactor // Write-only binding to the contract
+	IZapRecipientFilterer   // Log filterer for contract events
 }
 
-// IFastBridgeRecipientCaller is an auto generated read-only Go binding around an Ethereum contract.
-type IFastBridgeRecipientCaller struct {
+// IZapRecipientCaller is an auto generated read-only Go binding around an Ethereum contract.
+type IZapRecipientCaller struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// IFastBridgeRecipientTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type IFastBridgeRecipientTransactor struct {
+// IZapRecipientTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type IZapRecipientTransactor struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// IFastBridgeRecipientFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type IFastBridgeRecipientFilterer struct {
+// IZapRecipientFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type IZapRecipientFilterer struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// IFastBridgeRecipientSession is an auto generated Go binding around an Ethereum contract,
+// IZapRecipientSession is an auto generated Go binding around an Ethereum contract,
 // with pre-set call and transact options.
-type IFastBridgeRecipientSession struct {
-	Contract     *IFastBridgeRecipient // Generic contract binding to set the session for
-	CallOpts     bind.CallOpts         // Call options to use throughout this session
-	TransactOpts bind.TransactOpts     // Transaction auth options to use throughout this session
+type IZapRecipientSession struct {
+	Contract     *IZapRecipient    // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
 }
 
-// IFastBridgeRecipientCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// IZapRecipientCallerSession is an auto generated read-only Go binding around an Ethereum contract,
 // with pre-set call options.
-type IFastBridgeRecipientCallerSession struct {
-	Contract *IFastBridgeRecipientCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts               // Call options to use throughout this session
+type IZapRecipientCallerSession struct {
+	Contract *IZapRecipientCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts        // Call options to use throughout this session
 }
 
-// IFastBridgeRecipientTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// IZapRecipientTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
 // with pre-set transact options.
-type IFastBridgeRecipientTransactorSession struct {
-	Contract     *IFastBridgeRecipientTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts               // Transaction auth options to use throughout this session
+type IZapRecipientTransactorSession struct {
+	Contract     *IZapRecipientTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts        // Transaction auth options to use throughout this session
 }
 
-// IFastBridgeRecipientRaw is an auto generated low-level Go binding around an Ethereum contract.
-type IFastBridgeRecipientRaw struct {
-	Contract *IFastBridgeRecipient // Generic contract binding to access the raw methods on
+// IZapRecipientRaw is an auto generated low-level Go binding around an Ethereum contract.
+type IZapRecipientRaw struct {
+	Contract *IZapRecipient // Generic contract binding to access the raw methods on
 }
 
-// IFastBridgeRecipientCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type IFastBridgeRecipientCallerRaw struct {
-	Contract *IFastBridgeRecipientCaller // Generic read-only contract binding to access the raw methods on
+// IZapRecipientCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type IZapRecipientCallerRaw struct {
+	Contract *IZapRecipientCaller // Generic read-only contract binding to access the raw methods on
 }
 
-// IFastBridgeRecipientTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type IFastBridgeRecipientTransactorRaw struct {
-	Contract *IFastBridgeRecipientTransactor // Generic write-only contract binding to access the raw methods on
+// IZapRecipientTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type IZapRecipientTransactorRaw struct {
+	Contract *IZapRecipientTransactor // Generic write-only contract binding to access the raw methods on
 }
 
-// NewIFastBridgeRecipient creates a new instance of IFastBridgeRecipient, bound to a specific deployed contract.
-func NewIFastBridgeRecipient(address common.Address, backend bind.ContractBackend) (*IFastBridgeRecipient, error) {
-	contract, err := bindIFastBridgeRecipient(address, backend, backend, backend)
+// NewIZapRecipient creates a new instance of IZapRecipient, bound to a specific deployed contract.
+func NewIZapRecipient(address common.Address, backend bind.ContractBackend) (*IZapRecipient, error) {
+	contract, err := bindIZapRecipient(address, backend, backend, backend)
 	if err != nil {
 		return nil, err
 	}
-	return &IFastBridgeRecipient{IFastBridgeRecipientCaller: IFastBridgeRecipientCaller{contract: contract}, IFastBridgeRecipientTransactor: IFastBridgeRecipientTransactor{contract: contract}, IFastBridgeRecipientFilterer: IFastBridgeRecipientFilterer{contract: contract}}, nil
+	return &IZapRecipient{IZapRecipientCaller: IZapRecipientCaller{contract: contract}, IZapRecipientTransactor: IZapRecipientTransactor{contract: contract}, IZapRecipientFilterer: IZapRecipientFilterer{contract: contract}}, nil
 }
 
-// NewIFastBridgeRecipientCaller creates a new read-only instance of IFastBridgeRecipient, bound to a specific deployed contract.
-func NewIFastBridgeRecipientCaller(address common.Address, caller bind.ContractCaller) (*IFastBridgeRecipientCaller, error) {
-	contract, err := bindIFastBridgeRecipient(address, caller, nil, nil)
+// NewIZapRecipientCaller creates a new read-only instance of IZapRecipient, bound to a specific deployed contract.
+func NewIZapRecipientCaller(address common.Address, caller bind.ContractCaller) (*IZapRecipientCaller, error) {
+	contract, err := bindIZapRecipient(address, caller, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &IFastBridgeRecipientCaller{contract: contract}, nil
+	return &IZapRecipientCaller{contract: contract}, nil
 }
 
-// NewIFastBridgeRecipientTransactor creates a new write-only instance of IFastBridgeRecipient, bound to a specific deployed contract.
-func NewIFastBridgeRecipientTransactor(address common.Address, transactor bind.ContractTransactor) (*IFastBridgeRecipientTransactor, error) {
-	contract, err := bindIFastBridgeRecipient(address, nil, transactor, nil)
+// NewIZapRecipientTransactor creates a new write-only instance of IZapRecipient, bound to a specific deployed contract.
+func NewIZapRecipientTransactor(address common.Address, transactor bind.ContractTransactor) (*IZapRecipientTransactor, error) {
+	contract, err := bindIZapRecipient(address, nil, transactor, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &IFastBridgeRecipientTransactor{contract: contract}, nil
+	return &IZapRecipientTransactor{contract: contract}, nil
 }
 
-// NewIFastBridgeRecipientFilterer creates a new log filterer instance of IFastBridgeRecipient, bound to a specific deployed contract.
-func NewIFastBridgeRecipientFilterer(address common.Address, filterer bind.ContractFilterer) (*IFastBridgeRecipientFilterer, error) {
-	contract, err := bindIFastBridgeRecipient(address, nil, nil, filterer)
+// NewIZapRecipientFilterer creates a new log filterer instance of IZapRecipient, bound to a specific deployed contract.
+func NewIZapRecipientFilterer(address common.Address, filterer bind.ContractFilterer) (*IZapRecipientFilterer, error) {
+	contract, err := bindIZapRecipient(address, nil, nil, filterer)
 	if err != nil {
 		return nil, err
 	}
-	return &IFastBridgeRecipientFilterer{contract: contract}, nil
+	return &IZapRecipientFilterer{contract: contract}, nil
 }
 
-// bindIFastBridgeRecipient binds a generic wrapper to an already deployed contract.
-func bindIFastBridgeRecipient(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := IFastBridgeRecipientMetaData.GetAbi()
+// bindIZapRecipient binds a generic wrapper to an already deployed contract.
+func bindIZapRecipient(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := IZapRecipientMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
@@ -153,68 +153,69 @@ func bindIFastBridgeRecipient(address common.Address, caller bind.ContractCaller
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_IFastBridgeRecipient *IFastBridgeRecipientRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _IFastBridgeRecipient.Contract.IFastBridgeRecipientCaller.contract.Call(opts, result, method, params...)
+func (_IZapRecipient *IZapRecipientRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _IZapRecipient.Contract.IZapRecipientCaller.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_IFastBridgeRecipient *IFastBridgeRecipientRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _IFastBridgeRecipient.Contract.IFastBridgeRecipientTransactor.contract.Transfer(opts)
+func (_IZapRecipient *IZapRecipientRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IZapRecipient.Contract.IZapRecipientTransactor.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_IFastBridgeRecipient *IFastBridgeRecipientRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _IFastBridgeRecipient.Contract.IFastBridgeRecipientTransactor.contract.Transact(opts, method, params...)
+func (_IZapRecipient *IZapRecipientRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _IZapRecipient.Contract.IZapRecipientTransactor.contract.Transact(opts, method, params...)
 }
 
 // Call invokes the (constant) contract method with params as input values and
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_IFastBridgeRecipient *IFastBridgeRecipientCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _IFastBridgeRecipient.Contract.contract.Call(opts, result, method, params...)
+func (_IZapRecipient *IZapRecipientCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _IZapRecipient.Contract.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_IFastBridgeRecipient *IFastBridgeRecipientTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _IFastBridgeRecipient.Contract.contract.Transfer(opts)
+func (_IZapRecipient *IZapRecipientTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IZapRecipient.Contract.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_IFastBridgeRecipient *IFastBridgeRecipientTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _IFastBridgeRecipient.Contract.contract.Transact(opts, method, params...)
+func (_IZapRecipient *IZapRecipientTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _IZapRecipient.Contract.contract.Transact(opts, method, params...)
 }
 
-// FastBridgeTransferReceived is a paid mutator transaction binding the contract method 0x461e0c21.
+// Zap is a paid mutator transaction binding the contract method 0xe85e13dd.
 //
-// Solidity: function fastBridgeTransferReceived(address token, uint256 amount, bytes callParams) payable returns(bytes4)
-func (_IFastBridgeRecipient *IFastBridgeRecipientTransactor) FastBridgeTransferReceived(opts *bind.TransactOpts, token common.Address, amount *big.Int, callParams []byte) (*types.Transaction, error) {
-	return _IFastBridgeRecipient.contract.Transact(opts, "fastBridgeTransferReceived", token, amount, callParams)
+// Solidity: function zap(address token, uint256 amount, bytes zapData) payable returns(bytes4)
+func (_IZapRecipient *IZapRecipientTransactor) Zap(opts *bind.TransactOpts, token common.Address, amount *big.Int, zapData []byte) (*types.Transaction, error) {
+	return _IZapRecipient.contract.Transact(opts, "zap", token, amount, zapData)
 }
 
-// FastBridgeTransferReceived is a paid mutator transaction binding the contract method 0x461e0c21.
+// Zap is a paid mutator transaction binding the contract method 0xe85e13dd.
 //
-// Solidity: function fastBridgeTransferReceived(address token, uint256 amount, bytes callParams) payable returns(bytes4)
-func (_IFastBridgeRecipient *IFastBridgeRecipientSession) FastBridgeTransferReceived(token common.Address, amount *big.Int, callParams []byte) (*types.Transaction, error) {
-	return _IFastBridgeRecipient.Contract.FastBridgeTransferReceived(&_IFastBridgeRecipient.TransactOpts, token, amount, callParams)
+// Solidity: function zap(address token, uint256 amount, bytes zapData) payable returns(bytes4)
+func (_IZapRecipient *IZapRecipientSession) Zap(token common.Address, amount *big.Int, zapData []byte) (*types.Transaction, error) {
+	return _IZapRecipient.Contract.Zap(&_IZapRecipient.TransactOpts, token, amount, zapData)
 }
 
-// FastBridgeTransferReceived is a paid mutator transaction binding the contract method 0x461e0c21.
+// Zap is a paid mutator transaction binding the contract method 0xe85e13dd.
 //
-// Solidity: function fastBridgeTransferReceived(address token, uint256 amount, bytes callParams) payable returns(bytes4)
-func (_IFastBridgeRecipient *IFastBridgeRecipientTransactorSession) FastBridgeTransferReceived(token common.Address, amount *big.Int, callParams []byte) (*types.Transaction, error) {
-	return _IFastBridgeRecipient.Contract.FastBridgeTransferReceived(&_IFastBridgeRecipient.TransactOpts, token, amount, callParams)
+// Solidity: function zap(address token, uint256 amount, bytes zapData) payable returns(bytes4)
+func (_IZapRecipient *IZapRecipientTransactorSession) Zap(token common.Address, amount *big.Int, zapData []byte) (*types.Transaction, error) {
+	return _IZapRecipient.Contract.Zap(&_IZapRecipient.TransactOpts, token, amount, zapData)
 }
 
 // RecipientMockMetaData contains all meta data concerning the RecipientMock contract.
 var RecipientMockMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"fastBridgeTransferReceived\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"testRecipientMock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"zap\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}]",
 	Sigs: map[string]string{
-		"461e0c21": "fastBridgeTransferReceived(address,uint256,bytes)",
+		"b239c091": "testRecipientMock()",
+		"e85e13dd": "zap(address,uint256,bytes)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b50610202806100206000396000f3fe6080604052600436106100225760003560e01c8063461e0c211461002e57600080fd5b3661002957005b600080fd5b61006461003c3660046100c8565b7f461e0c21000000000000000000000000000000000000000000000000000000009392505050565b6040517fffffffff00000000000000000000000000000000000000000000000000000000909116815260200160405180910390f35b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b6000806000606084860312156100dd57600080fd5b833573ffffffffffffffffffffffffffffffffffffffff8116811461010157600080fd5b925060208401359150604084013567ffffffffffffffff8082111561012557600080fd5b818601915086601f83011261013957600080fd5b81358181111561014b5761014b610099565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f0116810190838211818310171561019157610191610099565b816040528281528960208487010111156101aa57600080fd5b826020860160208301376000602084830101528095505050505050925092509256fea2646970667358221220f1a74d56eefc9976c67d52f3119adaca862e91740662087e97a8e47c248fbb1d64736f6c63430008140033",
+	Bin: "0x608060405234801561001057600080fd5b5061021b806100206000396000f3fe60806040526004361061002d5760003560e01c8063b239c09114610039578063e85e13dd1461004757600080fd5b3661003457005b600080fd5b34801561004557600080fd5b005b61007d6100553660046100e1565b7fe85e13dd000000000000000000000000000000000000000000000000000000009392505050565b6040517fffffffff00000000000000000000000000000000000000000000000000000000909116815260200160405180910390f35b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b6000806000606084860312156100f657600080fd5b833573ffffffffffffffffffffffffffffffffffffffff8116811461011a57600080fd5b925060208401359150604084013567ffffffffffffffff8082111561013e57600080fd5b818601915086601f83011261015257600080fd5b813581811115610164576101646100b2565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019083821181831017156101aa576101aa6100b2565b816040528281528960208487010111156101c357600080fd5b826020860160208301376000602084830101528095505050505050925092509256fea26469706673582212206a5bc8b6ce97f6638e1238777c2558656268131efa652b2ea633dc4c60fe400a64736f6c63430008140033",
 }
 
 // RecipientMockABI is the input ABI used to generate the binding from.
@@ -388,25 +389,46 @@ func (_RecipientMock *RecipientMockTransactorRaw) Transact(opts *bind.TransactOp
 	return _RecipientMock.Contract.contract.Transact(opts, method, params...)
 }
 
-// FastBridgeTransferReceived is a paid mutator transaction binding the contract method 0x461e0c21.
+// TestRecipientMock is a paid mutator transaction binding the contract method 0xb239c091.
 //
-// Solidity: function fastBridgeTransferReceived(address , uint256 , bytes ) payable returns(bytes4)
-func (_RecipientMock *RecipientMockTransactor) FastBridgeTransferReceived(opts *bind.TransactOpts, arg0 common.Address, arg1 *big.Int, arg2 []byte) (*types.Transaction, error) {
-	return _RecipientMock.contract.Transact(opts, "fastBridgeTransferReceived", arg0, arg1, arg2)
+// Solidity: function testRecipientMock() returns()
+func (_RecipientMock *RecipientMockTransactor) TestRecipientMock(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _RecipientMock.contract.Transact(opts, "testRecipientMock")
 }
 
-// FastBridgeTransferReceived is a paid mutator transaction binding the contract method 0x461e0c21.
+// TestRecipientMock is a paid mutator transaction binding the contract method 0xb239c091.
 //
-// Solidity: function fastBridgeTransferReceived(address , uint256 , bytes ) payable returns(bytes4)
-func (_RecipientMock *RecipientMockSession) FastBridgeTransferReceived(arg0 common.Address, arg1 *big.Int, arg2 []byte) (*types.Transaction, error) {
-	return _RecipientMock.Contract.FastBridgeTransferReceived(&_RecipientMock.TransactOpts, arg0, arg1, arg2)
+// Solidity: function testRecipientMock() returns()
+func (_RecipientMock *RecipientMockSession) TestRecipientMock() (*types.Transaction, error) {
+	return _RecipientMock.Contract.TestRecipientMock(&_RecipientMock.TransactOpts)
 }
 
-// FastBridgeTransferReceived is a paid mutator transaction binding the contract method 0x461e0c21.
+// TestRecipientMock is a paid mutator transaction binding the contract method 0xb239c091.
 //
-// Solidity: function fastBridgeTransferReceived(address , uint256 , bytes ) payable returns(bytes4)
-func (_RecipientMock *RecipientMockTransactorSession) FastBridgeTransferReceived(arg0 common.Address, arg1 *big.Int, arg2 []byte) (*types.Transaction, error) {
-	return _RecipientMock.Contract.FastBridgeTransferReceived(&_RecipientMock.TransactOpts, arg0, arg1, arg2)
+// Solidity: function testRecipientMock() returns()
+func (_RecipientMock *RecipientMockTransactorSession) TestRecipientMock() (*types.Transaction, error) {
+	return _RecipientMock.Contract.TestRecipientMock(&_RecipientMock.TransactOpts)
+}
+
+// Zap is a paid mutator transaction binding the contract method 0xe85e13dd.
+//
+// Solidity: function zap(address , uint256 , bytes ) payable returns(bytes4)
+func (_RecipientMock *RecipientMockTransactor) Zap(opts *bind.TransactOpts, arg0 common.Address, arg1 *big.Int, arg2 []byte) (*types.Transaction, error) {
+	return _RecipientMock.contract.Transact(opts, "zap", arg0, arg1, arg2)
+}
+
+// Zap is a paid mutator transaction binding the contract method 0xe85e13dd.
+//
+// Solidity: function zap(address , uint256 , bytes ) payable returns(bytes4)
+func (_RecipientMock *RecipientMockSession) Zap(arg0 common.Address, arg1 *big.Int, arg2 []byte) (*types.Transaction, error) {
+	return _RecipientMock.Contract.Zap(&_RecipientMock.TransactOpts, arg0, arg1, arg2)
+}
+
+// Zap is a paid mutator transaction binding the contract method 0xe85e13dd.
+//
+// Solidity: function zap(address , uint256 , bytes ) payable returns(bytes4)
+func (_RecipientMock *RecipientMockTransactorSession) Zap(arg0 common.Address, arg1 *big.Int, arg2 []byte) (*types.Transaction, error) {
+	return _RecipientMock.Contract.Zap(&_RecipientMock.TransactOpts, arg0, arg1, arg2)
 }
 
 // Receive is a paid mutator transaction binding the contract receive function.
