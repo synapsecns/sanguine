@@ -452,9 +452,7 @@ func (s *QuoterSuite) TestGenerateActiveRFQ() {
 	dest := int(s.destination)
 	originAddr := common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
 	destAddr := common.HexToAddress("0x0b2c639c533813f4aa9d7837caf62653d097ff85")
-	balance := big.NewInt(100_000_000)     // 100 USDC
-	originAmount := big.NewInt(50_000_000) // 50 USDC
-
+	balance := big.NewInt(1_000_000_000_000)
 	balances := map[int]map[common.Address]*big.Int{
 		origin: {
 			originAddr: balance,
@@ -490,7 +488,7 @@ func (s *QuoterSuite) TestGenerateActiveRFQ() {
 		Data: model.QuoteData{
 			OriginChainID:     origin,
 			DestChainID:       dest,
-			OriginAmountExact: originAmount.String(),
+			OriginAmountExact: "100000",
 			OriginTokenAddr:   originAddr.String(),
 			DestTokenAddr:     destAddr.String(),
 		},
@@ -504,11 +502,35 @@ func (s *QuoterSuite) TestGenerateActiveRFQ() {
 
 	respMsg, err := s.manager.GenerateActiveRFQ(s.GetTestContext(), &msg)
 	s.NoError(err)
-	var resp model.PutRFQResponse
+	var resp model.WsRFQResponse
 	err = json.Unmarshal(respMsg.Content, &resp)
 	s.NoError(err)
-	s.False(resp.Success)
 	s.Equal("0", resp.DestAmount)
+
+	req = model.PutRFQRequest{
+		UserAddress:  "0x123",
+		IntegratorID: "123",
+		QuoteTypes:   []string{"active"},
+		Data: model.QuoteData{
+			OriginChainID:     origin,
+			DestChainID:       dest,
+			OriginAmountExact: "500000000000",
+			OriginTokenAddr:   originAddr.String(),
+			DestTokenAddr:     destAddr.String(),
+		},
+	}
+	reqBytes, err = json.Marshal(req)
+	s.NoError(err)
+	msg = model.ActiveRFQMessage{
+		Op:      rest.RequestQuoteOp,
+		Content: json.RawMessage(reqBytes),
+	}
+
+	respMsg, err = s.manager.GenerateActiveRFQ(s.GetTestContext(), &msg)
+	s.NoError(err)
+	err = json.Unmarshal(respMsg.Content, &resp)
+	s.NoError(err)
+	s.Equal("499899950000", resp.DestAmount)
 }
 
 func (s *QuoterSuite) TestGetOriginAmount() {
