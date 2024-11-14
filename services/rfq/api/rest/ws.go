@@ -198,6 +198,8 @@ func (c *wsClient) sendRelayerRequest(ctx context.Context, req *model.WsRFQReque
 
 // handleRelayerMessage handles messages from the relayer.
 // An error returned will result in the websocket connection being closed.
+//
+//nolint:cyclop
 func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err error) {
 	_, span := c.handler.Tracer().Start(ctx, "handleRelayerMessage", trace.WithAttributes(
 		attribute.String("relayer_address", c.relayerAddr),
