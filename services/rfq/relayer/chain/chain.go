@@ -77,8 +77,8 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 	// Check to see if ETH should be sent to destination
 	if util.IsGasToken(request.Transaction.DestToken) {
 		gasAmount = request.Transaction.DestAmount
-	} else if request.Transaction.CallValue != nil {
-		gasAmount = request.Transaction.CallValue
+	} else if request.Transaction.ZapNative != nil {
+		gasAmount = request.Transaction.ZapNative
 	} else if request.TransactionV1.SendChainGas {
 		gasAmount, err = c.Bridge.ChainGasAmount(&bind.CallOpts{Context: ctx})
 		if err != nil {

@@ -394,7 +394,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 }
 
 //nolint:gosec
-func (i *IntegrationSuite) TestArbitraryCall() {
+func (i *IntegrationSuite) TestZap() {
 	// start the relayer and guard
 	go func() {
 		_ = i.relayer.Start(i.GetTestContext())
@@ -475,8 +475,8 @@ func (i *IntegrationSuite) TestArbitraryCall() {
 	paramsV2 := fastbridgev2.IFastBridgeV2BridgeParamsV2{
 		QuoteRelayer:            i.relayerWallet.Address(),
 		QuoteExclusivitySeconds: new(big.Int).SetInt64(30),
-		CallParams:              []byte("Hello, world!"),
-		CallValue:               big.NewInt(1_337_420),
+		ZapData:                 []byte("Hello, world!"),
+		ZapNative:               big.NewInt(1_337_420),
 	}
 	tx, err = originFastBridge.Bridge0(auth.TransactOpts, params, paramsV2)
 	i.NoError(err)
