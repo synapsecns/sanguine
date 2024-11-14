@@ -387,7 +387,7 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	var acct *keystore.Key
 	// TODO handle storing accounts to conform to get tx context
 	if address != nil {
-		err := retry.WithBackoff(ctx, func(ctx context.Context) error {
+		err := retry.WithBackoff(ctx, func(_ context.Context) error {
 			acct = f.GetAccount(*address)
 			if acct == nil {
 				return fmt.Errorf("could not get account %s", address.String())
