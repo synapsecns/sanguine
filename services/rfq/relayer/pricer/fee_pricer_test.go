@@ -231,7 +231,7 @@ func (s *PricerSuite) TestGetTotalFee() {
 	quoteRequest := &reldb.QuoteRequest{
 		RawRequest: []byte{},
 		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
-			CallValue: big.NewInt(1 * 1e18),
+			ZapNative: big.NewInt(1 * 1e18),
 		},
 	}
 	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true, quoteRequest)
@@ -246,8 +246,8 @@ func (s *PricerSuite) TestGetTotalFee() {
 	quoteRequest = &reldb.QuoteRequest{
 		RawRequest: []byte{},
 		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
-			CallValue:  big.NewInt(1 * 1e18),
-			CallParams: []byte{1},
+			ZapNative:  big.NewInt(1 * 1e18),
+			ZapData:    []byte{1},
 			DestAmount: big.NewInt(1 * 1e18),
 		},
 	}
