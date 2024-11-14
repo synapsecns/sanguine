@@ -1,14 +1,7 @@
 import { Request, Response } from 'express'
 
 import { db } from '../db'
-import {
-  qDeposits,
-  qRelays,
-  qProofs,
-  qClaims,
-  qRefunds,
-  qDisputes,
-} from '../queries'
+import { qDeposits, qRelays, qProofs, qClaims, qRefunds } from '../queries'
 import { nest_results } from '../utils/nestResults'
 
 const sevenDaysAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60
@@ -21,7 +14,7 @@ export const pendingTransactionsMissingClaimController = async (
     const query = db
       .with('deposits', () => qDeposits())
       .with('relays', () => qRelays())
-      .with('proofs', () => qProofs({activeOnly: true}))
+      .with('proofs', () => qProofs({ activeOnly: true }))
       .with('claims', () => qClaims())
       .with('combined', (qb) =>
         qb
@@ -45,7 +38,7 @@ export const pendingTransactionsMissingClaimController = async (
       res.json(nestedResults)
     } else {
       res
-        .status(404)
+        .status(200)
         .json({ message: 'No pending transactions missing claim found' })
     }
   } catch (error) {
@@ -62,7 +55,7 @@ export const pendingTransactionsMissingProofController = async (
     const query = db
       .with('deposits', () => qDeposits())
       .with('relays', () => qRelays())
-      .with('proofs', () => qProofs({activeOnly: true}))
+      .with('proofs', () => qProofs({ activeOnly: true }))
       .with('combined', (qb) =>
         qb
           .selectFrom('deposits')
@@ -83,7 +76,7 @@ export const pendingTransactionsMissingProofController = async (
       res.json(nestedResults)
     } else {
       res
-        .status(404)
+        .status(200)
         .json({ message: 'No pending transactions missing proof found' })
     }
   } catch (error) {
@@ -128,7 +121,7 @@ export const pendingTransactionsMissingRelayController = async (
       res.json(nestedResults)
     } else {
       res
-        .status(404)
+        .status(200)
         .json({ message: 'No pending transactions missing relay found' })
     }
   } catch (error) {
@@ -173,7 +166,7 @@ export const pendingTransactionsMissingRelayExceedDeadlineController = async (
       res.json(nestedResults)
     } else {
       res
-        .status(404)
+        .status(200)
         .json({ message: 'No pending transactions missing relay found' })
     }
   } catch (error) {

@@ -37,7 +37,7 @@
     "New": "新規",
     "Gas token": "ガストークン",
     "Not bridgeable": "ブリッジ不可",
-    "Succesfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "{originChainName}の{fromToken}から{destinationChainName}の{toToken}へのブリッジを正常に開始しました",
+    "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "{originChainName}の{fromToken}から{destinationChainName}の{toToken}へのブリッジを正常に開始しました",
     "Slippage": "スリッページ",
     "Router": "ルーター",
     "Powered by Synapse": "Synapseによって提供",

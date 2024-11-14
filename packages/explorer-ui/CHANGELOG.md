@@ -3,6 +3,76 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.5.6...@synapsecns/explorer-ui@0.5.7) (2024-11-07)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
+## [0.5.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.5.5...@synapsecns/explorer-ui@0.5.6) (2024-11-04)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
+## [0.5.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.5.4...@synapsecns/explorer-ui@0.5.5) (2024-11-01)
+
+
+### Reverts
+
+* Revert "Removes banner (#3355)" ([47194e6](https://github.com/synapsecns/sanguine/commit/47194e6218d23c8e42c8df16790e6b64d4615dc7)), closes [#3355](https://github.com/synapsecns/sanguine/issues/3355)
+
+
+
+
+
+## [0.5.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.5.3...@synapsecns/explorer-ui@0.5.4) (2024-10-31)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
+## [0.5.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.5.2...@synapsecns/explorer-ui@0.5.3) (2024-10-29)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
+## [0.5.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.5.1...@synapsecns/explorer-ui@0.5.2) (2024-10-29)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
+## [0.5.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.5.0...@synapsecns/explorer-ui@0.5.1) (2024-10-21)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
+# [0.5.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.4.0...@synapsecns/explorer-ui@0.5.0) (2024-10-16)
+
+
+### Features
+
+* **explorer-ui:** Explorer maintenance banner message ([#3301](https://github.com/synapsecns/sanguine/issues/3301)) ([3e282e0](https://github.com/synapsecns/sanguine/commit/3e282e08fa7331af2377116e401970d1ecc2feb4))
+
+
+
+
+
 # [0.4.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.3.11...@synapsecns/explorer-ui@0.4.0) (2024-10-10)
 
 

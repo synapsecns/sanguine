@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
-import {IFastBridgeRecipient} from "../../contracts/interfaces/IFastBridgeRecipient.sol";
+import {IZapRecipient} from "../../contracts/interfaces/IZapRecipient.sol";
 
 // solhint-disable no-empty-blocks
 /// @notice Incorrectly implemented recipient mock for testing purposes. DO NOT USE IN PRODUCTION.
@@ -13,7 +13,7 @@ contract ExcessiveReturnValueRecipient {
     function testExcessiveReturnValueRecipient() external {}
 
     /// @notice Incorrectly implemented - method returns excessive bytes.
-    function fastBridgeTransferReceived(address, uint256, bytes memory) external payable returns (bytes4, uint256) {
-        return (IFastBridgeRecipient.fastBridgeTransferReceived.selector, 1337);
+    function zap(address, uint256, bytes memory) external payable returns (bytes4, uint256) {
+        return (IZapRecipient.zap.selector, 1337);
     }
 }

@@ -7,6 +7,7 @@ export const chainIdToName: { [key: number]: string } = {
   534352: 'scroll',
   59144: 'linea',
   56: 'bnb',
+  480: 'worldchain',
 }
 
 export const getChainName = (chainId: number): string => {

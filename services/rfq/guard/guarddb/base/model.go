@@ -41,7 +41,7 @@ type PendingProvenModel struct {
 	// TxHash is the hash of the relay transaction on destination
 	TxHash string
 	// Status is the status of the event
-	Status guarddb.PendingProvenStatus
+	Status guarddb.PendingProvenStatus `gorm:"column:status;index:idx_guard_status_name"`
 	// BlockNumber is the block number of the event
 	BlockNumber uint64
 }

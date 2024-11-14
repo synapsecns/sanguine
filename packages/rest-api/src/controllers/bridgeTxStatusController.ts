@@ -4,6 +4,7 @@ import { ethers } from 'ethers'
 import { Synapse } from '../services/synapseService'
 import { getTokenDecimals } from '../utils/getTokenDecimals'
 import { logger } from '../middleware/logger'
+import { fetchBridgeTransaction } from '../utils/fetchBridgeTransaction'
 
 export const bridgeTxStatusController = async (req, res) => {
   const errors = validationResult(req)
@@ -14,42 +15,26 @@ export const bridgeTxStatusController = async (req, res) => {
   try {
     const { destChainId, bridgeModule, synapseTxId } = req.query
 
+    const txIdWith0x = !synapseTxId.startsWith('0x')
+      ? `0x${synapseTxId}`
+      : synapseTxId
+
     const status = await Synapse.getBridgeTxStatus(
       Number(destChainId),
       bridgeModule,
-      synapseTxId
+      txIdWith0x
     )
 
     if (status) {
       const txIdWithout0x = synapseTxId.startsWith('0x')
         ? synapseTxId.slice(2)
         : synapseTxId
-      const graphqlEndpoint = 'https://explorer.omnirpc.io/graphql'
-      const graphqlQuery = `
-        {
-          bridgeTransactions(useMv: true, kappa: "${txIdWithout0x}") {
-            toInfo {
-              chainID
-              address
-              txnHash
-              value
-              USDValue
-              tokenSymbol
-              tokenAddress
-              formattedTime
-            }
-          }
-        }
-      `
 
-      const graphqlResponse = await fetch(graphqlEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: graphqlQuery }),
-      })
+      const params = { useMv: true, kappa: txIdWithout0x }
 
-      const graphqlData = await graphqlResponse.json()
-      const toInfo = graphqlData.data.bridgeTransactions[0]?.toInfo
+      const bridgeTxn = await fetchBridgeTransaction(params)
+
+      const { toInfo = null } = bridgeTxn || {}
 
       if (toInfo) {
         const { tokenAddress, value, ...restToInfo } = toInfo
@@ -100,7 +85,6 @@ export const bridgeTxStatusController = async (req, res) => {
     res.status(500).json({
       error:
         'An unexpected error occurred in /bridgeTxStatus. Please try again later.',
-      details: err.message,
     })
   }
 }
