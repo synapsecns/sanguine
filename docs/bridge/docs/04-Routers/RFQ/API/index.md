@@ -60,6 +60,54 @@ Please note that end-users and solvers will not need to run their own version of
 
   - [`PUT /rfq`](./put-rfq-request.api.mdx) - Initiate an RFQ and receive the best available quote.
 
+  ## Websocket API for Quoters
+
+  The websocket API allows quoters to interact with user quote requests once connected to the `GET /rfq_stream` endpoint.
+
+  The websocket API exposes several operations for quoters:
+  - `ping` - sends a heartbeat to the API server to keep the connection alive (must be sent at least once per minute)
+  - `subscribe` - subscribes to quote requests for given chain(s)
+  - `unsubscribe` - unsubscribes to quote requests for given chain(s)
+  - `send_quote` - responds to a quote request
+
+  The API server may respond with the following operations:
+  - `pong` - acknowleges a `ping` message
+  - `request_quote` - informs quoter of a new user quote request
+
+  All websocket messages follow this format:
+  ```
+  {
+    op: string,
+    content: json,
+    success: bool,
+  }
+  ```
+
+  Quote request content should have the following format:
+
+  ```
+  {
+    data: {
+      origin_chain_id: number,
+      dest_chain_id: number,
+      origin_token_addr: string,
+      dest_token_addr: string,
+      origin_amount_exact: string,
+      expiration_window: number // number of ms since created_at until request should expire
+    },
+  }
+  ```
+
+  Quote response content should have the following format:
+
+  ```
+  {
+    request_id: string,
+    dest_amount: string,
+  }
+  ```
+
+  Subscribe / Unsubscribe content should be an array of chain ids.
 
 
 **API Version Changes**
