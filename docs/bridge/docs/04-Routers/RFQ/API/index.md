@@ -3,28 +3,64 @@ sidebar_position: 0
 sidebar_label: API
 ---
 
-# RFQ API
+# Quoter API
 
 :::note
 
-This guide is mostly meant for developers who are working on building their own quoter or frontend for rfq. If you are just looking to run a relayer, please see [Relayer](../Relayer). If you are looking to integrate rfq, please see the API docs below the dropdown.
+This guide is intended for builders who are integrating a quoter or frontend with the Synapse RFQ system.
+
+If you are interested in running a relayer, please also see [Relayer](../Relayer).
 
 :::
 
-The RFQ API is an off-chain service that allows market makers to post quotes for certain bridge routes & tokens. Users can then read these quotes and take the liquidity by submitting a transaction on chain through the [Fast Bridge Contract](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html).
+The Quoter API is an off-chain RESTful service that allows market makers / solvers to post open quotes which communicate an intent to fulfill any transaction that occurs upon specifically quoted routes and meets specified limits, pricing, and fee criteria. This method of quoting is referred to as "Passive" quoting and is similar to an order book.
 
-Solvers are responsible for keeping quotes fresh and implementations of the RFQ relayer should update quotes as often as possible. By default, the canonical [relayer](../Relayer) continuously updates quotes by checking on-chain balances and in-flight requests and other implementations should take a similar approach.
+Starting with [Fast Bridge V2](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html), a new "Active" quoting method has been introduced where a solver can listen and respond to live quote requests individually. This creates a hybrid system, where Active and Passive quoting can be utilized together by solvers in any desired combination to maximize their efficiency.
 
-The implementation of the rfq api can be found [here](https://github.com/synapsecns/sanguine/tree/master/services/rfq/api). Please note that end-users and solvers will not need to run their own version of the API.
+Quoters that value simplicity over efficiency will prefer Passive quoting. Quoters can do not need to integrate with both systems - they can choose only one, or both. It is fully flexible.
 
-## Integrating the API
+Integrators and users can then utilize the data from these quotes to construct and submit a corresponding transaction on-chain through the [Fast Bridge Contract](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html).
 
-The RFQ API is a RESTful API that allows users to post quotes and read quotes. The API is incredibly simple and only has one endpoint with two methods:
+Quoters are responsible for keeping their quotes fresh and accurate. Likewise, they are responsible for completing their part of fulfillment for any transactions which act upon their quotes. To these effects, quoters should push updates as rapidly as possible in reaction to consequential changes in prices, balances, etc. By default, the canonical [relayer](../Relayer) continuously updates quotes by checking on-chain balances, in-flight requests, and gas prices - custom implementations should take a similar approach.
 
-- [`PUT /quotes`](./upsert-quote.api.mdx) (authenticated) - Upsert a quote
-- [`GET /quotes`](./get-quotes.api.mdx) (unauthenticated) - Get all quotes, can be filtered by different parameters.
+The implementation of the Quoter API can be found [here](https://github.com/synapsecns/sanguine/tree/master/services/rfq/api).
 
-Only Solvers should be writing to the API, end-users need only read from the `/quotes` endpoint.
+Please note that end-users and solvers will not need to run their own version of the API.
+
+
+**Integrating the API**
+
+## Passive Quotes
+
+  ## Endpoints for Quoters:
+
+  Authorized quoters can push passive quotes via these endpoints:
+
+  - [`PUT /quotes`](./upsert-quote.api.mdx) - Upsert a passive quote
+  - [`PUT /bulk_quotes`](./upsert-quotes.api.mdx) - Upsert an array of passive quotes in bulk
+
+  ## Endpoints for Integrators / Users
+
+  To view all current passive quotes, this permissionless endpoint can be used:
+
+  - [`GET /quotes`](./get-quotes.api.mdx) - Get all quotes, can be filtered by different parameters.
+
+
+
+## Active Quotes
+
+  Active Quoting is more complicated than passive and requires listening for & responding to individual Requests for Quotes (RFQs).
+
+  ## Endpoints for Quoters
+
+  - [`GET /rfq_stream`](./rfq-stream.api.mdx) - Connect via WebSocket to listen for streamed RFQs
+  - [`GET /rfq`](./get-rfq-request.api.mdx) - Retrieve open RFQs.
+
+  ## Endpoints for Integrators / Users
+
+  - [`PUT /rfq`](./put-rfq-request.api.mdx) - Initiate an RFQ and receive the best available quote.
+
+
 
 **API Version Changes**
 
@@ -36,13 +72,29 @@ Upon a version change, [versions.go](https://github.com/synapsecns/sanguine/blob
 
 Please note, while Synapse may choose to take additional steps to alert & advise on API changes through other communication channels, it will remain the responsibility of the API users & integrators to set up their own detection & notifications of version changes as they use these endpoints. Likewise, it will be their responsibility review the versions.go file, to research & understand how any changes may affect their integration, and to implement any necessary adjustments resulting from the API changes.
 
-**Authentication**
+**Authentication & Authorization**
 
-In accordance with [EIP-191](https://eips.ethereum.org/EIPS/eip-191), the RFQ API requires a signature to be sent with each request. The signature should be generated by the user's wallet and should be a valid signature of the message `rfq-api` with the user's private key. The signature should be sent in the `Authorization` header of the request. We provide a client stub/example implementation in go [here](https://pkg.go.dev/github.com/synapsecns/sanguine/services/rfq@v0.13.3/api/client).
+In accordance with [EIP-191](https://eips.ethereum.org/EIPS/eip-191), authorized Quoter API endpoints require a message signed by the relayer's address to accompany each request. The signature should be sent in the `Authorization` header of the request. We provide a client stub/example implementation in go [here](https://pkg.go.dev/github.com/synapsecns/sanguine/services/rfq@v0.13.3/api/client).
 
-:::note
+Additional Example in Typescript:
 
-The RFQ API expects the signatures to have V values as 0/1 rather than 27/28. The fastest way to fix this is to modify V by subtracting 27
+  ```typescript
+  import { ecsign, toBuffer, bufferToHex, hashPersonalMessage } from 'ethereumjs-util';
+
+  async function signMessage(privateKey: string) {
+      const message = Math.floor(Date.now() / 1000).toString();
+      const messageHash = hashPersonalMessage(Buffer.from(message));
+      var { v, r, s } = ecsign(messageHash, toBuffer(privateKey));
+
+      v -= 27
+
+      const signature = Buffer.concat([r, s, Buffer.from([v])]);
+
+      return `${message}:${bufferToHex(signature)}`;
+  }
+  ```
+
+Once the message has been authenticated, the authorization of the sender/signer will be checked against the assigned roles of the respective FastBridge contract. If `RELAYER_ROLE` is not assigned, the request will be rejected. If you wish to be added as an authorized quoter, contact us.
 
 :::
 
@@ -50,11 +102,11 @@ The RFQ API expects the signatures to have V values as 0/1 rather than 27/28. Th
 
  - Mainnet: `api.synapseprotocol.com/quotes`
  - Testnet: `rfq-api-testnet.omnirpc.io`
- - 
+ -
 
 ## Running the API:
 
-Users and relayers **are not** expected to run their own version of the RFQ API. The API is a service that should be run by Quoters and interfaces that allow Solvers to post quotes. The RFQ API takes in a yaml config that allows the user to specify which contracts, chains and interfaces it should run on. The config is structured like this:
+Users and relayers **are not** expected to run their own version of the Quoter API. The API is a service that should be run by Quoters and interfaces that allow Solvers to post quotes. The Quoter API takes in a yaml config that allows the user to specify which contracts, chains and interfaces it should run on. The config is structured like this:
 
 ```yaml
 database:
@@ -78,7 +130,7 @@ Yaml settings:
 
 **Building From Source:**
 
-To build the RFQ API from source, you will need to clone the repository and run the main.go file with the config file. Building from source requires go 1.21 or higher and is generally not recommended for end-users.
+To build the Quoter API from source, you will need to clone the repository and run the main.go file with the config file. Building from source requires go 1.21 or higher and is generally not recommended for end-users.
 
 1. `git clone https://github.com/synapsecns/sanguine --recursive`
 2. `cd sanguine/services/rfq`
@@ -86,7 +138,7 @@ To build the RFQ API from source, you will need to clone the repository and run 
 
 **Running with Docker**
 
-The RFQ API can also be run with docker. To do this, you will need to build the docker image and run it with the config file.
+The Quoter API can also be run with docker. To do this, you will need to build the docker image and run it with the config file.
 
 :::tip
 Docker versions should always be pinned in production environments. For a full list of tags, see [here](https://github.com/synapsecns/sanguine/pkgs/container/sanguine%2Frfq-api)
