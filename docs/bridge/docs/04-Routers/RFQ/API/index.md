@@ -28,41 +28,41 @@ The implementation of the Quoter API can be found [here](https://github.com/syna
 Please note that end-users and solvers will not need to run their own version of the API.
 
 
-**Integrating the API**
+## Integrating the API
 
-## Passive Quotes
+### Passive Quotes
 
-  ## Endpoints for Quoters:
+**Endpoints for Quoters**
 
-  Authorized quoters can push passive quotes via these endpoints:
+Authorized quoters can push passive quotes via these endpoints:
 
-  - [`PUT /quotes`](./upsert-quote.api.mdx) - Upsert a passive quote
-  - [`PUT /bulk_quotes`](./upsert-quotes.api.mdx) - Upsert an array of passive quotes in bulk
+- [`PUT /quotes`](./upsert-quote.api.mdx) - Upsert a passive quote
+- [`PUT /bulk_quotes`](./upsert-quotes.api.mdx) - Upsert an array of passive quotes in bulk
 
-  ## Endpoints for Integrators / Users
+**Endpoints for Integrators / Users**
 
-  To view all current passive quotes, this permissionless endpoint can be used:
+To view all current passive quotes, this permissionless endpoint can be used:
 
-  - [`GET /quotes`](./get-quotes.api.mdx) - Get all quotes, can be filtered by different parameters.
-
-
-
-## Active Quotes
-
-  Active Quoting is more complicated than passive and requires listening for & responding to individual Requests for Quotes (RFQs).
-
-  ## Endpoints for Quoters
-
-  - [`GET /rfq_stream`](./rfq-stream.api.mdx) - Connect via WebSocket to listen for streamed RFQs
-  - [`GET /rfq`](./get-rfq-request.api.mdx) - Retrieve currently open RFQs.
-
-  ## Endpoints for Integrators / Users
-
-  - [`PUT /rfq`](./put-rfq-request.api.mdx) - Initiate an RFQ and receive the best available quote.
+- [`GET /quotes`](./get-quotes.api.mdx) - Get all quotes, can be filtered by different parameters.
 
 
 
-**API Version Changes**
+### Active Quotes
+
+Active Quoting is more complicated than passive and requires listening for & responding to individual Requests for Quotes (RFQs).
+
+**Endpoints for Quoters**
+
+- [`GET /rfq_stream`](./rfq-stream.api.mdx) - Connect via WebSocket to listen for streamed RFQs
+- [`GET /rfq`](./get-rfq-request.api.mdx) - Retrieve currently open RFQs.
+
+**Endpoints for Integrators / Users**
+
+- [`PUT /rfq`](./put-rfq-request.api.mdx) - Initiate an RFQ and receive the best available quote.
+
+
+
+## API Version Changes
 
 An http response header "X-Api-Version" will be returned on each call response.
 
@@ -72,7 +72,7 @@ Upon a version change, [versions.go](https://github.com/synapsecns/sanguine/blob
 
 Please note, while Synapse may choose to take additional steps to alert & advise on API changes through other communication channels, it will remain the responsibility of the API users & integrators to set up their own detection & notifications of version changes as they use these endpoints. Likewise, it will be their responsibility review the versions.go file, to research & understand how any changes may affect their integration, and to implement any necessary adjustments resulting from the API changes.
 
-**Authentication & Authorization**
+## Authentication & Authorization
 
 In accordance with [EIP-191](https://eips.ethereum.org/EIPS/eip-191), authorized Quoter API endpoints require a message signed by the relayer's address to accompany each request. The signature should be sent in the `Authorization` header of the request. We provide a client stub/example implementation in go [here](https://pkg.go.dev/github.com/synapsecns/sanguine/services/rfq@v0.13.3/api/client).
 
@@ -98,7 +98,7 @@ Once the message has been authenticated, the authorization of the sender/signer 
 
 :::
 
-### API Urls
+## API Urls
 
  - Mainnet: `api.synapseprotocol.com/quotes`
  - Testnet: `rfq-api-testnet.omnirpc.io`
