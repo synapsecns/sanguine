@@ -17,7 +17,7 @@ The Quoter API is an off-chain RESTful service that allows market makers / solve
 
 Starting with [Fast Bridge V2](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html), a new "Active" quoting method has been introduced where a solver can listen and respond to live quote requests individually. This creates a hybrid system, where Active and Passive quoting can be utilized together by solvers in any desired combination to maximize their efficiency.
 
-Quoters that value simplicity over efficiency will prefer Passive quoting. Quoters can do not need to integrate with both systems - they can choose only one, or both. It is fully flexible.
+Active Quoting is more complicated to implement and maintain, but allow for more granular & customized quotes that can improve efficiency among other benefits. Quoters who prefer a simpler approach are free to use nothing but Passive Quotes if they choose.
 
 Integrators and users can then utilize the data from these quotes to construct and submit a corresponding transaction on-chain through the [Fast Bridge Contract](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html).
 
@@ -54,7 +54,7 @@ Please note that end-users and solvers will not need to run their own version of
   ## Endpoints for Quoters
 
   - [`GET /rfq_stream`](./rfq-stream.api.mdx) - Connect via WebSocket to listen for streamed RFQs
-  - [`GET /rfq`](./get-rfq-request.api.mdx) - Retrieve open RFQs.
+  - [`GET /rfq`](./get-rfq-request.api.mdx) - Retrieve currently open RFQs.
 
   ## Endpoints for Integrators / Users
 
