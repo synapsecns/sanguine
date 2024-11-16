@@ -53,12 +53,12 @@ Active Quoting is more complicated than passive and requires listening for & res
 
 **Endpoints for Quoters**
 
-- [`GET /rfq_stream`](./rfq-stream.api.mdx) - Connect via WebSocket to listen for streamed RFQs
-- [`GET /rfq`](./get-rfq-request.api.mdx) - Retrieve currently open RFQs.
+- [`GET /rfq_stream`](./listen-for-active-rf-qs.api.mdx) - Connect via WebSocket to listen for streamed RFQs
+- [`GET /rfq`](./get-open-quote-requests.api.mdx) - Retrieve currently open RFQs.
 
 **Endpoints for Integrators / Users**
 
-- [`PUT /rfq`](./put-rfq-request.api.mdx) - Initiate an RFQ and receive the best available quote.
+- [`PUT /rfq`](./initiate-an-active-rfq.api.mdx) - Initiate an RFQ and receive the best available quote.
 
   ## Websocket API for Quoters
 
@@ -70,7 +70,7 @@ Active Quoting is more complicated than passive and requires listening for & res
   - `unsubscribe` - unsubscribes to quote requests for given chain(s)
   - `send_quote` - responds to a quote request
 
-  The API server may respond with the following operations:
+  The API server may respond with the following operations:`
   - `pong` - acknowleges a `ping` message
   - `request_quote` - informs quoter of a new user quote request
 
