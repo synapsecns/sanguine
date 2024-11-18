@@ -34,9 +34,14 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     /// @dev Only addresses with this role can perform administrative tasks within the contract.
     bytes32 public constant GOVERNOR_ROLE = keccak256("GOVERNOR_ROLE");
 
+    /// @notice Denominator for fee rates, represents 100%.
     uint256 public constant FEE_BPS = 1e6;
-    uint256 public constant FEE_RATE_MAX = 0.01e6; // max 1% on origin amount
+    /// @notice Maximum protocol fee rate: 1% on origin amount.
+    uint256 public constant FEE_RATE_MAX = 0.01e6;
+
+    /// @notice Minimum cancel delay that can be set by the governor.
     uint256 public constant MIN_CANCEL_DELAY = 1 hours;
+    /// @notice Default cancel delay set during the contract deployment.
     uint256 public constant DEFAULT_CANCEL_DELAY = 1 days;
 
     /// @notice Protocol fee rate taken on origin amount deposited in origin chain
