@@ -2,6 +2,7 @@ package fastbridge
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -48,10 +49,10 @@ func EventTypeFromTopic(ogTopic common.Hash) *fastbridge.EventType {
 }
 
 // Topic gets the topic from the event type.
-func Topic(eventType fastbridge.EventType) common.Hash {
+func Topic(eventType fastbridge.EventType) (common.Hash, error) {
 	topicHash, ok := TopicMap()[fastbridge.EventType(eventType.Int())]
 	if !ok {
-		panic("unknown event")
+		return common.Hash{}, fmt.Errorf("unknown event type: %v", eventType)
 	}
-	return topicHash
+	return topicHash, nil
 }

@@ -191,3 +191,273 @@ func (e FastBridgeBridgeRelayed) GetSendChainGas() *bool {
 func (e FastBridgeBridgeRelayed) GetSender() *string {
 	return nil
 }
+
+// GetBlockNumber gets the block number for the event.
+func (e FastBridgeBridgeDepositRefunded) GetBlockNumber() uint64 {
+	return e.Raw.BlockNumber
+}
+
+// GetTxHash gets the tx hash for the event.
+func (e FastBridgeBridgeDepositRefunded) GetTxHash() common.Hash {
+	return e.Raw.TxHash
+}
+
+// GetContractAddress gets the contract address the event occurred on.
+func (e FastBridgeBridgeDepositRefunded) GetContractAddress() common.Address {
+	return e.Raw.Address
+}
+
+// GetEventType gets the event type for the event.
+func (e FastBridgeBridgeDepositRefunded) GetEventType() fastbridge.EventType {
+	return fastbridge.BridgeRefundedEvent
+}
+
+// GetEventIndex gets the event index for the event.
+func (e FastBridgeBridgeDepositRefunded) GetEventIndex() uint64 {
+	return uint64(e.Raw.TxIndex)
+}
+
+// GetTransactionID gets the transaction id for the event.
+func (e FastBridgeBridgeDepositRefunded) GetTransactionID() [32]byte {
+	return e.TransactionId
+}
+
+// GetSender gets the sender for the event.
+func (e FastBridgeBridgeDepositRefunded) GetSender() *string {
+	return nil
+}
+
+// GetRequest gets the request for the event.
+func (e FastBridgeBridgeDepositRefunded) GetRequest() *[]byte {
+	return nil
+}
+
+// GetOriginChainID gets the origin chain id for the event.
+func (e FastBridgeBridgeDepositRefunded) GetOriginChainID() *big.Int {
+	return nil
+}
+
+// GetDestChainID gets the destination chain id for the event.
+func (e FastBridgeBridgeDepositRefunded) GetDestChainID() *big.Int {
+	return nil
+}
+
+// GetOriginToken gets the origin token for the event.
+func (e FastBridgeBridgeDepositRefunded) GetOriginToken() common.Address {
+	return common.Address{}
+}
+
+// GetDestToken gets the destination token for the event.
+func (e FastBridgeBridgeDepositRefunded) GetDestToken() common.Address {
+	return common.Address{}
+}
+
+// GetOriginAmount gets the origin amount for the event.
+func (e FastBridgeBridgeDepositRefunded) GetOriginAmount() *big.Int {
+	return nil
+}
+
+// GetDestAmount gets the destination amount for the event.
+func (e FastBridgeBridgeDepositRefunded) GetDestAmount() *big.Int {
+	return nil
+}
+
+// GetSendChainGas gets the send chain gas for the event.
+func (e FastBridgeBridgeDepositRefunded) GetSendChainGas() *bool {
+	return nil
+}
+
+// GetChainGasAmount gets the chain gas amount for the event.
+func (e FastBridgeBridgeDepositRefunded) GetChainGasAmount() *big.Int {
+	return nil
+}
+
+// GetRelayer gets the relayer address for the event.
+func (e FastBridgeBridgeDepositRefunded) GetRelayer() *string {
+	return nil
+}
+
+// GetTo gets the to address for the event.
+func (e FastBridgeBridgeDepositRefunded) GetTo() *string {
+	return nil
+}
+
+// GetTxHash gets the tx hash for the event.
+func (e FastBridgeBridgeProofProvided) GetTxHash() common.Hash {
+	return e.Raw.TxHash
+}
+
+// GetContractAddress gets the contract address the event occurred on.
+func (e FastBridgeBridgeProofProvided) GetContractAddress() common.Address {
+	return e.Raw.Address
+}
+
+// GetBlockNumber gets the block number for the event.
+func (e FastBridgeBridgeProofProvided) GetBlockNumber() uint64 {
+	return e.Raw.BlockNumber
+}
+
+// GetEventType gets the event type for the event.
+func (e FastBridgeBridgeProofProvided) GetEventType() fastbridge.EventType {
+	return fastbridge.BridgeProvenEvent
+}
+
+// GetEventIndex gets the event index for the event.
+func (e FastBridgeBridgeProofProvided) GetEventIndex() uint64 {
+	return uint64(e.Raw.TxIndex)
+}
+
+// GetTransactionID gets the transaction id for the event.
+func (e FastBridgeBridgeProofProvided) GetTransactionID() [32]byte {
+	return e.TransactionId
+}
+
+// GetSender gets the sender for the event.
+func (e FastBridgeBridgeProofProvided) GetSender() *string {
+	return nil
+}
+
+// GetRequest gets the request for the event.
+func (e FastBridgeBridgeProofProvided) GetRequest() *[]byte {
+	return nil
+}
+
+// GetOriginChainID gets the origin chain id for the event.
+func (e FastBridgeBridgeProofProvided) GetOriginChainID() *big.Int {
+	return nil
+}
+
+// GetDestChainID gets the destination chain id for the event.
+func (e FastBridgeBridgeProofProvided) GetDestChainID() *big.Int {
+	return nil
+}
+
+// GetOriginToken gets the origin token for the event.
+func (e FastBridgeBridgeProofProvided) GetOriginToken() common.Address {
+	return common.Address{}
+}
+
+// GetDestToken gets the destination token for the event.
+func (e FastBridgeBridgeProofProvided) GetDestToken() common.Address {
+	return common.Address{}
+}
+
+// GetOriginAmount gets the origin amount for the event.
+func (e FastBridgeBridgeProofProvided) GetOriginAmount() *big.Int {
+	return nil
+}
+
+// GetDestAmount gets the destination amount for the event.
+func (e FastBridgeBridgeProofProvided) GetDestAmount() *big.Int {
+	return nil
+}
+
+// GetSendChainGas gets the send chain gas for the event.
+func (e FastBridgeBridgeProofProvided) GetSendChainGas() *bool {
+	return nil
+}
+
+// GetChainGasAmount gets the chain gas amount for the event.
+func (e FastBridgeBridgeProofProvided) GetChainGasAmount() *big.Int {
+	return nil
+}
+
+// GetRelayer gets the relayer address for the event.
+func (e FastBridgeBridgeProofProvided) GetRelayer() *string {
+	return nil
+}
+
+// GetTo gets the to address for the event.
+func (e FastBridgeBridgeProofProvided) GetTo() *string {
+	return nil
+}
+
+// GetTxHash gets the tx hash for the event.
+func (e FastBridgeBridgeDepositClaimed) GetTxHash() common.Hash {
+	return e.Raw.TxHash
+}
+
+// GetContractAddress gets the contract address the event occurred on.
+func (e FastBridgeBridgeDepositClaimed) GetContractAddress() common.Address {
+	return e.Raw.Address
+}
+
+// GetBlockNumber gets the block number for the event.
+func (e FastBridgeBridgeDepositClaimed) GetBlockNumber() uint64 {
+	return e.Raw.BlockNumber
+}
+
+// GetEventType gets the event type for the event.
+func (e FastBridgeBridgeDepositClaimed) GetEventType() fastbridge.EventType {
+	return fastbridge.BridgeClaimedEvent
+}
+
+// GetEventIndex gets the event index for the event.
+func (e FastBridgeBridgeDepositClaimed) GetEventIndex() uint64 {
+	return uint64(e.Raw.TxIndex)
+}
+
+// GetTransactionID gets the transaction id for the event.
+func (e FastBridgeBridgeDepositClaimed) GetTransactionID() [32]byte {
+	return e.TransactionId
+}
+
+// GetSender gets the sender for the event.
+func (e FastBridgeBridgeDepositClaimed) GetSender() *string {
+	return nil
+}
+
+// GetRequest gets the request for the event.
+func (e FastBridgeBridgeDepositClaimed) GetRequest() *[]byte {
+	return nil
+}
+
+// GetOriginChainID gets the origin chain id for the event.
+func (e FastBridgeBridgeDepositClaimed) GetOriginChainID() *big.Int {
+	return nil
+}
+
+// GetDestChainID gets the destination chain id for the event.
+func (e FastBridgeBridgeDepositClaimed) GetDestChainID() *big.Int {
+	return nil
+}
+
+// GetOriginToken gets the origin token for the event.
+func (e FastBridgeBridgeDepositClaimed) GetOriginToken() common.Address {
+	return common.Address{}
+}
+
+// GetDestToken gets the destination token for the event.
+func (e FastBridgeBridgeDepositClaimed) GetDestToken() common.Address {
+	return common.Address{}
+}
+
+// GetOriginAmount gets the origin amount for the event.
+func (e FastBridgeBridgeDepositClaimed) GetOriginAmount() *big.Int {
+	return nil
+}
+
+// GetDestAmount gets the destination amount for the event.
+func (e FastBridgeBridgeDepositClaimed) GetDestAmount() *big.Int {
+	return nil
+}
+
+// GetSendChainGas gets the send chain gas for the event.
+func (e FastBridgeBridgeDepositClaimed) GetSendChainGas() *bool {
+	return nil
+}
+
+// GetChainGasAmount gets the chain gas amount for the event.
+func (e FastBridgeBridgeDepositClaimed) GetChainGasAmount() *big.Int {
+	return nil
+}
+
+// GetRelayer gets the relayer address for the event.
+func (e FastBridgeBridgeDepositClaimed) GetRelayer() *string {
+	return nil
+}
+
+// GetTo gets the to address for the event.
+func (e FastBridgeBridgeDepositClaimed) GetTo() *string {
+	return nil
+}
