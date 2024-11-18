@@ -14,10 +14,24 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     /// @notice Address reserved for native gas token (ETH on Ethereum and most L2s, AVAX on Avalanche, etc)
     address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    bytes32 public constant RELAYER_ROLE = keccak256("RELAYER_ROLE");
+    /// @notice Role identifier for Quoter API's off-chain authentication.
+    /// @dev Only addresses with this role can post FastBridge quotes to the API.
+    bytes32 public constant QUOTER_ROLE = keccak256("QUOTER_ROLE");
+
+    /// @notice Role identifier for Prover's on-chain authentication in FastBridge.
+    /// @dev Only addresses with this role can provide proofs that a FastBridge request has been relayed.
     bytes32 public constant PROVER_ROLE = keccak256("PROVER_ROLE");
-    bytes32 public constant CANCELER_ROLE = keccak256("CANCELER_ROLE");
+
+    /// @notice Role identifier for Guard's on-chain authentication in FastBridge.
+    /// @dev Only addresses with this role can dispute submitted relay proofs during the dispute period.
     bytes32 public constant GUARD_ROLE = keccak256("GUARD_ROLE");
+
+    /// @notice Role identifier for Canceler's on-chain authentication in FastBridge.
+    /// @dev Only addresses with this role can cancel a FastBridge transaction without the cancel delay.
+    bytes32 public constant CANCELER_ROLE = keccak256("CANCELER_ROLE");
+
+    /// @notice Role identifier for Governor's on-chain administrative authority.
+    /// @dev Only addresses with this role can perform administrative tasks within the contract.
     bytes32 public constant GOVERNOR_ROLE = keccak256("GOVERNOR_ROLE");
 
     uint256 public constant FEE_BPS = 1e6;
