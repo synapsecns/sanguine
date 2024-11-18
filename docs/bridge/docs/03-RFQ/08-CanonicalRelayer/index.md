@@ -1,23 +1,34 @@
 ---
-sidebar_position: 0
-sidebar_label: Relayer
+sidebar_label: Canonical Relayer
 ---
 
-# RFQ Relayer
+# Canonical RFQ Relayer
 
 :::note
 
-Relayers must be whitelisted in order to fulfill bridge requests.
+Relaying itself is permissionless as of FastBridgeV2 - but other supporting functions of this Relayer (Quoting, Proving) are permissioned.
+
+Contact us if you wish to participate in these permissioned functions.
 
 :::
 
-A Go application which coordinates on-chain events and stored message states to relay user funds. Relayers are easily observable.
+The Canonical RFQ Relayer is the official relayer built and operated by Synapse which performs all necessary automated functions that are necessary for a Relayer.
 
-The canonical RFQ Relayer handles **three event loops**: quoting routes, approving relays, and rebalancing funds.
+These functions include:
 
-## Quote
+- Quoting
+- Relaying
+- Proving
+- Claiming
+- Rebalancing
 
-Continuously track and update route quotes based on changes to available and in-flight balances via [API](API). The quote should update each time the available balance or other parameters change.
+## Stack
+
+The canonical RFQ Relayer is primarily built in Go with a MySQL backend. It also utilizes other tools and services built by Synapse, such as the [Submitter](/docs/Services/Submitter).
+
+## Quoting
+
+Continuously track and update route quotes via the [Quoter API](/docs/Routers/RFQ/Quoter%20API/) based on changes to balances, prices, and fees.
 
 | Param   | Description
 |---------|-
@@ -27,24 +38,28 @@ Continuously track and update route quotes based on changes to available and in-
 
  <!-- TODO: Allow `time` as a quote parameter to put funds that are not _yet_ available to be put into play.  -->
 
-## Relay
+## Relaying
 
-Listen to on-chain events and database updates to move [`BridgeRequest`](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeparams) objects through the following states:
+Listen to on-chain events and database updates to move [`BridgeRequest`](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgeparams) objects through the following states:
 
 | State                | Description
 |----------------------|-
-| `Seen`               | [`BridgeRequested`](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerequested) event stored in the db.
-| `WillNotProcess`     | [`BridgeRequested`](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerequested) event is invalid
+| `Seen`               | [`BridgeRequested`](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgerequested) event stored in the db.
+| `WillNotProcess`     | [`BridgeRequested`](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgerequested) event is invalid
 | `NotEnoughInventory` | Retry later
-| `CommittedPending`   | All checks pass, waiting for transaction to finalize
-| `CommittedConfirmed` | Transaction is finalized on-chain
-| `RelayPending`       | Called [`relay`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#relay)
-| `RelayComplete`      | Relay completed on-chain
-| `ProvePosting`       | Called [`prove`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#prove)
-| `ClaimPending`       | Called [`claim`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#claim)
-| `ClaimComplete`      | Dispute period expired, funds received.
+| `CommittedPending`   | All checks pass. Inventory is committed to the fill. Awaiting [finalization](https://medium.com/@theblockchains/finality-in-blockchain-d287a087a9b9) of the BridgeRequested transction.
+| `CommittedConfirmed` | BridgeRequested transaction is [finalized](https://medium.com/@theblockchains/finality-in-blockchain-d287a087a9b9) on-chain. If conditions are still right, a relay will occur.
+| `RelayPending`       | A [`relay`](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#relay) tx has been submitted to the chain.
+| `RelayComplete`      | The submitted `relay` transaction has successfully landed on-chain.
+| `ProvePosting`       | Called [`prove`](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#prove) tx has been submitted to the chain.
+| `ProvePosted`       | The submitted `prove` transaction has successfully landed on-chain.
+| `ClaimPending`       | The `Dispute Period` has passed and the relayer has submitted a [`claim`](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#claim) tx to the chain.
+| `ClaimComplete`      | The submitted `claim` transaction has successfully landed on-chain and the funds from the original `BridgeRequested` tx have been released to the relayer - less any fees.
 
-## Rebalance
+| `RelayRaceLost`      | Another Relayer has completed the relay.
+
+
+## Rebalancing
 
 For cases where flows are mono-directional, the Relayer provides an interface for rebalancing funds.
 
@@ -84,7 +99,7 @@ At a high level, the rebalancer checks inventory on Scroll versus other chains, 
 
 :::
 
-## Configure
+## Configuration
 
 RFQ Relayer requires a YAML configuration file path to be provided at run time.
 
@@ -272,7 +287,7 @@ Clone the Sanguine repository, then run the main.go file along with the path to 
 
 ## sendChainGas
 
-Boolean flag available to Bridge users. When `sendChainGas` is `true`, the amount to send is specified as `chainGasAmount` in the FastBridge contract on the destination chain.
+Boolean flag available to Bridge users. When `sendChainGas` is `true`, the amount to send is specified as `chainGasAmount` in the FastBridgeV2 contract on the destination chain.
 
 :::note
 

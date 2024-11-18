@@ -1,6 +1,6 @@
 ---
 sidebar_position: 0
-sidebar_label: API
+sidebar_label: Quoter API
 ---
 
 # Quoter API
@@ -12,16 +12,6 @@ This guide is intended for builders who are integrating a quoter or frontend wit
 If you are interested in running a relayer, please also see [Relayer](../Relayer).
 
 :::
-
-The Quoter API is an off-chain RESTful service that allows market makers / solvers to post open quotes which communicate an intent to fulfill any transaction that occurs upon specifically quoted routes and meets specified limits, pricing, and fee criteria. This method of quoting is referred to as "Passive" quoting and is similar to an order book.
-
-Starting with [Fast Bridge V2](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html), a new "Active" quoting method has been introduced where a solver can listen and respond to live quote requests individually. This creates a hybrid system, where Active and Passive quoting can be utilized together by solvers in any desired combination to maximize their efficiency.
-
-Active Quoting is more complicated to implement and maintain, but allow for more granular & customized quotes that can improve efficiency among other benefits. Quoters who prefer a simpler approach are free to use nothing but Passive Quotes if they choose.
-
-Integrators and users can then utilize the data from these quotes to construct and submit a corresponding transaction on-chain through the [Fast Bridge Contract](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html).
-
-Quoters are responsible for keeping their quotes fresh and accurate. Likewise, they are responsible for completing their part of fulfillment for any transactions which act upon their quotes. To these effects, quoters should push updates as rapidly as possible in reaction to consequential changes in prices, balances, etc. By default, the canonical [relayer](../Relayer) continuously updates quotes by checking on-chain balances, in-flight requests, and gas prices - custom implementations should take a similar approach.
 
 The implementation of the Quoter API can be found [here](https://github.com/synapsecns/sanguine/tree/master/services/rfq/api).
 

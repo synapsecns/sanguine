@@ -1,0 +1,49 @@
+---
+title: Quoting
+---
+
+<!-- Reference Links -->
+[bridge]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridge
+[relay]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relay
+[prove]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#prove
+[dispute]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#dispute
+[claim]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#claim
+[cancel]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#cancel
+[proof]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgetxdetails
+[BridgeRequested]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerequested
+[BridgeTransactionV2]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgetransactionv2
+[BridgeRelayed]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
+[BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
+[Dispute Period]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#dispute_period
+[Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
+[Quoter API]: /docs/Routers/RFQ/Quoter%20API/
+[User]: /docs/RFQ/#entities
+[Relayer]: /docs/RFQ/#entities
+[Guard]: /docs/RFQ/#entities
+[Canceler]: /docs/RFQ/#entities
+
+# Quoting
+
+The Synapse RFQ systems allows [Quoter] entities (aka market makers / solvers / relayers) to post quotes via an off-chain [Quoter API]. These quotes are matched to `User` bridge inputs to achieve the optimal parameters (eg: the best price) for the [User]'s bridge transaction.
+
+There are two types of quoting methods supported by the Synapse RFQ system:
+
+##
+### Passive Quoting
+First is [Passive Quoting](/docs/Routers/RFQ/Quoter%20API/#passive-quotes), which communicates a [Quoter]'s ongoing intention to fulfill any transaction that occurs upon specific quoted routes and meets specific limits, pricing, and fee criteria.
+
+### Active Quoting
+Starting with [Fast Bridge V2](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html), a new [Active Quoting](/docs/Routers/RFQ/Quoter%20API/#active-quotes) method has been introduced where a solver can listen and respond to live quote requests individually. This creates a hybrid system, where Active and Passive quoting can be utilized together by solvers in any desired combination to maximize their efficiency.
+
+Active quoting is more complicated to implement and maintain, but allow for more granular & customized quotes that can improve efficiency among other benefits. Quoters who prefer a simpler approach are free to use nothing but Passive Quotes, if they choose.
+
+
+##
+
+
+Regardless of the method used, these quotes constitute a provisional commitment to fulfill the [User]'s bridge according to the quoted price and other parameters, once it is submitted on-chain.
+
+To that end, integrators and users can utilize the data from these quotes to construct and submit a corresponding [bridge] transaction on-chain through the [Fast Bridge Contract](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html). Once this transaction is finalized on-chain, `User`s can expect to receive their funds on the destination shortly after, as quoted.
+
+[Quoter]s are responsible for keeping their quotes fresh and accurate. Likewise, they are responsible for completing their part of fulfillment for any transactions which act upon their quotes. To these effects, [Quoter]s should push updates as rapidly as possible in reaction to consequential changes in prices, balances, etc. By default, the [Canonical Relayer](../Relayer) continuously updates quotes by checking on-chain balances, in-flight requests, and gas prices - custom implementations should take a similar approach.
+
