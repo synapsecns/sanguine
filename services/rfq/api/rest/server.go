@@ -329,7 +329,6 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (address
 	}
 
 	ops := &bind.CallOpts{Context: c}
-	relayerRole := crypto.Keccak256Hash([]byte("RELAYER_ROLE"))
 
 	// authenticate relayer signature with EIP191
 	deadline := time.Now().Unix() - 1000 // TODO: Replace with some type of r.cfg.AuthExpiryDelta
@@ -345,9 +344,14 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (address
 
 	if cachedRoleItem == nil || cachedRoleItem.IsExpired() {
 		// Cache miss or expired, check on-chain
-		hasRole, err = bridge.HasRole(ops, relayerRole, addressRecovered)
+		quoterRole := crypto.Keccak256Hash([]byte("QUOTER_ROLE"))
+		hasRole, err = bridge.HasRole(ops, quoterRole, addressRecovered)
 		if err != nil {
-			return addressRecovered, fmt.Errorf("unable to check relayer role on-chain: %w", err)
+			relayerRole := crypto.Keccak256Hash([]byte("RELAYER_ROLE"))
+			hasRole, err = bridge.HasRole(ops, relayerRole, addressRecovered)
+			if err != nil {
+				return addressRecovered, fmt.Errorf("unable to check relayer role on-chain: %w", err)
+			}
 		}
 		// Update cache
 		r.roleCache[destChainID].Set(addressRecovered.Hex(), hasRole, cacheInterval)
