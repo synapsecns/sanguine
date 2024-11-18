@@ -548,8 +548,10 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 		span.SetAttributes(attribute.String("passive_quote_dest_amount", *passiveQuote.DestAmount))
 	}
 	quote := getBestQuote(activeQuote, passiveQuote)
-	quoteType := quoteTypeActive
-	if activeQuote == nil {
+	var quoteType string
+	if quote == activeQuote {
+		quoteType = quoteTypeActive
+	} else if quote == passiveQuote {
 		quoteType = quoteTypePassive
 	}
 
