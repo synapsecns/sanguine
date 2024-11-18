@@ -1,19 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {IAdmin} from "../contracts/interfaces/IAdmin.sol";
+import {IAdminV2Errors} from "../contracts/interfaces/IAdminV2Errors.sol";
+
 import {FastBridgeV2, FastBridgeV2Test} from "./FastBridgeV2.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
-contract FastBridgeV2ManagementTest is FastBridgeV2Test {
+contract FastBridgeV2ManagementTest is FastBridgeV2Test, IAdminV2Errors {
     uint256 public constant FEE_RATE_MAX = 1e4; // 1%
     bytes32 public constant GOVERNOR_ROLE = keccak256("GOVERNOR_ROLE");
+
+    uint256 public constant MIN_CANCEL_DELAY = 1 hours;
+    uint256 public constant DEFAULT_CANCEL_DELAY = 1 days;
 
     address public admin = makeAddr("Admin");
     address public governorA = makeAddr("Governor A");
 
+    event CancelDelayUpdated(uint256 oldCancelDelay, uint256 newCancelDelay);
     event FeeRateUpdated(uint256 oldFeeRate, uint256 newFeeRate);
     event FeesSwept(address token, address recipient, uint256 amount);
-    event ChainGasAmountUpdated(uint256 oldChainGasAmount, uint256 newChainGasAmount);
 
     function deployFastBridge() public override returns (FastBridgeV2) {
         return new FastBridgeV2(admin);
@@ -35,6 +41,11 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         fastBridge.grantRole(GOVERNOR_ROLE, newGovernor);
     }
 
+    function setCancelDelay(address caller, uint256 newCancelDelay) public {
+        vm.prank(caller);
+        fastBridge.setCancelDelay(newCancelDelay);
+    }
+
     function setProtocolFeeRate(address caller, uint256 newFeeRate) public {
         vm.prank(caller);
         fastBridge.setProtocolFeeRate(newFeeRate);
@@ -43,11 +54,6 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
     function sweepProtocolFees(address caller, address token, address recipient) public {
         vm.prank(caller);
         fastBridge.sweepProtocolFees(token, recipient);
-    }
-
-    function setChainGasAmount(address caller, uint256 newChainGasAmount) public {
-        vm.prank(caller);
-        fastBridge.setChainGasAmount(newChainGasAmount);
     }
 
     function test_grantGovernorRole() public {
@@ -60,6 +66,38 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         vm.assume(caller != admin);
         expectUnauthorized(caller, fastBridge.DEFAULT_ADMIN_ROLE());
         setGovernor(caller, governorA);
+    }
+
+    function test_defaultCancelDelay() public view {
+        assertEq(fastBridge.cancelDelay(), DEFAULT_CANCEL_DELAY);
+    }
+
+    // ═════════════════════════════════════════════ SET CANCEL DELAY ══════════════════════════════════════════════════
+
+    function test_setCancelDelay() public {
+        vm.expectEmit(address(fastBridge));
+        emit CancelDelayUpdated(DEFAULT_CANCEL_DELAY, 4 days);
+        setCancelDelay(governor, 4 days);
+        assertEq(fastBridge.cancelDelay(), 4 days);
+    }
+
+    function test_setCancelDelay_twice() public {
+        test_setCancelDelay();
+        vm.expectEmit(address(fastBridge));
+        emit CancelDelayUpdated(4 days, 8 days);
+        setCancelDelay(governor, 8 days);
+        assertEq(fastBridge.cancelDelay(), 8 days);
+    }
+
+    function test_setCancelDelay_revertBelowMin() public {
+        vm.expectRevert(IAdminV2Errors.CancelDelayBelowMin.selector);
+        setCancelDelay(governor, MIN_CANCEL_DELAY - 1);
+    }
+
+    function test_setCancelDelay_revertNotGovernor(address caller) public {
+        vm.assume(caller != governor);
+        expectUnauthorized(caller, fastBridge.GOVERNOR_ROLE());
+        setCancelDelay(caller, 4 days);
     }
 
     // ═══════════════════════════════════════════ SET PROTOCOL FEE RATE ═══════════════════════════════════════════════
@@ -80,7 +118,7 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
     }
 
     function test_setProtocolFeeRate_revert_tooHigh() public {
-        vm.expectRevert("newFeeRate > max");
+        vm.expectRevert(IAdminV2Errors.FeeRateAboveMax.selector);
         setProtocolFeeRate(governor, FEE_RATE_MAX + 1);
     }
 
@@ -118,24 +156,14 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
 
     // ═══════════════════════════════════════════ SET CHAIN GAS AMOUNT ════════════════════════════════════════════════
 
-    function test_setChainGasAmount() public {
-        vm.expectEmit(address(fastBridge));
-        emit ChainGasAmountUpdated(0, 123);
-        setChainGasAmount(governor, 123);
-        assertEq(fastBridge.chainGasAmount(), 123);
+    function test_chainGasAmountZero() public view {
+        assertEq(fastBridge.chainGasAmount(), 0);
     }
 
-    function test_setChainGasAmount_twice() public {
-        test_setChainGasAmount();
-        vm.expectEmit(address(fastBridge));
-        emit ChainGasAmountUpdated(123, 456);
-        setChainGasAmount(governor, 456);
-        assertEq(fastBridge.chainGasAmount(), 456);
-    }
-
-    function test_setChainGasAmount_revertNotGovernor(address caller) public {
-        vm.assume(caller != governor);
-        expectUnauthorized(caller, fastBridge.GOVERNOR_ROLE());
-        setChainGasAmount(caller, 123);
+    function test_setChainGasAmount_revert() public {
+        // Generic revert: this function should not be in the V2 interface
+        vm.expectRevert();
+        vm.prank(governor);
+        IAdmin(address(fastBridge)).setChainGasAmount(123);
     }
 }
