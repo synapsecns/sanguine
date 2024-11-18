@@ -570,7 +570,7 @@ func getQuoteResponse(ctx context.Context, quote *model.QuoteData, quoteType str
 			destAmount = amt
 		}
 	}
-	if quote == nil || destAmount.Cmp(big.NewInt(0)) <= 0 {
+	if destAmount.Sign() <= 0 {
 		span.AddEvent("no quotes found")
 		resp = model.PutRFQResponse{
 			Success: false,
