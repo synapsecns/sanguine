@@ -142,39 +142,39 @@ var _ dbcommon.Enum = (*ActiveQuoteResponseStatus)(nil)
 
 // ActiveQuoteRequest is the database model for an active quote request.
 type ActiveQuoteRequest struct {
-	RequestID        string                   `gorm:"column:request_id;primaryKey"`
-	IntegratorID     string                   `gorm:"column:integrator_id"`
-	UserAddress      string                   `gorm:"column:user_address"`
-	OriginChainID    uint64                   `gorm:"column:origin_chain_id"`
-	OriginTokenAddr  string                   `gorm:"column:origin_token"`
-	DestChainID      uint64                   `gorm:"column:dest_chain_id"`
-	DestTokenAddr    string                   `gorm:"column:dest_token"`
-	OriginAmount     decimal.Decimal          `gorm:"column:origin_amount"`
-	ExpirationWindow time.Duration            `gorm:"column:expiration_window"`
-	CreatedAt        time.Time                `gorm:"column:created_at"`
-	Status           ActiveQuoteRequestStatus `gorm:"column:status"`
-	ClosedAt         *time.Time               `gorm:"column:closed_at"`
-	ClosedQuoteID    *string                  `gorm:"column:closed_quote_id"`
+	RequestID         string                   `gorm:"column:request_id;primaryKey"`
+	IntegratorID      string                   `gorm:"column:integrator_id"`
+	UserAddress       string                   `gorm:"column:user_address"`
+	OriginChainID     uint64                   `gorm:"column:origin_chain_id"`
+	OriginTokenAddr   string                   `gorm:"column:origin_token"`
+	DestChainID       uint64                   `gorm:"column:dest_chain_id"`
+	DestTokenAddr     string                   `gorm:"column:dest_token"`
+	OriginAmountExact decimal.Decimal          `gorm:"column:origin_amount_exact"`
+	ExpirationWindow  time.Duration            `gorm:"column:expiration_window"`
+	CreatedAt         time.Time                `gorm:"column:created_at"`
+	Status            ActiveQuoteRequestStatus `gorm:"column:status"`
+	ClosedAt          *time.Time               `gorm:"column:closed_at"`
+	ClosedQuoteID     *string                  `gorm:"column:closed_quote_id"`
 }
 
 // FromUserRequest converts a model.PutRFQRequest to an ActiveQuoteRequest.
 func FromUserRequest(req *model.PutRFQRequest, requestID string) (*ActiveQuoteRequest, error) {
-	originAmount, err := decimal.NewFromString(req.Data.OriginAmount)
+	originAmountExact, err := decimal.NewFromString(req.Data.OriginAmountExact)
 	if err != nil {
 		return nil, fmt.Errorf("invalid origin amount: %w", err)
 	}
 	return &ActiveQuoteRequest{
-		RequestID:        requestID,
-		IntegratorID:     req.IntegratorID,
-		UserAddress:      req.UserAddress,
-		OriginChainID:    uint64(req.Data.OriginChainID),
-		OriginTokenAddr:  req.Data.OriginTokenAddr,
-		DestChainID:      uint64(req.Data.DestChainID),
-		DestTokenAddr:    req.Data.DestTokenAddr,
-		OriginAmount:     originAmount,
-		ExpirationWindow: time.Duration(req.Data.ExpirationWindow),
-		CreatedAt:        time.Now(),
-		Status:           Received,
+		RequestID:         requestID,
+		IntegratorID:      req.IntegratorID,
+		UserAddress:       req.UserAddress,
+		OriginChainID:     uint64(req.Data.OriginChainID),
+		OriginTokenAddr:   req.Data.OriginTokenAddr,
+		DestChainID:       uint64(req.Data.DestChainID),
+		DestTokenAddr:     req.Data.DestTokenAddr,
+		OriginAmountExact: originAmountExact,
+		ExpirationWindow:  time.Duration(req.Data.ExpirationWindow),
+		CreatedAt:         time.Now(),
+		Status:            Received,
 	}, nil
 }
 

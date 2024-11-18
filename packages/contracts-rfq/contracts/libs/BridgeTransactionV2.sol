@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.4;
 
 import {IFastBridgeV2} from "../interfaces/IFastBridgeV2.sol";
 

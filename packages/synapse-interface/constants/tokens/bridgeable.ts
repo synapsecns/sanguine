@@ -738,7 +738,7 @@ export const MOVR = new Token({
   logo: movrLogo,
   isNative: true,
   swapableType: 'MOVR',
-  color: 'purple',
+  color: 'lime',
   priorityRank: 300,
   routeSymbol: 'MOVR',
 })
@@ -772,7 +772,7 @@ export const WMOVR = new Token({
   name: 'Wrapped MOVR',
   logo: movrLogo,
   swapableType: 'MOVR',
-  color: 'purple',
+  color: 'lime',
   priorityRank: 350,
   routeSymbol: 'WMOVR',
 })

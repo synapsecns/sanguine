@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import {IMulticallTarget} from "../contracts/interfaces/IMulticallTarget.sol";
 import {MulticallTargetHarness, MulticallTarget} from "./harnesses/MulticallTargetHarness.sol";
