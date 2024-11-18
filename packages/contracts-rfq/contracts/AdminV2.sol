@@ -57,8 +57,8 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     /// @dev Use ZapNative V2 requests instead.
     uint256 public immutable chainGasAmount = 0;
 
-    constructor(address _owner) {
-        _grantRole(DEFAULT_ADMIN_ROLE, _owner);
+    constructor(address defaultAdmin) {
+        _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _setCancelDelay(DEFAULT_CANCEL_DELAY);
     }
 
@@ -81,12 +81,13 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
 
     /// @notice Allows the contract governor to sweep the accumulated protocol fees in the contract.
     function sweepProtocolFees(address token, address recipient) external onlyRole(GOVERNOR_ROLE) {
+        // Early exit if no accumulated fees.
         uint256 feeAmount = protocolFees[token];
-        if (feeAmount == 0) return; // skip if no accumulated fees
-
+        if (feeAmount == 0) return;
+        // Reset the accumulated fees first.
         protocolFees[token] = 0;
         emit FeesSwept(token, recipient, feeAmount);
-        /// Sweep the fees as the last transaction action
+        // Sweep the fees as the last transaction action.
         if (token == NATIVE_GAS_TOKEN) {
             Address.sendValue(payable(recipient), feeAmount);
         } else {
@@ -94,7 +95,8 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
         }
     }
 
-    /// @notice Internal function to set the cancel delay. Security checks are performed outside of this function.
+    /// @notice Internal logic to set the cancel delay. Security checks are performed outside of this function.
+    /// @dev The function is marked as private to prevent the child contracts from calling it directly.
     function _setCancelDelay(uint256 newCancelDelay) private {
         if (newCancelDelay < MIN_CANCEL_DELAY) revert CancelDelayBelowMin();
         uint256 oldCancelDelay = cancelDelay;
