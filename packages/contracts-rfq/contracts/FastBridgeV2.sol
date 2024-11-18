@@ -224,8 +224,9 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         _validateRelayParams(request, transactionId, relayer);
 
         // Mark the bridge request as relayed by saving the relayer and the block details
-        bridgeRelayDetails[transactionId] =
-            BridgeRelay({blockNumber: uint48(block.number), blockTimestamp: uint48(block.timestamp), relayer: relayer});
+        bridgeRelayDetails[transactionId].blockNumber = uint48(block.number);
+        bridgeRelayDetails[transactionId].blockTimestamp = uint48(block.timestamp);
+        bridgeRelayDetails[transactionId].relayer = relayer;
 
         // Transfer tokens to recipient on destination chain and trigger Zap if requested
         address to = request.destRecipient();
