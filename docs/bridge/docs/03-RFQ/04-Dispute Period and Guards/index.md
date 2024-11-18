@@ -1,5 +1,5 @@
 ---
-title: Canceling
+title: Dispute Period and Guards
 ---
 
 <!-- Reference Links -->
@@ -22,13 +22,12 @@ title: Canceling
 [Guard]: /docs/RFQ/#entities
 [Canceler]: /docs/RFQ/#entities
 
+# Dispute Period and Guards
 
-Due to various factors, it is possible but uncommon for a [bridge] to go unfilled.
+The RFQ system optimistically assumes all [prove] transactions are accurate unless they are disputed. These disputes can occur during the [Dispute Period], where [Guard] entities may execute a [dispute] transaction if they detect errors or fraudulent activity, such as incorrect fill amounts or proofs submitted by the wrong [Relayer].
 
-In these situations, the [User]'s funds will remain safely in escrow on the FastBridge contract until a [cancel] function is executed. This function can be executed permissionlessly after a [Cancel Delay] period has passed.
+Currently, [Guard] entities are operated solely by Synapse itself and monitor all FastBridge activity across all deployments.
 
-A permissioned [Canceler] entity can also execute the [cancel] function prior to the cancellation delay, but only after the relay expiration deadline. This allows cancellations to occur more rapidly when appropriate, at the discretion of the [Canceler].
+# Monitoring
 
-If there is already a [proof] on file for the transaction, then cancellation will be prevented. (IE: Cannot attempt to [cancel] a transaction which appears to have already been successfully completed)
-
-Regardless of the manner of cancellation, the [User]'s originally deposited funds will be transferred from FastBridge escrow back to the [User].
+It is always best to self-verify critical functions such as these. To that end, if you are a participating [Relayer], it is highly recommended that you also monitor proofs and disputes that occur on your [relay] transactions.

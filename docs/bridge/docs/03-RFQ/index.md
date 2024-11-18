@@ -16,8 +16,8 @@ import { RFQFlow } from '@site/src/components/RFQFlow'
 [BridgeTransactionV2]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgetransactionv2
 [BridgeRelayed]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
 [BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
-[Dispute Period]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#dispute_period
-[CANCEL_DELAY]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
+[Dispute Period]: /docs/RFQ/Dispute%20Period%20and%20Guards/
+[Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
 [Quoter API]: /docs/Routers/RFQ/Quoter%20API/
 [User]: /docs/RFQ/#entities
 [Relayer]: /docs/RFQ/#entities
@@ -169,36 +169,4 @@ Due to various factors, it is possible but uncommon for a [bridge] to go unfille
 In these situations, the user's funds will remain safely in escrow until the bridge can be [cancelled](docs/RFQ/Canceling/),  at which point the funds will be securely returned to the user.
 
 For more detail, see the [Canceling](docs/RFQ/Canceling/) section.
-
-<!-- :::note Signing quotes
-
-Relayers authenticate quotes by signing requests with their private key in accordance with [EIP-191](https://eips.ethereum.org/EIPS/eip-191). See the canonical implementation [here](https://github.com/synapsecns/sanguine/tree/master/services/rfq).
-
-::: -->
-
-<!-- RFQ consists of three components, with each of the two off-chain components being ran by different actors: -->
-
-<!-- ### [API](API)
-
-Off-chain service ran by Quoters. user-interfaces that allows market makers/relayers to post quotes on different bridge routes. Solvers that have registered with the FastBridge contract can sign messages that post quotes signifying at what price they are willing to bridge tokens on a certain route. -->
-
-<!-- In the canonical implementation, Solvers authenticated by signing requests with their private key in accordance with [EIP-191](https://eips.ethereum.org/EIPS/eip-191). The canonical implementation can be found [here](https://github.com/synapsecns/sanguine/tree/master/services/rfq). -->
-
-<!-- ### Fast Bridge Contract
-
-The fast bridge contract is the core of the RFQ protocol and what allows solvers  to fulfill requests from users. A user deposits their funds into the FastBridge contract along with the lowest price they are willing to accept for a given route (a price they get by reading quotes from the Quoter). -->
-
-<!-- In the unlikely event no Solver is available to fulfill a users request, a user can permissionlessly  claim their funds back after waiting an optimistic period. -->
-
-<!-- Contract code level documentation can be found [here](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html). -->
-
-<!-- ### Relayer
-
-The relayer is a service ran by the solvers. The relayer is responsible for posting quotes & fulfilling requests. While the relayer can be implemented in any way, the canonical implementation is a golang based relayer that provides a way to decide what chains/routes to quote on, how much to quote and which addresses not to relay for. -->
-
-## Dispute Period and Guards
-
-The RFQ system optimistically assumes all [prove] transactions are accurate unless they are disputed. These disputes are effectuated during the `Dispute Window`  dispute window in which [Guard] entities may execute a dispute if they detect errors or fraudulent activity, such as incorrect fill amounts or proofs submitted by the wrong relayer.
-
-In a successful dispute, the relayer loses their claimable funds. This design is intended to enforce honest behavior while also protecting honest relayers in cases of blockchain reorgs.
 

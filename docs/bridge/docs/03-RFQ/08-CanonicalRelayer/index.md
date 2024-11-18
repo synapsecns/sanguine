@@ -55,7 +55,6 @@ Listen to on-chain events and database updates to move [`BridgeRequest`](https:/
 | `ProvePosted`       | The submitted `prove` transaction has successfully landed on-chain.
 | `ClaimPending`       | The `Dispute Period` has passed and the relayer has submitted a [`claim`](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#claim) tx to the chain.
 | `ClaimComplete`      | The submitted `claim` transaction has successfully landed on-chain and the funds from the original `BridgeRequested` tx have been released to the relayer - less any fees.
-
 | `RelayRaceLost`      | Another Relayer has completed the relay.
 
 

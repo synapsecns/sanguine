@@ -15,7 +15,7 @@ If you are interested in running a relayer, please also see [Relayer](../Relayer
 
 The implementation of the Quoter API can be found [here](https://github.com/synapsecns/sanguine/tree/master/services/rfq/api).
 
-Please note that end-users and solvers will not need to run their own version of the API.
+Please note that end-users and relayers will not need to run their own version of the API.
 
 
 ## Integrating the API
@@ -132,19 +132,23 @@ Additional Example in Typescript:
   }
   ```
 
-Once the message has been authenticated, the authorization of the sender/signer will be checked against the assigned roles of the respective FastBridge contract. If `RELAYER_ROLE` is not assigned, the request will be rejected. If you wish to be added as an authorized quoter, contact us.
+Once the message has been authenticated, the authorization of the sender/signer will be checked against the assigned roles of the respective FastBridge contract. If `QUOTER_ROLE` is not assigned, the request will be rejected. If you wish to be added as an authorized quoter, contact us.
 
 :::
 
 ## API Urls
 
- - Mainnet: `api.synapseprotocol.com/quotes`
+ - Mainnet: `api.synapseprotocol.com`
  - Testnet: `rfq-api-testnet.omnirpc.io`
- -
 
 ## Running the API:
 
-Users and relayers **are not** expected to run their own version of the Quoter API. The API is a service that should be run by Quoters and interfaces that allow Solvers to post quotes. The Quoter API takes in a yaml config that allows the user to specify which contracts, chains and interfaces it should run on. The config is structured like this:
+Users and relayers **are not** expected to run their own version of the Quoter API. Rather, they are expected to use a Quoter API that is hosted by the the interface they are quoting for. For example, the Quoter API used by the Synapse bridge interface is hosted at the URL above.
+
+
+### Configuration
+
+The Quoter API takes in a yaml config that allows the user to specify which contracts, chains and interfaces it should run on. The config is structured like this:
 
 ```yaml
 database:
@@ -157,7 +161,7 @@ bridges:
 port: '8081' # port to run your http server on
 ```
 
-Yaml settings:
+### YAML Descriptions
 
 - `database` - The database settings for the API backend. A database is required to store quotes and other information. Using SQLite with a dsn set to a `/tmp/` directory is recommended for development.
   - `type` - the database driver to use, can be `mysql` or `sqlite`.
@@ -166,7 +170,7 @@ Yaml settings:
 - `bridges` - A key value map of chain id to FastBridge contract address. The API will only allow quotes to be posted on these chains.
 - `port` - The port to run the http server on.
 
-**Building From Source:**
+### Building from Source
 
 To build the Quoter API from source, you will need to clone the repository and run the main.go file with the config file. Building from source requires go 1.21 or higher and is generally not recommended for end-users.
 

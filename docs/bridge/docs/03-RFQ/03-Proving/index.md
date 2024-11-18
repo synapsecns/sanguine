@@ -4,4 +4,3 @@ title: Proving
 
 # Proving
 
-# WIP
