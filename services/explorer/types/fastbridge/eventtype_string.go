@@ -10,11 +10,14 @@ func _() {
 	var x [1]struct{}
 	_ = x[BridgeRequestedEvent-0]
 	_ = x[BridgeRelayedEvent-1]
+	_ = x[BridgeRefundedEvent-2]
+	_ = x[BridgeProvenEvent-3]
+	_ = x[BridgeClaimedEvent-4]
 }
 
-const _EventType_name = "BridgeRequestedEventBridgeRelayedEvent"
+const _EventType_name = "BridgeRequestedEventBridgeRelayedEventBridgeRefundedEventBridgeProvenEventBridgeClaimedEvent"
 
-var _EventType_index = [...]uint8{0, 20, 38}
+var _EventType_index = [...]uint8{0, 20, 38, 57, 74, 92}
 
 func (i EventType) String() string {
 	if i >= EventType(len(_EventType_index)-1) {

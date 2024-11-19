@@ -197,6 +197,15 @@
               "type": "string"
             },
             "description": "The address of the user on the origin chain"
+          },
+          {
+            "in": "query",
+            "name": "destAddress",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The destination address of the user on the destination chain"
           }
         ],
         "responses": {
@@ -1206,6 +1215,15 @@
               "type": "number"
             },
             "description": "The amount of tokens to swap"
+          },
+          {
+            "in": "query",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the user"
           }
         ],
         "responses": {

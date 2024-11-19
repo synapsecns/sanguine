@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.4;
 
 import {IFastBridge} from "./IFastBridge.sol";
 
@@ -88,6 +88,12 @@ interface IFastBridgeV2 is IFastBridge {
     /// @notice Can only send funds to the relayer address on the proof.
     /// @param request The encoded bridge transaction to claim on origin chain
     function claim(bytes memory request) external;
+
+    /// @notice Cancels an outstanding bridge transaction in case optimistic bridging failed and returns the full amount
+    /// to the original sender.
+    /// @param request The encoded bridge transaction to refund
+    function cancel(bytes memory request) external;
+
     /// @notice Checks if a transaction has been relayed
     /// @param transactionId The ID of the transaction to check
     /// @return True if the transaction has been relayed, false otherwise

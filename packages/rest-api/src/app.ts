@@ -14,6 +14,19 @@ import {
 const app = express()
 const port = process.env.PORT || 3000
 
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', '*')
+
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200)
+    return
+  }
+
+  next()
+})
+
 app.use(express.json())
 
 app.use((req, res, next) => {

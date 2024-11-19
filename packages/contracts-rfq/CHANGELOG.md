@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.13.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.12.1...@synapsecns/contracts-rfq@0.13.0) (2024-11-18)
+
+
+### Features
+
+* **contracts-rfq:** rework permisionless cancellation [SLT-489] ([#3382](https://github.com/synapsecns/sanguine/issues/3382)) ([7932f41](https://github.com/synapsecns/sanguine/commit/7932f416341a227db295c33f232efde89fd2c50c))
+
+
+
+
+
+## [0.12.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.12.0...@synapsecns/contracts-rfq@0.12.1) (2024-11-11)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
 # [0.12.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.11.0...@synapsecns/contracts-rfq@0.12.0) (2024-11-04)
 
 
