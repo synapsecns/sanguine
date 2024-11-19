@@ -6,9 +6,9 @@ sidebar_label: Canonical Relayer
 
 :::note
 
-Relaying itself is permissionless as of FastBridgeV2 - but other supporting functions of this Relayer (Quoting, Proving) are permissioned.
+Relaying itself is permissionless as of FastBridgeV2 - but other necessary supporting functions of this Relayer (Quoting, Proving) are permissioned.
 
-Contact us if you wish to participate in these permissioned functions.
+Contact us if you wish to participate as a Relayerm
 
 :::
 

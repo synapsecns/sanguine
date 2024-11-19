@@ -16,9 +16,14 @@ import { RFQFlow } from '@site/src/components/RFQFlow'
 [BridgeTransactionV2]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgetransactionv2
 [BridgeRelayed]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
 [BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
-[Dispute Period]: /docs/RFQ/Dispute%20Period%20and%20Guards/
 [Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
+
 [Quoter API]: /docs/Routers/RFQ/Quoter%20API/
+[Dispute Period]: /docs/RFQ/Security/#dispute-period
+[Relaying]: /docs/RFQ/Relaying
+[Proving]: /docs/RFQ/Proving
+[Claiming]: /docs/RFQ/Claiming
+
 [User]: /docs/RFQ/#entities
 [Relayer]: /docs/RFQ/#entities
 [Guard]: /docs/RFQ/#entities
@@ -84,9 +89,9 @@ These relayers compete to provide the optimal bridge execution (eg: the best pri
 
 <b>Quoters</b> <span style={{color: 'darkgray'}}><i>(Permissioned Role)</i></span>
     <blockquote>
-        Posts Passive and/or Active Quotes to be matched against user bridge inputs.
+        Posts Passive and/or Active Quotes via the [Quoter API] to be matched against user bridge inputs.
         <div></div>
-        <span style={{color: 'darkgray', fontSize: '0.9em'}}><i>Note: In practice, each participating entity typically acts as their own Quoter, Relayer, and Prover.</i></span>
+        <span style={{color: 'darkgray', fontSize: '0.9em'}}><i>Note: In practice, each participating Quoter typically acts as their own Relayer and Prover.</i></span>
 
     </blockquote><br />
 
@@ -96,14 +101,14 @@ These relayers compete to provide the optimal bridge execution (eg: the best pri
         <div></div>
         Also submits `claim` transactions to be reimbursed for their relays.
         <div></div>
-        <span style={{color: 'darkgray', fontSize: '0.9em'}}><i>Note: In practice, each participating entity typically acts as their own Quoter, Relayer, and Prover.</i></span>
+        <span style={{color: 'darkgray', fontSize: '0.9em'}}><i>Note: In practice, each participating Relayer typically acts as their own Quoter and Prover.</i></span>
     </blockquote><br />
 
 <b>Provers</b> <span style={{color: 'darkgray'}}><i>(Permissioned Role)</i></span>
     <blockquote>
         Observes [relay]s and submits [prove] transactions to initiate relayer reimbursements.
        <div></div>
-        <span style={{color: 'darkgray', fontSize: '0.9em'}}><i>Note: In practice, each participating entity typically acts as their own Quoter, Relayer, and Prover.</i></span>
+        <span style={{color: 'darkgray', fontSize: '0.9em'}}><i>Note: In practice, each participating Prover typically acts as their own Quoter and Relayer.</i></span>
     </blockquote><br />
 
 <b>Guards</b> <span style={{color: 'darkgray'}}><i>(Permissioned Role)</i></span>

@@ -14,9 +14,14 @@ title: Relaying
 [BridgeTransactionV2]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgetransactionv2
 [BridgeRelayed]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
 [BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
-[Dispute Period]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#dispute_period
 [Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
+
 [Quoter API]: /docs/Routers/RFQ/Quoter%20API/
+[Dispute Period]: /docs/RFQ/Security/#dispute-period
+[Relaying]: /docs/RFQ/Relaying
+[Proving]: /docs/RFQ/Proving
+[Claiming]: /docs/RFQ/Claiming
+
 [User]: /docs/RFQ/#entities
 [Relayer]: /docs/RFQ/#entities
 [Guard]: /docs/RFQ/#entities
@@ -24,40 +29,62 @@ title: Relaying
 
 # Relaying
 
-In the Synapse RFQ System, [Relayer]s fulfill the intent of [User] [bridge] transactions by providing the liquidity and executing the [relay] transaction on the destination chain .
+In the Synapse RFQ System, [Relayers](Relayer) fulfill the intent of [User] [bridge] transactions by providing the liquidity and executing the [relay] transaction on the destination chain .
 
-A valid relay will start by observing a [BridgeRequested] event on an origin chain, which will emit the `request` bytes of an encoded [BridgeTransactionV2] struct, `destChainId`, and other values.
+:::note
 
-To complete the relay, these same request bytes should be provided to the `request` parameter of the [relay] function and executed on the FastBridge contract of the destination chain (`destChainId`)
+If you are interested in participating as a Relayer, it is important to read all sections of the RFQ documentation
 
-If the `destToken` is the native currency of the chain (`0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE`) then that amount must also be set as the `msg.value` (IE: Not wrapped gas, such as WETH)
+:::
 
-If the `destToken` is some other address, this would represent an ERC20 on the destination Chain.
-Prior to calling [relay], the [Relayer] must have already granted sufficient token approvals to FastBridge to allow transfers of this asset.
+## Detecting a Bridge Request
 
-### Contract Functions
+A relay will start by observing a [BridgeRequested] event on an origin chain, which will emit the `request` bytes of an encoded [BridgeTransactionV2] struct, `destChainId`, and other values.
 
-There are two overloaded versions of the relay function in FastBridge, [one](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relay) which allows you to supply an arbitrary `relayer` address, and [another](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#relay)  which assigns the executing EOA as the `relayer`.
+These are the bridge instructions that the [Relayer] is *relaying* to the FastBridge contract on the indicated destination chain (`destChainId`) - which will then utilize the [Relayer]'s liquidity to complete the bridge.
 
-The address specified as the `relayer` on your [relay] will ultimately be reimbursed the funds when the [claim] occurs.
-Note that you can utilize this feature to be reimbursed on different addresses than you are relaying from - as needed.
+## Executing the [relay] function
+
+To complete the relay, the [Relayer] should provide these same `request` bytes emitted by [BridgeRequested] to the `request` parameter of the [relay] function on the FastBridge contract of the destination chain.
+
+Additionally , if the `destToken` is the native currency of the chain (indicated by placeholder `0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE`) then that amount must also be set as the `msg.value`
+
+If the `destToken` is some other address, this would indicate that the destination asset to deliver is an ERC20.
+Prior to calling [relay], the [Relayer] must have already granted sufficient token approvals to FastBridge to allow transfers of this ERC20.
+
+If the [Relayer] has sufficient funds and approvals, and the relay has not already been completed by another relayer, FastBridge will then facilitate the delivery of the funds to the [User] and emit a [BridgeRelayed] event.
+
+### Function Options
+
+There are two overloaded versions of the relay function in FastBridge:
+
+<div style={{ marginLeft: '20px' }}>
+1)
+```solidity
+    function relay(bytes memory request, address relayer) external payable;
+```
+This version allows arbitrary `relayer` address to be supplied
+
+2)
+```solidity
+    function relay(bytes memory request) external payable;
+```
+This version will auto-assign the executing EOA (`msg.sender`) as the `relayer`
+</div>
+
+### Setting the `relayer` parameter
+The address which is specified as the `relayer` on the [relay] will ultimately be reimbursed the funds when the [claim] occurs later.
+
+Note that [Relayer]s can utilize this feature to be reimbursed on different addresses than they are actually relaying from. This can be useful for advanced relaying setups, but is not a necessity.
 
 ### Permissions
 
 Although relaying and claiming can be performed permissionlessly, in the current system [Relayer]s will need to also operate a permissioned [Prover] role.
+
 Note that this allows the use of different EOAs to [relay], [prove], and [claim] - which we recommend doing.
+
 We also recommend that [Relayer]s operate a [Quoter] to compete on pricing and routes, but this is not a necessity.
 
+## Next steps
 
-
-Once the [User] has signed and submitted their deposit on-chain via a [bridge] transaction, a [BridgeRequested] event will be emitted.
-
-[Relayer]s who observe this event can permissionlessly complete the bridge by calling [relay] on the FastBridge contract of the destination chain.
-
-The [BridgeRequested] event emission includes the `request` bytes of an encoded [BridgeTransactionV2] struct. The [Relayer] must execute their [relay] with these exact bytes from the origin chain, or their relay will not be considered valid and could result in a loss of relayer funds. To reiterate, the destination contract must operate optimistically upon the [Relayer]'s supplied parameters - it has no capability to verify or protect the [Relayer] from loss of funds due to error or ReOrgs on the origin chain. All relays are final and all participating [Relayer]s must assume the full responsibility and risk of invalid relays.
-
-Assuming the [Relayer] has sufficient funds and necessary ERC20 approvals on the destination chain, the [relay] transaction will facilitate the delivery of funds from the [Relayer] to the [User] via the FastBridge contract as intermediary. This will also emit a [BridgeRelayed] event and prevent any further attempts to relay that transaction.
-
-
-At this point, the process is complete from the [User]'s perspective. However, the [Relayer] needs to be reimbursed for the funds they delivered.
-
+After a [relay] has been completed, the next step is [Proving] the relay.
