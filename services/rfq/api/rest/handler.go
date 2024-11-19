@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/rfq/api/config"
 
 	"github.com/gin-gonic/gin"
@@ -69,7 +70,7 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		return
 	}
 
-	dbQuote, err := parseDBQuote(*putRequest, relayerAddr)
+	dbQuote, err := parseDBQuote(h.cfg, *putRequest, relayerAddr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -117,7 +118,7 @@ func (h *Handler) ModifyBulkQuotes(c *gin.Context) {
 
 	dbQuotes := []*db.Quote{}
 	for _, quoteReq := range putRequest.Quotes {
-		dbQuote, err := parseDBQuote(quoteReq, relayerAddr)
+		dbQuote, err := parseDBQuote(h.cfg, quoteReq, relayerAddr)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid quote request"})
 			return
@@ -134,7 +135,7 @@ func (h *Handler) ModifyBulkQuotes(c *gin.Context) {
 }
 
 //nolint:gosec
-func parseDBQuote(putRequest model.PutRelayerQuoteRequest, relayerAddr interface{}) (*db.Quote, error) {
+func parseDBQuote(cfg config.Config, putRequest model.PutRelayerQuoteRequest, relayerAddr interface{}) (*db.Quote, error) {
 	destAmount, err := decimal.NewFromString(putRequest.DestAmount)
 	if err != nil {
 		return nil, fmt.Errorf("invalid DestAmount")
@@ -147,6 +148,12 @@ func parseDBQuote(putRequest model.PutRelayerQuoteRequest, relayerAddr interface
 	if err != nil {
 		return nil, fmt.Errorf("invalid FixedFee")
 	}
+
+	err = validateFastBridgeAddresses(cfg, putRequest)
+	if err != nil {
+		return nil, fmt.Errorf("invalid fast bridge addresses: %w", err)
+	}
+
 	// nolint: forcetypeassert
 	return &db.Quote{
 		OriginChainID:   uint64(putRequest.OriginChainID),
@@ -161,6 +168,23 @@ func parseDBQuote(putRequest model.PutRelayerQuoteRequest, relayerAddr interface
 		OriginFastBridgeAddress: putRequest.OriginFastBridgeAddress,
 		DestFastBridgeAddress:   putRequest.DestFastBridgeAddress,
 	}, nil
+}
+
+func validateFastBridgeAddresses(cfg config.Config, putRequest model.PutRelayerQuoteRequest) error {
+	// Check V1 contracts
+	isV1Origin := common.HexToAddress(cfg.FastBridgeContractsV1[uint32(putRequest.OriginChainID)]) == common.HexToAddress(putRequest.OriginFastBridgeAddress)
+	isV1Dest := common.HexToAddress(cfg.FastBridgeContractsV1[uint32(putRequest.DestChainID)]) == common.HexToAddress(putRequest.DestFastBridgeAddress)
+
+	// Check V2 contracts
+	isV2Origin := common.HexToAddress(cfg.FastBridgeContractsV2[uint32(putRequest.OriginChainID)]) == common.HexToAddress(putRequest.OriginFastBridgeAddress)
+	isV2Dest := common.HexToAddress(cfg.FastBridgeContractsV2[uint32(putRequest.DestChainID)]) == common.HexToAddress(putRequest.DestFastBridgeAddress)
+
+	// Valid if both addresses match either V1 or V2
+	if (isV1Origin && isV1Dest) || (isV2Origin && isV2Dest) {
+		return nil
+	}
+
+	return fmt.Errorf("origin and destination fast bridge addresses must match either V1 or V2")
 }
 
 //nolint:gosec
