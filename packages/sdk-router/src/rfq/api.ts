@@ -30,7 +30,7 @@ export type PutRFQRequestAPI = {
     dest_chain_id: number
     origin_token_addr: string
     dest_token_addr: string
-    origin_amount: string
+    origin_amount_exact: string
     expiration_window: number
   }
 }
@@ -118,7 +118,7 @@ export const getBestRelayerQuote = async (
         dest_chain_id: ticker.destToken.chainId,
         origin_token_addr: ticker.originToken.token,
         dest_token_addr: ticker.destToken.token,
-        origin_amount: originAmount.toString(),
+        origin_amount_exact: originAmount.toString(),
         expiration_window: EXPIRATION_WINDOW,
       },
     }
