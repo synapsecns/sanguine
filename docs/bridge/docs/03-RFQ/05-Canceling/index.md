@@ -15,6 +15,7 @@ title: Canceling
 [BridgeRelayed]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
 [BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
 [Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
+[Multicall]: https://vercel-rfq-docs.vercel.app/contracts/utils/MulticallTarget.sol/abstract.MulticallTarget.html
 
 [Quoter API]: /docs/Routers/RFQ/Quoter%20API/
 [Dispute Period]: /docs/RFQ/Security/#dispute-period
@@ -23,6 +24,8 @@ title: Canceling
 [Claiming]: /docs/RFQ/Claiming
 
 [User]: /docs/RFQ/#entities
+[Quoter]: /docs/RFQ/#entities
+[Prover]: /docs/RFQ/#entities
 [Relayer]: /docs/RFQ/#entities
 [Guard]: /docs/RFQ/#entities
 [Canceler]: /docs/RFQ/#entities
@@ -40,3 +43,5 @@ If there is already a [proof] on file for the transaction, then cancellation wil
 Regardless of the manner of cancellation, the [User]'s escrowed funds will be transferred from FastBridge back to the `originSender` of the original [bridge] transaction.
 
 Additionally, a [BridgeDepositRefunded](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgedepositrefunded) event will be emitted.
+
+No further action is possible with the bridge after a cancellation and it can be considered closed.

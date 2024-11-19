@@ -15,6 +15,7 @@ title: Quoting
 [BridgeRelayed]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
 [BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
 [Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
+[Multicall]: https://vercel-rfq-docs.vercel.app/contracts/utils/MulticallTarget.sol/abstract.MulticallTarget.html
 
 [Quoter API]: /docs/Routers/RFQ/Quoter%20API/
 [Dispute Period]: /docs/RFQ/Security/#dispute-period
@@ -23,10 +24,11 @@ title: Quoting
 [Claiming]: /docs/RFQ/Claiming
 
 [User]: /docs/RFQ/#entities
+[Quoter]: /docs/RFQ/#entities
+[Prover]: /docs/RFQ/#entities
 [Relayer]: /docs/RFQ/#entities
 [Guard]: /docs/RFQ/#entities
 [Canceler]: /docs/RFQ/#entities
-
 # Quoting
 
 The Synapse RFQ systems allows [Quoter] entities (aka market makers / solvers / relayers) to post quotes via an off-chain [Quoter API]. These quotes are matched to `User` bridge inputs to achieve the optimal parameters (eg: the best price) for the [User]'s bridge transaction.
