@@ -42,7 +42,7 @@ Similar to an order book, Passive Quoting communicates a [Quoter]'s ongoing inte
 
 Starting with [Fast Bridge V2](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html), a new Active Quoting method has been introduced where a [Quoter] can listen and respond to live quote requests individually.
 
-This supplements the existing Passive Quotes to create a hybrid system, where Active and Passive quoting can be utilized together by [Quoter]s in any desired combination to maximize their efficiency.
+This supplements the existing Passive Quotes to create a hybrid system, where Active and Passive quoting can be utilized together by [Quoters](Quoter) in any desired combination to maximize their efficiency.
 
 Active quoting is more complicated to implement and maintain, but allow for more granular & customized quotes that can improve efficiency among other benefits. Quoters who prefer a simpler approach are free to use nothing but Passive Quotes, if they choose.
 
@@ -53,5 +53,5 @@ Regardless of the method used, these quotes constitute a provisional commitment 
 
 To that end, integrators and users can utilize the data from these quotes to construct and submit a corresponding [bridge] transaction on-chain through the [Fast Bridge Contract](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html). Once this transaction is finalized on-chain, `User`s can expect to receive their funds on the destination shortly after, as quoted.
 
-[Quoter]s are responsible for keeping their quotes fresh and accurate. Likewise, they are responsible for completing their part of fulfillment for any transactions which act upon their quotes. To these effects, [Quoter]s should push updates as rapidly as possible in reaction to consequential changes in prices, balances, etc. By default, the [Canonical Relayer](../Relayer) continuously updates quotes by checking on-chain balances, in-flight requests, and gas prices - custom implementations should take a similar approach.
+[Quoters](Quoter) are responsible for keeping their quotes fresh and accurate. Likewise, they are responsible for completing their part of fulfillment for any transactions which act upon their quotes. To these effects, [Quoters](Quoter) should push updates as rapidly as possible in reaction to consequential changes in prices, balances, etc. By default, the [Canonical Relayer](../Relayer) continuously updates quotes by checking on-chain balances, in-flight requests, and gas prices - custom implementations should take a similar approach.
 

@@ -56,14 +56,14 @@ If the [Relayer] has sufficient funds and approvals, and the relay has not alrea
 
 ### Function Options
 
-There are two overloaded versions of the relay function in FastBridge:
+There are two overloaded versions of the relay function in FastBridgeV2. Relayers can use whichever best suits their implementation.
 
 <div style={{ marginLeft: '20px' }}>
 1)
 ```solidity
     function relay(bytes memory request, address relayer) external payable;
 ```
-This version allows arbitrary `relayer` address to be supplied
+This version allows an arbitrary `relayer` address to be supplied
 
 2)
 ```solidity
@@ -72,19 +72,29 @@ This version allows arbitrary `relayer` address to be supplied
 This version will auto-assign the executing EOA (`msg.sender`) as the `relayer`
 </div>
 
-### Setting the `relayer` parameter
-The address which is specified as the `relayer` on the [relay] will ultimately be reimbursed the funds when the [claim] occurs later.
+Regardless of the method used, a [BridgeRelayed](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgedepositrefunded) event will be emitted.
 
-Note that [Relayer]s can utilize this feature to be reimbursed on different addresses than they are actually relaying from. This can be useful for advanced relaying setups, but is not a necessity.
+### Setting the `relayer` parameter
+The address which is specified as the `relayer` on the [relay] will have control of the reimbursed funds when the [claim] occurs later.
+
+Note that [Relayers](Relayer) can utilize this feature to be reimbursed on different addresses than they are actually relaying from. This can be useful for advanced relaying setups, but is not a necessity.
+
+# Multicalling
+
+As of FastBridgeV2, it is possible to batch many [relay] transactions together with [Multicall]
+
+However, the Multicall implementation is limited to non-payable transactions only, so native-gas bridges cannot be included in batches.
 
 ### Permissions
 
-Although relaying and claiming can be performed permissionlessly, in the current system [Relayer]s will need to also operate a permissioned [Prover] role.
+Although relaying and claiming can be performed permissionlessly, in the current system [Relayers](Relayer) will need to also operate a permissioned [Prover] role.
 
 Note that this allows the use of different EOAs to [relay], [prove], and [claim] - which we recommend doing.
 
-We also recommend that [Relayer]s operate a [Quoter] to compete on pricing and routes, but this is not a necessity.
+We also recommend that [Relayers](Relayer) operate a [Quoter] to compete on pricing and routes, but this is not a necessity.
 
 ## Next steps
 
-After a [relay] has been completed, the next step is [Proving] the relay.
+After a [relay] has been completed, the process is fully complete from the perspective of the [User].
+
+Next, the [Relayer] must proceed to [Proving] the relay so that they can be reimbursed for the liquidity they provided.

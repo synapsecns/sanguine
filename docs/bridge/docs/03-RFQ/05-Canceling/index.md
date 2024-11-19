@@ -27,8 +27,7 @@ title: Canceling
 [Guard]: /docs/RFQ/#entities
 [Canceler]: /docs/RFQ/#entities
 
-
-Due to various factors, it is possible but uncommon for a [bridge] to go unfilled.
+Due to various factors, it is possible but uncommon for a [bridge] to go unfilled, where it is indefinitely not relayed.
 
 In these situations, the [User]'s funds will remain safely in escrow on the FastBridge contract until a [cancel] function is executed. This function can be executed permissionlessly after a [Cancel Delay] period has passed.
 
@@ -36,4 +35,8 @@ A permissioned [Canceler] entity can also execute the [cancel] function prior to
 
 If there is already a [proof] on file for the transaction, then cancellation will be prevented. (IE: Cannot attempt to [cancel] a transaction which appears to have already been successfully completed)
 
-Regardless of the manner of cancellation, the [User]'s originally deposited funds will be transferred from FastBridge escrow back to the [User].
+### Effects of a cancel transaction
+
+Regardless of the manner of cancellation, the [User]'s escrowed funds will be transferred from FastBridge back to the `originSender` of the original [bridge] transaction.
+
+Additionally, a [BridgeDepositRefunded](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgedepositrefunded) event will be emitted.

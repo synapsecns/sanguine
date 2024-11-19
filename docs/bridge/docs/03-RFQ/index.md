@@ -25,6 +25,8 @@ import { RFQFlow } from '@site/src/components/RFQFlow'
 [Claiming]: /docs/RFQ/Claiming
 
 [User]: /docs/RFQ/#entities
+[Quoter]: /docs/RFQ/#entities
+[Prover]: /docs/RFQ/#entities
 [Relayer]: /docs/RFQ/#entities
 [Guard]: /docs/RFQ/#entities
 [Canceler]: /docs/RFQ/#entities
@@ -49,7 +51,7 @@ These relayers compete to provide the optimal bridge execution (eg: the best pri
       </tr>
       <tr>
         <td><strong>Quote</strong></td>
-        <td>Quotes from [Relayer]s are evaluated and resolved to the optimal choice to match the user's input.
+        <td>Quotes from [Relayers](Relayer) are evaluated and resolved to the optimal choice to match the user's input.
         <br/><br/>The resolved quote is used to construct a bridge transaction for the user to sign.</td>
       </tr>
       <tr>
@@ -133,7 +135,7 @@ These relayers compete to provide the optimal bridge execution (eg: the best pri
 
 ### Quoter API
 The RESTful [Quoter API] allows Quoters to post Passive and/or Active Quotes.
-These quotes are then used to create transactions for [User]s to sign and submit.
+These quotes are then used to create transactions for [Users](User) to sign and submit.
 
 ### FastBridge Smart Contracts
 [Synapse FastBridge contracts](/docs/Contracts/RFQ) facilitate and enforce all of the on-chain functionality and security of the system.
@@ -150,9 +152,9 @@ FastBridge contracts will be deployed on all supported chains.
 ## On-Chain Flow Detail
 Once the [User] has signed and submitted their deposit on-chain via a [bridge] transaction, a [BridgeRequested] event will be emitted.
 
-[Relayer]s who observe this event can permissionlessly complete the bridge by calling [relay] on the FastBridge contract of the destination chain.
+[Relayers](Relayer) who observe this event can permissionlessly complete the bridge by calling [relay] on the FastBridge contract of the destination chain.
 
-The [BridgeRequested] event emission includes the `request` bytes of an encoded [BridgeTransactionV2] struct. The [Relayer] must execute their [relay] with these exact bytes from the origin chain, or their relay will not be considered valid and could result in a loss of relayer funds. To reiterate, the destination contract must operate optimistically upon the [Relayer]'s supplied parameters - it has no capability to verify or protect the [Relayer] from loss of funds due to error or ReOrgs on the origin chain. All relays are final and all participating [Relayer]s must assume the full responsibility and risk of invalid relays.
+The [BridgeRequested] event emission includes the `request` bytes of an encoded [BridgeTransactionV2] struct. The [Relayer] must execute their [relay] with these exact bytes from the origin chain, or their relay will not be considered valid and could result in a loss of relayer funds. To reiterate, the destination contract must operate optimistically upon the [Relayer]'s supplied parameters - it has no capability to verify or protect the [Relayer] from loss of funds due to error or ReOrgs on the origin chain. All relays are final and all participating [Relayers](Relayer) must assume the full responsibility and risk of invalid relays.
 
 Assuming the [Relayer] has sufficient funds and necessary ERC20 approvals on the destination chain, the [relay] transaction will facilitate the delivery of funds from the [Relayer] to the [User] via the FastBridge contract as intermediary. This will also emit a [BridgeRelayed] event and prevent any further attempts to relay that transaction.
 

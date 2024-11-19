@@ -44,7 +44,7 @@ If a [bridge] transaction occurs that acts upon a quote issued by a particular [
 
 Although funds are safe in these instances and will eventually either be cancelled & refunded or completed late, these are adverse UX incidents nonetheless.
 
-All participating [Relayer]s must ensure they are able to complete all [bridge] transactions that act upon their quotes and will be asked to quickly rectify any shortfalls.
+All participating [Relayers](Relayer) must ensure they are able to complete all [bridge] transactions that act upon their quotes and will be asked to quickly rectify any shortfalls.
 
 This may include completing the [relay] at an unexpectedly unfavorable price - within a reasonable threshold. For example, if the gas price sharply increased beyond what was anticipated.
 
@@ -55,7 +55,7 @@ Refer to the [RFQ Indexer] for endpoints that can aid with tracking missing rela
 Currently, it is the responsibility of the [Relayer] to track and submit timely [prove] transactions for their own finalized [relay] transactions.
 Failure to do so can result in a delayed reimbursement at best, or an eventual loss of funds at worst.
 
-Likewise, [Relayer]s are expected to track and submit their own [claim] transactions once their proofs are past the [Dispute Period].
+Likewise, [Relayers](Relayer) are expected to track and submit their own [claim] transactions once their proofs are past the [Dispute Period].
 Missing claims are less urgent than missing proofs, but the funds can remain unclaimed in escrow indefinitely if the responsible [Relayer] loses track of them.
 
 Refer to the [RFQ Indexer] for endpoints that can aid with tracking missing proofs and claims.

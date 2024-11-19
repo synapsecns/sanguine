@@ -67,3 +67,6 @@ This allows for a new corrected [prove] to be submitted and the process begins a
 
 If a [relay] truly did occur for the disputed [prove], but it was not for the correct bridge parameters, this constitutes an [invalid relay](/docs/RFQ/Relaying%20Risk%20Factors/#invalid-relays).
 
+Additionally, a [BridgeProofDisputed](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofdisputed) event will be emitted.
+
+This event can be useful for monitoring / alerting.
