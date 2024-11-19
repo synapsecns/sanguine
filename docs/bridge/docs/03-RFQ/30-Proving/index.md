@@ -3,7 +3,6 @@ title: Proving
 ---
 
 <!-- Reference Links -->
-[bridge]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridge
 [relay]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relay
 [prove]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#prove
 [dispute]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#dispute
@@ -15,13 +14,16 @@ title: Proving
 [BridgeRelayed]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
 [BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
 [Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
-[Multicall]: https://vercel-rfq-docs.vercel.app/contracts/utils/MulticallTarget.sol/abstract.MulticallTarget.html
 
-[Quoter API]: /docs/Routers/RFQ/Quoter%20API/
+[Quoter API]: /docs/RFQ/Quoting/Quoter%20API/
 [Dispute Period]: /docs/RFQ/Security/#dispute-period
+[Quoting]: /docs/RFQ/Quoting
+[Bridging]: /docs/RFQ/Bridging
 [Relaying]: /docs/RFQ/Relaying
 [Proving]: /docs/RFQ/Proving
 [Claiming]: /docs/RFQ/Claiming
+[Canceling]: /docs/RFQ/Canceling
+[Security]: /docs/RFQ/Security
 
 [User]: /docs/RFQ/#entities
 [Quoter]: /docs/RFQ/#entities
@@ -30,9 +32,9 @@ title: Proving
 [Guard]: /docs/RFQ/#entities
 [Canceler]: /docs/RFQ/#entities
 
-After [Relaying], [prove] transactions are executed by authorized [Provers](Prover) (who are typically also the [Relayer])
+After [Relaying] successfully and observing that the [relay] transaction has finalized on the destination chain, [prove] transactions are executed by authorized Provers (who are typically also the [Relayer])
 
-Through these transactions, the Prover is asserting that the indicated `relayer` completed a [relay] and can rightfully [claim] the escrowed [bridge] funds as a reimbursement.
+Through these transactions, the Prover is asserting that the indicated `relayer` completed a [relay] and can rightfully [claim] the escrowed bridge funds as a reimbursement.
 
 Each [prove] transaction sets the [proof] data for the bridge and initiates a [Dispute Period].
 
@@ -57,6 +59,12 @@ This version will auto-assign the executing EOA (`msg.sender`) as the `relayer`
 Regardless of the method used, a [BridgeProofProvided](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided) event will be emitted.
 
 Note that during the [Dispute Period], the `relayer` indicated on this function will be required to match the `relayer` on the actual [relay].
+
+:::warning
+
+prove should not be called until the Relayer is confident that the relay transaction is finalized and will not be reorganized.
+
+:::
 
 ### Multicalling
 

@@ -1,8 +1,8 @@
 ---
 title: Security
 ---
+
 <!-- Reference Links -->
-[bridge]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridge
 [relay]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relay
 [prove]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#prove
 [dispute]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#dispute
@@ -14,13 +14,16 @@ title: Security
 [BridgeRelayed]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
 [BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
 [Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
-[Multicall]: https://vercel-rfq-docs.vercel.app/contracts/utils/MulticallTarget.sol/abstract.MulticallTarget.html
 
-[Quoter API]: /docs/Routers/RFQ/Quoter%20API/
+[Quoter API]: /docs/RFQ/Quoting/Quoter%20API/
 [Dispute Period]: /docs/RFQ/Security/#dispute-period
+[Quoting]: /docs/RFQ/Quoting
+[Bridging]: /docs/RFQ/Bridging
 [Relaying]: /docs/RFQ/Relaying
 [Proving]: /docs/RFQ/Proving
 [Claiming]: /docs/RFQ/Claiming
+[Canceling]: /docs/RFQ/Canceling
+[Security]: /docs/RFQ/Security
 
 [User]: /docs/RFQ/#entities
 [Quoter]: /docs/RFQ/#entities
@@ -35,7 +38,7 @@ Synapse RFQ is an optimistic cross-chain system. This means that any ambiguous a
 
 ### Proofs
 
-With this sytem in particular, [prove] transactions are the focal point of this optimistic mechanism - whereby a [Relayer] is asserting that they completed a [relay] and can rightfully [claim] the escrowed [bridge] funds as a reimbursement.
+With this sytem in particular, [prove] transactions are the focal point of this optimistic mechanism - whereby a [Relayer] is asserting that they completed a [relay] and can rightfully [claim] the escrowed bridge funds as a reimbursement.
 
 Each [prove] transaction sets the [proof] data for the bridge and initiates a dispute period.
 
@@ -46,7 +49,7 @@ After a [prove] transaction is posted and the [proof] data is set, a window of t
 
 During this time, the prove/proof is eligible to be [disputed](dispute) by [Guard] entities.
 
-After the [Dispute Period](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#dispute_period) has passed without any disputes, the funds in escrow from the original [bridge] transaction can be released via a [claim] transaction, which will reimburse the rightful [Relayer].
+After the [Dispute Period](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#dispute_period) has passed without any disputes, the funds in escrow from the original bridge transaction can be released via a [claim] transaction, which will reimburse the rightful [Relayer].
 
 
 ### Guards
@@ -55,7 +58,7 @@ During the dispute period, off-chain [Guard] entities provide the security funct
 
 - Does the asserted [relay] transaction exist in a finalized state on the destination chain?
 
-- Do all [BridgeTransactionV2] parameters of the destination [relay] match the origin [bridge]?
+- Do all [BridgeTransactionV2] parameters of the destination [relay] match the origin bridge?
 
 - Is the `relayer` asserted by the [prove] the same as the `relayer` of the [relay]?
 

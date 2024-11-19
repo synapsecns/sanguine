@@ -3,7 +3,6 @@ title: Risk Factors
 ---
 
 <!-- Reference Links -->
-[bridge]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridge
 [relay]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relay
 [prove]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#prove
 [dispute]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#dispute
@@ -15,13 +14,16 @@ title: Risk Factors
 [BridgeRelayed]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
 [BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
 [Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
-[Multicall]: https://vercel-rfq-docs.vercel.app/contracts/utils/MulticallTarget.sol/abstract.MulticallTarget.html
 
-[Quoter API]: /docs/Routers/RFQ/Quoter%20API/
+[Quoter API]: /docs/RFQ/Quoting/Quoter%20API/
 [Dispute Period]: /docs/RFQ/Security/#dispute-period
+[Quoting]: /docs/RFQ/Quoting
+[Bridging]: /docs/RFQ/Bridging
 [Relaying]: /docs/RFQ/Relaying
 [Proving]: /docs/RFQ/Proving
 [Claiming]: /docs/RFQ/Claiming
+[Canceling]: /docs/RFQ/Canceling
+[Security]: /docs/RFQ/Security
 
 [User]: /docs/RFQ/#entities
 [Quoter]: /docs/RFQ/#entities
@@ -31,9 +33,7 @@ title: Risk Factors
 [Canceler]: /docs/RFQ/#entities
 
 
-:::note
-
-<span style={{ color: 'red' }}>**IMPORTANT**</span>
+:::warning
 
 As is the case with many cross-chain systems, there are inherent risks involved with providing liquidity as a [Relayer].
 
@@ -43,11 +43,11 @@ Although the system is designed to minimize these risks, it is ultimately the so
 
 ### Missing Relays
 
-If a [bridge] transaction occurs that acts upon a quote issued by a particular [Relayer], and that [Relayer] fails to complete the [relay] transaction - the [bridge] deposit can be come "stuck" if there is no one to complete it.
+If a bridge transaction occurs that acts upon a quote issued by a particular [Relayer], and that [Relayer] fails to complete the [relay] transaction - the bridge deposit can be come "stuck" if there is no one to complete it.
 
 Although funds are safe in these instances and will eventually either be cancelled & refunded or completed late, these are adverse UX incidents nonetheless.
 
-All participating [Relayers](Relayer) must ensure they are able to complete all [bridge] transactions that act upon their quotes and will be asked to quickly rectify any shortfalls.
+All participating Relayers must ensure they are able to complete all bridge transactions that act upon their quotes and will be asked to quickly rectify any shortfalls.
 
 This may include completing the [relay] at an unexpectedly unfavorable price - within a reasonable threshold. For example, if the gas price sharply increased beyond what was anticipated.
 
@@ -58,23 +58,28 @@ Refer to the [RFQ Indexer] for endpoints that can aid with tracking missing rela
 Currently, it is the responsibility of the [Relayer] to track and submit timely [prove] transactions for their own finalized [relay] transactions.
 Failure to do so can result in a delayed reimbursement at best, or an eventual loss of funds at worst.
 
-Likewise, [Relayers](Relayer) are expected to track and submit their own [claim] transactions once their proofs are past the [Dispute Period].
+Likewise, Relayers are expected to track and submit their own [claim] transactions once their proofs are past the [Dispute Period].
 Missing claims are less urgent than missing proofs, but the funds can remain unclaimed in escrow indefinitely if the responsible [Relayer] loses track of them.
 
 Refer to the [RFQ Indexer] for endpoints that can aid with tracking missing proofs and claims.
 
 ### Invalid Relays
 
-If a [relay] occurs for an incorrect output amount (or any other incorrect [BridgeTransactionV2] data) and is submitted via [prove] as the fulfillment a [bridge] transaction, the [proof] will be disputed by a [Guard].
+If a [relay] occurs for an incorrect output amount (or any other incorrect [BridgeTransactionV2] data) and is submitted via [prove] as the fulfillment a bridge transaction, the [proof] will be disputed by a [Guard].
 
-In other terms, although a [relay] transaction may have truly taken place and delivered funds from the [Relayer] to the [User], if the [relay] request parameter does not exactly match the encoded [BridgeTransactionV2] data on the [bridge] transaction, then it cannot be accepted as the completion of that bridge.
+In other terms, although a [relay] transaction may have truly taken place and delivered funds from the [Relayer] to the [User], if the [relay] request parameter does not exactly match the encoded [BridgeTransactionV2] data on the bridge transaction, then it cannot be accepted as the completion of that bridge.
 
 The incorrect [relay] in this example cannot be reversed or reimbursed and would effectively be a loss of funds for the [Relayer] who performed it.
 
-Reorganizations of the [bridge] transaction on the origin chain are the most likely vector for this scenario.
+Reorganizations of the bridge transaction on the origin chain are the most likely vector for this scenario.
 
+### Pricing Failures
 
+Relayers should never assume that all bridges are profitable or properly priced, even those that came from the Synapse Frontend, and instead should independently verify using trusted mechanisms and oracles.
 
+Similarly, it is important to remember that bridge is a permissionless function. As with any similar system, bad actors *can* and *will* submit exploitative bridges to see if any Relayers make the fatal mistake of filling them.
+
+Failure to implement appropriate pricing protections could result in a loss of Relayer funds.
 
 ### Self-Monitoring
 

@@ -5,7 +5,6 @@ title: RFQ
 import { RFQFlow } from '@site/src/components/RFQFlow'
 
 <!-- Reference Links -->
-[bridge]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridge
 [relay]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relay
 [prove]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#prove
 [dispute]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#dispute
@@ -18,11 +17,15 @@ import { RFQFlow } from '@site/src/components/RFQFlow'
 [BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
 [Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
 
-[Quoter API]: /docs/Routers/RFQ/Quoter%20API/
+[Quoter API]: /docs/RFQ/Quoting/Quoter%20API/
 [Dispute Period]: /docs/RFQ/Security/#dispute-period
+[Quoting]: /docs/RFQ/Quoting
+[Bridging]: /docs/RFQ/Bridging
 [Relaying]: /docs/RFQ/Relaying
 [Proving]: /docs/RFQ/Proving
 [Claiming]: /docs/RFQ/Claiming
+[Canceling]: /docs/RFQ/Canceling
+[Security]: /docs/RFQ/Security
 
 [User]: /docs/RFQ/#entities
 [Quoter]: /docs/RFQ/#entities
@@ -31,7 +34,7 @@ import { RFQFlow } from '@site/src/components/RFQFlow'
 [Guard]: /docs/RFQ/#entities
 [Canceler]: /docs/RFQ/#entities
 
-# Synapse RFQ
+# Synapse RFQ Summary
 
 Synapse RFQ (Request-For-Quote) is an <abbr title="'Intent' refers to a user authorizing specific actions that they want to achieve, typically in very simple terms, such as a bridge or swap. Actual execution of the actions is then performed on the user's behalf by third parties known as solvers/relayers.">intent</abbr>-based bridging system that connects briding users to a network of relayers.
 
@@ -51,7 +54,7 @@ These relayers compete to provide the optimal bridge execution (eg: the best pri
       </tr>
       <tr>
         <td><strong>Quote</strong></td>
-        <td>Quotes from [Relayers](Relayer) are evaluated and resolved to the optimal choice to match the user's input.
+        <td>Quotes from Relayers are evaluated and resolved to the optimal choice to match the user's input.
         <br/><br/>The resolved quote is used to construct a bridge transaction for the user to sign.</td>
       </tr>
       <tr>
@@ -99,7 +102,7 @@ These relayers compete to provide the optimal bridge execution (eg: the best pri
 
 <b>Relayers</b> <span style={{color: 'darkgray'}}><i>(Permissionless Role)</i></span>
     <blockquote>
-        Observes [bridge] deposits and submits [relay] transactions to fulfill them.
+        Observes bridge deposits and submits [relay] transactions to fulfill them.
         <div></div>
         Also submits `claim` transactions to be reimbursed for their relays.
         <div></div>
@@ -135,12 +138,12 @@ These relayers compete to provide the optimal bridge execution (eg: the best pri
 
 ### Quoter API
 The RESTful [Quoter API] allows Quoters to post Passive and/or Active Quotes.
-These quotes are then used to create transactions for [Users](User) to sign and submit.
+These quotes are then used to create transactions for Users to sign and submit.
 
 ### FastBridge Smart Contracts
 [Synapse FastBridge contracts](/docs/Contracts/RFQ) facilitate and enforce all of the on-chain functionality and security of the system.
 
-This includes the [bridge] deposit, escrow, and eventual release of user funds on the origin chain.
+This includes the bridge, deposit, escrow, and eventual release of user funds on the origin chain.
 
 Associated [relay], [prove], [claim], [dispute], and [cancel] actions are also facilitated by FastBridge contracts.
 
@@ -149,31 +152,57 @@ Additionally, the FastBridge contracts manage all relevant permissions and on-ch
 FastBridge contracts will be deployed on all supported chains.
 
 
-## On-Chain Flow Detail
-Once the [User] has signed and submitted their deposit on-chain via a [bridge] transaction, a [BridgeRequested] event will be emitted.
+##  Flow Summary
 
-[Relayers](Relayer) who observe this event can permissionlessly complete the bridge by calling [relay] on the FastBridge contract of the destination chain.
+#### [Quoting]
+<blockquote>
+A [User] inputs their desired bridge information into an bridge interface such as [Synapse](https://synapseprotocol.com/?fromChainId=1).
 
-The [BridgeRequested] event emission includes the `request` bytes of an encoded [BridgeTransactionV2] struct. The [Relayer] must execute their [relay] with these exact bytes from the origin chain, or their relay will not be considered valid and could result in a loss of relayer funds. To reiterate, the destination contract must operate optimistically upon the [Relayer]'s supplied parameters - it has no capability to verify or protect the [Relayer] from loss of funds due to error or ReOrgs on the origin chain. All relays are final and all participating [Relayers](Relayer) must assume the full responsibility and risk of invalid relays.
+Quotes to complete the bridge are collected from [Quoters]. The best of these is resolved and presented to the user as a bridge transaction to sign & submit on-chain.
+</blockquote>
 
-Assuming the [Relayer] has sufficient funds and necessary ERC20 approvals on the destination chain, the [relay] transaction will facilitate the delivery of funds from the [Relayer] to the [User] via the FastBridge contract as intermediary. This will also emit a [BridgeRelayed] event and prevent any further attempts to relay that transaction.
+#### [Bridging]
+<blockquote>
+Once the [User] has signed and submitted their deposit on-chain via a bridge transaction, the bridging funds will be transferred to a FastBridge contract and held in escrow.
 
+</blockquote>
+
+#### [Relaying]
+
+<blockquote>
+Relayers who observe the bridge deposit event can permissionlessly complete the bridge by calling [relay] on the FastBridge contract of the destination chain. Typically the Relayer is the same as the Quoter.
+
+This will transfer the bridge destination funds from the [Relayer] to the [User], with FastBridge acting as intermediary.
 
 At this point, the process is complete from the [User]'s perspective. However, the [Relayer] needs to be reimbursed for the funds they delivered.
+</blockquote>
 
-After the relay, a permissioned [Prover] (typically also the Relayer) who observed the [BridgeRelayed] event will submit a [prove] transaction to the origin chain's FastBridge contract. The [prove] parameters include the relay transaction hash along with `transactionId`, which is a 32-byte hash of the encoded [BridgeTransactionV2] struct also emitted on the [BridgeRelayed] event.
+#### [Proving]
 
-The [prove] transaction will emit a [BridgeProofProvided] event, store the [proof] in the bridgeTxDetails mapping, and initiate a [Dispute Period] for this transaction.
+<blockquote>
 
-Shortly after the [Dispute Period] begins, a permissioned [Guard] entity who observed the [BridgeProofProvided] event will verify that it's asserted [relay] transaction is finalized and accurate, including whether it exactly matches the parameters from the user's original bridge transaction. If any discrepancies are discovered, the [Guard] will submit a [dispute] transaction on the origin chain which will effectively erase the [proof], at which time a new correct [proof] can be submitted.
+After the relay, a [Prover] (typically also the Relayer) will submit a [prove] transaction with the relay transaction's details to the origin chain's FastBridge contract.
 
-Once the [Dispute Period] has passed without incident, a [claim] transaction can be executed on the origin chain which will release the user's originally deposited funds from escrow and deliver them to the indicated [Relayer] address. The [claim] function can be executed permissionlessly, but in practice the [Relayer] will typically execute it themselves.
+This asserts that the [relay] for the bridge was completed according to the specifications of the [User], and that the [Relayer] can rightfully [claim] the escrowed funds.
 
-## [Cancellations](docs/RFQ/Canceling/)
+A [Dispute Period] begins for the transaction before the [claim] can occur.
 
-Due to various factors, it is possible but uncommon for a [bridge] to go unfilled.
+</blockquote>
 
-In these situations, the user's funds will remain safely in escrow until the bridge can be [cancelled](docs/RFQ/Canceling/),  at which point the funds will be securely returned to the user.
+#### [Dispute Period]
 
-For more detail, see the [Canceling](docs/RFQ/Canceling/) section.
+<blockquote>
+During the [Dispute Period], [Guard] entities will verify that the proof's assertion is accurate.
 
+IE: They will confirm that the [relay] being asserted was completed exactly as specified by the user.
+
+If any discrepancies are found, the guards will [dispute] the proof
+</blockquote>
+
+#### [Claiming]
+
+<blockquote>
+Once the [Dispute Period] has passed without incident, a [claim] transaction can be executed by the [Relayer] on the origin chain.
+
+This wil release the deposit funds from escrow and deliver them to the rightful [Relayer] as a reimbursement for the liquidity they provided on the [relay].
+</blockquote>

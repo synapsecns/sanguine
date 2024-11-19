@@ -2,24 +2,54 @@
 sidebar_label: Canonical Relayer
 ---
 
+<!-- Reference Links -->
+[relay]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relay
+[prove]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#prove
+[dispute]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#dispute
+[claim]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#claim
+[cancel]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#cancel
+[proof]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgetxdetails
+[BridgeRequested]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerequested
+[BridgeTransactionV2]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgetransactionv2
+[BridgeRelayed]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
+[BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
+[Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
+
+[Quoter API]: /docs/RFQ/Quoting/Quoter%20API/
+[Dispute Period]: /docs/RFQ/Security/#dispute-period
+[Quoting]: /docs/RFQ/Quoting
+[Bridging]: /docs/RFQ/Bridging
+[Relaying]: /docs/RFQ/Relaying
+[Proving]: /docs/RFQ/Proving
+[Claiming]: /docs/RFQ/Claiming
+[Canceling]: /docs/RFQ/Canceling
+[Security]: /docs/RFQ/Security
+
+[User]: /docs/RFQ/#entities
+[Quoter]: /docs/RFQ/#entities
+[Prover]: /docs/RFQ/#entities
+[Relayer]: /docs/RFQ/#entities
+[Guard]: /docs/RFQ/#entities
+[Canceler]: /docs/RFQ/#entities
+
 # Canonical RFQ Relayer
 
-:::note
+:::info
 
 Relaying itself is permissionless as of FastBridgeV2 - but other necessary supporting functions of this Relayer (Quoting, Proving) are permissioned.
 
-Contact us if you wish to participate as a Relayerm
+If you are interested in participating as a Relayer, contact us.
 
 :::
 
-The Canonical RFQ Relayer is the official relayer built and operated by Synapse which performs all necessary automated functions that are necessary for a Relayer.
+The Canonical RFQ Relayer is the official relayer app built and operated by Synapse which performs all necessary automated functions that are necessary for a Relayer participating in the Synapse RFQ network.
 
 These functions include:
 
-- Quoting
-- Relaying
-- Proving
-- Claiming
+- [Quoting]
+- [Relaying]
+- [Proving]
+- [Claiming]
 - Rebalancing
 
 ## Stack
@@ -28,7 +58,7 @@ The canonical RFQ Relayer is primarily built in Go with a MySQL backend. It also
 
 ## Quoting
 
-Continuously track and update route quotes via the [Quoter API](/docs/Routers/RFQ/Quoter%20API/) based on changes to balances, prices, and fees.
+Continuously track and update route quotes via the [Quoter API](/docs/RFQ/Quoting/Quoter%20API/) based on changes to balances, prices, and fees.
 
 | Param   | Description
 |---------|-

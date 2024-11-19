@@ -3,7 +3,6 @@ title: Relaying
 ---
 
 <!-- Reference Links -->
-[bridge]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridge
 [relay]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relay
 [prove]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#prove
 [dispute]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#dispute
@@ -15,13 +14,16 @@ title: Relaying
 [BridgeRelayed]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
 [BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
 [Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
-[Multicall]: https://vercel-rfq-docs.vercel.app/contracts/utils/MulticallTarget.sol/abstract.MulticallTarget.html
 
-[Quoter API]: /docs/Routers/RFQ/Quoter%20API/
+[Quoter API]: /docs/RFQ/Quoting/Quoter%20API/
 [Dispute Period]: /docs/RFQ/Security/#dispute-period
+[Quoting]: /docs/RFQ/Quoting
+[Bridging]: /docs/RFQ/Bridging
 [Relaying]: /docs/RFQ/Relaying
 [Proving]: /docs/RFQ/Proving
 [Claiming]: /docs/RFQ/Claiming
+[Canceling]: /docs/RFQ/Canceling
+[Security]: /docs/RFQ/Security
 
 [User]: /docs/RFQ/#entities
 [Quoter]: /docs/RFQ/#entities
@@ -32,11 +34,15 @@ title: Relaying
 
 # Relaying
 
-In the Synapse RFQ System, [Relayers](Relayer) fulfill the intent of [User] [bridge] transactions by providing the liquidity and executing the [relay] transaction on the destination chain .
+In the Synapse RFQ System, Relayers fulfill the intent of [User] [bridge] transactions by providing the liquidity and executing the [relay] transaction on the destination chain .
 
-:::note
+:::info
 
-If you are interested in participating as a Relayer, it is important to read all sections of the RFQ documentation
+If you are reading this documentation to become a participating Relayer, be sure to read all RFQ sections.
+
+Also note - Currently, relaying involves actions which require explicit authorization.
+
+If you are interested in participating as a Relayer, contact us.
 
 :::
 
@@ -80,7 +86,7 @@ Regardless of the method used, a [BridgeRelayed](https://vercel-rfq-docs.vercel.
 ### Setting the `relayer` parameter
 The address which is specified as the `relayer` on the [relay] will have control of the reimbursed funds when the [claim] occurs later.
 
-Note that [Relayers](Relayer) can utilize this feature to be reimbursed on different addresses than they are actually relaying from. This can be useful for advanced relaying setups, but is not a necessity.
+Note that Relayers can utilize this feature to be reimbursed on different addresses than they are actually relaying from. This can be useful for advanced relaying setups, but is not a necessity.
 
 # Multicalling
 
@@ -90,11 +96,11 @@ However, the Multicall implementation is limited to non-payable transactions onl
 
 ### Permissions
 
-Although relaying and claiming can be performed permissionlessly, in the current system [Relayers](Relayer) will need to also operate a permissioned [Prover] role.
+Although relaying and claiming can be performed permissionlessly, in the current system Relayers will need to also operate a permissioned [Prover] role.
 
 Note that this allows the use of different EOAs to [relay], [prove], and [claim] - which we recommend doing.
 
-We also recommend that [Relayers](Relayer) operate a [Quoter] to compete on pricing and routes, but this is not a necessity.
+We also recommend that Relayers operate a [Quoter] to compete on pricing and routes, but this is not a necessity.
 
 ## Next steps
 

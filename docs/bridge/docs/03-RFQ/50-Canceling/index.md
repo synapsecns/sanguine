@@ -3,7 +3,6 @@ title: Canceling
 ---
 
 <!-- Reference Links -->
-[bridge]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridge
 [relay]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relay
 [prove]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#prove
 [dispute]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#dispute
@@ -15,13 +14,16 @@ title: Canceling
 [BridgeRelayed]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
 [BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
 [Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
-[Multicall]: https://vercel-rfq-docs.vercel.app/contracts/utils/MulticallTarget.sol/abstract.MulticallTarget.html
 
-[Quoter API]: /docs/Routers/RFQ/Quoter%20API/
+[Quoter API]: /docs/RFQ/Quoting/Quoter%20API/
 [Dispute Period]: /docs/RFQ/Security/#dispute-period
+[Quoting]: /docs/RFQ/Quoting
+[Bridging]: /docs/RFQ/Bridging
 [Relaying]: /docs/RFQ/Relaying
 [Proving]: /docs/RFQ/Proving
 [Claiming]: /docs/RFQ/Claiming
+[Canceling]: /docs/RFQ/Canceling
+[Security]: /docs/RFQ/Security
 
 [User]: /docs/RFQ/#entities
 [Quoter]: /docs/RFQ/#entities
@@ -30,7 +32,7 @@ title: Canceling
 [Guard]: /docs/RFQ/#entities
 [Canceler]: /docs/RFQ/#entities
 
-Due to various factors, it is possible but uncommon for a [bridge] to go unfilled, where it is indefinitely not relayed.
+Due to various factors, it is possible but uncommon for a bridge to go unfilled, where it is indefinitely not relayed.
 
 In these situations, the [User]'s funds will remain safely in escrow on the FastBridge contract until a [cancel] function is executed. This function can be executed permissionlessly after a [Cancel Delay] period has passed.
 
@@ -40,7 +42,7 @@ If there is already a [proof] on file for the transaction, then cancellation wil
 
 ### Effects of a cancel transaction
 
-Regardless of the manner of cancellation, the [User]'s escrowed funds will be transferred from FastBridge back to the `originSender` of the original [bridge] transaction.
+Regardless of the manner of cancellation, the [User]'s escrowed funds will be transferred from FastBridge back to the `originSender` of the original bridge transaction.
 
 Additionally, a [BridgeDepositRefunded](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgedepositrefunded) event will be emitted.
 

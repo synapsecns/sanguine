@@ -1,9 +1,8 @@
 ---
-title: Claiming
+title: Bridging
 ---
 
 <!-- Reference Links -->
-[bridge]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridge
 [relay]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relay
 [prove]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#prove
 [dispute]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#dispute
@@ -15,13 +14,16 @@ title: Claiming
 [BridgeRelayed]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
 [BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
 [Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
-[Multicall]: https://vercel-rfq-docs.vercel.app/contracts/utils/MulticallTarget.sol/abstract.MulticallTarget.html
 
-[Quoter API]: /docs/Routers/RFQ/Quoter%20API/
+[Quoter API]: /docs/RFQ/Quoting/Quoter%20API/
 [Dispute Period]: /docs/RFQ/Security/#dispute-period
+[Quoting]: /docs/RFQ/Quoting
+[Bridging]: /docs/RFQ/Bridging
 [Relaying]: /docs/RFQ/Relaying
 [Proving]: /docs/RFQ/Proving
 [Claiming]: /docs/RFQ/Claiming
+[Canceling]: /docs/RFQ/Canceling
+[Security]: /docs/RFQ/Security
 
 [User]: /docs/RFQ/#entities
 [Quoter]: /docs/RFQ/#entities
@@ -30,36 +32,37 @@ title: Claiming
 [Guard]: /docs/RFQ/#entities
 [Canceler]: /docs/RFQ/#entities
 
-After [Proving] and waiting for the [Dispute Period] to end, [Relayers] can then execute a [claim] transaction which will release the funds which have been escrowed since the original [bridge].
 
-The funds will be transferred to the rightful [Relayer] as a reimbursement for the liquidity they provided on the [relay].
+Once a quote has been obtained via [Quoting], the details of the quote can be used to construct a bridge transaction for the user to sign and submit to the origin chain.
+
+Bridges through Synapse RFQ utilize the [Synapse Router](/docs/Routers/Synapse-Router/) - Refer to those docs for more detail.
 
 
-### Function Options
+:::info
+If you are interested in integrating with Synapse RFQ Bridging, refer to the [Synapse Bridge SDK](/docs/Bridge/SDK).
 
-There are two overloaded versions of the claim function in FastBridgeV2. Relayers can use whichever best suits their implementation.
+Alternatively, you can explore the [Bridge REST API](https://api.synapseprotocol.com/api-docs/).
 
-<div style={{ marginLeft: '20px' }}>
-1)
-```solidity
-    function claim(bytes memory request, address to) external;
-```
-This version can only be executed by the `relayer` address on the proof and allows an arbitrary `to` address to be the recipient of the funds.
+:::
 
-2)
-```solidity
-    function claim(bytes memory request) external;
-```
-This version can be executed permissionlessly, and will transfer the funds only to the `relayer` address on the proof.
-</div>
 
-Regardless of the method used, a [BridgeDepositClaimed](hhttps://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgedepositclaimed) event will be emitted.
+### Effects of a bridge Transaction
 
-### Multicalling
+If sufficient funds and approvals exist, the bridging funds will be transferred from the [User] to the FastBridge contract.
 
-As of FastBridgeV2, it is possible to batch many [claim] transactions together with [Multicall]
+The funds will remain with the contract in escrow until:
+
+- [Claiming] occurs, which transfers the funds to the [Relayer] as reimbursement for completing the relay on the destination.
+
+or
+
+- [Canceling] occurs, which returns the funds to the `originSender`.
+
+
+Additionally, a [BridgeRequested] event will be emitted which contains all instructions for the bridge to be completed by Relayers
+
 
 
 ## Next steps
 
-Following the [claim] transation, the bridge deposit funds have been reimbursed to the [Relayer] and are ready to be used for another relay. The bridge cycle is fully complete.
+Relayers will observe the bridge transaction via the [BridgeRequested] event and proceed to [Relaying] if it meets all of their criteria.
