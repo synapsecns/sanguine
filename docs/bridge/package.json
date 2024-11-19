@@ -20,6 +20,15 @@
     "write-heading-ids": "docusaurus write-heading-ids",
     "typecheck": "tsc"
   },
+  "cspell": {
+  "version": "0.1",
+  "language": "en",
+  "words": [
+    "permissioned",
+    "permissionless",
+    "permissionlessly"
+    ]
+  },
   "dependencies": {
     "@codecov/webpack-plugin": "^0.0.1-beta.10",
     "@docusaurus/core": "3.5.2",

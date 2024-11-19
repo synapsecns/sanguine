@@ -38,7 +38,7 @@ Synapse RFQ is an optimistic cross-chain system. This means that any ambiguous a
 
 ### Proofs
 
-With this sytem in particular, [prove] transactions are the focal point of this optimistic mechanism - whereby a [Relayer] is asserting that they completed a [relay] and can rightfully [claim] the escrowed bridge funds as a reimbursement.
+With this system in particular, [prove] transactions are the focal point of this optimistic mechanism - whereby a [Relayer] is asserting that they completed a [relay] and can rightfully [claim] the escrowed bridge funds as a reimbursement.
 
 Each [prove] transaction sets the [proof] data for the bridge and initiates a dispute period.
 
