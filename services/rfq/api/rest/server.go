@@ -4,6 +4,7 @@ package rest
 import (
 	"context"
 	"encoding/json"
+	"math/big"
 
 	"fmt"
 	"net/http"
@@ -608,19 +609,21 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 	span.SetAttributes(attribute.Bool("is_active_rfq", isActiveRFQ))
 
 	// if specified, fetch the active quote. always consider passive quotes
-	var activeQuote *model.QuoteData
+	var activeQuote, passiveQuote *model.QuoteData
 	if isActiveRFQ {
 		activeQuote = r.handleActiveRFQ(ctx, &req, requestID)
 		if activeQuote != nil && activeQuote.DestAmount != nil {
 			span.SetAttributes(attribute.String("active_quote_dest_amount", *activeQuote.DestAmount))
 		}
 	}
-	passiveQuote, err := r.handlePassiveRFQ(ctx, &req)
-	if err != nil {
-		logger.Error("Error handling passive RFQ", "error", err)
-	}
-	if passiveQuote != nil && passiveQuote.DestAmount != nil {
-		span.SetAttributes(attribute.String("passive_quote_dest_amount", *passiveQuote.DestAmount))
+	if !isZapQuote(&req) {
+		passiveQuote, err = r.handlePassiveRFQ(ctx, &req)
+		if err != nil {
+			logger.Error("Error handling passive RFQ", "error", err)
+		}
+		if passiveQuote != nil && passiveQuote.DestAmount != nil {
+			span.SetAttributes(attribute.String("passive_quote_dest_amount", *passiveQuote.DestAmount))
+		}
 	}
 	quote := getBestQuote(activeQuote, passiveQuote)
 
@@ -650,6 +653,18 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 		}
 	}
 	c.JSON(http.StatusOK, resp)
+}
+
+func isZapQuote(req *model.PutRFQRequest) bool {
+	if req.Data.ZapData != "" {
+		return true
+	}
+
+	zapNative, ok := new(big.Int).SetString(req.Data.ZapNative, 10)
+	if !ok {
+		return false
+	}
+	return zapNative.Sign() != 0
 }
 
 func (r *QuoterAPIServer) recordLatestQuoteAge(ctx context.Context, observer metric.Observer) (err error) {

@@ -38,7 +38,7 @@ func (c Config) GetRelayAckTimeout() time.Duration {
 	return c.RelayAckTimeout
 }
 
-const defaultMaxQuoteAge = 1 * time.Hour
+const defaultMaxQuoteAge = 5 * time.Minute
 
 // GetMaxQuoteAge returns the max quote age.
 func (c Config) GetMaxQuoteAge() time.Duration {

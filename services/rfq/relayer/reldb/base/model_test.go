@@ -36,8 +36,8 @@ func TestRoundtripBetweenFromQuoteRequestAndToQuoteRequest(t *testing.T) {
 			Nonce:              big.NewInt(1),
 			ExclusivityEndTime: big.NewInt(0),
 			OriginFeeAmount:    big.NewInt(0),
-			CallValue:          big.NewInt(0),
-			CallParams:         []byte{},
+			ZapNative:          big.NewInt(0),
+			ZapData:            []byte{},
 		},
 		Status: reldb.QuoteRequestStatus(1),
 	}

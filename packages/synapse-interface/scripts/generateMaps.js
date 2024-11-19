@@ -42,7 +42,9 @@ const allowedChainIdsForSynapseBridge = [
 const allowedChainIdsForSynapseCCTPRouter = [1, 10, 137, 8453, 42161, 43114]
 
 // Chain IDs where RFQ is allowed
-const allowedChainIdsForRfq = [1, 10, 56, 8453, 42161, 59144, 81457, 534352]
+const allowedChainIdsForRfq = [
+  1, 10, 56, 480, 8453, 42161, 59144, 81457, 534352,
+]
 
 // Get SynapseRouter contract instances for each chain
 const SynapseRouters = {}
@@ -374,12 +376,20 @@ const printMaps = async () => {
       const tokens = {}
       await Promise.all(
         Object.keys(originMap).map(async (token) => {
+          const decimals = await getTokenDecimals(chainId, token)
+          const symbol = await getTokenSymbol(chainId, token)
+          const origin = Array.from(originMap[token])
+            .map((t) => (t === 'RFQ.USDC.e' ? 'RFQ.USDC' : t))
+            .sort()
+          const destination = await getDestinationBridgeSymbols(chainId, token)
+          const swappable = extractSwappable(poolSets, token)
+
           tokens[token] = {
-            decimals: await getTokenDecimals(chainId, token),
-            symbol: await getTokenSymbol(chainId, token),
-            origin: Array.from(originMap[token]).sort(),
-            destination: await getDestinationBridgeSymbols(chainId, token),
-            swappable: extractSwappable(poolSets, token),
+            decimals,
+            symbol,
+            origin,
+            destination,
+            swappable,
           }
           // Check if token is supported as destination asset in RFQ
           if (
@@ -457,7 +467,11 @@ const getTokenDecimals = async (chainId, token) => {
 }
 
 const getRFQSymbol = (symbol) => {
-  return `RFQ.${symbol}`
+  if (symbol === 'USDC.e') {
+    return 'RFQ.USDC'
+  } else {
+    return `RFQ.${symbol}`
+  }
 }
 
 printMaps()

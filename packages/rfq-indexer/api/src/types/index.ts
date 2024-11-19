@@ -10,6 +10,7 @@ export interface BridgeRequestEvents {
   originChainId: ColumnType<number>
   originChain: ColumnType<string>
   sender: ColumnType<string>
+  request: ColumnType<string>
   originToken: ColumnType<string>
   destToken: ColumnType<string>
   originAmount: ColumnType<bigint>
@@ -89,6 +90,8 @@ export interface BridgeProofDisputedEvents {
   transactionHash: ColumnType<string>
   chainId: ColumnType<number>
   chain: ColumnType<string>
+  originChainId: ColumnType<number>
+  originChain: ColumnType<string>
 }
 // Add any other shared types used across the API
 export type EventType =

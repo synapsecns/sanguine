@@ -10,7 +10,7 @@ import { WarningMessage } from '../../Warning'
 
 /**
  * Leaving this file to serve as an example for how to create
- * Singular automated annoucement banners and event countdown timer bars
+ * Singular automated announcement banners and event countdown timer bars
  * with the ability to pause Bridge by selected chain ids
  */
 

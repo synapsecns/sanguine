@@ -12,7 +12,7 @@ export const swapController = async (req, res) => {
     return res.status(400).json({ errors: errors.array() })
   }
   try {
-    const { chain, amount, fromToken, toToken } = req.query
+    const { chain, amount, fromToken, toToken, address } = req.query
 
     const fromTokenInfo = tokenAddressToToken(chain.toString(), fromToken)
     const toTokenInfo = tokenAddressToToken(chain.toString(), toToken)
@@ -30,9 +30,20 @@ export const swapController = async (req, res) => {
       toTokenInfo.decimals
     )
 
+    const callData = address
+      ? await Synapse.swap(
+          Number(chain),
+          address,
+          fromToken,
+          amountInWei,
+          quote.query
+        )
+      : null
+
     const payload = {
       ...quote,
       maxAmountOut: formattedMaxAmountOut,
+      callData,
     }
 
     logger.info(`Successful swapController response`, {
@@ -48,7 +59,6 @@ export const swapController = async (req, res) => {
     })
     res.status(500).json({
       error: 'An unexpected error occurred in /swap. Please try again later.',
-      details: err.message,
     })
   }
 }

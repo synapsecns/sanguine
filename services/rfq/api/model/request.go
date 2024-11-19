@@ -51,15 +51,18 @@ type QuoteRequest struct {
 
 // QuoteData represents the data within a quote request.
 type QuoteData struct {
-	OriginChainID    int     `json:"origin_chain_id"`
-	DestChainID      int     `json:"dest_chain_id"`
-	OriginTokenAddr  string  `json:"origin_token_addr"`
-	DestTokenAddr    string  `json:"dest_token_addr"`
-	OriginAmount     string  `json:"origin_amount"`
-	ExpirationWindow int64   `json:"expiration_window"`
-	DestAmount       *string `json:"dest_amount"`
-	RelayerAddress   *string `json:"relayer_address"`
-	QuoteID          *string `json:"quote_id"`
+	OriginChainID     int     `json:"origin_chain_id"`
+	DestChainID       int     `json:"dest_chain_id"`
+	OriginTokenAddr   string  `json:"origin_token_addr"`
+	DestTokenAddr     string  `json:"dest_token_addr"`
+	OriginAmount      string  `json:"origin_amount"`
+	ExpirationWindow  int64   `json:"expiration_window"`
+	ZapData           string  `json:"zap_data"`
+	ZapNative         string  `json:"zap_native"`
+	OriginAmountExact string  `json:"origin_amount_exact"`
+	DestAmount        *string `json:"dest_amount"`
+	RelayerAddress    *string `json:"relayer_address"`
+	QuoteID           *string `json:"quote_id"`
 }
 
 // WsRFQRequest represents a request for a quote to a relayer.

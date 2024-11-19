@@ -19,6 +19,8 @@ package generate
 
 ```
 
+
+
 ### Note:
 
 Using abigen this way can occasionally cause you to run into the following error string: `missing go.sum entry for module providing package`. This is well documented in [several](https://github.com/99designs/gqlgen/issues/1483) projects made to be run from go-generate. If this is the case, you can create a package exclusively for updating the go.mod.
@@ -122,4 +124,25 @@ func init() {
 
 5. Golang native `sol-merger`. Currently, this package relies on [`sol-merger`](https://github.com/RyuuGan/sol-merger). This package handles C3 linearization (removing duplicate abstracts, etc) and dependency resolution in the way that go native solidity flatteners (e.g. [flattener](https://github.com/DaveAppleton/SolidityFlattery/blob/master/flat.go)) don't yet. It'd be nice to be able to  do this in `abigen` so we could skip the merge step.
 6. Consider generating a `doc.go` if one doesn't exist documenting the package
-7. Better vyper support
+7. Better [vyper](https://vyperlang.org/) support
+
+### Note on macOS and Rosetta
+
+If you are using a Mac with Apple Silicon, you might encounter issues running AMD64 Docker images due to the Rosetta translation layer. Rosetta is a dynamic binary translator that allows applications compiled for Intel processors to run on Apple Silicon. However, it may not always work seamlessly with Docker images designed for AMD64 architecture.
+
+To resolve this issue, you can:
+
+1. **Install Rosetta**: If not already installed, run the following command in your terminal:
+   ```shell
+   softwareupdate --install-rosetta
+   ```
+
+2. **Update Docker**: Ensure your Docker Desktop is up-to-date by navigating to **Settings** > **Software Update** > **Check for Updates**.
+
+3. **Disable x86_64/amd64 Emulation**: In Docker Desktop, go to **General settings** and disable the x86_64/amd64 emulation using Rosetta.
+
+For a detailed guide on fixing this issue, refer to [this blog post](https://romanzipp.com/blog/maocs-sequoia-docker-resetta-is-only-intended-to-run-silicon).
+
+### Future Plans
+
+To mitigate these issues, we plan to implement a fallback mechanism that downloads `solc` directly, bypassing the need for Docker-based solutions on incompatible architectures. For more details on this planned improvement, see [issue #3366](https://github.com/synapsecns/sanguine/issues/3366).

@@ -49,6 +49,7 @@ query GetBridgeTransactions($chainIDTo: [Int],$chainIDFrom: [Int], $addressTo: S
     kappa
     pending
     swapSuccess
+    bridgeModule
   }
 }
 
@@ -155,6 +156,7 @@ query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $durat
     blast
     scroll
     linea
+    worldchain
     total
   }
 }
@@ -302,6 +304,7 @@ query GetOriginBridgeTx($chainID: Int!, $txnHash: String!, $bridgeType: BridgeTy
     type
     kappa
     kappaStatus
+    bridgeModule
   }
 }
 query GetDestinationBridgeTx($chainID: Int!, $kappa: String!, $address: String!, $timestamp: Int!, $bridgeType: BridgeType!, $historical: Boolean) {
@@ -331,5 +334,6 @@ query GetDestinationBridgeTx($chainID: Int!, $kappa: String!, $address: String!,
     type
     kappa
     kappaStatus
+    bridgeModule
   }
 }

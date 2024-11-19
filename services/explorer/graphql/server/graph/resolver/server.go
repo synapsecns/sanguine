@@ -79,19 +79,21 @@ type ComplexityRoot struct {
 	}
 
 	BridgeTransaction struct {
-		FromInfo    func(childComplexity int) int
-		Kappa       func(childComplexity int) int
-		Pending     func(childComplexity int) int
-		SwapSuccess func(childComplexity int) int
-		ToInfo      func(childComplexity int) int
+		BridgeModule func(childComplexity int) int
+		FromInfo     func(childComplexity int) int
+		Kappa        func(childComplexity int) int
+		Pending      func(childComplexity int) int
+		SwapSuccess  func(childComplexity int) int
+		ToInfo       func(childComplexity int) int
 	}
 
 	BridgeWatcherTx struct {
-		BridgeTx    func(childComplexity int) int
-		Kappa       func(childComplexity int) int
-		KappaStatus func(childComplexity int) int
-		Pending     func(childComplexity int) int
-		Type        func(childComplexity int) int
+		BridgeModule func(childComplexity int) int
+		BridgeTx     func(childComplexity int) int
+		Kappa        func(childComplexity int) int
+		KappaStatus  func(childComplexity int) int
+		Pending      func(childComplexity int) int
+		Type         func(childComplexity int) int
 	}
 
 	DateResult struct {
@@ -100,30 +102,31 @@ type ComplexityRoot struct {
 	}
 
 	DateResultByChain struct {
-		Arbitrum  func(childComplexity int) int
-		Aurora    func(childComplexity int) int
-		Avalanche func(childComplexity int) int
-		Base      func(childComplexity int) int
-		Blast     func(childComplexity int) int
-		Boba      func(childComplexity int) int
-		Bsc       func(childComplexity int) int
-		Canto     func(childComplexity int) int
-		Cronos    func(childComplexity int) int
-		Date      func(childComplexity int) int
-		Dfk       func(childComplexity int) int
-		Dogechain func(childComplexity int) int
-		Ethereum  func(childComplexity int) int
-		Fantom    func(childComplexity int) int
-		Harmony   func(childComplexity int) int
-		Klaytn    func(childComplexity int) int
-		Linea     func(childComplexity int) int
-		Metis     func(childComplexity int) int
-		Moonbeam  func(childComplexity int) int
-		Moonriver func(childComplexity int) int
-		Optimism  func(childComplexity int) int
-		Polygon   func(childComplexity int) int
-		Scroll    func(childComplexity int) int
-		Total     func(childComplexity int) int
+		Arbitrum   func(childComplexity int) int
+		Aurora     func(childComplexity int) int
+		Avalanche  func(childComplexity int) int
+		Base       func(childComplexity int) int
+		Blast      func(childComplexity int) int
+		Boba       func(childComplexity int) int
+		Bsc        func(childComplexity int) int
+		Canto      func(childComplexity int) int
+		Cronos     func(childComplexity int) int
+		Date       func(childComplexity int) int
+		Dfk        func(childComplexity int) int
+		Dogechain  func(childComplexity int) int
+		Ethereum   func(childComplexity int) int
+		Fantom     func(childComplexity int) int
+		Harmony    func(childComplexity int) int
+		Klaytn     func(childComplexity int) int
+		Linea      func(childComplexity int) int
+		Metis      func(childComplexity int) int
+		Moonbeam   func(childComplexity int) int
+		Moonriver  func(childComplexity int) int
+		Optimism   func(childComplexity int) int
+		Polygon    func(childComplexity int) int
+		Scroll     func(childComplexity int) int
+		Total      func(childComplexity int) int
+		Worldchain func(childComplexity int) int
 	}
 
 	HeroType struct {
@@ -408,6 +411,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.BlockHeight.Type(childComplexity), true
 
+	case "BridgeTransaction.bridgeModule":
+		if e.complexity.BridgeTransaction.BridgeModule == nil {
+			break
+		}
+
+		return e.complexity.BridgeTransaction.BridgeModule(childComplexity), true
+
 	case "BridgeTransaction.fromInfo":
 		if e.complexity.BridgeTransaction.FromInfo == nil {
 			break
@@ -442,6 +452,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BridgeTransaction.ToInfo(childComplexity), true
+
+	case "BridgeWatcherTx.bridgeModule":
+		if e.complexity.BridgeWatcherTx.BridgeModule == nil {
+			break
+		}
+
+		return e.complexity.BridgeWatcherTx.BridgeModule(childComplexity), true
 
 	case "BridgeWatcherTx.bridgeTx":
 		if e.complexity.BridgeWatcherTx.BridgeTx == nil {
@@ -659,6 +676,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DateResultByChain.Total(childComplexity), true
+
+	case "DateResultByChain.worldchain":
+		if e.complexity.DateResultByChain.Worldchain == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Worldchain(childComplexity), true
 
 	case "HeroType.heroID":
 		if e.complexity.HeroType.HeroID == nil {
@@ -1493,6 +1517,7 @@ type BridgeTransaction {
   kappa:        String
   pending:      Boolean
   swapSuccess:  Boolean
+  bridgeModule: String
 }
 """
 PartialInfo is a transaction that occurred on one chain.
@@ -1527,6 +1552,7 @@ type BridgeWatcherTx {
   type:  BridgeTxType
   kappa:        String
   kappaStatus: KappaStatus
+  bridgeModule: String
 }
 """
 DateResult is a given statistic for a given date.
@@ -1664,6 +1690,7 @@ type DateResultByChain {
   blast: Float
   scroll: Float
   linea: Float
+  worldchain: Float
   total:  Float
 }
 
@@ -3572,6 +3599,47 @@ func (ec *executionContext) fieldContext_BridgeTransaction_swapSuccess(ctx conte
 	return fc, nil
 }
 
+func (ec *executionContext) _BridgeTransaction_bridgeModule(ctx context.Context, field graphql.CollectedField, obj *model.BridgeTransaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BridgeTransaction_bridgeModule(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BridgeModule, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BridgeTransaction_bridgeModule(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BridgeTransaction",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _BridgeWatcherTx_bridgeTx(ctx context.Context, field graphql.CollectedField, obj *model.BridgeWatcherTx) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_BridgeWatcherTx_bridgeTx(ctx, field)
 	if err != nil {
@@ -3802,6 +3870,47 @@ func (ec *executionContext) fieldContext_BridgeWatcherTx_kappaStatus(ctx context
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type KappaStatus does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BridgeWatcherTx_bridgeModule(ctx context.Context, field graphql.CollectedField, obj *model.BridgeWatcherTx) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BridgeWatcherTx_bridgeModule(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BridgeModule, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BridgeWatcherTx_bridgeModule(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BridgeWatcherTx",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4820,6 +4929,47 @@ func (ec *executionContext) _DateResultByChain_linea(ctx context.Context, field 
 }
 
 func (ec *executionContext) fieldContext_DateResultByChain_linea(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_worldchain(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_worldchain(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Worldchain, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_worldchain(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "DateResultByChain",
 		Field:      field,
@@ -6796,6 +6946,8 @@ func (ec *executionContext) fieldContext_Query_bridgeTransactions(ctx context.Co
 				return ec.fieldContext_BridgeTransaction_pending(ctx, field)
 			case "swapSuccess":
 				return ec.fieldContext_BridgeTransaction_swapSuccess(ctx, field)
+			case "bridgeModule":
+				return ec.fieldContext_BridgeTransaction_bridgeModule(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BridgeTransaction", field.Name)
 		},
@@ -7190,6 +7342,8 @@ func (ec *executionContext) fieldContext_Query_dailyStatisticsByChain(ctx contex
 				return ec.fieldContext_DateResultByChain_scroll(ctx, field)
 			case "linea":
 				return ec.fieldContext_DateResultByChain_linea(ctx, field)
+			case "worldchain":
+				return ec.fieldContext_DateResultByChain_worldchain(ctx, field)
 			case "total":
 				return ec.fieldContext_DateResultByChain_total(ctx, field)
 			}
@@ -7454,6 +7608,8 @@ func (ec *executionContext) fieldContext_Query_getOriginBridgeTx(ctx context.Con
 				return ec.fieldContext_BridgeWatcherTx_kappa(ctx, field)
 			case "kappaStatus":
 				return ec.fieldContext_BridgeWatcherTx_kappaStatus(ctx, field)
+			case "bridgeModule":
+				return ec.fieldContext_BridgeWatcherTx_bridgeModule(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BridgeWatcherTx", field.Name)
 		},
@@ -7518,6 +7674,8 @@ func (ec *executionContext) fieldContext_Query_getDestinationBridgeTx(ctx contex
 				return ec.fieldContext_BridgeWatcherTx_kappa(ctx, field)
 			case "kappaStatus":
 				return ec.fieldContext_BridgeWatcherTx_kappaStatus(ctx, field)
+			case "bridgeModule":
+				return ec.fieldContext_BridgeWatcherTx_bridgeModule(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BridgeWatcherTx", field.Name)
 		},
@@ -10272,6 +10430,8 @@ func (ec *executionContext) _BridgeTransaction(ctx context.Context, sel ast.Sele
 			out.Values[i] = ec._BridgeTransaction_pending(ctx, field, obj)
 		case "swapSuccess":
 			out.Values[i] = ec._BridgeTransaction_swapSuccess(ctx, field, obj)
+		case "bridgeModule":
+			out.Values[i] = ec._BridgeTransaction_bridgeModule(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10316,6 +10476,8 @@ func (ec *executionContext) _BridgeWatcherTx(ctx context.Context, sel ast.Select
 			out.Values[i] = ec._BridgeWatcherTx_kappa(ctx, field, obj)
 		case "kappaStatus":
 			out.Values[i] = ec._BridgeWatcherTx_kappaStatus(ctx, field, obj)
+		case "bridgeModule":
+			out.Values[i] = ec._BridgeWatcherTx_bridgeModule(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10434,6 +10596,8 @@ func (ec *executionContext) _DateResultByChain(ctx context.Context, sel ast.Sele
 			out.Values[i] = ec._DateResultByChain_scroll(ctx, field, obj)
 		case "linea":
 			out.Values[i] = ec._DateResultByChain_linea(ctx, field, obj)
+		case "worldchain":
+			out.Values[i] = ec._DateResultByChain_worldchain(ctx, field, obj)
 		case "total":
 			out.Values[i] = ec._DateResultByChain_total(ctx, field, obj)
 		default:

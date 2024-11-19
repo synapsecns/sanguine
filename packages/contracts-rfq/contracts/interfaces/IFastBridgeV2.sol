@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.4;
 
 import {IFastBridge} from "./IFastBridge.sol";
 
@@ -14,8 +14,8 @@ interface IFastBridgeV2 is IFastBridge {
 
     struct BridgeTxDetails {
         BridgeStatus status;
-        uint40 proofBlockTimestamp;
-        uint48 proofBlockNumber;
+        uint32 destChainId;
+        uint56 proofBlockTimestamp;
         address proofRelayer;
     }
 
@@ -30,23 +30,22 @@ interface IFastBridgeV2 is IFastBridge {
     /// for backwards compatibility.
     /// Note: quoteRelayer and quoteExclusivitySeconds are either both zero (indicating no exclusivity)
     /// or both non-zero (indicating exclusivity for the given period).
-    /// Note: callValue > 0 can NOT be used with destToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE (ETH_ADDRESS)
+    /// Note: zapNative > 0 can NOT be used with destToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE (native token)
     /// @param quoteRelayer             Relayer that provided the quote for the transaction
     /// @param quoteExclusivitySeconds  Period of time the quote relayer is guaranteed exclusivity after user's deposit
     /// @param quoteId                  Unique quote identifier used for tracking the quote
-    /// @param callValue                ETH value to send to the recipient (if any)
-    /// @param callParams               Parameters for the arbitrary call to the destination recipient (if any)
+    /// @param zapNative                ETH value to send to the recipient (if any)
+    /// @param zapData                  Parameters for the Zap to the destination recipient (if any)
     struct BridgeParamsV2 {
         address quoteRelayer;
         int256 quoteExclusivitySeconds;
         bytes quoteId;
-        uint256 callValue;
-        bytes callParams;
+        uint256 zapNative;
+        bytes zapData;
     }
 
     /// @notice Updated bridge transaction struct to include parameters introduced in FastBridgeV2.
     /// Note: only `exclusivityRelayer` can fill such a transaction until `exclusivityEndTime`.
-    /// TODO: consider changing the encoding scheme to prevent spending extra gas on decoding.
     struct BridgeTransactionV2 {
         uint32 originChainId;
         uint32 destChainId;
@@ -57,12 +56,13 @@ interface IFastBridgeV2 is IFastBridge {
         uint256 originAmount; // amount in on origin bridge less originFeeAmount
         uint256 destAmount;
         uint256 originFeeAmount;
-        uint256 callValue; // ETH value to send to the recipient (if any) - replaces V1's sendChainGas flag
+        // Note: sendChainGas flag from V1 is deprecated
         uint256 deadline; // user specified deadline for destination relay
         uint256 nonce;
         address exclusivityRelayer;
         uint256 exclusivityEndTime;
-        bytes callParams;
+        uint256 zapNative; // ETH value to send to the recipient (if any)
+        bytes zapData; // data to pass for the Zap action (if any)
     }
 
     event BridgeQuoteDetails(bytes32 indexed transactionId, bytes quoteId);
@@ -88,6 +88,12 @@ interface IFastBridgeV2 is IFastBridge {
     /// @notice Can only send funds to the relayer address on the proof.
     /// @param request The encoded bridge transaction to claim on origin chain
     function claim(bytes memory request) external;
+
+    /// @notice Cancels an outstanding bridge transaction in case optimistic bridging failed and returns the full amount
+    /// to the original sender.
+    /// @param request The encoded bridge transaction to refund
+    function cancel(bytes memory request) external;
+
     /// @notice Checks if a transaction has been relayed
     /// @param transactionId The ID of the transaction to check
     /// @return True if the transaction has been relayed, false otherwise

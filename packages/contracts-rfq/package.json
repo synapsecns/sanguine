@@ -1,14 +1,15 @@
 {
   "name": "@synapsecns/contracts-rfq",
   "license": "MIT",
-  "version": "0.8.2",
+  "version": "0.13.0",
   "description": "FastBridge contracts.",
   "private": true,
   "files": [
     "contracts/**/*.sol"
   ],
   "dependencies": {
-    "@openzeppelin/contracts": "5.0.1"
+    "@openzeppelin/contracts": "5.0.1",
+    "@openzeppelin/contracts-4.5.0": "npm:@openzeppelin/contracts@4.5.0"
   },
   "devDependencies": {
     "@synapsecns/solidity-devops": "^0.4.8",
@@ -19,6 +20,7 @@
     "build:contracts": "forge build",
     "build:slither": "forge build --out=out --build-info --force",
     "test:coverage": "echo 'Please use foundry'",
+    "coverage:filter": "lcov -r lcov.info '*legacy*' -o lcov.info",
     "test": "forge test",
     "gas:bench": "forge test --mc GasBenchmark --gas-report",
     "lint": "forge fmt && npm run solhint",

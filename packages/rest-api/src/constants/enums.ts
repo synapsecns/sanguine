@@ -1,0 +1,7 @@
+export enum BridgeStatus {
+  NULL,
+  REQUESTED,
+  RELAYER_PROVED,
+  RELAYER_CLAIMED,
+  REFUNDED,
+}

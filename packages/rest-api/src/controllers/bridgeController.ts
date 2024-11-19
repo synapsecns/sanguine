@@ -19,7 +19,16 @@ export const bridgeController = async (req, res) => {
       fromToken,
       toToken,
       originUserAddress,
-    } = req.query
+      destAddress, // Optional parameter
+    } = req.query as {
+      fromChain: string
+      toChain: string
+      amount: string
+      fromToken: string
+      toToken: string
+      originUserAddress?: string
+      destAddress?: string
+    }
 
     const fromTokenInfo = tokenAddressToToken(fromChain.toString(), fromToken)
     const toTokenInfo = tokenAddressToToken(toChain.toString(), toToken)
@@ -37,23 +46,40 @@ export const bridgeController = async (req, res) => {
         : {}
     )
 
-    const payload = resp.map((quote) => {
-      const originQueryTokenOutInfo = tokenAddressToToken(
-        fromChain.toString(),
-        quote.originQuery.tokenOut
-      )
-      return {
-        ...quote,
-        maxAmountOutStr: formatBNToString(
-          quote.maxAmountOut,
-          toTokenInfo.decimals
-        ),
-        bridgeFeeFormatted: formatBNToString(
-          quote.feeAmount,
-          originQueryTokenOutInfo.decimals
-        ),
-      }
-    })
+    const payload = await Promise.all(
+      resp.map(async (quote) => {
+        const originQueryTokenOutInfo = tokenAddressToToken(
+          fromChain.toString(),
+          quote.originQuery.tokenOut
+        )
+
+        const callData = destAddress
+          ? await Synapse.bridge(
+              destAddress,
+              quote.routerAddress,
+              Number(fromChain),
+              Number(toChain),
+              fromToken,
+              amountInWei,
+              quote.originQuery,
+              quote.destQuery
+            )
+          : null
+
+        return {
+          ...quote,
+          maxAmountOutStr: formatBNToString(
+            quote.maxAmountOut,
+            toTokenInfo.decimals
+          ),
+          bridgeFeeFormatted: formatBNToString(
+            quote.feeAmount,
+            originQueryTokenOutInfo.decimals
+          ),
+          callData,
+        }
+      })
+    )
 
     logger.info(`Successful bridgeController response`, {
       payload,
@@ -68,7 +94,6 @@ export const bridgeController = async (req, res) => {
     })
     res.status(500).json({
       error: 'An unexpected error occurred in /bridge. Please try again later.',
-      details: err.message,
     })
   }
 }

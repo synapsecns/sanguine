@@ -66,7 +66,7 @@ func verifyActiveQuoteRequest(c *ServerSuite, userReq *model.PutRFQRequest, acti
 	c.Assert().Equal(userReq.Data.OriginTokenAddr, activeQuoteRequest.OriginTokenAddr)
 	c.Assert().Equal(uint64(userReq.Data.DestChainID), activeQuoteRequest.DestChainID)
 	c.Assert().Equal(userReq.Data.DestTokenAddr, activeQuoteRequest.DestTokenAddr)
-	c.Assert().Equal(userReq.Data.OriginAmount, activeQuoteRequest.OriginAmount.String())
+	c.Assert().Equal(userReq.Data.OriginAmountExact, activeQuoteRequest.OriginAmountExact.String())
 	c.Assert().Equal(status, activeQuoteRequest.Status)
 }
 
@@ -92,12 +92,12 @@ func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	userRequestAmount := big.NewInt(1_000_000)
 	userQuoteReq := &model.PutRFQRequest{
 		Data: model.QuoteData{
-			OriginChainID:    c.originChainID,
-			OriginTokenAddr:  originTokenAddr,
-			DestChainID:      c.destChainID,
-			DestTokenAddr:    destTokenAddr,
-			OriginAmount:     userRequestAmount.String(),
-			ExpirationWindow: 10_000,
+			OriginChainID:     c.originChainID,
+			OriginTokenAddr:   originTokenAddr,
+			DestChainID:       c.destChainID,
+			DestTokenAddr:     destTokenAddr,
+			OriginAmountExact: userRequestAmount.String(),
+			ExpirationWindow:  10_000,
 		},
 		QuoteTypes: []string{"active"},
 	}
@@ -143,12 +143,12 @@ func (c *ServerSuite) TestActiveRFQExpiredRequest() {
 	userRequestAmount := big.NewInt(1_000_000)
 	userQuoteReq := &model.PutRFQRequest{
 		Data: model.QuoteData{
-			OriginChainID:    c.originChainID,
-			OriginTokenAddr:  originTokenAddr,
-			DestChainID:      c.destChainID,
-			DestTokenAddr:    destTokenAddr,
-			OriginAmount:     userRequestAmount.String(),
-			ExpirationWindow: 0,
+			OriginChainID:     c.originChainID,
+			OriginTokenAddr:   originTokenAddr,
+			DestChainID:       c.destChainID,
+			DestTokenAddr:     destTokenAddr,
+			OriginAmountExact: userRequestAmount.String(),
+			ExpirationWindow:  0,
 		},
 		QuoteTypes: []string{"active"},
 	}
@@ -193,12 +193,12 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 	userRequestAmount := big.NewInt(1_000_000)
 	userQuoteReq := &model.PutRFQRequest{
 		Data: model.QuoteData{
-			OriginChainID:    c.originChainID,
-			OriginTokenAddr:  originTokenAddr,
-			DestChainID:      c.destChainID,
-			DestTokenAddr:    destTokenAddr,
-			OriginAmount:     userRequestAmount.String(),
-			ExpirationWindow: 10_000,
+			OriginChainID:     c.originChainID,
+			OriginTokenAddr:   originTokenAddr,
+			DestChainID:       c.destChainID,
+			DestTokenAddr:     destTokenAddr,
+			OriginAmountExact: userRequestAmount.String(),
+			ExpirationWindow:  10_000,
 		},
 		QuoteTypes: []string{"active"},
 	}
@@ -276,12 +276,12 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	// Prepare user quote request with 0 expiration window
 	userQuoteReq := &model.PutRFQRequest{
 		Data: model.QuoteData{
-			OriginChainID:    c.originChainID,
-			OriginTokenAddr:  originTokenAddr,
-			DestChainID:      c.destChainID,
-			DestTokenAddr:    destTokenAddr,
-			OriginAmount:     userRequestAmount.String(),
-			ExpirationWindow: 0,
+			OriginChainID:     c.originChainID,
+			OriginTokenAddr:   originTokenAddr,
+			DestChainID:       c.destChainID,
+			DestTokenAddr:     destTokenAddr,
+			OriginAmountExact: userRequestAmount.String(),
+			ExpirationWindow:  0,
 		},
 		QuoteTypes: []string{"active", "passive"},
 	}
@@ -307,6 +307,16 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	c.Assert().Equal("passive", userQuoteResp.QuoteType)
 	c.Assert().Equal("998000", userQuoteResp.DestAmount) // destAmount is quote destAmount minus fixed fee
 	c.Assert().Equal(c.relayerWallets[0].Address().Hex(), userQuoteResp.RelayerAddress)
+
+	// Submit a user quote request with zap data
+	userQuoteReq.Data.ZapData = "abc"
+	userQuoteReq.Data.ZapNative = "100"
+	userQuoteResp, err = userClient.PutRFQRequest(c.GetTestContext(), userQuoteReq)
+	c.Require().NoError(err)
+
+	// Assert the response
+	c.Assert().False(userQuoteResp.Success)
+	c.Assert().Equal("no quotes found", userQuoteResp.Reason)
 }
 
 func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
@@ -346,12 +356,12 @@ func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
 	// Prepare user quote request with 0 expiration window
 	userQuoteReq := &model.PutRFQRequest{
 		Data: model.QuoteData{
-			OriginChainID:    c.originChainID,
-			OriginTokenAddr:  originTokenAddr,
-			DestChainID:      c.destChainID,
-			DestTokenAddr:    destTokenAddr,
-			OriginAmount:     userRequestAmount.String(),
-			ExpirationWindow: 0,
+			OriginChainID:     c.originChainID,
+			OriginTokenAddr:   originTokenAddr,
+			DestChainID:       c.destChainID,
+			DestTokenAddr:     destTokenAddr,
+			OriginAmountExact: userRequestAmount.String(),
+			ExpirationWindow:  0,
 		},
 		QuoteTypes: []string{"active", "passive"},
 	}

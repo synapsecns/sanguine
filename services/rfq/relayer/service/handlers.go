@@ -241,7 +241,7 @@ func (q *QuoteRequestHandler) commitPendingBalance(ctx context.Context, span tra
 	defer unlocker.Unlock()
 
 	// get destination committable balance
-	committableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken)
+	committableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken, inventory.SkipDBCache())
 	if errors.Is(err, inventory.ErrUnsupportedChain) {
 		// don't process request if chain is currently unsupported
 		span.AddEvent("dropping unsupported chain")
@@ -650,7 +650,7 @@ func (q *QuoteRequestHandler) handleNotEnoughInventory(ctx context.Context, span
 	defer unlocker.Unlock()
 
 	// commit destination balance
-	committableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken)
+	committableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken, inventory.SkipDBCache())
 	if err != nil {
 		return fmt.Errorf("could not get committable balance: %w", err)
 	}

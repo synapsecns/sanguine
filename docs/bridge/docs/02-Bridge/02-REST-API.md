@@ -10,16 +10,17 @@ Get read-only data from on-chain Synapse contracts, and generate Bridge and Swap
 
 [`api.synapseprotocol.com/api-docs`](https://api.synapseprotocol.com/api-docs)
 
+**Note:** The OpenAPI 3.0 specification is available at `https://api.synapseprotocol.com/openapi.json` for client generation.
+
 ## Previous versions
 
-| Date                   | Description
-|------------------------|-
-| 2024&#8209;10&#8209;01 | [https://synapse-rest-api-v2.herokuapp.com/](https://synapse-rest-api-v2.herokuapp.com/) is no longer maintained and has been fully deprecated as of October 2024.
+| Date                   | Description                                                                                                                                                        |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2024&#8209;10&#8209;01 | [https://synapse-rest-api-v2.herokuapp.com/](https://synapse-rest-api-v2.herokuapp.com/) is no longer maintained and has been fully deprecated as of October 2024. |
 
 ## Support
 
 Please read the documentation and examples carefully before reaching out on [Discord](https://discord.gg/synapseprotocol) for questions.
-
 
 <!-- ## GET Endpoints
 
@@ -39,7 +40,7 @@ Get a token swap quote.
 * `routerAddress` (string): The address of the router contract
 * `maxAmountOut {` (object): The maximum amount of tokens that can be swapped out.
     * `type:` (string): The data type
-    * `hex:` (string): The amount encoded in hexidecimal
+    * `hex:` (string): The amount encoded in hexadecimal
 * `query {` (object): Parameters for the swap query:
     * `0:` (string): Router contract address
     * `1:` (string): Address of `tokenIn`
@@ -197,7 +198,7 @@ Used to return which tokens you can bridge to, once an origin token is identifie
 * Array of token objects the `fromToken` can be bridged to, containing:
   * `symbol`: The token symbol of the destination token identified
   * `chainId`: The `chainId` of the destination token identified
-  * `addres`: The token address of the destination token identified
+  * `address`: The token address of the destination token identified
 
 
 #### Example

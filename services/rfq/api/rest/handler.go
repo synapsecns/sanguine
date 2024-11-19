@@ -278,14 +278,14 @@ func (h *Handler) GetOpenQuoteRequests(c *gin.Context) {
 
 func dbActiveQuoteRequestToModel(dbQuote *db.ActiveQuoteRequest) *model.GetOpenQuoteRequestsResponse {
 	return &model.GetOpenQuoteRequestsResponse{
-		UserAddress:      dbQuote.UserAddress,
-		OriginChainID:    dbQuote.OriginChainID,
-		OriginTokenAddr:  dbQuote.OriginTokenAddr,
-		DestChainID:      dbQuote.DestChainID,
-		DestTokenAddr:    dbQuote.DestTokenAddr,
-		OriginAmount:     dbQuote.OriginAmount.String(),
-		ExpirationWindow: int(dbQuote.ExpirationWindow.Milliseconds()),
-		CreatedAt:        dbQuote.CreatedAt,
+		UserAddress:       dbQuote.UserAddress,
+		OriginChainID:     dbQuote.OriginChainID,
+		OriginTokenAddr:   dbQuote.OriginTokenAddr,
+		DestChainID:       dbQuote.DestChainID,
+		DestTokenAddr:     dbQuote.DestTokenAddr,
+		OriginAmountExact: dbQuote.OriginAmountExact.String(),
+		ExpirationWindow:  int(dbQuote.ExpirationWindow.Milliseconds()),
+		CreatedAt:         dbQuote.CreatedAt,
 	}
 }
 

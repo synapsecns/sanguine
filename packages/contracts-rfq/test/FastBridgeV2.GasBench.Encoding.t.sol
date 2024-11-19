@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {BridgeTransactionV2Lib} from "../contracts/libs/BridgeTransactionV2.sol";
+
 import {FastBridgeV2SrcBaseTest} from "./FastBridgeV2.Src.Base.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
@@ -11,12 +13,12 @@ contract FastBridgeV2GasBenchmarkEncodingTest is FastBridgeV2SrcBaseTest {
     }
 
     function test_getBridgeTransactionV2() public view {
-        bytes memory request = abi.encode(tokenTx);
+        bytes memory request = BridgeTransactionV2Lib.encodeV2(tokenTx);
         fastBridge.getBridgeTransactionV2(request);
     }
 
-    function test_getBridgeTransactionV2_withArbitraryCall() public {
-        setTokenTestCallParams({callParams: abi.encode(userA, keccak256("Random ID"))});
+    function test_getBridgeTransactionV2_withZap() public {
+        setTokenTestZapData({zapData: abi.encode(userA, keccak256("Random ID"))});
         test_getBridgeTransactionV2();
     }
 }
