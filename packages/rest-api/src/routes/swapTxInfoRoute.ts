@@ -18,8 +18,8 @@ const router: express.Router = express.Router()
  * @openapi
  * /swapTxInfo:
  *   get:
- *     summary: [Deprecated] Get swap transaction information
- *     description: [Deprecated] in favor of using the /swap endpoint, which now returns call data.
+ *     summary: "[Deprecated] in favor of using the /swap endpoint, which now returns call data
+ *     description: "[Deprecated] Originally used to get Swap transaction information
  *     parameters:
  *       - in: query
  *         name: chain
