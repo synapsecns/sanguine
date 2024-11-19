@@ -18,8 +18,8 @@ const router: express.Router = express.Router()
  * @openapi
  * /swapTxInfo:
  *   get:
- *     summary: Get swap transaction information
- *     description: Retrieve transaction information for swapping tokens on a specific chain
+ *     summary: [Deprecated] Get swap transaction information
+ *     description: [Deprecated] in favor of using the /swap endpoint, which now returns call data.
  *     parameters:
  *       - in: query
  *         name: chain
