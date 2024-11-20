@@ -371,7 +371,8 @@ func (b *Bot) makeFastBridge(ctx context.Context, chainID uint32) (*fastbridge.F
 		return nil, fmt.Errorf("error getting chain client for chain ID %d: %w", chainID, err)
 	}
 
-	contractAddress, ok := contracts.Contracts[chainID]
+	// TODO: handle v2 contract if specified
+	contractAddress, ok := contracts.ContractsV1[chainID]
 	if !ok {
 		return nil, fmt.Errorf("no contract address for chain ID")
 	}

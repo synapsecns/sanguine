@@ -59,7 +59,7 @@ func (i *IntegrationSuite) setupQuoterAPI() {
 			DSN:  dbPath,
 		},
 		OmniRPCURL: i.omniServer,
-		Bridges: map[uint32]string{
+		FastBridgeContractsV1: map[uint32]string{
 			originBackendChainID: i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
 			destBackendChainID:   i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
 		},
