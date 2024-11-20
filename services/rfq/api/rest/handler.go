@@ -70,6 +70,7 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		return
 	}
 
+	fmt.Printf("parsing db quote\n")
 	dbQuote, err := parseDBQuote(h.cfg, *putRequest, relayerAddr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -170,6 +171,7 @@ func parseDBQuote(cfg config.Config, putRequest model.PutRelayerQuoteRequest, re
 	}, nil
 }
 
+//nolint:gosec
 func validateFastBridgeAddresses(cfg config.Config, putRequest model.PutRelayerQuoteRequest) error {
 	// Check V1 contracts
 	isV1Origin := common.HexToAddress(cfg.FastBridgeContractsV1[uint32(putRequest.OriginChainID)]) == common.HexToAddress(putRequest.OriginFastBridgeAddress)
