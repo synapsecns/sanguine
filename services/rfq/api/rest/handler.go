@@ -70,7 +70,6 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("parsing db quote\n")
 	dbQuote, err := parseDBQuote(h.cfg, *putRequest, relayerAddr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
