@@ -360,21 +360,24 @@ func (r *QuoterAPIServer) checkRoleParallel(c *gin.Context, destChainID uint32) 
 	var v1Addr, v2Addr common.Address
 	var v1Err, v2Err error
 
+	var v1Ok, v2Ok bool
 	g.Go(func() error {
 		v1Addr, v1Err = r.checkRole(c, destChainID, true)
+		v1Ok = v1Err == nil
 		return v1Err
 	})
 
 	g.Go(func() error {
 		v2Addr, v2Err = r.checkRole(c, destChainID, false)
+		v2Ok = v2Err == nil
 		return v2Err
 	})
 
 	err = g.Wait()
-	if v1Addr != (common.Address{}) {
+	if v1Ok {
 		return v1Addr, nil
 	}
-	if v2Addr != (common.Address{}) {
+	if v2Ok {
 		return v2Addr, nil
 	}
 	if err != nil {
