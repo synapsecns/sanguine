@@ -360,13 +360,22 @@ func (r *QuoterAPIServer) checkRoleParallel(c *gin.Context, destChainID uint32) 
 	var v1Addr, v2Addr common.Address
 	var v1Err, v2Err error
 
+	quoterRole := crypto.Keccak256Hash([]byte("QUOTER_ROLE"))
+	relayerRole := crypto.Keccak256Hash([]byte("RELAYER_ROLE"))
 	g.Go(func() error {
-		v1Addr, v1Err = r.checkRole(c, destChainID, true)
+		v1Addr, v1Err = r.checkRole(c, destChainID, true, quoterRole)
 		return v1Err
 	})
-
 	g.Go(func() error {
-		v2Addr, v2Err = r.checkRole(c, destChainID, false)
+		v1Addr, v1Err = r.checkRole(c, destChainID, true, relayerRole)
+		return v1Err
+	})
+	g.Go(func() error {
+		v2Addr, v2Err = r.checkRole(c, destChainID, false, quoterRole)
+		return v2Err
+	})
+	g.Go(func() error {
+		v2Addr, v2Err = r.checkRole(c, destChainID, false, relayerRole)
 		return v2Err
 	})
 
@@ -384,7 +393,7 @@ func (r *QuoterAPIServer) checkRoleParallel(c *gin.Context, destChainID uint32) 
 	return common.Address{}, fmt.Errorf("role check failed for both v1 and v2")
 }
 
-func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32, useV1 bool) (addressRecovered common.Address, err error) {
+func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32, useV1 bool, role [32]byte) (addressRecovered common.Address, err error) {
 	var bridge roleContract
 	var roleCache *ttlcache.Cache[string, bool]
 	var ok bool
@@ -420,14 +429,9 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32, useV1 bo
 
 	if cachedRoleItem == nil || cachedRoleItem.IsExpired() {
 		// Cache miss or expired, check on-chain
-		quoterRole := crypto.Keccak256Hash([]byte("QUOTER_ROLE"))
-		hasRole, err = bridge.HasRole(ops, quoterRole, addressRecovered)
+		hasRole, err = bridge.HasRole(ops, role, addressRecovered)
 		if err != nil {
-			relayerRole := crypto.Keccak256Hash([]byte("RELAYER_ROLE"))
-			hasRole, err = bridge.HasRole(ops, relayerRole, addressRecovered)
-			if err != nil {
-				return addressRecovered, fmt.Errorf("unable to check relayer role on-chain: %w", err)
-			}
+			return addressRecovered, fmt.Errorf("unable to check role on-chain: %w", err)
 		}
 		// Update cache
 		roleCache.Set(addressRecovered.Hex(), hasRole, cacheInterval)
