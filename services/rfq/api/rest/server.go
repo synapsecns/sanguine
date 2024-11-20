@@ -626,20 +626,35 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 		}
 	}
 	quote := getBestQuote(activeQuote, passiveQuote)
+	var quoteType string
+	if quote == activeQuote {
+		quoteType = quoteTypeActive
+	} else if quote == passiveQuote {
+		quoteType = quoteTypePassive
+	}
 
-	// construct the response
-	var resp model.PutRFQResponse
-	if quote == nil {
+	// build and return the response
+	resp := getQuoteResponse(ctx, quote, quoteType)
+	c.JSON(http.StatusOK, resp)
+}
+
+func getQuoteResponse(ctx context.Context, quote *model.QuoteData, quoteType string) (resp model.PutRFQResponse) {
+	span := trace.SpanFromContext(ctx)
+
+	destAmount := big.NewInt(0)
+	if quote != nil && quote.DestAmount != nil {
+		amt, ok := destAmount.SetString(*quote.DestAmount, 10)
+		if ok {
+			destAmount = amt
+		}
+	}
+	if destAmount.Sign() <= 0 {
 		span.AddEvent("no quotes found")
 		resp = model.PutRFQResponse{
 			Success: false,
 			Reason:  "no quotes found",
 		}
 	} else {
-		quoteType := quoteTypeActive
-		if activeQuote == nil {
-			quoteType = quoteTypePassive
-		}
 		span.SetAttributes(
 			attribute.String("quote_type", quoteType),
 			attribute.String("quote_dest_amount", *quote.DestAmount),
@@ -652,7 +667,8 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 			RelayerAddress: *quote.RelayerAddress,
 		}
 	}
-	c.JSON(http.StatusOK, resp)
+
+	return resp
 }
 
 func isZapQuote(req *model.PutRFQRequest) bool {
