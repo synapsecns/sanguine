@@ -16,6 +16,7 @@ import { RFQFlow } from '@site/src/components/RFQFlow'
 [BridgeRelayed]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
 [BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
 [Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
+[Multicall]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IMulticallTarget.sol/interface.IMulticallTarget.html
 
 [Quoter API]: /docs/RFQ/Quoting/Quoter%20API/
 [Dispute Period]: /docs/RFQ/Security/#dispute-period

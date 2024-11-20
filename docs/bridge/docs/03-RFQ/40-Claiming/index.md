@@ -14,6 +14,7 @@ title: Claiming
 [BridgeRelayed]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
 [BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
 [Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
+[Multicall]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IMulticallTarget.sol/interface.IMulticallTarget.html
 
 [Quoter API]: /docs/RFQ/Quoting/Quoter%20API/
 [Dispute Period]: /docs/RFQ/Security/#dispute-period
@@ -55,7 +56,7 @@ This version can only be executed by the `relayer` address on the proof and allo
 This version can be executed permissionlessly, and will transfer the funds only to the `relayer` address on the proof.
 </div>
 
-Regardless of the method used, a [BridgeDepositClaimed](hhttps://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgedepositclaimed) event will be emitted.
+Regardless of the method used, a [BridgeDepositClaimed](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgedepositclaimed) event will be emitted.
 
 ### Multicalling
 
