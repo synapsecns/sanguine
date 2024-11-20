@@ -47,6 +47,8 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         deployBlock = block.number;
     }
 
+    // ══════════════════════════════════════ EXTERNAL MUTABLE (USER FACING) ═══════════════════════════════════════════
+
     /// @inheritdoc IFastBridge
     function bridge(BridgeParams memory params) external payable {
         bridge({
@@ -60,6 +62,14 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
             })
         });
     }
+
+    /// Note: this function is deprecated and will be removed in a future version.
+    /// @inheritdoc IFastBridge
+    function refund(bytes calldata request) external {
+        cancel(request);
+    }
+
+    // ══════════════════════════════════════ EXTERNAL MUTABLE (AGENT FACING) ══════════════════════════════════════════
 
     /// @inheritdoc IFastBridge
     function relay(bytes calldata request) external payable {
@@ -102,11 +112,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         emit BridgeProofDisputed(transactionId, disputedRelayer);
     }
 
-    /// Note: this function is deprecated and will be removed in a future version.
-    /// @inheritdoc IFastBridge
-    function refund(bytes calldata request) external {
-        cancel(request);
-    }
+    // ══════════════════════════════════════════════ EXTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @inheritdoc IFastBridge
     function canClaim(bytes32 transactionId, address relayer) external view returns (bool) {
@@ -152,6 +158,8 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         request.validateV2();
         return BridgeTransactionV2Lib.decodeV2(request);
     }
+
+    // ═══════════════════════════════════════ PUBLIC MUTABLE (USER FACING) ════════════════════════════════════════════
 
     /// @inheritdoc IFastBridgeV2
     function bridge(BridgeParams memory params, BridgeParamsV2 memory paramsV2) public payable {
@@ -215,6 +223,44 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         });
         emit BridgeQuoteDetails(transactionId, paramsV2.quoteId);
     }
+
+    /// @inheritdoc IFastBridgeV2
+    function cancel(bytes calldata request) public {
+        // Decode the request and check that it could be cancelled
+        request.validateV2();
+        bytes32 transactionId = keccak256(request);
+
+        // Can only cancel a REQUESTED transaction after its deadline expires
+        BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
+        if ($.status != BridgeStatus.REQUESTED) revert StatusIncorrect();
+
+        // Permissionless cancel is only allowed after `cancelDelay` on top of the deadline
+        uint256 deadline = request.deadline();
+        if (!hasRole(CANCELER_ROLE, msg.sender)) deadline += cancelDelay;
+        if (block.timestamp <= deadline) revert DeadlineNotExceeded();
+
+        // Update status to REFUNDED.
+        // Note: this is a storage write.
+        $.status = BridgeStatus.REFUNDED;
+
+        // Return the full amount (collateral + protocol fees) to the original sender.
+        // The protocol fees are only accumulated when the transaction is claimed, so we don't need to update them here.
+        address to = request.originSender();
+        address token = request.originToken();
+        uint256 amount = request.originAmount() + request.originFeeAmount();
+
+        // Emit the event before any external calls
+        emit BridgeDepositRefunded(transactionId, to, token, amount);
+
+        // Return the funds to the original sender as last transaction action
+        if (token == NATIVE_GAS_TOKEN) {
+            Address.sendValue(payable(to), amount);
+        } else {
+            IERC20(token).safeTransfer(to, amount);
+        }
+    }
+
+    // ═══════════════════════════════════════ PUBLIC MUTABLE (AGENT FACING) ═══════════════════════════════════════════
 
     /// @inheritdoc IFastBridgeV2
     function relay(bytes calldata request, address relayer) public payable {
@@ -344,41 +390,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         }
     }
 
-    /// @inheritdoc IFastBridgeV2
-    function cancel(bytes calldata request) public {
-        // Decode the request and check that it could be cancelled
-        request.validateV2();
-        bytes32 transactionId = keccak256(request);
-
-        // Can only cancel a REQUESTED transaction after its deadline expires
-        BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
-        if ($.status != BridgeStatus.REQUESTED) revert StatusIncorrect();
-
-        // Permissionless cancel is only allowed after `cancelDelay` on top of the deadline
-        uint256 deadline = request.deadline();
-        if (!hasRole(CANCELER_ROLE, msg.sender)) deadline += cancelDelay;
-        if (block.timestamp <= deadline) revert DeadlineNotExceeded();
-
-        // Update status to REFUNDED.
-        // Note: this is a storage write.
-        $.status = BridgeStatus.REFUNDED;
-
-        // Return the full amount (collateral + protocol fees) to the original sender.
-        // The protocol fees are only accumulated when the transaction is claimed, so we don't need to update them here.
-        address to = request.originSender();
-        address token = request.originToken();
-        uint256 amount = request.originAmount() + request.originFeeAmount();
-
-        // Emit the event before any external calls
-        emit BridgeDepositRefunded(transactionId, to, token, amount);
-
-        // Complete the user cancel as the last transaction action
-        if (token == NATIVE_GAS_TOKEN) {
-            Address.sendValue(payable(to), amount);
-        } else {
-            IERC20(token).safeTransfer(to, amount);
-        }
-    }
+    // ═══════════════════════════════════════════════ PUBLIC VIEWS ════════════════════════════════════════════════════
 
     /// @inheritdoc IFastBridgeV2
     function bridgeStatuses(bytes32 transactionId) public view returns (BridgeStatus status) {
@@ -397,6 +409,8 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         // This transaction has been relayed if the relayer address is recorded
         return bridgeRelayDetails[transactionId].relayer != address(0);
     }
+
+    // ═════════════════════════════════════════════ INTERNAL METHODS ══════════════════════════════════════════════════
 
     /// @notice Takes the bridged asset from the user into FastBridgeV2 custody. It will be later
     /// claimed by the relayer who completed the relay on destination chain, or transferred back to the user
