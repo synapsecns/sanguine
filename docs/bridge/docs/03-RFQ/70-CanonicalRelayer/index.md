@@ -148,7 +148,7 @@ RFQ Relayer requires a YAML configuration file path to be provided at run time.
   *  `type`: Database driver to use, can be `mysql` or `sqlite`.
   *  `dsn`: 'Data Source Name'. If using SQLite, this can be a path. For MySQL see [here](https://dev.mysql.com/doc/connector-odbc/en/connector-odbc-configuration.html) for more information.
 * `screener_api_url` (optional): [Screener API](https://github.com/synapsecns/sanguine/tree/master/contrib/screener-api#screening-api)
-* `rfq_url`: [Mainnet & Testnet addresses](API/#api-urls)
+* `rfq_url`: [Mainnet & Testnet addresses](/docs/RFQ/Quoting/Quoter%20API/#api-urls)
 * `omnirpc_url`: [Running an OmniRPC instance](/docs/Services/Omnirpc)
 * `rebalance_interval`: How often to rebalance. Can use `s` (seconds), `m` (minutes), or `h` (hours)
 * `relayer_api_port`: Controls the relayer. Should be private or secured. <!--TODO: more info here-->

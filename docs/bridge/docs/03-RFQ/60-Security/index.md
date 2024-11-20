@@ -48,7 +48,7 @@ Each [prove] transaction sets the [proof] data for the bridge and initiates a di
 
 After a [prove] transaction is posted and the [proof] data is set, a window of time called the [Dispute Period](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#dispute_period) begins.
 
-During this time, the prove/proof is eligible to be [disputed](dispute) by [Guard] entities.
+During this time, the prove/proof is eligible to be dispuated by [Guard] entities.
 
 After the [Dispute Period](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#dispute_period) has passed without any disputes, the funds in escrow from the original bridge transaction can be released via a [claim] transaction, which will reimburse the rightful [Relayer].
 
@@ -72,7 +72,7 @@ When a [dispute] is executed, it effectively negates/erases the [proof] which wa
 
 This allows for a new corrected [prove] to be submitted and the process begins again.
 
-If a [relay] truly did occur for the disputed [prove], but it was not for the correct bridge parameters, this constitutes an [invalid relay](/docs/RFQ/Relaying%20Risk%20Factors/#invalid-relays).
+If a [relay] truly did occur for the disputed [prove], but it was not for the correct bridge parameters, this constitutes an [invalid relay](/docs/RFQ/Relaying/riskFactors#invalid-relays).
 
 Additionally, a [BridgeProofDisputed](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofdisputed) event will be emitted.
 
