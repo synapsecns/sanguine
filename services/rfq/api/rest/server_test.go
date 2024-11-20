@@ -539,15 +539,20 @@ func (c *ServerSuite) prepareAuthHeader(wallet wallet.Wallet) (string, error) {
 }
 
 // sendPutQuoteRequest sends a PUT request to the server with the given authorization header.
+//
+//nolint:gosec
 func (c *ServerSuite) sendPutQuoteRequest(header string) (*http.Response, error) {
 	// Prepare the PUT request with JSON data.
 	client := &http.Client{}
 	putData := model.PutRelayerQuoteRequest{
-		DestChainID:     42161,
-		DestTokenAddr:   "0xDestTokenAddr",
-		DestAmount:      "100.0",
-		MaxOriginAmount: "200.0",
-		FixedFee:        "10.0",
+		OriginChainID:           c.originChainID,
+		DestChainID:             c.destChainID,
+		DestTokenAddr:           "0xDestTokenAddr",
+		DestAmount:              "100.0",
+		MaxOriginAmount:         "200.0",
+		FixedFee:                "10.0",
+		OriginFastBridgeAddress: c.cfg.FastBridgeContractsV1[uint32(c.originChainID)],
+		DestFastBridgeAddress:   c.cfg.FastBridgeContractsV1[uint32(c.destChainID)],
 	}
 	jsonData, err := json.Marshal(putData)
 	if err != nil {
