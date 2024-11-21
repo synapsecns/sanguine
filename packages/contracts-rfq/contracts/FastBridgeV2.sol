@@ -19,26 +19,28 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     using BridgeTransactionV2Lib for bytes;
     using SafeERC20 for IERC20;
 
-    /// @notice Dispute period for relayed transactions
+    /// @notice The duration of the dispute period for relayed transactions.
     uint256 public constant DISPUTE_PERIOD = 30 minutes;
 
-    /// @notice Minimum deadline period to relay a requested bridge transaction
+    /// @notice The minimum required time between transaction request and deadline.
     uint256 public constant MIN_DEADLINE_PERIOD = 30 minutes;
 
-    /// @notice Maximum length of accepted zapData
+    /// @notice The maximum allowed length for zapData.
     uint256 public constant MAX_ZAP_DATA_LENGTH = 2 ** 16 - 1;
 
-    /// @notice Status of the bridge tx on origin chain
+    /// @notice Maps transaction IDs to bridge details (status, destination chain ID, proof timestamp, and relayer).
+    /// Note: this is only stored for transactions having local chain as the origin chain.
     mapping(bytes32 => BridgeTxDetails) public bridgeTxDetails;
-    /// @notice Relay details on destination chain
+    /// @notice Maps transaction IDs to relay details (block number, block timestamp, and relayer).
+    /// Note: this is only stored for transactions having local chain as the destination chain.
     mapping(bytes32 => BridgeRelay) public bridgeRelayDetails;
-    /// @notice Unique bridge nonces tracked per originSender
+    /// @notice Maps sender addresses to their unique bridge nonce.
     mapping(address => uint256) public senderNonces;
 
-    /// @notice This is deprecated and should not be used.
-    /// @dev Replaced by senderNonces
+    /// @notice This variable is deprecated and should not be used.
+    /// @dev Replaced by senderNonces.
     uint256 public immutable nonce = 0;
-    /// @notice The block the contract was deployed at
+    /// @notice The block number at which this contract was deployed.
     uint256 public immutable deployBlock;
 
     /// @notice Initializes the FastBridgeV2 contract with the provided default admin,
@@ -73,7 +75,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
 
     /// @inheritdoc IFastBridge
     function relay(bytes calldata request) external payable {
-        // `relay` override will validate the request
+        // `relay` override will validate the request.
         relay({request: request, relayer: msg.sender});
     }
 
@@ -85,19 +87,19 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
 
     /// @inheritdoc IFastBridgeV2
     function claim(bytes calldata request) external {
-        // `claim` override will validate the request
+        // `claim` override will validate the request.
         claim({request: request, to: address(0)});
     }
 
     /// @inheritdoc IFastBridge
     function dispute(bytes32 transactionId) external onlyRole(GUARD_ROLE) {
-        // Aggregate the read operations from the same storage slot
+        // Aggregate the read operations from the same storage slot.
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
         address disputedRelayer = $.proofRelayer;
         BridgeStatus status = $.status;
         uint56 proofBlockTimestamp = $.proofBlockTimestamp;
 
-        // Can only dispute a RELAYER_PROVED transaction within the dispute period
+        // Can only dispute a RELAYER_PROVED transaction within the dispute period.
         if (status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
         if (_timeSince(proofBlockTimestamp) > DISPUTE_PERIOD) {
             revert DisputePeriodPassed();
@@ -116,7 +118,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
 
     /// @inheritdoc IFastBridge
     function canClaim(bytes32 transactionId, address relayer) external view returns (bool) {
-        // The correct relayer can only claim a RELAYER_PROVED transaction after the dispute period
+        // The correct relayer can only claim a RELAYER_PROVED transaction after the dispute period.
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
         if ($.status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
         if ($.proofRelayer != relayer) revert SenderIncorrect();
@@ -130,9 +132,9 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     /// - `zapData` is ignored
     /// In order to process all kinds of requests use getBridgeTransactionV2 instead.
     function getBridgeTransaction(bytes calldata request) external view returns (BridgeTransaction memory) {
-        // Try decoding into V2 struct first. This will revert if V1 struct is passed
+        // Try decoding into V2 struct first. This will revert if V1 struct is passed.
         try this.getBridgeTransactionV2(request) returns (BridgeTransactionV2 memory txV2) {
-            // Note: we entirely ignore the zapData field, as it was not present in V1
+            // Note: we entirely ignore the zapData field, as it was not present in V1.
             return BridgeTransaction({
                 originChainId: txV2.originChainId,
                 destChainId: txV2.destChainId,
@@ -148,7 +150,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
                 nonce: txV2.nonce
             });
         } catch {
-            // Fallback to V1 struct
+            // Fallback to V1 struct.
             return abi.decode(request, (BridgeTransaction));
         }
     }
@@ -171,10 +173,10 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         }
         _validateBridgeParams(params, paramsV2, exclusivityEndTime);
 
-        // Transfer tokens to bridge contract. We use the actual transferred amount in case of transfer fees
+        // Transfer tokens to bridge contract. We use the actual transferred amount in case of transfer fees.
         uint256 originAmount = _takeBridgedUserAsset(params.originToken, params.originAmount);
 
-        // Track the amount of origin token owed to protocol
+        // Track the amount of origin token owed to protocol.
         uint256 originFeeAmount = 0;
         if (protocolFeeRate > 0) {
             originFeeAmount = (originAmount * protocolFeeRate) / FEE_BPS;
@@ -183,7 +185,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
             originAmount -= originFeeAmount;
         }
 
-        // Hash the bridge request and set the initial status to REQUESTED
+        // Hash the bridge request and set the initial status to REQUESTED.
         bytes memory request = BridgeTransactionV2Lib.encodeV2(
             BridgeTransactionV2({
                 originChainId: uint32(block.chainid),
@@ -196,17 +198,17 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
                 destAmount: params.destAmount,
                 originFeeAmount: originFeeAmount,
                 deadline: params.deadline,
-                // Increment the sender's nonce on every bridge
+                // Increment the sender's nonce on every bridge.
                 nonce: senderNonces[params.sender]++,
                 exclusivityRelayer: paramsV2.quoteRelayer,
-                // We checked exclusivityEndTime to be in range [0 .. params.deadline] above, so can safely cast
+                // We checked exclusivityEndTime to be in range [0 .. params.deadline] above, so can safely cast.
                 exclusivityEndTime: uint256(exclusivityEndTime),
                 zapNative: paramsV2.zapNative,
                 zapData: paramsV2.zapData
             })
         );
         bytes32 transactionId = keccak256(request);
-        // Note: the tx status will be updated throughout the tx lifecycle, while destChainId is set once here
+        // Note: the tx status will be updated throughout the tx lifecycle, while destChainId is set once here.
         bridgeTxDetails[transactionId].status = BridgeStatus.REQUESTED;
         bridgeTxDetails[transactionId].destChainId = params.dstChainId;
 
@@ -226,15 +228,15 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
 
     /// @inheritdoc IFastBridgeV2
     function cancel(bytes calldata request) public {
-        // Decode the request and check that it could be cancelled
+        // Decode the request and check that it could be cancelled.
         request.validateV2();
         bytes32 transactionId = keccak256(request);
 
-        // Can only cancel a REQUESTED transaction after its deadline expires
+        // Can only cancel a REQUESTED transaction after its deadline expires.
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
         if ($.status != BridgeStatus.REQUESTED) revert StatusIncorrect();
 
-        // Permissionless cancel is only allowed after `cancelDelay` on top of the deadline
+        // Permissionless cancel is only allowed after `cancelDelay` on top of the deadline.
         uint256 deadline = request.deadline();
         if (!hasRole(CANCELER_ROLE, msg.sender)) deadline += cancelDelay;
         if (block.timestamp <= deadline) revert DeadlineNotExceeded();
@@ -249,10 +251,10 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         address token = request.originToken();
         uint256 amount = request.originAmount() + request.originFeeAmount();
 
-        // Emit the event before any external calls
+        // Emit the event before any external calls.
         emit BridgeDepositRefunded(transactionId, to, token, amount);
 
-        // Return the funds to the original sender as last transaction action
+        // Return the funds to the original sender as last transaction action.
         if (token == NATIVE_GAS_TOKEN) {
             Address.sendValue(payable(to), amount);
         } else {
@@ -264,23 +266,23 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
 
     /// @inheritdoc IFastBridgeV2
     function relay(bytes calldata request, address relayer) public payable {
-        // Decode the request and check that it could be relayed
+        // Decode the request and check that it could be relayed.
         request.validateV2();
         bytes32 transactionId = keccak256(request);
         _validateRelayParams(request, transactionId, relayer);
 
-        // Mark the bridge request as relayed by saving the relayer and the block details
+        // Mark the bridge request as relayed by saving the relayer and the block details.
         bridgeRelayDetails[transactionId].blockNumber = uint48(block.number);
         bridgeRelayDetails[transactionId].blockTimestamp = uint48(block.timestamp);
         bridgeRelayDetails[transactionId].relayer = relayer;
 
-        // Transfer tokens to recipient on destination chain and trigger Zap if requested
+        // Transfer tokens to recipient on destination chain and trigger Zap if requested.
         address to = request.destRecipient();
         address token = request.destToken();
         uint256 amount = request.destAmount();
         uint256 zapNative = request.zapNative();
 
-        // Emit the event before any external calls
+        // Emit the event before any external calls.
         emit BridgeRelayed({
             transactionId: transactionId,
             relayer: relayer,
@@ -296,13 +298,13 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         // All state changes have been done at this point, can proceed to the external calls.
         // This follows the checks-effects-interactions pattern to mitigate potential reentrancy attacks.
         if (token == NATIVE_GAS_TOKEN) {
-            // For the native gas token, additional zapNative is not allowed
+            // For the native gas token, additional zapNative is not allowed.
             if (zapNative != 0) revert ZapNativeNotSupported();
-            // Check that the correct msg.value was sent
+            // Check that the correct msg.value was sent.
             if (msg.value != amount) revert MsgValueIncorrect();
-            // Don't do a native transfer yet: we will handle it alongside the Zap below
+            // Don't do a native transfer yet: we will handle it alongside the Zap below.
         } else {
-            // For ERC20s, we check that the correct msg.value was sent
+            // For ERC20s, we check that the correct msg.value was sent.
             if (msg.value != zapNative) revert MsgValueIncorrect();
             // We need to transfer the tokens from the Relayer to the recipient first before performing an
             // optional post-transfer Zap.
@@ -333,7 +335,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
 
     /// @inheritdoc IFastBridgeV2
     function prove(bytes32 transactionId, bytes32 destTxHash, address relayer) public onlyRole(PROVER_ROLE) {
-        // Can only prove a REQUESTED transaction
+        // Can only prove a REQUESTED transaction.
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
         if ($.status != BridgeStatus.REQUESTED) revert StatusIncorrect();
 
@@ -348,24 +350,24 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
 
     /// @inheritdoc IFastBridge
     function claim(bytes calldata request, address to) public {
-        // Decode the request and check that it could be claimed
+        // Decode the request and check that it could be claimed.
         request.validateV2();
         bytes32 transactionId = keccak256(request);
 
-        // Aggregate the read operations from the same storage slot
+        // Aggregate the read operations from the same storage slot.
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
         address proofRelayer = $.proofRelayer;
         BridgeStatus status = $.status;
         uint56 proofBlockTimestamp = $.proofBlockTimestamp;
 
-        // Can only claim a RELAYER_PROVED transaction after the dispute period
+        // Can only claim a RELAYER_PROVED transaction after the dispute period.
         if (status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
         if (_timeSince(proofBlockTimestamp) <= DISPUTE_PERIOD) revert DisputePeriodNotPassed();
         if (to == address(0)) {
-            // Anyone could claim the funds to the proven relayer on their behalf
+            // Anyone could claim the funds to the proven relayer on their behalf.
             to = proofRelayer;
         } else if (proofRelayer != msg.sender) {
-            // Only the proven relayer could specify an address to claim the funds to
+            // Only the proven relayer could specify an address to claim the funds to.
             revert SenderIncorrect();
         }
 
@@ -373,16 +375,16 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         // Note: this is a storage write.
         $.status = BridgeStatus.RELAYER_CLAIMED;
 
-        // Accumulate protocol fees if origin fee amount exists
+        // Accumulate protocol fees if origin fee amount exists.
         address token = request.originToken();
         uint256 amount = request.originAmount();
         uint256 originFeeAmount = request.originFeeAmount();
         if (originFeeAmount > 0) protocolFees[token] += originFeeAmount;
 
-        // Emit the event before any external calls
+        // Emit the event before any external calls.
         emit BridgeDepositClaimed(transactionId, proofRelayer, to, token, amount);
 
-        // Complete the relayer claim as the last transaction action
+        // Complete the relayer claim as the last transaction action.
         if (token == NATIVE_GAS_TOKEN) {
             Address.sendValue(payable(to), amount);
         } else {
@@ -406,15 +408,15 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
 
     /// @inheritdoc IFastBridgeV2
     function bridgeRelays(bytes32 transactionId) public view returns (bool) {
-        // This transaction has been relayed if the relayer address is recorded
+        // This transaction has been relayed if the relayer address is recorded.
         return bridgeRelayDetails[transactionId].relayer != address(0);
     }
 
     // ═════════════════════════════════════════════ INTERNAL METHODS ══════════════════════════════════════════════════
 
-    /// @notice Takes the bridged asset from the user into FastBridgeV2 custody. It will be later
-    /// claimed by the relayer who completed the relay on destination chain, or transferred back to the user
-    /// via the cancel function should no one complete the relay.
+    /// @notice Takes the bridged asset from the user into FastBridgeV2 custody. The asset will later be
+    /// claimed by the relayer who completed the relay on the destination chain, or returned to the user
+    /// via the cancel function if no relay is completed.
     function _takeBridgedUserAsset(address token, uint256 amount) internal returns (uint256 amountTaken) {
         if (token == NATIVE_GAS_TOKEN) {
             // For the native gas token, we just need to check that the supplied msg.value is correct.
@@ -425,52 +427,52 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
             // For ERC20s, token is explicitly transferred from the user to FastBridgeV2.
             // We don't allow non-zero `msg.value` to avoid extra funds from being stuck in FastBridgeV2.
             if (msg.value != 0) revert MsgValueIncorrect();
-            // Throw an explicit error if the provided token address is not a contract
+            // Throw an explicit error if the provided token address is not a contract.
             if (token.code.length == 0) revert TokenNotContract();
 
-            // Use the balance difference as the amount taken in case of fee on transfer tokens
+            // Use the balance difference as the amount taken in case of fee on transfer tokens.
             amountTaken = IERC20(token).balanceOf(address(this));
             IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
             amountTaken = IERC20(token).balanceOf(address(this)) - amountTaken;
         }
     }
 
-    /// @notice Calls the Recipient's hook function with the specified zapData and performs
-    /// all the necessary checks for the returned value.
+    /// @notice Calls the recipient's hook function with the specified zapData and validates
+    /// the returned value.
     function _triggerZapWithChecks(address recipient, address token, uint256 amount, bytes calldata zapData) internal {
-        // Call the recipient's hook function with the specified zapData, bubbling any revert messages
+        // Call the recipient's hook function with the specified zapData, bubbling any revert messages.
         bytes memory returnData = Address.functionCallWithValue({
             target: recipient,
             data: abi.encodeCall(IZapRecipient.zap, (token, amount, zapData)),
-            // Note: see `relay()` for reasoning behind passing msg.value
+            // Note: see `relay()` for reasoning behind passing msg.value.
             value: msg.value
         });
 
-        // Explicit revert if no return data at all
+        // Explicit revert if no return data at all.
         if (returnData.length == 0) revert RecipientNoReturnValue();
-        // Check that exactly a single return value was returned
+        // Check that exactly a single return value was returned.
         if (returnData.length != 32) revert RecipientIncorrectReturnValue();
-        // Return value should be abi-encoded hook function selector
+        // Return value should be abi-encoded hook function selector.
         if (bytes32(returnData) != bytes32(IZapRecipient.zap.selector)) {
             revert RecipientIncorrectReturnValue();
         }
     }
 
-    /// @notice Calculates time since proof submitted
-    /// @dev proof.timestamp stores casted uint56(block.timestamp) block timestamps for gas optimization
-    ///      _timeSince(proof) can accomodate rollover case when block.timestamp > type(uint56).max but
-    ///      proof.timestamp < type(uint56).max via unchecked statement
-    /// @param proofBlockTimestamp The bridge proof block timestamp
-    /// @return delta Time delta since proof submitted
+    /// @notice Calculates the time elapsed since a proof was submitted.
+    /// @dev The proof.timestamp stores block timestamps as uint56 for gas optimization.
+    /// _timeSince(proof) handles timestamp rollover when block.timestamp > type(uint56).max but
+    /// proof.timestamp < type(uint56).max via an unchecked statement.
+    /// @param proofBlockTimestamp The block timestamp when the proof was submitted.
+    /// @return delta The time elapsed since proof submission.
     function _timeSince(uint56 proofBlockTimestamp) internal view returns (uint256 delta) {
         unchecked {
             delta = uint56(block.timestamp) - proofBlockTimestamp;
         }
     }
 
-    /// @notice Performs all the necessary checks for a bridge to happen.
-    /// @dev There's no good way to refactor this function to reduce cyclomatic complexity due to
-    /// the number of checks that need to be performed, so we skip the code-complexity rule here.
+    /// @notice Validates all parameters required for a bridge transaction.
+    /// @dev This function's complexity cannot be reduced due to the number of required checks,
+    /// so we disable the code-complexity rule.
     // solhint-disable-next-line code-complexity
     function _validateBridgeParams(
         BridgeParams memory params,
@@ -480,34 +482,34 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         internal
         view
     {
-        // Check V1 (legacy) params
+        // Check V1 (legacy) params.
         if (params.dstChainId == block.chainid) revert ChainIncorrect();
         if (params.originAmount == 0 || params.destAmount == 0) revert AmountIncorrect();
         if (params.sender == address(0) || params.to == address(0)) revert ZeroAddress();
         if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
         if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
 
-        // Check V2 params
+        // Check V2 params.
         if (paramsV2.zapData.length > MAX_ZAP_DATA_LENGTH) revert ZapDataLengthAboveMax();
         if (paramsV2.zapNative != 0 && params.destToken == NATIVE_GAS_TOKEN) {
             revert ZapNativeNotSupported();
         }
 
-        // exclusivityEndTime must be in range [0 .. params.deadline]
+        // exclusivityEndTime must be in range [0 .. params.deadline].
         if (exclusivityEndTime < 0 || exclusivityEndTime > int256(params.deadline)) {
             revert ExclusivityParamsIncorrect();
         }
     }
 
-    /// @notice Performs all the necessary checks for a relay to happen.
+    /// @notice Validates all parameters required for a relay transaction.
     function _validateRelayParams(bytes calldata request, bytes32 transactionId, address relayer) internal view {
         if (relayer == address(0)) revert ZeroAddress();
-        // Check that the transaction has not been relayed yet and is for the current chain
+        // Check that the transaction has not been relayed yet and is for the current chain.
         if (bridgeRelays(transactionId)) revert TransactionRelayed();
         if (request.destChainId() != block.chainid) revert ChainIncorrect();
-        // Check that the deadline for relay to happen has not passed yet
+        // Check that the deadline for relay to happen has not passed yet.
         if (block.timestamp > request.deadline()) revert DeadlineExceeded();
-        // Check the exclusivity period, if it was specified and is still ongoing
+        // Check the exclusivity period, if it was specified and is still ongoing.
         address exclRelayer = request.exclusivityRelayer();
         if (exclRelayer != address(0) && exclRelayer != relayer && block.timestamp <= request.exclusivityEndTime()) {
             revert ExclusivityPeriodNotPassed();
