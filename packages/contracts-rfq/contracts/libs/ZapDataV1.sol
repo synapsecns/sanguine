@@ -25,7 +25,7 @@ library ZapDataV1 {
     error ZapDataV1__TargetZeroAddress();
     error ZapDataV1__UnsupportedVersion(uint16 version);
 
-    /// @notice Validates the encodedZapData to be a tightly packed encoded payload for ZapData struct.
+    /// @notice Validates that encodedZapData is a tightly packed encoded payload for ZapData struct.
     /// @dev Checks that all the required fields are present and the version is correct.
     function validateV1(bytes calldata encodedZapData) internal pure {
         // Check the minimum length: must at least include all static fields.
@@ -37,7 +37,7 @@ library ZapDataV1 {
 
     /// @notice Encodes the ZapData struct by tightly packing the fields.
     /// Note: we don't know the exact amount of tokens that will be used for the Zap at the time of encoding,
-    /// so we provide the reference index where the token amount is encoded within `payload_`. This allows up to
+    /// so we provide the reference index where the token amount is encoded within `payload_`. This allows us to
     /// hot-swap the token amount in the payload, when the Zap is performed.
     /// @dev `abi.decode` will not work as a result of the tightly packed fields. Use `decodeZapData` instead.
     /// @param amountPosition_  Position (start index) where the token amount is encoded within `payload_`.
