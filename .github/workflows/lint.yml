@@ -28,6 +28,11 @@ jobs:
         with:
           pattern: '.github/renovate.json' # Regular expression for filename to validate, default to *.json
 
+      - name: jsonc-syntax-check
+        uses: stevieb9/jsonc-syntax-check@1.02
+        with:
+          pattern: .vscode/*.json'
+
 
       - name: yaml-lint
         uses: ibiqlik/action-yamllint@v3

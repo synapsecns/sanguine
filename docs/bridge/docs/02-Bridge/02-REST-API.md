@@ -4,7 +4,16 @@ title: REST API
 
 # REST API
 
-Get read-only data from on-chain Synapse contracts, and generate Bridge and Swap quotes, plus additional transaction information.
+The Synapse REST API is a read-only API that allows you to integrate the Synapse liquidity network into your application.
+
+Through HTTP requests, developers can integrate Synapse cross-chain tokens and liquidity transfers dynamically into their applications. Developers can retrieve quotes, as well as generate the relevant call data for Synapse Bridges and Swaps.  Example requests can be found below in the [API-docs](#api-docs) section.
+
+
+The Synapse REST API is built on top of the [Synapse Bridge SDK](https://docs.synapseprotocol.com/docs/Bridge/SDK).
+
+
+The API is available at [`https://api.synapseprotocol.com/`](https://api.synapseprotocol.com/).
+
 
 ## API-docs
 
@@ -17,6 +26,7 @@ Get read-only data from on-chain Synapse contracts, and generate Bridge and Swap
 | Date                   | Description                                                                                                                                                        |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 2024&#8209;10&#8209;01 | [https://synapse-rest-api-v2.herokuapp.com/](https://synapse-rest-api-v2.herokuapp.com/) is no longer maintained and has been fully deprecated as of October 2024. |
+| 2024&#8209;11&#8209;19 | [https://api.synapseprotocol.com/](https://api.synapseprotocol.com/) the /bridgeTxInfo endpoint has been consolidated into the /bridge endpoint, which now returns call data                   |
 
 ## Support
 

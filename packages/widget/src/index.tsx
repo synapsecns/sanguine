@@ -108,7 +108,6 @@ export const WBTC = BRIDGEABLE.WBTC
 export const WETH = BRIDGEABLE.WETH
 export const WETHE = BRIDGEABLE.WETHE
 export const WFTM = BRIDGEABLE.WFTM
-export const WLD = BRIDGEABLE.WLD
 export const WJEWEL = BRIDGEABLE.WJEWEL
 export const WKLAY = BRIDGEABLE.WKLAY
 export const WPOL = BRIDGEABLE.WPOL
