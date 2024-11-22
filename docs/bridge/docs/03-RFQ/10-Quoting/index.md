@@ -45,7 +45,7 @@ Similar to an order book, Passive Quoting communicates a [Quoter]'s ongoing inte
 
 ## [Active Quoting](/docs/RFQ/Quoting/Quoter%20API/#active-quotes)
 
-Starting with [Fast Bridge V2](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html), a new Active Quoting method has been introduced where a [Quoter] can listen and respond to live quote requests individually.
+In our latest version of the [Quoter API], a new Active Quoting method has been introduced where a [Quoter] can listen and respond to live quote requests individually.
 
 This supplements the existing Passive Quotes to create a hybrid system, where Active and Passive quoting can be utilized together by Quoters in any desired combination to maximize their efficiency and further improve prices.
 
