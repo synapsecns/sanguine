@@ -14,7 +14,14 @@ import {MulticallTarget} from "./utils/MulticallTarget.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
-/// @notice FastBridgeV2 is a contract for bridging tokens across chains.
+/// @title FastBridgeV2
+/// @notice Core component of the SynapseRFQ protocol, enabling Relayers (Solvers) to fulfill bridge requests.
+/// Supports ERC20 and native gas tokens, along with the Zap feature for executing actions on the destination chain.
+/// Users interact with the off-chain Quoter API to obtain a current quote for a bridge transaction.
+/// They then submit the bridge request with the quote to this contract, depositing their assets in escrow.
+/// Relayers can fulfill requests by relaying them to the destination chain and must prove fulfillment to claim funds.
+/// Guards monitor proofs and can dispute discrepancies.
+/// Users can reclaim funds by cancelling their requests if it has not been fulfilled within the specified deadline.
 contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2Errors {
     using BridgeTransactionV2Lib for bytes;
     using SafeERC20 for IERC20;

@@ -8,6 +8,9 @@ import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
+/// @title AdminV2
+/// @notice Provides administrative functions and controls for managing the FastBridgeV2 contract,
+/// including access control and configuration settings.
 contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     using SafeERC20 for IERC20;
 
