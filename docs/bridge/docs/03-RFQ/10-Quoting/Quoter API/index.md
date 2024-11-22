@@ -26,6 +26,7 @@ sidebar_label: Quoter API
 [Claiming]: /docs/RFQ/Claiming
 [Canceling]: /docs/RFQ/Canceling
 [Security]: /docs/RFQ/Security
+[Exclusivity]: /docs/RFQ/Exclusivity
 
 [User]: /docs/RFQ/#entities
 [Quoter]: /docs/RFQ/#entities

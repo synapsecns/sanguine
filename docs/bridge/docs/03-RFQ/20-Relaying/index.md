@@ -25,6 +25,7 @@ title: Relaying
 [Claiming]: /docs/RFQ/Claiming
 [Canceling]: /docs/RFQ/Canceling
 [Security]: /docs/RFQ/Security
+[Exclusivity]: /docs/RFQ/Exclusivity
 
 [User]: /docs/RFQ/#entities
 [Quoter]: /docs/RFQ/#entities
@@ -88,6 +89,14 @@ Regardless of the method used, a [BridgeRelayed](https://vercel-rfq-docs.vercel.
 The address which is specified as the `relayer` on the [relay] will have control of the reimbursed funds when the [claim] occurs later.
 
 Note that Relayers can utilize this feature to be reimbursed on different addresses than they are actually relaying from. This can be useful for advanced relaying setups, but is not a necessity.
+
+# Exclusivity
+
+As of FastBridgeV2, it is possible for integrators to optionally assign temporary exclusive fill rights to certain relayers.
+
+IE: For a temporary period of time, only the relayer chosen and assigned by the integrator will be able to execute the relay.
+
+For details on Exclusivity and how to relay these types of bridges, see [Exclusivity]
 
 # Multicalling
 

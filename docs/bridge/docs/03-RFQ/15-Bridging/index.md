@@ -25,6 +25,7 @@ title: Bridging
 [Claiming]: /docs/RFQ/Claiming
 [Canceling]: /docs/RFQ/Canceling
 [Security]: /docs/RFQ/Security
+[Exclusivity]: /docs/RFQ/Exclusivity
 
 [User]: /docs/RFQ/#entities
 [Quoter]: /docs/RFQ/#entities
@@ -47,7 +48,16 @@ Alternatively, you can explore the [Bridge REST API](https://api.synapseprotocol
 :::
 
 
-### Effects of a bridge Transaction
+## Exclusivity
+
+As of FastBridgeV2, it is possible for integrators to optionally assign temporary exclusive fill rights to certain relayers.
+
+IE: For a temporary period of time, only the relayer chosen and assigned by the integrator will be able to execute the relay.
+
+For details on Exclusivity and how to create these types of bridges, see [Exclusivity]
+
+
+## Effects of a bridge Transaction
 
 If sufficient funds and approvals exist, the bridging funds will be transferred from the [User] to the FastBridge contract.
 
