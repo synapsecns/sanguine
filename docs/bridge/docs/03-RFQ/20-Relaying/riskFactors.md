@@ -52,7 +52,7 @@ All participating Relayers must ensure they are able to complete all bridge tran
 
 This may include completing the [relay] at an unexpectedly unfavorable price - within a reasonable threshold. For example, if the gas price sharply increased beyond what was anticipated.
 
-Refer to the [RFQ Indexer] for endpoints that can aid with tracking missing relays.
+Refer to the [RFQ Indexer](/docs/Services/RFQ-Indexer-API) for endpoints that can aid with tracking missing relays.
 
 ### Missing Proofs / Claims
 
@@ -62,7 +62,7 @@ Failure to do so can result in a delayed reimbursement at best, or an eventual l
 Likewise, Relayers are expected to track and submit their own [claim] transactions once their proofs are past the [Dispute Period].
 Missing claims are less urgent than missing proofs, but the funds can remain unclaimed in escrow indefinitely if the responsible [Relayer] loses track of them.
 
-Refer to the [RFQ Indexer] for endpoints that can aid with tracking missing proofs and claims.
+Refer to the [RFQ Indexer](/docs/Services/RFQ-Indexer-API) for endpoints that can aid with tracking missing proofs and claims.
 
 ### Invalid Relays
 
@@ -86,5 +86,5 @@ Failure to implement appropriate pricing protections could result in a loss of R
 
 If you are a participating [Relayer], it is highly recommended that you monitor proofs, disputes, and other critical functions that involve your quotes and transactions.
 
-Refer to the [RFQ Indexer] for endpoints that can aid with monitoring and alerting.
+Refer to the [RFQ Indexer](/docs/Services/RFQ-Indexer-API) for endpoints that can aid with monitoring and alerting.
 
