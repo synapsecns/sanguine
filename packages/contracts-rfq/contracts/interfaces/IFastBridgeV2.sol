@@ -5,7 +5,7 @@ import {IFastBridge} from "./IFastBridge.sol";
 
 interface IFastBridgeV2 is IFastBridge {
     enum BridgeStatus {
-        NULL, // doesn't exist yet
+        NULL, // Doesn't exist yet.
         REQUESTED,
         RELAYER_PROVED,
         RELAYER_CLAIMED,
@@ -26,8 +26,7 @@ interface IFastBridgeV2 is IFastBridge {
     }
 
     /// @notice New params introduced in the FastBridgeV2.
-    /// We are passing fields from the older BridgeParams struct outside of this struct
-    /// for backwards compatibility.
+    /// We are passing fields from the older BridgeParams struct outside of this struct for backwards compatibility.
     /// Note: quoteRelayer and quoteExclusivitySeconds are either both zero (indicating no exclusivity)
     /// or both non-zero (indicating exclusivity for the given period).
     /// Note: zapNative > 0 can NOT be used with destToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE (native token)
