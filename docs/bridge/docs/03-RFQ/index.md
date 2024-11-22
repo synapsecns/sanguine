@@ -15,7 +15,7 @@ import { RFQFlow } from '@site/src/components/RFQFlow'
 [BridgeTransactionV2]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgetransactionv2
 [BridgeRelayed]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
 [BridgeProofProvided]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
-[Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#refund_delay
+[Cancel Delay]: https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#refund_delay
 [Multicall]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IMulticallTarget.sol/interface.IMulticallTarget.html
 
 [Quoter API]: /docs/RFQ/Quoting/Quoter%20API/
@@ -121,16 +121,16 @@ These relayers compete to provide the optimal bridge execution (eg: the best pri
     <blockquote>
         Validates proofs during the [Dispute Period] and submits [dispute] transactions for any discrepancies found.
         <div></div>
-        Currently, Synapse itself is currently the sole Guard operator of the Synapse RFQ system.
+        Currently, Synapse itself is the sole Guard operator of the Synapse RFQ system.
     </blockquote><br />
 
 <b>Cancelers</b> <span style={{color: 'darkgray'}}><i>(Permissioned Role)</i></span>
     <blockquote>
-        Allows pre-emptive cancellation of bridge requests which have already been deposited but have not yet been relayed.
+        Able to manually pre-emptively cancel bridge requests which have been deposited, have not yet been relayed, and are past their relay deadline.
         <div></div>
-        Currently, Synapse itself is currently the sole Canceler operator of the Synapse RFQ system.
+        Currently, Synapse itself is the sole Canceler operator of the Synapse RFQ system.
         <div></div>
-        <span style={{color: 'darkgray', fontSize: '0.9em'}}><i>Note: Incomplete bridge requests can also be permissionlessly canceled after a cancellation window has passed.</i></span>
+        <span style={{color: 'darkgray', fontSize: '0.9em'}}><i>Note: Incomplete bridge requests can also be canceled permissionlessly (without any involvement from a Canceler) after a longer cancellation window has passed.</i></span>
     </blockquote>
 
 
