@@ -358,32 +358,27 @@ type roleContract interface {
 func (r *QuoterAPIServer) checkRoleParallel(c *gin.Context, destChainID uint32) (addressRecovered common.Address, err error) {
 	g := new(errgroup.Group)
 	var v1Addr, v2Addr common.Address
+	var v1Ok, v2Ok bool
 	var v1Err, v2Err error
 
 	quoterRole := crypto.Keccak256Hash([]byte("QUOTER_ROLE"))
 	relayerRole := crypto.Keccak256Hash([]byte("RELAYER_ROLE"))
 	g.Go(func() error {
-		v1Addr, v1Err = r.checkRole(c, destChainID, true, quoterRole)
-		return v1Err
-	})
-	g.Go(func() error {
 		v1Addr, v1Err = r.checkRole(c, destChainID, true, relayerRole)
+		v1Ok = v1Err == nil
 		return v1Err
 	})
 	g.Go(func() error {
 		v2Addr, v2Err = r.checkRole(c, destChainID, false, quoterRole)
-		return v2Err
-	})
-	g.Go(func() error {
-		v2Addr, v2Err = r.checkRole(c, destChainID, false, relayerRole)
+		v2Ok = v2Err == nil
 		return v2Err
 	})
 
 	err = g.Wait()
-	if v1Addr != (common.Address{}) {
+	if v1Ok {
 		return v1Addr, nil
 	}
-	if v2Addr != (common.Address{}) {
+	if v2Ok {
 		return v2Addr, nil
 	}
 	if err != nil {
@@ -634,20 +629,35 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 		}
 	}
 	quote := getBestQuote(activeQuote, passiveQuote)
+	var quoteType string
+	if quote == activeQuote {
+		quoteType = quoteTypeActive
+	} else if quote == passiveQuote {
+		quoteType = quoteTypePassive
+	}
 
-	// construct the response
-	var resp model.PutRFQResponse
-	if quote == nil {
+	// build and return the response
+	resp := getQuoteResponse(ctx, quote, quoteType)
+	c.JSON(http.StatusOK, resp)
+}
+
+func getQuoteResponse(ctx context.Context, quote *model.QuoteData, quoteType string) (resp model.PutRFQResponse) {
+	span := trace.SpanFromContext(ctx)
+
+	destAmount := big.NewInt(0)
+	if quote != nil && quote.DestAmount != nil {
+		amt, ok := destAmount.SetString(*quote.DestAmount, 10)
+		if ok {
+			destAmount = amt
+		}
+	}
+	if destAmount.Sign() <= 0 {
 		span.AddEvent("no quotes found")
 		resp = model.PutRFQResponse{
 			Success: false,
 			Reason:  "no quotes found",
 		}
 	} else {
-		quoteType := quoteTypeActive
-		if activeQuote == nil {
-			quoteType = quoteTypePassive
-		}
 		span.SetAttributes(
 			attribute.String("quote_type", quoteType),
 			attribute.String("quote_dest_amount", *quote.DestAmount),
@@ -660,7 +670,8 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 			RelayerAddress: *quote.RelayerAddress,
 		}
 	}
-	c.JSON(http.StatusOK, resp)
+
+	return resp
 }
 
 func isZapQuote(req *model.PutRFQRequest) bool {
