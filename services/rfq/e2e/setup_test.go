@@ -365,14 +365,25 @@ func (i *IntegrationSuite) setupRelayer() {
 				metadata, rfqContract := i.manager.GetFastBridge(i.GetTestContext(), backend)
 
 				txContext := backend.GetTxContext(i.GetTestContext(), metadata.OwnerPtr())
-				relayerRole, err := rfqContract.RELAYERROLE(&bind.CallOpts{Context: i.GetTestContext()})
+				proverRole, err := rfqContract.PROVERROLE(&bind.CallOpts{Context: i.GetTestContext()})
 				if err != nil {
-					return fmt.Errorf("could not get relayer role: %w", err)
+					return fmt.Errorf("could not get prover role: %w", err)
 				}
 
-				tx, err := rfqContract.GrantRole(txContext.TransactOpts, relayerRole, i.relayerWallet.Address())
+				tx, err := rfqContract.GrantRole(txContext.TransactOpts, proverRole, i.relayerWallet.Address())
 				if err != nil {
-					return fmt.Errorf("could not grant role: %w", err)
+					return fmt.Errorf("could not grant prover role: %w", err)
+				}
+				backend.WaitForConfirmation(i.GetTestContext(), tx)
+
+				quoterRole, err := rfqContract.QUOTERROLE(&bind.CallOpts{Context: i.GetTestContext()})
+				if err != nil {
+					return fmt.Errorf("could not get quoter role: %w", err)
+				}
+
+				tx, err = rfqContract.GrantRole(txContext.TransactOpts, quoterRole, i.relayerWallet.Address())
+				if err != nil {
+					return fmt.Errorf("could not grant quoter role: %w", err)
 				}
 				backend.WaitForConfirmation(i.GetTestContext(), tx)
 
