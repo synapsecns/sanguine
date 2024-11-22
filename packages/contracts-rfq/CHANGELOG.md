@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.14.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.13.0...@synapsecns/contracts-rfq@0.14.0) (2024-11-22)
+
+
+### Features
+
+* **contracts-rfq:** Token Zap [SLT-389] ([#3352](https://github.com/synapsecns/sanguine/issues/3352)) ([743e859](https://github.com/synapsecns/sanguine/commit/743e859e3274ed449c6410441bd664ff2aaf9740)), closes [#3382](https://github.com/synapsecns/sanguine/issues/3382)
+
+
+
+
+
 # [0.13.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.12.1...@synapsecns/contracts-rfq@0.13.0) (2024-11-18)
 
 
