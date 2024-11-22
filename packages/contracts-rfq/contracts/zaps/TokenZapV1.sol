@@ -7,14 +7,12 @@ import {ZapDataV1} from "../libs/ZapDataV1.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-/// @notice TokenZapV1 enables atomic token operations called "Zaps". A Zap executes a predefined action with tokens
-/// on behalf of a user, such as depositing into a vault or performing a token swap.
-/// The contract supports both ERC20 tokens and the chain's native gas token (e.g. ETH).
-/// @dev For security and efficiency, TokenZapV1 requires tokens to be pre-transferred to the contract before executing
-/// a Zap, rather than using transferFrom. For native tokens, the amount must be sent as msg.value.
-/// IMPORTANT: This contract is stateless and does not custody assets between Zaps. Any tokens left in the contract
-/// can be claimed by anyone. To prevent loss of funds, ensure that Zaps either consume the entire token amount
-/// or revert the transaction.
+/// @title TokenZapV1
+/// @notice Facilitates atomic token operations known as "Zaps," allowing to execute predefined actions
+/// on behalf of users like deposits or swaps. Supports ERC20 tokens and native gas tokens (e.g., ETH).
+/// @dev Tokens must be pre-transferred to the contract for execution, with native tokens sent as msg.value.
+/// This contract is stateless and does not hold assets between Zaps; leftover tokens can be claimed by anyone.
+/// Ensure Zaps fully utilize tokens or revert to prevent fund loss.
 contract TokenZapV1 is IZapRecipient {
     using SafeERC20 for IERC20;
     using ZapDataV1 for bytes;
@@ -30,24 +28,24 @@ contract TokenZapV1 is IZapRecipient {
     /// encoded using the encodeZapData function.
     /// @param token        Address of the token to be used for the Zap action.
     /// @param amount       Amount of the token to be used for the Zap action.
-    ///                     Must match msg.value if the token is native gas token.
+    ///                     Must match msg.value if the token is a native gas token.
     /// @param zapData      Encoded Zap Data containing the target address and calldata for the Zap action.
     /// @return selector    Selector of this function to signal the caller about the success of the Zap action.
     function zap(address token, uint256 amount, bytes calldata zapData) external payable returns (bytes4) {
-        // Validate the ZapData format and extract target address
+        // Validate the ZapData format and extract the target address.
         zapData.validateV1();
         address target = zapData.target();
         if (token == NATIVE_GAS_TOKEN) {
-            // For native gas token (e.g. ETH), verify msg.value matches expected amount.
+            // For native gas token (e.g., ETH), verify msg.value matches the expected amount.
             // No approval needed since native token doesn't use allowances.
             if (msg.value != amount) revert TokenZapV1__AmountIncorrect();
         } else {
-            // For ERC20 tokens, grant unlimited approval to target if current allowance insufficient.
-            // This is safe since contract doesn't custody tokens between zaps.
+            // For ERC20 tokens, grant unlimited approval to the target if the current allowance is insufficient.
+            // This is safe since the contract doesn't custody tokens between zaps.
             if (IERC20(token).allowance(address(this), target) < amount) {
                 IERC20(token).forceApprove(target, type(uint256).max);
             }
-            // Note: Balance check omitted as target contract will revert if insufficient funds
+            // Note: balance check is omitted as the target contract will revert if there are insufficient funds.
         }
         // Construct the payload for the target contract call with the Zap action.
         // The payload is modified to replace the placeholder amount with the actual amount.
@@ -60,19 +58,19 @@ contract TokenZapV1 is IZapRecipient {
     }
 
     /// @notice Encodes the ZapData for a Zap action.
-    /// Note: at the time of encoding we don't know the exact amount of tokens that will be used for the Zap,
-    /// as we don't have a quote for performing a Zap. Therefore a placeholder value for amount must be used
-    /// when abi-encoding the payload. A reference index where the actual amount is encoded within the payload
+    /// @dev At the time of encoding, we don't know the exact amount of tokens that will be used for the Zap,
+    /// as we don't have a quote for performing a Zap. Therefore, a placeholder value for the amount must be used
+    /// when ABI-encoding the payload. A reference index where the actual amount is encoded within the payload
     /// must be provided in order to replace the placeholder with the actual amount when the Zap is performed.
     /// @param target           Address of the target contract.
     /// @param payload          ABI-encoded calldata to be used for the `target` contract call.
     ///                         If the target function has the token amount as an argument, any placeholder amount value
     ///                         can be used for the original ABI encoding of `payload`. The placeholder amount will
-    ///                         be replaced with the actual amount, when the Zap Data is decoded.
+    ///                         be replaced with the actual amount when the Zap Data is decoded.
     /// @param amountPosition   Position (start index) where the token amount is encoded within `payload`.
     ///                         This will usually be `4 + 32 * n`, where `n` is the position of the token amount in
     ///                         the list of parameters of the target function (starting from 0).
-    ///                         Any value greater or equal to `payload.length` can be used if the token amount is
+    ///                         Any value greater than or equal to `payload.length` can be used if the token amount is
     ///                         not an argument of the target function.
     function encodeZapData(
         address target,
@@ -92,12 +90,12 @@ contract TokenZapV1 is IZapRecipient {
         if (amountPosition >= payload.length) {
             amountPosition = ZapDataV1.AMOUNT_NOT_PRESENT;
         }
-        // At this point we checked that both `amountPosition` and `payload.length` fit in uint16.
+        // At this point, we have checked that both `amountPosition` and `payload.length` fit in uint16.
         return ZapDataV1.encodeV1(uint16(amountPosition), target, payload);
     }
 
     /// @notice Decodes the ZapData for a Zap action. Replaces the placeholder amount with the actual amount,
-    /// if it was present in the original `payload`. Otherwise returns the original `payload` as is.
+    /// if it was present in the original `payload`. Otherwise, returns the original `payload` as is.
     /// @param zapData          Encoded Zap Data containing the target address and calldata for the Zap action.
     /// @param amount           Actual amount of the token to be used for the Zap action.
     function decodeZapData(
