@@ -73,6 +73,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     }
 
     /// Note: this function is deprecated and will be removed in a future version.
+    /// @dev Replaced by `cancel`.
     /// @inheritdoc IFastBridge
     function refund(bytes calldata request) external {
         cancel(request);
