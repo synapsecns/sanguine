@@ -4,8 +4,8 @@ pragma solidity 0.8.24;
 import {ZapDataV1} from "../../contracts/libs/ZapDataV1.sol";
 import {TokenZapV1} from "../../contracts/zaps/TokenZapV1.sol";
 
-import {VaultManyArguments} from "../mocks/VaultManyArguments.sol";
 import {MockERC20} from "../MockERC20.sol";
+import {VaultManyArguments} from "../mocks/VaultManyArguments.sol";
 
 import {Test} from "forge-std/Test.sol";
 

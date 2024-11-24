@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {ZapDataV1Harness, ZapDataV1} from "../harnesses/ZapDataV1Harness.sol";
+import {ZapDataV1, ZapDataV1Harness} from "../harnesses/ZapDataV1Harness.sol";
 
 import {Test} from "forge-std/Test.sol";
 

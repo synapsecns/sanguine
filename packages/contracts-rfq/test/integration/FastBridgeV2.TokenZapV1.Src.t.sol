@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {TokenZapV1IntegrationTest, IFastBridge, IFastBridgeV2} from "./TokenZapV1.t.sol";
+import {IFastBridge, IFastBridgeV2, TokenZapV1IntegrationTest} from "./TokenZapV1.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
 contract FastBridgeV2TokenZapV1SrcTest is TokenZapV1IntegrationTest {
