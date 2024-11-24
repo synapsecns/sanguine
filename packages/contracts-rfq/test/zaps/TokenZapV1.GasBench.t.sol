@@ -3,8 +3,8 @@ pragma solidity 0.8.24;
 
 import {TokenZapV1} from "../../contracts/zaps/TokenZapV1.sol";
 
-import {SimpleVaultMock} from "../mocks/SimpleVaultMock.sol";
 import {MockERC20} from "../MockERC20.sol";
+import {SimpleVaultMock} from "../mocks/SimpleVaultMock.sol";
 
 import {Test} from "forge-std/Test.sol";
 

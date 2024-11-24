@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {FastBridgeV2SrcTest, BridgeTransactionV2Lib, IFastBridgeV2} from "./FastBridgeV2.Src.t.sol";
+import {BridgeTransactionV2Lib, FastBridgeV2SrcTest, IFastBridgeV2} from "./FastBridgeV2.Src.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
 contract FastBridgeV2SrcRefundV1Test is FastBridgeV2SrcTest {

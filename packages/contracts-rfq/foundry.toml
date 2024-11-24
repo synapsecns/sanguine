@@ -17,6 +17,7 @@ ignore = ["contracts/legacy/**/*.sol"]
 line_length = 120
 multiline_func_header = 'all'
 number_underscore = 'thousands'
+sort_imports = true
 
 [rpc_endpoints]
 arbitrum = "${ARBITRUM_RPC}"

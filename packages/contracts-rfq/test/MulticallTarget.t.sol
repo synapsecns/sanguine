@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 import {IMulticallTarget} from "../contracts/interfaces/IMulticallTarget.sol";
-import {MulticallTargetHarness, MulticallTarget} from "./harnesses/MulticallTargetHarness.sol";
+import {MulticallTarget, MulticallTargetHarness} from "./harnesses/MulticallTargetHarness.sol";
 
 import {Test} from "forge-std/Test.sol";
 
