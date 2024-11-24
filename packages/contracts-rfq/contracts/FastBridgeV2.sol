@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {BridgeTransactionV2Lib} from "./libs/BridgeTransactionV2.sol";
-
-import {AdminV2} from "./AdminV2.sol";
+// ════════════════════════════════════════════════ INTERFACES ═════════════════════════════════════════════════════
 import {IFastBridge} from "./interfaces/IFastBridge.sol";
 import {IFastBridgeV2} from "./interfaces/IFastBridgeV2.sol";
 import {IFastBridgeV2Errors} from "./interfaces/IFastBridgeV2Errors.sol";
 import {IZapRecipient} from "./interfaces/IZapRecipient.sol";
-
+// ═════════════════════════════════════════════ INTERNAL IMPORTS ══════════════════════════════════════════════════
+import {BridgeTransactionV2Lib} from "./libs/BridgeTransactionV2.sol";
+import {AdminV2} from "./AdminV2.sol";
 import {MulticallTarget} from "./utils/MulticallTarget.sol";
-
+// ═════════════════════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════════════════════════
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 

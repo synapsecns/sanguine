@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
+// ════════════════════════════════════════════════ INTERFACES ═════════════════════════════════════════════════════
 import {IZapRecipient} from "../interfaces/IZapRecipient.sol";
+// ═════════════════════════════════════════════ INTERNAL IMPORTS ══════════════════════════════════════════════════
 import {ZapDataV1} from "../libs/ZapDataV1.sol";
-
+// ═════════════════════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════════════════════════
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
