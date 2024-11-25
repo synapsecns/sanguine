@@ -65,7 +65,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
 
     /// @inheritdoc IFastBridge
     function bridge(BridgeParams memory params) external payable {
-        bridge({
+        bridgeV2({
             params: params,
             paramsV2: BridgeParamsV2({
                 quoteRelayer: address(0),
@@ -81,7 +81,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     /// @dev Replaced by `cancel`.
     /// @inheritdoc IFastBridge
     function refund(bytes calldata request) external {
-        cancel(request);
+        cancelV2(request);
     }
 
     // ══════════════════════════════════════ EXTERNAL MUTABLE (AGENT FACING) ══════════════════════════════════════════
@@ -89,17 +89,17 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     /// @inheritdoc IFastBridge
     function relay(bytes calldata request) external payable {
         // `relay` override will validate the request.
-        relay({request: request, relayer: msg.sender});
+        relayV2({request: request, relayer: msg.sender});
     }
 
     /// @inheritdoc IFastBridge
     function prove(bytes calldata request, bytes32 destTxHash) external {
         request.validateV2();
-        prove({transactionId: keccak256(request), destTxHash: destTxHash, relayer: msg.sender});
+        proveV2({transactionId: keccak256(request), destTxHash: destTxHash, relayer: msg.sender});
     }
 
     /// @inheritdoc IFastBridgeV2
-    function claim(bytes calldata request) external {
+    function claimV2(bytes calldata request) external {
         // `claim` override will validate the request.
         claim({request: request, to: address(0)});
     }
@@ -177,7 +177,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     // ═══════════════════════════════════════ PUBLIC MUTABLE (USER FACING) ════════════════════════════════════════════
 
     /// @inheritdoc IFastBridgeV2
-    function bridge(BridgeParams memory params, BridgeParamsV2 memory paramsV2) public payable {
+    function bridgeV2(BridgeParams memory params, BridgeParamsV2 memory paramsV2) public payable {
         // If relayer exclusivity is not intended for this bridge, set exclusivityEndTime to static zero.
         // Otherwise, set exclusivity to expire at the current block ts offset by quoteExclusivitySeconds.
         int256 exclusivityEndTime = 0;
@@ -240,7 +240,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     }
 
     /// @inheritdoc IFastBridgeV2
-    function cancel(bytes calldata request) public {
+    function cancelV2(bytes calldata request) public {
         // Decode the request and check that it could be cancelled.
         request.validateV2();
         bytes32 transactionId = keccak256(request);
@@ -278,7 +278,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     // ═══════════════════════════════════════ PUBLIC MUTABLE (AGENT FACING) ═══════════════════════════════════════════
 
     /// @inheritdoc IFastBridgeV2
-    function relay(bytes calldata request, address relayer) public payable {
+    function relayV2(bytes calldata request, address relayer) public payable {
         // Decode the request and check that it could be relayed.
         request.validateV2();
         bytes32 transactionId = keccak256(request);
@@ -347,7 +347,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     }
 
     /// @inheritdoc IFastBridgeV2
-    function prove(bytes32 transactionId, bytes32 destTxHash, address relayer) public onlyRole(PROVER_ROLE) {
+    function proveV2(bytes32 transactionId, bytes32 destTxHash, address relayer) public onlyRole(PROVER_ROLE) {
         // Can only prove a REQUESTED transaction.
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
         if ($.status != BridgeStatus.REQUESTED) revert StatusIncorrect();
