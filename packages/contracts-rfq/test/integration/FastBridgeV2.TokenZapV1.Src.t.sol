@@ -37,7 +37,7 @@ contract FastBridgeV2TokenZapV1SrcTest is TokenZapV1IntegrationTest {
         public
     {
         vm.prank({msgSender: user, txOrigin: user});
-        fastBridge.bridge{value: isToken ? 0 : SRC_AMOUNT}(params, paramsV2);
+        fastBridge.bridgeV2{value: isToken ? 0 : SRC_AMOUNT}(params, paramsV2);
     }
 
     function expectEventBridgeRequested(

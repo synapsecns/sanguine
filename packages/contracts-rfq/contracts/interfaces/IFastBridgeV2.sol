@@ -70,28 +70,28 @@ interface IFastBridgeV2 is IFastBridge {
     /// to provide temporary exclusivity fill rights for the quote relayer.
     /// @param params   The parameters required to bridge
     /// @param paramsV2 The parameters for exclusivity fill rights (optional, can be left empty)
-    function bridge(BridgeParams memory params, BridgeParamsV2 memory paramsV2) external payable;
+    function bridgeV2(BridgeParams memory params, BridgeParamsV2 memory paramsV2) external payable;
 
     /// @notice Relays destination side of bridge transaction by off-chain relayer
     /// @param request The encoded bridge transaction to relay on destination chain
     /// @param relayer The address of the relaying entity which should have control of the origin funds when claimed
-    function relay(bytes memory request, address relayer) external payable;
+    function relayV2(bytes memory request, address relayer) external payable;
 
     /// @notice Provides proof on origin side that relayer provided funds on destination side of bridge transaction
     /// @param transactionId The transaction id associated with the encoded bridge transaction to prove
     /// @param destTxHash The destination tx hash proving bridge transaction was relayed
     /// @param relayer The address of the relaying entity which should have control of the origin funds when claimed
-    function prove(bytes32 transactionId, bytes32 destTxHash, address relayer) external;
+    function proveV2(bytes32 transactionId, bytes32 destTxHash, address relayer) external;
 
     /// @notice Completes bridge transaction on origin chain by claiming originally deposited capital.
     /// @notice Can only send funds to the relayer address on the proof.
     /// @param request The encoded bridge transaction to claim on origin chain
-    function claim(bytes memory request) external;
+    function claimV2(bytes memory request) external;
 
     /// @notice Cancels an outstanding bridge transaction in case optimistic bridging failed and returns the full amount
     /// to the original sender.
     /// @param request The encoded bridge transaction to refund
-    function cancel(bytes memory request) external;
+    function cancelV2(bytes memory request) external;
 
     /// @notice Checks if a transaction has been relayed
     /// @param transactionId The ID of the transaction to check
