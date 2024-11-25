@@ -300,11 +300,14 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 	dsn := filet.TmpDir(i.T(), "")
 	cctpContractOrigin, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), i.originBackend)
 	cctpContractDest, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), i.destBackend)
+	rfqAddressV1Origin := i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String()
+	rfqAddressV1Dest := i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String()
 	return relconfig.Config{
 		// generated ex-post facto
 		Chains: map[int]relconfig.ChainConfig{
 			originBackendChainID: {
-				RFQAddress: i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeV2Type).Address().String(),
+				RFQAddress:   i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeV2Type).Address().String(),
+				RFQAddressV1: &rfqAddressV1Origin,
 				RebalanceConfigs: relconfig.RebalanceConfigs{
 					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
 						SynapseCCTPAddress: cctpContractOrigin.Address().Hex(),
@@ -321,7 +324,8 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 				NativeToken: "ETH",
 			},
 			destBackendChainID: {
-				RFQAddress: i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeV2Type).Address().String(),
+				RFQAddress:   i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeV2Type).Address().String(),
+				RFQAddressV1: &rfqAddressV1Dest,
 				RebalanceConfigs: relconfig.RebalanceConfigs{
 					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
 						SynapseCCTPAddress: cctpContractDest.Address().Hex(),
