@@ -165,7 +165,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	})
 
 	// now we can send the money
-	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
+	_, originFastBridge := i.manager.GetFastBridgeV2(i.GetTestContext(), i.originBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
 	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridgev2.IFastBridgeBridgeParams{
 		DstChainId:   uint32(i.destBackend.GetChainID()),
@@ -318,7 +318,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 	})
 
 	// now we can send the money
-	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
+	_, originFastBridge := i.manager.GetFastBridgeV2(i.GetTestContext(), i.originBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
 	auth.TransactOpts.Value = realWantAmount
 	// we want 499 ETH for 500 requested within a day
@@ -458,7 +458,7 @@ func (i *IntegrationSuite) TestArbitraryCall() {
 	})
 
 	// now we can send the money
-	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
+	_, originFastBridge := i.manager.GetFastBridgeV2(i.GetTestContext(), i.originBackend)
 	_, destRecipient := i.manager.GetRecipientMock(i.GetTestContext(), i.destBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
 	params := fastbridgev2.IFastBridgeBridgeParams{
@@ -548,7 +548,7 @@ func (i *IntegrationSuite) TestDispute() {
 	i.Approve(i.originBackend, originUSDC, i.userWallet)
 
 	// now we can send the money
-	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
+	_, originFastBridge := i.manager.GetFastBridgeV2(i.GetTestContext(), i.originBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
 	// we want 499 usdc for 500 requested within a day
 	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridgev2.IFastBridgeBridgeParams{
@@ -670,7 +670,7 @@ func (i *IntegrationSuite) TestConcurrentBridges() {
 		return false
 	})
 
-	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
+	_, originFastBridge := i.manager.GetFastBridgeV2(i.GetTestContext(), i.originBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
 	parser, err := fastbridge.NewParser(originFastBridge.Address())
 	i.NoError(err)

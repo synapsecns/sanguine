@@ -60,8 +60,8 @@ func (i *IntegrationSuite) setupQuoterAPI() {
 		},
 		OmniRPCURL: i.omniServer,
 		Bridges: map[uint32]string{
-			originBackendChainID: i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
-			destBackendChainID:   i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
+			originBackendChainID: i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeV2Type).Address().String(),
+			destBackendChainID:   i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeV2Type).Address().String(),
 		},
 		Port: strconv.Itoa(apiPort),
 	}
@@ -147,7 +147,7 @@ func (i *IntegrationSuite) setupBE(backend backends.SimulatedTestBackend) {
 	// but this way we can do something while we're waiting for the other backend to startup.
 	// no need to wait for these to deploy since they can happen in background as soon as the backend is up.
 	predeployTokens := []contracts.ContractType{testutil.DAIType, testutil.USDTType, testutil.WETH9Type}
-	predeploys := append(predeployTokens, testutil.FastBridgeType)
+	predeploys := append(predeployTokens, testutil.FastBridgeV2Type)
 	slices.Reverse(predeploys) // return fast bridge first
 
 	ethAmount := *new(big.Int).Mul(big.NewInt(params.Ether), big.NewInt(10))
@@ -267,7 +267,7 @@ func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token 
 
 	erc20, err := ierc20.NewIERC20(token.Address(), backend)
 	i.Require().NoError(err, "Failed to get erc20")
-	_, fastBridge := i.manager.GetFastBridge(i.GetTestContext(), backend)
+	_, fastBridge := i.manager.GetFastBridgeV2(i.GetTestContext(), backend)
 	allowance, err := erc20.Allowance(&bind.CallOpts{Context: i.GetTestContext()}, user.Address(), fastBridge.Address())
 	i.Require().NoError(err, "Failed to get allowance")
 
@@ -290,7 +290,7 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 		// generated ex-post facto
 		Chains: map[int]relconfig.ChainConfig{
 			originBackendChainID: {
-				RFQAddress: i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
+				RFQAddress: i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeV2Type).Address().String(),
 				RebalanceConfigs: relconfig.RebalanceConfigs{
 					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
 						SynapseCCTPAddress: cctpContractOrigin.Address().Hex(),
@@ -307,7 +307,7 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 				NativeToken: "ETH",
 			},
 			destBackendChainID: {
-				RFQAddress: i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
+				RFQAddress: i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeV2Type).Address().String(),
 				RebalanceConfigs: relconfig.RebalanceConfigs{
 					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
 						SynapseCCTPAddress: cctpContractDest.Address().Hex(),
@@ -362,7 +362,7 @@ func (i *IntegrationSuite) setupRelayer() {
 			defer wg.Done()
 
 			err := retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
-				metadata, rfqContract := i.manager.GetFastBridge(i.GetTestContext(), backend)
+				metadata, rfqContract := i.manager.GetFastBridgeV2(i.GetTestContext(), backend)
 
 				txContext := backend.GetTxContext(i.GetTestContext(), metadata.OwnerPtr())
 				relayerRole, err := rfqContract.RELAYERROLE(&bind.CallOpts{Context: i.GetTestContext()})
@@ -477,7 +477,7 @@ func (i *IntegrationSuite) setupGuard() {
 		go func(backend backends.SimulatedTestBackend) {
 			defer wg.Done()
 
-			metadata, rfqContract := i.manager.GetFastBridge(i.GetTestContext(), backend)
+			metadata, rfqContract := i.manager.GetFastBridgeV2(i.GetTestContext(), backend)
 
 			txContext := backend.GetTxContext(i.GetTestContext(), metadata.OwnerPtr())
 			guardRole, err := rfqContract.GUARDROLE(&bind.CallOpts{Context: i.GetTestContext()})
