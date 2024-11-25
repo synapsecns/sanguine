@@ -3,11 +3,11 @@ title: Claiming
 ---
 
 <!-- Reference Links -->
-[relay]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relay
-[prove]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#prove
+[relay]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relayv2
+[prove]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#provev2
 [dispute]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#dispute
-[claim]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#claim
-[cancel]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#cancel
+[claim]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#claimv2
+[cancel]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#cancelv2
 [proof]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgetxdetails
 [BridgeRequested]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerequested
 [BridgeTransactionV2]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgetransactionv2
@@ -41,20 +41,24 @@ The funds will be transferred to the rightful [Relayer] as a reimbursement for t
 
 ### Function Options
 
-There are two overloaded versions of the claim function in FastBridgeV2. Relayers can use whichever best suits their implementation.
+There are two versions of the claim function in FastBridgeV2. Relayers can use whichever best suits their implementation.
 
 <div style={{ marginLeft: '20px' }}>
-1)
+<blockquote>
+```solidity
+    function claimV2(bytes memory request) external;
+```
+This version can only be executed by the `relayer` on the proof. Allows an arbitrary `to` address as the recipient of funds.
+</blockquote>
+<br />
+<blockquote>
 ```solidity
     function claim(bytes memory request, address to) external;
 ```
-This version can only be executed by the `relayer` address on the proof and allows an arbitrary `to` address to be the recipient of the funds.
 
-2)
-```solidity
-    function claim(bytes memory request) external;
-```
+
 This version can be executed permissionlessly, and will transfer the funds only to the `relayer` address on the proof.
+</blockquote>
 </div>
 
 Regardless of the method used, a [BridgeDepositClaimed](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgedepositclaimed) event will be emitted.

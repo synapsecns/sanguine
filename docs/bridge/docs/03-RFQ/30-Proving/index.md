@@ -3,11 +3,11 @@ title: Proving
 ---
 
 <!-- Reference Links -->
-[relay]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relay
-[prove]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#prove
+[relay]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relayv2
+[prove]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#provev2
 [dispute]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#dispute
-[claim]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#claim
-[cancel]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#cancel
+[claim]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#claimv2
+[cancel]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#cancelv2
 [proof]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgetxdetails
 [BridgeRequested]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerequested
 [BridgeTransactionV2]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgetransactionv2
@@ -42,20 +42,23 @@ Each [prove] transaction sets the [proof] data for the bridge and initiates a [D
 
 ### Function Options
 
-There are two overloaded versions of the prove function in FastBridgeV2. Relayers can use whichever best suits their implementation.
+There are two versions of the prove function in FastBridgeV2. Relayers can use whichever best suits their implementation.
 
 <div style={{ marginLeft: '20px' }}>
-1)
+<blockquote>
 ```solidity
-    function prove(bytes32 transactionId, bytes32 destTxHash, address relayer) external;
+    function proveV2(bytes32 transactionId, bytes32 destTxHash, address relayer) external;
 ```
 This version allows an arbitrary `relayer` address to be supplied
+</blockquote>
 
-2)
+<br />
+<blockquote>
 ```solidity
     function prove(bytes memory request, bytes32 destTxHash) external;
 ```
 This version will auto-assign the executing EOA (`msg.sender`) as the `relayer`
+</blockquote>
 </div>
 
 Regardless of the method used, a [BridgeProofProvided](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided) event will be emitted.

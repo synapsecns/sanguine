@@ -3,11 +3,11 @@ title: Relaying
 ---
 
 <!-- Reference Links -->
-[relay]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relay
-[prove]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#prove
+[relay]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relayv2
+[prove]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#provev2
 [dispute]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#dispute
-[claim]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#claim
-[cancel]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#cancel
+[claim]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#claimv2
+[cancel]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#cancelv2
 [proof]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgetxdetails
 [BridgeRequested]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerequested
 [BridgeTransactionV2]: https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgetransactionv2
@@ -67,20 +67,23 @@ If the [Relayer] has sufficient funds and approvals, and the relay has not alrea
 
 ### Function Options
 
-There are two overloaded versions of the relay function in FastBridgeV2. Relayers can use whichever best suits their implementation.
+There are two versions of the relay function in FastBridgeV2. Relayers can use whichever best suits their implementation.
 
 <div style={{ marginLeft: '20px' }}>
-1)
+
+<blockquote>
 ```solidity
-    function relay(bytes memory request, address relayer) external payable;
+    function relayV2(bytes memory request, address relayer) external payable;
 ```
 This version allows an arbitrary `relayer` address to be supplied
-
-2)
+</blockquote>
+<br />
+<blockquote>
 ```solidity
     function relay(bytes memory request) external payable;
 ```
 This version will auto-assign the executing EOA (`msg.sender`) as the `relayer`
+</blockquote>
 </div>
 
 Regardless of the method used, a [BridgeRelayed](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgedepositrefunded) event will be emitted.
