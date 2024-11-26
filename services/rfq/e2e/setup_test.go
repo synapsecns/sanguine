@@ -63,6 +63,10 @@ func (i *IntegrationSuite) setupQuoterAPI() {
 			originBackendChainID: i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
 			destBackendChainID:   i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
 		},
+		FastBridgeContractsV2: map[uint32]string{
+			originBackendChainID: i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeV2Type).Address().String(),
+			destBackendChainID:   i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeV2Type).Address().String(),
+		},
 		Port: strconv.Itoa(apiPort),
 	}
 	api, err := rest.NewAPI(i.GetTestContext(), apiCfg, i.metrics, i.omniClient, apiStore)
@@ -147,7 +151,7 @@ func (i *IntegrationSuite) setupBE(backend backends.SimulatedTestBackend) {
 	// but this way we can do something while we're waiting for the other backend to startup.
 	// no need to wait for these to deploy since they can happen in background as soon as the backend is up.
 	predeployTokens := []contracts.ContractType{testutil.DAIType, testutil.USDTType, testutil.WETH9Type}
-	predeploys := append(predeployTokens, testutil.FastBridgeType)
+	predeploys := append(predeployTokens, testutil.FastBridgeV2Type)
 	slices.Reverse(predeploys) // return fast bridge first
 
 	ethAmount := *new(big.Int).Mul(big.NewInt(params.Ether), big.NewInt(10))
@@ -267,15 +271,41 @@ func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token 
 
 	erc20, err := ierc20.NewIERC20(token.Address(), backend)
 	i.Require().NoError(err, "Failed to get erc20")
-	_, fastBridge := i.manager.GetFastBridge(i.GetTestContext(), backend)
-	allowance, err := erc20.Allowance(&bind.CallOpts{Context: i.GetTestContext()}, user.Address(), fastBridge.Address())
+
+	// approve fastbridgev1
+	_, fastBridgeV1 := i.manager.GetFastBridge(i.GetTestContext(), backend)
+	allowance, err := erc20.Allowance(&bind.CallOpts{Context: i.GetTestContext()}, user.Address(), fastBridgeV1.Address())
 	i.Require().NoError(err, "Failed to get allowance")
 
 	if allowance.Cmp(big.NewInt(0)) == 0 {
-		txOpts := backend.GetTxContext(i.GetTestContext(), user.AddressPtr())
-		tx, err := erc20.Approve(txOpts.TransactOpts, fastBridge.Address(), core.CopyBigInt(abi.MaxUint256))
+		err = retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
+			txOpts := backend.GetTxContext(ctx, user.AddressPtr())
+			tx, err := erc20.Approve(txOpts.TransactOpts, fastBridgeV1.Address(), core.CopyBigInt(abi.MaxUint256))
+			if err != nil {
+				return fmt.Errorf("failed to approve: %w", err)
+			}
+			backend.WaitForConfirmation(ctx, tx)
+			return nil
+		})
 		i.Require().NoError(err, "Failed to approve")
-		backend.WaitForConfirmation(i.GetTestContext(), tx)
+	}
+
+	// approve fastbridgev2
+	_, fastBridgeV2 := i.manager.GetFastBridgeV2(i.GetTestContext(), backend)
+	allowance, err = erc20.Allowance(&bind.CallOpts{Context: i.GetTestContext()}, user.Address(), fastBridgeV2.Address())
+	i.Require().NoError(err, "Failed to get allowance")
+
+	if allowance.Cmp(big.NewInt(0)) == 0 {
+		err = retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
+			txOpts := backend.GetTxContext(ctx, user.AddressPtr())
+			tx, err := erc20.Approve(txOpts.TransactOpts, fastBridgeV2.Address(), core.CopyBigInt(abi.MaxUint256))
+			if err != nil {
+				return fmt.Errorf("failed to approve: %w", err)
+			}
+			backend.WaitForConfirmation(ctx, tx)
+			return nil
+		})
+		i.Require().NoError(err, "Failed to approve")
 	}
 }
 
@@ -286,11 +316,14 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 	dsn := filet.TmpDir(i.T(), "")
 	cctpContractOrigin, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), i.originBackend)
 	cctpContractDest, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), i.destBackend)
+	rfqAddressV1Origin := i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String()
+	rfqAddressV1Dest := i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String()
 	return relconfig.Config{
 		// generated ex-post facto
 		Chains: map[int]relconfig.ChainConfig{
 			originBackendChainID: {
-				RFQAddress: i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
+				RFQAddress:   i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeV2Type).Address().String(),
+				RFQAddressV1: &rfqAddressV1Origin,
 				RebalanceConfigs: relconfig.RebalanceConfigs{
 					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
 						SynapseCCTPAddress: cctpContractOrigin.Address().Hex(),
@@ -307,7 +340,8 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 				NativeToken: "ETH",
 			},
 			destBackendChainID: {
-				RFQAddress: i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
+				RFQAddress:   i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeV2Type).Address().String(),
+				RFQAddressV1: &rfqAddressV1Dest,
 				RebalanceConfigs: relconfig.RebalanceConfigs{
 					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
 						SynapseCCTPAddress: cctpContractDest.Address().Hex(),
@@ -362,26 +396,38 @@ func (i *IntegrationSuite) setupRelayer() {
 			defer wg.Done()
 
 			err := retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
-				metadata, rfqContract := i.manager.GetFastBridge(i.GetTestContext(), backend)
+				metadataV1, rfqContractV1 := i.manager.GetFastBridge(i.GetTestContext(), backend)
+				txContextV1 := backend.GetTxContext(i.GetTestContext(), metadataV1.OwnerPtr())
 
-				txContext := backend.GetTxContext(i.GetTestContext(), metadata.OwnerPtr())
-				proverRole, err := rfqContract.PROVERROLE(&bind.CallOpts{Context: i.GetTestContext()})
+				relayerRole, err := rfqContractV1.RELAYERROLE(&bind.CallOpts{Context: i.GetTestContext()})
+				proverRole, err := rfqContractV1.RELAYERROLE(&bind.CallOpts{Context: i.GetTestContext()})
 				if err != nil {
 					return fmt.Errorf("could not get prover role: %w", err)
 				}
+				tx, err := rfqContractV1.GrantRole(txContextV1.TransactOpts, relayerRole, i.relayerWallet.Address())
+				if err != nil {
+					return fmt.Errorf("could not grant relayer role: %w", err)
+				}
+				backend.WaitForConfirmation(i.GetTestContext(), tx)
 
-				tx, err := rfqContract.GrantRole(txContext.TransactOpts, proverRole, i.relayerWallet.Address())
+				metadataV2, rfqContractV2 := i.manager.GetFastBridgeV2(i.GetTestContext(), backend)
+				txContextV2 := backend.GetTxContext(i.GetTestContext(), metadataV2.OwnerPtr())
+
+				proverRole, err = rfqContractV2.PROVERROLE(&bind.CallOpts{Context: i.GetTestContext()})
+				if err != nil {
+					return fmt.Errorf("could not get prover role: %w", err)
+				}
+				tx, err = rfqContractV2.GrantRole(txContextV2.TransactOpts, proverRole, i.relayerWallet.Address())
 				if err != nil {
 					return fmt.Errorf("could not grant prover role: %w", err)
 				}
 				backend.WaitForConfirmation(i.GetTestContext(), tx)
 
-				quoterRole, err := rfqContract.QUOTERROLE(&bind.CallOpts{Context: i.GetTestContext()})
+				quoterRole, err := rfqContractV2.QUOTERROLE(&bind.CallOpts{Context: i.GetTestContext()})
 				if err != nil {
 					return fmt.Errorf("could not get quoter role: %w", err)
 				}
-
-				tx, err = rfqContract.GrantRole(txContext.TransactOpts, quoterRole, i.relayerWallet.Address())
+				tx, err = rfqContractV2.GrantRole(txContextV2.TransactOpts, quoterRole, i.relayerWallet.Address())
 				if err != nil {
 					return fmt.Errorf("could not grant quoter role: %w", err)
 				}
@@ -488,13 +534,24 @@ func (i *IntegrationSuite) setupGuard() {
 		go func(backend backends.SimulatedTestBackend) {
 			defer wg.Done()
 
-			metadata, rfqContract := i.manager.GetFastBridge(i.GetTestContext(), backend)
+			metadataV1, rfqContractV1 := i.manager.GetFastBridge(i.GetTestContext(), backend)
 
-			txContext := backend.GetTxContext(i.GetTestContext(), metadata.OwnerPtr())
-			guardRole, err := rfqContract.GUARDROLE(&bind.CallOpts{Context: i.GetTestContext()})
+			txContext := backend.GetTxContext(i.GetTestContext(), metadataV1.OwnerPtr())
+			guardRole, err := rfqContractV1.GUARDROLE(&bind.CallOpts{Context: i.GetTestContext()})
 			i.NoError(err)
 
-			tx, err := rfqContract.GrantRole(txContext.TransactOpts, guardRole, i.guardWallet.Address())
+			tx, err := rfqContractV1.GrantRole(txContext.TransactOpts, guardRole, i.guardWallet.Address())
+			i.NoError(err)
+
+			backend.WaitForConfirmation(i.GetTestContext(), tx)
+
+			metadataV2, rfqContractV2 := i.manager.GetFastBridgeV2(i.GetTestContext(), backend)
+
+			txContext = backend.GetTxContext(i.GetTestContext(), metadataV2.OwnerPtr())
+			guardRole, err = rfqContractV2.GUARDROLE(&bind.CallOpts{Context: i.GetTestContext()})
+			i.NoError(err)
+
+			tx, err = rfqContractV2.GrantRole(txContext.TransactOpts, guardRole, i.guardWallet.Address())
 			i.NoError(err)
 
 			backend.WaitForConfirmation(i.GetTestContext(), tx)

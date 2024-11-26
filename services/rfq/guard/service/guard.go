@@ -17,6 +17,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/guard/guardconfig"
 	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb"
 	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb/connect"
@@ -29,14 +30,16 @@ var logger = log.Logger("guard")
 
 // Guard monitors calls to prove() and verifies them.
 type Guard struct {
-	cfg            guardconfig.Config
-	metrics        metrics.Handler
-	db             guarddb.Service
-	client         omniClient.RPCClient
-	chainListeners map[int]listener.ContractListener
-	contracts      map[int]*fastbridge.FastBridgeRef
-	txSubmitter    submitter.TransactionSubmitter
-	otelRecorder   iOtelRecorder
+	cfg          guardconfig.Config
+	metrics      metrics.Handler
+	db           guarddb.Service
+	client       omniClient.RPCClient
+	contractsV1  map[int]*fastbridge.FastBridgeRef
+	contractsV2  map[int]*fastbridgev2.FastBridgeV2Ref
+	listenersV1  map[int]listener.ContractListener
+	listenersV2  map[int]listener.ContractListener
+	txSubmitter  submitter.TransactionSubmitter
+	otelRecorder iOtelRecorder
 }
 
 // NewGuard creates a new Guard.
@@ -44,7 +47,6 @@ type Guard struct {
 //nolint:cyclop
 func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfig.Config, txSubmitter submitter.TransactionSubmitter) (*Guard, error) {
 	omniClient := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricHandler, omniClient.WithCaptureReqRes())
-	chainListeners := make(map[int]listener.ContractListener)
 
 	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
 	if err != nil {
@@ -55,10 +57,41 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 		return nil, fmt.Errorf("could not make db: %w", err)
 	}
 
+	contractsV1 := make(map[int]*fastbridge.FastBridgeRef)
+	contractsV2 := make(map[int]*fastbridgev2.FastBridgeV2Ref)
+	listenersV1 := make(map[int]listener.ContractListener)
+	listenersV2 := make(map[int]listener.ContractListener)
+
 	// setup chain listeners
-	contracts := make(map[int]*fastbridge.FastBridgeRef)
 	for chainID := range cfg.GetChains() {
-		rfqAddr, err := cfg.GetRFQAddress(chainID)
+		// setup v1
+		rfqAddrV1, err := cfg.GetRFQAddressV1(chainID)
+		if err != nil {
+			return nil, fmt.Errorf("could not get rfq address: %w", err)
+		}
+		if rfqAddrV1 != nil {
+			chainClient, err := omniClient.GetChainClient(ctx, chainID)
+			if err != nil {
+				return nil, fmt.Errorf("could not get chain client: %w", err)
+			}
+			contract, err := fastbridge.NewFastBridgeRef(common.HexToAddress(*rfqAddrV1), chainClient)
+			if err != nil {
+				return nil, fmt.Errorf("could not create fast bridge contract: %w", err)
+			}
+			startBlock, err := contract.DeployBlock(&bind.CallOpts{Context: ctx})
+			if err != nil {
+				return nil, fmt.Errorf("could not get deploy block: %w", err)
+			}
+			chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(*rfqAddrV1), uint64(startBlock.Int64()), metricHandler, listener.WithName("guard"))
+			if err != nil {
+				return nil, fmt.Errorf("could not get chain listener: %w", err)
+			}
+			listenersV1[chainID] = chainListener
+			contractsV1[chainID] = contract
+		}
+
+		// setup v2
+		rfqAddrV2, err := cfg.GetRFQAddressV2(chainID)
 		if err != nil {
 			return nil, fmt.Errorf("could not get rfq address: %w", err)
 		}
@@ -66,8 +99,7 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain client: %w", err)
 		}
-
-		contract, err := fastbridge.NewFastBridgeRef(common.HexToAddress(rfqAddr), chainClient)
+		contract, err := fastbridgev2.NewFastBridgeV2Ref(common.HexToAddress(rfqAddrV2), chainClient)
 		if err != nil {
 			return nil, fmt.Errorf("could not create fast bridge contract: %w", err)
 		}
@@ -75,17 +107,12 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 		if err != nil {
 			return nil, fmt.Errorf("could not get deploy block: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddr), uint64(startBlock.Int64()), metricHandler, listener.WithName("guard"))
+		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddrV2), uint64(startBlock.Int64()), metricHandler, listener.WithName("guardV2"))
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
-		chainListeners[chainID] = chainListener
-
-		// setup FastBridge contract on this chain
-		contracts[chainID], err = fastbridge.NewFastBridgeRef(common.HexToAddress(rfqAddr), chainClient)
-		if err != nil {
-			return nil, fmt.Errorf("could not create bridge contract: %w", err)
-		}
+		listenersV2[chainID] = chainListener
+		contractsV2[chainID] = contract
 	}
 
 	// build submitter from config if one is not supplied
@@ -103,14 +130,16 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 	}
 
 	return &Guard{
-		cfg:            cfg,
-		metrics:        metricHandler,
-		db:             store,
-		client:         omniClient,
-		chainListeners: chainListeners,
-		contracts:      contracts,
-		txSubmitter:    txSubmitter,
-		otelRecorder:   otelRecorder,
+		cfg:          cfg,
+		metrics:      metricHandler,
+		db:           store,
+		client:       omniClient,
+		contractsV1:  contractsV1,
+		contractsV2:  contractsV2,
+		listenersV1:  listenersV1,
+		listenersV2:  listenersV2,
+		txSubmitter:  txSubmitter,
+		otelRecorder: otelRecorder,
 	}, nil
 }
 
@@ -173,10 +202,26 @@ func (g *Guard) startChainIndexers(ctx context.Context) (err error) {
 	for chainID := range g.cfg.GetChains() {
 		//nolint: copyloopvar
 		chainID := chainID // capture loop variable
+
+		// only run v1 if it is set
+		v1Addr, err := g.cfg.GetRFQAddressV1(chainID)
+		if err != nil {
+			return fmt.Errorf("could not get rfq address v1: %w", err)
+		}
+		if v1Addr != nil {
+			group.Go(func() error {
+				err := g.runChainIndexerV1(ctx, chainID, g.listenersV1[chainID])
+				if err != nil {
+					return fmt.Errorf("could not runChainIndexer chain indexer for chain %d [v1]: %w", chainID, err)
+				}
+				return nil
+			})
+		}
+
 		group.Go(func() error {
-			err := g.runChainIndexer(ctx, chainID)
+			err := g.runChainIndexerV2(ctx, chainID, g.listenersV2[chainID])
 			if err != nil {
-				return fmt.Errorf("could not runChainIndexer chain indexer for chain %d: %w", chainID, err)
+				return fmt.Errorf("could not runChainIndexer chain indexer for chain %d [v2]: %w", chainID, err)
 			}
 			return nil
 		})
@@ -191,9 +236,7 @@ func (g *Guard) startChainIndexers(ctx context.Context) (err error) {
 }
 
 //nolint:cyclop
-func (g Guard) runChainIndexer(ctx context.Context, chainID int) (err error) {
-	chainListener := g.chainListeners[chainID]
-
+func (g Guard) runChainIndexerV1(ctx context.Context, chainID int, chainListener listener.ContractListener) (err error) {
 	parser, err := fastbridge.NewParser(chainListener.Address())
 	if err != nil {
 		return fmt.Errorf("could not parse: %w", err)
@@ -223,16 +266,94 @@ func (g Guard) runChainIndexer(ctx context.Context, chainID int) (err error) {
 
 		switch event := parsedEvent.(type) {
 		case *fastbridge.FastBridgeBridgeRequested:
-			err = g.handleBridgeRequestedLog(ctx, event, chainID)
+			v2Event := &fastbridgev2.FastBridgeV2BridgeRequested{
+				TransactionId: event.TransactionId,
+				Sender:        event.Sender,
+				Request:       event.Request,
+				DestChainId:   event.DestChainId,
+				OriginToken:   event.OriginToken,
+				DestToken:     event.DestToken,
+				OriginAmount:  event.OriginAmount,
+				DestAmount:    event.DestAmount,
+				SendChainGas:  event.SendChainGas,
+				Raw:           event.Raw,
+			}
+			err = g.handleBridgeRequestedLog(ctx, v2Event, chainID)
 			if err != nil {
 				return fmt.Errorf("could not handle request: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeProofProvided:
-			err = g.handleProofProvidedLog(ctx, event, chainID)
+			v2Event := &fastbridgev2.FastBridgeV2BridgeProofProvided{
+				TransactionId:   event.TransactionId,
+				Relayer:         event.Relayer,
+				TransactionHash: event.TransactionHash,
+				Raw:             event.Raw,
+			}
+			err = g.handleProofProvidedLog(ctx, v2Event, chainID)
 			if err != nil {
 				return fmt.Errorf("could not handle request: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeProofDisputed:
+			eventV2 := &fastbridgev2.FastBridgeV2BridgeProofDisputed{
+				TransactionId: event.TransactionId,
+				Relayer:       event.Relayer,
+				Raw:           event.Raw,
+			}
+			err = g.handleProofDisputedLog(ctx, eventV2)
+			if err != nil {
+				return fmt.Errorf("could not handle request: %w", err)
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("listener failed: %w", err)
+	}
+	return nil
+}
+
+//nolint:cyclop
+func (g Guard) runChainIndexerV2(ctx context.Context, chainID int, chainListener listener.ContractListener) (err error) {
+	parser, err := fastbridgev2.NewParser(chainListener.Address())
+	if err != nil {
+		return fmt.Errorf("could not parse: %w", err)
+	}
+
+	err = chainListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
+		et, parsedEvent, ok := parser.ParseEvent(log)
+		// handle unknown event
+		if !ok {
+			if len(log.Topics) != 0 {
+				logger.Warnf("unknown event %s", log.Topics[0])
+			}
+			return nil
+		}
+
+		ctx, span := g.metrics.Tracer().Start(parentCtx, fmt.Sprintf("handleLog-%s", et), trace.WithAttributes(
+			attribute.String(metrics.TxHash, log.TxHash.String()),
+			attribute.Int(metrics.Origin, chainID),
+			attribute.String(metrics.Contract, log.Address.String()),
+			attribute.String("block_hash", log.BlockHash.String()),
+			attribute.Int64("block_number", int64(log.BlockNumber)),
+		))
+
+		defer func() {
+			metrics.EndSpanWithErr(span, err)
+		}()
+
+		switch event := parsedEvent.(type) {
+		case *fastbridgev2.FastBridgeV2BridgeRequested:
+			err = g.handleBridgeRequestedLog(ctx, event, chainID)
+			if err != nil {
+				return fmt.Errorf("could not handle request: %w", err)
+			}
+		case *fastbridgev2.FastBridgeV2BridgeProofProvided:
+			err = g.handleProofProvidedLog(ctx, event, chainID)
+			if err != nil {
+				return fmt.Errorf("could not handle request: %w", err)
+			}
+		case *fastbridgev2.FastBridgeV2BridgeProofDisputed:
 			err = g.handleProofDisputedLog(ctx, event)
 			if err != nil {
 				return fmt.Errorf("could not handle request: %w", err)
@@ -261,4 +382,12 @@ func (g *Guard) processDB(ctx context.Context) (err error) {
 	}
 
 	return nil
+}
+
+func (g *Guard) isV2Address(chainID int, addr common.Address) bool {
+	rfqAddr, err := g.cfg.GetRFQAddressV2(chainID)
+	if err != nil {
+		return false
+	}
+	return addr == common.HexToAddress(rfqAddr)
 }
