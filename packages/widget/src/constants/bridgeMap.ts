@@ -555,6 +555,13 @@ export const BRIDGE_MAP = {
         '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',
       ],
     },
+    '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
+      decimals: 18,
+      symbol: 'BNB',
+      origin: ['RFQ.BNB'],
+      destination: [],
+      swappable: [],
+    },
     '0xa4080f1778e69467E905B8d6F72f6e441f9e9484': {
       decimals: 18,
       symbol: 'SYN',
@@ -567,6 +574,13 @@ export const BRIDGE_MAP = {
       symbol: 'DOG',
       origin: ['DOG'],
       destination: ['DOG'],
+      swappable: [],
+    },
+    '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c': {
+      decimals: 18,
+      symbol: 'WBNB',
+      origin: ['RFQ.BNB'],
+      destination: [],
       swappable: [],
     },
     '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56': {
@@ -591,7 +605,7 @@ export const BRIDGE_MAP = {
     },
     '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270': {
       decimals: 18,
-      symbol: 'WMATIC',
+      symbol: 'WPOL',
       origin: ['MATIC'],
       destination: ['MATIC'],
       swappable: [],
@@ -670,7 +684,7 @@ export const BRIDGE_MAP = {
     },
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
       decimals: 18,
-      symbol: 'MATIC',
+      symbol: 'POL',
       origin: ['MATIC'],
       destination: ['MATIC'],
       swappable: [],
@@ -872,6 +886,29 @@ export const BRIDGE_MAP = {
       ],
     },
   },
+  '480': {
+    '0x4200000000000000000000000000000000000006': {
+      decimals: 18,
+      symbol: 'WETH',
+      origin: ['RFQ.ETH'],
+      destination: [],
+      swappable: [],
+    },
+    '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1': {
+      decimals: 6,
+      symbol: 'USDC.e',
+      origin: ['RFQ.USDC'],
+      destination: ['RFQ.USDC'],
+      swappable: [],
+    },
+    '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
+      decimals: 18,
+      symbol: 'ETH',
+      origin: ['RFQ.ETH'],
+      destination: [],
+      swappable: [],
+    },
+  },
   '1088': {
     '0x17C09cfC96C865CF546d73365Cedb6dC66986963': {
       decimals: 18,
@@ -896,7 +933,7 @@ export const BRIDGE_MAP = {
     },
     '0x75cb093E4D61d2A2e65D8e0BBb01DE8d89b53481': {
       decimals: 18,
-      symbol: 'WMETIS',
+      symbol: 'WMetis',
       origin: ['Metis'],
       destination: ['Metis'],
       swappable: [],

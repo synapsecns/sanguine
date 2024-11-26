@@ -3,6 +3,163 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.14.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.4...@synapsecns/contracts-rfq@0.14.5) (2024-11-25)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.14.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.3...@synapsecns/contracts-rfq@0.14.4) (2024-11-24)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.14.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.2...@synapsecns/contracts-rfq@0.14.3) (2024-11-23)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.14.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.1...@synapsecns/contracts-rfq@0.14.2) (2024-11-22)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.14.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.0...@synapsecns/contracts-rfq@0.14.1) (2024-11-22)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+# [0.14.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.13.0...@synapsecns/contracts-rfq@0.14.0) (2024-11-22)
+
+
+### Features
+
+* **contracts-rfq:** Token Zap [SLT-389] ([#3352](https://github.com/synapsecns/sanguine/issues/3352)) ([743e859](https://github.com/synapsecns/sanguine/commit/743e859e3274ed449c6410441bd664ff2aaf9740)), closes [#3382](https://github.com/synapsecns/sanguine/issues/3382)
+
+
+
+
+
+# [0.13.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.12.1...@synapsecns/contracts-rfq@0.13.0) (2024-11-18)
+
+
+### Features
+
+* **contracts-rfq:** rework permisionless cancellation [SLT-489] ([#3382](https://github.com/synapsecns/sanguine/issues/3382)) ([7932f41](https://github.com/synapsecns/sanguine/commit/7932f416341a227db295c33f232efde89fd2c50c))
+
+
+
+
+
+## [0.12.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.12.0...@synapsecns/contracts-rfq@0.12.1) (2024-11-11)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+# [0.12.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.11.0...@synapsecns/contracts-rfq@0.12.0) (2024-11-04)
+
+
+### Features
+
+* **contracts-rfq:** save destination chain ID for requested bridges [SLT-423] ([#3356](https://github.com/synapsecns/sanguine/issues/3356)) ([5e11d4d](https://github.com/synapsecns/sanguine/commit/5e11d4d19d8e90f6aee8452f87e65302c4138e06))
+
+
+
+
+
+# [0.11.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.9.4...@synapsecns/contracts-rfq@0.11.0) (2024-10-28)
+
+
+### Bug Fixes
+
+* **contracts-rfq:** skip version to unbrick lerna ([#3348](https://github.com/synapsecns/sanguine/issues/3348)) ([e939e4e](https://github.com/synapsecns/sanguine/commit/e939e4e50d047cc433fc1c3ddfffa53da7897a11))
+
+
+### Features
+
+* **contracts-rfq:** Multicall in FastBridgeV2 [SLT-369] ([#3315](https://github.com/synapsecns/sanguine/issues/3315)) ([1daa5f4](https://github.com/synapsecns/sanguine/commit/1daa5f45951aa7841c220f9ce3c1023231c7dcba)), closes [#3335](https://github.com/synapsecns/sanguine/issues/3335)
+
+
+
+
+
+## [0.9.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.9.3...@synapsecns/contracts-rfq@0.9.4) (2024-10-28)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.9.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.9.2...@synapsecns/contracts-rfq@0.9.3) (2024-10-24)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.9.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.9.1...@synapsecns/contracts-rfq@0.9.2) (2024-10-22)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.9.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.9.0...@synapsecns/contracts-rfq@0.9.1) (2024-10-18)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+# [0.9.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.8.4...@synapsecns/contracts-rfq@0.9.0) (2024-10-18)
+
+
+### Features
+
+* **contracts-rfq:** add version to `BridgeTransaction`, tight packing [SLT-328] [SLT-273] ([#3284](https://github.com/synapsecns/sanguine/issues/3284)) ([a0d8a39](https://github.com/synapsecns/sanguine/commit/a0d8a39013b1ae332a80a2a624b99b0e7bb50722))
+* **contracts-rfq:** FastBridge v1 multicall [SLT-324] ([#3313](https://github.com/synapsecns/sanguine/issues/3313)) ([bd6bd2d](https://github.com/synapsecns/sanguine/commit/bd6bd2db4be4b2a8b43357f0293bceaef294039d))
+
+
+
+
+
+## [0.8.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.8.3...@synapsecns/contracts-rfq@0.8.4) (2024-10-18)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.8.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.8.2...@synapsecns/contracts-rfq@0.8.3) (2024-10-16)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
 ## [0.8.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.8.1...@synapsecns/contracts-rfq@0.8.2) (2024-10-15)
 
 **Note:** Version bump only for package @synapsecns/contracts-rfq

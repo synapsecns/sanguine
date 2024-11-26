@@ -711,6 +711,8 @@ export const ETH = new Token({
     [CHAINS.BLAST.id]: zeroAddress,
     [CHAINS.SCROLL.id]: zeroAddress,
     [CHAINS.LINEA.id]: zeroAddress,
+    [CHAINS.WORLDCHAIN.id]: zeroAddress,
+    [CHAINS.BNB.id]: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
   },
   decimals: 18,
   symbol: 'ETH',
@@ -735,7 +737,7 @@ export const MOVR = new Token({
   logo: movrLogo,
   isNative: true,
   swapableType: 'MOVR',
-  color: 'purple',
+  color: 'lime',
   priorityRank: 300,
   routeSymbol: 'MOVR',
 })
@@ -769,7 +771,7 @@ export const WMOVR = new Token({
   name: 'Wrapped MOVR',
   logo: movrLogo,
   swapableType: 'MOVR',
-  color: 'purple',
+  color: 'lime',
   priorityRank: 350,
   routeSymbol: 'WMOVR',
 })
@@ -859,6 +861,7 @@ export const USDCe = new Token({
     [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
     [CHAINS.AURORA.id]: '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802',
     [CHAINS.POLYGON.id]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
+    [CHAINS.WORLDCHAIN.id]: '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1',
   },
   decimals: 6,
   symbol: 'USDC.e',
@@ -1046,7 +1049,6 @@ export const WKLAY = new Token({
 
 export const MATIC = new Token({
   addresses: {
-    [CHAINS.POLYGON.id]: zeroAddress,
     [CHAINS.DFK.id]: '0xD17a41Cd199edF1093A9Be4404EaDe52Ec19698e',
   },
   decimals: 18,
@@ -1061,7 +1063,23 @@ export const MATIC = new Token({
   routeSymbol: 'MATIC',
 })
 
-export const WMATIC = new Token({
+export const POL = new Token({
+  addresses: {
+    [CHAINS.POLYGON.id]: zeroAddress,
+  },
+  decimals: 18,
+  symbol: 'MATIC',
+  name: 'MATIC',
+  logo: maticLogo,
+  isNative: true,
+  swapableType: 'MATIC',
+  color: 'blue',
+  visibilityRank: 90,
+  priorityRank: 300,
+  routeSymbol: 'POL',
+})
+
+export const WPOL = new Token({
   addresses: {
     [CHAINS.POLYGON.id]: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
   },
@@ -1073,7 +1091,7 @@ export const WMATIC = new Token({
   color: 'blue',
   visibilityRank: 90,
   priorityRank: 350,
-  routeSymbol: 'WMATIC',
+  routeSymbol: 'WPOL',
 })
 
 export const FTM = new Token({

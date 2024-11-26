@@ -3,6 +3,7 @@ package parser
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -23,7 +24,7 @@ import (
 
 const ethCoinGeckoID = "ethereum"
 
-// RFQParser parsers rfq logs.
+// RFQParser parsers all rfq logs.
 type RFQParser struct {
 	// consumerDB is the database to store parsed data in
 	consumerDB db.ConsumerDB
@@ -63,25 +64,32 @@ func (p *RFQParser) ParserType() string {
 func (p *RFQParser) ParseLog(log ethTypes.Log, chainID uint32) (*model.RFQEvent, rfqTypes.EventLog, error) {
 	logTopic := log.Topics[0]
 	iFace, err := func(log ethTypes.Log) (rfqTypes.EventLog, error) {
-		switch logTopic {
-		case fastbridge.Topic(rfqTypes.BridgeRequestedEvent):
-			iFace, err := p.Filterer.ParseBridgeRequested(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not parse fastbridge bridge requested : %w", err)
-			}
-			return iFace, nil
-		case fastbridge.Topic(rfqTypes.BridgeRelayedEvent):
-			iFace, err := p.Filterer.ParseBridgeRelayed(log)
-			if err != nil {
-				return nil, fmt.Errorf("could not parse fastbridge bridge relayed: %w", err)
-			}
-			return iFace, nil
-
-		default:
-			logger.Warnf("ErrUnknownTopic in rfq: %s %s chain: %d address: %s", log.TxHash, logTopic.String(), chainID, log.Address.Hex())
-
-			return nil, fmt.Errorf(ErrUnknownTopic)
+		// Get the topic hash safely
+		bridgeRequestedTopic, err := fastbridge.Topic(rfqTypes.BridgeRequestedEvent)
+		if err == nil && logTopic == bridgeRequestedTopic {
+			return p.Filterer.ParseBridgeRequested(log)
 		}
+
+		bridgeRelayedTopic, err := fastbridge.Topic(rfqTypes.BridgeRelayedEvent)
+		if err == nil && logTopic == bridgeRelayedTopic {
+			return p.Filterer.ParseBridgeRelayed(log)
+		}
+		bridgeProofProvidedTopic, err := fastbridge.Topic(rfqTypes.BridgeProvenEvent)
+		if err == nil && logTopic == bridgeProofProvidedTopic {
+			return p.Filterer.ParseBridgeProofProvided(log)
+		}
+		bridgeDepositClaimedTopic, err := fastbridge.Topic(rfqTypes.BridgeClaimedEvent)
+		if err == nil && logTopic == bridgeDepositClaimedTopic {
+			return p.Filterer.ParseBridgeDepositClaimed(log)
+		}
+		bridgeDepositRefundedTopic, err := fastbridge.Topic(rfqTypes.BridgeRefundedEvent)
+		if err == nil && logTopic == bridgeDepositRefundedTopic {
+			return p.Filterer.ParseBridgeDepositRefunded(log)
+		}
+
+		logger.Warnf("ErrUnknownTopic in rfq: %s %s chain: %d address: %s",
+			log.TxHash, logTopic.String(), chainID, log.Address.Hex())
+		return nil, errors.New("unknown topic")
 	}(log)
 
 	if err != nil {
@@ -108,6 +116,7 @@ func (p *RFQParser) MatureLogs(ctx context.Context, rfqEvent *model.RFQEvent, iF
 	}
 
 	// If we have a timestamp, populate the following attributes of rfqEvent.
+	// This logic will have to be generalized as we support more tokens (we need to programatically find coingecko id based on token address)
 	timeStampBig := uint64(*timeStamp)
 	rfqEvent.TimeStamp = &timeStampBig
 
@@ -115,13 +124,18 @@ func (p *RFQParser) MatureLogs(ctx context.Context, rfqEvent *model.RFQEvent, iF
 	tokenAddressStr := common.HexToAddress(rfqEvent.OriginToken).Hex()
 	const ethAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 
-	if strings.EqualFold(tokenAddressStr, ethAddress) {
+	switch {
+	case strings.EqualFold(tokenAddressStr, ethAddress) || strings.EqualFold(tokenAddressStr, "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"):
 		rfqEvent.TokenSymbol = "ETH"
 		rfqEvent.TokenDecimal = new(uint8)
 		*rfqEvent.TokenDecimal = 18
 		curCoinGeckoID = ethCoinGeckoID
-	} else {
-		// Assuming any other token is USDC
+	case strings.EqualFold(tokenAddressStr, "0x2cFc85d8E48F8EAB294be644d9E25C3030863003") || strings.EqualFold(tokenAddressStr, "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1"):
+		rfqEvent.TokenSymbol = "WLD"
+		rfqEvent.TokenDecimal = new(uint8)
+		*rfqEvent.TokenDecimal = 18
+		curCoinGeckoID = "worldcoin-wld"
+	default:
 		rfqEvent.TokenSymbol = "USDC"
 		rfqEvent.TokenDecimal = new(uint8)
 		*rfqEvent.TokenDecimal = 6
@@ -227,6 +241,14 @@ func eventToRFQEvent(event rfqTypes.EventLog, chainID uint32) model.RFQEvent {
 }
 
 func rfqEventToBridgeEvent(rfqEvent model.RFQEvent) model.BridgeEvent {
+	// Only convert BridgeRequestedEvent and BridgeRelayedEvent to bridge events
+	// Exclude BridgeDepositRefunded, BridgeProofProvided, and BridgeDepositClaimed
+	eventType := rfqEvent.EventType
+	if eventType != rfqTypes.BridgeRequestedEvent.Int() &&
+		eventType != rfqTypes.BridgeRelayedEvent.Int() {
+		return model.BridgeEvent{}
+	}
+
 	bridgeType := bridgeTypes.BridgeRequestedEvent
 	token := rfqEvent.OriginToken
 	amount := rfqEvent.OriginAmount

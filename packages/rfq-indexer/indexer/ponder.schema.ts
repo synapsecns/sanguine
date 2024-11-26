@@ -5,6 +5,7 @@ export default createSchema((p) => ({
     id: p.string(),
     transactionId: p.string(),
     sender: p.string(),
+    request: p.string(),
     originToken: p.string(),
     destToken: p.string(),
     originAmount: p.bigint().optional(),

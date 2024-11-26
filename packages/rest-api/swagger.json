@@ -1,0 +1,2930 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Synapse Protocol REST API",
+    "version": "1.7.0",
+    "description": "API documentation for the Synapse Protocol REST API"
+  },
+  "servers": [
+    {
+      "url": "https://api.synapseprotocol.com",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/bridgeLimits": {
+      "get": {
+        "summary": "Get min/max origin values for bridge quote",
+        "description": "Retrieve min/max bridgeable amounts to bridge from source chain to destination chain. Returns null for min/max amounts if limits are unavailable.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "fromChain",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The source chain ID."
+          },
+          {
+            "in": "query",
+            "name": "toChain",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The destination chain ID."
+          },
+          {
+            "in": "query",
+            "name": "fromToken",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the token on the source chain."
+          },
+          {
+            "in": "query",
+            "name": "toToken",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the token on the destination chain."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response containing min and max origin amounts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "maxOriginAmount": {
+                      "type": "string",
+                      "description": "Maximum amount of tokens that can be bridged from the origin chain."
+                    },
+                    "minOriginAmount": {
+                      "type": "string",
+                      "description": "Minimum amount of tokens that can be bridged from the origin chain."
+                    }
+                  }
+                },
+                "example": {
+                  "maxOriginAmount": "999600",
+                  "minOriginAmount": "4"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "field": {
+                          "type": "string"
+                        },
+                        "location": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "error": {
+                    "value": "999",
+                    "message": "Unsupported fromChain",
+                    "field": "fromChain",
+                    "location": "query"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Synapse Bridge REST API"]
+      }
+    },
+    "/bridge": {
+      "get": {
+        "summary": "Get quotes for bridging tokens between chains",
+        "description": "Retrieve list of detailed bridge quotes based on origin and destination chains based on tokens and amount",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "fromChain",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The source chain ID"
+          },
+          {
+            "in": "query",
+            "name": "toChain",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The destination chain ID"
+          },
+          {
+            "in": "query",
+            "name": "fromToken",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the token on the source chain"
+          },
+          {
+            "in": "query",
+            "name": "toToken",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the token on the destination chain"
+          },
+          {
+            "in": "query",
+            "name": "amount",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "description": "The amount of tokens to bridge"
+          },
+          {
+            "in": "query",
+            "name": "originUserAddress",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the user on the origin chain"
+          },
+          {
+            "in": "query",
+            "name": "destAddress",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The destination address of the user on the destination chain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "feeAmount": {
+                        "$ref": "#/components/schemas/BigNumber"
+                      },
+                      "feeConfig": {
+                        "type": "object",
+                        "properties": {
+                          "bridgeFee": {
+                            "type": "integer"
+                          },
+                          "minFee": {
+                            "$ref": "#/components/schemas/BigNumber"
+                          },
+                          "maxFee": {
+                            "$ref": "#/components/schemas/BigNumber"
+                          }
+                        }
+                      },
+                      "routerAddress": {
+                        "type": "string"
+                      },
+                      "maxAmountOut": {
+                        "$ref": "#/components/schemas/BigNumber"
+                      },
+                      "originQuery": {
+                        "type": "object"
+                      },
+                      "destQuery": {
+                        "type": "object"
+                      },
+                      "estimatedTime": {
+                        "type": "integer"
+                      },
+                      "bridgeModuleName": {
+                        "type": "string"
+                      },
+                      "gasDropAmount": {
+                        "$ref": "#/components/schemas/BigNumber"
+                      },
+                      "originChainId": {
+                        "type": "integer"
+                      },
+                      "destChainId": {
+                        "type": "integer"
+                      },
+                      "maxAmountOutStr": {
+                        "type": "string"
+                      },
+                      "bridgeFeeFormatted": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "id": "01920c87-7f14-7cdf-90e1-e13b2d4af55f",
+                    "feeAmount": {
+                      "type": "BigNumber",
+                      "hex": "0x17d78400"
+                    },
+                    "feeConfig": {
+                      "bridgeFee": 4000000,
+                      "minFee": {
+                        "type": "BigNumber",
+                        "hex": "0x3d0900"
+                      },
+                      "maxFee": {
+                        "type": "BigNumber",
+                        "hex": "0x17d78400"
+                      }
+                    },
+                    "routerAddress": "0xd5a597d6e7ddf373a92C8f477DAAA673b0902F48",
+                    "maxAmountOut": {
+                      "type": "BigNumber",
+                      "hex": "0xe89bd2cb27"
+                    },
+                    "originQuery": {
+                      "routerAdapter": "0x0000000000000000000000000000000000000000",
+                      "tokenOut": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                      "minAmountOut": {
+                        "type": "BigNumber",
+                        "hex": "0xe8d4a51000"
+                      },
+                      "deadline": {
+                        "type": "BigNumber",
+                        "hex": "0x66ecb04b"
+                      },
+                      "rawParams": "0x"
+                    },
+                    "destQuery": {
+                      "routerAdapter": "0xd5a597d6e7ddf373a92C8f477DAAA673b0902F48",
+                      "tokenOut": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+                      "minAmountOut": {
+                        "type": "BigNumber",
+                        "hex": "0xe89bd2cb27"
+                      },
+                      "deadline": {
+                        "type": "BigNumber",
+                        "hex": "0x66f5e873"
+                      },
+                      "rawParams": "0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009a2dea7b81cfe3e0011d44d41c5c5142b8d9abdf00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002"
+                    },
+                    "estimatedTime": 1020,
+                    "bridgeModuleName": "SynapseCCTP",
+                    "gasDropAmount": {
+                      "type": "BigNumber",
+                      "hex": "0x0110d9316ec000"
+                    },
+                    "originChainId": 1,
+                    "destChainId": 42161,
+                    "maxAmountOutStr": "999046.695719",
+                    "bridgeFeeFormatted": "400"
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "field": {
+                          "type": "string"
+                        },
+                        "location": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "error": {
+                    "value": "999",
+                    "message": "Unsupported fromChain",
+                    "field": "fromChain",
+                    "location": "query"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Synapse Bridge REST API"]
+      }
+    },
+    "/bridgeTxInfo": {
+      "get": {
+        "summary": "[Deprecated] in favor of using the /bridge endpoint, which now returns call data",
+        "description": "[Deprecated] Originally used to get Bridge transaction information",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "fromChain",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The source chain ID"
+          },
+          {
+            "in": "query",
+            "name": "fromToken",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the token on the source chain"
+          },
+          {
+            "in": "query",
+            "name": "toChain",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The destination chain ID"
+          },
+          {
+            "in": "query",
+            "name": "toToken",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the token on the destination chain"
+          },
+          {
+            "in": "query",
+            "name": "amount",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "description": "The amount of tokens to bridge"
+          },
+          {
+            "in": "query",
+            "name": "destAddress",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The destination address for the bridged tokens"
+          },
+          {
+            "in": "query",
+            "name": "originUserAddress",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the user on the origin chain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "data": {
+                        "type": "string",
+                        "description": "Encoded transaction data"
+                      },
+                      "to": {
+                        "type": "string",
+                        "description": "The address of the contract to interact with"
+                      },
+                      "value": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": ["BigNumber"]
+                          },
+                          "hex": {
+                            "type": "string"
+                          }
+                        },
+                        "description": "The amount of native currency to send with the transaction"
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "data": "0xc2288147000000000000000000000000abb4f79430002534df3f62e964d62659a010ef3c000000000000000000000000000000000000000000000000000000000000a4b1000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48000000000000000000000000000000000000000000000000000000174876e80000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000001800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48000000000000000000000000000000000000000000000000000000174876e8000000000000000000000000000000000000000000000000000000000066ecbadf00000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d5a597d6e7ddf373a92c8f477daaa673b0902f48000000000000000000000000fd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb90000000000000000000000000000000000000000000000000000001744e380400000000000000000000000000000000000000000000000000000000066f5f30700000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009a2dea7b81cfe3e0011d44d41c5c5142b8d9abdf00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004",
+                    "to": "0xd5a597d6e7ddf373a92C8f477DAAA673b0902F48",
+                    "value": {
+                      "type": "BigNumber",
+                      "hex": "0x00"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "field": {
+                          "type": "string"
+                        },
+                        "location": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "error": {
+                    "value": "999",
+                    "message": "Unsupported fromChain",
+                    "field": "fromChain",
+                    "location": "query"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Synapse Bridge REST API"]
+      }
+    },
+    "/bridgeTxStatus": {
+      "get": {
+        "summary": "Get Bridge Transaction Status",
+        "description": "Used to get the status of a bridge transaction, and the destination transaction information if the transaction is finalized",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "destChainId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the destination chain"
+          },
+          {
+            "in": "query",
+            "name": "bridgeModule",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["SynapseRFQ", "SynapseBridge", "SynapseCCTP"]
+            },
+            "description": "The bridge module used for the transaction"
+          },
+          {
+            "in": "query",
+            "name": "synapseTxId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The Synapse transaction ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "boolean",
+                      "description": "The status of the transaction"
+                    },
+                    "toInfo": {
+                      "type": "object",
+                      "properties": {
+                        "chainID": {
+                          "type": "integer",
+                          "description": "The destination chain ID"
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "The recipient address"
+                        },
+                        "txnHash": {
+                          "type": "string",
+                          "description": "The transaction hash on the destination chain"
+                        },
+                        "USDValue": {
+                          "type": "number",
+                          "description": "The USD value of the transaction"
+                        },
+                        "tokenSymbol": {
+                          "type": "string",
+                          "description": "The symbol of the token transferred"
+                        },
+                        "formattedTime": {
+                          "type": "string",
+                          "description": "The formatted time of the transaction"
+                        },
+                        "formattedValue": {
+                          "type": "string",
+                          "description": "The formatted value of the transaction"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "status": true,
+                  "toInfo": {
+                    "chainID": 10,
+                    "address": "0xRL3Bab0e4c09Ff447863f507E16090A9F22792d2",
+                    "txnHash": "0x4eff784e85df5265dcc8e3c30b9df4b5c8a0c940300f6d8ad7ed737e9beb6fab",
+                    "USDValue": 1.79848,
+                    "tokenSymbol": "USDC",
+                    "formattedTime": "2024-09-01 17:10:41 +0000 UTC",
+                    "formattedValue": "1.797684"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "field": {
+                          "type": "string"
+                        },
+                        "location": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "error": {
+                    "value": "999",
+                    "message": "Unsupported destChainId",
+                    "field": "destChainId",
+                    "location": "query"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Synapse Bridge REST API"]
+      }
+    },
+    "/destinationTokens": {
+      "get": {
+        "summary": "Get possible destination tokens for a bridge",
+        "description": "Retrieve possible destination tokens for a given source chain ID and token address",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "fromChain",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The source chain ID"
+          },
+          {
+            "in": "query",
+            "name": "fromToken",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the token on the source chain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "symbol": {
+                        "type": "string",
+                        "description": "The token symbol"
+                      },
+                      "chainId": {
+                        "type": "string",
+                        "description": "The chain ID where the token is available"
+                      },
+                      "address": {
+                        "type": "string",
+                        "description": "The token contract address"
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "symbol": "USDC",
+                    "chainId": "1",
+                    "address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                  },
+                  {
+                    "symbol": "USDT",
+                    "chainId": "42161",
+                    "address": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9"
+                  },
+                  {
+                    "symbol": "crvUSD",
+                    "chainId": "8453",
+                    "address": "0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93"
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "field": {
+                          "type": "string"
+                        },
+                        "location": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "error": {
+                    "value": "100",
+                    "message": "Unsupported fromChain",
+                    "field": "fromChain",
+                    "location": "query"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Synapse Bridge REST API"]
+      }
+    },
+    "/destinationTx": {
+      "get": {
+        "summary": "Get Destination Transaction Information",
+        "description": "Used to get the status of a bridge transaction, and the destination transaction information if the transaction is finalized",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "originChainId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the origin chain where the transaction was initiated"
+          },
+          {
+            "in": "query",
+            "name": "txHash",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The transaction hash on the origin chain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "The status of the transaction"
+                    },
+                    "fromInfo": {
+                      "type": "object",
+                      "properties": {
+                        "chainID": {
+                          "type": "integer",
+                          "description": "The origin chain ID"
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "The recipient address"
+                        },
+                        "txnHash": {
+                          "type": "string",
+                          "description": "The transaction hash on the destination chain"
+                        },
+                        "USDValue": {
+                          "type": "number",
+                          "description": "The USD value of the transaction"
+                        },
+                        "tokenSymbol": {
+                          "type": "string",
+                          "description": "The symbol of the token transferred"
+                        },
+                        "blockNumber": {
+                          "type": "integer",
+                          "description": "The block number of the transaction"
+                        },
+                        "formattedTime": {
+                          "type": "string",
+                          "description": "The formatted time of the transaction"
+                        },
+                        "formattedValue": {
+                          "type": "string",
+                          "description": "The formatted value of the transaction"
+                        }
+                      }
+                    },
+                    "toInfo": {
+                      "type": "object",
+                      "properties": {
+                        "chainID": {
+                          "type": "integer",
+                          "description": "The destination chain ID"
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "The recipient address"
+                        },
+                        "txnHash": {
+                          "type": "string",
+                          "description": "The transaction hash on the destination chain"
+                        },
+                        "USDValue": {
+                          "type": "number",
+                          "description": "The USD value of the transaction"
+                        },
+                        "tokenSymbol": {
+                          "type": "string",
+                          "description": "The symbol of the token transferred"
+                        },
+                        "blockNumber": {
+                          "type": "integer",
+                          "description": "The block number of the transaction"
+                        },
+                        "formattedTime": {
+                          "type": "string",
+                          "description": "The formatted time of the transaction"
+                        },
+                        "formattedValue": {
+                          "type": "string",
+                          "description": "The formatted value of the transaction"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "status": "completed",
+                  "fromInfo": {
+                    "chainID": 8453,
+                    "address": "0x6eA4207627aAf2Ef86642eD8B331579b606471c3",
+                    "txnHash": "0x13486d9eaefd68de6a20b704d70deb8436effbac1f77fddfc0c7ef14f08e96c3",
+                    "USDValue": "11660.93019,",
+                    "tokenSymbol": "USDC",
+                    "blockNumber": "19857812,",
+                    "formattedTime": "2024-09-16 16:42:51 +0000 UTC",
+                    "formattedValue": "11637.654884"
+                  },
+                  "toInfo": {
+                    "chainID": 42161,
+                    "address": "0xfC8f27Bcf34FfD52869ffa4A5A6B9b0A872281Ad",
+                    "txnHash": "0xe26be8f4296c14dc8da6ef92d39c1d20577a43704bfb0b2cea5ee2f516be0f4e",
+                    "USDValue": 11660.92558,
+                    "tokenSymbol": "USDC",
+                    "blockNumber": 254173724,
+                    "formattedTime": "2024-09-16 16:42:55 +0000 UTC",
+                    "formattedValue": "11637.650281"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "field": {
+                          "type": "string"
+                        },
+                        "location": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "error": {
+                    "value": "999",
+                    "message": "originChainId is required",
+                    "field": "originChainId",
+                    "location": "query"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "fromInfo": {
+                      "type": "object",
+                      "nullable": true
+                    },
+                    "toInfo": {
+                      "type": "object",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Synapse Bridge REST API"]
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Get API information",
+        "description": "Retrieve general information about the Synapse REST API, including available chains and tokens",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Welcome message for the API"
+                    },
+                    "availableChains": {
+                      "type": "array",
+                      "description": "List of available blockchain networks",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "Name of the blockchain network"
+                          },
+                          "id": {
+                            "type": "integer",
+                            "description": "Chain ID of the blockchain network"
+                          }
+                        }
+                      }
+                    },
+                    "availableTokens": {
+                      "type": "array",
+                      "description": "List of available tokens across different chains",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "symbol": {
+                            "type": "string",
+                            "description": "Token symbol"
+                          },
+                          "chains": {
+                            "type": "array",
+                            "description": "List of chains where the token is available",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "chainId": {
+                                  "type": "string",
+                                  "description": "Chain ID where the token is available"
+                                },
+                                "address": {
+                                  "type": "string",
+                                  "description": "Token contract address on the specific chain"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Welcome to the Synapse REST API for swap and bridge quotes",
+                  "availableChains": [
+                    {
+                      "name": "Ethereum",
+                      "id": 1
+                    },
+                    {
+                      "name": "Arbitrum",
+                      "id": 42161
+                    }
+                  ],
+                  "availableTokens": [
+                    {
+                      "symbol": "USDC",
+                      "chains": [
+                        {
+                          "chainId": "1",
+                          "address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                        },
+                        {
+                          "chainId": "42161",
+                          "address": "0xaf88d065e77c8cc2239327c5edb3a432268e5831"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Synapse Bridge REST API"]
+      }
+    },
+    "/swap": {
+      "get": {
+        "summary": "Get swap quote for tokens on a specific chain",
+        "description": "Retrieve detailed swap quote for exchanging one token for another on a specified chain",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "chain",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The chain ID where the swap will occur"
+          },
+          {
+            "in": "query",
+            "name": "fromToken",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the token to swap from"
+          },
+          {
+            "in": "query",
+            "name": "toToken",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the token to swap to"
+          },
+          {
+            "in": "query",
+            "name": "amount",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "description": "The amount of tokens to swap"
+          },
+          {
+            "in": "query",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the user"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "routerAddress": {
+                      "type": "string",
+                      "description": "The address of the router contract"
+                    },
+                    "maxAmountOut": {
+                      "type": "string",
+                      "description": "The maximum amount of tokens that will be received"
+                    },
+                    "query": {
+                      "type": "object",
+                      "properties": {
+                        "swapAdapter": {
+                          "type": "string",
+                          "description": "The address of the swap adapter"
+                        },
+                        "tokenOut": {
+                          "type": "string",
+                          "description": "The address of the token being received"
+                        },
+                        "minAmountOut": {
+                          "$ref": "#/components/schemas/BigNumber"
+                        },
+                        "deadline": {
+                          "$ref": "#/components/schemas/BigNumber"
+                        },
+                        "rawParams": {
+                          "type": "string",
+                          "description": "Raw parameters for the swap"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "routerAddress": "0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a",
+                  "maxAmountOut": "999.746386",
+                  "query": {
+                    "swapAdapter": "0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a",
+                    "tokenOut": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+                    "minAmountOut": {
+                      "type": "BigNumber",
+                      "hex": "0x3b96eb52"
+                    },
+                    "deadline": {
+                      "type": "BigNumber",
+                      "hex": "0x66ecb470"
+                    },
+                    "rawParams": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000001116898dda4015ed8ddefb84b6e8bc24528af2d800000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "field": {
+                          "type": "string"
+                        },
+                        "location": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "error": {
+                    "value": "999",
+                    "message": "Unsupported chain",
+                    "field": "chain",
+                    "location": "query"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Synapse Bridge REST API"]
+      }
+    },
+    "/swapTxInfo": {
+      "get": {
+        "summary": "[Deprecated] in favor of using the /swap endpoint, which now returns call data",
+        "description": "[Deprecated] Originally used to get Swap transaction information",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "chain",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The chain ID where the swap will occur"
+          },
+          {
+            "in": "query",
+            "name": "fromToken",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the token to swap from"
+          },
+          {
+            "in": "query",
+            "name": "toToken",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the token to swap to"
+          },
+          {
+            "in": "query",
+            "name": "amount",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "description": "The amount of tokens to swap"
+          },
+          {
+            "in": "query",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The Ethereum address of the user performing the swap"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string",
+                      "description": "Encoded transaction data"
+                    },
+                    "to": {
+                      "type": "string",
+                      "description": "The address of the contract to interact with"
+                    },
+                    "value": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": ["BigNumber"]
+                        },
+                        "hex": {
+                          "type": "string"
+                        }
+                      },
+                      "description": "The amount of native currency to send with the transaction"
+                    }
+                  }
+                },
+                "example": {
+                  "data": "0xb5d1cdd4000000000000000000000000abb4f79430002534df3f62e964d62659a010ef3c000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48000000000000000000000000000000000000000000000000000000003b9aca0000000000000000000000000000000000000000000000000000000000000000800000000000000000000000007e7a0e201fd38d3adaa9523da6c109a07118c96a000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7000000000000000000000000000000000000000000000000000000003b96eaed0000000000000000000000000000000000000000000000000000000066ecbb7c00000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001116898dda4015ed8ddefb84b6e8bc24528af2d800000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002",
+                  "to": "0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a",
+                  "value": {
+                    "type": "BigNumber",
+                    "hex": "0x00"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "field": {
+                          "type": "string"
+                        },
+                        "location": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "error": {
+                    "value": "999",
+                    "message": "Unsupported chain",
+                    "field": "chain",
+                    "location": "query"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Synapse Bridge REST API"]
+      }
+    },
+    "/synapseTxId": {
+      "get": {
+        "summary": "Get Synapse Transaction ID",
+        "description": "Retrieve the Synapse transaction ID for a given origin chain transaction",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "originChainId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the origin chain where the transaction was initiated"
+          },
+          {
+            "in": "query",
+            "name": "bridgeModule",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["SynapseRFQ", "SynapseBridge", "SynapseCCTP"]
+            },
+            "description": "The bridge module used for the transaction"
+          },
+          {
+            "in": "query",
+            "name": "txHash",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The transaction hash on the origin chain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "synapseTxId": {
+                      "type": "string",
+                      "description": "The Synapse transaction ID"
+                    }
+                  }
+                },
+                "example": {
+                  "synapseTxId": "0x812516c5477aeeb4361ecbdd561abcd10f779a0fce22bad13635b8cae088760a"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "field": {
+                          "type": "string"
+                        },
+                        "location": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "error": {
+                    "value": "999",
+                    "message": "Invalid bridge module. Must be one of: SynapseRFQ, SynapseBridge, SynapseCCTP",
+                    "field": "bridgeModule",
+                    "location": "query"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Synapse Bridge REST API"]
+      }
+    },
+    "/tokenlist": {
+      "get": {
+        "summary": "Get the list of bridgeable tokens & associated chain metadata",
+        "description": "Retrieve the complete list of tokens that can be bridged across different chains",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "addresses": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      "decimals": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "integer"
+                        }
+                      },
+                      "symbol": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "swapableType": {
+                        "type": "string"
+                      },
+                      "color": {
+                        "type": "string"
+                      },
+                      "priorityRank": {
+                        "type": "integer"
+                      },
+                      "routeSymbol": {
+                        "type": "string"
+                      },
+                      "imgUrl": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "USDC": {
+                    "addresses": {
+                      "1": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+                      "10": "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
+                    },
+                    "decimals": {
+                      "1": 6,
+                      "10": 6
+                    },
+                    "symbol": "USDC",
+                    "name": "USD Coin",
+                    "swapableType": "USD",
+                    "color": "blue",
+                    "priorityRank": 100,
+                    "routeSymbol": "USDC",
+                    "imgUrl": "https://example.com/usdc.svg"
+                  },
+                  "USDT": {
+                    "addresses": {
+                      "1": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+                      "10": "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58"
+                    },
+                    "decimals": {
+                      "1": 6,
+                      "10": 6
+                    },
+                    "symbol": "USDT",
+                    "name": "USD Tether",
+                    "swapableType": "USD",
+                    "color": "lime",
+                    "priorityRank": 100,
+                    "routeSymbol": "USDT",
+                    "imgUrl": "https://example.com/usdt.svg"
+                  },
+                  "NUSD": {
+                    "addresses": {
+                      "1": "0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F",
+                      "10": "0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00"
+                    },
+                    "decimals": {
+                      "1": 18,
+                      "10": 18
+                    },
+                    "symbol": "nUSD",
+                    "name": "Synapse nUSD",
+                    "swapableType": "USD",
+                    "color": "purple",
+                    "priorityRank": 500,
+                    "routeSymbol": "nUSD",
+                    "imgUrl": "https://example.com/nusd.svg"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Synapse Bridge REST API"]
+      }
+    },
+    "/conflicting-proofs": {
+      "get": {
+        "summary": "Get conflicting proofs",
+        "description": "Retrieves a list of transactions where the relayer in the proof differs from the relayer in the relay event",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Bridge": {
+                        "type": "object",
+                        "description": "General transaction fields"
+                      },
+                      "BridgeRequest": {
+                        "type": "object",
+                        "description": "Deposit information"
+                      },
+                      "BridgeRelay": {
+                        "type": "object",
+                        "description": "Relay information"
+                      },
+                      "BridgeRefund": {
+                        "type": "object",
+                        "description": "Refund information"
+                      },
+                      "BridgeProof": {
+                        "type": "object",
+                        "description": "Proof information (if available)"
+                      },
+                      "BridgeClaim": {
+                        "type": "object",
+                        "description": "Claim information (if available)"
+                      },
+                      "BridgeDispute": {
+                        "type": "object",
+                        "description": "Dispute information (if available)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No conflicting proofs found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["RFQ Indexer API"]
+      }
+    },
+    "/disputes": {
+      "get": {
+        "summary": "Get all active disputes",
+        "description": "Retrieves a list of all active disputes",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Bridge": {
+                        "type": "object",
+                        "description": "General transaction fields"
+                      },
+                      "BridgeRequest": {
+                        "type": "object",
+                        "description": "Deposit information"
+                      },
+                      "BridgeRelay": {
+                        "type": "object",
+                        "description": "Relay information"
+                      },
+                      "BridgeRefund": {
+                        "type": "object",
+                        "description": "Refund information"
+                      },
+                      "BridgeProof": {
+                        "type": "object",
+                        "description": "Proof information (if available)"
+                      },
+                      "BridgeClaim": {
+                        "type": "object",
+                        "description": "Claim information (if available)"
+                      },
+                      "BridgeDispute": {
+                        "type": "object",
+                        "description": "Dispute information (if available)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No disputes found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["RFQ Indexer API"]
+      }
+    },
+    "/invalid-relays": {
+      "get": {
+        "summary": "Get recent invalid relays",
+        "description": "Retrieves a list of recent invalid relay events from the past 2 weeks",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Bridge": {
+                        "type": "object",
+                        "description": "General transaction fields"
+                      },
+                      "BridgeRequest": {
+                        "type": "object",
+                        "description": "Deposit information"
+                      },
+                      "BridgeRelay": {
+                        "type": "object",
+                        "description": "Relay information"
+                      },
+                      "BridgeRefund": {
+                        "type": "object",
+                        "description": "Refund information"
+                      },
+                      "BridgeProof": {
+                        "type": "object",
+                        "description": "Proof information (if available)"
+                      },
+                      "BridgeClaim": {
+                        "type": "object",
+                        "description": "Claim information (if available)"
+                      },
+                      "BridgeDispute": {
+                        "type": "object",
+                        "description": "Dispute information (if available)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No recent invalid relays found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["RFQ Indexer API"]
+      }
+    },
+    "/pending-transactions/missing-claim": {
+      "get": {
+        "summary": "Get pending transactions missing claim",
+        "description": "Retrieves a list of transactions that have been deposited, relayed, and proven, but not yet claimed",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Bridge": {
+                        "type": "object",
+                        "description": "General transaction fields"
+                      },
+                      "BridgeRequest": {
+                        "type": "object",
+                        "description": "Deposit information"
+                      },
+                      "BridgeRelay": {
+                        "type": "object",
+                        "description": "Relay information"
+                      },
+                      "BridgeRefund": {
+                        "type": "object",
+                        "description": "Refund information"
+                      },
+                      "BridgeProof": {
+                        "type": "object",
+                        "description": "Proof information (if available)"
+                      },
+                      "BridgeClaim": {
+                        "type": "object",
+                        "description": "Claim information (if available)"
+                      },
+                      "BridgeDispute": {
+                        "type": "object",
+                        "description": "Dispute information (if available)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No pending transactions missing claim found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["RFQ Indexer API"]
+      }
+    },
+    "/pending-transactions/missing-proof": {
+      "get": {
+        "summary": "Get pending transactions missing proof",
+        "description": "Retrieves a list of transactions that have been deposited and relayed, but not yet proven",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "deposit": {
+                        "type": "object"
+                      },
+                      "relay": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No pending transactions missing proof found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["RFQ Indexer API"]
+      }
+    },
+    "/pending-transactions/missing-relay": {
+      "get": {
+        "summary": "Get pending transactions missing relay",
+        "description": "Retrieves a list of transactions that have been deposited, but not yet relayed or refunded",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "deposit": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No pending transactions missing relay found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["RFQ Indexer API"]
+      }
+    },
+    "/pending-transactions/exceed-deadline": {
+      "get": {
+        "summary": "Get pending transactions exceed deadline",
+        "description": "Retrieves a list of transactions that have been deposited, but not yet relayed or refunded and have exceeded the deadline",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "deposit": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No pending transactionst that exceed the deadline found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["RFQ Indexer API"]
+      }
+    },
+    "/refunded-and-relayed": {
+      "get": {
+        "summary": "Get refunded and relayed transactions",
+        "description": "Retrieves a list of transactions that have been both refunded and relayed",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Bridge": {
+                        "type": "object",
+                        "description": "General transaction fields"
+                      },
+                      "BridgeRequest": {
+                        "type": "object",
+                        "description": "Deposit information"
+                      },
+                      "BridgeRelay": {
+                        "type": "object",
+                        "description": "Relay information"
+                      },
+                      "BridgeRefund": {
+                        "type": "object",
+                        "description": "Refund information"
+                      },
+                      "BridgeProof": {
+                        "type": "object",
+                        "description": "Proof information (if available)"
+                      },
+                      "BridgeClaim": {
+                        "type": "object",
+                        "description": "Claim information (if available)"
+                      },
+                      "BridgeDispute": {
+                        "type": "object",
+                        "description": "Dispute information (if available)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No refunded and relayed transactions found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["RFQ Indexer API"]
+      }
+    },
+    "/transaction-id/{transactionId}": {
+      "get": {
+        "summary": "Get transaction details by ID or the origin transaction hash",
+        "description": "Retrieves detailed information about a transaction, including deposit, relay, proof, claim, and refund data if available",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transactionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The unique identifier of the transaction or the origin transaction hash"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Bridge": {
+                      "type": "object",
+                      "description": "General transaction fields"
+                    },
+                    "BridgeRequest": {
+                      "type": "object",
+                      "description": "Deposit information"
+                    },
+                    "BridgeRelay": {
+                      "type": "object",
+                      "description": "Relay information"
+                    },
+                    "BridgeRefund": {
+                      "type": "object",
+                      "description": "Refund information"
+                    },
+                    "BridgeProof": {
+                      "type": "object",
+                      "description": "Proof information (if available)"
+                    },
+                    "BridgeClaim": {
+                      "type": "object",
+                      "description": "Claim information (if available)"
+                    },
+                    "BridgeDispute": {
+                      "type": "object",
+                      "description": "Dispute information (if available)"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["RFQ Indexer API"]
+      }
+    },
+    "/ack": {
+      "put": {
+        "tags": ["RFQ API"],
+        "summary": "Relay ack",
+        "description": "cache an ack request to synchronize relayer actions.",
+        "requestBody": {
+          "description": "query params",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/model.PutRelayerQuoteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {}
+          }
+        },
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/bulk_quotes": {
+      "put": {
+        "tags": ["RFQ API"],
+        "summary": "Upsert quotes",
+        "description": "upsert bulk quotes from relayer.",
+        "requestBody": {
+          "description": "query params",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/model.PutBulkQuotesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {}
+          }
+        },
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/contracts": {
+      "get": {
+        "tags": ["RFQ API"],
+        "summary": "Get contract addresses",
+        "description": "get quotes from all relayers.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/model.GetContractsResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/open_quote_requests": {
+      "get": {
+        "tags": ["RFQ API"],
+        "summary": "Get open quote requests",
+        "description": "Get all open quote requests that are currently in Received or Pending status.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/model.GetOpenQuoteRequestsResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quotes": {
+      "get": {
+        "tags": ["RFQ API"],
+        "summary": "Get quotes",
+        "description": "get quotes from all relayers.",
+        "parameters": [
+          {
+            "name": "originChainID",
+            "in": "query",
+            "description": "origin chain id to filter quotes by",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "originTokenAddr",
+            "in": "query",
+            "description": "origin chain id to filter quotes by",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destChainID",
+            "in": "query",
+            "description": "destination chain id to filter quotes by",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "destTokenAddr",
+            "in": "query",
+            "description": "destination token address to filter quotes by",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "relayerAddr",
+            "in": "query",
+            "description": "relayer address to filter quotes by",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/model.GetQuoteResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["RFQ API"],
+        "summary": "Upsert quote",
+        "description": "upsert a quote from relayer.",
+        "requestBody": {
+          "description": "query params",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/model.PutRelayerQuoteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {}
+          }
+        },
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/rfq": {
+      "put": {
+        "tags": ["RFQ API"],
+        "summary": "Handle user quote request",
+        "description": "Handle user quote request and return the best quote available.",
+        "requestBody": {
+          "description": "User quote request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/model.PutRFQRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.PutRFQResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/rfq_stream": {
+      "get": {
+        "tags": ["RFQ API"],
+        "summary": "Handle WebSocket connection for active quote requests",
+        "description": "Establish a WebSocket connection to receive active quote requests.",
+        "responses": {
+          "101": {
+            "description": "Switching Protocols",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BigNumber": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["BigNumber"]
+          },
+          "hex": {
+            "type": "string"
+          }
+        }
+      },
+      "model.GetContractsResponse": {
+        "type": "object",
+        "properties": {
+          "contracts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Contracts is a map of chain id to contract address"
+          }
+        }
+      },
+      "model.GetOpenQuoteRequestsResponse": {
+        "type": "object",
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "dest_chain_id": {
+            "type": "integer"
+          },
+          "dest_token": {
+            "type": "string"
+          },
+          "expiration_window": {
+            "type": "integer"
+          },
+          "origin_amount": {
+            "type": "string"
+          },
+          "origin_chain_id": {
+            "type": "integer"
+          },
+          "origin_token": {
+            "type": "string"
+          },
+          "user_address": {
+            "type": "string"
+          }
+        }
+      },
+      "model.GetQuoteResponse": {
+        "type": "object",
+        "properties": {
+          "dest_amount": {
+            "type": "string",
+            "description": "DestAmount is the max amount of liquidity which exists for a given destination token, provided in the destination token decimals"
+          },
+          "dest_chain_id": {
+            "type": "integer",
+            "description": "DestChainID is the chain which the relayer is willing to relay to"
+          },
+          "dest_fast_bridge_address": {
+            "type": "string",
+            "description": "DestFastBridgeAddress is the address of the fast bridge contract on the destination chain"
+          },
+          "dest_token_addr": {
+            "type": "string",
+            "description": "DestToken is the token address for which the relayer willing to relay to"
+          },
+          "fixed_fee": {
+            "type": "string",
+            "description": "FixedFee is the fixed fee for the quote, provided in the destination token terms"
+          },
+          "max_origin_amount": {
+            "type": "string",
+            "description": "MaxOriginAmount is the maximum amount of origin tokens bridgeable"
+          },
+          "origin_chain_id": {
+            "type": "integer",
+            "description": "OriginChainID is the chain which the relayer is willing to relay from"
+          },
+          "origin_fast_bridge_address": {
+            "type": "string",
+            "description": "OriginFastBridgeAddress is the address of the fast bridge contract on the origin chain"
+          },
+          "origin_token_addr": {
+            "type": "string",
+            "description": "OriginTokenAddr is the token address for which the relayer willing to relay from"
+          },
+          "relayer_addr": {
+            "type": "string",
+            "description": "Address of the relayer providing the quote"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "UpdatedAt is the time that the quote was last upserted"
+          }
+        }
+      },
+      "model.PutBulkQuotesRequest": {
+        "type": "object",
+        "properties": {
+          "quotes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/model.PutRelayerQuoteRequest"
+            }
+          }
+        }
+      },
+      "model.PutRFQRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/model.QuoteData"
+          },
+          "integrator_id": {
+            "type": "string"
+          },
+          "quote_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "user_address": {
+            "type": "string"
+          }
+        }
+      },
+      "model.PutRFQResponse": {
+        "type": "object",
+        "properties": {
+          "dest_amount": {
+            "type": "string"
+          },
+          "quote_id": {
+            "type": "string"
+          },
+          "quote_type": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "relayer_address": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "model.PutRelayerQuoteRequest": {
+        "type": "object",
+        "properties": {
+          "dest_amount": {
+            "type": "string"
+          },
+          "dest_chain_id": {
+            "type": "integer"
+          },
+          "dest_fast_bridge_address": {
+            "type": "string"
+          },
+          "dest_token_addr": {
+            "type": "string"
+          },
+          "fixed_fee": {
+            "type": "string"
+          },
+          "max_origin_amount": {
+            "type": "string"
+          },
+          "origin_chain_id": {
+            "type": "integer"
+          },
+          "origin_fast_bridge_address": {
+            "type": "string"
+          },
+          "origin_token_addr": {
+            "type": "string"
+          }
+        }
+      },
+      "model.QuoteData": {
+        "type": "object",
+        "properties": {
+          "dest_amount": {
+            "type": "string"
+          },
+          "dest_chain_id": {
+            "type": "integer"
+          },
+          "dest_token_addr": {
+            "type": "string"
+          },
+          "expiration_window": {
+            "type": "integer"
+          },
+          "origin_amount": {
+            "type": "string"
+          },
+          "origin_chain_id": {
+            "type": "integer"
+          },
+          "origin_token_addr": {
+            "type": "string"
+          },
+          "quote_id": {
+            "type": "string"
+          },
+          "relayer_address": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "tags": []
+}

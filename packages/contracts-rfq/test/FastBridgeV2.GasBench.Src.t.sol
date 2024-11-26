@@ -48,17 +48,6 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
         ethTx.nonce = 5;
     }
 
-    function createFixturesV2() public virtual override {
-        super.createFixturesV2();
-        bridgedTokenTx.exclusivityEndTime = block.timestamp;
-        provenTokenTx.exclusivityEndTime = block.timestamp;
-        bridgedEthTx.exclusivityEndTime = block.timestamp;
-        provenEthTx.exclusivityEndTime = block.timestamp;
-        // Actual tx will be submitted one block later
-        tokenTx.exclusivityEndTime = block.timestamp + BLOCK_TIME;
-        ethTx.exclusivityEndTime = block.timestamp + BLOCK_TIME;
-    }
-
     function mintTokens() public virtual override {
         super.mintTokens();
         srcToken.mint(relayerA, INITIAL_RELAYER_BALANCE);
@@ -163,19 +152,19 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
         assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken);
     }
 
-    function test_refundPermissioned_token() public {
+    function test_cancelPermissioned_token() public {
         bytes32 txId = getTxId(bridgedTokenTx);
         skipTimeAtLeast({time: DEADLINE});
-        refund({caller: refunder, bridgeTx: bridgedTokenTx});
+        cancel({caller: canceler, bridgeTx: bridgedTokenTx});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(srcToken.balanceOf(userA), initialUserBalanceToken + tokenParams.originAmount);
         assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken - tokenParams.originAmount);
     }
 
-    function test_refundPermissionless_token() public {
+    function test_cancelPermissionless_token() public {
         bytes32 txId = getTxId(bridgedTokenTx);
-        skipTimeAtLeast({time: DEADLINE + PERMISSIONLESS_REFUND_DELAY});
-        refund({caller: userB, bridgeTx: bridgedTokenTx});
+        skipTimeAtLeast({time: DEADLINE + PERMISSIONLESS_CANCEL_DELAY});
+        cancel({caller: userB, bridgeTx: bridgedTokenTx});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(srcToken.balanceOf(userA), initialUserBalanceToken + tokenParams.originAmount);
         assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken - tokenParams.originAmount);
@@ -247,19 +236,19 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
         assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth);
     }
 
-    function test_refundPermissioned_eth() public {
+    function test_cancelPermissioned_eth() public {
         bytes32 txId = getTxId(bridgedEthTx);
         skipTimeAtLeast({time: DEADLINE});
-        refund({caller: refunder, bridgeTx: bridgedEthTx});
+        cancel({caller: canceler, bridgeTx: bridgedEthTx});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(userA.balance, initialUserBalanceEth + ethParams.originAmount);
         assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth - ethParams.originAmount);
     }
 
-    function test_refundPermissionless_eth() public {
+    function test_cancelPermissionless_eth() public {
         bytes32 txId = getTxId(bridgedEthTx);
-        skipTimeAtLeast({time: DEADLINE + PERMISSIONLESS_REFUND_DELAY});
-        refund({caller: userB, bridgeTx: bridgedEthTx});
+        skipTimeAtLeast({time: DEADLINE + PERMISSIONLESS_CANCEL_DELAY});
+        cancel({caller: userB, bridgeTx: bridgedEthTx});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(userA.balance, initialUserBalanceEth + ethParams.originAmount);
         assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth - ethParams.originAmount);

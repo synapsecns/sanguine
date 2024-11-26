@@ -41,10 +41,12 @@ type PutRelayAckResponse struct {
 	RelayerAddress string `json:"relayer_address"`
 }
 
-// GetContractsResponse contains the schema for a GET /contract response.
+// GetContractsResponse contains the schema for a GET /contracts response.
 type GetContractsResponse struct {
-	// Contracts is a map of chain id to contract address
-	Contracts map[uint32]string `json:"contracts"`
+	// ContractsV1 is a map of chain id to contract address for v1 fast bridge contracts
+	ContractsV1 map[uint32]string `json:"contracts_v1"`
+	// ContractsV2 is a map of chain id to contract address for v2 fast bridge contracts
+	ContractsV2 map[uint32]string `json:"contracts_v2"`
 }
 
 // ActiveRFQMessage represents the general structure of WebSocket messages for Active RFQ.
@@ -79,12 +81,12 @@ type SubscriptionParams struct {
 
 // GetOpenQuoteRequestsResponse represents a response to a GET /open_quote_requests request.
 type GetOpenQuoteRequestsResponse struct {
-	UserAddress      string    `json:"user_address"`
-	OriginChainID    uint64    `json:"origin_chain_id"`
-	OriginTokenAddr  string    `json:"origin_token"`
-	DestChainID      uint64    `json:"dest_chain_id"`
-	DestTokenAddr    string    `json:"dest_token"`
-	OriginAmount     string    `json:"origin_amount"`
-	ExpirationWindow int       `json:"expiration_window"`
-	CreatedAt        time.Time `json:"created_at"`
+	UserAddress       string    `json:"user_address"`
+	OriginChainID     uint64    `json:"origin_chain_id"`
+	OriginTokenAddr   string    `json:"origin_token"`
+	DestChainID       uint64    `json:"dest_chain_id"`
+	DestTokenAddr     string    `json:"dest_token"`
+	OriginAmountExact string    `json:"origin_amount_exact"`
+	ExpirationWindow  int       `json:"expiration_window"`
+	CreatedAt         time.Time `json:"created_at"`
 }

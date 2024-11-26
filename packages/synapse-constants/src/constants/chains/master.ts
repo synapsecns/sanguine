@@ -341,7 +341,7 @@ export const MOONBEAM: Chain = {
   chainSymbol: 'MOONBEAM',
   name: 'Moonbeam',
   chainImg:
-    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/moonbeam.284ab9b4.svg',
+    'https://adf1cceb.sanguine-fe.pages.dev/_next/static/media/moonbeam.63f34507.svg',
   layer: 1,
   codeName: 'moonbeam',
   blockTime: 12000,
@@ -354,7 +354,7 @@ export const MOONBEAM: Chain = {
   explorerName: 'Moonbeam Explorer',
   explorerImg:
     'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/moonbeam.284ab9b4.svg',
-  color: 'teal',
+  color: 'purple',
 }
 
 export const MOONRIVER: Chain = {
@@ -363,7 +363,7 @@ export const MOONRIVER: Chain = {
   chainSymbol: 'MOONRIVER',
   name: 'Moonriver',
   chainImg:
-    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/moonriver.3fb35010.svg',
+    'https://adf1cceb.sanguine-fe.pages.dev/_next/static/media/moonriver.275d190a.svg',
   layer: 1,
   codeName: 'moonriver',
   blockTime: 12000,
@@ -376,7 +376,7 @@ export const MOONRIVER: Chain = {
   explorerName: 'Moonriver Explorer',
   explorerImg:
     'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/moonriver.3fb35010.svg',
-  color: 'purple',
+  color: 'lime',
 }
 
 export const DOGE: Chain = {
@@ -499,6 +499,32 @@ export const LINEA: Chain = {
   blockTime: 3000,
   nativeCurrency: {
     name: 'Ether',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+  color: 'black',
+}
+
+export const WORLDCHAIN: Chain = {
+  priorityRank: 99,
+  id: 480,
+  chainSymbol: 'WORLDCHAIN',
+  name: 'World Chain',
+  codeName: 'worldchain',
+  chainImg:
+    'https://synapse-interface-worldchain.sanguine-fe.pages.dev/_next/static/media/worldchain.62d1dfd2.svg',
+  layer: 2,
+  rpcUrls: {
+    primary: 'https://worldchain-mainnet.g.alchemy.com/public',
+    fallback: 'https://worldchain-mainnet.g.alchemy.com/public',
+  },
+  explorerUrl: 'https://worldchain-mainnet.explorer.alchemy.com',
+  explorerName: 'World Chain Explorer',
+  explorerImg:
+    'https://synapse-interface-worldchain.sanguine-fe.pages.dev/_next/static/media/worldchain.62d1dfd2.svg',
+  blockTime: 3000,
+  nativeCurrency: {
+    name: 'Ethereum',
     symbol: 'ETH',
     decimals: 18,
   },

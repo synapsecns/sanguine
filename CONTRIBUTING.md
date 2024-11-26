@@ -82,15 +82,18 @@ If you need to make a new go module, here are the steps to follow:
     ```go
     module github.com/synapsecns/sanguine/path/to/your/module
 
-    go 1.21 // or whatever the version is in go.work
+    go 1.22.1
+
+    toolchain go1.22.4 // or whatever the version is in go.work
    ```
 
    Any local dependencies should use replaces like this:
     ```go
     module github.com/synapsecns/sanguine/path/to/your/module
 
-    go 1.21 // or whatever the version is in go.work
+    go 1.22.1
 
+    toolchain go1.22.4 // or whatever the version is in go.work
    require (
         github.com/synapsecns/sanguine/core v0.0.1
    )
@@ -183,6 +186,10 @@ If you need to make a new go module, here are the steps to follow:
 ## Best Practices
 
 For the most part, we follow the [uber style guide](https://github.com/uber-go/guide/blob/master/style.md).
+
+### macOS and Docker-based Tools
+
+If you're using a Mac with Apple Silicon (M1/M2/M3), you might encounter issues with Docker-based tools that use AMD64 images. This is particularly relevant for tools like our `abigen` utility. Please see our [abigen README](./tools/abigen/README.md#note-on-macos-and-rosetta) for details on how to resolve Rosetta-related issues and our plans for future improvements.
 
 ### Testing
 

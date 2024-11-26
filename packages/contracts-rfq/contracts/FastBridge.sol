@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./libs/Errors.sol";
 import {UniversalTokenLib} from "./libs/UniversalToken.sol";
@@ -9,7 +9,9 @@ import {UniversalTokenLib} from "./libs/UniversalToken.sol";
 import {Admin} from "./Admin.sol";
 import {IFastBridge} from "./interfaces/IFastBridge.sol";
 
-contract FastBridge is IFastBridge, Admin {
+import {MulticallTarget} from "./utils/MulticallTarget.sol";
+
+contract FastBridge is IFastBridge, MulticallTarget, Admin {
     using SafeERC20 for IERC20;
     using UniversalTokenLib for address;
 

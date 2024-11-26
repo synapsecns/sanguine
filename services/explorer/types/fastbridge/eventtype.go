@@ -10,11 +10,17 @@ const (
 	BridgeRequestedEvent EventType = iota
 	// BridgeRelayedEvent is emitted when a RFQ request is relayed to the destination chain.
 	BridgeRelayedEvent
+	// BridgeRefundedEvent is emitted when a RFQ request is refunded.
+	BridgeRefundedEvent
+	// BridgeProvenEvent is emitted when a RFQ request is proven.
+	BridgeProvenEvent
+	// BridgeClaimedEvent is emitted when a RFQ request is claimed.
+	BridgeClaimedEvent
 )
 
 // AllEventTypes is a list of the event types.
 func AllEventTypes() []EventType {
-	return []EventType{BridgeRequestedEvent, BridgeRelayedEvent}
+	return []EventType{BridgeRequestedEvent, BridgeRelayedEvent, BridgeRefundedEvent, BridgeProvenEvent, BridgeClaimedEvent}
 }
 
 // Int gets the int value of the event type.

@@ -23,7 +23,7 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         uint256 chainGasAmount
     );
 
-    uint256 public constant CALL_VALUE = 1_337_420;
+    uint256 public constant ZAP_NATIVE = 1_337_420;
 
     address public excessiveReturnValueRecipient;
     address public incorrectReturnValueRecipient;
@@ -57,8 +57,8 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         ethTx.destRecipient = recipient;
     }
 
-    function assertEmptyCallParams(bytes memory callParams) public pure {
-        assertEq(callParams.length, 0, "Invalid setup: callParams are not empty");
+    function assertEmptyZapData(bytes memory zapData) public pure {
+        assertEq(zapData.length, 0, "Invalid setup: zapData are not empty");
     }
 
     function expectBridgeRelayed(
@@ -69,7 +69,7 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         public
         virtual
     {
-        uint256 chainGasAmount = bridgeTx.destToken == ETH_ADDRESS ? 0 : bridgeTx.callValue;
+        uint256 chainGasAmount = bridgeTx.destToken == ETH_ADDRESS ? 0 : bridgeTx.zapNative;
         vm.expectEmit(address(fastBridge));
         emit BridgeRelayed({
             transactionId: txId,
@@ -158,132 +158,126 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
 
     // ══════════════════════════════════════════ RELAYS WITH CALL VALUE ═══════════════════════════════════════════════
 
-    function test_relay_token_withCallValue() public {
-        setTokenTestCallValue(CALL_VALUE);
+    function test_relay_token_withZapNative() public {
+        setTokenTestZapNative(ZAP_NATIVE);
         bytes32 txId = getTxId(tokenTx);
         expectBridgeRelayed(tokenTx, txId, relayerA);
-        relay({caller: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
+        relay({caller: relayerA, msgValue: ZAP_NATIVE, bridgeTx: tokenTx});
         checkRelayedViews({txId: txId, expectedRelayer: relayerA});
         checkTokenBalances({recipient: userB, relayCaller: relayerA});
-        assertEq(userB.balance, CALL_VALUE);
+        assertEq(userB.balance, ZAP_NATIVE);
     }
 
-    function test_relay_token_withRelayerAddressCallValue() public {
-        setTokenTestCallValue(CALL_VALUE);
+    function test_relay_token_withRelayerAddressZapNative() public {
+        setTokenTestZapNative(ZAP_NATIVE);
         bytes32 txId = getTxId(tokenTx);
         expectBridgeRelayed(tokenTx, txId, relayerA);
-        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
+        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: ZAP_NATIVE, bridgeTx: tokenTx});
         checkRelayedViews({txId: txId, expectedRelayer: relayerA});
         checkTokenBalances({recipient: userB, relayCaller: relayerB});
-        assertEq(userB.balance, CALL_VALUE);
+        assertEq(userB.balance, ZAP_NATIVE);
     }
 
     // ═════════════════════════════════════ EXCESSIVE RETURN VALUE RECIPIENT ══════════════════════════════════════════
 
-    // Note: in this test, the callParams are not present, and the below test functions succeed.
-    // Override them in the derived tests where callParams are present to check for a revert.
+    // Note: in this test, the zapData are not present, and the below test functions succeed.
+    // Override them in the derived tests where zapData are present to check for a revert.
 
-    function test_relay_token_excessiveReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
-        assertEmptyCallParams(tokenTx.callParams);
+    function test_relay_token_excessiveReturnValueRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(tokenTx.zapData);
         setTokenTestRecipient(excessiveReturnValueRecipient);
         test_relay_token();
     }
 
-    function test_relay_token_withRelayerAddress_excessiveReturnValueRecipient_revertWhenCallParamsPresent()
+    function test_relay_token_withRelayerAddress_excessiveReturnValueRecipient_revertWhenZapDataPresent()
         public
         virtual
     {
-        assertEmptyCallParams(tokenTx.callParams);
+        assertEmptyZapData(tokenTx.zapData);
         setTokenTestRecipient(excessiveReturnValueRecipient);
         test_relay_token_withRelayerAddress();
     }
 
-    function test_relay_token_withCallValue_excessiveReturnValueRecipient_revertWhenCallParamsPresent()
+    function test_relay_token_withZapNative_excessiveReturnValueRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(tokenTx.zapData);
+        setTokenTestZapNative(ZAP_NATIVE);
+        setTokenTestRecipient(excessiveReturnValueRecipient);
+        test_relay_token_withZapNative();
+    }
+
+    function test_relay_token_withRelayerAddressZapNative_excessiveReturnValueRecipient_revertWhenZapDataPresent()
         public
         virtual
     {
-        assertEmptyCallParams(tokenTx.callParams);
-        setTokenTestCallValue(CALL_VALUE);
+        assertEmptyZapData(tokenTx.zapData);
+        setTokenTestZapNative(ZAP_NATIVE);
         setTokenTestRecipient(excessiveReturnValueRecipient);
-        test_relay_token_withCallValue();
+        test_relay_token_withRelayerAddressZapNative();
     }
 
-    function test_relay_token_withRelayerAddressCallValue_excessiveReturnValueRecipient_revertWhenCallParamsPresent()
-        public
-        virtual
-    {
-        assertEmptyCallParams(tokenTx.callParams);
-        setTokenTestCallValue(CALL_VALUE);
-        setTokenTestRecipient(excessiveReturnValueRecipient);
-        test_relay_token_withRelayerAddressCallValue();
-    }
-
-    function test_relay_eth_excessiveReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
-        assertEmptyCallParams(ethTx.callParams);
+    function test_relay_eth_excessiveReturnValueRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(ethTx.zapData);
         setEthTestRecipient(excessiveReturnValueRecipient);
         test_relay_eth();
     }
 
-    function test_relay_eth_withRelayerAddress_excessiveReturnValueRecipient_revertWhenCallParamsPresent()
+    function test_relay_eth_withRelayerAddress_excessiveReturnValueRecipient_revertWhenZapDataPresent()
         public
         virtual
     {
-        assertEmptyCallParams(ethTx.callParams);
+        assertEmptyZapData(ethTx.zapData);
         setEthTestRecipient(excessiveReturnValueRecipient);
         test_relay_eth_withRelayerAddress();
     }
 
     // ═════════════════════════════════════ INCORRECT RETURN VALUE RECIPIENT ══════════════════════════════════════════
 
-    // Note: in this test, the callParams are not present, and the below test functions succeed.
-    // Override them in the derived tests where callParams are present to check for a revert.
+    // Note: in this test, the zapData are not present, and the below test functions succeed.
+    // Override them in the derived tests where zapData are present to check for a revert.
 
-    function test_relay_token_incorrectReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
-        assertEmptyCallParams(tokenTx.callParams);
+    function test_relay_token_incorrectReturnValueRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(tokenTx.zapData);
         setTokenTestRecipient(incorrectReturnValueRecipient);
         test_relay_token();
     }
 
-    function test_relay_token_withRelayerAddress_incorrectReturnValueRecipient_revertWhenCallParamsPresent()
+    function test_relay_token_withRelayerAddress_incorrectReturnValueRecipient_revertWhenZapDataPresent()
         public
         virtual
     {
-        assertEmptyCallParams(tokenTx.callParams);
+        assertEmptyZapData(tokenTx.zapData);
         setTokenTestRecipient(incorrectReturnValueRecipient);
         test_relay_token_withRelayerAddress();
     }
 
-    function test_relay_token_withCallValue_incorrectReturnValueRecipient_revertWhenCallParamsPresent()
+    function test_relay_token_withZapNative_incorrectReturnValueRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(tokenTx.zapData);
+        setTokenTestZapNative(ZAP_NATIVE);
+        setTokenTestRecipient(incorrectReturnValueRecipient);
+        test_relay_token_withZapNative();
+    }
+
+    function test_relay_token_withRelayerAddressZapNative_incorrectReturnValueRecipient_revertWhenZapDataPresent()
         public
         virtual
     {
-        assertEmptyCallParams(tokenTx.callParams);
-        setTokenTestCallValue(CALL_VALUE);
+        assertEmptyZapData(tokenTx.zapData);
+        setTokenTestZapNative(ZAP_NATIVE);
         setTokenTestRecipient(incorrectReturnValueRecipient);
-        test_relay_token_withCallValue();
+        test_relay_token_withRelayerAddressZapNative();
     }
 
-    function test_relay_token_withRelayerAddressCallValue_incorrectReturnValueRecipient_revertWhenCallParamsPresent()
-        public
-        virtual
-    {
-        assertEmptyCallParams(tokenTx.callParams);
-        setTokenTestCallValue(CALL_VALUE);
-        setTokenTestRecipient(incorrectReturnValueRecipient);
-        test_relay_token_withRelayerAddressCallValue();
-    }
-
-    function test_relay_eth_incorrectReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
-        assertEmptyCallParams(ethTx.callParams);
+    function test_relay_eth_incorrectReturnValueRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(ethTx.zapData);
         setEthTestRecipient(incorrectReturnValueRecipient);
         test_relay_eth();
     }
 
-    function test_relay_eth_withRelayerAddress_incorrectReturnValueRecipient_revertWhenCallParamsPresent()
+    function test_relay_eth_withRelayerAddress_incorrectReturnValueRecipient_revertWhenZapDataPresent()
         public
         virtual
     {
-        assertEmptyCallParams(ethTx.callParams);
+        assertEmptyZapData(ethTx.zapData);
         setEthTestRecipient(incorrectReturnValueRecipient);
         test_relay_eth_withRelayerAddress();
     }
@@ -301,18 +295,18 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         test_relay_token_withRelayerAddress();
     }
 
-    function test_relay_token_withCallValue_nonPayableRecipient_revert() public {
-        setTokenTestCallValue(CALL_VALUE);
+    function test_relay_token_withZapNative_nonPayableRecipient_revert() public {
+        setTokenTestZapNative(ZAP_NATIVE);
         setTokenTestRecipient(nonPayableRecipient);
         vm.expectRevert();
-        relay({caller: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
+        relay({caller: relayerA, msgValue: ZAP_NATIVE, bridgeTx: tokenTx});
     }
 
-    function test_relay_token_withRelayerAddressCallValue_nonPayableRecipient_revert() public {
-        setTokenTestCallValue(CALL_VALUE);
+    function test_relay_token_withRelayerAddressZapNative_nonPayableRecipient_revert() public {
+        setTokenTestZapNative(ZAP_NATIVE);
         setTokenTestRecipient(nonPayableRecipient);
         vm.expectRevert();
-        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
+        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: ZAP_NATIVE, bridgeTx: tokenTx});
     }
 
     function test_relay_eth_revert_nonPayableRecipient() public {
@@ -329,100 +323,112 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
 
     // ══════════════════════════════════════════════ NO-OP RECIPIENT ══════════════════════════════════════════════════
 
-    // Note: in this test, the callParams are not present, and the below test functions succeed.
-    // Override them in the derived tests where callParams are present to check for a revert.
+    // Note: in this test, the zapData are not present, and the below test functions succeed.
+    // Override them in the derived tests where zapData are present to check for a revert.
 
-    function test_relay_token_noOpRecipient_revertWhenCallParamsPresent() public virtual {
-        assertEmptyCallParams(tokenTx.callParams);
+    function test_relay_token_noOpRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(tokenTx.zapData);
         setTokenTestRecipient(noOpRecipient);
         test_relay_token();
     }
 
-    function test_relay_token_withRelayerAddress_noOpRecipient_revertWhenCallParamsPresent() public virtual {
-        assertEmptyCallParams(tokenTx.callParams);
+    function test_relay_token_withRelayerAddress_noOpRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(tokenTx.zapData);
         setTokenTestRecipient(noOpRecipient);
         test_relay_token_withRelayerAddress();
     }
 
-    function test_relay_token_withCallValue_noOpRecipient_revertWhenCallParamsPresent() public virtual {
-        assertEmptyCallParams(tokenTx.callParams);
-        setTokenTestCallValue(CALL_VALUE);
+    function test_relay_token_withZapNative_noOpRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(tokenTx.zapData);
+        setTokenTestZapNative(ZAP_NATIVE);
         setTokenTestRecipient(noOpRecipient);
-        test_relay_token_withCallValue();
+        test_relay_token_withZapNative();
     }
 
-    function test_relay_token_withRelayerAddressCallValue_noOpRecipient_revertWhenCallParamsPresent() public virtual {
-        assertEmptyCallParams(tokenTx.callParams);
-        setTokenTestCallValue(CALL_VALUE);
+    function test_relay_token_withRelayerAddressZapNative_noOpRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(tokenTx.zapData);
+        setTokenTestZapNative(ZAP_NATIVE);
         setTokenTestRecipient(noOpRecipient);
-        test_relay_token_withRelayerAddressCallValue();
+        test_relay_token_withRelayerAddressZapNative();
     }
 
-    function test_relay_eth_noOpRecipient_revertWhenCallParamsPresent() public virtual {
-        assertEmptyCallParams(ethTx.callParams);
+    function test_relay_eth_noOpRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(ethTx.zapData);
         setEthTestRecipient(noOpRecipient);
         test_relay_eth();
     }
 
-    function test_relay_eth_withRelayerAddress_noOpRecipient_revertWhenCallParamsPresent() public virtual {
-        assertEmptyCallParams(ethTx.callParams);
+    function test_relay_eth_withRelayerAddress_noOpRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(ethTx.zapData);
         setEthTestRecipient(noOpRecipient);
         test_relay_eth_withRelayerAddress();
     }
 
     // ═════════════════════════════════════════ NO RETURN VALUE RECIPIENT ═════════════════════════════════════════════
 
-    // Note: in this test, the callParams are not present, and the below test functions succeed.
-    // Override them in the derived tests where callParams are present to check for a revert.
+    // Note: in this test, the zapData are not present, and the below test functions succeed.
+    // Override them in the derived tests where zapData are present to check for a revert.
 
-    function test_relay_token_noReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
-        assertEmptyCallParams(tokenTx.callParams);
+    function test_relay_token_noReturnValueRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(tokenTx.zapData);
         setTokenTestRecipient(noReturnValueRecipient);
         test_relay_token();
     }
 
-    function test_relay_token_withRelayerAddress_noReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
-        assertEmptyCallParams(tokenTx.callParams);
+    function test_relay_token_withRelayerAddress_noReturnValueRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(tokenTx.zapData);
         setTokenTestRecipient(noReturnValueRecipient);
         test_relay_token_withRelayerAddress();
     }
 
-    function test_relay_token_withCallValue_noReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
-        assertEmptyCallParams(tokenTx.callParams);
-        setTokenTestCallValue(CALL_VALUE);
+    function test_relay_token_withZapNative_noReturnValueRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(tokenTx.zapData);
+        setTokenTestZapNative(ZAP_NATIVE);
         setTokenTestRecipient(noReturnValueRecipient);
-        test_relay_token_withCallValue();
+        test_relay_token_withZapNative();
     }
 
-    function test_relay_token_withRelayerAddressCallValue_noReturnValueRecipient_revertWhenCallParamsPresent()
+    function test_relay_token_withRelayerAddressZapNative_noReturnValueRecipient_revertWhenZapDataPresent()
         public
         virtual
     {
-        assertEmptyCallParams(tokenTx.callParams);
-        setTokenTestCallValue(CALL_VALUE);
+        assertEmptyZapData(tokenTx.zapData);
+        setTokenTestZapNative(ZAP_NATIVE);
         setTokenTestRecipient(noReturnValueRecipient);
-        test_relay_token_withRelayerAddressCallValue();
+        test_relay_token_withRelayerAddressZapNative();
     }
 
-    function test_relay_eth_noReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
-        assertEmptyCallParams(ethTx.callParams);
+    function test_relay_eth_noReturnValueRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(ethTx.zapData);
         setEthTestRecipient(noReturnValueRecipient);
         test_relay_eth();
     }
 
-    function test_relay_eth_withRelayerAddress_noReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
-        assertEmptyCallParams(ethTx.callParams);
+    function test_relay_eth_withRelayerAddress_noReturnValueRecipient_revertWhenZapDataPresent() public virtual {
+        assertEmptyZapData(ethTx.zapData);
         setEthTestRecipient(noReturnValueRecipient);
         test_relay_eth_withRelayerAddress();
     }
 
     // ══════════════════════════════════════════════════ REVERTS ══════════════════════════════════════════════════════
 
-    function test_relay_revert_usedRequestV1() public {
-        bytes memory request = abi.encode(extractV1(tokenTx));
-        vm.expectRevert();
+    function test_relay_revert_requestV1() public {
+        // V1 doesn't have any version field
+        expectRevertUnsupportedVersion(0);
         vm.prank({msgSender: relayerA, txOrigin: relayerA});
-        fastBridge.relay(request);
+        fastBridge.relay(mockRequestV1);
+    }
+
+    function test_relay_revert_invalidRequestV2() public {
+        expectRevertInvalidEncodedTx();
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.relay(invalidRequestV2);
+    }
+
+    function test_relay_revert_requestV3() public {
+        expectRevertUnsupportedVersion(3);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.relay(mockRequestV3);
     }
 
     function test_relay_revert_chainIncorrect() public {
@@ -443,11 +449,23 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         relay({caller: relayerA, msgValue: 0, bridgeTx: tokenTx});
     }
 
-    function test_relay_withRelayerAddress_revert_usedRequestV1() public {
-        bytes memory request = abi.encode(extractV1(tokenTx));
-        vm.expectRevert();
+    function test_relay_withRelayerAddress_revert_requestV1() public {
+        // V1 doesn't have any version field
+        expectRevertUnsupportedVersion(0);
         vm.prank({msgSender: relayerA, txOrigin: relayerA});
-        fastBridge.relay(request, relayerB);
+        fastBridge.relayV2(mockRequestV1, relayerB);
+    }
+
+    function test_relay_withRelayerAddress_revert_invalidRequestV2() public {
+        expectRevertInvalidEncodedTx();
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.relayV2(invalidRequestV2, relayerB);
+    }
+
+    function test_relay_withRelayerAddress_revert_requestV3() public {
+        expectRevertUnsupportedVersion(3);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.relayV2(mockRequestV3, relayerB);
     }
 
     function test_relay_withRelayerAddress_revert_chainIncorrect() public {
@@ -473,65 +491,65 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         relayWithAddress({caller: relayerA, relayer: address(0), msgValue: 0, bridgeTx: tokenTx});
     }
 
-    function test_relay_token_withCallValue_revert_zeroCallValue() public {
-        setTokenTestCallValue(CALL_VALUE);
+    function test_relay_token_withZapNative_revert_zeroZapNative() public {
+        setTokenTestZapNative(ZAP_NATIVE);
         vm.expectRevert(MsgValueIncorrect.selector);
         relay({caller: relayerA, msgValue: 0, bridgeTx: tokenTx});
     }
 
-    function test_relay_token_withCallValue_revert_lowerCallValue() public {
-        setTokenTestCallValue(CALL_VALUE);
+    function test_relay_token_withZapNative_revert_lowerZapNative() public {
+        setTokenTestZapNative(ZAP_NATIVE);
         vm.expectRevert(MsgValueIncorrect.selector);
-        relay({caller: relayerA, msgValue: CALL_VALUE - 1, bridgeTx: tokenTx});
+        relay({caller: relayerA, msgValue: ZAP_NATIVE - 1, bridgeTx: tokenTx});
     }
 
-    function test_relay_token_withCallValue_revert_higherCallValue() public {
-        setTokenTestCallValue(CALL_VALUE);
+    function test_relay_token_withZapNative_revert_higherZapNative() public {
+        setTokenTestZapNative(ZAP_NATIVE);
         vm.expectRevert(MsgValueIncorrect.selector);
-        relay({caller: relayerA, msgValue: CALL_VALUE + 1, bridgeTx: tokenTx});
+        relay({caller: relayerA, msgValue: ZAP_NATIVE + 1, bridgeTx: tokenTx});
     }
 
-    function test_relay_token_withRelayerAddressCallValue_revert_zeroCallValue() public {
-        setTokenTestCallValue(CALL_VALUE);
+    function test_relay_token_withRelayerAddressZapNative_revert_zeroZapNative() public {
+        setTokenTestZapNative(ZAP_NATIVE);
         vm.expectRevert(MsgValueIncorrect.selector);
         relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: 0, bridgeTx: tokenTx});
     }
 
-    function test_relay_token_withRelayerAddressCallValue_revert_lowerCallValue() public {
-        setTokenTestCallValue(CALL_VALUE);
+    function test_relay_token_withRelayerAddressZapNative_revert_lowerZapNative() public {
+        setTokenTestZapNative(ZAP_NATIVE);
         vm.expectRevert(MsgValueIncorrect.selector);
-        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: CALL_VALUE - 1, bridgeTx: tokenTx});
+        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: ZAP_NATIVE - 1, bridgeTx: tokenTx});
     }
 
-    function test_relay_token_withRelayerAddressCallValue_revert_higherCallValue() public {
-        setTokenTestCallValue(CALL_VALUE);
+    function test_relay_token_withRelayerAddressZapNative_revert_higherZapNative() public {
+        setTokenTestZapNative(ZAP_NATIVE);
         vm.expectRevert(MsgValueIncorrect.selector);
-        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: CALL_VALUE + 1, bridgeTx: tokenTx});
+        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: ZAP_NATIVE + 1, bridgeTx: tokenTx});
     }
 
-    function test_relay_eth_withCallValue_revert_notSupported() public {
-        setEthTestCallValue(CALL_VALUE);
-        // Neither destAmount, CALL_VALUE, nor destAmount + CALL_VALUE should work here
-        vm.expectRevert(NativeTokenCallValueNotSupported.selector);
-        relay({caller: relayerB, msgValue: CALL_VALUE, bridgeTx: ethTx});
-        vm.expectRevert(NativeTokenCallValueNotSupported.selector);
+    function test_relay_eth_withZapNative_revert_notSupported() public {
+        setEthTestZapNative(ZAP_NATIVE);
+        // Neither destAmount, ZAP_NATIVE, nor destAmount + ZAP_NATIVE should work here
+        vm.expectRevert(ZapNativeNotSupported.selector);
+        relay({caller: relayerB, msgValue: ZAP_NATIVE, bridgeTx: ethTx});
+        vm.expectRevert(ZapNativeNotSupported.selector);
         relay({caller: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
-        vm.expectRevert(NativeTokenCallValueNotSupported.selector);
-        relay({caller: relayerB, msgValue: ethParams.destAmount + CALL_VALUE, bridgeTx: ethTx});
+        vm.expectRevert(ZapNativeNotSupported.selector);
+        relay({caller: relayerB, msgValue: ethParams.destAmount + ZAP_NATIVE, bridgeTx: ethTx});
     }
 
-    function test_relay_eth_withRelayerAddressCallValue_revert_notSupported() public {
-        setEthTestCallValue(CALL_VALUE);
-        // Neither destAmount, CALL_VALUE, nor destAmount + CALL_VALUE should work here
-        vm.expectRevert(NativeTokenCallValueNotSupported.selector);
-        relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: CALL_VALUE, bridgeTx: ethTx});
-        vm.expectRevert(NativeTokenCallValueNotSupported.selector);
+    function test_relay_eth_withRelayerAddressZapNative_revert_notSupported() public {
+        setEthTestZapNative(ZAP_NATIVE);
+        // Neither destAmount, ZAP_NATIVE, nor destAmount + ZAP_NATIVE should work here
+        vm.expectRevert(ZapNativeNotSupported.selector);
+        relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: ZAP_NATIVE, bridgeTx: ethTx});
+        vm.expectRevert(ZapNativeNotSupported.selector);
         relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
-        vm.expectRevert(NativeTokenCallValueNotSupported.selector);
+        vm.expectRevert(ZapNativeNotSupported.selector);
         relayWithAddress({
             caller: relayerA,
             relayer: relayerB,
-            msgValue: ethParams.destAmount + CALL_VALUE,
+            msgValue: ethParams.destAmount + ZAP_NATIVE,
             bridgeTx: ethTx
         });
     }

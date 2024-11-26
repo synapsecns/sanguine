@@ -4,7 +4,7 @@ import { check } from 'express-validator'
 import { showFirstValidationError } from '../middleware/showFirstValidationError'
 import { destinationTxController } from '../controllers/destinationTxController'
 
-const router = express.Router()
+const router: express.Router = express.Router()
 
 /**
  * @openapi
@@ -34,8 +34,35 @@ const router = express.Router()
  *               type: object
  *               properties:
  *                 status:
- *                   type: boolean
+ *                   type: string
  *                   description: The status of the transaction
+ *                 fromInfo:
+ *                   type: object
+ *                   properties:
+ *                     chainID:
+ *                       type: integer
+ *                       description: The origin chain ID
+ *                     address:
+ *                       type: string
+ *                       description: The recipient address
+ *                     txnHash:
+ *                       type: string
+ *                       description: The transaction hash on the destination chain
+ *                     USDValue:
+ *                       type: number
+ *                       description: The USD value of the transaction
+ *                     tokenSymbol:
+ *                       type: string
+ *                       description: The symbol of the token transferred
+ *                     blockNumber:
+ *                       type: integer
+ *                       description: The block number of the transaction
+ *                     formattedTime:
+ *                       type: string
+ *                       description: The formatted time of the transaction
+ *                     formattedValue:
+ *                       type: string
+ *                       description: The formatted value of the transaction
  *                 toInfo:
  *                   type: object
  *                   properties:
@@ -54,6 +81,9 @@ const router = express.Router()
  *                     tokenSymbol:
  *                       type: string
  *                       description: The symbol of the token transferred
+ *                     blockNumber:
+ *                       type: integer
+ *                       description: The block number of the transaction
  *                     formattedTime:
  *                       type: string
  *                       description: The formatted time of the transaction
@@ -61,15 +91,25 @@ const router = express.Router()
  *                       type: string
  *                       description: The formatted value of the transaction
  *             example:
- *               status: true
- *               toInfo:
+ *               status: "completed"
+ *               fromInfo:
  *                 chainID: 8453
- *                 address: "0xABb4F79430002534df3F62E964D62659A010Ef3C"
- *                 txnHash: "0xc9284b2de9ba74ab618573884930e51575c1a3511216d9949da2955efb69afa8"
- *                 USDValue: 5999.98657
+ *                 address: "0x6eA4207627aAf2Ef86642eD8B331579b606471c3"
+ *                 txnHash: "0x13486d9eaefd68de6a20b704d70deb8436effbac1f77fddfc0c7ef14f08e96c3"
+ *                 USDValue: 11660.93019,
  *                 tokenSymbol: "USDC"
- *                 formattedTime: "2024-09-19 23:32:29 +0000 UTC"
- *                 formattedValue: "5999.986575"
+ *                 blockNumber: 19857812,
+ *                 formattedTime: "2024-09-16 16:42:51 +0000 UTC"
+ *                 formattedValue: "11637.654884"
+ *               toInfo:
+ *                 chainID: 42161
+ *                 address: "0xfC8f27Bcf34FfD52869ffa4A5A6B9b0A872281Ad"
+ *                 txnHash: "0xe26be8f4296c14dc8da6ef92d39c1d20577a43704bfb0b2cea5ee2f516be0f4e"
+ *                 USDValue: 11660.92558
+ *                 tokenSymbol: "USDC"
+ *                 blockNumber: 254173724
+ *                 formattedTime: "2024-09-16 16:42:55 +0000 UTC"
+ *                 formattedValue: "11637.650281"
  *       400:
  *         description: Invalid input
  *         content:
@@ -94,6 +134,21 @@ const router = express.Router()
  *                 message: "originChainId is required"
  *                 field: "originChainId"
  *                 location: "query"
+ *       404:
+ *         description: Not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 fromInfo:
+ *                   type: object
+ *                   nullable: true
+ *                 toInfo:
+ *                   type: object
+ *                   nullable: true
  *       500:
  *         description: Server error
  *         content:
@@ -102,8 +157,6 @@ const router = express.Router()
  *               type: object
  *               properties:
  *                 error:
- *                   type: string
- *                 details:
  *                   type: string
  */
 router.get(

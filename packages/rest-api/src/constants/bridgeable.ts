@@ -807,6 +807,8 @@ export const ETH: BridgeableToken = {
     [CHAINS.BLAST.id]: NativeTokenAddress,
     [CHAINS.SCROLL.id]: NativeTokenAddress,
     [CHAINS.LINEA.id]: NativeTokenAddress,
+    [CHAINS.WORLDCHAIN.id]: NativeTokenAddress,
+    [CHAINS.BNBCHAIN.id]: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
   },
   decimals: {
     [CHAINS.ETHEREUM.id]: 18,
@@ -819,6 +821,8 @@ export const ETH: BridgeableToken = {
     [CHAINS.BLAST.id]: 18,
     [CHAINS.SCROLL.id]: 18,
     [CHAINS.LINEA.id]: 18,
+    [CHAINS.WORLDCHAIN.id]: 18,
+    [CHAINS.BNBCHAIN.id]: 18,
   },
   symbol: 'ETH',
   name: 'Ethereum',
@@ -995,12 +999,15 @@ export const USDCe: BridgeableToken = {
     [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
     [CHAINS.AURORA.id]: '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802',
     [CHAINS.POLYGON.id]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
+    [CHAINS.WORLDCHAIN.id]: '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1',
   },
   decimals: {
     [CHAINS.OPTIMISM.id]: 6,
     [CHAINS.AVALANCHE.id]: 6,
     [CHAINS.ARBITRUM.id]: 6,
     [CHAINS.AURORA.id]: 6,
+    [CHAINS.POLYGON.id]: 6,
+    [CHAINS.WORLDCHAIN.id]: 6,
   },
   symbol: 'USDC.e',
   name: 'Bridged USDC',
@@ -1196,11 +1203,9 @@ export const WKLAY: BridgeableToken = {
 
 export const MATIC: BridgeableToken = {
   addresses: {
-    [CHAINS.POLYGON.id]: NativeTokenAddress,
     [CHAINS.DFK.id]: '0xD17a41Cd199edF1093A9Be4404EaDe52Ec19698e',
   },
   decimals: {
-    [CHAINS.POLYGON.id]: 18,
     [CHAINS.DFK.id]: 18,
   },
   symbol: 'MATIC',
@@ -1213,7 +1218,24 @@ export const MATIC: BridgeableToken = {
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/matic.237cd2b6.svg',
 }
 
-export const WMATIC: BridgeableToken = {
+export const POL: BridgeableToken = {
+  addresses: {
+    [CHAINS.POLYGON.id]: NativeTokenAddress,
+  },
+  decimals: {
+    [CHAINS.POLYGON.id]: 18,
+  },
+  symbol: 'MATIC',
+  name: 'MATIC',
+  swapableType: 'MATIC',
+  color: 'blue',
+  priorityRank: 300,
+  routeSymbol: 'POL',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/matic.237cd2b6.svg',
+}
+
+export const WPOL: BridgeableToken = {
   addresses: {
     [CHAINS.POLYGON.id]: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
   },
@@ -1225,7 +1247,7 @@ export const WMATIC: BridgeableToken = {
   swapableType: 'MATIC',
   color: 'blue',
   priorityRank: 350,
-  routeSymbol: 'WMATIC',
+  routeSymbol: 'WPOL',
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/matic.237cd2b6.svg',
 }

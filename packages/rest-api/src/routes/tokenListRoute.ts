@@ -2,7 +2,7 @@ import express from 'express'
 
 import { tokenListController } from '../controllers/tokenListController'
 
-const router = express.Router()
+const router: express.Router = express.Router()
 
 /**
  * @openapi
@@ -93,8 +93,6 @@ const router = express.Router()
  *               type: object
  *               properties:
  *                 error:
- *                   type: string
- *                 details:
  *                   type: string
  */
 router.get('/', tokenListController)

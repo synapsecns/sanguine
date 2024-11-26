@@ -1,5 +1,6 @@
 import express from 'express'
 import { check } from 'express-validator'
+import { isAddress } from 'ethers/lib/utils'
 
 import { showFirstValidationError } from '../middleware/showFirstValidationError'
 import { swapController } from '../controllers/swapController'
@@ -10,8 +11,10 @@ import { checksumAddresses } from '../middleware/checksumAddresses'
 import { normalizeNativeTokenAddress } from '../middleware/normalizeNativeTokenAddress'
 import { validSwapTokens } from '../validations/validSwapTokens'
 import { validSwapChain } from '../validations/validSwapChain'
+import { validateDecimals } from '../validations/validateDecimals'
+import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 
-const router = express.Router()
+const router: express.Router = express.Router()
 
 /**
  * @openapi
@@ -44,6 +47,12 @@ const router = express.Router()
  *         schema:
  *           type: number
  *         description: The amount of tokens to swap
+ *       - in: query
+ *         name: address
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Optional. The address that will perform the swap. If provided, returns transaction data.
  *     responses:
  *       200:
  *         description: Successful response
@@ -74,6 +83,16 @@ const router = express.Router()
  *                     rawParams:
  *                       type: string
  *                       description: Raw parameters for the swap
+ *                     callData:
+ *                       type: object
+ *                       nullable: true
+ *                       properties:
+ *                         to:
+ *                           type: string
+ *                         data:
+ *                           type: string
+ *                         value:
+ *                           type: string
  *             example:
  *               routerAddress: "0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a"
  *               maxAmountOut: "999.746386"
@@ -120,8 +139,6 @@ const router = express.Router()
  *               properties:
  *                 error:
  *                   type: string
- *                 details:
- *                   type: string
  *
  * components:
  *   schemas:
@@ -163,7 +180,20 @@ router.get(
         isTokenSupportedOnChain(value, req.query.chain as string)
       )
       .withMessage('Token not supported on specified chain'),
-    check('amount').exists().withMessage('amount is required').isNumeric(),
+    check('amount')
+      .exists()
+      .withMessage('amount is required')
+      .isNumeric()
+      .custom((value, { req }) => {
+        const fromTokenInfo = tokenAddressToToken(
+          req.query.chain,
+          req.query.fromToken
+        )
+        return validateDecimals(value, fromTokenInfo.decimals)
+      })
+      .withMessage(
+        'Amount has too many decimals, beyond the maximum allowed for this token'
+      ),
     check()
       .custom((_value, { req }) => {
         const { chain } = req.query
@@ -178,6 +208,10 @@ router.get(
         return validSwapTokens(chain, fromToken, toToken)
       })
       .withMessage('Swap not supported for given tokens'),
+    check('address')
+      .optional()
+      .custom((value) => isAddress(value))
+      .withMessage('Invalid address'),
   ],
   showFirstValidationError,
   swapController

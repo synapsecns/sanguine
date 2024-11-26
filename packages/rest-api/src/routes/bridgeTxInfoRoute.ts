@@ -10,15 +10,17 @@ import { isTokenSupportedOnChain } from '../utils/isTokenSupportedOnChain'
 import { checksumAddresses } from '../middleware/checksumAddresses'
 import { normalizeNativeTokenAddress } from '../middleware/normalizeNativeTokenAddress'
 import { validateRouteExists } from '../validations/validateRouteExists'
+import { validateDecimals } from '../validations/validateDecimals'
+import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 
-const router = express.Router()
+const router: express.Router = express.Router()
 
 /**
  * @openapi
  * /bridgeTxInfo:
  *   get:
- *     summary: Get bridge transaction information
- *     description: Retrieve transaction information for bridging tokens between chains
+ *     summary: "[Deprecated] in favor of using the /bridge endpoint, which now returns call data"
+ *     description: "[Deprecated] Originally used to get Bridge transaction information"
  *     parameters:
  *       - in: query
  *         name: fromChain
@@ -126,8 +128,6 @@ const router = express.Router()
  *               properties:
  *                 error:
  *                   type: string
- *                 details:
- *                   type: string
  */
 router.get(
   '/',
@@ -164,7 +164,20 @@ router.get(
         isTokenSupportedOnChain(value, req.query.toChain as string)
       )
       .withMessage('Token not supported on specified chain'),
-    check('amount').exists().withMessage('amount is required').isNumeric(),
+    check('amount')
+      .exists()
+      .withMessage('amount is required')
+      .isNumeric()
+      .custom((value, { req }) => {
+        const fromTokenInfo = tokenAddressToToken(
+          req.query.fromChain,
+          req.query.fromToken
+        )
+        return validateDecimals(value, fromTokenInfo.decimals)
+      })
+      .withMessage(
+        'Amount has too many decimals, beyond the maximum allowed for this token'
+      ),
     check('destAddress')
       .exists()
       .withMessage('destAddress is required')

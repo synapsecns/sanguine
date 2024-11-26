@@ -689,12 +689,14 @@ func GetPartialInfoFromBridgeEventHybrid(bridgeEvent sql.HybridBridgeEvent, incl
 	if kappa == "" {
 		kappa = bridgeEvent.TKappa.String
 	}
+	bridgeModule := getBridgeModule(int(bridgeEvent.FEventType))
 	bridgeTx = model.BridgeTransaction{
-		FromInfo:    fromInfos,
-		ToInfo:      toInfos,
-		Kappa:       &kappa,
-		Pending:     &pending,
-		SwapSuccess: &swapSuccess,
+		FromInfo:     fromInfos,
+		ToInfo:       toInfos,
+		Kappa:        &kappa,
+		Pending:      &pending,
+		SwapSuccess:  &swapSuccess,
+		BridgeModule: &bridgeModule,
 	}
 	return &bridgeTx, nil
 }
@@ -1775,12 +1777,14 @@ func bwBridgeMVToBWTxOrigin(bridgeEvent *sql.HybridBridgeEvent, txType model.Bri
 		Time:               &timestamp,
 		FormattedTime:      &timeStampFormatted,
 	}
+	bridgeModule := getBridgeModule(int(bridgeEvent.FEventType))
 	result := &model.BridgeWatcherTx{
-		BridgeTx:    &bridgeTx,
-		Pending:     &isPending,
-		Type:        &txType,
-		Kappa:       &kappa,
-		KappaStatus: &kappaStatus,
+		BridgeTx:     &bridgeTx,
+		Pending:      &isPending,
+		Type:         &txType,
+		Kappa:        &kappa,
+		KappaStatus:  &kappaStatus,
+		BridgeModule: &bridgeModule,
 	}
 	return result, nil
 }
@@ -1823,12 +1827,14 @@ func bwBridgeMVToBWTxDestination(bridgeEvent *sql.HybridBridgeEvent, txType mode
 		Time:               &timestamp,
 		FormattedTime:      &timeStampFormatted,
 	}
+	bridgeModule := getBridgeModule(int(bridgeEvent.TEventType))
 	result := &model.BridgeWatcherTx{
-		BridgeTx:    &bridgeTx,
-		Pending:     &isPending,
-		Type:        &txType,
-		Kappa:       &kappa,
-		KappaStatus: &kappaStatus,
+		BridgeTx:     &bridgeTx,
+		Pending:      &isPending,
+		Type:         &txType,
+		Kappa:        &kappa,
+		KappaStatus:  &kappaStatus,
+		BridgeModule: &bridgeModule,
 	}
 	return result, nil
 }
@@ -1863,5 +1869,18 @@ func (r *queryResolver) getContractAddressFromType(chainID uint32, contractType 
 		return r.Config.Chains[chainID].Contracts.CCTP, nil
 	default:
 		return "", fmt.Errorf("contract type not supported")
+	}
+}
+
+func getBridgeModule(eventType int) string {
+	switch {
+	case eventType < 10:
+		return "SynapseBridge"
+	case eventType == 10:
+		return "SynapseCCTP"
+	case eventType == 12:
+		return "SynapseRFQ"
+	default:
+		return ""
 	}
 }

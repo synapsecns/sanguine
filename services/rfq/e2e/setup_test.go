@@ -59,7 +59,11 @@ func (i *IntegrationSuite) setupQuoterAPI() {
 			DSN:  dbPath,
 		},
 		OmniRPCURL: i.omniServer,
-		Bridges: map[uint32]string{
+		FastBridgeContractsV1: map[uint32]string{
+			originBackendChainID: i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
+			destBackendChainID:   i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
+		},
+		FastBridgeContractsV2: map[uint32]string{
 			originBackendChainID: i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeV2Type).Address().String(),
 			destBackendChainID:   i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeV2Type).Address().String(),
 		},
@@ -274,10 +278,16 @@ func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token 
 	i.Require().NoError(err, "Failed to get allowance")
 
 	if allowance.Cmp(big.NewInt(0)) == 0 {
-		txOpts := backend.GetTxContext(i.GetTestContext(), user.AddressPtr())
-		tx, err := erc20.Approve(txOpts.TransactOpts, fastBridgeV1.Address(), core.CopyBigInt(abi.MaxUint256))
+		err = retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
+			txOpts := backend.GetTxContext(ctx, user.AddressPtr())
+			tx, err := erc20.Approve(txOpts.TransactOpts, fastBridgeV1.Address(), core.CopyBigInt(abi.MaxUint256))
+			if err != nil {
+				return fmt.Errorf("failed to approve: %w", err)
+			}
+			backend.WaitForConfirmation(ctx, tx)
+			return nil
+		})
 		i.Require().NoError(err, "Failed to approve")
-		backend.WaitForConfirmation(i.GetTestContext(), tx)
 	}
 
 	// approve fastbridgev2
@@ -286,10 +296,16 @@ func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token 
 	i.Require().NoError(err, "Failed to get allowance")
 
 	if allowance.Cmp(big.NewInt(0)) == 0 {
-		txOpts := backend.GetTxContext(i.GetTestContext(), user.AddressPtr())
-		tx, err := erc20.Approve(txOpts.TransactOpts, fastBridgeV2.Address(), core.CopyBigInt(abi.MaxUint256))
+		err = retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
+			txOpts := backend.GetTxContext(ctx, user.AddressPtr())
+			tx, err := erc20.Approve(txOpts.TransactOpts, fastBridgeV2.Address(), core.CopyBigInt(abi.MaxUint256))
+			if err != nil {
+				return fmt.Errorf("failed to approve: %w", err)
+			}
+			backend.WaitForConfirmation(ctx, tx)
+			return nil
+		})
 		i.Require().NoError(err, "Failed to approve")
-		backend.WaitForConfirmation(i.GetTestContext(), tx)
 	}
 }
 
@@ -381,30 +397,39 @@ func (i *IntegrationSuite) setupRelayer() {
 
 			err := retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
 				metadataV1, rfqContractV1 := i.manager.GetFastBridge(i.GetTestContext(), backend)
+				txContextV1 := backend.GetTxContext(i.GetTestContext(), metadataV1.OwnerPtr())
 
-				txContext := backend.GetTxContext(i.GetTestContext(), metadataV1.OwnerPtr())
 				relayerRole, err := rfqContractV1.RELAYERROLE(&bind.CallOpts{Context: i.GetTestContext()})
+				proverRole, err := rfqContractV1.RELAYERROLE(&bind.CallOpts{Context: i.GetTestContext()})
 				if err != nil {
-					return fmt.Errorf("could not get relayer role: %w", err)
+					return fmt.Errorf("could not get prover role: %w", err)
 				}
-
-				tx, err := rfqContractV1.GrantRole(txContext.TransactOpts, relayerRole, i.relayerWallet.Address())
+				tx, err := rfqContractV1.GrantRole(txContextV1.TransactOpts, relayerRole, i.relayerWallet.Address())
 				if err != nil {
-					return fmt.Errorf("could not grant role: %w", err)
+					return fmt.Errorf("could not grant relayer role: %w", err)
 				}
 				backend.WaitForConfirmation(i.GetTestContext(), tx)
 
 				metadataV2, rfqContractV2 := i.manager.GetFastBridgeV2(i.GetTestContext(), backend)
+				txContextV2 := backend.GetTxContext(i.GetTestContext(), metadataV2.OwnerPtr())
 
-				txContext = backend.GetTxContext(i.GetTestContext(), metadataV2.OwnerPtr())
-				relayerRole, err = rfqContractV2.RELAYERROLE(&bind.CallOpts{Context: i.GetTestContext()})
+				proverRole, err = rfqContractV2.PROVERROLE(&bind.CallOpts{Context: i.GetTestContext()})
 				if err != nil {
-					return fmt.Errorf("could not get relayer role: %w", err)
+					return fmt.Errorf("could not get prover role: %w", err)
 				}
-
-				tx, err = rfqContractV2.GrantRole(txContext.TransactOpts, relayerRole, i.relayerWallet.Address())
+				tx, err = rfqContractV2.GrantRole(txContextV2.TransactOpts, proverRole, i.relayerWallet.Address())
 				if err != nil {
-					return fmt.Errorf("could not grant role: %w", err)
+					return fmt.Errorf("could not grant prover role: %w", err)
+				}
+				backend.WaitForConfirmation(i.GetTestContext(), tx)
+
+				quoterRole, err := rfqContractV2.QUOTERROLE(&bind.CallOpts{Context: i.GetTestContext()})
+				if err != nil {
+					return fmt.Errorf("could not get quoter role: %w", err)
+				}
+				tx, err = rfqContractV2.GrantRole(txContextV2.TransactOpts, quoterRole, i.relayerWallet.Address())
+				if err != nil {
+					return fmt.Errorf("could not grant quoter role: %w", err)
 				}
 				backend.WaitForConfirmation(i.GetTestContext(), tx)
 

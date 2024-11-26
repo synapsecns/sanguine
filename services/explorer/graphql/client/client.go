@@ -62,9 +62,10 @@ type GetBridgeTransactions struct {
 			Time           *int     "json:\"time\" graphql:\"time\""
 			FormattedTime  *string  "json:\"formattedTime\" graphql:\"formattedTime\""
 		} "json:\"toInfo\" graphql:\"toInfo\""
-		Kappa       *string "json:\"kappa\" graphql:\"kappa\""
-		Pending     *bool   "json:\"pending\" graphql:\"pending\""
-		SwapSuccess *bool   "json:\"swapSuccess\" graphql:\"swapSuccess\""
+		Kappa        *string "json:\"kappa\" graphql:\"kappa\""
+		Pending      *bool   "json:\"pending\" graphql:\"pending\""
+		SwapSuccess  *bool   "json:\"swapSuccess\" graphql:\"swapSuccess\""
+		BridgeModule *string "json:\"bridgeModule\" graphql:\"bridgeModule\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetCountByChainID struct {
@@ -106,30 +107,31 @@ type GetAmountStatistic struct {
 }
 type GetDailyStatisticsByChain struct {
 	Response []*struct {
-		Date      *string  "json:\"date\" graphql:\"date\""
-		Ethereum  *float64 "json:\"ethereum\" graphql:\"ethereum\""
-		Optimism  *float64 "json:\"optimism\" graphql:\"optimism\""
-		Cronos    *float64 "json:\"cronos\" graphql:\"cronos\""
-		Bsc       *float64 "json:\"bsc\" graphql:\"bsc\""
-		Polygon   *float64 "json:\"polygon\" graphql:\"polygon\""
-		Fantom    *float64 "json:\"fantom\" graphql:\"fantom\""
-		Boba      *float64 "json:\"boba\" graphql:\"boba\""
-		Metis     *float64 "json:\"metis\" graphql:\"metis\""
-		Moonbeam  *float64 "json:\"moonbeam\" graphql:\"moonbeam\""
-		Moonriver *float64 "json:\"moonriver\" graphql:\"moonriver\""
-		Klaytn    *float64 "json:\"klaytn\" graphql:\"klaytn\""
-		Arbitrum  *float64 "json:\"arbitrum\" graphql:\"arbitrum\""
-		Avalanche *float64 "json:\"avalanche\" graphql:\"avalanche\""
-		Dfk       *float64 "json:\"dfk\" graphql:\"dfk\""
-		Aurora    *float64 "json:\"aurora\" graphql:\"aurora\""
-		Harmony   *float64 "json:\"harmony\" graphql:\"harmony\""
-		Canto     *float64 "json:\"canto\" graphql:\"canto\""
-		Dogechain *float64 "json:\"dogechain\" graphql:\"dogechain\""
-		Base      *float64 "json:\"base\" graphql:\"base\""
-		Blast     *float64 "json:\"blast\" graphql:\"blast\""
-		Scroll    *float64 "json:\"scroll\" graphql:\"scroll\""
-		Linea     *float64 "json:\"linea\" graphql:\"linea\""
-		Total     *float64 "json:\"total\" graphql:\"total\""
+		Date       *string  "json:\"date\" graphql:\"date\""
+		Ethereum   *float64 "json:\"ethereum\" graphql:\"ethereum\""
+		Optimism   *float64 "json:\"optimism\" graphql:\"optimism\""
+		Cronos     *float64 "json:\"cronos\" graphql:\"cronos\""
+		Bsc        *float64 "json:\"bsc\" graphql:\"bsc\""
+		Polygon    *float64 "json:\"polygon\" graphql:\"polygon\""
+		Fantom     *float64 "json:\"fantom\" graphql:\"fantom\""
+		Boba       *float64 "json:\"boba\" graphql:\"boba\""
+		Metis      *float64 "json:\"metis\" graphql:\"metis\""
+		Moonbeam   *float64 "json:\"moonbeam\" graphql:\"moonbeam\""
+		Moonriver  *float64 "json:\"moonriver\" graphql:\"moonriver\""
+		Klaytn     *float64 "json:\"klaytn\" graphql:\"klaytn\""
+		Arbitrum   *float64 "json:\"arbitrum\" graphql:\"arbitrum\""
+		Avalanche  *float64 "json:\"avalanche\" graphql:\"avalanche\""
+		Dfk        *float64 "json:\"dfk\" graphql:\"dfk\""
+		Aurora     *float64 "json:\"aurora\" graphql:\"aurora\""
+		Harmony    *float64 "json:\"harmony\" graphql:\"harmony\""
+		Canto      *float64 "json:\"canto\" graphql:\"canto\""
+		Dogechain  *float64 "json:\"dogechain\" graphql:\"dogechain\""
+		Base       *float64 "json:\"base\" graphql:\"base\""
+		Blast      *float64 "json:\"blast\" graphql:\"blast\""
+		Scroll     *float64 "json:\"scroll\" graphql:\"scroll\""
+		Linea      *float64 "json:\"linea\" graphql:\"linea\""
+		Worldchain *float64 "json:\"worldchain\" graphql:\"worldchain\""
+		Total      *float64 "json:\"total\" graphql:\"total\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetMessageBusTransactions struct {
@@ -244,10 +246,11 @@ type GetOriginBridgeTx struct {
 			Time               *int     "json:\"time\" graphql:\"time\""
 			FormattedTime      *string  "json:\"formattedTime\" graphql:\"formattedTime\""
 		} "json:\"bridgeTx\" graphql:\"bridgeTx\""
-		Pending     *bool               "json:\"pending\" graphql:\"pending\""
-		Type        *model.BridgeTxType "json:\"type\" graphql:\"type\""
-		Kappa       *string             "json:\"kappa\" graphql:\"kappa\""
-		KappaStatus *model.KappaStatus  "json:\"kappaStatus\" graphql:\"kappaStatus\""
+		Pending      *bool               "json:\"pending\" graphql:\"pending\""
+		Type         *model.BridgeTxType "json:\"type\" graphql:\"type\""
+		Kappa        *string             "json:\"kappa\" graphql:\"kappa\""
+		KappaStatus  *model.KappaStatus  "json:\"kappaStatus\" graphql:\"kappaStatus\""
+		BridgeModule *string             "json:\"bridgeModule\" graphql:\"bridgeModule\""
 	} "json:\"response\" graphql:\"response\""
 }
 type GetDestinationBridgeTx struct {
@@ -266,10 +269,11 @@ type GetDestinationBridgeTx struct {
 			Time               *int     "json:\"time\" graphql:\"time\""
 			FormattedTime      *string  "json:\"formattedTime\" graphql:\"formattedTime\""
 		} "json:\"bridgeTx\" graphql:\"bridgeTx\""
-		Pending     *bool               "json:\"pending\" graphql:\"pending\""
-		Type        *model.BridgeTxType "json:\"type\" graphql:\"type\""
-		Kappa       *string             "json:\"kappa\" graphql:\"kappa\""
-		KappaStatus *model.KappaStatus  "json:\"kappaStatus\" graphql:\"kappaStatus\""
+		Pending      *bool               "json:\"pending\" graphql:\"pending\""
+		Type         *model.BridgeTxType "json:\"type\" graphql:\"type\""
+		Kappa        *string             "json:\"kappa\" graphql:\"kappa\""
+		KappaStatus  *model.KappaStatus  "json:\"kappaStatus\" graphql:\"kappaStatus\""
+		BridgeModule *string             "json:\"bridgeModule\" graphql:\"bridgeModule\""
 	} "json:\"response\" graphql:\"response\""
 }
 
@@ -305,6 +309,7 @@ const GetBridgeTransactionsDocument = `query GetBridgeTransactions ($chainIDTo: 
 		kappa
 		pending
 		swapSuccess
+		bridgeModule
 	}
 }
 `
@@ -502,6 +507,7 @@ const GetDailyStatisticsByChainDocument = `query GetDailyStatisticsByChain ($cha
 		blast
 		scroll
 		linea
+		worldchain
 		total
 	}
 }
@@ -696,6 +702,7 @@ const GetOriginBridgeTxDocument = `query GetOriginBridgeTx ($chainID: Int!, $txn
 		type
 		kappa
 		kappaStatus
+		bridgeModule
 	}
 }
 `
@@ -735,6 +742,7 @@ const GetDestinationBridgeTxDocument = `query GetDestinationBridgeTx ($chainID: 
 		type
 		kappa
 		kappaStatus
+		bridgeModule
 	}
 }
 `

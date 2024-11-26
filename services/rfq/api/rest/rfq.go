@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/rfq/api/config"
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"go.opentelemetry.io/otel/attribute"
@@ -146,13 +147,13 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 
 func getRelayerQuoteData(request *model.PutRFQRequest, resp *model.WsRFQResponse) *model.QuoteData {
 	return &model.QuoteData{
-		OriginChainID:   request.Data.OriginChainID,
-		DestChainID:     request.Data.DestChainID,
-		OriginTokenAddr: request.Data.OriginTokenAddr,
-		DestTokenAddr:   request.Data.DestTokenAddr,
-		OriginAmount:    request.Data.OriginAmount,
-		DestAmount:      &resp.DestAmount,
-		QuoteID:         &resp.QuoteID,
+		OriginChainID:     request.Data.OriginChainID,
+		DestChainID:       request.Data.DestChainID,
+		OriginTokenAddr:   request.Data.OriginTokenAddr,
+		DestTokenAddr:     request.Data.DestTokenAddr,
+		OriginAmountExact: request.Data.OriginAmountExact,
+		DestAmount:        &resp.DestAmount,
+		QuoteID:           &resp.QuoteID,
 	}
 }
 
@@ -226,9 +227,20 @@ func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.P
 		return nil, fmt.Errorf("failed to get quotes: %w", err)
 	}
 
-	originAmount, ok := new(big.Int).SetString(request.Data.OriginAmount, 10)
+	quote, err := getPassiveQuote(r.cfg, quotes, request)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get passive quote: %w", err)
+	}
+
+	return quote, nil
+}
+
+func getPassiveQuote(cfg config.Config, quotes []*db.Quote, request *model.PutRFQRequest) (*model.QuoteData, error) {
+	quotes = filterQuoteAge(cfg, quotes)
+
+	originAmount, ok := new(big.Int).SetString(request.Data.OriginAmountExact, 10)
 	if !ok {
-		return nil, errors.New("invalid origin amount")
+		return nil, errors.New("invalid origin amount exact")
 	}
 
 	var bestQuote *model.QuoteData
@@ -257,13 +269,13 @@ func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.P
 		destAmount := new(big.Int).Sub(rawDestAmountInt, quote.FixedFee.BigInt()).String()
 		//nolint:gosec
 		quoteData := &model.QuoteData{
-			OriginChainID:   int(quote.OriginChainID),
-			DestChainID:     int(quote.DestChainID),
-			OriginTokenAddr: quote.OriginTokenAddr,
-			DestTokenAddr:   quote.DestTokenAddr,
-			OriginAmount:    quote.MaxOriginAmount.String(),
-			DestAmount:      &destAmount,
-			RelayerAddress:  &quote.RelayerAddr,
+			OriginChainID:     int(quote.OriginChainID),
+			DestChainID:       int(quote.DestChainID),
+			OriginTokenAddr:   quote.OriginTokenAddr,
+			DestTokenAddr:     quote.DestTokenAddr,
+			OriginAmountExact: quote.MaxOriginAmount.String(),
+			DestAmount:        &destAmount,
+			RelayerAddress:    &quote.RelayerAddr,
 		}
 		bestQuote = getBestQuote(bestQuote, quoteData)
 	}

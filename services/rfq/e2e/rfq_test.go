@@ -394,7 +394,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 }
 
 //nolint:gosec
-func (i *IntegrationSuite) TestArbitraryCall() {
+func (i *IntegrationSuite) TestZap() {
 	// start the relayer and guard
 	go func() {
 		_ = i.relayer.Start(i.GetTestContext())
@@ -475,10 +475,10 @@ func (i *IntegrationSuite) TestArbitraryCall() {
 	paramsV2 := fastbridgev2.IFastBridgeV2BridgeParamsV2{
 		QuoteRelayer:            i.relayerWallet.Address(),
 		QuoteExclusivitySeconds: new(big.Int).SetInt64(30),
-		CallParams:              []byte("Hello, world!"),
-		CallValue:               big.NewInt(1_337_420),
+		ZapData:                 []byte("Hello, world!"),
+		ZapNative:               big.NewInt(1_337_420),
 	}
-	tx, err = originFastBridge.Bridge0(auth.TransactOpts, params, paramsV2)
+	tx, err = originFastBridge.BridgeV2(auth.TransactOpts, params, paramsV2)
 	i.NoError(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
@@ -686,7 +686,7 @@ func (i *IntegrationSuite) TestDisputeV2() {
 	// call prove() from the relayer wallet before relay actually occurred on dest
 	relayerAuth := i.originBackend.GetTxContext(i.GetTestContext(), i.relayerWallet.AddressPtr())
 	fakeHash := common.HexToHash("0xdeadbeef")
-	tx, err = originFastBridge.Prove(relayerAuth.TransactOpts, txID, fakeHash, relayerAuth.From)
+	tx, err = originFastBridge.ProveV2(relayerAuth.TransactOpts, txID, fakeHash, relayerAuth.From)
 	i.NoError(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 

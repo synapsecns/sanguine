@@ -22,7 +22,7 @@ export function uriToHttp(uri: string) {
     case 'https':
       return [uri]
     case 'http':
-      // udpate
+      // update
       return [`https${uri.substr(4)}`, uri]
     case 'ipfs':
       const hash = uri.match(IPFS_URI_REGEXP)?.[2]

@@ -10,8 +10,9 @@ import { isTokenSupportedOnChain } from '../utils/isTokenSupportedOnChain'
 import { checksumAddresses } from '../middleware/checksumAddresses'
 import { normalizeNativeTokenAddress } from '../middleware/normalizeNativeTokenAddress'
 import { validateRouteExists } from '../validations/validateRouteExists'
-
-const router = express.Router()
+import { validateDecimals } from '../validations/validateDecimals'
+import { tokenAddressToToken } from '../utils/tokenAddressToToken'
+const router: express.Router = express.Router()
 
 /**
  * @openapi
@@ -56,6 +57,12 @@ const router = express.Router()
  *         schema:
  *           type: string
  *         description: The address of the user on the origin chain
+ *       - in: query
+ *         name: destAddress
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: The destination address for the bridge transaction
  *     responses:
  *       200:
  *         description: Successful response
@@ -101,6 +108,16 @@ const router = express.Router()
  *                     type: string
  *                   bridgeFeeFormatted:
  *                     type: string
+ *                   callData:
+ *                     type: object
+ *                     nullable: true
+ *                     properties:
+ *                       to:
+ *                         type: string
+ *                       data:
+ *                         type: string
+ *                       value:
+ *                         type: string
  *             example:
  *               - id: "01920c87-7f14-7cdf-90e1-e13b2d4af55f"
  *                 feeAmount:
@@ -180,8 +197,6 @@ const router = express.Router()
  *               properties:
  *                 error:
  *                   type: string
- *                 details:
- *                   type: string
  *
  * components:
  *   schemas:
@@ -229,7 +244,20 @@ router.get(
         isTokenSupportedOnChain(value, req.query.toChain as string)
       )
       .withMessage('Token not supported on specified chain'),
-    check('amount').isNumeric().exists().withMessage('amount is required'),
+    check('amount')
+      .exists()
+      .withMessage('amount is required')
+      .isNumeric()
+      .custom((value, { req }) => {
+        const fromTokenInfo = tokenAddressToToken(
+          req.query.fromChain,
+          req.query.fromToken
+        )
+        return validateDecimals(value, fromTokenInfo.decimals)
+      })
+      .withMessage(
+        'Amount has too many decimals, beyond the maximum allowed for this token'
+      ),
     check()
       .custom((_value, { req }) => {
         const { fromChain, toChain, fromToken, toToken } = req.query
@@ -241,6 +269,10 @@ router.get(
       .optional()
       .custom((value) => isAddress(value))
       .withMessage('Invalid originUserAddress address'),
+    check('destAddress')
+      .optional()
+      .custom((value) => isAddress(value))
+      .withMessage('Invalid destAddress'),
   ],
   showFirstValidationError,
   bridgeController
