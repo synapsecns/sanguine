@@ -3,6 +3,7 @@ package pricer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"strings"
@@ -14,9 +15,9 @@ import (
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
+	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -28,9 +29,9 @@ type FeePricer interface {
 	// GetOriginFee returns the total fee for a given chainID and gas limit, denominated in a given token.
 	GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string, isQuote bool) (*big.Int, error)
 	// GetDestinationFee returns the total fee for a given chainID and gas limit, denominated in a given token.
-	GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string, isQuote bool, quoteRequest *reldb.QuoteRequest) (*big.Int, error)
+	GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string, isQuote bool, quoteData *model.QuoteData) (*big.Int, error)
 	// GetTotalFee returns the total fee for a given origin and destination chainID, denominated in a given token.
-	GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string, isQuote bool, quoteRequest *reldb.QuoteRequest) (*big.Int, error)
+	GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string, isQuote bool, quoteData *model.QuoteData) (*big.Int, error)
 	// GetGasPrice returns the gas price for a given chainID in native units.
 	GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, error)
 	// GetTokenPrice returns the price of a token in USD.
@@ -126,7 +127,7 @@ func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination 
 }
 
 //nolint:gosec
-func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination uint32, denomToken string, isQuote bool, quoteRequest *reldb.QuoteRequest) (*big.Int, error) {
+func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination uint32, denomToken string, isQuote bool, quoteData *model.QuoteData) (*big.Int, error) {
 	var err error
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getDestinationFee", trace.WithAttributes(
 		attribute.Int(metrics.Destination, int(destination)),
@@ -141,7 +142,7 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 
 	// Calculate the static L2 fee if it won't be incorporated by directly estimating the relay() call
 	// in addZapFees().
-	if quoteRequest == nil || quoteRequest.Transaction.ZapData == nil || len(quoteRequest.Transaction.ZapData) == 0 {
+	if quoteData == nil || quoteData.ZapData == "" || quoteData.ZapData == "" {
 		gasEstimate, err := f.config.GetDestGasEstimate(int(destination))
 		if err != nil {
 			return nil, fmt.Errorf("could not get dest gas estimate: %w", err)
@@ -154,8 +155,8 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 	span.SetAttributes(attribute.String("raw_fee", fee.String()))
 
 	// If specified, calculate and add the call fee, as well as the call value which will be paid by the relayer
-	if quoteRequest != nil {
-		fee, err = f.addZapFees(ctx, destination, denomToken, quoteRequest, fee)
+	if quoteData != nil {
+		fee, err = f.addZapFees(ctx, destination, denomToken, quoteData, fee)
 		if err != nil {
 			return nil, err
 		}
@@ -180,11 +181,11 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 // Note that to be conservative, we always use the QuoteFixedFeeMultiplier over the RelayFixedFeeMultiplier.
 //
 //nolint:gosec
-func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomToken string, quoteRequest *reldb.QuoteRequest, fee *big.Int) (*big.Int, error) {
+func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomToken string, quoteData *model.QuoteData, fee *big.Int) (*big.Int, error) {
 	span := trace.SpanFromContext(ctx)
 
-	if len(quoteRequest.Transaction.ZapData) > 0 {
-		gasEstimate, err := f.getZapGasEstimate(ctx, destination, quoteRequest)
+	if quoteData.ZapData != "" {
+		gasEstimate, err := f.getZapGasEstimate(ctx, destination, quoteData)
 		if err != nil {
 			return nil, err
 		}
@@ -196,8 +197,13 @@ func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomTok
 		span.SetAttributes(attribute.String("call_fee", callFee.String()))
 	}
 
-	if quoteRequest.Transaction.ZapNative != nil && quoteRequest.Transaction.ZapNative.Sign() > 0 {
-		callValueFloat := new(big.Float).SetInt(quoteRequest.Transaction.ZapNative)
+	zapNative, ok := new(big.Int).SetString(quoteData.ZapNative, 10)
+	if !ok {
+		return nil, errors.New("could not parse zap native")
+	}
+
+	if zapNative.Sign() > 0 {
+		callValueFloat := new(big.Float).SetInt(zapNative)
 		valueDenom, err := f.getDenomFee(ctx, destination, destination, denomToken, callValueFloat)
 		if err != nil {
 			return nil, err
@@ -218,7 +224,7 @@ var fastBridgeV2ABI *abi.ABI
 
 const methodName = "relay0"
 
-func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, quoteRequest *reldb.QuoteRequest) (gasEstimate uint64, err error) {
+func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, quoteData *model.QuoteData) (gasEstimate uint64, err error) {
 	client, err := f.clientFetcher.GetClient(ctx, big.NewInt(int64(destination)))
 	if err != nil {
 		return 0, fmt.Errorf("could not get client: %w", err)
@@ -232,7 +238,9 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 		fastBridgeV2ABI = &parsedABI
 	}
 
-	encodedData, err := fastBridgeV2ABI.Pack(methodName, quoteRequest.RawRequest, f.relayerAddress)
+	// TODO: manual conversion of quoteData to RawRequest
+
+	encodedData, err := fastBridgeV2ABI.Pack(methodName, quoteData.RawRequest, f.relayerAddress)
 	if err != nil {
 		return 0, fmt.Errorf("could not encode function call: %w", err)
 	}
@@ -242,10 +250,15 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 		return 0, fmt.Errorf("could not get RFQ address: %w", err)
 	}
 
+	zapNative, ok := new(big.Int).SetString(quoteData.ZapNative, 10)
+	if !ok {
+		return 0, fmt.Errorf("could not parse zap native: %w", err)
+	}
+
 	callMsg := ethereum.CallMsg{
 		From:  f.relayerAddress,
 		To:    &rfqAddr,
-		Value: quoteRequest.Transaction.ZapNative,
+		Value: zapNative,
 		Data:  encodedData,
 	}
 	gasEstimate, err = client.EstimateGas(ctx, callMsg)
@@ -256,7 +269,7 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 	return gasEstimate, nil
 }
 
-func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string, isQuote bool, quoteRequest *reldb.QuoteRequest) (_ *big.Int, err error) {
+func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string, isQuote bool, quoteData *model.QuoteData) (_ *big.Int, err error) {
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getTotalFee", trace.WithAttributes(
 		attribute.Int(metrics.Origin, int(origin)),
 		attribute.Int(metrics.Destination, int(destination)),
@@ -275,7 +288,7 @@ func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination u
 		))
 		return nil, err
 	}
-	destFee, err := f.GetDestinationFee(ctx, origin, destination, denomToken, isQuote, quoteRequest)
+	destFee, err := f.GetDestinationFee(ctx, origin, destination, denomToken, isQuote, quoteData)
 	if err != nil {
 		span.AddEvent("could not get destination fee", trace.WithAttributes(
 			attribute.String("error", err.Error()),

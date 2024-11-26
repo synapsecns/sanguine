@@ -59,6 +59,8 @@ type QuoteData struct {
 	ZapData           string  `json:"zap_data"`
 	ZapNative         string  `json:"zap_native"`
 	OriginAmountExact string  `json:"origin_amount_exact"`
+	OriginSender      string  `json:"origin_sender"`
+	DestRecipient     string  `json:"dest_recipient"`
 	DestAmount        *string `json:"dest_amount"`
 	RelayerAddress    *string `json:"relayer_address"`
 	QuoteID           *string `json:"quote_id"`
