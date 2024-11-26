@@ -238,9 +238,12 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 		fastBridgeV2ABI = &parsedABI
 	}
 
-	// TODO: manual conversion of quoteData to RawRequest
+	rawRequest, err := encodeQuoteData(quoteData)
+	if err != nil {
+		return 0, fmt.Errorf("could not encode quote data: %w", err)
+	}
 
-	encodedData, err := fastBridgeV2ABI.Pack(methodName, quoteData.RawRequest, f.relayerAddress)
+	encodedData, err := fastBridgeV2ABI.Pack(methodName, rawRequest, f.relayerAddress)
 	if err != nil {
 		return 0, fmt.Errorf("could not encode function call: %w", err)
 	}
@@ -267,6 +270,56 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 	}
 
 	return gasEstimate, nil
+}
+
+func encodeQuoteData(quoteData *model.QuoteData) ([]byte, error) {
+	if quoteData == nil {
+		return nil, errors.New("quote data is nil")
+	}
+
+	// Parse string fields into appropriate types
+	originAmount, ok := new(big.Int).SetString(quoteData.OriginAmountExact, 10)
+	if !ok {
+		return nil, errors.New("invalid origin amount")
+	}
+	destAmount := originAmount // assume dest amount same as origin amount for estimation purposes
+	originFeeAmount := big.NewInt(0)
+	nonce := big.NewInt(0)
+	exclusivityEndTime := big.NewInt(0)
+	zapNative, ok := new(big.Int).SetString(quoteData.ZapNative, 10)
+	if !ok {
+		return nil, errors.New("invalid zap native")
+	}
+
+	// First part of encoding (matching Solidity implementation)
+	firstPart := []interface{}{
+		uint16(2), // VERSION
+		uint32(quoteData.OriginChainID),
+		uint32(quoteData.DestChainID),
+		common.HexToAddress(quoteData.OriginSender),
+		common.HexToAddress(quoteData.DestRecipient),
+		common.HexToAddress(quoteData.OriginTokenAddr),
+		common.HexToAddress(quoteData.DestTokenAddr),
+		originAmount,
+	}
+
+	deadline := new(big.Int).Sub(new(big.Int).Exp(big.NewInt(2), big.NewInt(256), nil), big.NewInt(1))
+	exclusivityRelayer := common.HexToAddress("")
+
+	// Second part of encoding
+	secondPart := []interface{}{
+		destAmount,
+		originFeeAmount,
+		deadline,
+		nonce,
+		exclusivityRelayer,
+		exclusivityEndTime,
+		zapNative,
+		[]byte(quoteData.ZapData),
+	}
+
+	// Combine both parts using abi.encode
+	return abi.Arguments{}.Pack(append(firstPart, secondPart...)...)
 }
 
 func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string, isQuote bool, quoteData *model.QuoteData) (_ *big.Int, err error) {
