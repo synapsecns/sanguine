@@ -478,7 +478,7 @@ func (i *IntegrationSuite) TestZap() {
 		ZapData:                 []byte("Hello, world!"),
 		ZapNative:               big.NewInt(1_337_420),
 	}
-	tx, err = originFastBridge.Bridge0(auth.TransactOpts, params, paramsV2)
+	tx, err = originFastBridge.BridgeV2(auth.TransactOpts, params, paramsV2)
 	i.NoError(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
@@ -589,7 +589,7 @@ func (i *IntegrationSuite) TestDispute() {
 	// call prove() from the relayer wallet before relay actually occurred on dest
 	relayerAuth := i.originBackend.GetTxContext(i.GetTestContext(), i.relayerWallet.AddressPtr())
 	fakeHash := common.HexToHash("0xdeadbeef")
-	tx, err = originFastBridge.Prove(relayerAuth.TransactOpts, txID, fakeHash, relayerAuth.From)
+	tx, err = originFastBridge.ProveV2(relayerAuth.TransactOpts, txID, fakeHash, relayerAuth.From)
 	i.NoError(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
