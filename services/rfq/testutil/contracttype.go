@@ -58,6 +58,8 @@ const (
 	FastBridgeMockType // FastBridgeMock
 	// RecipientMockType is a mock contract for testing fast bridge interactions.
 	RecipientMockType // RecipientMock
+	// BridgeTransactionV2Type is a bridge transaction contract for testing fast bridge interactions.
+	BridgeTransactionV2Type // BridgeTransactionV2
 	// WETH9Type  is the weth 9 contract.
 	WETH9Type // WETH9
 	// USDTType is the tether type.
