@@ -8,6 +8,7 @@ import {MockERC20} from "../MockERC20.sol";
 import {VaultManyArguments} from "../mocks/VaultManyArguments.sol";
 import {WETHMock} from "../mocks/WETHMock.sol";
 
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {Test} from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase, ordering
@@ -148,6 +149,27 @@ contract TokenZapV1Test is Test {
         test_zap_native_noAmount();
     }
 
+    /// @notice Should be able to use amount lower than msg.value.
+    function test_zap_native_msgValueHigherThanAmount() public {
+        bytes memory zapData = getZapData(getVaultPayload(nativeGasToken, 1 ether));
+        bytes4 returnValue = tokenZap.zap{value: AMOUNT + 1 wei}(nativeGasToken, AMOUNT, zapData);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, nativeGasToken), AMOUNT);
+        // Note: the extra funds are left in the contract
+        assertEq(address(tokenZap).balance, 1 wei);
+    }
+
+    /// @notice Should be able to utilize both msg.value and existing native balance.
+    function test_zap_native_msgValueLowerThanAmount_extraNative() public {
+        deal(address(tokenZap), 1337);
+        bytes memory zapData = getZapData(getVaultPayload(nativeGasToken, 1 ether));
+        bytes4 returnValue = tokenZap.zap{value: AMOUNT - 1337}(nativeGasToken, AMOUNT, zapData);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, nativeGasToken), AMOUNT);
+    }
+
     // ═════════════════════════════════════════════════ MULTIHOPS ═════════════════════════════════════════════════════
 
     function getZapDataWithdraw(uint256 amount) public view returns (bytes memory) {
@@ -261,16 +283,8 @@ contract TokenZapV1Test is Test {
         bytes memory originalPayload = getVaultPayload(nativeGasToken, 0);
         bytes memory zapData = getZapData(originalPayload);
 
-        vm.expectRevert(TokenZapV1.TokenZapV1__AmountIncorrect.selector);
+        vm.expectRevert(abi.encodeWithSelector(Address.AddressInsufficientBalance.selector, tokenZap));
         tokenZap.zap{value: 1 ether - 1 wei}(nativeGasToken, 1 ether, zapData);
-    }
-
-    function test_zap_native_revert_msgValueHigherThanExpected() public {
-        bytes memory originalPayload = getVaultPayload(nativeGasToken, 0);
-        bytes memory zapData = getZapData(originalPayload);
-
-        vm.expectRevert(TokenZapV1.TokenZapV1__AmountIncorrect.selector);
-        tokenZap.zap{value: 1 ether + 1 wei}(nativeGasToken, 1 ether, zapData);
     }
 
     function test_encodeZapData_revert_payloadLengthAboveMax() public {
