@@ -267,32 +267,69 @@ func encodeQuoteRequest(quoteRequest *reldb.QuoteRequest) ([]byte, error) {
 		return nil, errors.New("quote request is nil")
 	}
 
-	// First part of encoding (matching Solidity implementation)
-	firstPart := []interface{}{
+	// Create ABI types with error handling
+	uint16Type, err := abi.NewType("uint16", "", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create uint16 type: %w", err)
+	}
+	uint32Type, err := abi.NewType("uint32", "", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create uint32 type: %w", err)
+	}
+	addressType, err := abi.NewType("address", "", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create address type: %w", err)
+	}
+	uint256Type, err := abi.NewType("uint256", "", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create uint256 type: %w", err)
+	}
+	bytesType, err := abi.NewType("bytes", "", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create bytes type: %w", err)
+	}
+
+	// Define the ABI arguments
+	args := abi.Arguments{
+		{Type: uint16Type},  // version
+		{Type: uint32Type},  // originChainID
+		{Type: uint32Type},  // destChainID
+		{Type: addressType}, // originSender
+		{Type: addressType}, // destRecipient
+		{Type: addressType}, // originToken
+		{Type: addressType}, // destToken
+		{Type: uint256Type}, // originAmount
+		{Type: uint256Type}, // destAmount
+		{Type: uint256Type}, // originFeeAmount
+		{Type: uint256Type}, // deadline
+		{Type: uint256Type}, // nonce
+		{Type: addressType}, // exclusivityRelayer
+		{Type: uint256Type}, // exclusivityEndTime
+		{Type: uint256Type}, // zapNative
+		{Type: bytesType},   // zapData
+	}
+
+	tx := quoteRequest.Transaction
+
+	// Pack the arguments
+	return args.Pack(
 		uint16(2), // VERSION
-		quoteRequest.Transaction.OriginChainId,
-		quoteRequest.Transaction.DestChainId,
-		quoteRequest.Transaction.OriginSender,
-		quoteRequest.Transaction.DestRecipient,
-		quoteRequest.Transaction.OriginToken,
-		quoteRequest.Transaction.DestToken,
-		quoteRequest.Transaction.OriginAmount,
-	}
-
-	// Second part of encoding
-	secondPart := []interface{}{
-		quoteRequest.Transaction.DestAmount,
-		quoteRequest.Transaction.OriginFeeAmount,
-		quoteRequest.Transaction.Deadline,
-		quoteRequest.Transaction.Nonce,
-		quoteRequest.Transaction.ExclusivityRelayer,
-		quoteRequest.Transaction.ExclusivityEndTime,
-		quoteRequest.Transaction.ZapNative,
-		quoteRequest.Transaction.ZapData,
-	}
-
-	// Combine both parts using abi.encode
-	return abi.Arguments{}.Pack(append(firstPart, secondPart...)...)
+		tx.OriginChainId,
+		tx.DestChainId,
+		tx.OriginSender,
+		tx.DestRecipient,
+		tx.OriginToken,
+		tx.DestToken,
+		tx.OriginAmount,
+		tx.DestAmount,
+		tx.OriginFeeAmount,
+		tx.Deadline,
+		tx.Nonce,
+		tx.ExclusivityRelayer,
+		tx.ExclusivityEndTime,
+		tx.ZapNative,
+		tx.ZapData,
+	)
 }
 
 func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string, isQuote bool, quoteRequest *reldb.QuoteRequest) (_ *big.Int, err error) {
