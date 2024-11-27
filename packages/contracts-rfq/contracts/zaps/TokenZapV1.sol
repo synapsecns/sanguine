@@ -29,6 +29,10 @@ contract TokenZapV1 is IZapRecipient {
     error TokenZapV1__AmountIncorrect();
     error TokenZapV1__PayloadLengthAboveMax();
 
+    /// @notice Allows the contract to receive ETH.
+    /// @dev Leftover ETH can be claimed by anyone, make sure to spend the full balance during the Zaps.
+    receive() external payable {}
+
     /// @notice Performs a Zap action using the specified token and amount. This amount must be previously
     /// transferred to this contract (or supplied as msg.value if the token is native gas token).
     /// @dev The provided ZapData contains the target address and calldata for the Zap action, and must be
