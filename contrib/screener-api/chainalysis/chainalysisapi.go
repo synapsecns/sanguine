@@ -41,6 +41,7 @@ const (
 	maxCacheSizeGB            = 3
 	bytesInGB                 = 1024 * 1024 * 1024
 	chainalysisRequestTimeout = 30 * time.Second
+	defaultTTL                = 24 * time.Hour
 )
 
 // NewClient creates a new Chainalysis API client.
@@ -53,7 +54,10 @@ func NewClient(metricHandler metrics.Handler, riskLevels []string, apiKey, url s
 
 	// max cache size 3gb
 	// TODO: make this configurable.
-	registrationCache := gocache.NewCache().WithEvictionPolicy(gocache.LeastRecentlyUsed).WithMaxMemoryUsage(maxCacheSizeGB * bytesInGB)
+	registrationCache := gocache.NewCache().
+		WithEvictionPolicy(gocache.LeastRecentlyUsed).
+		WithMaxMemoryUsage(maxCacheSizeGB * bytesInGB).
+		WithDefaultTTL(defaultTTL)
 
 	otelresty.TraceClient(client, otelresty.WithTracerProvider(metricHandler.GetTracerProvider()))
 
@@ -131,6 +135,8 @@ func (c *clientImpl) checkBlacklist(ctx context.Context, address string) (bool, 
 		c.registrationCache.Set(address, struct{}{})
 		return true, nil
 	}
+
+	c.registrationCache.Delete(address)
 
 	return false, nil
 }
