@@ -34,6 +34,7 @@ contract TokenZapV1 is IZapRecipient {
 
     /// @notice Performs a Zap action using the specified token and amount. This amount must be previously
     /// transferred to this contract (could also be supplied as msg.value if the token is native gas token).
+    /// Zap action will be performed forwarding full `msg.value` for ERC20s or `amount` for native gas token.
     /// Note: all funds remaining after the Zap action is performed can be claimed by anyone.
     /// Make sure to spend the full balance during the Zaps and avoid sending extra funds if a single Zap is performed.
     /// @dev The provided ZapData contains the target address and calldata for the Zap action, and must be
@@ -73,7 +74,7 @@ contract TokenZapV1 is IZapRecipient {
             // revert with a generic custom error should the target contract revert on incoming transfer.
             Address.sendValue({recipient: payable(target), amount: msgValue});
         } else {
-            // Perform the Zap action, forwarding full msg.value to the target contract.
+            // Perform the Zap action, forwarding requested native value to the target contract.
             // Note: this will bubble up any revert from the target contract.
             Address.functionCallWithValue({target: target, data: payload, value: msgValue});
         }
