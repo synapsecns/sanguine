@@ -5,6 +5,8 @@ import {ZapDataV1} from "../../contracts/libs/ZapDataV1.sol";
 import {TokenZapV1} from "../../contracts/zaps/TokenZapV1.sol";
 
 import {MockERC20} from "../MockERC20.sol";
+import {NonPayableRecipient} from "../mocks/NonPayableRecipient.sol";
+import {RecipientMock} from "../mocks/RecipientMock.sol";
 import {VaultManyArguments} from "../mocks/VaultManyArguments.sol";
 import {WETHMock} from "../mocks/WETHMock.sol";
 
@@ -19,6 +21,8 @@ contract TokenZapV1Test is Test {
     VaultManyArguments internal vault;
     MockERC20 internal erc20;
     WETHMock internal weth;
+    address internal payableMock;
+    address internal nonPayableMock;
 
     address internal user;
     address internal nativeGasToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
@@ -28,6 +32,8 @@ contract TokenZapV1Test is Test {
         vault = new VaultManyArguments();
         erc20 = new MockERC20("TKN", 18);
         weth = new WETHMock();
+        payableMock = address(new RecipientMock());
+        nonPayableMock = address(new NonPayableRecipient());
 
         user = makeAddr("user");
 
@@ -231,6 +237,116 @@ contract TokenZapV1Test is Test {
         test_zap_withdraw_depositNative_placeholderNonZero();
     }
 
+    function test_zap_withdraw_transferNativeEOA_placeholderZero() public {
+        bytes memory zapDataWithdraw = getZapDataWithdraw(0);
+        bytes memory zapDataTransfer = tokenZap.encodeZapData({target: user, payload: "", amountPosition: 0});
+        weth.transfer(address(tokenZap), AMOUNT);
+        // Do two Zaps in a row
+        bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataWithdraw);
+        assertEq(returnValue, tokenZap.zap.selector);
+        returnValue = tokenZap.zap(nativeGasToken, AMOUNT, zapDataTransfer);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the user received the native tokens
+        assertEq(user.balance, AMOUNT);
+    }
+
+    function test_zap_withdraw_transferNativeEOA_placeholderNonZero() public {
+        // Use the approximate amount of tokens as placeholder
+        bytes memory zapDataWithdraw = getZapDataWithdraw(1 ether);
+        bytes memory zapDataTransfer = tokenZap.encodeZapData({target: user, payload: "", amountPosition: 0});
+        weth.transfer(address(tokenZap), AMOUNT);
+        // Do two Zaps in a row
+        bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataWithdraw);
+        assertEq(returnValue, tokenZap.zap.selector);
+        returnValue = tokenZap.zap(nativeGasToken, AMOUNT, zapDataTransfer);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the user received the native tokens
+        assertEq(user.balance, AMOUNT);
+    }
+
+    function test_zap_withdraw_transferNativeEOA_placeholderZero_extraTokens() public {
+        // Transfer some extra tokens to the zap contract
+        weth.transfer(address(tokenZap), AMOUNT);
+        // Should not affect the zap
+        test_zap_withdraw_transferNativeEOA_placeholderZero();
+    }
+
+    function test_zap_withdraw_transferNativeEOA_placeholderZero_extraNative() public {
+        // Transfer some extra native tokens to the zap contract
+        deal(address(tokenZap), AMOUNT);
+        // Should not affect the zap
+        test_zap_withdraw_transferNativeEOA_placeholderZero();
+    }
+
+    function test_zap_withdraw_transferNativeEOA_placeholderNonZero_extraTokens() public {
+        // Transfer some extra tokens to the zap contract
+        weth.transfer(address(tokenZap), AMOUNT);
+        // Should not affect the zap
+        test_zap_withdraw_transferNativeEOA_placeholderNonZero();
+    }
+
+    function test_zap_withdraw_transferNativeEOA_placeholderNonZero_extraNative() public {
+        // Transfer some extra native tokens to the zap contract
+        deal(address(tokenZap), AMOUNT);
+        // Should not affect the zap
+        test_zap_withdraw_transferNativeEOA_placeholderNonZero();
+    }
+
+    function test_zap_withdraw_transferNativeContract_placeholderZero() public {
+        bytes memory zapDataWithdraw = getZapDataWithdraw(0);
+        bytes memory zapDataTransfer = tokenZap.encodeZapData({target: payableMock, payload: "", amountPosition: 0});
+        weth.transfer(address(tokenZap), AMOUNT);
+        // Do two Zaps in a row
+        bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataWithdraw);
+        assertEq(returnValue, tokenZap.zap.selector);
+        returnValue = tokenZap.zap(nativeGasToken, AMOUNT, zapDataTransfer);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the contract received the native tokens
+        assertEq(payableMock.balance, AMOUNT);
+    }
+
+    function test_zap_withdraw_transferNativeContract_placeholderNonZero() public {
+        // Use the approximate amount of tokens as placeholder
+        bytes memory zapDataWithdraw = getZapDataWithdraw(1 ether);
+        bytes memory zapDataTransfer = tokenZap.encodeZapData({target: payableMock, payload: "", amountPosition: 0});
+        weth.transfer(address(tokenZap), AMOUNT);
+        // Do two Zaps in a row
+        bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataWithdraw);
+        assertEq(returnValue, tokenZap.zap.selector);
+        returnValue = tokenZap.zap(nativeGasToken, AMOUNT, zapDataTransfer);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the contract received the native tokens
+        assertEq(payableMock.balance, AMOUNT);
+    }
+
+    function test_zap_withdraw_transferNativeContract_placeholderZero_extraTokens() public {
+        // Transfer some extra tokens to the zap contract
+        weth.transfer(address(tokenZap), AMOUNT);
+        // Should not affect the zap
+        test_zap_withdraw_transferNativeContract_placeholderZero();
+    }
+
+    function test_zap_withdraw_transferNativeContract_placeholderZero_extraNative() public {
+        // Transfer some extra native tokens to the zap contract
+        deal(address(tokenZap), AMOUNT);
+        // Should not affect the zap
+        test_zap_withdraw_transferNativeContract_placeholderZero();
+    }
+
+    function test_zap_withdraw_transferNativeContract_placeholderNonZero_extraTokens() public {
+        // Transfer some extra tokens to the zap contract
+        weth.transfer(address(tokenZap), AMOUNT);
+        // Should not affect the zap
+        test_zap_withdraw_transferNativeContract_placeholderNonZero();
+    }
+
+    function test_zap_withdraw_transferNativeContract_placeholderNonZero_extraNative() public {
+        // Transfer some extra native tokens to the zap contract
+        deal(address(tokenZap), AMOUNT);
+        // Should not affect the zap
+        test_zap_withdraw_transferNativeContract_placeholderNonZero();
+    }
+
     // ═════════════════════════════════════════════════ ENCODING ══════════════════════════════════════════════════════
 
     function test_encodeZapData_roundtrip(address token, uint256 placeholderAmount, uint256 amount) public view {
@@ -285,6 +401,15 @@ contract TokenZapV1Test is Test {
 
         vm.expectRevert(abi.encodeWithSelector(Address.AddressInsufficientBalance.selector, tokenZap));
         tokenZap.zap{value: 1 ether - 1 wei}(nativeGasToken, 1 ether, zapData);
+    }
+
+    function test_zap_withdraw_transferNative_revert_targetReverted() public {
+        bytes memory zapDataWithdraw = getZapDataWithdraw(0);
+        bytes memory zapDataTransfer = tokenZap.encodeZapData({target: nonPayableMock, payload: "", amountPosition: 0});
+        weth.transfer(address(tokenZap), AMOUNT);
+        tokenZap.zap(address(weth), AMOUNT, zapDataWithdraw);
+        vm.expectRevert(Address.FailedInnerCall.selector);
+        tokenZap.zap(address(weth), AMOUNT, zapDataTransfer);
     }
 
     function test_encodeZapData_revert_payloadLengthAboveMax() public {
