@@ -39,7 +39,8 @@ contract TokenZapV1 is IZapRecipient {
     /// Note: all funds remaining after the Zap action is performed can be claimed by anyone.
     /// Make sure to spend the full balance during the Zaps and avoid sending extra funds if a single Zap is performed.
     /// @dev The provided ZapData contains the target address and calldata for the Zap action, and must be
-    /// encoded using the encodeZapData function.
+    /// encoded using the encodeZapData function. Native gas token transfers could be done by using empty `payload`,
+    /// this is the only case where target could be an EOA.
     /// @param token        Address of the token to be used for the Zap action.
     /// @param amount       Amount of the token to be used for the Zap action.
     /// @param zapData      Encoded Zap Data containing the target address and calldata for the Zap action.
@@ -70,14 +71,14 @@ contract TokenZapV1 is IZapRecipient {
         // Construct the payload for the target contract call with the Zap action.
         // The payload is modified to replace the placeholder amount with the actual amount.
         bytes memory payload = zapData.payload(amount);
-        if (payload.length == 0) {
-            // No payload provided, perform the native gas token transfer to the target.
+        if (payload.length == 0 && token == NATIVE_GAS_TOKEN) {
+            // Zap Action in a form of native gas token transfer to the target is requested.
             // Note: we avoid using `functionCallWithValue` because the target might be an EOA. This will
             // revert with a generic custom error should the target contract revert on incoming transfer.
             Address.sendValue({recipient: payable(target), amount: msgValue});
         } else {
             // Perform the Zap action, forwarding the requested native value to the target contract.
-            // Note: this will bubble up any revert from the target contract.
+            // Note: this will bubble up any revert from the target contract, and revert if target is EOA.
             Address.functionCallWithValue({target: target, data: payload, value: msgValue});
         }
         // Return function selector to indicate successful execution
