@@ -55,7 +55,7 @@ contract TokenZapV1 is IZapRecipient {
             // Silimar to ERC20s, we allow to use pre-transferred native tokens for the Zap.
             msgValue = amount;
             // No approval needed since native token doesn't use allowances.
-            // Note: balance check is performed within `Address.functionCallWithValue`.
+            // Note: balance check is performed within `Address.sendValue` or `Address.functionCallWithValue` below.
         } else {
             // For ERC20 tokens, grant unlimited approval to the target if the current allowance is insufficient.
             // This is safe since the contract doesn't custody tokens between zaps.
@@ -67,9 +67,16 @@ contract TokenZapV1 is IZapRecipient {
         // Construct the payload for the target contract call with the Zap action.
         // The payload is modified to replace the placeholder amount with the actual amount.
         bytes memory payload = zapData.payload(amount);
-        // Perform the Zap action, forwarding full msg.value to the target contract.
-        // Note: this will bubble up any revert from the target contract.
-        Address.functionCallWithValue({target: target, data: payload, value: msgValue});
+        if (payload.length == 0) {
+            // No payload provided, perform the native gas token transfer to the target.
+            // Note: we avoid using `functionCallWithValue` because target might be an EOA. This will
+            // revert with a generic custom error should the target contract revert on incoming transfer.
+            Address.sendValue({recipient: payable(target), amount: msgValue});
+        } else {
+            // Perform the Zap action, forwarding full msg.value to the target contract.
+            // Note: this will bubble up any revert from the target contract.
+            Address.functionCallWithValue({target: target, data: payload, value: msgValue});
+        }
         // Return function selector to indicate successful execution
         return this.zap.selector;
     }
