@@ -27,6 +27,7 @@ contract TokenZapV1 is IZapRecipient {
     address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     error TokenZapV1__PayloadLengthAboveMax();
+    error TokenZapV1__TargetZeroAddress();
 
     /// @notice Allows the contract to receive ETH.
     /// @dev Leftover ETH can be claimed by anyone. Ensure the full balance is spent during Zaps.
@@ -47,10 +48,11 @@ contract TokenZapV1 is IZapRecipient {
         // Validate the ZapData format and extract the target address.
         zapData.validateV1();
         address target = zapData.target();
-        uint256 msgValue = msg.value;
+        if (target == address(0)) revert TokenZapV1__TargetZeroAddress();
         // Note: we don't check the amount that was transferred to TokenZapV1 (or msg.value for native gas tokens).
         // Transferring more than `amount` will lead to remaining funds in TokenZapV1, which can be claimed by anyone.
         // Ensure that you send the exact amount for a single Zap or spend the full balance for multiple `zap()` calls.
+        uint256 msgValue = msg.value;
         if (token == NATIVE_GAS_TOKEN) {
             // For native gas tokens, we forward the requested amount to the target contract during the Zap action.
             // Similar to ERC20s, we allow using pre-transferred native tokens for the Zap.
