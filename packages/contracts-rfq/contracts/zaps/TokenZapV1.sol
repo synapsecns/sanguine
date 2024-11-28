@@ -15,11 +15,11 @@ import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 /// @title TokenZapV1
-/// @notice Facilitates atomic token operations known as "Zaps," allowing to execute predefined actions
-/// on behalf of users like deposits or swaps. Supports ERC20 tokens and native gas tokens (e.g., ETH).
-/// @dev Tokens must be pre-transferred to the contract for execution, with native tokens sent as msg.value.
+/// @notice Facilitates atomic token operations known as "Zaps", allowing the execution of predefined actions
+/// on behalf of users, such as deposits or swaps. Supports ERC20 tokens and native gas tokens (e.g., ETH).
+/// @dev Tokens must be transferred to the contract before execution, native tokens could be provided as `msg.value`.
 /// This contract is stateless and does not hold assets between Zaps; leftover tokens can be claimed by anyone.
-/// Ensure Zaps fully utilize tokens or revert to prevent fund loss.
+/// Ensure that Zaps fully utilize tokens or revert to prevent the loss of funds.
 contract TokenZapV1 is IZapRecipient {
     using SafeERC20 for IERC20;
     using ZapDataV1 for bytes;
@@ -29,12 +29,12 @@ contract TokenZapV1 is IZapRecipient {
     error TokenZapV1__PayloadLengthAboveMax();
 
     /// @notice Allows the contract to receive ETH.
-    /// @dev Leftover ETH can be claimed by anyone, make sure to spend the full balance during the Zaps.
+    /// @dev Leftover ETH can be claimed by anyone. Ensure the full balance is spent during Zaps.
     receive() external payable {}
 
-    /// @notice Performs a Zap action using the specified token and amount. This amount must be previously
-    /// transferred to this contract (could also be supplied as msg.value if the token is native gas token).
-    /// Zap action will be performed forwarding full `msg.value` for ERC20s or `amount` for native gas token.
+    /// @notice Performs a Zap action using the specified token and amount. This amount must have previously been
+    /// transferred to this contract (could also be supplied as msg.value if the token is a native gas token).
+    /// Zap action will be performed forwarding full `msg.value` for ERC20s or `amount` for native gas tokens.
     /// Note: all funds remaining after the Zap action is performed can be claimed by anyone.
     /// Make sure to spend the full balance during the Zaps and avoid sending extra funds if a single Zap is performed.
     /// @dev The provided ZapData contains the target address and calldata for the Zap action, and must be
@@ -48,14 +48,14 @@ contract TokenZapV1 is IZapRecipient {
         zapData.validateV1();
         address target = zapData.target();
         uint256 msgValue = msg.value;
-        // Note: we don't check the amount that was transferred to TokenZapV1 (or msg.value for native gas tokens),
-        // so transfering more than `amount` will lead to remaining funds in TokenZapV1, which can be claimed by anyone.
-        // Make sure to send the exact amount for a single Zap or spend the full balance for multiple `zap()` calls.
+        // Note: we don't check the amount that was transferred to TokenZapV1 (or msg.value for native gas tokens).
+        // Transferring more than `amount` will lead to remaining funds in TokenZapV1, which can be claimed by anyone.
+        // Ensure that you send the exact amount for a single Zap or spend the full balance for multiple `zap()` calls.
         if (token == NATIVE_GAS_TOKEN) {
-            // For native gas tokens we forward the requested amount to the target contract during the Zap action.
-            // Silimar to ERC20s, we allow to use pre-transferred native tokens for the Zap.
+            // For native gas tokens, we forward the requested amount to the target contract during the Zap action.
+            // Similar to ERC20s, we allow using pre-transferred native tokens for the Zap.
             msgValue = amount;
-            // No approval needed since native token doesn't use allowances.
+            // No approval is needed since native tokens don't use allowances.
             // Note: balance check is performed within `Address.sendValue` or `Address.functionCallWithValue` below.
         } else {
             // For ERC20 tokens, grant unlimited approval to the target if the current allowance is insufficient.
@@ -70,11 +70,11 @@ contract TokenZapV1 is IZapRecipient {
         bytes memory payload = zapData.payload(amount);
         if (payload.length == 0) {
             // No payload provided, perform the native gas token transfer to the target.
-            // Note: we avoid using `functionCallWithValue` because target might be an EOA. This will
+            // Note: we avoid using `functionCallWithValue` because the target might be an EOA. This will
             // revert with a generic custom error should the target contract revert on incoming transfer.
             Address.sendValue({recipient: payable(target), amount: msgValue});
         } else {
-            // Perform the Zap action, forwarding requested native value to the target contract.
+            // Perform the Zap action, forwarding the requested native value to the target contract.
             // Note: this will bubble up any revert from the target contract.
             Address.functionCallWithValue({target: target, data: payload, value: msgValue});
         }
