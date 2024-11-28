@@ -373,6 +373,11 @@ contract TokenZapV1Test is Test {
 
     // ══════════════════════════════════════════════════ REVERTS ══════════════════════════════════════════════════════
 
+    function getZeroTargetZapData(bytes memory payload, uint16 amountPosition) public pure returns (bytes memory) {
+        // Encode manually as the library checks for zero address
+        return abi.encodePacked(ZapDataV1.VERSION, amountPosition, address(0), payload);
+    }
+
     function test_zap_erc20_revert_notEnoughTokens() public {
         bytes memory zapData = getZapData(getVaultPayload(address(erc20), 0));
         // Transfer tokens to the zap contract first, but not enough
@@ -386,6 +391,43 @@ contract TokenZapV1Test is Test {
         // Transfer tokens to the zap contract first
         erc20.transfer(address(tokenZap), AMOUNT);
         vm.expectRevert(VaultManyArguments.VaultManyArguments__SomeError.selector);
+        tokenZap.zap(address(erc20), AMOUNT, zapData);
+    }
+
+    function test_zap_erc20_revert_targetZeroAddress_emptyPayload() public {
+        bytes memory zapData = getZeroTargetZapData({payload: "", amountPosition: 0});
+        // Transfer tokens to the zap contract first
+        erc20.transfer(address(tokenZap), AMOUNT);
+        vm.expectRevert(TokenZapV1.TokenZapV1__TargetZeroAddress.selector);
+        tokenZap.zap(address(erc20), AMOUNT, zapData);
+    }
+
+    function test_zap_erc20_revert_targetZeroAddress_nonEmptyPayload() public {
+        bytes memory zapData =
+            getZeroTargetZapData({payload: getVaultPayload(address(erc20), 0), amountPosition: 4 + 32 * 2});
+        // Transfer tokens to the zap contract first
+        erc20.transfer(address(tokenZap), AMOUNT);
+        vm.expectRevert(TokenZapV1.TokenZapV1__TargetZeroAddress.selector);
+        tokenZap.zap(address(erc20), AMOUNT, zapData);
+    }
+
+    function test_zap_erc20_revert_targetEOA_nonEmptyPayload() public {
+        bytes memory zapData = tokenZap.encodeZapData({
+            target: user,
+            payload: getVaultPayload(address(erc20), 0),
+            amountPosition: 4 + 32 * 2
+        });
+        // Transfer tokens to the zap contract first
+        erc20.transfer(address(tokenZap), AMOUNT);
+        vm.expectRevert(abi.encodeWithSelector(Address.AddressEmptyCode.selector, user));
+        tokenZap.zap(address(erc20), AMOUNT, zapData);
+    }
+
+    function test_zap_erc20_revert_targetEOA_emptyPayload() public {
+        bytes memory zapData = tokenZap.encodeZapData({target: user, payload: "", amountPosition: 0});
+        // Transfer tokens to the zap contract first
+        erc20.transfer(address(tokenZap), AMOUNT);
+        vm.expectRevert(abi.encodeWithSelector(Address.AddressEmptyCode.selector, user));
         tokenZap.zap(address(erc20), AMOUNT, zapData);
     }
 
@@ -409,6 +451,35 @@ contract TokenZapV1Test is Test {
         weth.transfer(address(tokenZap), AMOUNT);
         tokenZap.zap(address(weth), AMOUNT, zapDataWithdraw);
         vm.expectRevert(Address.FailedInnerCall.selector);
+        tokenZap.zap(address(weth), AMOUNT, zapDataTransfer);
+    }
+
+    function test_zap_withdraw_transferNative_revert_targetZeroAddress_emptyPayload() public {
+        bytes memory zapDataWithdraw = getZapDataWithdraw(0);
+        bytes memory zapDataTransfer = getZeroTargetZapData({payload: "", amountPosition: 0});
+        weth.transfer(address(tokenZap), AMOUNT);
+        tokenZap.zap(address(weth), AMOUNT, zapDataWithdraw);
+        vm.expectRevert(TokenZapV1.TokenZapV1__TargetZeroAddress.selector);
+        tokenZap.zap(address(weth), AMOUNT, zapDataTransfer);
+    }
+
+    function test_zap_withdraw_transferNative_revert_targetZeroAddress_nonEmptyPayload() public {
+        bytes memory zapDataWithdraw = getZapDataWithdraw(0);
+        bytes memory payload = getVaultPayloadNoAmount();
+        bytes memory zapDataTransfer = getZeroTargetZapData({payload: payload, amountPosition: uint16(payload.length)});
+        weth.transfer(address(tokenZap), AMOUNT);
+        tokenZap.zap(address(weth), AMOUNT, zapDataWithdraw);
+        vm.expectRevert(TokenZapV1.TokenZapV1__TargetZeroAddress.selector);
+        tokenZap.zap(address(weth), AMOUNT, zapDataTransfer);
+    }
+
+    function test_zap_withdraw_transferNative_revert_targetEOA_nonEmptyPayload() public {
+        bytes memory zapDataWithdraw = getZapDataWithdraw(0);
+        bytes memory zapDataTransfer =
+            tokenZap.encodeZapData({target: user, payload: getVaultPayloadNoAmount(), amountPosition: 0});
+        weth.transfer(address(tokenZap), AMOUNT);
+        tokenZap.zap(address(weth), AMOUNT, zapDataWithdraw);
+        vm.expectRevert(abi.encodeWithSelector(Address.AddressEmptyCode.selector, user));
         tokenZap.zap(address(weth), AMOUNT, zapDataTransfer);
     }
 
