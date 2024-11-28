@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.14.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.5...@synapsecns/contracts-rfq@0.14.6) (2024-11-28)
+
+
+### Bug Fixes
+
+* **contracts-rfq:** `TokenZapV1` native gas token behaviour [SLT-389] ([#3418](https://github.com/synapsecns/sanguine/issues/3418)) ([ee3705a](https://github.com/synapsecns/sanguine/commit/ee3705a1fabf52746a933964d6d52ba1ca2379d6))
+
+
+
+
+
 ## [0.14.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.4...@synapsecns/contracts-rfq@0.14.5) (2024-11-25)
 
 **Note:** Version bump only for package @synapsecns/contracts-rfq
