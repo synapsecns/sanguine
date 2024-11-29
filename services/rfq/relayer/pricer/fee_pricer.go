@@ -262,7 +262,31 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 	return gasEstimate, nil
 }
 
-const OFFSET_ZAP_DATA = 334
+const (
+	// Field sizes in bytes
+	sizeVersion = 2
+	sizeChainID = 4
+	sizeAddress = 20
+	sizeUint256 = 32
+
+	// Field offsets in bytes
+	offsetVersion            = 0
+	offsetOriginChainID      = offsetVersion + sizeVersion
+	offsetDestChainID        = offsetOriginChainID + sizeChainID
+	offsetOriginSender       = offsetDestChainID + sizeChainID
+	offsetDestRecipient      = offsetOriginSender + sizeAddress
+	offsetOriginToken        = offsetDestRecipient + sizeAddress
+	offsetDestToken          = offsetOriginToken + sizeAddress
+	offsetOriginAmount       = offsetDestToken + sizeAddress
+	offsetDestAmount         = offsetOriginAmount + sizeUint256
+	offsetOriginFeeAmount    = offsetDestAmount + sizeUint256
+	offsetDeadline           = offsetOriginFeeAmount + sizeUint256
+	offsetNonce              = offsetDeadline + sizeUint256
+	offsetExclusivityRelayer = offsetNonce + sizeUint256
+	offsetExclusivityEndTime = offsetExclusivityRelayer + sizeAddress
+	offsetZapNative          = offsetExclusivityEndTime + sizeUint256
+	offsetZapData            = offsetZapNative + sizeUint256
+)
 
 // Helper function to properly encode uint256
 func padUint256(b *big.Int) []byte {
@@ -277,39 +301,37 @@ func padUint256(b *big.Int) []byte {
 
 // EncodeQuoteRequest encodes a quote request into a byte array.
 func EncodeQuoteRequest(tx fastbridgev2.IFastBridgeV2BridgeTransactionV2) ([]byte, error) {
-	result := make([]byte, OFFSET_ZAP_DATA)
+	result := make([]byte, offsetZapData)
 
-	fmt.Printf("tx: %+v\n", tx)
+	// Version
+	result[offsetVersion] = 0
+	result[offsetVersion+1] = 2
 
-	// Version (highest 16 bits)
-	result[0] = 0
-	result[1] = 2
+	// Chain IDs
+	binary.BigEndian.PutUint32(result[offsetOriginChainID:offsetOriginChainID+sizeChainID], tx.OriginChainId)
+	binary.BigEndian.PutUint32(result[offsetDestChainID:offsetDestChainID+sizeChainID], tx.DestChainId)
 
-	// Chain IDs (highest 32 bits)
-	binary.BigEndian.PutUint32(result[2:6], tx.OriginChainId)
-	binary.BigEndian.PutUint32(result[6:10], tx.DestChainId)
+	// Addresses
+	copy(result[offsetOriginSender:offsetOriginSender+sizeAddress], tx.OriginSender.Bytes())
+	copy(result[offsetDestRecipient:offsetDestRecipient+sizeAddress], tx.DestRecipient.Bytes())
+	copy(result[offsetOriginToken:offsetOriginToken+sizeAddress], tx.OriginToken.Bytes())
+	copy(result[offsetDestToken:offsetDestToken+sizeAddress], tx.DestToken.Bytes())
 
-	// Addresses (highest 160 bits / 20 bytes)
-	copy(result[10:30], tx.OriginSender.Bytes())
-	copy(result[30:50], tx.DestRecipient.Bytes())
-	copy(result[50:70], tx.OriginToken.Bytes())
-	copy(result[70:90], tx.DestToken.Bytes())
+	// uint256 values
+	copy(result[offsetOriginAmount:offsetOriginAmount+sizeUint256], padUint256(tx.OriginAmount))
+	copy(result[offsetDestAmount:offsetDestAmount+sizeUint256], padUint256(tx.DestAmount))
+	copy(result[offsetOriginFeeAmount:offsetOriginFeeAmount+sizeUint256], padUint256(tx.OriginFeeAmount))
+	copy(result[offsetDeadline:offsetDeadline+sizeUint256], padUint256(tx.Deadline))
+	copy(result[offsetNonce:offsetNonce+sizeUint256], padUint256(tx.Nonce))
 
-	// uint256 values - now properly padded to 32 bytes
-	copy(result[90:122], padUint256(tx.OriginAmount))
-	copy(result[122:154], padUint256(tx.DestAmount))
-	copy(result[154:186], padUint256(tx.OriginFeeAmount))
-	copy(result[186:218], padUint256(tx.Deadline))
-	copy(result[218:250], padUint256(tx.Nonce))
-
-	// Exclusivity address (highest 160 bits)
-	copy(result[250:270], tx.ExclusivityRelayer.Bytes())
+	// Exclusivity address
+	copy(result[offsetExclusivityRelayer:offsetExclusivityRelayer+sizeAddress], tx.ExclusivityRelayer.Bytes())
 
 	// More uint256 values
-	copy(result[270:302], tx.ExclusivityEndTime.Bytes())
-	copy(result[302:334], padUint256(tx.ZapNative))
+	copy(result[offsetExclusivityEndTime:offsetExclusivityEndTime+sizeUint256], padUint256(tx.ExclusivityEndTime))
+	copy(result[offsetZapNative:offsetZapNative+sizeUint256], padUint256(tx.ZapNative))
 
-	// Append ZapData at the end
+	// Append ZapData
 	result = append(result, tx.ZapData...)
 
 	return result, nil

@@ -78,7 +78,6 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 	if util.IsGasToken(request.Transaction.DestToken) {
 		gasAmount = request.Transaction.DestAmount
 	} else if request.Transaction.ZapNative != nil {
-		fmt.Printf("zap native: %s\n", request.Transaction.ZapNative.String())
 		gasAmount = request.Transaction.ZapNative
 	} else if request.TransactionV1.SendChainGas {
 		gasAmount, err = c.Bridge.ChainGasAmount(&bind.CallOpts{Context: ctx})
