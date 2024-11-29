@@ -3,6 +3,7 @@ package pricer
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
 	"math/big"
 	"strings"
@@ -261,85 +262,57 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 	return gasEstimate, nil
 }
 
+const OFFSET_ZAP_DATA = 334
+
+// Helper function to properly encode uint256
+func padUint256(b *big.Int) []byte {
+	// Convert big.Int to bytes
+	bytes := b.Bytes()
+	// Create 32-byte array (initialized to zeros)
+	result := make([]byte, 32)
+	// Copy bytes to right side of array (left-pad with zeros)
+	copy(result[32-len(bytes):], bytes)
+	return result
+}
+
 // EncodeQuoteRequest encodes a quote request into a byte array.
 func EncodeQuoteRequest(tx fastbridgev2.IFastBridgeV2BridgeTransactionV2) ([]byte, error) {
-	// Create ABI types with error handling
-	uint16Type, err := abi.NewType("uint16", "", nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create uint16 type: %w", err)
-	}
-	uint32Type, err := abi.NewType("uint32", "", nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create uint32 type: %w", err)
-	}
-	addressType, err := abi.NewType("address", "", nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create address type: %w", err)
-	}
-	uint256Type, err := abi.NewType("uint256", "", nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create uint256 type: %w", err)
-	}
-	bytesType, err := abi.NewType("bytes", "", nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create bytes type: %w", err)
-	}
+	result := make([]byte, OFFSET_ZAP_DATA)
 
-	// Define the ABI arguments
-	args := abi.Arguments{
-		{Type: uint16Type},  // version
-		{Type: uint32Type},  // originChainID
-		{Type: uint32Type},  // destChainID
-		{Type: addressType}, // originSender
-		{Type: addressType}, // destRecipient
-		{Type: addressType}, // originToken
-		{Type: addressType}, // destToken
-		{Type: uint256Type}, // originAmount
-		{Type: uint256Type}, // destAmount
-		{Type: uint256Type}, // originFeeAmount
-		{Type: uint256Type}, // deadline
-		{Type: uint256Type}, // nonce
-		{Type: addressType}, // exclusivityRelayer
-		{Type: uint256Type}, // exclusivityEndTime
-		{Type: uint256Type}, // zapNative
-		{Type: bytesType},   // zapData
-	}
+	fmt.Printf("tx: %+v\n", tx)
 
-	fmt.Printf("Encoding with origin chain id: %d\n", tx.OriginChainId)
-	fmt.Printf("Encoding with dest chain id: %d\n", tx.DestChainId)
-	fmt.Printf("Encoding with origin sender: %s\n", tx.OriginSender)
-	fmt.Printf("Encoding with dest recipient: %s\n", tx.DestRecipient)
-	fmt.Printf("Encoding with origin token: %s\n", tx.OriginToken)
-	fmt.Printf("Encoding with dest token: %s\n", tx.DestToken)
-	fmt.Printf("Encoding with origin amount: %s\n", tx.OriginAmount)
-	fmt.Printf("Encoding with dest amount: %s\n", tx.DestAmount)
-	fmt.Printf("Encoding with origin fee amount: %s\n", tx.OriginFeeAmount)
-	fmt.Printf("Encoding with deadline: %s\n", tx.Deadline)
-	fmt.Printf("Encoding with nonce: %s\n", tx.Nonce)
-	fmt.Printf("Encoding with exclusivity relayer: %s\n", tx.ExclusivityRelayer)
-	fmt.Printf("Encoding with exclusivity end time: %s\n", tx.ExclusivityEndTime)
-	fmt.Printf("Encoding with zap native: %s\n", tx.ZapNative)
-	fmt.Printf("Encoding with zap data: %s\n", tx.ZapData)
+	// Version (highest 16 bits)
+	result[0] = 0
+	result[1] = 2
 
-	// Pack the arguments
-	return args.Pack(
-		uint16(2), // VERSION
-		tx.OriginChainId,
-		tx.DestChainId,
-		tx.OriginSender,
-		tx.DestRecipient,
-		tx.OriginToken,
-		tx.DestToken,
-		tx.OriginAmount,
-		tx.DestAmount,
-		tx.OriginFeeAmount,
-		tx.Deadline,
-		tx.Nonce,
-		tx.ExclusivityRelayer,
-		tx.ExclusivityEndTime,
-		tx.ZapNative,
-		tx.ZapData,
-	)
+	// Chain IDs (highest 32 bits)
+	binary.BigEndian.PutUint32(result[2:6], tx.OriginChainId)
+	binary.BigEndian.PutUint32(result[6:10], tx.DestChainId)
+
+	// Addresses (highest 160 bits / 20 bytes)
+	copy(result[10:30], tx.OriginSender.Bytes())
+	copy(result[30:50], tx.DestRecipient.Bytes())
+	copy(result[50:70], tx.OriginToken.Bytes())
+	copy(result[70:90], tx.DestToken.Bytes())
+
+	// uint256 values - now properly padded to 32 bytes
+	copy(result[90:122], padUint256(tx.OriginAmount))
+	copy(result[122:154], padUint256(tx.DestAmount))
+	copy(result[154:186], padUint256(tx.OriginFeeAmount))
+	copy(result[186:218], padUint256(tx.Deadline))
+	copy(result[218:250], padUint256(tx.Nonce))
+
+	// Exclusivity address (highest 160 bits)
+	copy(result[250:270], tx.ExclusivityRelayer.Bytes())
+
+	// More uint256 values
+	copy(result[270:302], tx.ExclusivityEndTime.Bytes())
+	copy(result[302:334], padUint256(tx.ZapNative))
+
+	// Append ZapData at the end
+	result = append(result, tx.ZapData...)
+
+	return result, nil
 }
 
 func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string, isQuote bool, quoteRequest *reldb.QuoteRequest) (_ *big.Int, err error) {

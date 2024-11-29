@@ -797,12 +797,13 @@ func (i *IntegrationSuite) TestEncodeBridgeTransactionParity() {
 		OriginFeeAmount:    big.NewInt(10),
 		Deadline:           big.NewInt(0),
 		Nonce:              big.NewInt(0),
-		ExclusivityRelayer: common.HexToAddress(""),
+		ExclusivityRelayer: i.relayerWallet.Address(),
 		ExclusivityEndTime: big.NewInt(0),
 		ZapNative:          big.NewInt(100),
 		ZapData:            zapData,
 	}
 
+	fmt.Printf("address: %v\n", handle.Address())
 	expectedEncoded, err := handle.EncodeV2(&bind.CallOpts{Context: i.GetTestContext()}, bridgeTx)
 	i.NoError(err)
 	fmt.Printf("Expected: %x\n", expectedEncoded)
