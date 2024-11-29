@@ -10,7 +10,7 @@ import (
 //
 //nolint:golint
 type BridgeTransactionV2Ref struct {
-	*BridgeTransactionV2Lib
+	*BridgeTransactionV2Harness
 	address common.Address
 }
 
@@ -21,14 +21,14 @@ func (f *BridgeTransactionV2Ref) Address() common.Address {
 
 // NewBridgeTransactionV2Ref creates a new fast bridge mock contract with a ref.
 func NewBridgeTransactionV2Ref(address common.Address, backend bind.ContractBackend) (*BridgeTransactionV2Ref, error) {
-	bridgetransactionv2, err := NewBridgeTransactionV2Lib(address, backend)
+	bridgetransactionv2, err := NewBridgeTransactionV2Harness(address, backend)
 	if err != nil {
 		return nil, err
 	}
 
 	return &BridgeTransactionV2Ref{
-		BridgeTransactionV2Lib: bridgetransactionv2,
-		address:                address,
+		BridgeTransactionV2Harness: bridgetransactionv2,
+		address:                    address,
 	}, nil
 }
 

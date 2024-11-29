@@ -21,10 +21,12 @@ import (
 	cctpTest "github.com/synapsecns/sanguine/services/cctp-relayer/testutil"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/bridgetransactionv2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb"
 	guardService "github.com/synapsecns/sanguine/services/rfq/guard/service"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
@@ -772,4 +774,59 @@ func (i *IntegrationSuite) TestConcurrentBridges() {
 		}
 		return true
 	})
+}
+
+func (i *IntegrationSuite) TestEncodeBridgeTransactionParity() {
+	_, handle := i.manager.GetBridgeTransactionV2(i.GetTestContext(), i.originBackend)
+
+	originUSDC, _ := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.originBackend)
+	destUSDC, _ := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.destBackend)
+	deadline := new(big.Int).Sub(new(big.Int).Exp(big.NewInt(2), big.NewInt(256), nil), big.NewInt(1))
+	// zapData := []byte("Hello, world!")
+	zapData := []byte{}
+
+	bridgeTx := bridgetransactionv2.IFastBridgeV2BridgeTransactionV2{
+		OriginChainId:      uint32(i.originBackend.GetChainID()),
+		DestChainId:        uint32(i.destBackend.GetChainID()),
+		OriginSender:       i.userWallet.Address(),
+		DestRecipient:      i.userWallet.Address(),
+		OriginToken:        originUSDC.Address(),
+		DestToken:          destUSDC.Address(),
+		OriginAmount:       big.NewInt(1000),
+		DestAmount:         big.NewInt(1000),
+		OriginFeeAmount:    big.NewInt(10),
+		Deadline:           big.NewInt(0),
+		Nonce:              big.NewInt(0),
+		ExclusivityRelayer: common.HexToAddress(""),
+		ExclusivityEndTime: big.NewInt(0),
+		ZapNative:          big.NewInt(100),
+		ZapData:            zapData,
+	}
+
+	expectedEncoded, err := handle.EncodeV2(&bind.CallOpts{Context: i.GetTestContext()}, bridgeTx)
+	i.NoError(err)
+	fmt.Printf("Expected: %x\n", expectedEncoded)
+
+	tx := fastbridgev2.IFastBridgeV2BridgeTransactionV2{
+		OriginChainId:      uint32(i.originBackend.GetChainID()),
+		DestChainId:        uint32(i.destBackend.GetChainID()),
+		OriginSender:       i.userWallet.Address(),
+		DestRecipient:      i.userWallet.Address(),
+		OriginToken:        originUSDC.Address(),
+		DestToken:          destUSDC.Address(),
+		OriginAmount:       big.NewInt(1000),
+		DestAmount:         big.NewInt(1000),
+		OriginFeeAmount:    big.NewInt(10),
+		Deadline:           deadline,
+		Nonce:              big.NewInt(0),
+		ExclusivityRelayer: common.HexToAddress(""),
+		ExclusivityEndTime: big.NewInt(0),
+		ZapNative:          big.NewInt(100),
+		ZapData:            zapData,
+	}
+
+	encoded, err := pricer.EncodeQuoteRequest(tx)
+	i.NoError(err)
+
+	i.Equal(expectedEncoded, encoded)
 }

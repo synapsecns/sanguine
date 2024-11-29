@@ -3,7 +3,6 @@ package pricer
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math/big"
 	"strings"
@@ -233,7 +232,7 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 		fastBridgeV2ABI = &parsedABI
 	}
 
-	rawRequest, err := encodeQuoteRequest(quoteRequest)
+	rawRequest, err := EncodeQuoteRequest(quoteRequest.Transaction)
 	if err != nil {
 		return 0, fmt.Errorf("could not encode quote data: %w", err)
 	}
@@ -262,11 +261,8 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 	return gasEstimate, nil
 }
 
-func encodeQuoteRequest(quoteRequest *reldb.QuoteRequest) ([]byte, error) {
-	if quoteRequest == nil {
-		return nil, errors.New("quote request is nil")
-	}
-
+// EncodeQuoteRequest encodes a quote request into a byte array.
+func EncodeQuoteRequest(tx fastbridgev2.IFastBridgeV2BridgeTransactionV2) ([]byte, error) {
 	// Create ABI types with error handling
 	uint16Type, err := abi.NewType("uint16", "", nil)
 	if err != nil {
@@ -309,7 +305,21 @@ func encodeQuoteRequest(quoteRequest *reldb.QuoteRequest) ([]byte, error) {
 		{Type: bytesType},   // zapData
 	}
 
-	tx := quoteRequest.Transaction
+	fmt.Printf("Encoding with origin chain id: %d\n", tx.OriginChainId)
+	fmt.Printf("Encoding with dest chain id: %d\n", tx.DestChainId)
+	fmt.Printf("Encoding with origin sender: %s\n", tx.OriginSender)
+	fmt.Printf("Encoding with dest recipient: %s\n", tx.DestRecipient)
+	fmt.Printf("Encoding with origin token: %s\n", tx.OriginToken)
+	fmt.Printf("Encoding with dest token: %s\n", tx.DestToken)
+	fmt.Printf("Encoding with origin amount: %s\n", tx.OriginAmount)
+	fmt.Printf("Encoding with dest amount: %s\n", tx.DestAmount)
+	fmt.Printf("Encoding with origin fee amount: %s\n", tx.OriginFeeAmount)
+	fmt.Printf("Encoding with deadline: %s\n", tx.Deadline)
+	fmt.Printf("Encoding with nonce: %s\n", tx.Nonce)
+	fmt.Printf("Encoding with exclusivity relayer: %s\n", tx.ExclusivityRelayer)
+	fmt.Printf("Encoding with exclusivity end time: %s\n", tx.ExclusivityEndTime)
+	fmt.Printf("Encoding with zap native: %s\n", tx.ZapNative)
+	fmt.Printf("Encoding with zap data: %s\n", tx.ZapData)
 
 	// Pack the arguments
 	return args.Pack(
