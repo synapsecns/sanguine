@@ -1,23 +1,66 @@
 ---
-sidebar_position: 0
-sidebar_label: Relayer
+sidebar_label: Canonical Relayer
 ---
 
-# RFQ Relayer
+<!-- Reference Links -->
+[relay]: https://rfq-contracts.synapseprotocol.com/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#relayv2
+[prove]: https://rfq-contracts.synapseprotocol.com/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#provev2
+[dispute]: https://rfq-contracts.synapseprotocol.com/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#dispute
+[claim]: https://rfq-contracts.synapseprotocol.com/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#claimv2
+[cancel]: https://rfq-contracts.synapseprotocol.com/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#cancelv2
+[proof]: https://rfq-contracts.synapseprotocol.com/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgetxdetails
+[BridgeRequested]: https://rfq-contracts.synapseprotocol.com/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerequested
+[BridgeTransactionV2]: https://rfq-contracts.synapseprotocol.com/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgetransactionv2
+[BridgeRelayed]: https://rfq-contracts.synapseprotocol.com/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerelayed
+[BridgeProofProvided]: https://rfq-contracts.synapseprotocol.com/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeproofprovided
+[Cancel Delay]: https://rfq-contracts.synapseprotocol.com/contracts/FastBridge.sol/contract.FastBridge.html#refund_delay
+[Multicall]: https://rfq-contracts.synapseprotocol.com/contracts/interfaces/IMulticallTarget.sol/interface.IMulticallTarget.html
 
-:::note
+[Quoter API]: /docs/RFQ/Quoting/Quoter%20API/
+[Dispute Period]: /docs/RFQ/Security/#dispute-period
+[Quoting]: /docs/RFQ/Quoting
+[Bridging]: /docs/RFQ/Bridging
+[Relaying]: /docs/RFQ/Relaying
+[Proving]: /docs/RFQ/Proving
+[Claiming]: /docs/RFQ/Claiming
+[Canceling]: /docs/RFQ/Canceling
+[Security]: /docs/RFQ/Security
+[Exclusivity]: /docs/RFQ/Exclusivity
 
-Relayers must be whitelisted in order to fulfill bridge requests.
+[User]: /docs/RFQ/#entities
+[Quoter]: /docs/RFQ/#entities
+[Prover]: /docs/RFQ/#entities
+[Relayer]: /docs/RFQ/#entities
+[Guard]: /docs/RFQ/#entities
+[Canceler]: /docs/RFQ/#entities
+
+# Canonical RFQ Relayer
+
+:::info
+
+Relaying itself is permissionless as of FastBridgeV2 - but other necessary supporting functions of this Relayer (Quoting, Proving) are permissioned.
+
+If you are interested in participating as a Relayer, contact us.
 
 :::
 
-A Go application which coordinates on-chain events and stored message states to relay user funds. Relayers are easily observable.
+The Canonical RFQ Relayer is the official relayer app built and operated by Synapse which performs all necessary automated functions that are necessary for a Relayer participating in the Synapse RFQ network.
 
-The canonical RFQ Relayer handles **three event loops**: quoting routes, approving relays, and rebalancing funds.
+These functions include:
 
-## Quote
+- [Quoting]
+- [Relaying]
+- [Proving]
+- [Claiming]
+- Rebalancing
 
-Continuously track and update route quotes based on changes to available and in-flight balances via [API](API). The quote should update each time the available balance or other parameters change.
+## Stack
+
+The canonical RFQ Relayer is primarily built in Go with a MySQL backend. It also utilizes other tools and services built by Synapse, such as the [Submitter](/docs/Services/Submitter).
+
+## Quoting
+
+Continuously track and update route quotes via the [Quoter API](/docs/RFQ/Quoting/Quoter%20API/) based on changes to balances, prices, and fees.
 
 | Param   | Description
 |---------|-
@@ -27,24 +70,27 @@ Continuously track and update route quotes based on changes to available and in-
 
  <!-- TODO: Allow `time` as a quote parameter to put funds that are not _yet_ available to be put into play.  -->
 
-## Relay
+## Relaying
 
-Listen to on-chain events and database updates to move [`BridgeRequest`](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeparams) objects through the following states:
+Listen to on-chain events and database updates to move [`BridgeRequest`](https://rfq-contracts.synapseprotocol.com/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgeparams) objects through the following states:
 
 | State                | Description
 |----------------------|-
-| `Seen`               | [`BridgeRequested`](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerequested) event stored in the db.
-| `WillNotProcess`     | [`BridgeRequested`](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerequested) event is invalid
+| `Seen`               | [`BridgeRequested`](https://rfq-contracts.synapseprotocol.com/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgerequested) event stored in the db.
+| `WillNotProcess`     | [`BridgeRequested`](https://rfq-contracts.synapseprotocol.com/contracts/interfaces/IFastBridgeV2.sol/interface.IFastBridgeV2.html#bridgerequested) event is invalid
 | `NotEnoughInventory` | Retry later
-| `CommittedPending`   | All checks pass, waiting for transaction to finalize
-| `CommittedConfirmed` | Transaction is finalized on-chain
-| `RelayPending`       | Called [`relay`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#relay)
-| `RelayComplete`      | Relay completed on-chain
-| `ProvePosting`       | Called [`prove`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#prove)
-| `ClaimPending`       | Called [`claim`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#claim)
-| `ClaimComplete`      | Dispute period expired, funds received.
+| `CommittedPending`   | All checks pass. Inventory is committed to the fill. Awaiting [finalization](https://medium.com/@theblockchains/finality-in-blockchain-d287a087a9b9) of the BridgeRequested transction.
+| `CommittedConfirmed` | BridgeRequested transaction is [finalized](https://medium.com/@theblockchains/finality-in-blockchain-d287a087a9b9) on-chain. If conditions are still right, a relay will occur.
+| `RelayPending`       | A [`relay`](https://rfq-contracts.synapseprotocol.com/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#relay) tx has been submitted to the chain.
+| `RelayComplete`      | The submitted `relay` transaction has successfully landed on-chain.
+| `ProvePosting`       | Called [`prove`](https://rfq-contracts.synapseprotocol.com/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#prove) tx has been submitted to the chain.
+| `ProvePosted`       | The submitted `prove` transaction has successfully landed on-chain.
+| `ClaimPending`       | The `Dispute Period` has passed and the relayer has submitted a [`claim`](https://rfq-contracts.synapseprotocol.com/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#claim) tx to the chain.
+| `ClaimComplete`      | The submitted `claim` transaction has successfully landed on-chain and the funds from the original `BridgeRequested` tx have been released to the relayer - less any fees.
+| `RelayRaceLost`      | Another Relayer has completed the relay.
 
-## Rebalance
+
+## Rebalancing
 
 For cases where flows are mono-directional, the Relayer provides an interface for rebalancing funds.
 
@@ -84,7 +130,7 @@ At a high level, the rebalancer checks inventory on Scroll versus other chains, 
 
 :::
 
-## Configure
+## Configuration
 
 RFQ Relayer requires a YAML configuration file path to be provided at run time.
 
@@ -103,7 +149,7 @@ RFQ Relayer requires a YAML configuration file path to be provided at run time.
   *  `type`: Database driver to use, can be `mysql` or `sqlite`.
   *  `dsn`: 'Data Source Name'. If using SQLite, this can be a path. For MySQL see [here](https://dev.mysql.com/doc/connector-odbc/en/connector-odbc-configuration.html) for more information.
 * `screener_api_url` (optional): [Screener API](https://github.com/synapsecns/sanguine/tree/master/contrib/screener-api#screening-api)
-* `rfq_url`: [Mainnet & Testnet addresses](API/#api-urls)
+* `rfq_url`: [Mainnet & Testnet addresses](/docs/RFQ/Quoting/Quoter%20API/#api-urls)
 * `omnirpc_url`: [Running an OmniRPC instance](/docs/Services/Omnirpc)
 * `rebalance_interval`: How often to rebalance. Can use `s` (seconds), `m` (minutes), or `h` (hours)
 * `relayer_api_port`: Controls the relayer. Should be private or secured. <!--TODO: more info here-->
@@ -272,7 +318,7 @@ Clone the Sanguine repository, then run the main.go file along with the path to 
 
 ## sendChainGas
 
-Boolean flag available to Bridge users. When `sendChainGas` is `true`, the amount to send is specified as `chainGasAmount` in the FastBridge contract on the destination chain.
+Boolean flag available to Bridge users. When `sendChainGas` is `true`, the amount to send is specified as `chainGasAmount` in the FastBridgeV2 contract on the destination chain.
 
 :::note
 

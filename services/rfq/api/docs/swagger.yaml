@@ -310,7 +310,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: Handle user quote request and return the best quote available.
+      description: Initiate an Active Request-For-Quote return the best quote available.
       parameters:
       - description: User quote request
         in: body
@@ -329,12 +329,12 @@ paths:
               type: string
           schema:
             $ref: '#/definitions/model.PutRFQResponse'
-      summary: Handle user quote request
+      summary: Initiate an Active RFQ
       tags:
       - quotes
   /rfq_stream:
     get:
-      description: Establish a WebSocket connection to receive active quote requests.
+      description: Establish a WebSocket connection to listen for Active Requests-For-Quote.
       produces:
       - application/json
       responses:
@@ -346,7 +346,7 @@ paths:
               type: string
           schema:
             type: string
-      summary: Handle WebSocket connection for active quote requests
+      summary: Listen for Active RFQs
       tags:
       - quotes
 swagger: "2.0"

@@ -41,7 +41,7 @@ Synapse Router automatically determines the appropriate router for each Bridge t
 
 * **[Synapse Router](/docs/Routers/Synapse-Router)** – Returns and executes quotes for supported interchain transactions.
 * **[CCTP](/docs/Routers/CCTP)** – Native router for USDC transactions.
-* **[RFQ](/docs/Routers/RFQ)** – Relayers bid for the right to provide immediate delivery.
+* **[RFQ](/docs/RFQ)** – Relayers bid for the right to provide immediate delivery.
 
 <figure id="flowGroup">
     <figure>

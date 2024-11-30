@@ -1,0 +1,158 @@
+---
+id: listen-for-active-rf-qs
+title: "Listen for Active RFQs"
+description: "Establish a WebSocket connection to listen for Active Requests-For-Quote."
+sidebar_label: "Listen for Active RFQs"
+hide_title: true
+hide_table_of_contents: true
+api: eJytUktv2zAM/ivCd5aX9epbDu0wYBjapnsARjDIChNrtSVFpLMFhv/7QLfF+gB22kkAyY/fg5qwI/YlZAkposYli2v7wJ1x5hu1m+TvSYxPMZLXESPJ9IGFotmnYtZewonMLR1HYuHqKpXqZkxC72BRiHOKTIx6wsX7C31esm1+BfFdiAdzXZIkn3qGRUduR2VBfa/WOVRfqfACeI1fX380j03zeRxaKqYyGyKzS54XgUMqZELcJ1iw72hwukXOmVCDpYR4wDzPFj5FoSjadTn3wTvlWP3kB95/YBUt7sCoGxzVO2NrMZB0aYcaBxJYZCcdaqzK/viDpZAbYLHoqqeF23nl1lVBeiWAxenJNzBb5MQyuEVNdIOOfHp7iKsbTfBFStNfb//1vI9BCP2WVe5diCpyLL0yPtht8Mzu1qJLLFqdptYxfSn9PGv5OFI5o262FidXgmvVf7Odn34C6mbCPZ314N5T1jxPrh+V/c2t5ufZf7i8wzz/ATWw/8w=
+sidebar_class_name: "get api-method"
+custom_edit_url: null
+---
+
+import ApiTabs from "@theme/ApiTabs";
+import DiscriminatorTabs from "@theme/DiscriminatorTabs";
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import SecuritySchemes from "@theme/ApiExplorer/SecuritySchemes";
+import MimeTabs from "@theme/MimeTabs";
+import ParamsItem from "@theme/ParamsItem";
+import ResponseSamples from "@theme/ResponseSamples";
+import SchemaItem from "@theme/SchemaItem";
+import SchemaTabs from "@theme/SchemaTabs";
+import Heading from "@theme/Heading";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Listen for Active RFQs"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/rfq_stream"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Establish a WebSocket connection to listen for Active Requests-For-Quote.
+
+<div>
+  <div>
+    <ApiTabs
+      label={undefined}
+      id={undefined}
+    >
+      <TabItem
+        label={"101"}
+        value={"101"}
+      >
+        <div>
+          
+          
+          Switching Protocols
+          
+          
+        </div><details
+          style={{"textAlign":"left","marginBottom":"1rem"}}
+          className={"openapi-markdown__details"}
+          data-collapsed={true}
+          open={false}
+        >
+          <summary
+            style={{}}
+          >
+            <strong>
+              Response Headers
+            </strong>
+          </summary><ul
+            style={{"marginLeft":"1rem"}}
+          >
+            <li
+              className={"schemaItem"}
+            >
+              <summary
+                style={{}}
+              >
+                <strong>
+                  X-Api-Version
+                </strong><span
+                  style={{"opacity":"0.6"}}
+                >
+                   string
+                </span>
+              </summary><div>
+                <div
+                  style={{"marginTop":".5rem","marginBottom":".5rem"}}
+                >
+                  
+                  
+                  API Version Number - See docs for more info
+                  
+                  
+                </div>
+              </div>
+            </li>
+          </ul>
+        </details><div>
+          <MimeTabs
+            className={"openapi-tabs__mime"}
+            schemaType={"response"}
+          >
+            <TabItem
+              label={"application/json"}
+              value={"application/json"}
+            >
+              <SchemaTabs
+                className={"openapi-tabs__schema"}
+              >
+                <TabItem
+                  label={"Schema"}
+                  value={"Schema"}
+                >
+                  <details
+                    style={{}}
+                    className={"openapi-markdown__details response"}
+                    data-collapsed={false}
+                    open={true}
+                  >
+                    <summary
+                      style={{}}
+                      className={"openapi-markdown__details-summary-response"}
+                    >
+                      <strong>
+                        Schema
+                      </strong>
+                    </summary><div
+                      style={{"textAlign":"left","marginLeft":"1rem"}}
+                    >
+                      
+                    </div><ul
+                      style={{"marginLeft":"1rem"}}
+                    >
+                      <div
+                        style={{"marginTop":".5rem","marginBottom":".5rem"}}
+                      >
+                        
+                        
+                        string
+                        
+                        
+                      </div>
+                    </ul>
+                  </details>
+                </TabItem>
+              </SchemaTabs>
+            </TabItem>
+          </MimeTabs>
+        </div>
+      </TabItem>
+    </ApiTabs>
+  </div>
+</div>
+      

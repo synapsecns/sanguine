@@ -2638,10 +2638,10 @@
     "/rfq": {
       "put": {
         "tags": ["RFQ API"],
-        "summary": "Handle user quote request",
-        "description": "Handle user quote request and return the best quote available.",
+        "summary": "Initiate an Active RFQ",
+        "description": "Initiate an Active Request-For-Quote return the best quote available.",
         "requestBody": {
-          "description": "User quote request",
+          "description": "Initiate an Active Request-For-Quote",
           "content": {
             "application/json": {
               "schema": {
@@ -2677,8 +2677,8 @@
     "/rfq_stream": {
       "get": {
         "tags": ["RFQ API"],
-        "summary": "Handle WebSocket connection for active quote requests",
-        "description": "Establish a WebSocket connection to receive active quote requests.",
+        "summary": "Listen for Active RFQs",
+        "description": "Establish a WebSocket connection to listen for Active Requests-For-Quote.",
         "responses": {
           "101": {
             "description": "Switching Protocols",
