@@ -15,7 +15,7 @@ RFQ transactions primarily interact with the Router Address, which is responsibl
 ## FastBridge Version 2
 
 **Source code**: [SynapseCNS (Github)](https://github.com/synapsecns/sanguine/tree/master/packages/contracts-rfq)\
-**Generated docs**: [Contract docs](https://vercel-rfq-docs.vercel.app/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html)\
+**Generated docs**: [Contract docs](https://rfq-contracts.synapseprotocol.com/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html)\
 **RFQ Router Address**: `0x00cD000000003f7F682BE4813200893d4e690000`
 
 <!-- TODO-DOCS -->
@@ -35,7 +35,7 @@ RFQ transactions primarily interact with the Router Address, which is responsibl
 ## FastBridge Version 1
 
 **Source code**: [SynapseCNS (Github)](https://github.com/synapsecns/sanguine/tree/master/packages/contracts-rfq)\
-**Generated docs**: [Contract docs](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html)\
+**Generated docs**: [Contract docs](https://rfq-contracts.synapseprotocol.com/contracts/FastBridge.sol/contract.FastBridge.html)\
 **RFQ Router Address**: `0x00cD000000003f7F682BE4813200893d4e690000`
 
 | Chain    | Address |
