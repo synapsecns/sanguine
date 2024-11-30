@@ -32,20 +32,22 @@
     "maps:generate": "node ./src/scripts/generateMaps.cjs && node ./src/scripts/findMissing.cjs && yarn build"
   },
   "dependencies": {
-    "@codecov/rollup-plugin": "^1.2.0",
     "@ethersproject/address": "5.7.0",
     "@ethersproject/bignumber": "5.7.0",
+    "ethers": "5.7.2",
+    "viem": "^2.21.6"
+  },
+  "devDependencies": {
+    "@codecov/rollup-plugin": "^1.2.0",
     "@rollup/plugin-commonjs": "^28.0.0",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.3.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-url": "^8.0.2",
     "babel-plugin-transform-export-extensions": "^6.22.0",
-    "ethers": "5.7.2",
     "lodash": "^4.17.21",
     "rollup": "^4.22.4",
     "rollup-plugin-typescript2": "^0.36.0",
-    "typescript": "^5.3.3",
-    "viem": "^2.21.6"
+    "typescript": "^5.3.3"
   }
 }
