@@ -1,5 +1,5 @@
 ---
-title: RFQ
+title: Synapse Intent Network
 ---
 
 import { RFQFlow } from '@site/src/components/RFQFlow'
@@ -36,9 +36,9 @@ import { RFQFlow } from '@site/src/components/RFQFlow'
 [Guard]: /docs/RFQ/#entities
 [Canceler]: /docs/RFQ/#entities
 
-# Synapse RFQ Summary
+# Synapse Intent Network
 
-Synapse RFQ (Request-For-Quote) is an <abbr title="'Intent' refers to a user authorizing specific actions that they want to achieve, typically in very simple terms, such as a bridge or swap. Actual execution of the actions is then performed on the user's behalf by third parties known as solvers/relayers.">intent</abbr>-based bridging system that connects bridging users to a network of relayers.
+Synapse Intent Network is an RFQ (Request-For-Quote) based <abbr title="'Intent' refers to a user authorizing specific actions that they want to achieve, typically in very simple terms, such as a bridge or swap. Actual execution of the actions is then performed on the user's behalf by third parties known as solvers/relayers.">intent</abbr> centric bridging system that connects bridging users to a network of relayers.
 
 These relayers compete to provide the optimal bridge execution (eg: the best price) for the user's specific request.
 
