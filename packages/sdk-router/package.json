@@ -71,7 +71,7 @@
     "@ethersproject/bytes": "^5.7.0",
     "@ethersproject/constants": "^5.7.0",
     "@ethersproject/contracts": "^5.7.0",
-    "babel-jest": "^25.2.6",
+    "babel-jest": "^27.0.0",
     "big.js": "^5.2.2",
     "decimal.js-light": "^2.5.1",
     "ethers": "^5.7.2",
