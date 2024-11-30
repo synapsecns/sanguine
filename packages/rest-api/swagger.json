@@ -197,6 +197,15 @@
               "type": "string"
             },
             "description": "The address of the user on the origin chain"
+          },
+          {
+            "in": "query",
+            "name": "destAddress",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The destination address of the user on the destination chain"
           }
         ],
         "responses": {
@@ -387,8 +396,8 @@
     },
     "/bridgeTxInfo": {
       "get": {
-        "summary": "Get bridge transaction information",
-        "description": "Retrieve transaction information for bridging tokens between chains",
+        "summary": "[Deprecated] in favor of using the /bridge endpoint, which now returns call data",
+        "description": "[Deprecated] Originally used to get Bridge transaction information",
         "parameters": [
           {
             "in": "query",
@@ -1206,6 +1215,15 @@
               "type": "number"
             },
             "description": "The amount of tokens to swap"
+          },
+          {
+            "in": "query",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the user"
           }
         ],
         "responses": {
@@ -1327,8 +1345,8 @@
     },
     "/swapTxInfo": {
       "get": {
-        "summary": "Get swap transaction information",
-        "description": "Retrieve transaction information for swapping tokens on a specific chain",
+        "summary": "[Deprecated] in favor of using the /swap endpoint, which now returns call data",
+        "description": "[Deprecated] Originally used to get Swap transaction information",
         "parameters": [
           {
             "in": "query",

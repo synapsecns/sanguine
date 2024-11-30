@@ -19,8 +19,8 @@ const router: express.Router = express.Router()
  * @openapi
  * /bridgeTxInfo:
  *   get:
- *     summary: Get bridge transaction information
- *     description: Retrieve transaction information for bridging tokens between chains
+ *     summary: "[Deprecated] in favor of using the /bridge endpoint, which now returns call data"
+ *     description: "[Deprecated] Originally used to get Bridge transaction information"
  *     parameters:
  *       - in: query
  *         name: fromChain

@@ -1295,23 +1295,3 @@ export const SPECTRAL = new Token({
   color: 'blue',
   routeSymbol: 'SPEC',
 })
-
-export const WLD = new Token({
-  priorityRank: 106,
-  addresses: {
-    [CHAINS.ETH.id]: '0x163f8c2467924be0ae7b5347228cabf260318753',
-    [CHAINS.OPTIMISM.id]: '0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1',
-    [CHAINS.WORLDCHAIN.id]: '0x2cFc85d8E48F8EAB294be644d9E25C3030863003',
-  },
-  decimals: {
-    [CHAINS.ETH.id]: 18,
-    [CHAINS.OPTIMISM.id]: 18,
-    [CHAINS.WORLDCHAIN.id]: 18,
-  },
-  symbol: 'WLD',
-  name: 'Worldcoin',
-  logo: 'https://synapse-interface-worldchain.sanguine-fe.pages.dev/_next/static/media/worldchain.62d1dfd2.svg',
-  swapableType: 'WLD',
-  color: 'gray',
-  routeSymbol: 'WLD',
-})

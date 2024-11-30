@@ -453,19 +453,19 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         // V1 doesn't have any version field
         expectRevertUnsupportedVersion(0);
         vm.prank({msgSender: relayerA, txOrigin: relayerA});
-        fastBridge.relay(mockRequestV1, relayerB);
+        fastBridge.relayV2(mockRequestV1, relayerB);
     }
 
     function test_relay_withRelayerAddress_revert_invalidRequestV2() public {
         expectRevertInvalidEncodedTx();
         vm.prank({msgSender: relayerA, txOrigin: relayerA});
-        fastBridge.relay(invalidRequestV2, relayerB);
+        fastBridge.relayV2(invalidRequestV2, relayerB);
     }
 
     function test_relay_withRelayerAddress_revert_requestV3() public {
         expectRevertUnsupportedVersion(3);
         vm.prank({msgSender: relayerA, txOrigin: relayerA});
-        fastBridge.relay(mockRequestV3, relayerB);
+        fastBridge.relayV2(mockRequestV3, relayerB);
     }
 
     function test_relay_withRelayerAddress_revert_chainIncorrect() public {

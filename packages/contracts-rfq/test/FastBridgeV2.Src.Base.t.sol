@@ -9,7 +9,8 @@ import {FastBridgeV2, FastBridgeV2Test, IFastBridge, IFastBridgeV2} from "./Fast
 abstract contract FastBridgeV2SrcBaseTest is FastBridgeV2Test {
     uint256 public constant MIN_DEADLINE = 30 minutes;
     uint256 public constant CLAIM_DELAY = 30 minutes;
-    uint256 public constant PERMISSIONLESS_REFUND_DELAY = 7 days;
+    // Use a value different from the default to ensure it's being set correctly.
+    uint256 public constant PERMISSIONLESS_CANCEL_DELAY = 13.37 hours;
 
     uint256 public constant LEFTOVER_BALANCE = 10 ether;
     uint256 public constant INITIAL_PROTOCOL_FEES_TOKEN = 456_789;
@@ -25,10 +26,13 @@ abstract contract FastBridgeV2SrcBaseTest is FastBridgeV2Test {
     }
 
     function configureFastBridge() public virtual override {
-        fastBridge.grantRole(fastBridge.RELAYER_ROLE(), relayerA);
-        fastBridge.grantRole(fastBridge.RELAYER_ROLE(), relayerB);
+        fastBridge.grantRole(fastBridge.PROVER_ROLE(), relayerA);
+        fastBridge.grantRole(fastBridge.PROVER_ROLE(), relayerB);
         fastBridge.grantRole(fastBridge.GUARD_ROLE(), guard);
-        fastBridge.grantRole(fastBridge.REFUNDER_ROLE(), refunder);
+        fastBridge.grantRole(fastBridge.CANCELER_ROLE(), canceler);
+
+        fastBridge.grantRole(fastBridge.GOVERNOR_ROLE(), address(this));
+        fastBridge.setCancelDelay(PERMISSIONLESS_CANCEL_DELAY);
     }
 
     function mintTokens() public virtual override {
@@ -64,12 +68,12 @@ abstract contract FastBridgeV2SrcBaseTest is FastBridgeV2Test {
         public
     {
         vm.prank({msgSender: caller, txOrigin: caller});
-        fastBridge.bridge{value: msgValue}(params, paramsV2);
+        fastBridge.bridgeV2{value: msgValue}(params, paramsV2);
     }
 
     function prove(address caller, bytes32 transactionId, bytes32 destTxHash, address relayer) public {
         vm.prank({msgSender: caller, txOrigin: caller});
-        fastBridge.prove(transactionId, destTxHash, relayer);
+        fastBridge.proveV2(transactionId, destTxHash, relayer);
     }
 
     function prove(address caller, IFastBridgeV2.BridgeTransactionV2 memory bridgeTx, bytes32 destTxHash) public {
@@ -79,7 +83,7 @@ abstract contract FastBridgeV2SrcBaseTest is FastBridgeV2Test {
 
     function claim(address caller, IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public {
         vm.prank({msgSender: caller, txOrigin: caller});
-        fastBridge.claim(BridgeTransactionV2Lib.encodeV2(bridgeTx));
+        fastBridge.claimV2(BridgeTransactionV2Lib.encodeV2(bridgeTx));
     }
 
     function claim(address caller, IFastBridgeV2.BridgeTransactionV2 memory bridgeTx, address to) public {
@@ -92,9 +96,9 @@ abstract contract FastBridgeV2SrcBaseTest is FastBridgeV2Test {
         fastBridge.dispute(txId);
     }
 
-    function refund(address caller, IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public {
+    function cancel(address caller, IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public virtual {
         vm.prank({msgSender: caller, txOrigin: caller});
-        fastBridge.refund(BridgeTransactionV2Lib.encodeV2(bridgeTx));
+        fastBridge.cancelV2(BridgeTransactionV2Lib.encodeV2(bridgeTx));
     }
 
     function test_nonce() public view {

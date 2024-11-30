@@ -50,6 +50,6 @@ contract FastBridgeV2DstBaseTest is FastBridgeV2Test {
     {
         bytes memory request = BridgeTransactionV2Lib.encodeV2(bridgeTx);
         vm.prank({msgSender: caller, txOrigin: caller});
-        fastBridge.relay{value: msgValue}(request, relayer);
+        fastBridge.relayV2{value: msgValue}(request, relayer);
     }
 }

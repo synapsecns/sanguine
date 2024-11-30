@@ -1,12 +1,19 @@
 {
+    // This file (like all vscode metadata files) uses JSON with Comments (JSONC) format, which supports:
+    // - Comments (both single and multi-line)
+    // - Trailing commas
+    // - More lenient syntax than standard JSON
+
     // See https://go.microsoft.com/fwlink/?LinkId=827846 to learn about workspace recommendations.
     // Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
-  
+
     // List of extensions which should be recommended for users of this workspace.
     "recommendations": [
       "dbaeumer.vscode-eslint",
       "editorconfig.editorconfig",
       "juanblanco.solidity",
       "golang.go",
+      "bierner.markdown-mermaid",
+      "bpruitt-goddard.mermaid-markdown-syntax-highlighting",
     ],
   }

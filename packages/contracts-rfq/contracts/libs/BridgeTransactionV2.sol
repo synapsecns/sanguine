@@ -46,7 +46,7 @@ library BridgeTransactionV2Lib {
     error BridgeTransactionV2__InvalidEncodedTx();
     error BridgeTransactionV2__UnsupportedVersion(uint16 version);
 
-    /// @notice Validates the encoded transaction to be a tightly packed encoded payload for BridgeTransactionV2.
+    /// @notice Validates that the encoded transaction is a tightly packed encoded payload for BridgeTransactionV2.
     /// @dev Checks the minimum length and the version, use this function before decoding any of the fields.
     function validateV2(bytes calldata encodedTx) internal pure {
         // Check the minimum length: must at least include all static fields.
