@@ -7,6 +7,7 @@ interface ISynapseIntentRouterErrors {
     error SIR__MsgValueIncorrect();
     error SIR__StepsNotProvided();
     error SIR__TokenNotContract();
+    error SIR__UnspentFunds();
     error SIR__ZapIncorrectReturnValue();
     error SIR__ZapNoReturnValue();
 }

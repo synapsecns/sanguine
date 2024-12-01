@@ -22,6 +22,7 @@ interface ISynapseIntentRouter {
     /// - SIR does not perform any checks on the Zap Data; the user is responsible for ensuring correct encoding.
     /// - The user is responsible for selecting the correct ZapRecipient for their intent: ZapRecipient must be
     ///   able to modify the Zap Data to adjust to possible changes in the passed amount value.
+    /// - SIR checks that the ZapRecipient balance for every token in `steps` has not increased after the last step.
     /// @dev Typical workflow involves a series of preparation steps followed by the last step representing the user
     /// intent such as bridging, depositing, or a simple transfer to the final recipient. The ZapRecipient must be
     /// the funds recipient for the preparation steps, while the final recipient must be used for the last step.
@@ -37,6 +38,22 @@ interface ISynapseIntentRouter {
     /// @param deadline             Deadline for the intent to be completed
     /// @param steps                Parameters for each step. Use amount = type(uint256).max for steps that
     ///                             should use the full ZapRecipient balance.
+    function completeIntentWithBalanceChecks(
+        address zapRecipient,
+        uint256 amountIn,
+        uint256 minLastStepAmountIn,
+        uint256 deadline,
+        StepParams[] memory steps
+    )
+        external
+        payable;
+
+    /// @notice Kindly ask SIR to complete the provided intent by completing a series of Zap steps using the
+    /// provided ZapRecipient contract.
+    /// @dev This function is identical to `completeIntentWithBalanceChecks` except that it does not verify that
+    /// the ZapRecipient balance for every token in `steps` has not increased after the last Zap.
+    /// Anyone using this function must validate that the funds are fully spent by ZapRecipient
+    /// using other means like separate on-chain checks or off-chain simulation.
     function completeIntent(
         address zapRecipient,
         uint256 amountIn,

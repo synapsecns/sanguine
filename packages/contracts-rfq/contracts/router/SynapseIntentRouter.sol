@@ -22,7 +22,7 @@ contract SynapseIntentRouter is ISynapseIntentRouter, ISynapseIntentRouterErrors
     uint256 internal constant FULL_BALANCE = type(uint256).max;
 
     /// @inheritdoc ISynapseIntentRouter
-    function completeIntent(
+    function completeIntentWithBalanceChecks(
         address zapRecipient,
         uint256 amountIn,
         uint256 minLastStepAmountIn,
@@ -30,6 +30,21 @@ contract SynapseIntentRouter is ISynapseIntentRouter, ISynapseIntentRouterErrors
         StepParams[] calldata steps
     )
         external
+        payable
+    {
+        // TODO: record and check balances
+        completeIntent(zapRecipient, amountIn, minLastStepAmountIn, deadline, steps);
+    }
+
+    /// @inheritdoc ISynapseIntentRouter
+    function completeIntent(
+        address zapRecipient,
+        uint256 amountIn,
+        uint256 minLastStepAmountIn,
+        uint256 deadline,
+        StepParams[] calldata steps
+    )
+        public
         payable
     {
         // Validate the input parameters before proceeding.
