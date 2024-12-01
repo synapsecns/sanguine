@@ -28,7 +28,7 @@ contract ZapRouterV1BalanceChecksTest is ZapRouterV1Test {
 
     // ═════════════════════════════════════════ SINGLE ZAP UNSPENT FUNDS ══════════════════════════════════════════════
 
-    function test_depositERC20_revert_unspentERC20() public {
+    function test_depositERC20_exactAmount_revert_unspentERC20() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositERC20ZapParams(AMOUNT);
         vm.expectRevert(ZapRouterV1__ZapUnspentFunds.selector);
         userPerformZaps({
@@ -40,7 +40,12 @@ contract ZapRouterV1BalanceChecksTest is ZapRouterV1Test {
         });
     }
 
-    function test_depositNative_revert_unspentNative() public {
+    function test_depositERC20_exactAmount_extraERC20_revert_unspentERC20() public {
+        erc20.mint(address(tokenZap), EXTRA_FUNDS);
+        test_depositERC20_exactAmount_revert_unspentERC20();
+    }
+
+    function test_depositNative_exactAmount_revert_unspentNative() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositNativeZapParams(AMOUNT);
         zapParams[0].msgValue = AMOUNT + 1;
         vm.expectRevert(ZapRouterV1__ZapUnspentFunds.selector);
@@ -51,5 +56,10 @@ contract ZapRouterV1BalanceChecksTest is ZapRouterV1Test {
             deadline: block.timestamp,
             zapParams: zapParams
         });
+    }
+
+    function test_depositNative_exactAmount_extraNative_revert_unspentNative() public {
+        deal(address(tokenZap), EXTRA_FUNDS);
+        test_depositNative_exactAmount_revert_unspentNative();
     }
 }

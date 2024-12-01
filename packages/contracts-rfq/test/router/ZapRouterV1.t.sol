@@ -16,6 +16,7 @@ import {Test} from "forge-std/Test.sol";
 contract ZapRouterV1Test is Test, IZapRouterV1Errors {
     address internal constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     uint256 internal constant AMOUNT = 1 ether;
+    uint256 internal constant EXTRA_FUNDS = 0.1337 ether;
     uint256 internal constant USE_FULL_BALANCE = type(uint256).max;
 
     ZapRouterV1 internal router;
@@ -114,6 +115,12 @@ contract ZapRouterV1Test is Test, IZapRouterV1Errors {
         assertEq(vault.balanceOf(user, address(erc20)), AMOUNT);
     }
 
+    /// @notice Extra funds should have no effect on "exact amount" instructions.
+    function test_depositERC20_exactAmount_extraERC20() public {
+        erc20.mint(address(tokenZap), EXTRA_FUNDS);
+        test_depositERC20_exactAmount();
+    }
+
     function test_depositERC20_exactAmount_revert_deadlineExceeded() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositERC20ZapParams(AMOUNT);
         vm.expectRevert(ZapRouterV1__DeadlineExceeded.selector);
@@ -161,6 +168,21 @@ contract ZapRouterV1Test is Test, IZapRouterV1Errors {
         });
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, address(erc20)), AMOUNT);
+    }
+
+    /// @notice Extra funds should be used with "full balance" instructions.
+    function test_depositERC20_fullBalance_extraERC20() public {
+        erc20.mint(address(tokenZap), EXTRA_FUNDS);
+        IZapRouterV1.ZapParams[] memory zapParams = getDepositERC20ZapParams(USE_FULL_BALANCE);
+        userPerformZaps({
+            msgValue: 0,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: AMOUNT,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit with the extra funds
+        assertEq(vault.balanceOf(user, address(erc20)), AMOUNT + EXTRA_FUNDS);
     }
 
     function test_depositERC20_fullBalance_revert_deadlineExceeded() public {
@@ -223,6 +245,12 @@ contract ZapRouterV1Test is Test, IZapRouterV1Errors {
         });
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT);
+    }
+
+    /// @notice Extra funds should have no effect on "exact amount" instructions.
+    function test_depositNative_exactAmount_extraNative() public {
+        deal(address(tokenZap), EXTRA_FUNDS);
+        test_depositNative_exactAmount();
     }
 
     function test_depositNative_exactAmount_revert_deadlineExceeded() public {
@@ -304,6 +332,21 @@ contract ZapRouterV1Test is Test, IZapRouterV1Errors {
         });
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT);
+    }
+
+    /// @notice Extra funds should be used with "full balance" instructions.
+    function test_depositNative_fullBalance_extraNative() public {
+        deal(address(tokenZap), EXTRA_FUNDS);
+        IZapRouterV1.ZapParams[] memory zapParams = getDepositNativeZapParams(USE_FULL_BALANCE);
+        userPerformZaps({
+            msgValue: AMOUNT,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: AMOUNT,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit with the extra funds
+        assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT + EXTRA_FUNDS);
     }
 
     function test_depositNative_fullBalance_revert_deadlineExceeded() public {
