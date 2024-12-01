@@ -10,7 +10,7 @@ router.get('/:chainId.svg', async (req, res) => {
   // Find the chain with matching ID
   const chain = Object.values(CHAINS).find(
     (c): c is Chain =>
-      typeof c === 'object' && c !== null && 'id' in c && c.id === chainId,
+      typeof c === 'object' && c !== null && 'id' in c && c.id === chainId
   )
 
   if (!chain || !chain.chainImg) {
