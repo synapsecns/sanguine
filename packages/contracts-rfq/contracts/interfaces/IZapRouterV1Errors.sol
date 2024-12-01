@@ -9,4 +9,5 @@ interface IZapRouterV1Errors {
     error ZapRouterV1__TokenNotContract();
     error ZapRouterV1__ZapIncorrectReturnValue();
     error ZapRouterV1__ZapNoReturnValue();
+    error ZapRouterV1__ZapUnspentFunds();
 }

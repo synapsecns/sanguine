@@ -22,6 +22,21 @@ contract ZapRouterV1 is IZapRouterV1, IZapRouterV1Errors {
     uint256 internal constant FULL_BALANCE = type(uint256).max;
 
     /// @inheritdoc IZapRouterV1
+    function performZapsWithBalanceChecks(
+        address zapRecipient,
+        uint256 amountIn,
+        uint256 minLastZapAmountIn,
+        uint256 deadline,
+        ZapParams[] calldata zapParams
+    )
+        public
+        payable
+    {
+        // TODO: record and check balances
+        performZaps(zapRecipient, amountIn, minLastZapAmountIn, deadline, zapParams);
+    }
+
+    /// @inheritdoc IZapRouterV1
     function performZaps(
         address zapRecipient,
         uint256 amountIn,
@@ -29,7 +44,7 @@ contract ZapRouterV1 is IZapRouterV1, IZapRouterV1Errors {
         uint256 deadline,
         ZapParams[] calldata zapParams
     )
-        external
+        public
         payable
     {
         // Validate the input parameters before proceeding.
