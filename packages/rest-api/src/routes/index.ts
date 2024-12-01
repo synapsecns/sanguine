@@ -11,6 +11,7 @@ import destinationTxRoute from './destinationTxRoute'
 import tokenListRoute from './tokenListRoute'
 import destinationTokensRoute from './destinationTokensRoute'
 import bridgeLimitsRoute from './bridgeLimitsRoute'
+import chainIconRoute from './chainIconRoute'
 
 const router: express.Router = express.Router()
 
@@ -25,5 +26,6 @@ router.use('/bridgeTxStatus', bridgeTxStatusRoute)
 router.use('/destinationTx', destinationTxRoute)
 router.use('/tokenList', tokenListRoute)
 router.use('/destinationTokens', destinationTokensRoute)
+router.use('/chainIcon', chainIconRoute)
 
 export default router
