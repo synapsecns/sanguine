@@ -28,8 +28,8 @@ contract SynapseIntentRouterBalanceChecksTest is SynapseIntentRouterTest {
 
     // ═════════════════════════════════════════ SINGLE ZAP UNSPENT FUNDS ══════════════════════════════════════════════
 
-    function test_depositERC20_revert_unspentERC20() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getDepositERC20StepParams(AMOUNT);
+    function test_depositERC20_exactAmount_revert_unspentERC20() public {
+        ISynapseIntentRouter.StepParams[] memory steps = getDepositERC20Steps(AMOUNT);
         vm.expectRevert(SIR__UnspentFunds.selector);
         completeUserIntent({
             msgValue: 0,
@@ -40,8 +40,12 @@ contract SynapseIntentRouterBalanceChecksTest is SynapseIntentRouterTest {
         });
     }
 
-    function test_depositNative_revert_unspentNative() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getDepositNativeStepParams(AMOUNT);
+    function test_depositERC20_exactAmount_extraFunds_revert_unspentERC20() public withExtraFunds {
+        test_depositERC20_exactAmount_revert_unspentERC20();
+    }
+
+    function test_depositNative_exactAmount_revert_unspentNative() public {
+        ISynapseIntentRouter.StepParams[] memory steps = getDepositNativeSteps(AMOUNT);
         steps[0].msgValue = AMOUNT + 1;
         vm.expectRevert(SIR__UnspentFunds.selector);
         completeUserIntent({
@@ -51,5 +55,9 @@ contract SynapseIntentRouterBalanceChecksTest is SynapseIntentRouterTest {
             deadline: block.timestamp,
             steps: steps
         });
+    }
+
+    function test_depositNative_exactAmount_extraFunds_revert_unspentNative() public withExtraFunds {
+        test_depositNative_exactAmount_revert_unspentNative();
     }
 }

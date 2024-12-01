@@ -20,6 +20,7 @@ import {Test} from "forge-std/Test.sol";
 contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     address internal constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     uint256 internal constant AMOUNT = 1 ether;
+    uint256 internal constant EXTRA_FUNDS = 0.1337 ether;
     uint256 internal constant FULL_BALANCE = type(uint256).max;
 
     SynapseIntentRouter internal router;
@@ -31,6 +32,13 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     SimpleVaultMock internal vault;
 
     address internal user;
+
+    modifier withExtraFunds() {
+        erc20.mint(address(tokenZap), EXTRA_FUNDS);
+        weth.mint(address(tokenZap), EXTRA_FUNDS);
+        deal(address(tokenZap), EXTRA_FUNDS);
+        _;
+    }
 
     function setUp() public {
         router = new SynapseIntentRouter();
@@ -218,6 +226,11 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
         assertEq(vault.balanceOf(user, address(erc20)), AMOUNT);
     }
 
+    /// @notice Extra funds should have no effect on "exact amount" instructions.
+    function test_depositERC20_exactAmount_extraFunds() public withExtraFunds {
+        test_depositERC20_exactAmount();
+    }
+
     function test_depositERC20_exactAmount_revert_deadlineExceeded() public {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositERC20Steps(AMOUNT);
         checkRevertDeadlineExceeded({msgValue: 0, lastStepAmountIn: AMOUNT, steps: steps});
@@ -244,6 +257,20 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
         });
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, address(erc20)), AMOUNT);
+    }
+
+    /// @notice Extra funds should be used with "full balance" instructions.
+    function test_depositERC20_fullBalance_extraFunds() public withExtraFunds {
+        ISynapseIntentRouter.StepParams[] memory steps = getDepositERC20Steps(FULL_BALANCE);
+        completeUserIntent({
+            msgValue: 0,
+            amountIn: AMOUNT,
+            minLastStepAmountIn: AMOUNT,
+            deadline: block.timestamp,
+            steps: steps
+        });
+        // Check that the vault registered the deposit with the extra funds
+        assertEq(vault.balanceOf(user, address(erc20)), AMOUNT + EXTRA_FUNDS);
     }
 
     function test_depositERC20_fullBalance_revert_deadlineExceeded() public {
@@ -287,6 +314,11 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
         assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT);
     }
 
+    /// @notice Extra funds should have no effect on "exact amount" instructions.
+    function test_depositNative_exactAmount_extraFunds() public withExtraFunds {
+        test_depositNative_exactAmount();
+    }
+
     function test_depositNative_exactAmount_revert_deadlineExceeded() public {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositNativeSteps(AMOUNT);
         checkRevertDeadlineExceeded({msgValue: AMOUNT, lastStepAmountIn: AMOUNT, steps: steps});
@@ -318,6 +350,20 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
         });
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT);
+    }
+
+    /// @notice Extra funds should be used with "full balance" instructions.
+    function test_depositNative_fullBalance_extraFunds() public withExtraFunds {
+        ISynapseIntentRouter.StepParams[] memory steps = getDepositNativeSteps(FULL_BALANCE);
+        completeUserIntent({
+            msgValue: AMOUNT,
+            amountIn: AMOUNT,
+            minLastStepAmountIn: AMOUNT,
+            deadline: block.timestamp,
+            steps: steps
+        });
+        // Check that the vault registered the deposit with the extra funds
+        assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT + EXTRA_FUNDS);
     }
 
     function test_depositNative_fullBalance_revert_deadlineExceeded() public {
