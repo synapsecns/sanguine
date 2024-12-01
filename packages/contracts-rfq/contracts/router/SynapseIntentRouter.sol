@@ -32,8 +32,25 @@ contract SynapseIntentRouter is ISynapseIntentRouter, ISynapseIntentRouterErrors
         external
         payable
     {
-        // TODO: record and check balances
+        // Record the initial balances of ZapRecipient for each token.
+        uint256 length = steps.length;
+        uint256[] memory initialBalances = new uint256[](length);
+        for (uint256 i = 0; i < length; i++) {
+            address token = steps[i].token;
+            initialBalances[i] =
+                token == NATIVE_GAS_TOKEN ? zapRecipient.balance : IERC20(token).balanceOf(zapRecipient);
+        }
+
+        // Complete the intent as usual.
         completeIntent(zapRecipient, amountIn, minLastStepAmountIn, deadline, steps);
+
+        // Verify that the ZapRecipient balance for each token has not increased.
+        for (uint256 i = 0; i < length; i++) {
+            address token = steps[i].token;
+            uint256 newBalance =
+                token == NATIVE_GAS_TOKEN ? zapRecipient.balance : IERC20(token).balanceOf(zapRecipient);
+            if (newBalance > initialBalances[i]) revert SIR__UnspentFunds();
+        }
     }
 
     /// @inheritdoc ISynapseIntentRouter
