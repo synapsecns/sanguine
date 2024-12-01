@@ -32,8 +32,25 @@ contract ZapRouterV1 is IZapRouterV1, IZapRouterV1Errors {
         public
         payable
     {
-        // TODO: record and check balances
+        // Record the initial balances of ZapRecipient for each token.
+        uint256 length = zapParams.length;
+        uint256[] memory initialBalances = new uint256[](length);
+        for (uint256 i = 0; i < length; i++) {
+            address token = zapParams[i].token;
+            initialBalances[i] =
+                token == NATIVE_GAS_TOKEN ? zapRecipient.balance : IERC20(token).balanceOf(zapRecipient);
+        }
+
+        // Perform the Zaps as usual.
         performZaps(zapRecipient, amountIn, minLastZapAmountIn, deadline, zapParams);
+
+        // Verify that the ZapRecipient balance for each token has not increased.
+        for (uint256 i = 0; i < length; i++) {
+            address token = zapParams[i].token;
+            uint256 newBalance =
+                token == NATIVE_GAS_TOKEN ? zapRecipient.balance : IERC20(token).balanceOf(zapRecipient);
+            if (newBalance > initialBalances[i]) revert ZapRouterV1__ZapUnspentFunds();
+        }
     }
 
     /// @inheritdoc IZapRouterV1
