@@ -3,8 +3,8 @@ pragma solidity ^0.8.20;
 
 import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
 
-import {UniversalTokenLib} from "./libs/UniversalToken.sol";
 import {IAdmin} from "./interfaces/IAdmin.sol";
+import {UniversalTokenLib} from "./libs/UniversalToken.sol";
 
 contract Admin is IAdmin, AccessControlEnumerable {
     using UniversalTokenLib for address;

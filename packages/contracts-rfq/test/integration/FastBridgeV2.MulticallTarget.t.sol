@@ -4,12 +4,12 @@ pragma solidity 0.8.24;
 import {FastBridgeV2, IFastBridgeV2} from "../../contracts/FastBridgeV2.sol";
 import {BridgeTransactionV2Lib} from "../../contracts/libs/BridgeTransactionV2.sol";
 
-import {MulticallTargetIntegrationTest, IFastBridge} from "./MulticallTarget.t.sol";
+import {IFastBridge, MulticallTargetIntegrationTest} from "./MulticallTarget.t.sol";
 
 contract FastBridgeV2MulticallTargetTest is MulticallTargetIntegrationTest {
     function deployAndConfigureFastBridge() public override returns (address) {
         FastBridgeV2 fastBridge = new FastBridgeV2(address(this));
-        fastBridge.grantRole(fastBridge.RELAYER_ROLE(), relayer);
+        fastBridge.grantRole(fastBridge.PROVER_ROLE(), relayer);
         return address(fastBridge);
     }
 

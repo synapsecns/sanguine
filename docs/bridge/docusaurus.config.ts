@@ -15,7 +15,7 @@ const options = {
       // the <id> referenced when running CLI commands
       specPath: '../../services/rfq/api/docs/swagger.yaml', // path to OpenAPI spec, URLs supported
       baseUrl: 'https://rfq-api.omnirpc.io/',
-      outputDir: 'docs/rfq/API', // output directory for generated files
+      outputDir: 'docs/04-Routers/RFQ/API', // output directory for generated files
       sidebarOptions: {
         // optional, instructs plugin to generate sidebar.js
         groupPathsBy: 'tag', // group sidebar items by operation "tag"
@@ -30,7 +30,7 @@ const config: Config = {
   favicon: 'brand-assets/synapse-mark.svg',
 
   // Set the production url of your site here
-  url: 'https://docs.bridge.synapseprotocol.com',
+  url: 'https://docs.synapseprotocol.com',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',

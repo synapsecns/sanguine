@@ -320,6 +320,10 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				})
 			if err != nil {
 				log.Printf("error submitting refund: %v\n", err)
+				_, err := ctx.Response().Reply("error submitting refund")
+				if err != nil {
+					log.Println(err)
+				}
 				return
 			}
 
@@ -331,17 +335,19 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 					if err != nil || !status.HasTx() {
 						b.logger.Errorf(ctx, "error fetching quote request: %v", err)
 						return fmt.Errorf("error fetching quote request: %w", err)
+					} else if !status.HasTx() {
+						return fmt.Errorf("no transaction hash found yet")
 					}
 					return nil
 				},
-				retry.WithMaxAttempts(5),
-				retry.WithMaxAttemptTime(30*time.Second),
+				retry.WithMaxTotalTime(1*time.Minute),
 			)
+
 			if err != nil {
 				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
 				_, err := ctx.Response().Reply(fmt.Sprintf("refund submitted with nonce %d", nonce))
 				if err != nil {
-					log.Println(err)
+					b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
 				}
 				return
 			}
@@ -351,6 +357,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 			if err != nil {
 				log.Println(err)
 			}
+
 		},
 	}
 }

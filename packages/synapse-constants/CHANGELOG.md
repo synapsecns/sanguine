@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-constants@1.8.4...@synapsecns/synapse-constants@1.8.5) (2024-12-02)
+
+
+### Bug Fixes
+
+* update klaytn/kaia rpc url ([#3426](https://github.com/synapsecns/sanguine/issues/3426)) ([590594a](https://github.com/synapsecns/sanguine/commit/590594a80d576ea916052f25e22220823623e088))
+
+
+
+
+
+## [1.8.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-constants@1.8.3...@synapsecns/synapse-constants@1.8.4) (2024-12-01)
+
+
+### Reverts
+
+* Revert "reducing dependency bloat (#3411)" (#3421) ([5feb5a0](https://github.com/synapsecns/sanguine/commit/5feb5a0883e297bafa328fbe5c86935ed1ed2fa5)), closes [#3411](https://github.com/synapsecns/sanguine/issues/3411) [#3421](https://github.com/synapsecns/sanguine/issues/3421)
+
+
+
+
+
+## [1.8.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-constants@1.8.2...@synapsecns/synapse-constants@1.8.3) (2024-11-30)
+
+**Note:** Version bump only for package @synapsecns/synapse-constants
+
+
+
+
+
 ## [1.8.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-constants@1.8.1...@synapsecns/synapse-constants@1.8.2) (2024-11-07)
 
 **Note:** Version bump only for package @synapsecns/synapse-constants

@@ -1412,24 +1412,3 @@ export const SPECTRAL: BridgeableToken = {
   imgUrl:
     'https://105bc697.sanguine-fe.pages.dev/_next/static/media/spectral.6d51750c.svg',
 }
-
-export const WLD: BridgeableToken = {
-  priorityRank: 106,
-  addresses: {
-    [CHAINS.ETHEREUM.id]: '0x163f8C2467924be0ae7B5347228CABF260318753',
-    [CHAINS.OPTIMISM.id]: '0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1',
-    [CHAINS.WORLDCHAIN.id]: '0x2cFc85d8E48F8EAB294be644d9E25C3030863003',
-  },
-  decimals: {
-    [CHAINS.ETHEREUM.id]: 18,
-    [CHAINS.OPTIMISM.id]: 18,
-    [CHAINS.WORLDCHAIN.id]: 18,
-  },
-  symbol: 'WLD',
-  name: 'Worldcoin',
-  swapableType: 'WLD',
-  color: 'gray',
-  routeSymbol: 'WLD',
-  imgUrl:
-    'https://synapse-interface-worldchain.sanguine-fe.pages.dev/_next/static/media/worldchain.62d1dfd2.svg',
-}

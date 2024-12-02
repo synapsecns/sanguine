@@ -2,8 +2,9 @@
 pragma solidity ^0.8.20;
 
 import {Admin} from "../contracts/Admin.sol";
-import {IFastBridge} from "../contracts/interfaces/IFastBridge.sol";
+
 import {FastBridge} from "../contracts/FastBridge.sol";
+import {IFastBridge} from "../contracts/interfaces/IFastBridge.sol";
 
 contract FastBridgeMock is IFastBridge, Admin {
     // @dev the block the contract was deployed at

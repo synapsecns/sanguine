@@ -192,7 +192,7 @@ export const KLAYTN: Chain = {
   codeName: 'klaytn',
   blockTime: 1000,
   rpcUrls: {
-    primary: 'https://klaytn.blockpi.network/v1/rpc/public',
+    primary: 'https://kaia.blockpi.network/v1/rpc/public',
     fallback: 'https://klaytn.api.onfinality.io/public',
   },
   nativeCurrency: { name: 'Klaytn', symbol: 'KLAY', decimals: 18 },

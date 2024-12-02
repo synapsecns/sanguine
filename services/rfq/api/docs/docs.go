@@ -254,7 +254,7 @@ const docTemplate = `{
         },
         "/rfq": {
             "put": {
-                "description": "Handle user quote request and return the best quote available.",
+                "description": "Handle Active request-for-quote and return the best quote available.",
                 "consumes": [
                     "application/json"
                 ],
@@ -264,10 +264,10 @@ const docTemplate = `{
                 "tags": [
                     "quotes"
                 ],
-                "summary": "Handle user quote request",
+                "summary": "Initiate an Active RFQ",
                 "parameters": [
                     {
-                        "description": "User quote request",
+                        "description": "Initiate an Active Request-for-Quote",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -294,14 +294,14 @@ const docTemplate = `{
         },
         "/rfq_stream": {
             "get": {
-                "description": "Establish a WebSocket connection to receive active quote requests.",
+                "description": "Establish a WebSocket connection to listen for Active Requests-For-Quote.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "quotes"
                 ],
-                "summary": "Handle WebSocket connection for active quote requests",
+                "summary": "Listen for Active RFQs",
                 "responses": {
                     "101": {
                         "description": "Switching Protocols",
@@ -347,7 +347,7 @@ const docTemplate = `{
                 "expiration_window": {
                     "type": "integer"
                 },
-                "origin_amount": {
+                "origin_amount_exact": {
                     "type": "string"
                 },
                 "origin_chain_id": {
@@ -511,7 +511,7 @@ const docTemplate = `{
                 "expiration_window": {
                     "type": "integer"
                 },
-                "origin_amount": {
+                "origin_amount_exact": {
                     "type": "string"
                 },
                 "origin_chain_id": {
