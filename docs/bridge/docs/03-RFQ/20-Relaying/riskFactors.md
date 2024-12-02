@@ -39,7 +39,7 @@ title: Risk Factors
 
 As is the case with many cross-chain systems, there are inherent risks involved with providing liquidity as a [Relayer].
 
-Although the system is designed to minimize these risks, it is ultimately the sole responsibility and liability of the [Relayer] to fully understand and manage the risks involved with participating as a [Relayer] in the Synapse RFQ system.
+Although the system is designed to minimize these risks, it is ultimately the sole responsibility and liability of the [Relayer] to fully understand and manage the risks involved with participating as a [Relayer] in the Synapse Intent Network (SIN) system.
 
 :::
 

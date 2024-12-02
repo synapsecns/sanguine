@@ -35,9 +35,9 @@ title: Quoting
 [Canceler]: /docs/RFQ/#entities
 
 
-The Synapse RFQ systems allows [Quoter] entities (aka market makers / solvers / relayers) to post quotes via an off-chain [Quoter API]. These quotes are matched to `User` bridge inputs to achieve the optimal parameters (eg: the best price) for the [User]'s bridge transaction.
+The Synapse Intent Network (SIN) systems allows [Quoter] entities (aka market makers / solvers / relayers) to post quotes via an off-chain [Quoter API]. These quotes are matched to `User` bridge inputs to achieve the optimal parameters (eg: the best price) for the [User]'s bridge transaction.
 
-There are two types of quoting methods supported by the Synapse RFQ system:
+There are two types of quoting methods supported by the Synapse Intent Network (SIN) system:
 
 ## [Passive Quoting](/docs/RFQ/Quoting/Quoter%20API/#passive-quotes)
 

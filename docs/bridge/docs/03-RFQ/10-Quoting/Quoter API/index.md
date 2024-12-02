@@ -39,7 +39,7 @@ sidebar_label: Quoter API
 
 :::info
 
-This guide is intended for builders who are integrating a quoter or frontend with the Synapse RFQ system.
+This guide is intended for builders who are integrating a quoter or frontend with the Synapse Intent Network (SIN) system.
 
 If you are interested in running a relayer, please also see [Relaying] and [Canonical Relayer](/docs/RFQ/CanonicalRelayer/) .
 

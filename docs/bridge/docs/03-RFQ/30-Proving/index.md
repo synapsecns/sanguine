@@ -78,6 +78,6 @@ As of FastBridgeV2, it is possible to batch many [prove] transactions together w
 
 ## Next steps
 
-Following the [prove] transation, a [Dispute Period] begins - after which the [Relayer] may proceed to [Claiming]
+Following the [prove] transaction, a [Dispute Period] begins - after which the [Relayer] may proceed to [Claiming]
 
 Although disputes are unlikely, monitoring should occur during the [Dispute Period] to verify there are no issues.

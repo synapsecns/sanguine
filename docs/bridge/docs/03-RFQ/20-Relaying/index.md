@@ -37,7 +37,7 @@ title: Relaying
 
 # Relaying
 
-In the Synapse RFQ System, Relayers fulfill the intent of [User] [bridge] transactions by providing the liquidity and executing the [relay] transaction on the destination chain .
+In the Synapse Intent Network (SIN) System, Relayers fulfill the intent of [User] [bridge] transactions by providing the liquidity and executing the [relay] transaction on the destination chain .
 
 :::info
 
