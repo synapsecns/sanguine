@@ -2207,9 +2207,9 @@
   integrity sha512-tl0YWAfjUVb4LyyE4JIMVE8DlLzb1ecHRmIWc4eT6nkyDqQgHKzdHsnusxFEFMVLIQomgSg0Zz6hJ5S1E4W4ww==
 
 "@cspell/dict-software-terms@^4.1.11":
-  version "4.1.11"
-  resolved "https://registry.yarnpkg.com/@cspell/dict-software-terms/-/dict-software-terms-4.1.11.tgz#54e1cfcda53f308135215f7163797d7ed8f69ee4"
-  integrity sha512-77CTHxWFTVw6tVoMN8WBMrlNW2F2FbgATwD/6vcOuiyrJUmh8klN5ZK3m+yyK3ZzsnaW2Bduoc0fw2Ckcm/riQ==
+  version "4.1.17"
+  resolved "https://registry.yarnpkg.com/@cspell/dict-software-terms/-/dict-software-terms-4.1.17.tgz#da5fc11e44b0fe4d8f6fd6d293bb706340c47510"
+  integrity sha512-QORIk1R5DV8oOQ+oAlUWE7UomaJwUucqu2srrc2+PmkoI6R1fJwwg2uHCPBWlIb4PGDNEdXLv9BAD13H+0wytQ==
 
 "@cspell/dict-sql@^2.1.8":
   version "2.1.8"
@@ -2227,9 +2227,9 @@
   integrity sha512-CsFF0IFAbRtYNg0yZcdaYbADF5F3DsM8C4wHnZefQy8YcHP/qjAF/GdGfBFBLx+XSthYuBlo2b2XQVdz3cJZBw==
 
 "@cspell/dict-terraform@^1.0.5":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@cspell/dict-terraform/-/dict-terraform-1.0.5.tgz#14c427ae47d2f78b4acd6fe9ed12bcae53aec441"
-  integrity sha512-qH3epPB2d6d5w1l4hR2OsnN8qDQ4P0z6oDB7+YiNH+BoECXv4Z38MIV1H8cxIzD2wkzkt2JTcFYaVW72MDZAlg==
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@cspell/dict-terraform/-/dict-terraform-1.0.6.tgz#f67b7363d0cf08c820818980bbe8c927332ad0b8"
+  integrity sha512-Sqm5vGbXuI9hCFcr4w6xWf4Y25J9SdleE/IqfM6RySPnk8lISEmVdax4k6+Kinv9qaxyvnIbUUN4WFLWcBPQAg==
 
 "@cspell/dict-typescript@^3.1.10", "@cspell/dict-typescript@^3.1.11":
   version "3.1.11"
