@@ -104,7 +104,7 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	case RecipientMockType:
 		return recipientmock.Contracts["solidity/RecipientMock.sol:RecipientMock"]
 	case BridgeTransactionV2Type:
-		return bridgetransactionv2.Contracts["solidity/BridgeTransactionV2.t.sol:BridgeTransactionV2Lib"]
+		return bridgetransactionv2.Contracts["solidity/BridgeTransactionV2Harness.sol:BridgeTransactionV2Harness"]
 	case WETH9Type:
 		return weth9.Contracts["/solidity/WETH9.sol:WETH9"]
 	case USDTType:
