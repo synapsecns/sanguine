@@ -44,7 +44,7 @@ type PutRelayAckResponse struct {
 // GetContractsResponse contains the schema for a GET /contracts response.
 type GetContractsResponse struct {
 	// ContractsV1 is a map of chain id to contract address for v1 fast bridge contracts
-	ContractsV1 map[uint32]string `json:"contracts_v1"`
+	ContractsV1 map[uint32]string `json:"contracts"`
 	// ContractsV2 is a map of chain id to contract address for v2 fast bridge contracts
 	ContractsV2 map[uint32]string `json:"contracts_v2"`
 }
