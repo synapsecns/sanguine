@@ -173,7 +173,7 @@ export const KLAYTN: Chain = {
   id: 8217,
   name: 'Klaytn',
   rpcUrls: {
-    primary: 'https://klaytn.blockpi.network/v1/rpc/public',
+    primary: 'https://kaia.blockpi.network/v1/rpc/public',
     fallback: 'https://klaytn.api.onfinality.io/public',
   },
   explorerUrl: 'https://scope.klaytn.com',

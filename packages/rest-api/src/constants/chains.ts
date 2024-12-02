@@ -176,7 +176,7 @@ export const KLAYTN: Chain = {
   name: 'Klaytn',
   rpcUrls: {
     primary: getOmniRpcUrl(8217),
-    fallback: 'https://klaytn.blockpi.network/v1/rpc/public',
+    fallback: 'https://kaia.blockpi.network/v1/rpc/public',
   },
   explorerUrl: 'https://scope.klaytn.com',
   explorerName: 'Klaytn Explorer',
