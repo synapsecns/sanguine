@@ -776,6 +776,7 @@ func (i *IntegrationSuite) TestConcurrentBridges() {
 	})
 }
 
+//nolint:gosec
 func (i *IntegrationSuite) TestEncodeBridgeTransactionParity() {
 	_, handle := i.manager.GetBridgeTransactionV2(i.GetTestContext(), i.originBackend)
 

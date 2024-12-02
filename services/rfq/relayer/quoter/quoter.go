@@ -427,6 +427,7 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 	return resp, nil
 }
 
+//nolint:gosec
 func quoteDataToQuoteRequestV2(quoteData *model.QuoteData) (*reldb.QuoteRequest, error) {
 	if quoteData == nil {
 		return nil, errors.New("quote data is nil")

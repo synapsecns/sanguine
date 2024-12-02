@@ -8,13 +8,13 @@ import (
 )
 
 const (
-	// Field sizes in bytes
+	// Field sizes in bytes.
 	sizeVersion = 2
 	sizeChainID = 4
 	sizeAddress = 20
 	sizeUint256 = 32
 
-	// Field offsets in bytes
+	// Field offsets in bytes.
 	offsetVersion            = 0
 	offsetOriginChainID      = offsetVersion + sizeVersion
 	offsetDestChainID        = offsetOriginChainID + sizeChainID
@@ -33,7 +33,7 @@ const (
 	offsetZapData            = offsetZapNative + sizeUint256
 )
 
-// Helper function to properly encode uint256
+// Helper function to properly encode uint256.
 func padUint256(b *big.Int) []byte {
 	// Convert big.Int to bytes
 	bytes := b.Bytes()
@@ -46,7 +46,8 @@ func padUint256(b *big.Int) []byte {
 
 // EncodeQuoteRequest encodes a quote request into a byte array.
 func EncodeQuoteRequest(tx fastbridgev2.IFastBridgeV2BridgeTransactionV2) ([]byte, error) {
-	result := make([]byte, offsetZapData)
+	// Initialize with total size including ZapData
+	result := make([]byte, offsetZapData+len(tx.ZapData))
 
 	// Version
 	result[offsetVersion] = 0
@@ -76,8 +77,8 @@ func EncodeQuoteRequest(tx fastbridgev2.IFastBridgeV2BridgeTransactionV2) ([]byt
 	copy(result[offsetExclusivityEndTime:offsetExclusivityEndTime+sizeUint256], padUint256(tx.ExclusivityEndTime))
 	copy(result[offsetZapNative:offsetZapNative+sizeUint256], padUint256(tx.ZapNative))
 
-	// Append ZapData
-	result = append(result, tx.ZapData...)
+	// Replace append with copy for ZapData
+	copy(result[offsetZapData:], tx.ZapData)
 
 	return result, nil
 }
