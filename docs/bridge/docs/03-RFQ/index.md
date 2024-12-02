@@ -38,7 +38,7 @@ import { RFQFlow } from '@site/src/components/RFQFlow'
 
 # Synapse Intent Network
 
-Synapse Intent Network is an RFQ (Request-For-Quote) based <abbr title="'Intent' refers to a user authorizing specific actions that they want to achieve, typically in very simple terms, such as a bridge or swap. Actual execution of the actions is then performed on the user's behalf by third parties known as solvers/relayers.">intent</abbr> centric bridging system that connects bridging users to a network of relayers.
+Synapse Intent Network (SIN) is an RFQ (Request-For-Quote) based <abbr title="'Intent' refers to a user authorizing specific actions that they want to achieve, typically in very simple terms, such as a bridge or swap. Actual execution of the actions is then performed on the user's behalf by third parties known as solvers/relayers.">intent</abbr> centric bridging system that connects bridging users to a network of relayers.
 
 These relayers compete to provide the optimal bridge execution (eg: the best price) for the user's specific request.
 
@@ -122,14 +122,14 @@ These relayers compete to provide the optimal bridge execution (eg: the best pri
     <blockquote>
         Validates proofs during the [Dispute Period] and submits [dispute] transactions for any discrepancies found.
         <div></div>
-        Currently, Synapse itself is the sole Guard operator of the Synapse RFQ system.
+        Currently, Synapse itself is the sole Guard operator of the Synapse Intent Network (SIN) system.
     </blockquote><br />
 
 <b>Cancelers</b> <span style={{color: 'darkgray'}}><i>(Permissioned Role)</i></span>
     <blockquote>
         Able to manually pre-emptively cancel bridge requests which have been deposited, have not yet been relayed, and are past their relay deadline.
         <div></div>
-        Currently, Synapse itself is the sole Canceler operator of the Synapse RFQ system.
+        Currently, Synapse itself is the sole Canceler operator of the Synapse Intent Network (SIN) system.
         <div></div>
         <span style={{color: 'darkgray', fontSize: '0.9em'}}><i>Note: Incomplete bridge requests can also be canceled permissionlessly (without any involvement from a Canceler) after a longer cancellation window has passed.</i></span>
     </blockquote>
@@ -206,5 +206,5 @@ If any discrepancies are found, the guards will [dispute] the proof
 <blockquote>
 Once the [Dispute Period] has passed without incident, a [claim] transaction can be executed by the [Relayer] on the origin chain.
 
-This wil release the deposit funds from escrow and deliver them to the rightful [Relayer] as a reimbursement for the liquidity they provided on the [relay].
+This willrelease the deposit funds from escrow and deliver them to the rightful [Relayer] as a reimbursement for the liquidity they provided on the [relay].
 </blockquote>

@@ -35,7 +35,7 @@ title: Security
 [Canceler]: /docs/RFQ/#entities
 
 
-Synapse RFQ is an optimistic cross-chain system. This means that any ambiguous actions in the system are assumed to be accurate and honest by default unless they are challenged/disputed within a short timeframe.
+Synapse Intent Network (SIN) is an optimistic cross-chain system. This means that any ambiguous actions in the system are assumed to be accurate and honest by default unless they are challenged/disputed within a short timeframe.
 
 
 ### Proofs
@@ -49,7 +49,7 @@ Each [prove] transaction sets the [proof] data for the bridge and initiates a di
 
 After a [prove] transaction is posted and the [proof] data is set, a window of time called the [Dispute Period](https://rfq-contracts.synapseprotocol.com/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#dispute_period) begins.
 
-During this time, the prove/proof is eligible to be dispuated by [Guard] entities.
+During this time, the prove/proof is eligible to be disputed by [Guard] entities.
 
 After the [Dispute Period](https://rfq-contracts.synapseprotocol.com/contracts/FastBridgeV2.sol/contract.FastBridgeV2.html#dispute_period) has passed without any disputes, the funds in escrow from the original bridge transaction can be released via a [claim] transaction, which will reimburse the rightful [Relayer].
 

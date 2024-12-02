@@ -37,11 +37,11 @@ title: Bridging
 
 Once a quote has been obtained via [Quoting], the details of the quote can be used to construct a bridge transaction for the user to sign and submit to the origin chain.
 
-Bridges through Synapse RFQ utilize the [Synapse Router](/docs/Routers/Synapse-Router/) - Refer to those docs for more detail.
+Bridges through Synapse Intent Network (SIN) utilize the [Synapse Router](/docs/Routers/Synapse-Router/) - Refer to those docs for more detail.
 
 
 :::info
-If you are interested in integrating with Synapse RFQ Bridging, refer to the [Synapse Bridge SDK](/docs/Bridge/SDK).
+If you are interested in integrating with Synapse Intent Network (SIN) Bridging, refer to the [Synapse Bridge SDK](/docs/Bridge/SDK).
 
 Alternatively, you can explore the [Bridge REST API](https://api.synapseprotocol.com/api-docs/).
 

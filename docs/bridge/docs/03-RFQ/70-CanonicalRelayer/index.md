@@ -34,7 +34,7 @@ sidebar_label: Canonical Relayer
 [Guard]: /docs/RFQ/#entities
 [Canceler]: /docs/RFQ/#entities
 
-# Canonical RFQ Relayer
+# Canonical Relayer
 
 :::info
 
@@ -44,7 +44,7 @@ If you are interested in participating as a Relayer, contact us.
 
 :::
 
-The Canonical RFQ Relayer is the official relayer app built and operated by Synapse which performs all necessary automated functions that are necessary for a Relayer participating in the Synapse RFQ network.
+The Canonical Relayer is the official relayer app built and operated by Synapse which performs all necessary automated functions that are necessary for a Relayer participating in the Synapse Intent Network (SIN) network.
 
 These functions include:
 

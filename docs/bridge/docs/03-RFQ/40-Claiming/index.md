@@ -70,4 +70,4 @@ As of FastBridgeV2, it is possible to batch many [claim] transactions together w
 
 ## Next steps
 
-Following the [claim] transation, the bridge deposit funds have been reimbursed to the [Relayer] and are ready to be used for another relay. The bridge cycle is fully complete.
+Following the [claim] transaction, the bridge deposit funds have been reimbursed to the [Relayer] and are ready to be used for another relay. The bridge cycle is fully complete.
