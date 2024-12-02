@@ -206,5 +206,5 @@ If any discrepancies are found, the guards will [dispute] the proof
 <blockquote>
 Once the [Dispute Period] has passed without incident, a [claim] transaction can be executed by the [Relayer] on the origin chain.
 
-This willrelease the deposit funds from escrow and deliver them to the rightful [Relayer] as a reimbursement for the liquidity they provided on the [relay].
+This will release the deposit funds from escrow and deliver them to the rightful [Relayer] as a reimbursement for the liquidity they provided on the [relay].
 </blockquote>
