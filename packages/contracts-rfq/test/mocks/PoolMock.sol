@@ -27,7 +27,7 @@ contract PoolMock {
         ratioWei = ratioWei_;
     }
 
-    function swap(address tokenIn, uint256 amountIn) external returns (uint256 amountOut) {
+    function swap(uint256 amountIn, address tokenIn) external returns (uint256 amountOut) {
         address tokenOut;
         if (tokenIn == token0) {
             tokenOut = token1;

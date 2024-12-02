@@ -16,6 +16,7 @@ import {Test} from "forge-std/Test.sol";
 contract ZapRouterV1Test is Test, IZapRouterV1Errors {
     address internal constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     uint256 internal constant AMOUNT = 1 ether;
+    uint256 internal constant TOKEN_PRICE = 2; // in ETH
     uint256 internal constant EXTRA_FUNDS = 0.1337 ether;
     uint256 internal constant USE_FULL_BALANCE = type(uint256).max;
 
@@ -35,8 +36,10 @@ contract ZapRouterV1Test is Test, IZapRouterV1Errors {
 
         erc20 = new MockERC20("TKN", 18);
         weth = new WETHMock();
-        pool = new PoolMock(address(erc20), address(weth));
         vault = new SimpleVaultMock();
+
+        pool = new PoolMock(address(weth), address(erc20));
+        pool.setRatioWei(TOKEN_PRICE * 1e18);
 
         user = makeAddr("User");
 
@@ -59,6 +62,24 @@ contract ZapRouterV1Test is Test, IZapRouterV1Errors {
         weth.approve(address(router), type(uint256).max);
     }
 
+    function getWrapZapData() public view returns (bytes memory) {
+        return tokenZap.encodeZapData({
+            target: address(weth),
+            payload: abi.encodeCall(weth.deposit, ()),
+            // Amount is not encoded
+            amountPosition: type(uint256).max
+        });
+    }
+
+    function getUnwrapZapData() public view returns (bytes memory) {
+        return tokenZap.encodeZapData({
+            target: address(weth),
+            payload: abi.encodeCall(weth.withdraw, (AMOUNT)),
+            // Amount is encoded as the first parameter
+            amountPosition: 4
+        });
+    }
+
     function getDepositZapData(address token) public view returns (bytes memory) {
         return tokenZap.encodeZapData({
             target: address(vault),
@@ -66,6 +87,16 @@ contract ZapRouterV1Test is Test, IZapRouterV1Errors {
             payload: abi.encodeCall(vault.deposit, (token, 0, user)),
             // Amount is encoded as the second parameter
             amountPosition: 4 + 32
+        });
+    }
+
+    function getSwapZapData(address token) public view returns (bytes memory) {
+        return tokenZap.encodeZapData({
+            target: address(pool),
+            // Use placeholder zero amount
+            payload: abi.encodeCall(pool.swap, (0, token)),
+            // Amount is encoded as the first parameter
+            amountPosition: 4
         });
     }
 
@@ -85,6 +116,98 @@ contract ZapRouterV1Test is Test, IZapRouterV1Errors {
             amountIn: amountIn,
             minLastZapAmountIn: minLastZapAmountIn,
             deadline: deadline,
+            zapParams: zapParams
+        });
+    }
+
+    function checkRevertMsgValueAboveExpectedWithERC20(
+        IZapRouterV1.ZapParams[] memory zapParams,
+        uint256 minLastZapAmountIn
+    )
+        public
+    {
+        vm.expectRevert(ZapRouterV1__MsgValueIncorrect.selector);
+        userPerformZaps({
+            msgValue: 1,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: minLastZapAmountIn,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+    }
+
+    function checkRevertsMsgValueAboveExpectedWithNative(IZapRouterV1.ZapParams[] memory zapParams) public {
+        // Just msg.value is too high
+        vm.expectRevert(ZapRouterV1__MsgValueIncorrect.selector);
+        userPerformZaps({
+            msgValue: AMOUNT + 1,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: AMOUNT,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Both msg.value and amountIn are too high
+        vm.expectRevert(ZapRouterV1__MsgValueIncorrect.selector);
+        userPerformZaps({
+            msgValue: AMOUNT + 1,
+            amountIn: AMOUNT + 1,
+            minLastZapAmountIn: AMOUNT,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+    }
+
+    function checkRevertsMsgValueBelowExpectedWithNative(IZapRouterV1.ZapParams[] memory zapParams) public {
+        // Just msg.value is too low
+        vm.expectRevert(ZapRouterV1__MsgValueIncorrect.selector);
+        userPerformZaps({
+            msgValue: AMOUNT - 1,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: AMOUNT - 1,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Both msg.value and amountIn are too low
+        vm.expectRevert(abi.encodeWithSelector(Address.AddressInsufficientBalance.selector, router));
+        userPerformZaps({
+            msgValue: AMOUNT - 1,
+            amountIn: AMOUNT - 1,
+            minLastZapAmountIn: AMOUNT - 1,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+    }
+
+    function checkRevertDeadlineExceeded(
+        uint256 msgValue,
+        uint256 lastZapAmountIn,
+        IZapRouterV1.ZapParams[] memory zapParams
+    )
+        public
+    {
+        vm.expectRevert(ZapRouterV1__DeadlineExceeded.selector);
+        userPerformZaps({
+            msgValue: msgValue,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: lastZapAmountIn,
+            deadline: block.timestamp - 1,
+            zapParams: zapParams
+        });
+    }
+
+    function checkRevertAmountInsufficient(
+        uint256 msgValue,
+        uint256 lastZapAmountIn,
+        IZapRouterV1.ZapParams[] memory zapParams
+    )
+        public
+    {
+        vm.expectRevert(ZapRouterV1__AmountInsufficient.selector);
+        userPerformZaps({
+            msgValue: msgValue,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: lastZapAmountIn + 1,
+            deadline: block.timestamp,
             zapParams: zapParams
         });
     }
@@ -123,38 +246,17 @@ contract ZapRouterV1Test is Test, IZapRouterV1Errors {
 
     function test_depositERC20_exactAmount_revert_deadlineExceeded() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositERC20ZapParams(AMOUNT);
-        vm.expectRevert(ZapRouterV1__DeadlineExceeded.selector);
-        userPerformZaps({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastZapAmountIn: AMOUNT,
-            deadline: block.timestamp - 1,
-            zapParams: zapParams
-        });
+        checkRevertDeadlineExceeded({msgValue: 0, lastZapAmountIn: AMOUNT, zapParams: zapParams});
     }
 
     function test_depositERC20_exactAmount_revert_lastZapAmountInsufficient() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositERC20ZapParams(AMOUNT);
-        vm.expectRevert(ZapRouterV1__AmountInsufficient.selector);
-        userPerformZaps({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastZapAmountIn: AMOUNT + 1,
-            deadline: block.timestamp,
-            zapParams: zapParams
-        });
+        checkRevertAmountInsufficient({msgValue: 0, lastZapAmountIn: AMOUNT, zapParams: zapParams});
     }
 
     function test_depositERC20_exactAmount_revert_msgValueAboveExpected() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositERC20ZapParams(AMOUNT);
-        vm.expectRevert(ZapRouterV1__MsgValueIncorrect.selector);
-        userPerformZaps({
-            msgValue: 1,
-            amountIn: AMOUNT,
-            minLastZapAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            zapParams: zapParams
-        });
+        checkRevertMsgValueAboveExpectedWithERC20(zapParams, AMOUNT);
     }
 
     function test_depositERC20_fullBalance() public {
@@ -187,38 +289,17 @@ contract ZapRouterV1Test is Test, IZapRouterV1Errors {
 
     function test_depositERC20_fullBalance_revert_deadlineExceeded() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositERC20ZapParams(USE_FULL_BALANCE);
-        vm.expectRevert(ZapRouterV1__DeadlineExceeded.selector);
-        userPerformZaps({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastZapAmountIn: AMOUNT,
-            deadline: block.timestamp - 1,
-            zapParams: zapParams
-        });
+        checkRevertDeadlineExceeded({msgValue: 0, lastZapAmountIn: AMOUNT, zapParams: zapParams});
     }
 
     function test_depositERC20_fullBalance_revert_lastZapAmountInsufficient() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositERC20ZapParams(USE_FULL_BALANCE);
-        vm.expectRevert(ZapRouterV1__AmountInsufficient.selector);
-        userPerformZaps({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastZapAmountIn: AMOUNT + 1,
-            deadline: block.timestamp,
-            zapParams: zapParams
-        });
+        checkRevertAmountInsufficient({msgValue: 0, lastZapAmountIn: AMOUNT, zapParams: zapParams});
     }
 
     function test_depositERC20_fullBalance_revert_msgValueAboveExpected() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositERC20ZapParams(USE_FULL_BALANCE);
-        vm.expectRevert(ZapRouterV1__MsgValueIncorrect.selector);
-        userPerformZaps({
-            msgValue: 1,
-            amountIn: AMOUNT,
-            minLastZapAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            zapParams: zapParams
-        });
+        checkRevertMsgValueAboveExpectedWithERC20(zapParams, AMOUNT);
     }
 
     // ══════════════════════════════════════════════ DEPOSIT NATIVE ═══════════════════════════════════════════════════
@@ -255,70 +336,22 @@ contract ZapRouterV1Test is Test, IZapRouterV1Errors {
 
     function test_depositNative_exactAmount_revert_deadlineExceeded() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositNativeZapParams(AMOUNT);
-        vm.expectRevert(ZapRouterV1__DeadlineExceeded.selector);
-        userPerformZaps({
-            msgValue: AMOUNT,
-            amountIn: AMOUNT,
-            minLastZapAmountIn: AMOUNT,
-            deadline: block.timestamp - 1,
-            zapParams: zapParams
-        });
+        checkRevertDeadlineExceeded({msgValue: AMOUNT, lastZapAmountIn: AMOUNT, zapParams: zapParams});
     }
 
     function test_depositNative_exactAmount_revert_lastZapAmountInsufficient() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositNativeZapParams(AMOUNT);
-        vm.expectRevert(ZapRouterV1__AmountInsufficient.selector);
-        userPerformZaps({
-            msgValue: AMOUNT,
-            amountIn: AMOUNT,
-            minLastZapAmountIn: AMOUNT + 1,
-            deadline: block.timestamp,
-            zapParams: zapParams
-        });
+        checkRevertAmountInsufficient({msgValue: AMOUNT, lastZapAmountIn: AMOUNT, zapParams: zapParams});
     }
 
     function test_depositNative_exactAmount_revert_msgValueAboveExpected() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositNativeZapParams(AMOUNT);
-        // Just msg.value is too high
-        vm.expectRevert(ZapRouterV1__MsgValueIncorrect.selector);
-        userPerformZaps({
-            msgValue: AMOUNT + 1,
-            amountIn: AMOUNT,
-            minLastZapAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            zapParams: zapParams
-        });
-        // Both msg.value and amountIn are too high
-        vm.expectRevert(ZapRouterV1__MsgValueIncorrect.selector);
-        userPerformZaps({
-            msgValue: AMOUNT + 1,
-            amountIn: AMOUNT + 1,
-            minLastZapAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            zapParams: zapParams
-        });
+        checkRevertsMsgValueAboveExpectedWithNative(zapParams);
     }
 
     function test_depositNative_exactAmount_revert_msgValueBelowExpected() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositNativeZapParams(AMOUNT);
-        // Just msg.value is too low
-        vm.expectRevert(ZapRouterV1__MsgValueIncorrect.selector);
-        userPerformZaps({
-            msgValue: AMOUNT - 1,
-            amountIn: AMOUNT,
-            minLastZapAmountIn: AMOUNT - 1,
-            deadline: block.timestamp,
-            zapParams: zapParams
-        });
-        // Both msg.value and amountIn are too low
-        vm.expectRevert(abi.encodeWithSelector(Address.AddressInsufficientBalance.selector, router));
-        userPerformZaps({
-            msgValue: AMOUNT - 1,
-            amountIn: AMOUNT - 1,
-            minLastZapAmountIn: AMOUNT - 1,
-            deadline: block.timestamp,
-            zapParams: zapParams
-        });
+        checkRevertsMsgValueBelowExpectedWithNative(zapParams);
     }
 
     function test_depositNative_fullBalance() public {
@@ -351,70 +384,615 @@ contract ZapRouterV1Test is Test, IZapRouterV1Errors {
 
     function test_depositNative_fullBalance_revert_deadlineExceeded() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositNativeZapParams(USE_FULL_BALANCE);
-        vm.expectRevert(ZapRouterV1__DeadlineExceeded.selector);
-        userPerformZaps({
-            msgValue: AMOUNT,
-            amountIn: AMOUNT,
-            minLastZapAmountIn: AMOUNT,
-            deadline: block.timestamp - 1,
-            zapParams: zapParams
-        });
+        checkRevertDeadlineExceeded({msgValue: AMOUNT, lastZapAmountIn: AMOUNT, zapParams: zapParams});
     }
 
     function test_depositNative_fullBalance_revert_lastZapAmountInsufficient() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositNativeZapParams(USE_FULL_BALANCE);
-        vm.expectRevert(ZapRouterV1__AmountInsufficient.selector);
-        userPerformZaps({
-            msgValue: AMOUNT,
-            amountIn: AMOUNT,
-            minLastZapAmountIn: AMOUNT + 1,
-            deadline: block.timestamp,
-            zapParams: zapParams
-        });
+        checkRevertAmountInsufficient({msgValue: AMOUNT, lastZapAmountIn: AMOUNT, zapParams: zapParams});
     }
 
     function test_depositNative_fullBalance_revert_msgValueAboveExpected() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositNativeZapParams(USE_FULL_BALANCE);
-        // Just msg.value is too high
-        vm.expectRevert(ZapRouterV1__MsgValueIncorrect.selector);
-        userPerformZaps({
-            msgValue: AMOUNT + 1,
-            amountIn: AMOUNT,
-            minLastZapAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            zapParams: zapParams
-        });
-        // Both msg.value and amountIn are too high
-        vm.expectRevert(ZapRouterV1__MsgValueIncorrect.selector);
-        userPerformZaps({
-            msgValue: AMOUNT + 1,
-            amountIn: AMOUNT + 1,
-            minLastZapAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            zapParams: zapParams
-        });
+        checkRevertsMsgValueAboveExpectedWithNative(zapParams);
     }
 
     function test_depositNative_fullBalance_revert_msgValueBelowExpected() public {
         IZapRouterV1.ZapParams[] memory zapParams = getDepositNativeZapParams(USE_FULL_BALANCE);
-        // Just msg.value is too low
-        vm.expectRevert(ZapRouterV1__MsgValueIncorrect.selector);
+        checkRevertsMsgValueBelowExpectedWithNative(zapParams);
+    }
+
+    // ═══════════════════════════════════════════ SWAP & DEPOSIT ERC20 ════════════════════════════════════════════════
+
+    function getSwapDepositERC20ZapParams(
+        uint256 amountSwap,
+        uint256 amountDeposit
+    )
+        public
+        view
+        returns (IZapRouterV1.ZapParams[] memory)
+    {
+        return toArray(
+            // WETH -> ERC20
+            IZapRouterV1.ZapParams({
+                token: address(weth),
+                amount: amountSwap,
+                msgValue: 0,
+                zapData: getSwapZapData(address(weth))
+            }),
+            // deposit ERC20
+            IZapRouterV1.ZapParams({
+                token: address(erc20),
+                amount: amountDeposit,
+                msgValue: 0,
+                zapData: getDepositZapData(address(erc20))
+            })
+        );
+    }
+
+    function test_swapDepositERC20_exactAmounts() public {
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(AMOUNT, amountDeposit);
         userPerformZaps({
-            msgValue: AMOUNT - 1,
+            msgValue: 0,
             amountIn: AMOUNT,
-            minLastZapAmountIn: AMOUNT - 1,
+            minLastZapAmountIn: amountDeposit,
             deadline: block.timestamp,
             zapParams: zapParams
         });
-        // Both msg.value and amountIn are too low
-        vm.expectRevert(abi.encodeWithSelector(Address.AddressInsufficientBalance.selector, router));
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, address(erc20)), amountDeposit);
+    }
+
+    /// @notice Extra funds should have no effect on "exact amount" instructions.
+    function test_swapDepositERC20_exactAmounts_extraFunds() public {
+        erc20.mint(address(tokenZap), EXTRA_FUNDS);
+        weth.mint(address(tokenZap), EXTRA_FUNDS);
+        test_swapDepositERC20_exactAmounts();
+    }
+
+    function test_swapDepositERC20_exactAmounts_revert_deadlineExceeded() public {
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(AMOUNT, amountDeposit);
+        checkRevertDeadlineExceeded({msgValue: 0, lastZapAmountIn: amountDeposit, zapParams: zapParams});
+    }
+
+    function test_swapDepositERC20_exactAmounts_revert_lastZapAmountInsufficient() public {
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(AMOUNT, amountDeposit);
+        checkRevertAmountInsufficient({msgValue: 0, lastZapAmountIn: amountDeposit, zapParams: zapParams});
+    }
+
+    function test_swapDepositERC20_exactAmounts_revert_msgValueAboveExpected() public {
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(AMOUNT, amountDeposit);
+        checkRevertMsgValueAboveExpectedWithERC20(zapParams, amountDeposit);
+    }
+
+    function test_swapDepositERC20_exactAmount0() public {
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(AMOUNT, USE_FULL_BALANCE);
         userPerformZaps({
-            msgValue: AMOUNT - 1,
-            amountIn: AMOUNT - 1,
-            minLastZapAmountIn: AMOUNT - 1,
+            msgValue: 0,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: amountDeposit,
             deadline: block.timestamp,
             zapParams: zapParams
         });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, address(erc20)), amountDeposit);
+    }
+
+    function test_swapDepositERC20_exactAmount0_extraFunds() public {
+        erc20.mint(address(tokenZap), EXTRA_FUNDS);
+        weth.mint(address(tokenZap), EXTRA_FUNDS);
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE + EXTRA_FUNDS;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(AMOUNT, USE_FULL_BALANCE);
+        userPerformZaps({
+            msgValue: 0,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: amountDeposit,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, address(erc20)), amountDeposit);
+    }
+
+    function test_swapDepositERC20_exactAmount0_revert_deadlineExceeded() public {
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(AMOUNT, USE_FULL_BALANCE);
+        checkRevertDeadlineExceeded({msgValue: 0, lastZapAmountIn: amountDeposit, zapParams: zapParams});
+    }
+
+    function test_swapDepositERC20_exactAmount0_revert_lastZapAmountInsufficient() public {
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(AMOUNT, USE_FULL_BALANCE);
+        checkRevertAmountInsufficient({msgValue: 0, lastZapAmountIn: amountDeposit, zapParams: zapParams});
+    }
+
+    function test_swapDepositERC20_exactAmount0_revert_msgValueAboveExpected() public {
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(AMOUNT, USE_FULL_BALANCE);
+        checkRevertMsgValueAboveExpectedWithERC20(zapParams, amountDeposit);
+    }
+
+    function test_swapDepositERC20_exactAmount1() public {
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(USE_FULL_BALANCE, amountDeposit);
+        userPerformZaps({
+            msgValue: 0,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: amountDeposit,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, address(erc20)), amountDeposit);
+    }
+
+    /// @notice Should succeed with extra funds if no balance checks are performed.
+    /// Last action is "use exact amount", so extra funds have no effect.
+    function test_swapDepositERC20_exactAmount1_extraFunds_revertWithBalanceChecks() public virtual {
+        erc20.mint(address(tokenZap), EXTRA_FUNDS);
+        weth.mint(address(tokenZap), EXTRA_FUNDS);
+        test_swapDepositERC20_exactAmount1();
+    }
+
+    function test_swapDepositERC20_exactAmount1_revert_deadlineExceeded() public {
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(USE_FULL_BALANCE, amountDeposit);
+        checkRevertDeadlineExceeded({msgValue: 0, lastZapAmountIn: amountDeposit, zapParams: zapParams});
+    }
+
+    function test_swapDepositERC20_exactAmount1_revert_lastZapAmountInsufficient() public {
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(USE_FULL_BALANCE, amountDeposit);
+        checkRevertAmountInsufficient({msgValue: 0, lastZapAmountIn: amountDeposit, zapParams: zapParams});
+    }
+
+    function test_swapDepositERC20_exactAmount1_revert_msgValueAboveExpected() public {
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(USE_FULL_BALANCE, amountDeposit);
+        checkRevertMsgValueAboveExpectedWithERC20(zapParams, amountDeposit);
+    }
+
+    function test_swapDepositERC20_fullBalances() public {
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(USE_FULL_BALANCE, USE_FULL_BALANCE);
+        userPerformZaps({
+            msgValue: 0,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: amountDeposit,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, address(erc20)), amountDeposit);
+    }
+
+    function test_swapDepositERC20_fullBalances_extraFunds() public {
+        erc20.mint(address(tokenZap), EXTRA_FUNDS);
+        weth.mint(address(tokenZap), EXTRA_FUNDS);
+        uint256 amountDeposit = (AMOUNT + EXTRA_FUNDS) * TOKEN_PRICE + EXTRA_FUNDS;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(USE_FULL_BALANCE, USE_FULL_BALANCE);
+        userPerformZaps({
+            msgValue: 0,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: amountDeposit,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, address(erc20)), amountDeposit);
+    }
+
+    function test_swapDepositERC20_fullBalances_revert_deadlineExceeded() public {
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(USE_FULL_BALANCE, USE_FULL_BALANCE);
+        checkRevertDeadlineExceeded({msgValue: 0, lastZapAmountIn: amountDeposit, zapParams: zapParams});
+    }
+
+    function test_swapDepositERC20_fullBalances_revert_lastZapAmountInsufficient() public {
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(USE_FULL_BALANCE, USE_FULL_BALANCE);
+        checkRevertAmountInsufficient({msgValue: 0, lastZapAmountIn: amountDeposit, zapParams: zapParams});
+    }
+
+    function test_swapDepositERC20_fullBalances_revert_msgValueAboveExpected() public {
+        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
+        IZapRouterV1.ZapParams[] memory zapParams = getSwapDepositERC20ZapParams(USE_FULL_BALANCE, USE_FULL_BALANCE);
+        checkRevertMsgValueAboveExpectedWithERC20(zapParams, amountDeposit);
+    }
+
+    // ════════════════════════════════════════════ WRAP & DEPOSIT WETH ════════════════════════════════════════════════
+
+    function getWrapDepositWETHZapParams(
+        uint256 amountWrap,
+        uint256 amountDeposit
+    )
+        public
+        view
+        returns (IZapRouterV1.ZapParams[] memory)
+    {
+        return toArray(
+            IZapRouterV1.ZapParams({
+                token: NATIVE_GAS_TOKEN,
+                amount: amountWrap,
+                msgValue: AMOUNT,
+                zapData: getWrapZapData()
+            }),
+            IZapRouterV1.ZapParams({
+                token: address(weth),
+                amount: amountDeposit,
+                msgValue: 0,
+                zapData: getDepositZapData(address(weth))
+            })
+        );
+    }
+
+    function test_wrapDepositWETH_exactAmounts() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(AMOUNT, AMOUNT);
+        userPerformZaps({
+            msgValue: AMOUNT,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: AMOUNT,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, address(weth)), AMOUNT);
+    }
+
+    /// @notice Extra funds should have no effect on "exact amount" instructions.
+    function test_wrapDepositWETH_exactAmounts_extraFunds() public {
+        deal(address(tokenZap), EXTRA_FUNDS);
+        weth.mint(address(tokenZap), EXTRA_FUNDS);
+        test_wrapDepositWETH_exactAmounts();
+    }
+
+    function test_wrapDepositWETH_exactAmounts_revert_deadlineExceeded() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(AMOUNT, AMOUNT);
+        checkRevertDeadlineExceeded({msgValue: AMOUNT, lastZapAmountIn: AMOUNT, zapParams: zapParams});
+    }
+
+    function test_wrapDepositWETH_exactAmounts_revert_lastZapAmountInsufficient() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(AMOUNT, AMOUNT);
+        checkRevertAmountInsufficient({msgValue: AMOUNT, lastZapAmountIn: AMOUNT, zapParams: zapParams});
+    }
+
+    function test_wrapDepositWETH_exactAmounts_revert_msgValueAboveExpected() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(AMOUNT, AMOUNT);
+        checkRevertsMsgValueAboveExpectedWithNative(zapParams);
+    }
+
+    function test_wrapDepositWETH_exactAmounts_revert_msgValueBelowExpected() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(AMOUNT, AMOUNT);
+        checkRevertsMsgValueBelowExpectedWithNative(zapParams);
+    }
+
+    function test_wrapDepositWETH_exactAmount0() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(AMOUNT, USE_FULL_BALANCE);
+        userPerformZaps({
+            msgValue: AMOUNT,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: AMOUNT,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, address(weth)), AMOUNT);
+    }
+
+    function test_wrapDepositWETH_exactAmount0_extraFunds() public {
+        deal(address(tokenZap), EXTRA_FUNDS);
+        weth.mint(address(tokenZap), EXTRA_FUNDS);
+        uint256 amountDeposit = AMOUNT + EXTRA_FUNDS;
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(AMOUNT, USE_FULL_BALANCE);
+        userPerformZaps({
+            msgValue: AMOUNT,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: amountDeposit,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, address(weth)), amountDeposit);
+    }
+
+    function test_wrapDepositWETH_exactAmount0_revert_deadlineExceeded() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(AMOUNT, USE_FULL_BALANCE);
+        checkRevertDeadlineExceeded({msgValue: AMOUNT, lastZapAmountIn: AMOUNT, zapParams: zapParams});
+    }
+
+    function test_wrapDepositWETH_exactAmount0_revert_lastZapAmountInsufficient() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(AMOUNT, USE_FULL_BALANCE);
+        checkRevertAmountInsufficient({msgValue: AMOUNT, lastZapAmountIn: AMOUNT, zapParams: zapParams});
+    }
+
+    function test_wrapDepositWETH_exactAmount0_revert_msgValueAboveExpected() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(AMOUNT, USE_FULL_BALANCE);
+        checkRevertsMsgValueAboveExpectedWithNative(zapParams);
+    }
+
+    function test_wrapDepositWETH_exactAmount0_revert_msgValueBelowExpected() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(AMOUNT, USE_FULL_BALANCE);
+        checkRevertsMsgValueBelowExpectedWithNative(zapParams);
+    }
+
+    function test_wrapDepositWETH_exactAmount1() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(USE_FULL_BALANCE, AMOUNT);
+        userPerformZaps({
+            msgValue: AMOUNT,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: AMOUNT,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, address(weth)), AMOUNT);
+    }
+
+    /// @notice Should succeed with extra funds if no balance checks are performed.
+    /// Last action is "use exact amount", so extra funds have no effect.
+    function test_wrapDepositWETH_exactAmount1_extraFunds_revertWithBalanceChecks() public virtual {
+        deal(address(tokenZap), EXTRA_FUNDS);
+        weth.mint(address(tokenZap), EXTRA_FUNDS);
+        test_wrapDepositWETH_exactAmount1();
+    }
+
+    function test_wrapDepositWETH_exactAmount1_revert_deadlineExceeded() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(AMOUNT, USE_FULL_BALANCE);
+        checkRevertDeadlineExceeded({msgValue: AMOUNT, lastZapAmountIn: AMOUNT, zapParams: zapParams});
+    }
+
+    function test_wrapDepositWETH_exactAmount1_revert_lastZapAmountInsufficient() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(AMOUNT, USE_FULL_BALANCE);
+        checkRevertAmountInsufficient({msgValue: AMOUNT, lastZapAmountIn: AMOUNT, zapParams: zapParams});
+    }
+
+    function test_wrapDepositWETH_exactAmount1_revert_msgValueAboveExpected() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(AMOUNT, USE_FULL_BALANCE);
+        checkRevertsMsgValueAboveExpectedWithNative(zapParams);
+    }
+
+    function test_wrapDepositWETH_exactAmount1_revert_msgValueBelowExpected() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(AMOUNT, USE_FULL_BALANCE);
+        checkRevertsMsgValueBelowExpectedWithNative(zapParams);
+    }
+
+    function test_wrapDepositWETH_fullBalances() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(USE_FULL_BALANCE, USE_FULL_BALANCE);
+        userPerformZaps({
+            msgValue: AMOUNT,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: AMOUNT,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, address(weth)), AMOUNT);
+    }
+
+    function test_wrapDepositWETH_fullBalances_extraFunds() public {
+        deal(address(tokenZap), EXTRA_FUNDS);
+        weth.mint(address(tokenZap), EXTRA_FUNDS);
+        uint256 amountDeposit = AMOUNT + 2 * EXTRA_FUNDS;
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(USE_FULL_BALANCE, USE_FULL_BALANCE);
+        userPerformZaps({
+            msgValue: AMOUNT,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: amountDeposit,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, address(weth)), amountDeposit);
+    }
+
+    function test_wrapDepositWETH_fullBalances_revert_deadlineExceeded() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(USE_FULL_BALANCE, USE_FULL_BALANCE);
+        checkRevertDeadlineExceeded({msgValue: AMOUNT, lastZapAmountIn: AMOUNT, zapParams: zapParams});
+    }
+
+    function test_wrapDepositWETH_fullBalances_revert_lastZapAmountInsufficient() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(USE_FULL_BALANCE, USE_FULL_BALANCE);
+        checkRevertAmountInsufficient({msgValue: AMOUNT, lastZapAmountIn: AMOUNT, zapParams: zapParams});
+    }
+
+    function test_wrapDepositWETH_fullBalances_revert_msgValueAboveExpected() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(USE_FULL_BALANCE, USE_FULL_BALANCE);
+        checkRevertsMsgValueAboveExpectedWithNative(zapParams);
+    }
+
+    function test_wrapDepositWETH_fullBalances_revert_msgValueBelowExpected() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getWrapDepositWETHZapParams(USE_FULL_BALANCE, USE_FULL_BALANCE);
+        checkRevertsMsgValueBelowExpectedWithNative(zapParams);
+    }
+
+    // ══════════════════════════════════════════ UNWRAP & DEPOSIT NATIVE ══════════════════════════════════════════════
+
+    function getUnwrapDepositNativeZapParams(
+        uint256 amountUnwrap,
+        uint256 amountDeposit
+    )
+        public
+        view
+        returns (IZapRouterV1.ZapParams[] memory)
+    {
+        return toArray(
+            IZapRouterV1.ZapParams({
+                token: address(weth),
+                amount: amountUnwrap,
+                msgValue: 0,
+                zapData: getUnwrapZapData()
+            }),
+            IZapRouterV1.ZapParams({
+                token: NATIVE_GAS_TOKEN,
+                amount: amountDeposit,
+                msgValue: 0,
+                zapData: getDepositZapData(NATIVE_GAS_TOKEN)
+            })
+        );
+    }
+
+    function test_unwrapDepositNative_exactAmounts() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(AMOUNT, AMOUNT);
+        userPerformZaps({
+            msgValue: 0,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: AMOUNT,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT);
+    }
+
+    /// @notice Extra funds should have no effect on "exact amount" instructions.
+    function test_unwrapDepositNative_exactAmounts_extraFunds() public {
+        deal(address(tokenZap), EXTRA_FUNDS);
+        weth.mint(address(tokenZap), EXTRA_FUNDS);
+        test_unwrapDepositNative_exactAmounts();
+    }
+
+    function test_unwrapDepositNative_exactAmounts_revert_deadlineExceeded() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(AMOUNT, AMOUNT);
+        checkRevertDeadlineExceeded({msgValue: 0, lastZapAmountIn: AMOUNT, zapParams: zapParams});
+    }
+
+    function test_unwrapDepositNative_exactAmounts_revert_lastZapAmountInsufficient() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(AMOUNT, AMOUNT);
+        checkRevertAmountInsufficient({msgValue: 0, lastZapAmountIn: AMOUNT, zapParams: zapParams});
+    }
+
+    function test_unwrapDepositNative_exactAmounts_revert_msgValueAboveExpected() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(AMOUNT, AMOUNT);
+        checkRevertMsgValueAboveExpectedWithERC20({zapParams: zapParams, minLastZapAmountIn: AMOUNT});
+    }
+
+    function test_unwrapDepositNative_exactAmount0() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(AMOUNT, USE_FULL_BALANCE);
+        userPerformZaps({
+            msgValue: 0,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: AMOUNT,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT);
+    }
+
+    function test_unwrapDepositNative_exactAmount0_extraFunds() public {
+        deal(address(tokenZap), EXTRA_FUNDS);
+        weth.mint(address(tokenZap), EXTRA_FUNDS);
+        uint256 amountDeposit = AMOUNT + EXTRA_FUNDS;
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(AMOUNT, USE_FULL_BALANCE);
+        userPerformZaps({
+            msgValue: 0,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: amountDeposit,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), amountDeposit);
+    }
+
+    function test_unwrapDepositNative_exactAmount0_revert_deadlineExceeded() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(AMOUNT, USE_FULL_BALANCE);
+        checkRevertDeadlineExceeded({msgValue: 0, lastZapAmountIn: AMOUNT, zapParams: zapParams});
+    }
+
+    function test_unwrapDepositNative_exactAmount0_revert_lastZapAmountInsufficient() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(AMOUNT, USE_FULL_BALANCE);
+        checkRevertAmountInsufficient({msgValue: 0, lastZapAmountIn: AMOUNT, zapParams: zapParams});
+    }
+
+    function test_unwrapDepositNative_exactAmount0_revert_msgValueAboveExpected() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(AMOUNT, USE_FULL_BALANCE);
+        checkRevertMsgValueAboveExpectedWithERC20({zapParams: zapParams, minLastZapAmountIn: AMOUNT});
+    }
+
+    function test_unwrapDepositNative_exactAmount1() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(USE_FULL_BALANCE, AMOUNT);
+        userPerformZaps({
+            msgValue: 0,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: AMOUNT,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT);
+    }
+
+    /// @notice Should succeed with extra funds if no balance checks are performed.
+    /// Last action is "use exact amount", so extra funds have no effect.
+    function test_unwrapDepositNative_exactAmount1_extraFunds_revertWithBalanceChecks() public virtual {
+        deal(address(tokenZap), EXTRA_FUNDS);
+        weth.mint(address(tokenZap), EXTRA_FUNDS);
+        test_unwrapDepositNative_exactAmount1();
+    }
+
+    function test_unwrapDepositNative_exactAmount1_revert_deadlineExceeded() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(USE_FULL_BALANCE, AMOUNT);
+        checkRevertDeadlineExceeded({msgValue: 0, lastZapAmountIn: AMOUNT, zapParams: zapParams});
+    }
+
+    function test_unwrapDepositNative_exactAmount1_revert_lastZapAmountInsufficient() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(USE_FULL_BALANCE, AMOUNT);
+        checkRevertAmountInsufficient({msgValue: 0, lastZapAmountIn: AMOUNT, zapParams: zapParams});
+    }
+
+    function test_unwrapDepositNative_exactAmount1_revert_msgValueAboveExpected() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(USE_FULL_BALANCE, AMOUNT);
+        checkRevertMsgValueAboveExpectedWithERC20({zapParams: zapParams, minLastZapAmountIn: AMOUNT});
+    }
+
+    function test_unwrapDepositNative_fullBalances() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(USE_FULL_BALANCE, USE_FULL_BALANCE);
+        userPerformZaps({
+            msgValue: 0,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: AMOUNT,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT);
+    }
+
+    function test_unwrapDepositNative_fullBalances_extraFunds() public {
+        deal(address(tokenZap), EXTRA_FUNDS);
+        weth.mint(address(tokenZap), EXTRA_FUNDS);
+        uint256 amountDeposit = AMOUNT + 2 * EXTRA_FUNDS;
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(USE_FULL_BALANCE, USE_FULL_BALANCE);
+        userPerformZaps({
+            msgValue: 0,
+            amountIn: AMOUNT,
+            minLastZapAmountIn: amountDeposit,
+            deadline: block.timestamp,
+            zapParams: zapParams
+        });
+        // Check that the vault registered the deposit
+        assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), amountDeposit);
+    }
+
+    function test_unwrapDepositNative_fullBalances_revert_deadlineExceeded() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(USE_FULL_BALANCE, USE_FULL_BALANCE);
+        checkRevertDeadlineExceeded({msgValue: 0, lastZapAmountIn: AMOUNT, zapParams: zapParams});
+    }
+
+    function test_unwrapDepositNative_fullBalances_revert_lastZapAmountInsufficient() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(USE_FULL_BALANCE, USE_FULL_BALANCE);
+        checkRevertAmountInsufficient({msgValue: 0, lastZapAmountIn: AMOUNT, zapParams: zapParams});
+    }
+
+    function test_unwrapDepositNative_fullBalances_revert_msgValueAboveExpected() public {
+        IZapRouterV1.ZapParams[] memory zapParams = getUnwrapDepositNativeZapParams(USE_FULL_BALANCE, USE_FULL_BALANCE);
+        checkRevertMsgValueAboveExpectedWithERC20({zapParams: zapParams, minLastZapAmountIn: AMOUNT});
     }
 
     // ═══════════════════════════════════════════════════ UTILS ═══════════════════════════════════════════════════════
