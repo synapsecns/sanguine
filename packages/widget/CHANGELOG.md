@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.7...@synapsecns/widget@0.9.8) (2024-12-02)
+
+
+### Bug Fixes
+
+* update klaytn/kaia rpc url ([#3426](https://github.com/synapsecns/sanguine/issues/3426)) ([590594a](https://github.com/synapsecns/sanguine/commit/590594a80d576ea916052f25e22220823623e088))
+
+
+
+
+
 ## [0.9.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.6...@synapsecns/widget@0.9.7) (2024-12-01)
 
 **Note:** Version bump only for package @synapsecns/widget

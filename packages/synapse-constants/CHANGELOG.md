@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-constants@1.8.4...@synapsecns/synapse-constants@1.8.5) (2024-12-02)
+
+
+### Bug Fixes
+
+* update klaytn/kaia rpc url ([#3426](https://github.com/synapsecns/sanguine/issues/3426)) ([590594a](https://github.com/synapsecns/sanguine/commit/590594a80d576ea916052f25e22220823623e088))
+
+
+
+
+
 ## [1.8.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-constants@1.8.3...@synapsecns/synapse-constants@1.8.4) (2024-12-01)
 
 

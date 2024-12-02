@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-constants",
-  "version": "1.8.4",
+  "version": "1.8.5",
   "description": "This is an npm package that maintains all synapse constants",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
