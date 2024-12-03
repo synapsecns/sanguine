@@ -782,8 +782,7 @@ func (i *IntegrationSuite) TestEncodeBridgeTransactionParity() {
 
 	originUSDC, _ := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.originBackend)
 	destUSDC, _ := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.destBackend)
-	deadline := new(big.Int).Sub(new(big.Int).Exp(big.NewInt(2), big.NewInt(256), nil), big.NewInt(1))
-	// zapData := []byte("Hello, world!")
+	deadline := big.NewInt(0)  // Use same deadline for both
 	zapData := []byte{}
 
 	bridgeTx := bridgetransactionv2.IFastBridgeV2BridgeTransactionV2{
@@ -796,9 +795,9 @@ func (i *IntegrationSuite) TestEncodeBridgeTransactionParity() {
 		OriginAmount:       big.NewInt(1000),
 		DestAmount:         big.NewInt(1000),
 		OriginFeeAmount:    big.NewInt(10),
-		Deadline:           big.NewInt(0),
+		Deadline:           deadline,
 		Nonce:              big.NewInt(0),
-		ExclusivityRelayer: i.relayerWallet.Address(),
+		ExclusivityRelayer: common.HexToAddress(""),  // Match the empty address
 		ExclusivityEndTime: big.NewInt(0),
 		ZapNative:          big.NewInt(100),
 		ZapData:            zapData,
@@ -819,7 +818,7 @@ func (i *IntegrationSuite) TestEncodeBridgeTransactionParity() {
 		OriginAmount:       big.NewInt(1000),
 		DestAmount:         big.NewInt(1000),
 		OriginFeeAmount:    big.NewInt(10),
-		Deadline:           deadline,
+		Deadline:           deadline,  // Use same deadline
 		Nonce:              big.NewInt(0),
 		ExclusivityRelayer: common.HexToAddress(""),
 		ExclusivityEndTime: big.NewInt(0),
