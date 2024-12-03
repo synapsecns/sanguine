@@ -778,14 +778,16 @@ func (i *IntegrationSuite) TestConcurrentBridges() {
 	})
 }
 
-func mockAddress() common.Address {
-	// Generate a 40-character hex string
-	hex := gofakeit.HexUint256()[:40]
-	return common.HexToAddress("0x" + hex)
-}
+//nolint:gosec
+func (i *IntegrationSuite) TestEncodeBridgeTransactionParity() {
+	_, handle := i.manager.GetBridgeTransactionV2(i.GetTestContext(), i.originBackend)
 
-// getMockedBridgeTransactions returns a pair of matching bridge transactions with random but valid values
-func (i *IntegrationSuite) getMockedBridgeTransactions() (bridgetransactionv2.IFastBridgeV2BridgeTransactionV2, fastbridgev2.IFastBridgeV2BridgeTransactionV2) {
+	mockAddress := func() common.Address {
+		// Generate a 40-character hex string
+		hex := gofakeit.HexUint256()[:40]
+		return common.HexToAddress("0x" + hex)
+	}
+
 	// Generate random values that will be used for both transactions
 	originChainId := uint32(gofakeit.Number(1, 1000000))
 	destChainId := uint32(gofakeit.Number(1, 1000000))
@@ -847,20 +849,8 @@ func (i *IntegrationSuite) getMockedBridgeTransactions() (bridgetransactionv2.IF
 		ZapData:            zapData,
 	}
 
-	return bridgeTx, tx
-}
-
-//nolint:gosec
-func (i *IntegrationSuite) TestEncodeBridgeTransactionParity() {
-	_, handle := i.manager.GetBridgeTransactionV2(i.GetTestContext(), i.originBackend)
-
-	// Get randomly generated but matching transactions
-	bridgeTx, tx := i.getMockedBridgeTransactions()
-
-	fmt.Printf("address: %v\n", handle.Address())
 	expectedEncoded, err := handle.EncodeV2(&bind.CallOpts{Context: i.GetTestContext()}, bridgeTx)
 	i.NoError(err)
-	fmt.Printf("Expected: %x\n", expectedEncoded)
 
 	encoded, err := chain.EncodeQuoteRequest(tx)
 	i.NoError(err)
