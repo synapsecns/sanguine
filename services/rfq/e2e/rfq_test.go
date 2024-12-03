@@ -783,9 +783,12 @@ func (i *IntegrationSuite) TestEncodeBridgeTransactionParity() {
 	_, handle := i.manager.GetBridgeTransactionV2(i.GetTestContext(), i.originBackend)
 
 	mockAddress := func() common.Address {
-		// Generate a 40-character hex string
-		hex := gofakeit.HexUint256()[:40]
-		return common.HexToAddress("0x" + hex)
+		// Generate 20 random bytes for the address
+		b := make([]byte, 20)
+		for i := range b {
+			b[i] = byte(gofakeit.Number(0, 255))
+		}
+		return common.BytesToAddress(b)
 	}
 
 	// Generate random values that will be used for both transactions
