@@ -2,9 +2,11 @@ package chain
 
 import (
 	"encoding/binary"
+	"fmt"
 	"math/big"
 
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 const (
@@ -81,4 +83,31 @@ func EncodeBridgeTx(tx fastbridgev2.IFastBridgeV2BridgeTransactionV2) ([]byte, e
 	copy(result[offsetZapData:], tx.ZapData)
 
 	return result, nil
+}
+
+// DecodeBridgeTx decodes a byte array into a bridge transaction.
+func DecodeBridgeTx(data []byte) (fastbridgev2.IFastBridgeV2BridgeTransactionV2, error) {
+	if len(data) < offsetZapData {
+		return fastbridgev2.IFastBridgeV2BridgeTransactionV2{}, fmt.Errorf("data too short: got %d bytes, need at least %d", len(data), offsetZapData)
+	}
+
+	tx := fastbridgev2.IFastBridgeV2BridgeTransactionV2{
+		OriginChainId:      binary.BigEndian.Uint32(data[offsetOriginChainID:offsetDestChainID]),
+		DestChainId:        binary.BigEndian.Uint32(data[offsetDestChainID:offsetOriginSender]),
+		OriginSender:       common.BytesToAddress(data[offsetOriginSender:offsetDestRecipient]),
+		DestRecipient:      common.BytesToAddress(data[offsetDestRecipient:offsetOriginToken]),
+		OriginToken:        common.BytesToAddress(data[offsetOriginToken:offsetDestToken]),
+		DestToken:          common.BytesToAddress(data[offsetDestToken:offsetOriginAmount]),
+		OriginAmount:       new(big.Int).SetBytes(data[offsetOriginAmount:offsetDestAmount]),
+		DestAmount:         new(big.Int).SetBytes(data[offsetDestAmount:offsetOriginFeeAmount]),
+		OriginFeeAmount:    new(big.Int).SetBytes(data[offsetOriginFeeAmount:offsetDeadline]),
+		Deadline:           new(big.Int).SetBytes(data[offsetDeadline:offsetNonce]),
+		Nonce:             new(big.Int).SetBytes(data[offsetNonce:offsetExclusivityRelayer]),
+		ExclusivityRelayer: common.BytesToAddress(data[offsetExclusivityRelayer:offsetExclusivityEndTime]),
+		ExclusivityEndTime: new(big.Int).SetBytes(data[offsetExclusivityEndTime:offsetZapNative]),
+		ZapNative:         new(big.Int).SetBytes(data[offsetZapNative:offsetZapData]),
+		ZapData:           data[offsetZapData:],
+	}
+
+	return tx, nil
 }

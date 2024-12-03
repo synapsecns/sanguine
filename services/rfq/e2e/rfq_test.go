@@ -856,4 +856,25 @@ func (i *IntegrationSuite) TestEncodeBridgeTransactionParity() {
 	i.NoError(err)
 
 	i.Equal(expectedEncoded, encoded)
+
+	// Test decoding
+	decodedTx, err := chain.DecodeBridgeTx(encoded)
+	i.NoError(err)
+
+	// Verify all fields match the original transaction
+	i.Equal(tx.OriginChainId, decodedTx.OriginChainId)
+	i.Equal(tx.DestChainId, decodedTx.DestChainId)
+	i.Equal(tx.OriginSender, decodedTx.OriginSender)
+	i.Equal(tx.DestRecipient, decodedTx.DestRecipient)
+	i.Equal(tx.OriginToken, decodedTx.OriginToken)
+	i.Equal(tx.DestToken, decodedTx.DestToken)
+	i.Equal(tx.OriginAmount.String(), decodedTx.OriginAmount.String())
+	i.Equal(tx.DestAmount.String(), decodedTx.DestAmount.String())
+	i.Equal(tx.OriginFeeAmount.String(), decodedTx.OriginFeeAmount.String())
+	i.Equal(tx.Deadline.String(), decodedTx.Deadline.String())
+	i.Equal(tx.Nonce.String(), decodedTx.Nonce.String())
+	i.Equal(tx.ExclusivityRelayer, decodedTx.ExclusivityRelayer)
+	i.Equal(tx.ExclusivityEndTime.String(), decodedTx.ExclusivityEndTime.String())
+	i.Equal(tx.ZapNative.String(), decodedTx.ZapNative.String())
+	i.Equal(tx.ZapData, decodedTx.ZapData)
 }
