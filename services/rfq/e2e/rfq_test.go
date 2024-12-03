@@ -32,6 +32,8 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 	"github.com/synapsecns/sanguine/services/rfq/util"
 	"golang.org/x/sync/errgroup"
+
+	"github.com/brianvoe/gofakeit/v6"
 )
 
 type IntegrationSuite struct {
@@ -776,55 +778,89 @@ func (i *IntegrationSuite) TestConcurrentBridges() {
 	})
 }
 
+func mockAddress() common.Address {
+	// Generate a 40-character hex string
+	hex := gofakeit.HexUint256()[:40]
+	return common.HexToAddress("0x" + hex)
+}
+
+// getMockedBridgeTransactions returns a pair of matching bridge transactions with random but valid values
+func (i *IntegrationSuite) getMockedBridgeTransactions() (bridgetransactionv2.IFastBridgeV2BridgeTransactionV2, fastbridgev2.IFastBridgeV2BridgeTransactionV2) {
+	// Generate random values that will be used for both transactions
+	originChainId := uint32(gofakeit.Number(1, 1000000))
+	destChainId := uint32(gofakeit.Number(1, 1000000))
+	originSender := mockAddress()
+	destRecipient := mockAddress()
+	originToken := mockAddress()
+	destToken := mockAddress()
+	originAmount := new(big.Int).SetUint64(gofakeit.Uint64())
+	destAmount := new(big.Int).SetUint64(gofakeit.Uint64())
+	originFeeAmount := new(big.Int).SetUint64(gofakeit.Uint64())
+	deadline := new(big.Int).SetUint64(gofakeit.Uint64())
+	nonce := new(big.Int).SetUint64(gofakeit.Uint64())
+	exclusivityRelayer := mockAddress()
+	exclusivityEndTime := new(big.Int).SetUint64(gofakeit.Uint64())
+	zapNative := new(big.Int).SetUint64(gofakeit.Uint64())
+
+	// Random size and values for zapData
+	zapDataSize := gofakeit.Number(0, 1000)
+	zapData := make([]byte, zapDataSize)
+	for i := range zapDataSize {
+		zapData[i] = byte(gofakeit.Uint8())
+	}
+
+	// Create first transaction
+	bridgeTx := bridgetransactionv2.IFastBridgeV2BridgeTransactionV2{
+		OriginChainId:      originChainId,
+		DestChainId:        destChainId,
+		OriginSender:       originSender,
+		DestRecipient:      destRecipient,
+		OriginToken:        originToken,
+		DestToken:          destToken,
+		OriginAmount:       originAmount,
+		DestAmount:         destAmount,
+		OriginFeeAmount:    originFeeAmount,
+		Deadline:           deadline,
+		Nonce:              nonce,
+		ExclusivityRelayer: exclusivityRelayer,
+		ExclusivityEndTime: exclusivityEndTime,
+		ZapNative:          zapNative,
+		ZapData:            zapData,
+	}
+
+	// Create second transaction with same values
+	tx := fastbridgev2.IFastBridgeV2BridgeTransactionV2{
+		OriginChainId:      originChainId,
+		DestChainId:        destChainId,
+		OriginSender:       originSender,
+		DestRecipient:      destRecipient,
+		OriginToken:        originToken,
+		DestToken:          destToken,
+		OriginAmount:       originAmount,
+		DestAmount:         destAmount,
+		OriginFeeAmount:    originFeeAmount,
+		Deadline:           deadline,
+		Nonce:              nonce,
+		ExclusivityRelayer: exclusivityRelayer,
+		ExclusivityEndTime: exclusivityEndTime,
+		ZapNative:          zapNative,
+		ZapData:            zapData,
+	}
+
+	return bridgeTx, tx
+}
+
 //nolint:gosec
 func (i *IntegrationSuite) TestEncodeBridgeTransactionParity() {
 	_, handle := i.manager.GetBridgeTransactionV2(i.GetTestContext(), i.originBackend)
 
-	originUSDC, _ := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.originBackend)
-	destUSDC, _ := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.destBackend)
-	deadline := big.NewInt(0)  // Use same deadline for both
-	zapData := []byte{}
-
-	bridgeTx := bridgetransactionv2.IFastBridgeV2BridgeTransactionV2{
-		OriginChainId:      uint32(i.originBackend.GetChainID()),
-		DestChainId:        uint32(i.destBackend.GetChainID()),
-		OriginSender:       i.userWallet.Address(),
-		DestRecipient:      i.userWallet.Address(),
-		OriginToken:        originUSDC.Address(),
-		DestToken:          destUSDC.Address(),
-		OriginAmount:       big.NewInt(1000),
-		DestAmount:         big.NewInt(1000),
-		OriginFeeAmount:    big.NewInt(10),
-		Deadline:           deadline,
-		Nonce:              big.NewInt(0),
-		ExclusivityRelayer: common.HexToAddress(""),  // Match the empty address
-		ExclusivityEndTime: big.NewInt(0),
-		ZapNative:          big.NewInt(100),
-		ZapData:            zapData,
-	}
+	// Get randomly generated but matching transactions
+	bridgeTx, tx := i.getMockedBridgeTransactions()
 
 	fmt.Printf("address: %v\n", handle.Address())
 	expectedEncoded, err := handle.EncodeV2(&bind.CallOpts{Context: i.GetTestContext()}, bridgeTx)
 	i.NoError(err)
 	fmt.Printf("Expected: %x\n", expectedEncoded)
-
-	tx := fastbridgev2.IFastBridgeV2BridgeTransactionV2{
-		OriginChainId:      uint32(i.originBackend.GetChainID()),
-		DestChainId:        uint32(i.destBackend.GetChainID()),
-		OriginSender:       i.userWallet.Address(),
-		DestRecipient:      i.userWallet.Address(),
-		OriginToken:        originUSDC.Address(),
-		DestToken:          destUSDC.Address(),
-		OriginAmount:       big.NewInt(1000),
-		DestAmount:         big.NewInt(1000),
-		OriginFeeAmount:    big.NewInt(10),
-		Deadline:           deadline,  // Use same deadline
-		Nonce:              big.NewInt(0),
-		ExclusivityRelayer: common.HexToAddress(""),
-		ExclusivityEndTime: big.NewInt(0),
-		ZapNative:          big.NewInt(100),
-		ZapData:            zapData,
-	}
 
 	encoded, err := chain.EncodeQuoteRequest(tx)
 	i.NoError(err)
