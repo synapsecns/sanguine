@@ -178,7 +178,7 @@ func NewBridgeTransactionV2Deployer(registry deployer.GetOnlyContractRegistry, b
 // Deploy deploys the bridge transaction contract.
 func (m BridgeTransactionV2Deployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return m.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return bridgetransactionv2.DeployBridgeTransactionV2Lib(transactOps, backend)
+		return bridgetransactionv2.DeployBridgeTransactionV2Harness(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return bridgetransactionv2.NewBridgeTransactionV2Ref(address, backend)
 	})
