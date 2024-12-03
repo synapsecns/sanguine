@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 )
 
 const (
@@ -102,11 +102,11 @@ func DecodeBridgeTx(data []byte) (fastbridgev2.IFastBridgeV2BridgeTransactionV2,
 		DestAmount:         new(big.Int).SetBytes(data[offsetDestAmount:offsetOriginFeeAmount]),
 		OriginFeeAmount:    new(big.Int).SetBytes(data[offsetOriginFeeAmount:offsetDeadline]),
 		Deadline:           new(big.Int).SetBytes(data[offsetDeadline:offsetNonce]),
-		Nonce:             new(big.Int).SetBytes(data[offsetNonce:offsetExclusivityRelayer]),
+		Nonce:              new(big.Int).SetBytes(data[offsetNonce:offsetExclusivityRelayer]),
 		ExclusivityRelayer: common.BytesToAddress(data[offsetExclusivityRelayer:offsetExclusivityEndTime]),
 		ExclusivityEndTime: new(big.Int).SetBytes(data[offsetExclusivityEndTime:offsetZapNative]),
-		ZapNative:         new(big.Int).SetBytes(data[offsetZapNative:offsetZapData]),
-		ZapData:           data[offsetZapData:],
+		ZapNative:          new(big.Int).SetBytes(data[offsetZapNative:offsetZapData]),
+		ZapData:            data[offsetZapData:],
 	}
 
 	return tx, nil
