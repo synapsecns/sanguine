@@ -811,7 +811,7 @@ func (i *IntegrationSuite) TestEncodeBridgeTransactionParity() {
 	zapDataSize := gofakeit.Number(0, 1000)
 	zapData := make([]byte, zapDataSize)
 	for i := range zapDataSize {
-		zapData[i] = byte(gofakeit.Uint8())
+		zapData[i] = gofakeit.Uint8()
 	}
 
 	// Create first transaction
