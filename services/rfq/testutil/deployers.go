@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/sanguine/ethergo/manager"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/bridgetransactionv2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemockv2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/recipientmock"
@@ -28,7 +29,7 @@ type DeployManager struct {
 func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
-	parentManager := manager.NewDeployerManager(t, NewFastBridgeDeployer, NewMockERC20Deployer, NewMockFastBridgeDeployer, NewRecipientMockDeployer, NewWETH9Deployer, NewUSDTDeployer, NewUSDCDeployer, NewDAIDeployer)
+	parentManager := manager.NewDeployerManager(t, NewFastBridgeDeployer, NewMockERC20Deployer, NewMockFastBridgeDeployer, NewRecipientMockDeployer, NewBridgeTransactionV2Deployer, NewWETH9Deployer, NewUSDTDeployer, NewUSDCDeployer, NewDAIDeployer)
 	return &DeployManager{parentManager}
 }
 
@@ -159,5 +160,26 @@ func (m RecipientMockDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 		return recipientmock.DeployRecipientMock(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return recipientmock.NewRecipientMockRef(address, backend)
+	})
+}
+
+// BridgeTransactionV2Deployer deploys a bridge transaction contract for testing.
+type BridgeTransactionV2Deployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewBridgeTransactionV2Deployer deploys a mock recipient contract.
+func NewBridgeTransactionV2Deployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return BridgeTransactionV2Deployer{
+		deployer.NewSimpleDeployer(registry, backend, BridgeTransactionV2Type),
+	}
+}
+
+// Deploy deploys the bridge transaction contract.
+func (m BridgeTransactionV2Deployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return m.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return bridgetransactionv2.DeployBridgeTransactionV2Harness(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return bridgetransactionv2.NewBridgeTransactionV2Ref(address, backend)
 	})
 }

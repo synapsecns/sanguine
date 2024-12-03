@@ -381,16 +381,11 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 		OriginAmountExact: originAmountExact,
 	}
 	if rfqRequest.Data.ZapNative != "" || rfqRequest.Data.ZapData != "" {
-		zapNative, ok := new(big.Int).SetString(rfqRequest.Data.ZapNative, 10)
-		if !ok {
-			return nil, fmt.Errorf("invalid zap native amount: %s", rfqRequest.Data.ZapNative)
+		quoteRequest, err := quoteDataToQuoteRequestV2(&rfqRequest.Data)
+		if err != nil {
+			return nil, fmt.Errorf("error converting quote data to quote request: %w", err)
 		}
-		quoteInput.QuoteRequest = &reldb.QuoteRequest{
-			Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
-				ZapNative: zapNative,
-				ZapData:   []byte(rfqRequest.Data.ZapData),
-			},
-		}
+		quoteInput.QuoteRequest = quoteRequest
 	}
 
 	rawQuote, err := m.generateQuote(ctx, quoteInput)
@@ -430,6 +425,50 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 	span.AddEvent("generated response")
 
 	return resp, nil
+}
+
+//nolint:gosec
+func quoteDataToQuoteRequestV2(quoteData *model.QuoteData) (*reldb.QuoteRequest, error) {
+	if quoteData == nil {
+		return nil, errors.New("quote data is nil")
+	}
+
+	originAmount, ok := new(big.Int).SetString(quoteData.OriginAmountExact, 10)
+	if !ok {
+		return nil, errors.New("invalid origin amount")
+	}
+	destAmount := originAmount // assume dest amount same as origin amount for estimation purposes
+	originFeeAmount := big.NewInt(0)
+	nonce := big.NewInt(0)
+	exclusivityEndTime := big.NewInt(0)
+	zapNative, ok := new(big.Int).SetString(quoteData.ZapNative, 10)
+	if !ok {
+		return nil, errors.New("invalid zap native")
+	}
+	deadline := new(big.Int).Sub(new(big.Int).Exp(big.NewInt(2), big.NewInt(256), nil), big.NewInt(1))
+	exclusivityRelayer := common.HexToAddress("")
+
+	quoteRequest := &reldb.QuoteRequest{
+		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
+			OriginChainId:      uint32(quoteData.OriginChainID),
+			DestChainId:        uint32(quoteData.DestChainID),
+			OriginSender:       common.HexToAddress(quoteData.OriginSender),
+			DestRecipient:      common.HexToAddress(quoteData.DestRecipient),
+			OriginToken:        common.HexToAddress(quoteData.OriginTokenAddr),
+			DestToken:          common.HexToAddress(quoteData.DestTokenAddr),
+			OriginAmount:       originAmount,
+			DestAmount:         destAmount,
+			OriginFeeAmount:    originFeeAmount,
+			Deadline:           deadline,
+			Nonce:              nonce,
+			ExclusivityRelayer: exclusivityRelayer,
+			ExclusivityEndTime: exclusivityEndTime,
+			ZapNative:          zapNative,
+			ZapData:            []byte(quoteData.ZapData),
+		},
+	}
+
+	return quoteRequest, nil
 }
 
 // GetPrice gets the price of a token.

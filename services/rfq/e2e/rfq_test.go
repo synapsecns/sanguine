@@ -21,15 +21,19 @@ import (
 	cctpTest "github.com/synapsecns/sanguine/services/cctp-relayer/testutil"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/bridgetransactionv2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb"
 	guardService "github.com/synapsecns/sanguine/services/rfq/guard/service"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 	"github.com/synapsecns/sanguine/services/rfq/util"
 	"golang.org/x/sync/errgroup"
+
+	"github.com/brianvoe/gofakeit/v6"
 )
 
 type IntegrationSuite struct {
@@ -772,4 +776,108 @@ func (i *IntegrationSuite) TestConcurrentBridges() {
 		}
 		return true
 	})
+}
+
+//nolint:gosec
+func (i *IntegrationSuite) TestEncodeBridgeTransactionParity() {
+	_, handle := i.manager.GetBridgeTransactionV2(i.GetTestContext(), i.originBackend)
+
+	mockAddress := func() common.Address {
+		// Generate 20 random bytes for the address
+		b := make([]byte, 20)
+		for i := range b {
+			b[i] = byte(gofakeit.Number(0, 255))
+		}
+		return common.BytesToAddress(b)
+	}
+
+	// Generate random values that will be used for both transactions
+	originChainId := uint32(gofakeit.Number(1, 1000000))
+	destChainId := uint32(gofakeit.Number(1, 1000000))
+	originSender := mockAddress()
+	destRecipient := mockAddress()
+	originToken := mockAddress()
+	destToken := mockAddress()
+	originAmount := new(big.Int).SetUint64(gofakeit.Uint64())
+	destAmount := new(big.Int).SetUint64(gofakeit.Uint64())
+	originFeeAmount := new(big.Int).SetUint64(gofakeit.Uint64())
+	deadline := new(big.Int).SetUint64(gofakeit.Uint64())
+	nonce := new(big.Int).SetUint64(gofakeit.Uint64())
+	exclusivityRelayer := mockAddress()
+	exclusivityEndTime := new(big.Int).SetUint64(gofakeit.Uint64())
+	zapNative := new(big.Int).SetUint64(gofakeit.Uint64())
+
+	// Random size and values for zapData
+	zapDataSize := gofakeit.Number(0, 1000)
+	zapData := make([]byte, zapDataSize)
+	for i := range zapDataSize {
+		zapData[i] = gofakeit.Uint8()
+	}
+
+	// Create first transaction
+	bridgeTx := bridgetransactionv2.IFastBridgeV2BridgeTransactionV2{
+		OriginChainId:      originChainId,
+		DestChainId:        destChainId,
+		OriginSender:       originSender,
+		DestRecipient:      destRecipient,
+		OriginToken:        originToken,
+		DestToken:          destToken,
+		OriginAmount:       originAmount,
+		DestAmount:         destAmount,
+		OriginFeeAmount:    originFeeAmount,
+		Deadline:           deadline,
+		Nonce:              nonce,
+		ExclusivityRelayer: exclusivityRelayer,
+		ExclusivityEndTime: exclusivityEndTime,
+		ZapNative:          zapNative,
+		ZapData:            zapData,
+	}
+
+	// Create second transaction with same values
+	tx := fastbridgev2.IFastBridgeV2BridgeTransactionV2{
+		OriginChainId:      originChainId,
+		DestChainId:        destChainId,
+		OriginSender:       originSender,
+		DestRecipient:      destRecipient,
+		OriginToken:        originToken,
+		DestToken:          destToken,
+		OriginAmount:       originAmount,
+		DestAmount:         destAmount,
+		OriginFeeAmount:    originFeeAmount,
+		Deadline:           deadline,
+		Nonce:              nonce,
+		ExclusivityRelayer: exclusivityRelayer,
+		ExclusivityEndTime: exclusivityEndTime,
+		ZapNative:          zapNative,
+		ZapData:            zapData,
+	}
+
+	expectedEncoded, err := handle.EncodeV2(&bind.CallOpts{Context: i.GetTestContext()}, bridgeTx)
+	i.NoError(err)
+
+	encoded, err := chain.EncodeBridgeTx(tx)
+	i.NoError(err)
+
+	i.Equal(expectedEncoded, encoded)
+
+	// Test decoding
+	decodedTx, err := chain.DecodeBridgeTx(encoded)
+	i.NoError(err)
+
+	// Verify all fields match the original transaction
+	i.Equal(tx.OriginChainId, decodedTx.OriginChainId)
+	i.Equal(tx.DestChainId, decodedTx.DestChainId)
+	i.Equal(tx.OriginSender, decodedTx.OriginSender)
+	i.Equal(tx.DestRecipient, decodedTx.DestRecipient)
+	i.Equal(tx.OriginToken, decodedTx.OriginToken)
+	i.Equal(tx.DestToken, decodedTx.DestToken)
+	i.Equal(tx.OriginAmount.String(), decodedTx.OriginAmount.String())
+	i.Equal(tx.DestAmount.String(), decodedTx.DestAmount.String())
+	i.Equal(tx.OriginFeeAmount.String(), decodedTx.OriginFeeAmount.String())
+	i.Equal(tx.Deadline.String(), decodedTx.Deadline.String())
+	i.Equal(tx.Nonce.String(), decodedTx.Nonce.String())
+	i.Equal(tx.ExclusivityRelayer, decodedTx.ExclusivityRelayer)
+	i.Equal(tx.ExclusivityEndTime.String(), decodedTx.ExclusivityEndTime.String())
+	i.Equal(tx.ZapNative.String(), decodedTx.ZapNative.String())
+	i.Equal(tx.ZapData, decodedTx.ZapData)
 }

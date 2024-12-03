@@ -15,6 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
@@ -141,7 +142,7 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 
 	// Calculate the static L2 fee if it won't be incorporated by directly estimating the relay() call
 	// in addZapFees().
-	if quoteRequest == nil || quoteRequest.Transaction.ZapData == nil || len(quoteRequest.Transaction.ZapData) == 0 {
+	if quoteRequest == nil || quoteRequest.Transaction.ZapNative == nil || quoteRequest.Transaction.ZapData == nil {
 		gasEstimate, err := f.config.GetDestGasEstimate(int(destination))
 		if err != nil {
 			return nil, fmt.Errorf("could not get dest gas estimate: %w", err)
@@ -183,7 +184,7 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomToken string, quoteRequest *reldb.QuoteRequest, fee *big.Int) (*big.Int, error) {
 	span := trace.SpanFromContext(ctx)
 
-	if len(quoteRequest.Transaction.ZapData) > 0 {
+	if quoteRequest.Transaction.ZapData != nil {
 		gasEstimate, err := f.getZapGasEstimate(ctx, destination, quoteRequest)
 		if err != nil {
 			return nil, err
@@ -232,7 +233,12 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 		fastBridgeV2ABI = &parsedABI
 	}
 
-	encodedData, err := fastBridgeV2ABI.Pack(methodName, quoteRequest.RawRequest, f.relayerAddress)
+	rawRequest, err := chain.EncodeBridgeTx(quoteRequest.Transaction)
+	if err != nil {
+		return 0, fmt.Errorf("could not encode quote data: %w", err)
+	}
+
+	encodedData, err := fastBridgeV2ABI.Pack(methodName, rawRequest, f.relayerAddress)
 	if err != nil {
 		return 0, fmt.Errorf("could not encode function call: %w", err)
 	}
