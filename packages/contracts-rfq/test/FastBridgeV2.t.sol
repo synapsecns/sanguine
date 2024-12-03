@@ -11,7 +11,7 @@ import {IFastBridgeV2} from "../contracts/interfaces/IFastBridgeV2.sol";
 import {FastBridgeV2} from "../contracts/FastBridgeV2.sol";
 import {IFastBridgeV2Errors} from "../contracts/interfaces/IFastBridgeV2Errors.sol";
 
-import {MockERC20} from "./MockERC20.sol";
+import {MockERC20} from "./mocks/MockERC20.sol";
 
 import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
 import {Test} from "forge-std/Test.sol";

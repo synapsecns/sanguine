@@ -10,7 +10,7 @@ import "../contracts/interfaces/IFastBridge.sol";
 import "../contracts/libs/Errors.sol";
 import "../contracts/libs/UniversalToken.sol";
 
-import "./MockERC20.sol";
+import "./mocks/MockERC20.sol";
 
 import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
 
