@@ -233,7 +233,7 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 		fastBridgeV2ABI = &parsedABI
 	}
 
-	rawRequest, err := chain.EncodeQuoteRequest(quoteRequest.Transaction)
+	rawRequest, err := chain.EncodeBridgeTx(quoteRequest.Transaction)
 	if err != nil {
 		return 0, fmt.Errorf("could not encode quote data: %w", err)
 	}

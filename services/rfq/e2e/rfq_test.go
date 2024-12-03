@@ -852,7 +852,7 @@ func (i *IntegrationSuite) TestEncodeBridgeTransactionParity() {
 	expectedEncoded, err := handle.EncodeV2(&bind.CallOpts{Context: i.GetTestContext()}, bridgeTx)
 	i.NoError(err)
 
-	encoded, err := chain.EncodeQuoteRequest(tx)
+	encoded, err := chain.EncodeBridgeTx(tx)
 	i.NoError(err)
 
 	i.Equal(expectedEncoded, encoded)

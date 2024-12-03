@@ -44,8 +44,8 @@ func padUint256(b *big.Int) []byte {
 	return result
 }
 
-// EncodeQuoteRequest encodes a quote request into a byte array.
-func EncodeQuoteRequest(tx fastbridgev2.IFastBridgeV2BridgeTransactionV2) ([]byte, error) {
+// EncodeBridgeTx encodes a bridge transaction into a byte array.
+func EncodeBridgeTx(tx fastbridgev2.IFastBridgeV2BridgeTransactionV2) ([]byte, error) {
 	// Initialize with total size including ZapData
 	result := make([]byte, offsetZapData+len(tx.ZapData))
 
