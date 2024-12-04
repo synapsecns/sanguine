@@ -18,6 +18,16 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     using SafeERC20 for IERC20;
 
+    /// @notice Struct for storing information about a prover.
+    /// @param id                   The ID of the prover: its position in `_allProvers` plus one,
+    ///                             or zero if the prover has never been added.
+    /// @param activeFromTimestamp  The timestamp at which the prover becomes active,
+    ///                             or zero if the prover has never been added or is no longer active.
+    struct ProverInfo {
+        uint16 id;
+        uint240 activeFromTimestamp;
+    }
+
     /// @notice The address reserved for the native gas token (ETH on Ethereum and most L2s, AVAX on Avalanche, etc.).
     address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
@@ -60,6 +70,11 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     /// @notice The delay period after which a transaction can be permissionlessly cancelled.
     uint256 public cancelDelay;
 
+    /// @notice A list of all provers ever added to the contract. Can hold up to 2^16-1 provers.
+    address[] private _allProvers;
+    /// @notice A mapping of provers to their information: id and activeFromTimestamp.
+    mapping(address => ProverInfo) private _proverInfos;
+
     /// @notice This variable is deprecated and should not be used.
     /// @dev Use ZapNative V2 requests instead.
     uint256 public immutable chainGasAmount = 0;
@@ -67,6 +82,16 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     constructor(address defaultAdmin) {
         _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _setCancelDelay(DEFAULT_CANCEL_DELAY);
+    }
+
+    /// @inheritdoc IAdminV2
+    function addProver(address prover) external onlyRole(GOVERNOR_ROLE) {
+        // TODO: implement
+    }
+
+    /// @inheritdoc IAdminV2
+    function removeProver(address prover) external onlyRole(GOVERNOR_ROLE) {
+        // TODO: implement
     }
 
     /// @inheritdoc IAdminV2
@@ -96,6 +121,16 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
         } else {
             IERC20(token).safeTransfer(recipient, feeAmount);
         }
+    }
+
+    /// @inheritdoc IAdminV2
+    function getActiveProverID(address prover) external view returns (uint16) {
+        // TODO: implement
+    }
+
+    /// @inheritdoc IAdminV2
+    function getProvers() external view returns (address[] memory) {
+        // TODO: implement
     }
 
     /// @notice Internal logic to set the cancel delay. Security checks are performed outside of this function.

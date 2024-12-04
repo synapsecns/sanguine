@@ -6,6 +6,15 @@ interface IAdminV2 {
     event FeeRateUpdated(uint256 oldFeeRate, uint256 newFeeRate);
     event FeesSwept(address token, address recipient, uint256 amount);
 
+    event ProverAdded(address prover);
+    event ProverRemoved(address prover);
+
+    /// @notice Allows the governor to add a new prover to the contract.
+    function addProver(address prover) external;
+
+    /// @notice Allows the governor to remove a prover from the contract.
+    function removeProver(address prover) external;
+
     /// @notice Allows the governor to set the cancel delay. The cancel delay is the time period after the transaction
     /// deadline during which a transaction can be permissionlessly cancelled if it hasn't been proven by any Relayer.
     function setCancelDelay(uint256 newCancelDelay) external;
@@ -18,4 +27,10 @@ interface IAdminV2 {
 
     /// @notice Allows the governor to withdraw the accumulated protocol fees from the contract.
     function sweepProtocolFees(address token, address recipient) external;
+
+    /// @notice Returns the ID of the active prover, or zero if the prover is not currently active.
+    function getActiveProverID(address prover) external view returns (uint16);
+
+    /// @notice Returns the list of the active provers.
+    function getProvers() external view returns (address[] memory);
 }
