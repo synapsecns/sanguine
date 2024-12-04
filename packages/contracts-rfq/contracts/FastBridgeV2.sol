@@ -347,7 +347,9 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     }
 
     /// @inheritdoc IFastBridgeV2
-    function proveV2(bytes32 transactionId, bytes32 destTxHash, address relayer) public onlyRole(PROVER_ROLE) {
+    function proveV2(bytes32 transactionId, bytes32 destTxHash, address relayer) public {
+        uint16 proverID = getActiveProverID(msg.sender);
+        if (proverID == 0) revert ProverNotActive();
         // Can only prove a REQUESTED transaction.
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
         if ($.status != BridgeStatus.REQUESTED) revert StatusIncorrect();

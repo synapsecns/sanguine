@@ -35,10 +35,6 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     /// @dev Only addresses with this role can post FastBridge quotes to the API.
     bytes32 public constant QUOTER_ROLE = keccak256("QUOTER_ROLE");
 
-    /// @notice The role identifier for the Prover's on-chain authentication in FastBridge.
-    /// @dev Only addresses with this role can provide proofs that a FastBridge request has been relayed.
-    bytes32 public constant PROVER_ROLE = keccak256("PROVER_ROLE");
-
     /// @notice The role identifier for the Guard's on-chain authentication in FastBridge.
     /// @dev Only addresses with this role can dispute submitted relay proofs during the dispute period.
     bytes32 public constant GUARD_ROLE = keccak256("GUARD_ROLE");
