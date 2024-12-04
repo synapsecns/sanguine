@@ -2,12 +2,11 @@
 pragma solidity ^0.8.20;
 
 import {IAdmin} from "../contracts/interfaces/IAdmin.sol";
-import {IAdminV2Errors} from "../contracts/interfaces/IAdminV2Errors.sol";
 
 import {FastBridgeV2, FastBridgeV2Test} from "./FastBridgeV2.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
-contract FastBridgeV2ManagementTest is FastBridgeV2Test, IAdminV2Errors {
+contract FastBridgeV2ManagementTest is FastBridgeV2Test {
     uint256 public constant FEE_RATE_MAX = 1e4; // 1%
     bytes32 public constant GOVERNOR_ROLE = keccak256("GOVERNOR_ROLE");
 

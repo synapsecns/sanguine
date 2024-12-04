@@ -346,10 +346,10 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
     }
 
-    function test_prove_revert_callerNotRelayer(address caller) public {
+    function test_prove_revert_callerNotProver(address caller) public {
         vm.assume(caller != relayerA && caller != relayerB);
         bridge({caller: userA, msgValue: 0, params: tokenParams});
-        expectUnauthorized(caller, fastBridge.PROVER_ROLE());
+        vm.expectRevert(ProverNotActive.selector);
         prove({caller: caller, bridgeTx: tokenTx, destTxHash: hex"01"});
     }
 
@@ -464,7 +464,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bytes32 txId = getTxId(tokenTx);
         vm.assume(caller != relayerA && caller != relayerB);
         bridge({caller: userA, msgValue: 0, params: tokenParams});
-        expectUnauthorized(caller, fastBridge.PROVER_ROLE());
+        vm.expectRevert(ProverNotActive.selector);
         prove({caller: caller, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
     }
 

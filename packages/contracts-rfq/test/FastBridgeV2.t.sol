@@ -9,6 +9,7 @@ import {IFastBridge} from "../contracts/interfaces/IFastBridge.sol";
 import {IFastBridgeV2} from "../contracts/interfaces/IFastBridgeV2.sol";
 
 import {FastBridgeV2} from "../contracts/FastBridgeV2.sol";
+import {IAdminV2Errors} from "../contracts/interfaces/IAdminV2Errors.sol";
 import {IFastBridgeV2Errors} from "../contracts/interfaces/IFastBridgeV2Errors.sol";
 
 import {MockERC20} from "./MockERC20.sol";
@@ -18,7 +19,7 @@ import {Test} from "forge-std/Test.sol";
 import {StdStorage, stdStorage} from "forge-std/Test.sol";
 
 // solhint-disable no-empty-blocks, max-states-count, ordering
-abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
+abstract contract FastBridgeV2Test is Test, IAdminV2Errors, IFastBridgeV2Errors {
     using stdStorage for StdStorage;
 
     uint32 public constant SRC_CHAIN_ID = 1337;

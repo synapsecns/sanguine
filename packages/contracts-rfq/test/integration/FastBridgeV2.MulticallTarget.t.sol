@@ -8,9 +8,10 @@ import {IFastBridge, MulticallTargetIntegrationTest} from "./MulticallTarget.t.s
 
 contract FastBridgeV2MulticallTargetTest is MulticallTargetIntegrationTest {
     function deployAndConfigureFastBridge() public override returns (address) {
-        FastBridgeV2 fastBridge = new FastBridgeV2(address(this));
-        fastBridge.grantRole(fastBridge.PROVER_ROLE(), relayer);
-        return address(fastBridge);
+        FastBridgeV2 fb = new FastBridgeV2(address(this));
+        fb.grantRole(fb.GOVERNOR_ROLE(), address(this));
+        fb.addProver(relayer);
+        return address(fb);
     }
 
     function getEncodedBridgeTx(IFastBridge.BridgeTransaction memory bridgeTx)
