@@ -60,6 +60,12 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     /// @notice The delay period after which a transaction can be permissionlessly cancelled.
     uint256 public cancelDelay;
 
+    /// @notice The block number at which the contract was deployed.
+    /// @dev This used to be immutable in V1, but was adjusted to be mutable in V2 for chains like Arbitrum that
+    /// implement the `block.number` as the underlying L1 block number rather than the chain's native block number.
+    /// This is exposed for conveniece for off-chain indexers that need to know the deployment block.
+    uint256 public deployBlock;
+
     /// @notice This variable is deprecated and should not be used.
     /// @dev Use ZapNative V2 requests instead.
     uint256 public immutable chainGasAmount = 0;
@@ -67,11 +73,17 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     constructor(address defaultAdmin) {
         _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _setCancelDelay(DEFAULT_CANCEL_DELAY);
+        _setDeployBlock(block.number);
     }
 
     /// @inheritdoc IAdminV2
     function setCancelDelay(uint256 newCancelDelay) external onlyRole(GOVERNOR_ROLE) {
         _setCancelDelay(newCancelDelay);
+    }
+
+    /// @inheritdoc IAdminV2
+    function setDeployBlock(uint256 blockNumber) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _setDeployBlock(blockNumber);
     }
 
     /// @inheritdoc IAdminV2
@@ -105,5 +117,12 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
         uint256 oldCancelDelay = cancelDelay;
         cancelDelay = newCancelDelay;
         emit CancelDelayUpdated(oldCancelDelay, newCancelDelay);
+    }
+
+    /// @notice Internal logic to set the deploy block. Security checks are performed outside of this function.
+    /// @dev This function is marked as private to prevent child contracts from calling it directly.
+    function _setDeployBlock(uint256 blockNumber) private {
+        deployBlock = blockNumber;
+        emit DeployBlockSet(blockNumber);
     }
 }
