@@ -4,7 +4,7 @@ import {
   unmarshallFastBridgeQuote,
 } from './quote'
 
-const API_URL = 'https://rfq-api.omnirpc.io'
+const API_URL = 'rfq-api-stage.omnirpc.io'
 const API_TIMEOUT = 2000
 
 const fetchWithTimeout = async (
