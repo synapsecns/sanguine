@@ -7,6 +7,7 @@ src = 'contracts'
 out = 'out'
 libs = ["lib", "node_modules"]
 ffi = true
+gas_limit = 9223372036854775807
 fs_permissions = [
     { access = "read", path = "./" },
     { access = "read-write", path = "./.deployments" }

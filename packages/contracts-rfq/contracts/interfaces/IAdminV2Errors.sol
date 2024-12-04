@@ -5,5 +5,6 @@ interface IAdminV2Errors {
     error CancelDelayBelowMin();
     error FeeRateAboveMax();
     error ProverAlreadyActive();
+    error ProverCapacityExceeded();
     error ProverNotActive();
 }

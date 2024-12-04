@@ -17,6 +17,12 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test, IAdminV2Errors {
     address public admin = makeAddr("Admin");
     address public governorA = makeAddr("Governor A");
 
+    address public proverA = makeAddr("Prover A");
+    address public proverB = makeAddr("Prover B");
+
+    event ProverAdded(address prover);
+    event ProverRemoved(address prover);
+
     event CancelDelayUpdated(uint256 oldCancelDelay, uint256 newCancelDelay);
     event FeeRateUpdated(uint256 oldFeeRate, uint256 newFeeRate);
     event FeesSwept(address token, address recipient, uint256 amount);
@@ -34,6 +40,16 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test, IAdminV2Errors {
         deal(address(fastBridge), 200);
         cheatCollectedProtocolFees(address(srcToken), 100);
         cheatCollectedProtocolFees(ETH_ADDRESS, 200);
+    }
+
+    function addProver(address caller, address prover) public {
+        vm.prank(caller);
+        fastBridge.addProver(prover);
+    }
+
+    function removeProver(address caller, address prover) public {
+        vm.prank(caller);
+        fastBridge.removeProver(prover);
     }
 
     function setGovernor(address caller, address newGovernor) public {
@@ -72,6 +88,117 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test, IAdminV2Errors {
         assertEq(fastBridge.cancelDelay(), DEFAULT_CANCEL_DELAY);
     }
 
+    // ════════════════════════════════════════════════ ADD PROVER ═════════════════════════════════════════════════════
+
+    function test_addProver() public {
+        vm.expectEmit(address(fastBridge));
+        emit ProverAdded(proverA);
+        addProver(governor, proverA);
+        assertEq(fastBridge.getActiveProverID(proverA), 1);
+        assertEq(fastBridge.getActiveProverID(proverB), 0);
+        address[] memory provers = fastBridge.getProvers();
+        assertEq(provers.length, 1);
+        assertEq(provers[0], proverA);
+    }
+
+    function test_addProver_twice() public {
+        test_addProver();
+        vm.expectEmit(address(fastBridge));
+        emit ProverAdded(proverB);
+        addProver(governor, proverB);
+        assertEq(fastBridge.getActiveProverID(proverA), 1);
+        assertEq(fastBridge.getActiveProverID(proverB), 2);
+        address[] memory provers = fastBridge.getProvers();
+        assertEq(provers.length, 2);
+        assertEq(provers[0], proverA);
+        assertEq(provers[1], proverB);
+    }
+
+    function test_addProver_twice_afterRemoval() public {
+        test_removeProver_twice();
+        // Add B back
+        vm.expectEmit(address(fastBridge));
+        emit ProverAdded(proverB);
+        addProver(governor, proverB);
+        assertEq(fastBridge.getActiveProverID(proverA), 0);
+        assertEq(fastBridge.getActiveProverID(proverB), 2);
+        address[] memory provers = fastBridge.getProvers();
+        assertEq(provers.length, 1);
+        assertEq(provers[0], proverB);
+        // Add A back
+        vm.expectEmit(address(fastBridge));
+        emit ProverAdded(proverA);
+        addProver(governor, proverA);
+        assertEq(fastBridge.getActiveProverID(proverA), 1);
+        assertEq(fastBridge.getActiveProverID(proverB), 2);
+        provers = fastBridge.getProvers();
+        assertEq(provers.length, 2);
+        assertEq(provers[0], proverA);
+        assertEq(provers[1], proverB);
+    }
+
+    function test_addProver_revertNotGovernor(address caller) public {
+        vm.assume(caller != governor);
+        expectUnauthorized(caller, fastBridge.GOVERNOR_ROLE());
+        addProver(caller, proverA);
+    }
+
+    function test_addProver_revertAlreadyActive() public {
+        test_addProver();
+        vm.expectRevert(ProverAlreadyActive.selector);
+        addProver(governor, proverA);
+    }
+
+    function test_addProver_revertTooManyProvers() public {
+        for (uint256 i = 0; i < type(uint16).max; i++) {
+            addProver(governor, address(uint160(i)));
+        }
+        vm.expectRevert(ProverCapacityExceeded.selector);
+        addProver(governor, proverA);
+    }
+
+    // ═══════════════════════════════════════════════ REMOVE PROVER ═══════════════════════════════════════════════════
+
+    function test_removeProver() public {
+        test_addProver_twice();
+        vm.expectEmit(address(fastBridge));
+        emit ProverRemoved(proverA);
+        removeProver(governor, proverA);
+        assertEq(fastBridge.getActiveProverID(proverA), 0);
+        assertEq(fastBridge.getActiveProverID(proverB), 2);
+        address[] memory provers = fastBridge.getProvers();
+        assertEq(provers.length, 1);
+        assertEq(provers[0], proverB);
+    }
+
+    function test_removeProver_twice() public {
+        test_removeProver();
+        vm.expectEmit(address(fastBridge));
+        emit ProverRemoved(proverB);
+        removeProver(governor, proverB);
+        assertEq(fastBridge.getActiveProverID(proverA), 0);
+        assertEq(fastBridge.getActiveProverID(proverB), 0);
+        address[] memory provers = fastBridge.getProvers();
+        assertEq(provers.length, 0);
+    }
+
+    function test_removeProver_revertNotGovernor(address caller) public {
+        vm.assume(caller != governor);
+        expectUnauthorized(caller, fastBridge.GOVERNOR_ROLE());
+        removeProver(caller, proverA);
+    }
+
+    function test_removeProver_revertNeverBeenActive() public {
+        vm.expectRevert(ProverNotActive.selector);
+        removeProver(governor, proverA);
+    }
+
+    function test_removeProver_revertNotActive() public {
+        test_removeProver();
+        vm.expectRevert(ProverNotActive.selector);
+        removeProver(governor, proverA);
+    }
+
     // ═════════════════════════════════════════════ SET CANCEL DELAY ══════════════════════════════════════════════════
 
     function test_setCancelDelay() public {
@@ -90,7 +217,7 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test, IAdminV2Errors {
     }
 
     function test_setCancelDelay_revertBelowMin() public {
-        vm.expectRevert(IAdminV2Errors.CancelDelayBelowMin.selector);
+        vm.expectRevert(CancelDelayBelowMin.selector);
         setCancelDelay(governor, MIN_CANCEL_DELAY - 1);
     }
 
@@ -118,7 +245,7 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test, IAdminV2Errors {
     }
 
     function test_setProtocolFeeRate_revert_tooHigh() public {
-        vm.expectRevert(IAdminV2Errors.FeeRateAboveMax.selector);
+        vm.expectRevert(FeeRateAboveMax.selector);
         setProtocolFeeRate(governor, FEE_RATE_MAX + 1);
     }
 
