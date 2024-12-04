@@ -31,6 +31,16 @@ interface IAdminV2 {
     /// @notice Returns the ID of the active prover, or zero if the prover is not currently active.
     function getActiveProverID(address prover) external view returns (uint16);
 
+    /// @notice Returns the information about the prover with the provided address.
+    /// @return proverID            The ID of the prover if it has been added before, or zero otherwise.
+    /// @return activeFromTimestamp The timestamp when the prover becomes active, or zero if the prover isn't active.
+    function getProverInfo(address prover) external view returns (uint16 proverID, uint256 activeFromTimestamp);
+
+    /// @notice Returns the information about the prover with the provided ID.
+    /// @return prover              The address of the prover with the provided ID, or zero the ID does not exist.
+    /// @return activeFromTimestamp The timestamp when the prover becomes active, or zero if the prover isn't active.
+    function getProverInfoByID(uint16 proverID) external view returns (address prover, uint256 activeFromTimestamp);
+
     /// @notice Returns the list of the active provers.
     function getProvers() external view returns (address[] memory);
 }

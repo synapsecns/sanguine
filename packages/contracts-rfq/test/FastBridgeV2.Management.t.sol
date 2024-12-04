@@ -89,7 +89,23 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
 
     // ════════════════════════════════════════════════ ADD PROVER ═════════════════════════════════════════════════════
 
+    function checkProverInfo(address prover, uint16 proverID, uint256 activeFromTimestamp) public view {
+        (uint16 id, uint256 ts) = fastBridge.getProverInfo(prover);
+        assertEq(id, proverID);
+        assertEq(ts, activeFromTimestamp);
+        address p;
+        (p, ts) = fastBridge.getProverInfoByID(proverID);
+        if (proverID != 0) {
+            assertEq(p, prover);
+            assertEq(ts, activeFromTimestamp);
+        } else {
+            assertEq(p, address(0));
+            assertEq(ts, 0);
+        }
+    }
+
     function test_addProver() public {
+        uint256 proverAtime = block.timestamp;
         vm.expectEmit(address(fastBridge));
         emit ProverAdded(proverA);
         addProver(governor, proverA);
@@ -98,10 +114,15 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         address[] memory provers = fastBridge.getProvers();
         assertEq(provers.length, 1);
         assertEq(provers[0], proverA);
+        checkProverInfo(proverA, 1, proverAtime);
+        checkProverInfo(proverB, 0, 0);
     }
 
     function test_addProver_twice() public {
+        uint256 proverAtime = block.timestamp;
         test_addProver();
+        skip(1 hours);
+        uint256 proverBtime = block.timestamp;
         vm.expectEmit(address(fastBridge));
         emit ProverAdded(proverB);
         addProver(governor, proverB);
@@ -111,11 +132,15 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         assertEq(provers.length, 2);
         assertEq(provers[0], proverA);
         assertEq(provers[1], proverB);
+        checkProverInfo(proverA, 1, proverAtime);
+        checkProverInfo(proverB, 2, proverBtime);
     }
 
     function test_addProver_twice_afterRemoval() public {
         test_removeProver_twice();
         // Add B back
+        skip(1 hours);
+        uint256 proverBtime = block.timestamp;
         vm.expectEmit(address(fastBridge));
         emit ProverAdded(proverB);
         addProver(governor, proverB);
@@ -124,7 +149,11 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         address[] memory provers = fastBridge.getProvers();
         assertEq(provers.length, 1);
         assertEq(provers[0], proverB);
+        checkProverInfo(proverA, 1, 0);
+        checkProverInfo(proverB, 2, proverBtime);
         // Add A back
+        skip(1 hours);
+        uint256 proverAtime = block.timestamp;
         vm.expectEmit(address(fastBridge));
         emit ProverAdded(proverA);
         addProver(governor, proverA);
@@ -134,6 +163,8 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         assertEq(provers.length, 2);
         assertEq(provers[0], proverA);
         assertEq(provers[1], proverB);
+        checkProverInfo(proverA, 1, proverAtime);
+        checkProverInfo(proverB, 2, proverBtime);
     }
 
     function test_addProver_revertNotGovernor(address caller) public {
@@ -160,6 +191,7 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
 
     function test_removeProver() public {
         test_addProver_twice();
+        uint256 proverBtime = block.timestamp;
         vm.expectEmit(address(fastBridge));
         emit ProverRemoved(proverA);
         removeProver(governor, proverA);
@@ -168,6 +200,8 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         address[] memory provers = fastBridge.getProvers();
         assertEq(provers.length, 1);
         assertEq(provers[0], proverB);
+        checkProverInfo(proverA, 1, 0);
+        checkProverInfo(proverB, 2, proverBtime);
     }
 
     function test_removeProver_twice() public {
@@ -179,6 +213,8 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         assertEq(fastBridge.getActiveProverID(proverB), 0);
         address[] memory provers = fastBridge.getProvers();
         assertEq(provers.length, 0);
+        checkProverInfo(proverA, 1, 0);
+        checkProverInfo(proverB, 2, 0);
     }
 
     function test_removeProver_revertNotGovernor(address caller) public {

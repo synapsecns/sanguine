@@ -159,6 +159,19 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     }
 
     /// @inheritdoc IAdminV2
+    function getProverInfo(address prover) external view returns (uint16 proverID, uint256 activeFromTimestamp) {
+        proverID = _proverInfos[prover].id;
+        activeFromTimestamp = _proverInfos[prover].activeFromTimestamp;
+    }
+
+    /// @inheritdoc IAdminV2
+    function getProverInfoByID(uint16 proverID) external view returns (address prover, uint256 activeFromTimestamp) {
+        if (proverID == 0 || proverID > _allProvers.length) return (address(0), 0);
+        prover = _allProvers[proverID - 1];
+        activeFromTimestamp = _proverInfos[prover].activeFromTimestamp;
+    }
+
+    /// @inheritdoc IAdminV2
     function getActiveProverID(address prover) public view returns (uint16) {
         // Aggregate the read operations from the same storage slot.
         uint16 id = _proverInfos[prover].id;
