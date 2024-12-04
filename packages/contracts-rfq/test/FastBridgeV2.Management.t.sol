@@ -18,6 +18,7 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test, IAdminV2Errors {
     address public governorA = makeAddr("Governor A");
 
     event CancelDelayUpdated(uint256 oldCancelDelay, uint256 newCancelDelay);
+    event DeployBlockSet(uint256 blockNumber);
     event FeeRateUpdated(uint256 oldFeeRate, uint256 newFeeRate);
     event FeesSwept(address token, address recipient, uint256 amount);
 
@@ -46,6 +47,11 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test, IAdminV2Errors {
         fastBridge.setCancelDelay(newCancelDelay);
     }
 
+    function setDeployBlock(address caller, uint256 blockNumber) public {
+        vm.prank(caller);
+        fastBridge.setDeployBlock(blockNumber);
+    }
+
     function setProtocolFeeRate(address caller, uint256 newFeeRate) public {
         vm.prank(caller);
         fastBridge.setProtocolFeeRate(newFeeRate);
@@ -68,8 +74,10 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test, IAdminV2Errors {
         setGovernor(caller, governorA);
     }
 
-    function test_defaultCancelDelay() public view {
+    function test_defaultValues() public view {
         assertEq(fastBridge.cancelDelay(), DEFAULT_CANCEL_DELAY);
+        assertEq(fastBridge.deployBlock(), block.number);
+        assertEq(fastBridge.protocolFeeRate(), 0);
     }
 
     // ═════════════════════════════════════════════ SET CANCEL DELAY ══════════════════════════════════════════════════
@@ -98,6 +106,21 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test, IAdminV2Errors {
         vm.assume(caller != governor);
         expectUnauthorized(caller, fastBridge.GOVERNOR_ROLE());
         setCancelDelay(caller, 4 days);
+    }
+
+    // ═════════════════════════════════════════════ SET DEPLOY BLOCK ══════════════════════════════════════════════════
+
+    function test_setDeployBlock() public {
+        vm.expectEmit(address(fastBridge));
+        emit DeployBlockSet(123_456);
+        setDeployBlock(admin, 123_456);
+        assertEq(fastBridge.deployBlock(), 123_456);
+    }
+
+    function test_setDeployBlock_revertNotAdmin(address caller) public {
+        vm.assume(caller != admin);
+        expectUnauthorized(caller, fastBridge.DEFAULT_ADMIN_ROLE());
+        setDeployBlock(caller, 123_456);
     }
 
     // ═══════════════════════════════════════════ SET PROTOCOL FEE RATE ═══════════════════════════════════════════════
