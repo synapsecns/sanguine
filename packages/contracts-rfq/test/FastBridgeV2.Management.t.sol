@@ -13,6 +13,9 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
     uint256 public constant MIN_CANCEL_DELAY = 1 hours;
     uint256 public constant DEFAULT_CANCEL_DELAY = 1 days;
 
+    uint256 public constant MIN_PROVER_TIMEOUT = 1 minutes;
+    uint256 public constant DEFAULT_PROVER_TIMEOUT = 30 minutes;
+
     address public admin = makeAddr("Admin");
     address public governorA = makeAddr("Governor A");
 
@@ -23,6 +26,7 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
     event ProverRemoved(address prover);
 
     event CancelDelayUpdated(uint256 oldCancelDelay, uint256 newCancelDelay);
+    event ProverTimeoutUpdated(uint256 oldProverTimeout, uint256 newProverTimeout);
     event FeeRateUpdated(uint256 oldFeeRate, uint256 newFeeRate);
     event FeesSwept(address token, address recipient, uint256 amount);
 
@@ -61,6 +65,11 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         fastBridge.setCancelDelay(newCancelDelay);
     }
 
+    function setProverTimeout(address caller, uint256 newProverTimeout) public {
+        vm.prank(caller);
+        fastBridge.setProverTimeout(newProverTimeout);
+    }
+
     function setProtocolFeeRate(address caller, uint256 newFeeRate) public {
         vm.prank(caller);
         fastBridge.setProtocolFeeRate(newFeeRate);
@@ -83,8 +92,10 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         setGovernor(caller, governorA);
     }
 
-    function test_defaultCancelDelay() public view {
+    function test_defaultValues() public view {
         assertEq(fastBridge.cancelDelay(), DEFAULT_CANCEL_DELAY);
+        assertEq(fastBridge.proverTimeout(), DEFAULT_PROVER_TIMEOUT);
+        assertEq(fastBridge.protocolFeeRate(), 0);
     }
 
     // ════════════════════════════════════════════════ ADD PROVER ═════════════════════════════════════════════════════
@@ -260,6 +271,34 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         vm.assume(caller != governor);
         expectUnauthorized(caller, fastBridge.GOVERNOR_ROLE());
         setCancelDelay(caller, 4 days);
+    }
+
+    // ════════════════════════════════════════════ SET PROVER TIMEOUT ═════════════════════════════════════════════════
+
+    function test_setProverTimeout() public {
+        vm.expectEmit(address(fastBridge));
+        emit ProverTimeoutUpdated(DEFAULT_PROVER_TIMEOUT, 1 days);
+        setProverTimeout(governor, 1 days);
+        assertEq(fastBridge.proverTimeout(), 1 days);
+    }
+
+    function test_setProverTimeout_twice() public {
+        test_setProverTimeout();
+        vm.expectEmit(address(fastBridge));
+        emit ProverTimeoutUpdated(1 days, 2 days);
+        setProverTimeout(governor, 2 days);
+        assertEq(fastBridge.proverTimeout(), 2 days);
+    }
+
+    function test_setProverTimeout_revertBelowMin() public {
+        vm.expectRevert(ProverTimeoutBelowMin.selector);
+        setProverTimeout(governor, MIN_PROVER_TIMEOUT - 1);
+    }
+
+    function test_setProverTimeout_revertNotGovernor(address caller) public {
+        vm.assume(caller != governor);
+        expectUnauthorized(caller, fastBridge.GOVERNOR_ROLE());
+        setProverTimeout(caller, 1 days);
     }
 
     // ═══════════════════════════════════════════ SET PROTOCOL FEE RATE ═══════════════════════════════════════════════
