@@ -16,7 +16,7 @@ interface IFastBridgeV2 is IFastBridge {
         BridgeStatus status;
         uint32 destChainId;
         uint16 proverID;
-        uint56 proofBlockTimestamp;
+        uint40 proofBlockTimestamp;
         address proofRelayer;
     }
 

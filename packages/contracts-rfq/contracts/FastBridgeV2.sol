@@ -110,7 +110,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
         address disputedRelayer = $.proofRelayer;
         BridgeStatus status = $.status;
-        uint56 proofBlockTimestamp = $.proofBlockTimestamp;
+        uint40 proofBlockTimestamp = $.proofBlockTimestamp;
 
         // Can only dispute a RELAYER_PROVED transaction within the dispute period.
         if (status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
@@ -121,6 +121,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         // Update status to REQUESTED and delete the disputed proof details.
         // Note: these are storage writes.
         $.status = BridgeStatus.REQUESTED;
+        $.proverID = 0;
         $.proofRelayer = address(0);
         $.proofBlockTimestamp = 0;
 
@@ -357,7 +358,8 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         // Update status to RELAYER_PROVED and store the proof details.
         // Note: these are storage writes.
         $.status = BridgeStatus.RELAYER_PROVED;
-        $.proofBlockTimestamp = uint56(block.timestamp);
+        $.proverID = proverID;
+        $.proofBlockTimestamp = uint40(block.timestamp);
         $.proofRelayer = relayer;
 
         emit BridgeProofProvided(transactionId, relayer, destTxHash);
@@ -373,7 +375,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
         address proofRelayer = $.proofRelayer;
         BridgeStatus status = $.status;
-        uint56 proofBlockTimestamp = $.proofBlockTimestamp;
+        uint40 proofBlockTimestamp = $.proofBlockTimestamp;
 
         // Can only claim a RELAYER_PROVED transaction after the dispute period.
         if (status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
@@ -474,14 +476,14 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     }
 
     /// @notice Calculates the time elapsed since a proof was submitted.
-    /// @dev The proof.timestamp stores block timestamps as uint56 for gas optimization.
-    /// _timeSince(proof) handles timestamp rollover when block.timestamp > type(uint56).max but
-    /// proof.timestamp < type(uint56).max via an unchecked statement.
+    /// @dev The proof.timestamp stores block timestamps as uint40 for gas optimization.
+    /// _timeSince(proof) handles timestamp rollover when block.timestamp > type(uint40).max but
+    /// proof.timestamp < type(uint40).max via an unchecked statement.
     /// @param proofBlockTimestamp The block timestamp when the proof was submitted.
     /// @return delta The time elapsed since proof submission.
-    function _timeSince(uint56 proofBlockTimestamp) internal view returns (uint256 delta) {
+    function _timeSince(uint40 proofBlockTimestamp) internal view returns (uint256 delta) {
         unchecked {
-            delta = uint56(block.timestamp) - proofBlockTimestamp;
+            delta = uint40(block.timestamp) - proofBlockTimestamp;
         }
     }
 
