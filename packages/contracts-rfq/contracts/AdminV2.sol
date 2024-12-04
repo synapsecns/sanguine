@@ -57,6 +57,11 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     /// @notice The default cancel delay set during contract deployment.
     uint256 public constant DEFAULT_CANCEL_DELAY = 1 days;
 
+    /// @notice The minimum prover timeout that can be set by the governor.
+    uint256 public constant MIN_PROVER_TIMEOUT = 1 minutes;
+    /// @notice The default prover timeout set during contract deployment.
+    uint256 public constant DEFAULT_PROVER_TIMEOUT = 30 minutes;
+
     /// @notice The protocol fee rate taken on the origin amount deposited in the origin chain.
     uint256 public protocolFeeRate;
 
@@ -65,6 +70,9 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
 
     /// @notice The delay period after which a transaction can be permissionlessly cancelled.
     uint256 public cancelDelay;
+
+    /// @notice The timeout period that is used to temporarily disactivate a disputed prover.
+    uint256 public proverTimeout;
 
     /// @notice A list of all provers ever added to the contract. Can hold up to 2^16-1 provers.
     address[] private _allProvers;
@@ -78,6 +86,7 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     constructor(address defaultAdmin) {
         _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _setCancelDelay(DEFAULT_CANCEL_DELAY);
+        _setProverTimeout(DEFAULT_PROVER_TIMEOUT);
     }
 
     /// @inheritdoc IAdminV2
@@ -111,6 +120,11 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     /// @inheritdoc IAdminV2
     function setCancelDelay(uint256 newCancelDelay) external onlyRole(GOVERNOR_ROLE) {
         _setCancelDelay(newCancelDelay);
+    }
+
+    /// @inheritdoc IAdminV2
+    function setProverTimeout(uint256 newProverTimeout) external onlyRole(GOVERNOR_ROLE) {
+        _setProverTimeout(newProverTimeout);
     }
 
     /// @inheritdoc IAdminV2
@@ -188,5 +202,14 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
         uint256 oldCancelDelay = cancelDelay;
         cancelDelay = newCancelDelay;
         emit CancelDelayUpdated(oldCancelDelay, newCancelDelay);
+    }
+
+    /// @notice Internal logic to set the prover timeout. Security checks are performed outside of this function.
+    /// @dev This function is marked as private to prevent child contracts from calling it directly.
+    function _setProverTimeout(uint256 newProverTimeout) private {
+        if (newProverTimeout < MIN_PROVER_TIMEOUT) revert ProverTimeoutBelowMin();
+        uint256 oldProverTimeout = proverTimeout;
+        proverTimeout = newProverTimeout;
+        emit ProverTimeoutUpdated(oldProverTimeout, newProverTimeout);
     }
 }

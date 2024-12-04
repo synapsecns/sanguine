@@ -7,4 +7,5 @@ interface IAdminV2Errors {
     error ProverAlreadyActive();
     error ProverCapacityExceeded();
     error ProverNotActive();
+    error ProverTimeoutBelowMin();
 }
