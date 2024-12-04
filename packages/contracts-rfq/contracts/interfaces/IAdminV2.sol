@@ -11,10 +11,10 @@ interface IAdminV2 {
     event ProverRemoved(address prover);
     event ProverTimeoutApplied(address prover, uint256 inactiveUntilTimestamp);
 
-    /// @notice Allows the governor to add a new prover to the contract.
+    /// @notice Allows the role admin to add a new prover to the contract.
     function addProver(address prover) external;
 
-    /// @notice Allows the governor to remove a prover from the contract.
+    /// @notice Allows the role admin to remove a prover from the contract.
     function removeProver(address prover) external;
 
     /// @notice Allows the governor to set the cancel delay. The cancel delay is the time period after the transaction

@@ -119,7 +119,7 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         uint256 proverAtime = block.timestamp;
         vm.expectEmit(address(fastBridge));
         emit ProverAdded(proverA);
-        addProver(governor, proverA);
+        addProver(admin, proverA);
         assertEq(fastBridge.getActiveProverID(proverA), 1);
         assertEq(fastBridge.getActiveProverID(proverB), 0);
         address[] memory provers = fastBridge.getProvers();
@@ -136,7 +136,7 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         uint256 proverBtime = block.timestamp;
         vm.expectEmit(address(fastBridge));
         emit ProverAdded(proverB);
-        addProver(governor, proverB);
+        addProver(admin, proverB);
         assertEq(fastBridge.getActiveProverID(proverA), 1);
         assertEq(fastBridge.getActiveProverID(proverB), 2);
         address[] memory provers = fastBridge.getProvers();
@@ -154,7 +154,7 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         uint256 proverBtime = block.timestamp;
         vm.expectEmit(address(fastBridge));
         emit ProverAdded(proverB);
-        addProver(governor, proverB);
+        addProver(admin, proverB);
         assertEq(fastBridge.getActiveProverID(proverA), 0);
         assertEq(fastBridge.getActiveProverID(proverB), 2);
         address[] memory provers = fastBridge.getProvers();
@@ -167,7 +167,7 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         uint256 proverAtime = block.timestamp;
         vm.expectEmit(address(fastBridge));
         emit ProverAdded(proverA);
-        addProver(governor, proverA);
+        addProver(admin, proverA);
         assertEq(fastBridge.getActiveProverID(proverA), 1);
         assertEq(fastBridge.getActiveProverID(proverB), 2);
         provers = fastBridge.getProvers();
@@ -178,24 +178,24 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         checkProverInfo(proverB, 2, proverBtime);
     }
 
-    function test_addProver_revertNotGovernor(address caller) public {
-        vm.assume(caller != governor);
-        expectUnauthorized(caller, fastBridge.GOVERNOR_ROLE());
+    function test_addProver_revertNotAdmin(address caller) public {
+        vm.assume(caller != admin);
+        expectUnauthorized(caller, fastBridge.DEFAULT_ADMIN_ROLE());
         addProver(caller, proverA);
     }
 
     function test_addProver_revertAlreadyActive() public {
         test_addProver();
         vm.expectRevert(ProverAlreadyActive.selector);
-        addProver(governor, proverA);
+        addProver(admin, proverA);
     }
 
     function test_addProver_revertTooManyProvers() public {
         for (uint256 i = 0; i < type(uint16).max; i++) {
-            addProver(governor, address(uint160(i)));
+            addProver(admin, address(uint160(i)));
         }
         vm.expectRevert(ProverCapacityExceeded.selector);
-        addProver(governor, proverA);
+        addProver(admin, proverA);
     }
 
     // ═══════════════════════════════════════════════ REMOVE PROVER ═══════════════════════════════════════════════════
@@ -205,7 +205,7 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         uint256 proverBtime = block.timestamp;
         vm.expectEmit(address(fastBridge));
         emit ProverRemoved(proverA);
-        removeProver(governor, proverA);
+        removeProver(admin, proverA);
         assertEq(fastBridge.getActiveProverID(proverA), 0);
         assertEq(fastBridge.getActiveProverID(proverB), 2);
         address[] memory provers = fastBridge.getProvers();
@@ -219,7 +219,7 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         test_removeProver();
         vm.expectEmit(address(fastBridge));
         emit ProverRemoved(proverB);
-        removeProver(governor, proverB);
+        removeProver(admin, proverB);
         assertEq(fastBridge.getActiveProverID(proverA), 0);
         assertEq(fastBridge.getActiveProverID(proverB), 0);
         address[] memory provers = fastBridge.getProvers();
@@ -228,21 +228,21 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         checkProverInfo(proverB, 2, 0);
     }
 
-    function test_removeProver_revertNotGovernor(address caller) public {
-        vm.assume(caller != governor);
-        expectUnauthorized(caller, fastBridge.GOVERNOR_ROLE());
+    function test_removeProver_revertNotAdmin(address caller) public {
+        vm.assume(caller != admin);
+        expectUnauthorized(caller, fastBridge.DEFAULT_ADMIN_ROLE());
         removeProver(caller, proverA);
     }
 
     function test_removeProver_revertNeverBeenActive() public {
         vm.expectRevert(ProverNotActive.selector);
-        removeProver(governor, proverA);
+        removeProver(admin, proverA);
     }
 
     function test_removeProver_revertNotActive() public {
         test_removeProver();
         vm.expectRevert(ProverNotActive.selector);
-        removeProver(governor, proverA);
+        removeProver(admin, proverA);
     }
 
     // ═════════════════════════════════════════════ SET CANCEL DELAY ══════════════════════════════════════════════════

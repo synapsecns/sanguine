@@ -45,7 +45,6 @@ abstract contract TokenZapV1IntegrationTest is Test {
 
     function setUp() public virtual {
         fastBridge = new FastBridgeV2(address(this));
-        fastBridge.grantRole(fastBridge.GOVERNOR_ROLE(), address(this));
         fastBridge.addProver(relayer);
 
         srcToken = new MockERC20("SRC", 18);

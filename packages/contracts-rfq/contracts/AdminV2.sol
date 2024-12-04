@@ -90,7 +90,7 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     }
 
     /// @inheritdoc IAdminV2
-    function addProver(address prover) external onlyRole(GOVERNOR_ROLE) {
+    function addProver(address prover) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (getActiveProverID(prover) != 0) revert ProverAlreadyActive();
         ProverInfo storage $ = _proverInfos[prover];
         // Add the prover to the list of all provers and record its id (its position + 1),
@@ -109,7 +109,7 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     }
 
     /// @inheritdoc IAdminV2
-    function removeProver(address prover) external onlyRole(GOVERNOR_ROLE) {
+    function removeProver(address prover) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (getActiveProverID(prover) == 0) revert ProverNotActive();
         // We never remove provers from the list of all provers to preserve their IDs,
         // so we just need to reset the activeFrom timestamp.
