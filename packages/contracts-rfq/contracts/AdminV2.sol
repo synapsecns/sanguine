@@ -86,12 +86,30 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
 
     /// @inheritdoc IAdminV2
     function addProver(address prover) external onlyRole(GOVERNOR_ROLE) {
-        // TODO: implement
+        if (getActiveProverID(prover) != 0) revert ProverAlreadyActive();
+        ProverInfo storage $ = _proverInfos[prover];
+        // Add the prover to the list of all provers and record its id (its position + 1),
+        // if this has not already been done.
+        if ($.id == 0) {
+            _allProvers.push(prover);
+            uint256 id = _allProvers.length;
+            if (id > type(uint16).max) revert ProverCapacityExceeded();
+            // Note: this is a storage write.
+            $.id = uint16(id);
+        }
+        // Update the activeFrom timestamp.
+        // Note: this is a storage write.
+        $.activeFromTimestamp = uint240(block.timestamp);
+        emit ProverAdded(prover);
     }
 
     /// @inheritdoc IAdminV2
     function removeProver(address prover) external onlyRole(GOVERNOR_ROLE) {
-        // TODO: implement
+        if (getActiveProverID(prover) == 0) revert ProverNotActive();
+        // We never remove provers from the list of all provers to preserve their IDs,
+        // so we just need to reset the activeFrom timestamp.
+        _proverInfos[prover].activeFromTimestamp = 0;
+        emit ProverRemoved(prover);
     }
 
     /// @inheritdoc IAdminV2
@@ -124,13 +142,34 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     }
 
     /// @inheritdoc IAdminV2
-    function getActiveProverID(address prover) external view returns (uint16) {
-        // TODO: implement
+    function getProvers() external view returns (address[] memory provers) {
+        uint256 length = _allProvers.length;
+        // Calculate the number of active provers.
+        uint256 activeProversCount = 0;
+        for (uint256 i = 0; i < length; i++) {
+            if (getActiveProverID(_allProvers[i]) != 0) {
+                activeProversCount++;
+            }
+        }
+        // Do the second pass to populate the provers array.
+        provers = new address[](activeProversCount);
+        uint256 activeProversIndex = 0;
+        for (uint256 i = 0; i < length; i++) {
+            address prover = _allProvers[i];
+            if (getActiveProverID(prover) != 0) {
+                provers[activeProversIndex++] = prover;
+            }
+        }
     }
 
     /// @inheritdoc IAdminV2
-    function getProvers() external view returns (address[] memory) {
-        // TODO: implement
+    function getActiveProverID(address prover) public view returns (uint16) {
+        // Aggregate the read operations from the same storage slot.
+        uint16 id = _proverInfos[prover].id;
+        uint256 activeFromTimestamp = _proverInfos[prover].activeFromTimestamp;
+        // Return zero if the prover has never been added or is no longer active.
+        if (activeFromTimestamp == 0 || activeFromTimestamp > block.timestamp) return 0;
+        return id;
     }
 
     /// @notice Internal logic to set the cancel delay. Security checks are performed outside of this function.
