@@ -195,6 +195,22 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
         return id;
     }
 
+    /// @notice Internal logic to apply the prover timeout to a given prover. Will make the prover inactive
+    /// for `proverTimeout` seconds. No-op if the prover ID does not exist or prover is already inactive.
+    function _applyTimeoutPenalty(uint16 proverID) internal {
+        // Check that the prover exists.
+        if (proverID == 0 || proverID > _allProvers.length) return;
+        address prover = _allProvers[proverID - 1];
+        ProverInfo storage $ = _proverInfos[prover];
+        // No-op if the prover is already inactive.
+        if ($.activeFromTimestamp == 0) return;
+        uint256 newActiveFromTimestamp = block.timestamp + proverTimeout;
+        // Update the activeFrom timestamp.
+        // Note: this is a storage write.
+        $.activeFromTimestamp = uint240(newActiveFromTimestamp);
+        emit ProverTimeoutApplied(prover, newActiveFromTimestamp);
+    }
+
     /// @notice Internal logic to set the cancel delay. Security checks are performed outside of this function.
     /// @dev This function is marked as private to prevent child contracts from calling it directly.
     function _setCancelDelay(uint256 newCancelDelay) private {

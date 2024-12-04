@@ -108,6 +108,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     function dispute(bytes32 transactionId) external onlyRole(GUARD_ROLE) {
         // Aggregate the read operations from the same storage slot.
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
+        uint16 proverID = $.proverID;
         address disputedRelayer = $.proofRelayer;
         BridgeStatus status = $.status;
         uint40 proofBlockTimestamp = $.proofBlockTimestamp;
@@ -117,6 +118,10 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         if (_timeSince(proofBlockTimestamp) > DISPUTE_PERIOD) {
             revert DisputePeriodPassed();
         }
+
+        // Apply the timeout penalty to the prover that submitted the proof.
+        // Note: this is a no-op if the prover has already been removed.
+        _applyTimeoutPenalty(proverID);
 
         // Update status to REQUESTED and delete the disputed proof details.
         // Note: these are storage writes.
