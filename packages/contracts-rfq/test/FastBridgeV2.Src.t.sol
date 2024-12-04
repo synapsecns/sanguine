@@ -32,6 +32,8 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
 
     event BridgeQuoteDetails(bytes32 indexed transactionId, bytes quoteId);
 
+    event ProverTimeoutApplied(address prover, uint256 inactiveUntilTimestamp);
+
     address public claimTo = makeAddr("Claim To");
 
     function expectBridgeRequested(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx, bytes32 txId) public {
@@ -90,6 +92,11 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
             token: bridgeParams.originToken,
             amount: bridgeParams.originAmount
         });
+    }
+
+    function expectProverTimeoutApplied(address prover) public {
+        vm.expectEmit(address(fastBridge));
+        emit ProverTimeoutApplied({prover: prover, inactiveUntilTimestamp: block.timestamp + PROVER_TIMEOUT});
     }
 
     // ══════════════════════════════════════════════════ BRIDGE ═══════════════════════════════════════════════════════
@@ -365,6 +372,18 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         prove({caller: caller, bridgeTx: tokenTx, destTxHash: hex"01"});
     }
 
+    function test_prove_revert_proverTimeout() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
+        dispute({caller: guard, txId: txId});
+        vm.expectRevert(ProverNotActive.selector);
+        prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"02"});
+        skip(PROVER_TIMEOUT - 1);
+        vm.expectRevert(ProverNotActive.selector);
+        prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"02"});
+    }
+
     // ════════════════════════════════════════ PROVE OTHER RELAYER ════════════════════════════════════════════
 
     function test_proveOther_token() public {
@@ -412,6 +431,18 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
     }
 
+    function test_proveOther_afterDispute() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        prove({caller: relayerA, relayer: relayerB, transactionId: txId, destTxHash: hex"01"});
+        dispute({caller: guard, txId: txId});
+        expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"02"});
+        prove({caller: relayerB, relayer: relayerA, transactionId: txId, destTxHash: hex"02"});
+        checkStatusAndProofAfterProve(txId, 2, relayerA);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+    }
+
     function test_proveOther_reProveAfterDispute() public {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         bytes32 txId = getTxId(ethTx);
@@ -421,11 +452,13 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         checkStatusAndProofAfterProve(txId, 2, relayerA);
         expectBridgeProofDisputed(txId, relayerA);
         dispute(guard, txId);
+        skip(PROVER_TIMEOUT);
         expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"02"});
         prove({caller: relayerB, transactionId: txId, destTxHash: hex"02", relayer: relayerA});
         checkStatusAndProofAfterProve(txId, 2, relayerA);
         expectBridgeProofDisputed(txId, relayerA);
         dispute(guard, txId);
+        skip(PROVER_TIMEOUT);
         expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"03"});
         prove({caller: relayerB, transactionId: txId, destTxHash: hex"03", relayer: relayerA});
         checkStatusAndProofAfterProve(txId, 2, relayerA);
@@ -478,6 +511,18 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         vm.expectRevert(ProverNotActive.selector);
         prove({caller: caller, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+    }
+
+    function test_proveOther_revert_proverTimeout() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        prove({caller: relayerA, relayer: relayerB, transactionId: txId, destTxHash: hex"01"});
+        dispute({caller: guard, txId: txId});
+        vm.expectRevert(ProverNotActive.selector);
+        prove({caller: relayerA, relayer: relayerB, transactionId: txId, destTxHash: hex"02"});
+        skip(PROVER_TIMEOUT - 1);
+        vm.expectRevert(ProverNotActive.selector);
+        prove({caller: relayerA, relayer: relayerB, transactionId: txId, destTxHash: hex"02"});
     }
 
     // ═══════════════════════════════════════════════════ CLAIM ═══════════════════════════════════════════════════════
@@ -730,15 +775,59 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         checkStatusAndProofAfterBridge(txId);
     }
 
+    function checkProver(address prover, uint16 expectedProverID, uint256 expectedActiveFromTimestamp) public view {
+        (uint16 proverID, uint256 activeFromTimestamp) = fastBridge.getProverInfo(prover);
+        assertEq(proverID, expectedProverID);
+        assertEq(activeFromTimestamp, expectedActiveFromTimestamp);
+        address p;
+        (p, activeFromTimestamp) = fastBridge.getProverInfoByID(expectedProverID);
+        assertEq(p, prover);
+        assertEq(activeFromTimestamp, expectedActiveFromTimestamp);
+    }
+
     function test_dispute_token() public {
         bytes32 txId = getTxId(tokenTx);
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
+        expectProverTimeoutApplied({prover: relayerA});
         expectBridgeProofDisputed({txId: txId, relayer: relayerA});
         dispute({caller: guard, txId: txId});
         checkStatusAndProofAfterDispute(txId);
         assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
         assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+        // Check disputed prover
+        assertEq(fastBridge.getActiveProverID(relayerA), 0);
+        checkProver(relayerA, 1, block.timestamp + PROVER_TIMEOUT);
+    }
+
+    function test_dispute_token_provedOther() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        prove({caller: relayerA, relayer: relayerB, transactionId: txId, destTxHash: hex"01"});
+        expectProverTimeoutApplied({prover: relayerA});
+        expectBridgeProofDisputed({txId: txId, relayer: relayerB});
+        dispute({caller: guard, txId: txId});
+        checkStatusAndProofAfterDispute(txId);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+        // Check disputed prover
+        assertEq(fastBridge.getActiveProverID(relayerA), 0);
+        checkProver(relayerA, 1, block.timestamp + PROVER_TIMEOUT);
+    }
+
+    function test_dispute_token_proverAlreadyRemoved() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        prove({caller: relayerA, relayer: relayerB, transactionId: txId, destTxHash: hex"01"});
+        fastBridge.removeProver(relayerA);
+        expectBridgeProofDisputed({txId: txId, relayer: relayerB});
+        dispute({caller: guard, txId: txId});
+        checkStatusAndProofAfterDispute(txId);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+        // Check disputed prover
+        assertEq(fastBridge.getActiveProverID(relayerA), 0);
+        checkProver(relayerA, 1, 0);
     }
 
     function test_dispute_token_justBeforeDeadline() public {
@@ -746,36 +835,79 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
         skip(CLAIM_DELAY);
+        expectProverTimeoutApplied({prover: relayerA});
         expectBridgeProofDisputed({txId: txId, relayer: relayerA});
         dispute({caller: guard, txId: txId});
         checkStatusAndProofAfterDispute(txId);
         assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
         assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+        // Check disputed prover
+        assertEq(fastBridge.getActiveProverID(relayerA), 0);
+        checkProver(relayerA, 1, block.timestamp + PROVER_TIMEOUT);
     }
 
     function test_dispute_eth() public {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         bytes32 txId = getTxId(ethTx);
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
-        prove({caller: relayerA, bridgeTx: ethTx, destTxHash: hex"01"});
+        prove({caller: relayerB, bridgeTx: ethTx, destTxHash: hex"01"});
+        expectProverTimeoutApplied({prover: relayerB});
+        expectBridgeProofDisputed({txId: txId, relayer: relayerB});
+        dispute({caller: guard, txId: txId});
+        checkStatusAndProofAfterDispute(txId);
+        assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
+        assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH + ethParams.originAmount);
+        // Check disputed prover
+        assertEq(fastBridge.getActiveProverID(relayerB), 0);
+        checkProver(relayerB, 2, block.timestamp + PROVER_TIMEOUT);
+    }
+
+    function test_dispute_eth_provedOther() public {
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        bytes32 txId = getTxId(ethTx);
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+        prove({caller: relayerB, relayer: relayerA, transactionId: txId, destTxHash: hex"01"});
+        expectProverTimeoutApplied({prover: relayerB});
         expectBridgeProofDisputed({txId: txId, relayer: relayerA});
         dispute({caller: guard, txId: txId});
         checkStatusAndProofAfterDispute(txId);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH + ethParams.originAmount);
+        // Check disputed prover
+        assertEq(fastBridge.getActiveProverID(relayerB), 0);
+        checkProver(relayerB, 2, block.timestamp + PROVER_TIMEOUT);
+    }
+
+    function test_dispute_eth_proverAlreadyRemoved() public {
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        bytes32 txId = getTxId(ethTx);
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+        prove({caller: relayerB, relayer: relayerA, transactionId: txId, destTxHash: hex"01"});
+        fastBridge.removeProver(relayerB);
+        dispute({caller: guard, txId: txId});
+        checkStatusAndProofAfterDispute(txId);
+        assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
+        assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH + ethParams.originAmount);
+        // Check disputed prover
+        assertEq(fastBridge.getActiveProverID(relayerB), 0);
+        checkProver(relayerB, 2, 0);
     }
 
     function test_dispute_eth_justBeforeDeadline() public {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         bytes32 txId = getTxId(ethTx);
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
-        prove({caller: relayerA, bridgeTx: ethTx, destTxHash: hex"01"});
+        prove({caller: relayerB, bridgeTx: ethTx, destTxHash: hex"01"});
         skip(CLAIM_DELAY);
-        expectBridgeProofDisputed({txId: txId, relayer: relayerA});
+        expectProverTimeoutApplied({prover: relayerB});
+        expectBridgeProofDisputed({txId: txId, relayer: relayerB});
         dispute({caller: guard, txId: txId});
         checkStatusAndProofAfterDispute(txId);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH + ethParams.originAmount);
+        // Check disputed prover
+        assertEq(fastBridge.getActiveProverID(relayerB), 0);
+        checkProver(relayerB, 2, block.timestamp + PROVER_TIMEOUT);
     }
 
     function test_dispute_revert_afterDeadline() public {

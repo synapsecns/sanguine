@@ -9,6 +9,7 @@ interface IAdminV2 {
 
     event ProverAdded(address prover);
     event ProverRemoved(address prover);
+    event ProverTimeoutApplied(address prover, uint256 inactiveUntilTimestamp);
 
     /// @notice Allows the governor to add a new prover to the contract.
     function addProver(address prover) external;
