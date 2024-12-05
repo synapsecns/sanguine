@@ -65,3 +65,15 @@ export const FAST_BRIDGE_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
   FAST_BRIDGE_ROUTER_ADDRESS,
   FAST_BRIDGE_ROUTER_EXCEPTION_MAP
 )
+
+/**
+ * FastBridgeV2 contract address for all chains except ones from FAST_BRIDGE_V2_EXCEPTION_MAP.
+ * TODO: this is a staging FastBridgeV2 deployment, update to the production deployment when ready.
+ */
+const FAST_BRIDGE_V2_ADDRESS = '0xEb1eb846342274d5d652e068DD189EfCEd256332'
+const FAST_BRIDGE_V2_EXCEPTION_MAP: AddressMap = {}
+export const FAST_BRIDGE_V2_ADDRESS_MAP: AddressMap = generateAddressMap(
+  RFQ_SUPPORTED_CHAIN_IDS,
+  FAST_BRIDGE_V2_ADDRESS,
+  FAST_BRIDGE_V2_EXCEPTION_MAP
+)
