@@ -16,7 +16,7 @@
 # ignore ifacemaker files
 *_generated.go linguist-generated
 contrib/opbot/generated/* linguist-generated
-*.contractinfo.json linguist-generated=true
+*.contractinfo.json linguist-generated
 
 
 # svg should be treated as a binary https://git.io/JE2VK
@@ -26,4 +26,4 @@ contrib/opbot/generated/* linguist-generated
 .vscode/*.json linguist-language=jsonc
 
 # foundry deploy data
-packages/**/deployments/*.json linguist-vendored
+packages/**/deployments/*.json linguist-generated
