@@ -8,7 +8,7 @@ import {
 } from "../../contracts/router/SynapseIntentRouter.sol";
 import {TokenZapV1} from "../../contracts/zaps/TokenZapV1.sol";
 
-import {MockERC20} from "../MockERC20.sol";
+import {MockERC20} from "../mocks/MockERC20.sol";
 import {PoolMock} from "../mocks/PoolMock.sol";
 import {SimpleVaultMock} from "../mocks/SimpleVaultMock.sol";
 import {WETHMock} from "../mocks/WETHMock.sol";
