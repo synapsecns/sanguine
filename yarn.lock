@@ -9006,9 +9006,9 @@
     ts-jest "^29.0.5"
     yargs "^17.6.2"
 
-"@synapsecns/sdk-router@github:synapsecns/sanguine#staging/bridge-sdk-api":
+"@synapsecns/sdk-router@synapsecns/sanguine#staging/bridge-sdk-api":
   version "1.0.0"
-  resolved "https://codeload.github.com/synapsecns/sanguine/tar.gz/5288bd751797865478cd9b45e8646fb89f8a6a6e"
+  resolved "https://codeload.github.com/synapsecns/sanguine/tar.gz/2df2e967c269b8dbfe4553927373ac0a7024b44c"
   dependencies:
     "@changesets/cli" "2.22.0"
     eslint-plugin-jsx "^0.1.0"
