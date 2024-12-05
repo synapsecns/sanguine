@@ -6,7 +6,7 @@ import {BridgeTransactionV2Lib} from "../../contracts/libs/BridgeTransactionV2.s
 import {ZapDataV1} from "../../contracts/libs/ZapDataV1.sol";
 import {TokenZapV1} from "../../contracts/zaps/TokenZapV1.sol";
 
-import {MockERC20} from "../MockERC20.sol";
+import {MockERC20} from "../mocks/MockERC20.sol";
 import {VaultManyArguments} from "../mocks/VaultManyArguments.sol";
 
 import {Test} from "forge-std/Test.sol";
