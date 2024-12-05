@@ -6,7 +6,7 @@
     "node": ">=18.17.0"
   },
   "scripts": {
-    "build": "ln -sfn ../../packages/sdk-router ../../node_modules/@synapsecns/sdk-router && tsc",
+    "build": "ln -sfn ../../../sdk-router node_modules/@synapsecns/sdk-router && tsc",
     "build:go": " ",
     "build:slither": " ",
     "dev": "NODE_ENV=development nodemon --watch src --exec ts-node src/app.ts",
