@@ -27,7 +27,6 @@ class SynapseSDK {
    * @param {Provider[]} providers - The Ethereum providers for the respective chains.
    */
   constructor(chainIds: number[], providers: Provider[]) {
-    console.log('GM - this is a test build')
     invariant(
       chainIds.length === providers.length,
       `Amount of chains and providers does not equal`
