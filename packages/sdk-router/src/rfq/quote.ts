@@ -1,5 +1,4 @@
 import { BigNumber } from 'ethers'
-import { Zero } from '@ethersproject/constants'
 
 import { Ticker } from './ticker'
 
@@ -68,22 +67,4 @@ export const marshallFastBridgeQuote = (
     relayer_addr: quote.relayerAddr,
     updated_at: new Date(quote.updatedAt).toISOString(),
   }
-}
-
-export const applyQuote = (
-  quote: FastBridgeQuote,
-  originAmount: BigNumber
-): BigNumber => {
-  // Check that the origin amount covers the fixed fee
-  if (originAmount.lte(quote.fixedFee)) {
-    return Zero
-  }
-  // Check that the Relayer is able to process the origin amount (post fixed fee)
-  const amountAfterFee = originAmount.sub(quote.fixedFee)
-  if (amountAfterFee.gt(quote.maxOriginAmount)) {
-    return Zero
-  }
-  // After these checks: 0 < amountAfterFee <= quote.maxOriginAmount
-  // Solve (amountAfterFee -> ?) using (maxOriginAmount -> destAmount) pricing ratio
-  return amountAfterFee.mul(quote.destAmount).div(quote.maxOriginAmount)
 }

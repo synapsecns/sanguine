@@ -6,6 +6,7 @@ import { BigintIsh } from '../constants'
 import { BridgeQuote, BridgeRoute, FeeConfig } from './types'
 import { SynapseModule } from './synapseModule'
 import { applyOptionalDeadline } from '../utils/deadlines'
+import { isSameAddress } from '../utils/addressUtils'
 import { Query } from './query'
 
 export abstract class SynapseModuleSet {
@@ -70,10 +71,7 @@ export abstract class SynapseModuleSet {
     moduleAddress: string
   ): SynapseModule | undefined {
     const module = this.getModule(chainId)
-    if (module?.address.toLowerCase() === moduleAddress.toLowerCase()) {
-      return module
-    }
-    return undefined
+    return isSameAddress(module?.address, moduleAddress) ? module : undefined
   }
 
   /**

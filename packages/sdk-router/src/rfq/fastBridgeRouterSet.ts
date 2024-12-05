@@ -20,9 +20,9 @@ import {
 import { FastBridgeRouter } from './fastBridgeRouter'
 import { ChainProvider } from '../router'
 import { ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
-import { FastBridgeQuote, applyQuote } from './quote'
-import { marshallTicker } from './ticker'
-import { getAllQuotes } from './api'
+import { isSameAddress } from '../utils/addressUtils'
+import { marshallTicker, Ticker } from './ticker'
+import { getAllQuotes, getBestRelayerQuote } from './api'
 
 export class FastBridgeRouterSet extends SynapseModuleSet {
   static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
@@ -100,45 +100,48 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     if (!this.getModule(originChainId) || !this.getModule(destChainId)) {
       return []
     }
-    // Get all quotes that result in the final token
-    const allQuotes: FastBridgeQuote[] = await this.getQuotes(
+    // Get all tickers that can be used to fulfill the tokenIn -> tokenOut intent via RFQ
+    const tickers = await this.getAllTickers(
       originChainId,
       destChainId,
       tokenOut
     )
-    // Get queries for swaps on the origin chain into the "RFQ-supported token"
-    const filteredQuotes = await this.filterOriginQuotes(
+    // Get queries for swaps on the origin chain from tokenIn into the "RFQ-supported token"
+    const filteredTickers = await this.filterTickersWithPossibleSwap(
       originChainId,
       tokenIn,
       amountIn,
-      allQuotes
+      tickers
     )
     const protocolFeeRate = await this.getFastBridgeRouter(
       originChainId
     ).getProtocolFeeRate()
-    return filteredQuotes
-      .map(({ quote, originQuery }) => ({
-        quote,
+    const quotes = await Promise.all(
+      filteredTickers.map(async ({ ticker, originQuery }) => ({
+        ticker,
         originQuery,
-        // Apply quote to the proceeds of the origin swap with protocol fee applied
-        // TODO: handle optional gas airdrop pricing
-        destAmountOut: applyQuote(
-          quote,
-          this.applyProtocolFeeRate(originQuery.minAmountOut, protocolFeeRate)
+        quote: await getBestRelayerQuote(
+          ticker,
+          // Get the quote for the proceeds of the origin swap with protocol fee applied
+          this.applyProtocolFeeRate(originQuery.minAmountOut, protocolFeeRate),
+          originUserAddress
+          // TODO: pass MAX_QUOTE_AGE here once supported by the API
         ),
       }))
-      .filter(({ destAmountOut }) => destAmountOut.gt(0))
-      .map(({ quote, originQuery, destAmountOut }) => ({
+    )
+    return quotes
+      .filter(({ quote }) => quote.destAmount.gt(0))
+      .map(({ ticker, originQuery, quote }) => ({
         originChainId,
         destChainId,
         bridgeToken: {
-          symbol: marshallTicker(quote.ticker),
-          token: quote.ticker.destToken.token,
+          symbol: marshallTicker(ticker),
+          token: ticker.destToken.token,
         },
         originQuery,
         destQuery: FastBridgeRouterSet.createRFQDestQuery(
           tokenOut,
-          destAmountOut,
+          quote.destAmount,
           originUserAddress
         ),
         bridgeModuleName: this.bridgeModuleName,
@@ -251,66 +254,76 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   }
 
   /**
-   * Filters the list of quotes to only include those that can be used for given amount of input token.
-   * For every filtered quote, the origin query is returned with the information for tokenIn -> RFQ token swaps.
+   * Filters the list of tickers to only include those that can be used for given amount of input token.
+   * For every filtered ticker, the origin query is returned with the information for tokenIn -> ticker swaps.
    */
-  private async filterOriginQuotes(
+  private async filterTickersWithPossibleSwap(
     originChainId: number,
     tokenIn: string,
     amountIn: BigintIsh,
-    allQuotes: FastBridgeQuote[]
-  ): Promise<{ quote: FastBridgeQuote; originQuery: Query }[]> {
+    tickers: Ticker[]
+  ): Promise<{ ticker: Ticker; originQuery: Query }[]> {
     // Get queries for swaps on the origin chain into the "RFQ-supported token"
     const originQueries = await this.getFastBridgeRouter(
       originChainId
     ).getOriginAmountOut(
       tokenIn,
-      allQuotes.map((quote) => quote.ticker.originToken.token),
+      tickers.map((ticker) => ticker.originToken.token),
       amountIn
     )
-    // Note: allQuotes.length === originQueries.length
-    // Zip the quotes and queries together, filter out "no path found" queries
-    return allQuotes
-      .map((quote, index) => ({
-        quote,
+    // Note: tickers.length === originQueries.length
+    // Zip the tickers and queries together, filter out "no path found" queries
+    return tickers
+      .map((ticker, index) => ({
+        ticker,
         originQuery: originQueries[index],
       }))
       .filter(({ originQuery }) => originQuery.minAmountOut.gt(0))
   }
 
   /**
-   * Get the list of quotes between two chains for a given final token.
+   * Get all unique tickers for a given origin chain and a destination token. In other words,
+   * this is the list of all origin tokens that can be used to create a quote for a
+   * swap to the given destination token, without duplicates.
    *
    * @param originChainId - The ID of the origin chain.
    * @param destChainId - The ID of the destination chain.
    * @param tokenOut - The final token of the cross-chain swap.
-   * @returns A promise that resolves to the list of supported tickers.
+   * @returns A promise that resolves to the list of tickers.
    */
-  private async getQuotes(
+  private async getAllTickers(
     originChainId: number,
     destChainId: number,
     tokenOut: string
-  ): Promise<FastBridgeQuote[]> {
+  ): Promise<Ticker[]> {
     const allQuotes = await getAllQuotes()
     const originFB = await this.getFastBridgeAddress(originChainId)
     const destFB = await this.getFastBridgeAddress(destChainId)
+    // First, we filter out quotes for other chainIDs, bridges or destination token.
+    // Then, we filter out quotes that are too old.
+    // Finally, we remove the duplicates of the origin token.
     return allQuotes
-      .filter(
-        (quote) =>
+      .filter((quote) => {
+        const areSameChainsAndToken =
           quote.ticker.originToken.chainId === originChainId &&
           quote.ticker.destToken.chainId === destChainId &&
-          quote.ticker.destToken.token &&
-          quote.ticker.destToken.token.toLowerCase() === tokenOut.toLowerCase()
-      )
-      .filter(
-        (quote) =>
-          quote.originFastBridge.toLowerCase() === originFB.toLowerCase() &&
-          quote.destFastBridge.toLowerCase() === destFB.toLowerCase()
-      )
-      .filter((quote) => {
+          isSameAddress(quote.originFastBridge, originFB) &&
+          isSameAddress(quote.destFastBridge, destFB) &&
+          isSameAddress(quote.ticker.destToken.token, tokenOut)
+        // TODO: don't filter by age here
         const age = Date.now() - quote.updatedAt
-        return 0 <= age && age < FastBridgeRouterSet.MAX_QUOTE_AGE_MILLISECONDS
+        const isValidAge =
+          0 <= age && age < FastBridgeRouterSet.MAX_QUOTE_AGE_MILLISECONDS
+        return areSameChainsAndToken && isValidAge
       })
+      .map((quote) => quote.ticker)
+      .filter(
+        (ticker, index, self) =>
+          index ===
+          self.findIndex((t) =>
+            isSameAddress(t.originToken.token, ticker.originToken.token)
+          )
+      )
   }
 
   public static createRFQDestQuery(
