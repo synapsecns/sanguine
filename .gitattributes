@@ -24,3 +24,6 @@ contrib/opbot/generated/* linguist-generated
 *.sol linguist-language=Solidity
 
 .vscode/*.json linguist-language=jsonc
+
+# foundry deploy data
+packages/**/deployments/*.json linguist-vendored
