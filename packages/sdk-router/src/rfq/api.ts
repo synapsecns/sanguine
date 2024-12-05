@@ -8,10 +8,6 @@ import {
 } from './quote'
 
 const API_URL = 'https://rfq-api.omnirpc.io'
-
-/**
- * The timeout duration for API requests in milliseconds. If a request takes longer than this, it will be aborted.
- */
 const API_TIMEOUT = 2000
 
 /**
