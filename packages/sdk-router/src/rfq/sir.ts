@@ -3,14 +3,22 @@ import invariant from 'tiny-invariant'
 import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
 import { BigNumber } from '@ethersproject/bignumber'
+import { Zero } from '@ethersproject/constants'
 
 import fastBridgeV2Abi from '../abi/FastBridgeV2.json'
 import synapseIntentRouterAbi from '../abi/SynapseIntentRouter.json'
 import { FastBridgeV2 as FastBridgeV2Contract } from '../typechain/FastBridgeV2'
-import { SynapseIntentRouter as SIRContract } from '../typechain/SynapseIntentRouter'
+import {
+  SynapseIntentRouter as SIRContract,
+  ISynapseIntentRouter,
+} from '../typechain/SynapseIntentRouter'
+import { BigintIsh } from '../constants'
 import { SynapseModule, Query } from '../module'
 import { getMatchingTxLog } from '../utils/logs'
+import { adjustValueIfNative } from '../utils/handleNativeToken'
 import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
+
+export type StepParams = ISynapseIntentRouter.StepParamsStruct
 
 export class SynapseIntentRouter implements SynapseModule {
   static fastBridgeV2Interface = new Interface(fastBridgeV2Abi)
@@ -22,6 +30,7 @@ export class SynapseIntentRouter implements SynapseModule {
 
   private readonly fastBridgeV2Contract: FastBridgeV2Contract
   private readonly sirContract: SIRContract
+  private readonly tokenZapAddress: string
 
   // All possible events emitted by the FastBridgeV2 contract in the origin transaction (in alphabetical order)
   private readonly originEvents = ['BridgeRequested']
@@ -29,24 +38,28 @@ export class SynapseIntentRouter implements SynapseModule {
   constructor(
     chainId: number,
     provider: Provider,
-    address: string,
-    fastBridgeV2Address: string
+    fastBridgeV2Address: string,
+    sirAddress: string,
+    tokenZapAddress: string
   ) {
     invariant(chainId, 'CHAIN_ID_UNDEFINED')
     invariant(provider, 'PROVIDER_UNDEFINED')
-    invariant(address, 'ADDRESS_UNDEFINED')
+    invariant(fastBridgeV2Address, 'ADDRESS_UNDEFINED')
+    invariant(sirAddress, 'ADDRESS_UNDEFINED')
+    invariant(tokenZapAddress, 'ADDRESS_UNDEFINED')
     invariant(SynapseIntentRouter.fastBridgeV2Interface, 'INTERFACE_UNDEFINED')
     invariant(SynapseIntentRouter.sirInterface, 'INTERFACE_UNDEFINED')
     this.chainId = chainId
     this.provider = provider
-    this.address = address
+    this.address = sirAddress
+    this.tokenZapAddress = tokenZapAddress
     this.fastBridgeV2Contract = new Contract(
       fastBridgeV2Address,
       fastBridgeV2Abi,
       provider
     ) as FastBridgeV2Contract
     this.sirContract = new Contract(
-      address,
+      sirAddress,
       SynapseIntentRouter.sirInterface,
       provider
     ) as SIRContract
@@ -63,7 +76,32 @@ export class SynapseIntentRouter implements SynapseModule {
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {
-    // TODO
+    // Merge the preparation and final steps
+    const steps: StepParams[] = [
+      ...this.getPreparationSteps(token, amount, originQuery),
+      this.getFinalStep(
+        to,
+        destChainId,
+        originQuery.tokenOut,
+        originQuery.minAmountOut,
+        destQuery
+      ),
+    ]
+    // Get data for the complete intent transaction
+    const populatedTransaction =
+      await this.sirContract.populateTransaction.completeIntentWithBalanceChecks(
+        this.tokenZapAddress,
+        amount,
+        originQuery.minAmountOut,
+        originQuery.deadline,
+        steps
+      )
+    // Adjust the tx.value if the initial token is native
+    return adjustValueIfNative(
+      populatedTransaction,
+      token,
+      BigNumber.from(amount)
+    )
   }
 
   /**
@@ -99,5 +137,32 @@ export class SynapseIntentRouter implements SynapseModule {
   @RouterCache(CACHE_TIMES.TEN_MINUTES)
   public async getProtocolFeeRate(): Promise<BigNumber> {
     return this.fastBridgeV2Contract.protocolFeeRate()
+  }
+
+  // ═════════════════════════════════════════════════ SIR TOOLS ═════════════════════════════════════════════════════
+
+  private getPreparationSteps(
+    tokenIn: string,
+    amountIn: BigintIsh,
+    originQuery: Query
+  ): StepParams[] {
+    // TODO
+    return []
+  }
+
+  private getFinalStep(
+    to: string,
+    destChainId: number,
+    bridgedToken: string,
+    bridgedAmount: BigintIsh,
+    destQuery: Query
+  ): StepParams {
+    // TODO
+    return {
+      token: bridgedToken,
+      amount: bridgedAmount,
+      msgValue: Zero,
+      zapData: '0x',
+    }
   }
 }

@@ -77,3 +77,15 @@ export const FAST_BRIDGE_V2_ADDRESS_MAP: AddressMap = generateAddressMap(
   FAST_BRIDGE_V2_ADDRESS,
   FAST_BRIDGE_V2_EXCEPTION_MAP
 )
+
+/**
+ * TokenZapV1 contract address for all chains except ones from TOKEN_ZAP_V1_EXCEPTION_MAP.
+ * TODO: this is a staging TokenZapV1 deployment, update to the production deployment when ready.
+ */
+const TOKEN_ZAP_V1_ADDRESS = '0xcae5baD754dC99cDA1d58415C5eeeb92e1279F69'
+const TOKEN_ZAP_V1_EXCEPTION_MAP: AddressMap = {}
+export const TOKEN_ZAP_V1_ADDRESS_MAP: AddressMap = generateAddressMap(
+  RFQ_SUPPORTED_CHAIN_IDS,
+  TOKEN_ZAP_V1_ADDRESS,
+  TOKEN_ZAP_V1_EXCEPTION_MAP
+)
