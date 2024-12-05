@@ -6,7 +6,7 @@ import {IFastBridgeV2} from "../../contracts/interfaces/IFastBridgeV2.sol";
 import {IMulticallTarget} from "../../contracts/interfaces/IMulticallTarget.sol";
 import {DisputePeriodNotPassed} from "../../contracts/libs/Errors.sol";
 
-import {MockERC20} from "../MockERC20.sol";
+import {MockERC20} from "../mocks/MockERC20.sol";
 
 import {Test} from "forge-std/Test.sol";
 
