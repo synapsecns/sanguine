@@ -57,10 +57,10 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     /// @notice The default cancel delay set during contract deployment.
     uint256 public constant DEFAULT_CANCEL_DELAY = 1 days;
 
-    /// @notice The minimum prover timeout that can be set by the governor.
-    uint256 public constant MIN_PROVER_TIMEOUT = 1 minutes;
-    /// @notice The default prover timeout set during contract deployment.
-    uint256 public constant DEFAULT_PROVER_TIMEOUT = 30 minutes;
+    /// @notice The minimum dispute penalty time that can be set by the governor.
+    uint256 public constant MIN_DISPUTE_PENALTY_TIME = 1 minutes;
+    /// @notice The default dispute penalty time set during contract deployment.
+    uint256 public constant DEFAULT_DISPUTE_PENALTY_TIME = 30 minutes;
 
     /// @notice The protocol fee rate taken on the origin amount deposited in the origin chain.
     uint256 public protocolFeeRate;
@@ -72,7 +72,7 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     uint256 public cancelDelay;
 
     /// @notice The timeout period that is used to temporarily disactivate a disputed prover.
-    uint256 public proverTimeout;
+    uint256 public disputePenaltyTime;
 
     /// @notice A list of all provers ever added to the contract. Can hold up to 2^16-1 provers.
     address[] private _allProvers;
@@ -86,7 +86,7 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     constructor(address defaultAdmin) {
         _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _setCancelDelay(DEFAULT_CANCEL_DELAY);
-        _setProverTimeout(DEFAULT_PROVER_TIMEOUT);
+        _setDisputePenaltyTime(DEFAULT_DISPUTE_PENALTY_TIME);
     }
 
     /// @inheritdoc IAdminV2
@@ -123,8 +123,8 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     }
 
     /// @inheritdoc IAdminV2
-    function setProverTimeout(uint256 newProverTimeout) external onlyRole(GOVERNOR_ROLE) {
-        _setProverTimeout(newProverTimeout);
+    function setDisputePenaltyTime(uint256 newDisputePenaltyTime) external onlyRole(GOVERNOR_ROLE) {
+        _setDisputePenaltyTime(newDisputePenaltyTime);
     }
 
     /// @inheritdoc IAdminV2
@@ -195,20 +195,20 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
         return id;
     }
 
-    /// @notice Internal logic to apply the prover timeout to a given prover. Will make the prover inactive
-    /// for `proverTimeout` seconds. No-op if the prover ID does not exist or prover is already inactive.
-    function _applyTimeoutPenalty(uint16 proverID) internal {
+    /// @notice Internal logic to apply the dispute penalty time to a given prover. Will make the prover inactive
+    /// for `disputePenaltyTime` seconds. No-op if the prover ID does not exist or prover is already inactive.
+    function _applyDisputePenaltyTime(uint16 proverID) internal {
         // Check that the prover exists.
         if (proverID == 0 || proverID > _allProvers.length) return;
         address prover = _allProvers[proverID - 1];
         ProverInfo storage $ = _proverInfos[prover];
         // No-op if the prover is already inactive.
         if ($.activeFromTimestamp == 0) return;
-        uint256 newActiveFromTimestamp = block.timestamp + proverTimeout;
+        uint256 newActiveFromTimestamp = block.timestamp + disputePenaltyTime;
         // Update the activeFrom timestamp.
         // Note: this is a storage write.
         $.activeFromTimestamp = uint240(newActiveFromTimestamp);
-        emit ProverTimeoutApplied(prover, newActiveFromTimestamp);
+        emit DisputePenaltyTimeApplied(prover, newActiveFromTimestamp);
     }
 
     /// @notice Internal logic to set the cancel delay. Security checks are performed outside of this function.
@@ -220,12 +220,12 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
         emit CancelDelayUpdated(oldCancelDelay, newCancelDelay);
     }
 
-    /// @notice Internal logic to set the prover timeout. Security checks are performed outside of this function.
+    /// @notice Internal logic to set the dispute penalty time. Security checks are performed outside of this function.
     /// @dev This function is marked as private to prevent child contracts from calling it directly.
-    function _setProverTimeout(uint256 newProverTimeout) private {
-        if (newProverTimeout < MIN_PROVER_TIMEOUT) revert ProverTimeoutBelowMin();
-        uint256 oldProverTimeout = proverTimeout;
-        proverTimeout = newProverTimeout;
-        emit ProverTimeoutUpdated(oldProverTimeout, newProverTimeout);
+    function _setDisputePenaltyTime(uint256 newDisputePenaltyTime) private {
+        if (newDisputePenaltyTime < MIN_DISPUTE_PENALTY_TIME) revert DisputePenaltyTimeBelowMin();
+        uint256 oldDisputePenaltyTime = disputePenaltyTime;
+        disputePenaltyTime = newDisputePenaltyTime;
+        emit DisputePenaltyTimeUpdated(oldDisputePenaltyTime, newDisputePenaltyTime);
     }
 }

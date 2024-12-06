@@ -121,7 +121,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
 
         // Apply the timeout penalty to the prover that submitted the proof.
         // Note: this is a no-op if the prover has already been removed.
-        _applyTimeoutPenalty(proverID);
+        _applyDisputePenaltyTime(proverID);
 
         // Update status to REQUESTED and delete the disputed proof details.
         // Note: these are storage writes.
