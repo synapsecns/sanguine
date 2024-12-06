@@ -344,7 +344,8 @@
     "Telegram": "Telegram",
     "Functions": "Fonksiyonlar",
     "Developers": "Geliştiriciler",
-    "Support": "Destek"
+    "Support": "Destek",
+    "$SYN": "$SYN"
   },
   "ReturnToMonke": {
     "Choose Synapse": "Synapse'i Seç",

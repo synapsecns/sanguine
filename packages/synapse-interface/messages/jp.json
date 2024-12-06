@@ -344,7 +344,8 @@
     "Telegram": "Telegram",
     "Functions": "機能",
     "Developers": "開発者",
-    "Support": "サポート"
+    "Support": "サポート",
+    "$SYN": "$SYN"
   },
   "ReturnToMonke": {
     "Choose Synapse": "Synapseを選択",

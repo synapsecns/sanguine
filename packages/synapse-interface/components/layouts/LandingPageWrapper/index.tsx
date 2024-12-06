@@ -211,9 +211,9 @@ function MoreInfoButtons() {
         description="See preliminary analytics of the bridge"
       />
       <MoreInfoItem
-        to={NAVIGATION.Contracts.path}
-        labelText={NAVIGATION.Contracts.text}
-        description="View contract related information such as contract addresses"
+        to={NAVIGATION.SYN.path}
+        labelText={NAVIGATION.SYN.text}
+        description="View $SYN related information such as contract addresses"
       />
     </>
   )

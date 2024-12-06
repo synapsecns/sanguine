@@ -344,7 +344,8 @@
     "Telegram": "Telegram",
     "Functions": "Functions",
     "Developers": "Developers",
-    "Support": "Support"
+    "Support": "Support",
+    "$SYN": "$SYN"
   },
   "ReturnToMonke": {
     "Choose Synapse": "Choose Synapse",

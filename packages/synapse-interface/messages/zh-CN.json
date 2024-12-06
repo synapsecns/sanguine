@@ -344,7 +344,8 @@
     "Telegram": "Telegram",
     "Functions": "功能",
     "Developers": "开发者",
-    "Support": "支持"
+    "Support": "支持",
+    "$SYN": "$SYN"
   },
   "ReturnToMonke": {
     "Choose Synapse": "选择Synapse",
