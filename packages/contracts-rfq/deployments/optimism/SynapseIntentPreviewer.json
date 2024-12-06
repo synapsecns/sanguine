@@ -1,0 +1,114 @@
+{
+  "address": "0xE184826D4aBC2798134abE7e2Fd72156827Fc7EA",
+  "constructorArgs": "0x",
+  "receipt": {
+    "hash": "0x57d5d445810008804844d57d54ab99ab5229e87a206996f9cafc67494bf7fd77",
+    "blockNumber": 128944965
+  },
+  "abi": [
+    {
+      "type": "function",
+      "name": "NATIVE_GAS_TOKEN",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "previewIntent",
+      "inputs": [
+        {
+          "name": "swapQuoter",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "tokenIn",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "tokenOut",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amountIn",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "amountOut",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "steps",
+          "type": "tuple[]",
+          "internalType": "struct ISynapseIntentRouter.StepParams[]",
+          "components": [
+            {
+              "name": "token",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "amount",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "msgValue",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "zapData",
+              "type": "bytes",
+              "internalType": "bytes"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "error",
+      "name": "SIP__PoolTokenMismatch",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "SIP__PoolZeroAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "SIP__RawParamsEmpty",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "SIP__TokenNotNative",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ZapDataV1__InvalidEncoding",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ZapDataV1__TargetZeroAddress",
+      "inputs": []
+    }
+  ]
+}
