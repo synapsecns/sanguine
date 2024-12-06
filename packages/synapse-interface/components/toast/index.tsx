@@ -2,7 +2,7 @@ import React from 'react'
 import toast, { Toaster, ToastBar } from 'react-hot-toast'
 import ToastContent from './ToastContent'
 
-export default function CustomToaster() {
+const CustomToaster: React.FC = () => {
   return (
     <Toaster
       position="bottom-right" // top-right
@@ -29,3 +29,5 @@ export default function CustomToaster() {
     </Toaster>
   )
 }
+
+export default CustomToaster
