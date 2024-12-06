@@ -65,3 +65,69 @@ export const FAST_BRIDGE_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
   FAST_BRIDGE_ROUTER_ADDRESS,
   FAST_BRIDGE_ROUTER_EXCEPTION_MAP
 )
+
+/**
+ * FastBridgeV2 contract address for all chains except ones from FAST_BRIDGE_V2_EXCEPTION_MAP.
+ * TODO: this is a staging FastBridgeV2 deployment, update to the production deployment when ready.
+ */
+const FAST_BRIDGE_V2_ADDRESS = '0xEb1eb846342274d5d652e068DD189EfCEd256332'
+const FAST_BRIDGE_V2_EXCEPTION_MAP: AddressMap = {}
+export const FAST_BRIDGE_V2_ADDRESS_MAP: AddressMap = generateAddressMap(
+  RFQ_SUPPORTED_CHAIN_IDS,
+  FAST_BRIDGE_V2_ADDRESS,
+  FAST_BRIDGE_V2_EXCEPTION_MAP
+)
+
+/**
+ * TokenZapV1 contract address for all chains except ones from TOKEN_ZAP_V1_EXCEPTION_MAP.
+ * TODO: this is a staging TokenZapV1 deployment, update to the production deployment when ready.
+ */
+const TOKEN_ZAP_V1_ADDRESS = '0xcae5baD754dC99cDA1d58415C5eeeb92e1279F69'
+const TOKEN_ZAP_V1_EXCEPTION_MAP: AddressMap = {}
+export const TOKEN_ZAP_V1_ADDRESS_MAP: AddressMap = generateAddressMap(
+  RFQ_SUPPORTED_CHAIN_IDS,
+  TOKEN_ZAP_V1_ADDRESS,
+  TOKEN_ZAP_V1_EXCEPTION_MAP
+)
+
+/**
+ * SynapseIntentRouter contract address for all chains except ones from SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP.
+ * TODO: this is a staging SynapseIntentRouter deployment, update to the production deployment when ready.
+ */
+const SYNAPSE_INTENT_ROUTER_ADDRESS =
+  '0x57203c65DeA2ded4EE4E303a9494bee04df030BF'
+const SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP: AddressMap = {}
+export const SYNAPSE_INTENT_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
+  RFQ_SUPPORTED_CHAIN_IDS,
+  SYNAPSE_INTENT_ROUTER_ADDRESS,
+  SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP
+)
+
+/**
+ * SynapseIntentPreviewer contract address for all chains except ones from SYNAPSE_INTENT_PREVIEWER_EXCEPTION_MAP.
+ * TODO: this is a staging SynapseIntentPreviewer deployment, update to the production deployment when ready.
+ */
+const SYNAPSE_INTENT_PREVIEWER_ADDRESS =
+  '0xE184826D4aBC2798134abE7e2Fd72156827Fc7EA'
+const SYNAPSE_INTENT_PREVIEWER_EXCEPTION_MAP: AddressMap = {}
+export const SYNAPSE_INTENT_PREVIEWER_ADDRESS_MAP: AddressMap =
+  generateAddressMap(
+    RFQ_SUPPORTED_CHAIN_IDS,
+    SYNAPSE_INTENT_PREVIEWER_ADDRESS,
+    SYNAPSE_INTENT_PREVIEWER_EXCEPTION_MAP
+  )
+
+/**
+ * SwapQuoterV2 contract address on Ethereum. Addresses for other chains are defined in the
+ * SWAP_QUOTER_V2_EXCEPTION_MAP.
+ */
+const SWAP_QUOTER_V2_ADDRESS = '0x5682dC851C33adb48F6958a963A5d3Aa31F6f184'
+const SWAP_QUOTER_V2_EXCEPTION_MAP: AddressMap = {
+  [SupportedChainId.ARBITRUM]: '0xE402cC7826dD835FCe5E3cFb61D56703fEbc2642',
+  [SupportedChainId.OPTIMISM]: '0xd6Bdb96b356F4F51bf491297DF03F25DCd0cBf6D',
+}
+export const SWAP_QUOTER_V2_ADDRESS_MAP: AddressMap = generateAddressMap(
+  SUPPORTED_CHAIN_IDS,
+  SWAP_QUOTER_V2_ADDRESS,
+  SWAP_QUOTER_V2_EXCEPTION_MAP
+)
