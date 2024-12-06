@@ -52,6 +52,7 @@ function App({ Component, pageProps }: AppProps) {
         timeZone="UTC"
         messages={pageProps.messages}
       >
+        {/* @ts-ignore */}
         <WagmiProvider config={wagmiConfig}>
           <QueryClientProvider client={queryClient}>
             <RainbowKitProvider
