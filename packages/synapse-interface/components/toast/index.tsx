@@ -1,13 +1,15 @@
-import toast, { Toaster, ToastBar } from 'react-hot-toast'
+import React from 'react'
+import { Toaster as HotToaster, ToastBar } from 'react-hot-toast'
 import ToastContent from './ToastContent'
 
-export default function CustomToaster() {
+const Toaster = HotToaster as React.FC<any>
+
+export default function CustomToaster(): React.ReactElement {
   return (
     <Toaster
-      position="bottom-right" // top-right
+      position="bottom-right"
       containerClassName="pt-8"
       toastOptions={{
-        // Define default options
         style: {
           background: 'transparent',
           padding: '0px',
@@ -26,5 +28,5 @@ export default function CustomToaster() {
         </ToastBar>
       )}
     </Toaster>
-  ) as React.ReactElement
+  )
 }
