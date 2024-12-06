@@ -26,5 +26,5 @@ export default function CustomToaster() {
         </ToastBar>
       )}
     </Toaster>
-  )
+  ) as React.ReactElement
 }
