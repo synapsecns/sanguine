@@ -1,8 +1,9 @@
 import React from 'react'
-import { Toaster as HotToaster, ToastBar } from 'react-hot-toast'
+import { Toaster as HotToaster, ToastBar as HotToastBar } from 'react-hot-toast'
 import ToastContent from './ToastContent'
 
 const Toaster = HotToaster as React.FC<any>
+const ToastBar = HotToastBar as React.FC<any>
 
 export default function CustomToaster(): React.ReactElement {
   return (
