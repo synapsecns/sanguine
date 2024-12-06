@@ -89,3 +89,30 @@ export const TOKEN_ZAP_V1_ADDRESS_MAP: AddressMap = generateAddressMap(
   TOKEN_ZAP_V1_ADDRESS,
   TOKEN_ZAP_V1_EXCEPTION_MAP
 )
+
+/**
+ * SynapseIntentRouter contract address for all chains except ones from SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP.
+ * TODO: this is a staging SynapseIntentRouter deployment, update to the production deployment when ready.
+ */
+const SYNAPSE_INTENT_ROUTER_ADDRESS =
+  '0x57203c65DeA2ded4EE4E303a9494bee04df030BF'
+const SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP: AddressMap = {}
+export const SYNAPSE_INTENT_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
+  RFQ_SUPPORTED_CHAIN_IDS,
+  SYNAPSE_INTENT_ROUTER_ADDRESS,
+  SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP
+)
+
+/**
+ * SynapseIntentPreviewer contract address for all chains except ones from SYNAPSE_INTENT_PREVIEWER_EXCEPTION_MAP.
+ * TODO: this is a staging SynapseIntentPreviewer deployment, update to the production deployment when ready.
+ */
+const SYNAPSE_INTENT_PREVIEWER_ADDRESS =
+  '0xE184826D4aBC2798134abE7e2Fd72156827Fc7EA'
+const SYNAPSE_INTENT_PREVIEWER_EXCEPTION_MAP: AddressMap = {}
+export const SYNAPSE_INTENT_PREVIEWER_ADDRESS_MAP: AddressMap =
+  generateAddressMap(
+    RFQ_SUPPORTED_CHAIN_IDS,
+    SYNAPSE_INTENT_PREVIEWER_ADDRESS,
+    SYNAPSE_INTENT_PREVIEWER_EXCEPTION_MAP
+  )
