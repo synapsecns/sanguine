@@ -4,6 +4,9 @@ pragma solidity 0.8.24;
 import {ZapDataV1} from "../../contracts/libs/ZapDataV1.sol";
 
 contract ZapDataV1Harness {
+    uint16 public constant VERSION = ZapDataV1.VERSION;
+    uint16 public constant AMOUNT_NOT_PRESENT = ZapDataV1.AMOUNT_NOT_PRESENT;
+
     function validateV1(bytes calldata encodedZapData) public pure {
         ZapDataV1.validateV1(encodedZapData);
     }
