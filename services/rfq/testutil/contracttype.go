@@ -6,6 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/bridgetransactionv2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/dai"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemockv2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
@@ -51,7 +52,9 @@ type contractTypeImpl int
 
 const (
 	// FastBridgeType is the type of the fast bridge contract.
-	FastBridgeType contractTypeImpl = iota + 1 // FastBridge
+	FastBridgeType contractTypeImpl = iota + 1 // FastBridgeV1
+	// FastBridgeV2Type is the type of the fast bridge contract.
+	FastBridgeV2Type // FastBridgeV2
 	// MockERC20Type is a mock erc20 contract.
 	MockERC20Type // MockERC20
 	// FastBridgeMockType is a mock contract for testing fast bridge interactions.
@@ -97,6 +100,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
 	case FastBridgeType:
 		return fastbridge.Contracts["solidity/FastBridge.sol:FastBridge"]
+	case FastBridgeV2Type:
+		return fastbridgev2.Contracts["solidity/FastBridgeV2.sol:FastBridgeV2"]
 	case MockERC20Type:
 		return mockerc20.Contracts["solidity/MockERC20.sol:MockERC20"]
 	case FastBridgeMockType:

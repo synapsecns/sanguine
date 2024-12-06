@@ -89,7 +89,7 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 	nonce, err := c.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		transactor.Value = core.CopyBigInt(gasAmount)
 
-		tx, err = c.Bridge.Relay0(transactor, request.RawRequest, c.submitter.Address())
+		tx, err = c.Bridge.RelayV2(transactor, request.RawRequest, c.submitter.Address())
 		if err != nil {
 			return nil, fmt.Errorf("could not relay: %w", err)
 		}

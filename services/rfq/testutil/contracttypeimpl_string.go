@@ -22,7 +22,6 @@ func _() {
 const _contractTypeImpl_name = "FastBridgeMockERC20FastBridgeMockRecipientMockBridgeTransactionV2WETH9USDTUSDCDAI"
 
 var _contractTypeImpl_index = [...]uint8{0, 10, 19, 33, 46, 65, 70, 74, 78, 81}
-
 func (i contractTypeImpl) String() string {
 	i -= 1
 	if i < 0 || i >= contractTypeImpl(len(_contractTypeImpl_index)-1) {

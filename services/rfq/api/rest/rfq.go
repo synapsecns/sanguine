@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/rfq/api/config"
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"go.opentelemetry.io/otel/attribute"
@@ -225,6 +226,17 @@ func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.P
 	if err != nil {
 		return nil, fmt.Errorf("failed to get quotes: %w", err)
 	}
+
+	quote, err := getPassiveQuote(r.cfg, quotes, request)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get passive quote: %w", err)
+	}
+
+	return quote, nil
+}
+
+func getPassiveQuote(cfg config.Config, quotes []*db.Quote, request *model.PutRFQRequest) (*model.QuoteData, error) {
+	quotes = filterQuoteAge(cfg, quotes)
 
 	originAmount, ok := new(big.Int).SetString(request.Data.OriginAmountExact, 10)
 	if !ok {

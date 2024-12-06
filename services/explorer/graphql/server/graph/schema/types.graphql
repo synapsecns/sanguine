@@ -9,6 +9,7 @@ type BridgeTransaction {
   kappa:        String
   pending:      Boolean
   swapSuccess:  Boolean
+  bridgeModule: String
 }
 """
 PartialInfo is a transaction that occurred on one chain.
@@ -43,6 +44,7 @@ type BridgeWatcherTx {
   type:  BridgeTxType
   kappa:        String
   kappaStatus: KappaStatus
+  bridgeModule: String
 }
 """
 DateResult is a given statistic for a given date.

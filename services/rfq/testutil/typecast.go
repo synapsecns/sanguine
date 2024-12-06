@@ -18,10 +18,17 @@ import (
 )
 
 // GetFastBridge gets the pre-created fast bridge contract.
-func (d *DeployManager) GetFastBridge(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *fastbridgev2.FastBridgeV2Ref) {
+func (d *DeployManager) GetFastBridge(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *fastbridge.FastBridgeRef) {
 	d.T().Helper()
 
-	return manager.GetContract[*fastbridgev2.FastBridgeV2Ref](ctx, d.T(), d, backend, FastBridgeType)
+	return manager.GetContract[*fastbridge.FastBridgeRef](ctx, d.T(), d, backend, FastBridgeType)
+}
+
+// GetFastBridgeV2 gets the pre-created fast bridge v2 contract.
+func (d *DeployManager) GetFastBridgeV2(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *fastbridgev2.FastBridgeV2Ref) {
+	d.T().Helper()
+
+	return manager.GetContract[*fastbridgev2.FastBridgeV2Ref](ctx, d.T(), d, backend, FastBridgeV2Type)
 }
 
 // GetMockERC20 gets a mock erc20 deployed on a chain.

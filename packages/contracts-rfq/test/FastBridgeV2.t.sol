@@ -8,14 +8,14 @@ import {IFastBridge} from "../contracts/interfaces/IFastBridge.sol";
 // solhint-disable-next-line no-unused-import
 import {IFastBridgeV2} from "../contracts/interfaces/IFastBridgeV2.sol";
 
-import {IFastBridgeV2Errors} from "../contracts/interfaces/IFastBridgeV2Errors.sol";
 import {FastBridgeV2} from "../contracts/FastBridgeV2.sol";
+import {IFastBridgeV2Errors} from "../contracts/interfaces/IFastBridgeV2Errors.sol";
 
 import {MockERC20} from "./MockERC20.sol";
 
 import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
 import {Test} from "forge-std/Test.sol";
-import {stdStorage, StdStorage} from "forge-std/Test.sol";
+import {StdStorage, stdStorage} from "forge-std/Test.sol";
 
 // solhint-disable no-empty-blocks, max-states-count, ordering
 abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
@@ -36,7 +36,7 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
     address public userA = makeAddr("User A");
     address public userB = makeAddr("User B");
     address public governor = makeAddr("Governor");
-    address public refunder = makeAddr("Refunder");
+    address public canceler = makeAddr("Canceler");
 
     IFastBridgeV2.BridgeTransactionV2 internal tokenTx;
     IFastBridgeV2.BridgeTransactionV2 internal ethTx;

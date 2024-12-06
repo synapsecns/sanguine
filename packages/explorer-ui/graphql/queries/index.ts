@@ -211,6 +211,7 @@ export const DAILY_STATISTICS_BY_CHAIN = gql`
       blast
       scroll
       linea
+      worldchain
       total
     }
   }

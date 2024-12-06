@@ -3,6 +3,68 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.14.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.4...@synapsecns/contracts-rfq@0.14.5) (2024-11-25)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.14.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.3...@synapsecns/contracts-rfq@0.14.4) (2024-11-24)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.14.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.2...@synapsecns/contracts-rfq@0.14.3) (2024-11-23)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.14.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.1...@synapsecns/contracts-rfq@0.14.2) (2024-11-22)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.14.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.0...@synapsecns/contracts-rfq@0.14.1) (2024-11-22)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+# [0.14.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.13.0...@synapsecns/contracts-rfq@0.14.0) (2024-11-22)
+
+
+### Features
+
+* **contracts-rfq:** Token Zap [SLT-389] ([#3352](https://github.com/synapsecns/sanguine/issues/3352)) ([743e859](https://github.com/synapsecns/sanguine/commit/743e859e3274ed449c6410441bd664ff2aaf9740)), closes [#3382](https://github.com/synapsecns/sanguine/issues/3382)
+
+
+
+
+
+# [0.13.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.12.1...@synapsecns/contracts-rfq@0.13.0) (2024-11-18)
+
+
+### Features
+
+* **contracts-rfq:** rework permisionless cancellation [SLT-489] ([#3382](https://github.com/synapsecns/sanguine/issues/3382)) ([7932f41](https://github.com/synapsecns/sanguine/commit/7932f416341a227db295c33f232efde89fd2c50c))
+
+
+
+
+
 ## [0.12.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.12.0...@synapsecns/contracts-rfq@0.12.1) (2024-11-11)
 
 **Note:** Version bump only for package @synapsecns/contracts-rfq

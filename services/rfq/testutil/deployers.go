@@ -115,6 +115,27 @@ func NewFastBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend ba
 // Deploy deploys the fast bridge contract.
 func (f FastBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return f.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return fastbridge.DeployFastBridge(transactOps, backend, transactOps.From)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return fastbridge.NewFastBridgeRef(address, backend)
+	})
+}
+
+// FastBridgeV2Deployer deplyos a fast bridge contract for testing.
+type FastBridgeV2Deployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewFastBridgeV2Deployer deploys a fast bridge contract.
+func NewFastBridgeV2Deployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return FastBridgeV2Deployer{
+		deployer.NewSimpleDeployer(registry, backend, FastBridgeV2Type),
+	}
+}
+
+// Deploy deploys the fast bridge contract.
+func (f FastBridgeV2Deployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return f.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return fastbridgev2.DeployFastBridgeV2(transactOps, backend, transactOps.From)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return fastbridgev2.NewFastBridgeV2Ref(address, backend)

@@ -311,6 +311,8 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	// Submit a user quote request with zap data
 	userQuoteReq.Data.ZapData = "abc"
 	userQuoteReq.Data.ZapNative = "100"
+	// Submit the user quote request with a large origin amount, expect no quotes will be found
+	userQuoteReq.Data.OriginAmountExact = big.NewInt(1e18).String()
 	userQuoteResp, err = userClient.PutRFQRequest(c.GetTestContext(), userQuoteReq)
 	c.Require().NoError(err)
 

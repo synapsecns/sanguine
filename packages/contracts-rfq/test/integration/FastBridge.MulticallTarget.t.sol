@@ -3,7 +3,7 @@ pragma solidity 0.8.20;
 
 import {FastBridge} from "../../contracts/FastBridge.sol";
 
-import {MulticallTargetIntegrationTest, IFastBridge} from "./MulticallTarget.t.sol";
+import {IFastBridge, MulticallTargetIntegrationTest} from "./MulticallTarget.t.sol";
 
 contract FastBridgeMulticallTargetTest is MulticallTargetIntegrationTest {
     function deployAndConfigureFastBridge() public override returns (address) {
