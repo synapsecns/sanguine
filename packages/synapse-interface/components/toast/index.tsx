@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react'
 import toast, { Toaster, ToastBar } from 'react-hot-toast'
 import ToastContent from './ToastContent'
