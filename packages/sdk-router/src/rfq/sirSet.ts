@@ -32,7 +32,7 @@ import { BridgeParamsV2, encodeSavedBridgeParams } from './paramsV2'
 export class SynapseIntentRouterSet extends SynapseModuleSet {
   static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
 
-  public readonly bridgeModuleName = 'SynapseIntentNetwork'
+  public readonly bridgeModuleName = 'SynapseIntents'
   public readonly allEvents = ['BridgeRequestedEvent', 'BridgeRelayedEvent']
 
   public routers: {
