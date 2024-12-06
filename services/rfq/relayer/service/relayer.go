@@ -128,7 +128,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 	}
 
 	priceFetcher := pricer.NewCoingeckoPriceFetcher(cfg.GetHTTPTimeout())
-	fp := pricer.NewFeePricer(cfg, omniClient, priceFetcher, metricHandler)
+	fp := pricer.NewFeePricer(cfg, omniClient, priceFetcher, metricHandler, sg.Address())
 
 	apiClient, err := rfqAPIClient.NewAuthenticatedClient(metricHandler, cfg.GetRFQAPIURL(), sg)
 	if err != nil {

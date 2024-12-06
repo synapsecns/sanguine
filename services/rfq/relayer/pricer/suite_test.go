@@ -42,6 +42,7 @@ func (c *PricerSuite) SetupTest() {
 		},
 		Chains: map[int]relconfig.ChainConfig{
 			int(c.origin): {
+				RFQAddress: "0x0000000000000000000000000000000000000000",
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
 						Address:  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
@@ -57,6 +58,7 @@ func (c *PricerSuite) SetupTest() {
 				NativeToken: "ETH",
 			},
 			int(c.destination): {
+				RFQAddress: "0x0000000000000000000000000000000000000000",
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
 						Address:  "0x0b2c639c533813f4aa9d7837caf62653d097ff85",

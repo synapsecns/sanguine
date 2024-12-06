@@ -5,6 +5,9 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	goHTTP "net/http"
+	"strings"
+
 	"github.com/ImVexed/fasturl"
 	"github.com/goccy/go-json"
 	"github.com/jftuga/ellipsis"
@@ -14,8 +17,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/exp/slices"
-	goHTTP "net/http"
-	"strings"
 )
 
 type rawResponse struct {
@@ -56,7 +57,7 @@ func (f *Forwarder) newRawResponse(ctx context.Context, body []byte, url string)
 
 		standardizedResponse, err = standardizeResponse(ctx, &f.rpcRequest[0], rpcMessage)
 		if err != nil {
-			return nil, fmt.Errorf("could not standardize response: %w", err)
+			return nil, fmt.Errorf("could not standardize response from body %s: %w", ellipsis.Shorten(string(body), 200), err)
 		}
 	}
 

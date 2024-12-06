@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/bridgetransactionv2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/dai"
@@ -61,6 +62,8 @@ const (
 	FastBridgeMockType // FastBridgeMock
 	// RecipientMockType is a mock contract for testing fast bridge interactions.
 	RecipientMockType // RecipientMock
+	// BridgeTransactionV2Type is a bridge transaction contract for testing fast bridge interactions.
+	BridgeTransactionV2Type // BridgeTransactionV2
 	// WETH9Type  is the weth 9 contract.
 	WETH9Type // WETH9
 	// USDTType is the tether type.
@@ -105,6 +108,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return fastbridgemockv2.Contracts["solidity/FastBridgeMock.sol:FastBridgeMock"]
 	case RecipientMockType:
 		return recipientmock.Contracts["solidity/RecipientMock.sol:RecipientMock"]
+	case BridgeTransactionV2Type:
+		return bridgetransactionv2.Contracts["solidity/BridgeTransactionV2Harness.sol:BridgeTransactionV2Harness"]
 	case WETH9Type:
 		return weth9.Contracts["/solidity/WETH9.sol:WETH9"]
 	case USDTType:

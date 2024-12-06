@@ -21,6 +21,7 @@ import (
 
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -233,7 +234,7 @@ func (m *Manager) IsProfitable(parentCtx context.Context, quote reldb.QuoteReque
 	if err != nil {
 		return false, fmt.Errorf("error getting dest token ID: %w", err)
 	}
-	fee, err := m.feePricer.GetTotalFee(ctx, quote.Transaction.OriginChainId, quote.Transaction.DestChainId, destTokenID, false)
+	fee, err := m.feePricer.GetTotalFee(ctx, quote.Transaction.OriginChainId, quote.Transaction.DestChainId, destTokenID, false, &quote)
 	if err != nil {
 		return false, fmt.Errorf("error getting total fee: %w", err)
 	}
@@ -337,7 +338,7 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 
 // getActiveRFQ handles an active RFQ message.
 //
-//nolint:nilnil
+//nolint:nilnil,cyclop
 func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMessage) (resp *model.ActiveRFQMessage, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "generateActiveRFQ", trace.WithAttributes(
 		attribute.String("op", msg.Op),
@@ -364,6 +365,7 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 	}
 	span.SetAttributes(attribute.String("request_id", rfqRequest.RequestID))
 
+	// TODO: incorporate the user call data into the quote request and set the Transaction here
 	originAmountExact, ok := new(big.Int).SetString(rfqRequest.Data.OriginAmountExact, 10)
 	if !ok {
 		return nil, fmt.Errorf("invalid rfq request deposit amount: %s", rfqRequest.Data.OriginAmountExact)
@@ -378,11 +380,33 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 		DestBalance:       inv[rfqRequest.Data.DestChainID][common.HexToAddress(rfqRequest.Data.DestTokenAddr)],
 		OriginAmountExact: originAmountExact,
 	}
+	if rfqRequest.Data.ZapNative != "" || rfqRequest.Data.ZapData != "" {
+		quoteRequest, err := quoteDataToQuoteRequestV2(&rfqRequest.Data)
+		if err != nil {
+			return nil, fmt.Errorf("error converting quote data to quote request: %w", err)
+		}
+		quoteInput.QuoteRequest = quoteRequest
+	}
 
 	rawQuote, err := m.generateQuote(ctx, quoteInput)
 	if err != nil {
 		return nil, fmt.Errorf("error generating quote: %w", err)
 	}
+
+	// adjust dest amount by fixed fee
+	destAmountBigInt, ok := new(big.Int).SetString(rawQuote.DestAmount, 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid dest amount: %s", rawQuote.DestAmount)
+	}
+	fixedFeeBigInt, ok := new(big.Int).SetString(rawQuote.FixedFee, 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid fixed fee: %s", rawQuote.FixedFee)
+	}
+	destAmountAdj := new(big.Int).Sub(destAmountBigInt, fixedFeeBigInt)
+	if destAmountAdj.Sign() < 0 {
+		destAmountAdj = big.NewInt(0)
+	}
+	rawQuote.DestAmount = destAmountAdj.String()
 	span.SetAttributes(attribute.String("dest_amount", rawQuote.DestAmount))
 
 	rfqResp := model.WsRFQResponse{
@@ -401,6 +425,50 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 	span.AddEvent("generated response")
 
 	return resp, nil
+}
+
+//nolint:gosec
+func quoteDataToQuoteRequestV2(quoteData *model.QuoteData) (*reldb.QuoteRequest, error) {
+	if quoteData == nil {
+		return nil, errors.New("quote data is nil")
+	}
+
+	originAmount, ok := new(big.Int).SetString(quoteData.OriginAmountExact, 10)
+	if !ok {
+		return nil, errors.New("invalid origin amount")
+	}
+	destAmount := originAmount // assume dest amount same as origin amount for estimation purposes
+	originFeeAmount := big.NewInt(0)
+	nonce := big.NewInt(0)
+	exclusivityEndTime := big.NewInt(0)
+	zapNative, ok := new(big.Int).SetString(quoteData.ZapNative, 10)
+	if !ok {
+		return nil, errors.New("invalid zap native")
+	}
+	deadline := new(big.Int).Sub(new(big.Int).Exp(big.NewInt(2), big.NewInt(256), nil), big.NewInt(1))
+	exclusivityRelayer := common.HexToAddress("")
+
+	quoteRequest := &reldb.QuoteRequest{
+		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
+			OriginChainId:      uint32(quoteData.OriginChainID),
+			DestChainId:        uint32(quoteData.DestChainID),
+			OriginSender:       common.HexToAddress(quoteData.OriginSender),
+			DestRecipient:      common.HexToAddress(quoteData.DestRecipient),
+			OriginToken:        common.HexToAddress(quoteData.OriginTokenAddr),
+			DestToken:          common.HexToAddress(quoteData.DestTokenAddr),
+			OriginAmount:       originAmount,
+			DestAmount:         destAmount,
+			OriginFeeAmount:    originFeeAmount,
+			Deadline:           deadline,
+			Nonce:              nonce,
+			ExclusivityRelayer: exclusivityRelayer,
+			ExclusivityEndTime: exclusivityEndTime,
+			ZapNative:          zapNative,
+			ZapData:            []byte(quoteData.ZapData),
+		},
+	}
+
+	return quoteRequest, nil
 }
 
 // GetPrice gets the price of a token.
@@ -585,8 +653,10 @@ type QuoteInput struct {
 	DestBalance       *big.Int
 	OriginAmountExact *big.Int
 	DestRFQAddr       string
+	QuoteRequest      *reldb.QuoteRequest
 }
 
+//nolint:gosec
 func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *model.PutRelayerQuoteRequest, err error) {
 	// Calculate the quote amount for this route
 	originAmount, err := m.getOriginAmount(ctx, input)
@@ -604,7 +674,7 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 		logger.Error("Error getting dest token ID", "error", err)
 		return nil, fmt.Errorf("error getting dest token ID: %w", err)
 	}
-	fee, err := m.feePricer.GetTotalFee(ctx, uint32(input.OriginChainID), uint32(input.DestChainID), destToken, true)
+	fee, err := m.feePricer.GetTotalFee(ctx, uint32(input.OriginChainID), uint32(input.DestChainID), destToken, true, input.QuoteRequest)
 	if err != nil {
 		logger.Error("Error getting total fee", "error", err)
 		return nil, fmt.Errorf("error getting total fee: %w", err)

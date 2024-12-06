@@ -6,7 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/manager"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/bridgetransactionv2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/dai"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemockv2"
@@ -50,6 +50,13 @@ func (d *DeployManager) GetRecipientMock(ctx context.Context, backend backends.S
 	d.T().Helper()
 
 	return manager.GetContract[*recipientmock.RecipientMockRef](ctx, d.T(), d, backend, RecipientMockType)
+}
+
+// GetBridgeTransactionV2 gets the bridge transaction v2.
+func (d *DeployManager) GetBridgeTransactionV2(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *bridgetransactionv2.BridgeTransactionV2Ref) {
+	d.T().Helper()
+
+	return manager.GetContract[*bridgetransactionv2.BridgeTransactionV2Ref](ctx, d.T(), d, backend, BridgeTransactionV2Type)
 }
 
 // GetWETH9 gets the weth9 contract.

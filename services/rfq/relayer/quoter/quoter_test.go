@@ -1,6 +1,7 @@
 package quoter_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/big"
 
@@ -8,8 +9,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
+	clientMocks "github.com/synapsecns/sanguine/ethergo/client/mocks"
 	fetcherMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
+	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	inventoryMocks "github.com/synapsecns/sanguine/services/rfq/relayer/inventory/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
@@ -444,6 +447,92 @@ func (s *QuoterSuite) TestGetOriginAmountActiveQuotes() {
 	s.Equal(expectedAmount, quoteAmount)
 }
 
+func (s *QuoterSuite) TestGenerateActiveRFQ() {
+	origin := int(s.origin)
+	dest := int(s.destination)
+	originAddr := common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
+	destAddr := common.HexToAddress("0x0b2c639c533813f4aa9d7837caf62653d097ff85")
+	balance := big.NewInt(1_000_000_000_000)
+	balances := map[int]map[common.Address]*big.Int{
+		origin: {
+			originAddr: balance,
+		},
+		dest: {
+			destAddr: balance,
+		},
+	}
+
+	currentHeader := big.NewInt(100_000_000_000) // 100 gwei
+	clientFetcher := new(fetcherMocks.ClientFetcher)
+	clientMock := new(clientMocks.EVM)
+	clientMock.On(testsuite.GetFunctionName(clientMock.SuggestGasPrice), mock.Anything).Return(currentHeader, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientMock.EstimateGas), mock.Anything, mock.Anything).Return(100_000, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Return(clientMock, nil)
+	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, mock.Anything).Return(0., fmt.Errorf("not using mocked price"))
+	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler(), common.HexToAddress("0x123"))
+	inventoryManager := new(inventoryMocks.Manager)
+	inventoryManager.On(testsuite.GetFunctionName(inventoryManager.HasSufficientGas), mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
+	inventoryManager.On(testsuite.GetFunctionName(inventoryManager.GetCommittableBalances), mock.Anything, mock.Anything, mock.Anything).Return(balances, nil)
+	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), inventoryManager, nil, feePricer, nil)
+	s.NoError(err)
+
+	var ok bool
+	s.manager, ok = mgr.(*quoter.Manager)
+	s.True(ok)
+
+	req := model.PutRFQRequest{
+		UserAddress:  "0x123",
+		IntegratorID: "123",
+		QuoteTypes:   []string{"active"},
+		Data: model.QuoteData{
+			OriginChainID:     origin,
+			DestChainID:       dest,
+			OriginAmountExact: "100000",
+			OriginTokenAddr:   originAddr.String(),
+			DestTokenAddr:     destAddr.String(),
+		},
+	}
+	reqBytes, err := json.Marshal(req)
+	s.NoError(err)
+	msg := model.ActiveRFQMessage{
+		Op:      rest.RequestQuoteOp,
+		Content: json.RawMessage(reqBytes),
+	}
+
+	respMsg, err := s.manager.GenerateActiveRFQ(s.GetTestContext(), &msg)
+	s.NoError(err)
+	var resp model.WsRFQResponse
+	err = json.Unmarshal(respMsg.Content, &resp)
+	s.NoError(err)
+	s.Equal("0", resp.DestAmount)
+
+	req = model.PutRFQRequest{
+		UserAddress:  "0x123",
+		IntegratorID: "123",
+		QuoteTypes:   []string{"active"},
+		Data: model.QuoteData{
+			OriginChainID:     origin,
+			DestChainID:       dest,
+			OriginAmountExact: "500000000000",
+			OriginTokenAddr:   originAddr.String(),
+			DestTokenAddr:     destAddr.String(),
+		},
+	}
+	reqBytes, err = json.Marshal(req)
+	s.NoError(err)
+	msg = model.ActiveRFQMessage{
+		Op:      rest.RequestQuoteOp,
+		Content: json.RawMessage(reqBytes),
+	}
+
+	respMsg, err = s.manager.GenerateActiveRFQ(s.GetTestContext(), &msg)
+	s.NoError(err)
+	err = json.Unmarshal(respMsg.Content, &resp)
+	s.NoError(err)
+	s.Equal("499899950000", resp.DestAmount)
+}
+
 func (s *QuoterSuite) TestGetOriginAmount() {
 	origin := int(s.origin)
 	dest := int(s.destination)
@@ -573,7 +662,7 @@ func (s *QuoterSuite) setGasSufficiency(sufficient bool) {
 	clientFetcher := new(fetcherMocks.ClientFetcher)
 	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, mock.Anything).Return(0., fmt.Errorf("not using mocked price"))
-	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler())
+	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler(), common.HexToAddress("0x123"))
 	inventoryManager := new(inventoryMocks.Manager)
 	inventoryManager.On(testsuite.GetFunctionName(inventoryManager.HasSufficientGas), mock.Anything, mock.Anything, mock.Anything).Return(sufficient, nil)
 	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), inventoryManager, nil, feePricer, nil)
