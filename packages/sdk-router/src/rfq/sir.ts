@@ -12,7 +12,6 @@ import tokenZapV1Abi from '../abi/TokenZapV1.json'
 import {
   FastBridgeV2 as FastBridgeV2Contract,
   IFastBridge,
-  IFastBridgeV2,
 } from '../typechain/FastBridgeV2'
 import { SynapseIntentPreviewer as PreviewerContract } from '../typechain/SynapseIntentPreviewer'
 import { SynapseIntentRouter as SIRContract } from '../typechain/SynapseIntentRouter'
@@ -22,6 +21,7 @@ import { SynapseModule, CCTPRouterQuery } from '../module'
 import { getMatchingTxLog } from '../utils/logs'
 import { adjustValueIfNative, isNativeToken } from '../utils/handleNativeToken'
 import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
+import { decodeSavedBridgeParams } from './paramsV2'
 import { StepParams, encodeStepParams, decodeStepParams } from './steps'
 
 export class SynapseIntentRouter implements SynapseModule {
@@ -211,10 +211,17 @@ export class SynapseIntentRouter implements SynapseModule {
     originToken: string,
     dstQuery: CCTPRouterQuery
   ): Promise<StepParams> {
+    // We should have saved neccessary params within dstQuery.rawParams
+    if (dstQuery.rawParams.length <= 2) {
+      throw new Error('Missing bridge params for FastBridgeV2')
+    }
+    const { sender, paramsV2 } = decodeSavedBridgeParams(dstQuery.rawParams)
+    if (sender === AddressZero) {
+      throw new Error('Missing sender address for FastBridgeV2')
+    }
     const bridgeParamsV1: IFastBridge.BridgeParamsStruct = {
       dstChainId,
-      // TODO
-      sender: AddressZero,
+      sender,
       to,
       originToken,
       destToken: dstQuery.tokenOut,
@@ -224,18 +231,10 @@ export class SynapseIntentRouter implements SynapseModule {
       sendChainGas: false,
       deadline: dstQuery.deadline,
     }
-    // TODO: non-default values
-    const bridgeParamsV2: IFastBridgeV2.BridgeParamsV2Struct = {
-      quoteRelayer: AddressZero,
-      quoteExclusivitySeconds: 0,
-      quoteId: '0x',
-      zapNative: 0,
-      zapData: '0x',
-    }
     const fastBridgeV2CallData =
       this.fastBridgeV2Contract.interface.encodeFunctionData('bridgeV2', [
         bridgeParamsV1,
-        bridgeParamsV2,
+        paramsV2,
       ])
     const zapData = await this.tokenZapContract.encodeZapData(
       // target
