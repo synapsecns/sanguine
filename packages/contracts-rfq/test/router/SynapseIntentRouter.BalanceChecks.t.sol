@@ -204,4 +204,55 @@ contract SynapseIntentRouterBalanceChecksTest is SynapseIntentRouterTest {
             steps: steps
         });
     }
+
+    function test_swapUnwrapForwardNative_exactAmounts_revert_unspentERC20() public {
+        uint256 amountSwap = AMOUNT / TOKEN_PRICE;
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(AMOUNT, amountSwap);
+        vm.expectRevert(SIR__UnspentFunds.selector);
+        completeUserIntent({
+            msgValue: 0,
+            amountIn: AMOUNT + 1,
+            minLastStepAmountIn: amountSwap,
+            deadline: block.timestamp,
+            steps: steps
+        });
+    }
+
+    function test_swapUnwrapForwardNative_exactAmounts_revert_unspentWETH() public {
+        uint256 amountReduced = AMOUNT / TOKEN_PRICE - 1;
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(AMOUNT, amountReduced);
+        vm.expectRevert(SIR__UnspentFunds.selector);
+        completeUserIntent({
+            msgValue: 0,
+            amountIn: AMOUNT,
+            minLastStepAmountIn: amountReduced,
+            deadline: block.timestamp,
+            steps: steps
+        });
+    }
+
+    function test_swapUnwrapForwardNative_exactAmounts_extraFunds_revert_unspentERC20() public withExtraFunds {
+        test_swapUnwrapForwardNative_exactAmounts_revert_unspentERC20();
+    }
+
+    function test_swapUnwrapForwardNative_exactAmounts_extraFunds_revert_unspentWETH() public withExtraFunds {
+        test_swapUnwrapForwardNative_exactAmounts_revert_unspentWETH();
+    }
+
+    function test_swapUnwrapForwardNative_exactAmount1_extraFunds_revertWithBalanceChecks()
+        public
+        override
+        withExtraFunds
+    {
+        uint256 amountSwap = AMOUNT / TOKEN_PRICE;
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(FULL_BALANCE, amountSwap);
+        vm.expectRevert(SIR__UnspentFunds.selector);
+        completeUserIntent({
+            msgValue: 0,
+            amountIn: AMOUNT,
+            minLastStepAmountIn: amountSwap,
+            deadline: block.timestamp,
+            steps: steps
+        });
+    }
 }
