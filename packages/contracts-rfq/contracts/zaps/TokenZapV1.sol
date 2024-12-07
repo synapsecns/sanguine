@@ -28,6 +28,7 @@ contract TokenZapV1 is IZapRecipient {
 
     error TokenZapV1__PayloadLengthAboveMax();
     error TokenZapV1__TargetZeroAddress();
+    error TokenZapV1__TokenZeroAddress();
 
     /// @notice Allows the contract to receive ETH.
     /// @dev Leftover ETH can be claimed by anyone. Ensure the full balance is spent during Zaps.
@@ -100,10 +101,20 @@ contract TokenZapV1 is IZapRecipient {
     ///                         the list of parameters of the target function (starting from 0).
     ///                         Any value greater than or equal to `payload.length` can be used if the token amount is
     ///                         not an argument of the target function.
+    /// @param finalToken       The token produced as a result of the Zap action (ERC20 or native gas token).
+    ///                         A zero address value signals that the Zap action doesn't result in any asset per se,
+    ///                         like bridging or depositing into a vault without an LP token.
+    ///                         Note: this parameter must be set to a non-zero value if the `forwardTo` parameter is
+    ///                         set to a non-zero value.
+    /// @param forwardTo        The address to which `finalToken` should be forwarded. This parameter is required only
+    ///                         if the Zap action does not automatically transfer the token to the intended recipient.
+    ///                         Otherwise, it must be set to address(0).
     function encodeZapData(
         address target,
         bytes memory payload,
-        uint256 amountPosition
+        uint256 amountPosition,
+        address finalToken,
+        address forwardTo
     )
         external
         pure
@@ -119,8 +130,13 @@ contract TokenZapV1 is IZapRecipient {
             amountPosition = ZapDataV1.AMOUNT_NOT_PRESENT;
         }
         // At this point, we have checked that both `amountPosition` and `payload.length` fit in uint16.
-        // TODO
-        return ZapDataV1.encodeV1(uint16(amountPosition), address(0), address(0), target, payload);
+        return ZapDataV1.encodeV1({
+            amountPosition_: uint16(amountPosition),
+            finalToken_: finalToken,
+            forwardTo_: forwardTo,
+            target_: target,
+            payload_: payload
+        });
     }
 
     /// @notice Decodes the ZapData for a Zap action. Replaces the placeholder amount with the actual amount,
