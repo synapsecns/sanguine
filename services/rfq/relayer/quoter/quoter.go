@@ -380,7 +380,7 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 		DestBalance:       inv[rfqRequest.Data.DestChainID][common.HexToAddress(rfqRequest.Data.DestTokenAddr)],
 		OriginAmountExact: originAmountExact,
 	}
-	if rfqRequest.Data.ZapNative != "" || rfqRequest.Data.ZapData != "" {
+	if (rfqRequest.Data.ZapNative != "0" && rfqRequest.Data.ZapNative != "") || rfqRequest.Data.ZapData != "" {
 		quoteRequest, err := quoteDataToQuoteRequestV2(&rfqRequest.Data)
 		if err != nil {
 			return nil, fmt.Errorf("error converting quote data to quote request: %w", err)
