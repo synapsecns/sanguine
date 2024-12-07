@@ -47,6 +47,7 @@ contract TokenZapV1 is IZapRecipient {
     /// @param zapData      Encoded Zap Data containing the target address and calldata for the Zap action.
     /// @return selector    Selector of this function to signal the caller about the success of the Zap action.
     function zap(address token, uint256 amount, bytes calldata zapData) external payable returns (bytes4) {
+        if (token == address(0)) revert TokenZapV1__TokenZeroAddress();
         // Validate the ZapData format and extract the target address.
         zapData.validateV1();
         address target = zapData.target();
@@ -122,6 +123,10 @@ contract TokenZapV1 is IZapRecipient {
     {
         if (payload.length > ZapDataV1.AMOUNT_NOT_PRESENT) {
             revert TokenZapV1__PayloadLengthAboveMax();
+        }
+        // Final token needs to be specified if forwarding is required.
+        if (forwardTo != address(0) && finalToken == address(0)) {
+            revert TokenZapV1__TokenZeroAddress();
         }
         // External integrations do not need to understand the specific `AMOUNT_NOT_PRESENT` semantics.
         // Therefore, they can specify any value greater than or equal to `payload.length` to indicate
