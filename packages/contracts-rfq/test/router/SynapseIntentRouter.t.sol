@@ -76,26 +76,33 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
             target: address(weth),
             payload: abi.encodeCall(weth.deposit, ()),
             // Amount is not encoded
-            amountPosition: type(uint256).max
+            amountPosition: type(uint256).max,
+            finalToken: address(weth),
+            forwardTo: address(0)
         });
     }
 
-    function getUnwrapZapData() public view returns (bytes memory) {
+    function getUnwrapZapData(address forwardTo) public view returns (bytes memory) {
         return tokenZap.encodeZapData({
             target: address(weth),
             payload: abi.encodeCall(weth.withdraw, (AMOUNT)),
             // Amount is encoded as the first parameter
-            amountPosition: 4
+            amountPosition: 4,
+            finalToken: NATIVE_GAS_TOKEN,
+            forwardTo: forwardTo
         });
     }
 
-    function getSwapZapData(address token) public view returns (bytes memory) {
+    function getSwapZapData(address token, address forwardTo) public view returns (bytes memory) {
+        address otherToken = token == address(weth) ? address(erc20) : address(weth);
         return tokenZap.encodeZapData({
             target: address(pool),
             // Use placeholder zero amount
             payload: abi.encodeCall(pool.swap, (0, token)),
             // Amount is encoded as the first parameter
-            amountPosition: 4
+            amountPosition: 4,
+            finalToken: otherToken,
+            forwardTo: forwardTo
         });
     }
 
@@ -105,7 +112,9 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
             // Use placeholder zero amount
             payload: abi.encodeCall(vault.deposit, (token, 0, user)),
             // Amount is encoded as the second parameter
-            amountPosition: 4 + 32
+            amountPosition: 4 + 32,
+            finalToken: address(0),
+            forwardTo: address(0)
         });
     }
 
@@ -433,7 +442,7 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
                 token: address(weth),
                 amount: amountSwap,
                 msgValue: 0,
-                zapData: getSwapZapData(address(weth))
+                zapData: getSwapZapData(address(weth), address(0))
             }),
             // deposit ERC20
             ISynapseIntentRouter.StepParams({
@@ -826,7 +835,7 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
                 token: address(weth),
                 amount: amountUnwrap,
                 msgValue: 0,
-                zapData: getUnwrapZapData()
+                zapData: getUnwrapZapData(address(0))
             }),
             // Deposit ETH
             ISynapseIntentRouter.StepParams({
