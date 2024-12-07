@@ -26,6 +26,7 @@ contract TokenZapV1 is IZapRecipient {
 
     address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
+    error TokenZapV1__FinalTokenBalanceZero();
     error TokenZapV1__PayloadLengthAboveMax();
     error TokenZapV1__TargetZeroAddress();
     error TokenZapV1__TokenZeroAddress();
@@ -82,6 +83,11 @@ contract TokenZapV1 is IZapRecipient {
             // Perform the Zap action, forwarding the requested native value to the target contract.
             // Note: this will bubble up any revert from the target contract, and revert if target is EOA.
             Address.functionCallWithValue({target: target, data: payload, value: msgValue});
+        }
+        // Forward the final token to the specified recipient, if required.
+        address forwardTo = zapData.forwardTo();
+        if (forwardTo != address(0)) {
+            _forwardToken(zapData.finalToken(), forwardTo);
         }
         // Return function selector to indicate successful execution
         return this.zap.selector;
@@ -159,5 +165,10 @@ contract TokenZapV1 is IZapRecipient {
         zapData.validateV1();
         target = zapData.target();
         payload = zapData.payload(amount);
+    }
+
+    /// @notice Forwards the proceeds of the Zap action to the specified recipient.
+    function _forwardToken(address token, address forwardTo) internal {
+        // TODO
     }
 }
