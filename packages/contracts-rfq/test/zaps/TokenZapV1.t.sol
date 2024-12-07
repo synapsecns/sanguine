@@ -184,12 +184,20 @@ contract TokenZapV1Test is Test {
         );
     }
 
-    function getZapDataUnwrapAndForward(uint256 amount, address forwardTo) public view returns (bytes memory) {
+    function getZapDataUnwrapAndForward(
+        uint256 amount,
+        address finalToken,
+        address forwardTo
+    )
+        public
+        view
+        returns (bytes memory)
+    {
         return tokenZap.encodeZapData({
             target: address(weth),
             payload: abi.encodeCall(WETHMock.withdraw, (amount)),
             amountPosition: 4,
-            finalToken: nativeGasToken,
+            finalToken: finalToken,
             forwardTo: forwardTo
         });
     }
@@ -200,12 +208,12 @@ contract TokenZapV1Test is Test {
         );
     }
 
-    function getZapDataWrapAndForward(address forwardTo) public view returns (bytes memory) {
+    function getZapDataWrapAndForward(address finalToken, address forwardTo) public view returns (bytes memory) {
         return tokenZap.encodeZapData({
             target: address(weth),
             payload: abi.encodeCall(WETHMock.deposit, ()),
             amountPosition: type(uint256).max,
-            finalToken: address(0),
+            finalToken: finalToken,
             forwardTo: forwardTo
         });
     }
@@ -254,7 +262,7 @@ contract TokenZapV1Test is Test {
     }
 
     function test_zap_unwrapForwardNativeEOA_placeholderZero() public {
-        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(0, user);
+        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(0, nativeGasToken, user);
         weth.transfer(address(tokenZap), AMOUNT);
         bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataUnwrapAndForward);
         assertEq(returnValue, tokenZap.zap.selector);
@@ -264,7 +272,7 @@ contract TokenZapV1Test is Test {
 
     function test_zap_unwrapForwardNativeEOA_placeholderNonZero() public {
         // Use the approximate amount of tokens as placeholder
-        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(1 ether, user);
+        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(1 ether, nativeGasToken, user);
         weth.transfer(address(tokenZap), AMOUNT);
         bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataUnwrapAndForward);
         assertEq(returnValue, tokenZap.zap.selector);
@@ -276,20 +284,32 @@ contract TokenZapV1Test is Test {
         // Transfer some extra tokens to the zap contract
         weth.transfer(address(tokenZap), AMOUNT);
         deal(address(tokenZap), AMOUNT);
-        // Should not affect the zap
-        test_zap_unwrapForwardNativeEOA_placeholderZero();
+        // Extra funds will be used when forwarding the proceeds
+        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(0, nativeGasToken, user);
+        weth.transfer(address(tokenZap), AMOUNT);
+        bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataUnwrapAndForward);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the user received the native tokens with extra funds
+        assertEq(weth.balanceOf(address(tokenZap)), AMOUNT);
+        assertEq(user.balance, 2 * AMOUNT);
     }
 
     function test_zap_unwrapForwardNativeEOA_placeholderNonZero_extraFunds() public {
         // Transfer some extra native tokens to the zap contract
         weth.transfer(address(tokenZap), AMOUNT);
         deal(address(tokenZap), AMOUNT);
-        // Should not affect the zap
-        test_zap_unwrapForwardNativeEOA_placeholderNonZero();
+        // Extra funds will be used when forwarding the proceeds
+        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(1 ether, nativeGasToken, user);
+        weth.transfer(address(tokenZap), AMOUNT);
+        bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataUnwrapAndForward);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the user received the native tokens with extra funds
+        assertEq(weth.balanceOf(address(tokenZap)), AMOUNT);
+        assertEq(user.balance, 2 * AMOUNT);
     }
 
     function test_zap_unwrapForwardNativeContract_placeholderZero() public {
-        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(0, payableMock);
+        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(0, nativeGasToken, payableMock);
         weth.transfer(address(tokenZap), AMOUNT);
         bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataUnwrapAndForward);
         assertEq(returnValue, tokenZap.zap.selector);
@@ -299,7 +319,7 @@ contract TokenZapV1Test is Test {
 
     function test_zap_unwrapForwardNativeContract_placeholderNonZero() public {
         // Use the approximate amount of tokens as placeholder
-        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(1 ether, payableMock);
+        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(1 ether, nativeGasToken, payableMock);
         weth.transfer(address(tokenZap), AMOUNT);
         bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataUnwrapAndForward);
         assertEq(returnValue, tokenZap.zap.selector);
@@ -311,16 +331,28 @@ contract TokenZapV1Test is Test {
         // Transfer some extra tokens to the zap contract
         weth.transfer(address(tokenZap), AMOUNT);
         deal(address(tokenZap), AMOUNT);
-        // Should not affect the zap
-        test_zap_unwrapForwardNativeContract_placeholderZero();
+        // Extra funds will be used when forwarding the proceeds
+        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(0, nativeGasToken, payableMock);
+        weth.transfer(address(tokenZap), AMOUNT);
+        bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataUnwrapAndForward);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the contract received the native tokens with extra funds
+        assertEq(weth.balanceOf(address(tokenZap)), AMOUNT);
+        assertEq(payableMock.balance, 2 * AMOUNT);
     }
 
     function test_zap_unwrapForwardNativeContract_placeholderNonZero_extraFunds() public {
         // Transfer some extra native tokens to the zap contract
         weth.transfer(address(tokenZap), AMOUNT);
         deal(address(tokenZap), AMOUNT);
-        // Should not affect the zap
-        test_zap_unwrapForwardNativeContract_placeholderNonZero();
+        // Extra funds will be used when forwarding the proceeds
+        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(1 ether, nativeGasToken, payableMock);
+        weth.transfer(address(tokenZap), AMOUNT);
+        bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataUnwrapAndForward);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the contract received the native tokens with extra funds
+        assertEq(weth.balanceOf(address(tokenZap)), AMOUNT);
+        assertEq(payableMock.balance, 2 * AMOUNT);
     }
 
     function test_zap_wrap_depositWETH_placeholderZero() public {
@@ -365,12 +397,24 @@ contract TokenZapV1Test is Test {
     }
 
     function test_zap_wrapForward() public {
-        bytes memory zapDataWrapAndForward = getZapDataWrapAndForward(user);
-        weth.transfer(address(tokenZap), AMOUNT);
+        bytes memory zapDataWrapAndForward = getZapDataWrapAndForward(address(weth), user);
         bytes4 returnValue = tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapDataWrapAndForward);
         assertEq(returnValue, tokenZap.zap.selector);
         // Check that the user received WETH
         assertEq(weth.balanceOf(user), AMOUNT);
+    }
+
+    function test_zap_wrapForward_extraFunds() public {
+        // Transfer some extra tokens to the zap contract
+        weth.transfer(address(tokenZap), AMOUNT);
+        deal(address(tokenZap), AMOUNT);
+        // Extra funds will be used when forwarding the proceeds
+        bytes memory zapDataWrapAndForward = getZapDataWrapAndForward(address(weth), user);
+        bytes4 returnValue = tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapDataWrapAndForward);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the user received WETH with extra funds
+        assertEq(address(tokenZap).balance, AMOUNT);
+        assertEq(weth.balanceOf(user), 2 * AMOUNT);
     }
 
     // ═════════════════════════════════════════════════ ENCODING ══════════════════════════════════════════════════════
@@ -402,6 +446,20 @@ contract TokenZapV1Test is Test {
     function getZeroTargetZapData(bytes memory payload, uint16 amountPosition) public pure returns (bytes memory) {
         // Encode manually as the library checks for zero address
         return abi.encodePacked(ZapDataV1.VERSION, amountPosition, address(0), address(0), address(0), payload);
+    }
+
+    function getZeroFinalTokenZapData(
+        bytes memory payload,
+        uint16 amountPosition,
+        address target,
+        address forwardTo
+    )
+        public
+        pure
+        returns (bytes memory)
+    {
+        // Encode manually as the library checks for zero address
+        return abi.encodePacked(ZapDataV1.VERSION, amountPosition, address(0), forwardTo, target, payload);
     }
 
     function test_zap_erc20_revert_notEnoughTokens() public {
@@ -480,7 +538,7 @@ contract TokenZapV1Test is Test {
     }
 
     function test_zap_unwrapForwardNative_revert_targetReverted() public {
-        bytes memory zapDataWithdrawAndForward = getZapDataUnwrapAndForward(0, nonPayableMock);
+        bytes memory zapDataWithdrawAndForward = getZapDataUnwrapAndForward(0, nativeGasToken, nonPayableMock);
         weth.transfer(address(tokenZap), AMOUNT);
         vm.expectRevert(Address.FailedInnerCall.selector);
         tokenZap.zap(address(weth), AMOUNT, zapDataWithdrawAndForward);
@@ -496,6 +554,42 @@ contract TokenZapV1Test is Test {
         bytes memory zapData = getZeroTargetZapData({payload: getVaultPayloadNoAmount(), amountPosition: 0});
         vm.expectRevert(TokenZapV1.TokenZapV1__TargetZeroAddress.selector);
         tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapData);
+    }
+
+    function test_zap_wrapForward_revert_zeroFinalToken() public {
+        bytes memory zapData = getZeroFinalTokenZapData({
+            payload: abi.encodeCall(WETHMock.deposit, ()),
+            amountPosition: type(uint16).max,
+            target: address(weth),
+            forwardTo: user
+        });
+        vm.expectRevert(TokenZapV1.TokenZapV1__TokenZeroAddress.selector);
+        tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapData);
+    }
+
+    function test_zap_wrapForward_revert_incorrectFinalToken() public {
+        bytes memory zapData = getZapDataWrapAndForward(nativeGasToken, user);
+        vm.expectRevert(TokenZapV1.TokenZapV1__FinalTokenBalanceZero.selector);
+        tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapData);
+    }
+
+    function test_zap_unwrapForward_revert_zeroFinalToken() public {
+        bytes memory zapData = getZeroFinalTokenZapData({
+            payload: abi.encodeCall(WETHMock.withdraw, (0)),
+            amountPosition: 4,
+            target: address(weth),
+            forwardTo: user
+        });
+        weth.transfer(address(tokenZap), AMOUNT);
+        vm.expectRevert(TokenZapV1.TokenZapV1__TokenZeroAddress.selector);
+        tokenZap.zap(address(weth), AMOUNT, zapData);
+    }
+
+    function test_zap_unwrapForward_revert_incorrectFinalToken() public {
+        bytes memory zapData = getZapDataUnwrapAndForward(0, address(weth), user);
+        weth.transfer(address(tokenZap), AMOUNT);
+        vm.expectRevert(TokenZapV1.TokenZapV1__FinalTokenBalanceZero.selector);
+        tokenZap.zap(address(weth), AMOUNT, zapData);
     }
 
     function test_zap_unwrap_transferNative_revert_targetEOA_nonEmptyPayload() public {
