@@ -167,8 +167,17 @@ contract TokenZapV1 is IZapRecipient {
         payload = zapData.payload(amount);
     }
 
-    /// @notice Forwards the proceeds of the Zap action to the specified recipient.
+    /// @notice Forwards the proceeds of the Zap action to the specified non-zero recipient.
     function _forwardToken(address token, address forwardTo) internal {
-        // TODO
+        // Check the token address and its balance to be safely forwarded.
+        if (token == address(0)) revert TokenZapV1__TokenZeroAddress();
+        uint256 amount = token == NATIVE_GAS_TOKEN ? address(this).balance : IERC20(token).balanceOf(address(this));
+        if (amount == 0) revert TokenZapV1__FinalTokenBalanceZero();
+        // Forward the full balance of the final token to the specified recipient.
+        if (token == NATIVE_GAS_TOKEN) {
+            Address.sendValue({recipient: payable(forwardTo), amount: amount});
+        } else {
+            IERC20(token).safeTransfer(forwardTo, amount);
+        }
     }
 }
