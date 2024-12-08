@@ -12,13 +12,17 @@ library ZapDataV1 {
     // Offsets of the fields in the packed ZapData struct
     // uint16   version                 [000 .. 002)
     // uint16   amountPosition          [002 .. 004)
-    // address  target                  [004 .. 024)
-    // bytes    payload                 [024 .. ***)
+    // address  finalToken              [004 .. 024)
+    // address  forwardTo               [024 .. 044)
+    // address  target                  [044 .. 064)
+    // bytes    payload                 [064 .. ***)
 
     // forgefmt: disable-start
     uint256 private constant OFFSET_AMOUNT_POSITION = 2;
-    uint256 private constant OFFSET_TARGET          = 4;
-    uint256 private constant OFFSET_PAYLOAD         = 24;
+    uint256 private constant OFFSET_FINAL_TOKEN     = 4;
+    uint256 private constant OFFSET_FORWARD_TO      = 24;
+    uint256 private constant OFFSET_TARGET          = 44;
+    uint256 private constant OFFSET_PAYLOAD         = 64;
     // forgefmt: disable-end
 
     error ZapDataV1__InvalidEncoding();
@@ -73,7 +77,7 @@ library ZapDataV1 {
         if (amountPosition_ != AMOUNT_NOT_PRESENT && (uint256(amountPosition_) + 32 > payload_.length)) {
             revert ZapDataV1__InvalidEncoding();
         }
-        return abi.encodePacked(VERSION, amountPosition_, target_, payload_);
+        return abi.encodePacked(VERSION, amountPosition_, finalToken_, forwardTo_, target_, payload_);
     }
 
     /// @notice Extracts the version from the encoded Zap Data.
@@ -86,12 +90,18 @@ library ZapDataV1 {
 
     /// @notice Extracts the finalToken address from the encoded Zap Data.
     function finalToken(bytes calldata encodedZapData) internal pure returns (address finalToken_) {
-        // TODO
+        // Load 32 bytes from the offset and shift it 96 bits to the right to get the highest 160 bits.
+        assembly {
+            finalToken_ := shr(96, calldataload(add(encodedZapData.offset, OFFSET_FINAL_TOKEN)))
+        }
     }
 
     /// @notice Extracts the forwardTo address from the encoded Zap Data.
     function forwardTo(bytes calldata encodedZapData) internal pure returns (address forwardTo_) {
-        // TODO
+        // Load 32 bytes from the offset and shift it 96 bits to the right to get the highest 160 bits.
+        assembly {
+            forwardTo_ := shr(96, calldataload(add(encodedZapData.offset, OFFSET_FORWARD_TO)))
+        }
     }
 
     /// @notice Extracts the target address from the encoded Zap Data.
