@@ -119,7 +119,8 @@ contract TokenZapV1 is IZapRecipient {
             amountPosition = ZapDataV1.AMOUNT_NOT_PRESENT;
         }
         // At this point, we have checked that both `amountPosition` and `payload.length` fit in uint16.
-        return ZapDataV1.encodeV1(uint16(amountPosition), target, payload);
+        // TODO
+        return ZapDataV1.encodeV1(uint16(amountPosition), address(0), address(0), target, payload);
     }
 
     /// @notice Decodes the ZapData for a Zap action. Replaces the placeholder amount with the actual amount,

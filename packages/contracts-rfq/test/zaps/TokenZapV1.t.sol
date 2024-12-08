@@ -375,7 +375,7 @@ contract TokenZapV1Test is Test {
 
     function getZeroTargetZapData(bytes memory payload, uint16 amountPosition) public pure returns (bytes memory) {
         // Encode manually as the library checks for zero address
-        return abi.encodePacked(ZapDataV1.VERSION, amountPosition, address(0), payload);
+        return abi.encodePacked(ZapDataV1.VERSION, amountPosition, address(0), address(0), address(0), payload);
     }
 
     function test_zap_erc20_revert_notEnoughTokens() public {

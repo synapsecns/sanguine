@@ -44,6 +44,14 @@ library ZapDataV1 {
     ///                         This will usually be `4 + 32 * n`, where `n` is the position of the token amount in
     ///                         the list of parameters of the target function (starting from 0).
     ///                         Or `AMOUNT_NOT_PRESENT` if the token amount is not encoded within `payload_`.
+    /// @param finalToken_      The token produced as a result of the Zap action (ERC20 or native gas token).
+    ///                         A zero address value signals that the Zap action doesn't result in any asset per se,
+    ///                         like bridging or depositing into a vault without an LP token.
+    ///                         Note: this parameter must be set to a non-zero value if the `forwardTo_` parameter is
+    ///                         set to a non-zero value.
+    /// @param forwardTo_       The address to which `finalToken` should be forwarded. This parameter is required only
+    ///                         if the Zap action does not automatically transfer the token to the intended recipient.
+    ///                         Otherwise, it must be set to address(0).
     /// @param target_          Address of the target contract.
     /// @param payload_         ABI-encoded calldata to be used for the `target_` contract call.
     ///                         If the target function has the token amount as an argument, any placeholder amount value
@@ -51,6 +59,8 @@ library ZapDataV1 {
     ///                         be replaced with the actual amount, when the Zap Data is decoded.
     function encodeV1(
         uint16 amountPosition_,
+        address finalToken_,
+        address forwardTo_,
         address target_,
         bytes memory payload_
     )
@@ -72,6 +82,16 @@ library ZapDataV1 {
         assembly {
             version_ := shr(240, calldataload(encodedZapData.offset))
         }
+    }
+
+    /// @notice Extracts the finalToken address from the encoded Zap Data.
+    function finalToken(bytes calldata encodedZapData) internal pure returns (address finalToken_) {
+        // TODO
+    }
+
+    /// @notice Extracts the forwardTo address from the encoded Zap Data.
+    function forwardTo(bytes calldata encodedZapData) internal pure returns (address forwardTo_) {
+        // TODO
     }
 
     /// @notice Extracts the target address from the encoded Zap Data.

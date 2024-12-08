@@ -110,6 +110,9 @@ contract SynapseIntentPreviewerTest is Test {
     function getSwapZapData(uint8 indexIn, uint8 indexOut) public view returns (bytes memory) {
         return zapDataLib.encodeV1({
             target_: defaultPoolMock,
+            // TODO
+            finalToken_: address(0),
+            forwardTo_: address(0),
             // swap(tokenIndexFrom, tokenIndexTo, dx, minDy, deadline)
             payload_: abi.encodeCall(DefaultPoolMock.swap, (indexIn, indexOut, 0, 0, type(uint256).max)),
             // Amount (dx) is encoded as the third parameter
@@ -153,6 +156,9 @@ contract SynapseIntentPreviewerTest is Test {
         uint256[] memory amounts = new uint256[](TOKENS);
         return zapDataLib.encodeV1({
             target_: defaultPoolMock,
+            // TODO
+            finalToken_: address(0),
+            forwardTo_: address(0),
             // addLiquidity(amounts, minToMint, deadline)
             payload_: abi.encodeCall(IDefaultExtendedPool.addLiquidity, (amounts, 0, type(uint256).max)),
             // Amount is encoded within `amounts` at `TOKEN_IN_INDEX`, `amounts` is encoded after
@@ -196,6 +202,9 @@ contract SynapseIntentPreviewerTest is Test {
     function getRemoveLiquidityZapData(uint8 indexOut) public view returns (bytes memory) {
         return zapDataLib.encodeV1({
             target_: defaultPoolMock,
+            // TODO
+            finalToken_: address(0),
+            forwardTo_: address(0),
             // removeLiquidityOneToken(tokenAmount, tokenIndex, minAmount, deadline)
             payload_: abi.encodeCall(IDefaultExtendedPool.removeLiquidityOneToken, (0, indexOut, 0, type(uint256).max)),
             // Amount (tokenAmount) is encoded as the first parameter
@@ -235,6 +244,9 @@ contract SynapseIntentPreviewerTest is Test {
     function getWrapETHZapData() public view returns (bytes memory) {
         return zapDataLib.encodeV1({
             target_: weth,
+            // TODO
+            finalToken_: address(0),
+            forwardTo_: address(0),
             // deposit()
             payload_: abi.encodeCall(WETHMock.deposit, ()),
             // Amount is not encoded
@@ -269,6 +281,9 @@ contract SynapseIntentPreviewerTest is Test {
     function getUnwrapWETHZapData() public view returns (bytes memory) {
         return zapDataLib.encodeV1({
             target_: weth,
+            // TODO
+            finalToken_: address(0),
+            forwardTo_: address(0),
             // withdraw(amount)
             payload_: abi.encodeCall(WETHMock.withdraw, (0)),
             // Amount is encoded as the first parameter

@@ -152,6 +152,9 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
                 msgValue: 0,
                 zapData: ZapDataV1.encodeV1({
                     target_: pool,
+                    // TODO
+                    finalToken_: address(0),
+                    forwardTo_: address(0),
                     // addLiquidity(amounts, minToMint, deadline)
                     payload_: abi.encodeCall(IDefaultExtendedPool.addLiquidity, (amounts, 0, type(uint256).max)),
                     // amountIn is encoded within `amounts` at `TOKEN_IN_INDEX`, `amounts` is encoded after
@@ -185,6 +188,9 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
                 msgValue: 0,
                 zapData: ZapDataV1.encodeV1({
                     target_: pool,
+                    // TODO
+                    finalToken_: address(0),
+                    forwardTo_: address(0),
                     // removeLiquidityOneToken(tokenAmount, tokenIndex, minAmount, deadline)
                     payload_: abi.encodeCall(
                         IDefaultExtendedPool.removeLiquidityOneToken, (0, params.tokenIndexTo, 0, type(uint256).max)
@@ -236,6 +242,9 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
             msgValue: 0,
             zapData: ZapDataV1.encodeV1({
                 target_: params.pool,
+                // TODO
+                finalToken_: address(0),
+                forwardTo_: address(0),
                 // swap(tokenIndexFrom, tokenIndexTo, dx, minDy, deadline)
                 payload_: abi.encodeCall(
                     IDefaultPool.swap, (params.tokenIndexFrom, params.tokenIndexTo, 0, 0, type(uint256).max)
@@ -261,6 +270,9 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
             msgValue: amountIn,
             zapData: ZapDataV1.encodeV1({
                 target_: wrappedNative,
+                // TODO
+                finalToken_: address(0),
+                forwardTo_: address(0),
                 // deposit()
                 payload_: abi.encodeCall(IWETH9.deposit, ()),
                 // amountIn is not encoded
@@ -281,6 +293,9 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
             msgValue: 0,
             zapData: ZapDataV1.encodeV1({
                 target_: wrappedNative,
+                // TODO
+                finalToken_: address(0),
+                forwardTo_: address(0),
                 // withdraw(amount)
                 payload_: abi.encodeCall(IWETH9.withdraw, (0)),
                 // amountIn encoded as the first parameter
