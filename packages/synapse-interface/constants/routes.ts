@@ -6,8 +6,8 @@ import {
   POOL_PATH,
   LANDING_PATH,
   BRIDGE_PATH,
-  SYN_TOKEN_LINK,
   SOLANA_BRIDGE_LINK,
+  SYN_TOKEN_LINK,
 } from './urls'
 
 export interface RouteObject {

@@ -31,3 +31,5 @@ export default function CustomToaster(): React.ReactElement {
     </Toaster>
   )
 }
+
+export default CustomToaster
