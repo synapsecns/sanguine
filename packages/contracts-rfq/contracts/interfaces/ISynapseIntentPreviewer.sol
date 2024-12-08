@@ -8,6 +8,8 @@ interface ISynapseIntentPreviewer {
     /// @dev Will not revert if the intent cannot be completed, returns empty values instead.
     /// @dev Returns (amountIn, []) if the intent is a no-op (tokenIn == tokenOut).
     /// @param swapQuoter   Peripheral contract to use for swap quoting
+    /// @param forwardTo    The address to which the proceeds of the intent should be forwarded to.
+    ///                     Note: if no forwarding is required (or done within the intent), use address(0).
     /// @param tokenIn      Initial token for the intent
     /// @param tokenOut     Final token for the intent
     /// @param amountIn     Initial amount of tokens to use for the intent
@@ -16,6 +18,7 @@ interface ISynapseIntentPreviewer {
     ///                     Empty if the intent cannot be completed, or if intent is a no-op (tokenIn == tokenOut).
     function previewIntent(
         address swapQuoter,
+        address forwardTo,
         address tokenIn,
         address tokenOut,
         uint256 amountIn

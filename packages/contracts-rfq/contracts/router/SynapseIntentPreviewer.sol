@@ -21,6 +21,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
     /// @dev Amount value that signals that the Zap step should be performed using the full ZapRecipient balance.
     uint256 internal constant FULL_BALANCE = type(uint256).max;
 
+    error SIP__NoOpForwardNotSupported();
     error SIP__PoolTokenMismatch();
     error SIP__PoolZeroAddress();
     error SIP__RawParamsEmpty();
@@ -29,6 +30,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
     /// @inheritdoc ISynapseIntentPreviewer
     function previewIntent(
         address swapQuoter,
+        address forwardTo,
         address tokenIn,
         address tokenOut,
         uint256 amountIn
