@@ -16,6 +16,10 @@ Liquidity for the [$SYN](https://coinmarketcap.com/currencies/synapse-2/) token 
 | Binance (Spot)       | `https://www.binance.com/en/trade/SYN_USDT?type=spot` [↗](https://www.binance.com/en/trade/SYN_USDT?type=spot)                                                             |
 | Binance (Perpetuals) | `https://www.binance.com/en/futures/SYNUSDT` [↗](https://www.binance.com/en/futures/SYNUSDT)                                                                               |
 | Bybit (SYN/USDT)     | `https://www.bybit.com/trade/usdt/SYNUSDT` [↗](https://www.bybit.com/trade/usdt/SYNUSDT)                                                                                   |
+| HTX                  | `https://www.htx.com/price/syn/` [↗](https://www.htx.com/price/syn/)                                                                                                       |
+| Kraken               | `https://www.kraken.com/prices/synapse` [↗](https://www.kraken.com/prices/synapse)                                                                                         |
+| KuCoin               | `https://www.kucoin.com/price/SYN` [↗](https://www.kucoin.com/price/SYN)                                                                                                   |
+
 
 <br />
 
