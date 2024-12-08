@@ -1,9 +1,9 @@
 {
-  "address": "0xcae5baD754dC99cDA1d58415C5eeeb92e1279F69",
+  "address": "0x6327797F149a75D506aFda46D5fCE6E74fC409D5",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0x2a3ca21354283f25dd3e27358b642bc9d33e3a780afb99c98729b7697e903ff6",
-    "blockNumber": 281258026
+    "hash": "0x961a29a85c10275a0d1921ef606f3ed45a79e9106e379b5efd7ae14faa30b1fe",
+    "blockNumber": 282619267
   },
   "abi": [
     {
@@ -70,6 +70,16 @@
           "name": "amountPosition",
           "type": "uint256",
           "internalType": "uint256"
+        },
+        {
+          "name": "finalToken",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "forwardTo",
+          "type": "address",
+          "internalType": "address"
         }
       ],
       "outputs": [
@@ -150,12 +160,22 @@
     },
     {
       "type": "error",
+      "name": "TokenZapV1__FinalTokenBalanceZero",
+      "inputs": []
+    },
+    {
+      "type": "error",
       "name": "TokenZapV1__PayloadLengthAboveMax",
       "inputs": []
     },
     {
       "type": "error",
       "name": "TokenZapV1__TargetZeroAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "TokenZapV1__TokenZeroAddress",
       "inputs": []
     },
     {
