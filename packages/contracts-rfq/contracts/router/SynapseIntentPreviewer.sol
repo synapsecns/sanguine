@@ -28,6 +28,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
     error SIP__TokenNotNative();
 
     /// @inheritdoc ISynapseIntentPreviewer
+    // solhint-disable-next-line code-complexity
     function previewIntent(
         address swapQuoter,
         address forwardTo,
@@ -41,6 +42,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
     {
         // First, check if the intent is a no-op.
         if (tokenIn == tokenOut) {
+            if (forwardTo != address(0)) revert SIP__NoOpForwardNotSupported();
             return (amountIn, new ISynapseIntentRouter.StepParams[](0));
         }
 
@@ -61,13 +63,13 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
 
         // Create the steps for the intent based on the action type.
         if (params.action == Action.Swap) {
-            steps = _createSwapSteps(tokenIn, tokenOut, amountIn, params);
+            steps = _createSwapSteps(tokenIn, tokenOut, amountIn, params, forwardTo);
         } else if (params.action == Action.AddLiquidity) {
-            steps = _createAddLiquiditySteps(tokenIn, tokenOut, params);
+            steps = _createAddLiquiditySteps(tokenIn, tokenOut, params, forwardTo);
         } else if (params.action == Action.RemoveLiquidity) {
-            steps = _createRemoveLiquiditySteps(tokenIn, tokenOut, params);
+            steps = _createRemoveLiquiditySteps(tokenIn, tokenOut, params, forwardTo);
         } else {
-            steps = _createHandleHativeSteps(tokenIn, tokenOut, amountIn);
+            steps = _createHandleHativeSteps(tokenIn, tokenOut, amountIn, forwardTo);
         }
     }
 
@@ -76,7 +78,8 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
-        DefaultParams memory params
+        DefaultParams memory params,
+        address forwardTo
     )
         internal
         view
@@ -91,10 +94,10 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
             address wrappedNative = IDefaultPool(pool).getToken(params.tokenIndexFrom);
             // Sanity check tokenOut vs tokenIndexTo.
             if (IDefaultPool(pool).getToken(params.tokenIndexTo) != tokenOut) revert SIP__PoolTokenMismatch();
-            // Native => WrappedNative + WrappedNative => TokenOut.
+            // Native => WrappedNative + WrappedNative => TokenOut. Forwarding is done in the second step.
             return _toStepsArray(
-                _createWrapNativeStep({wrappedNative: wrappedNative, amountIn: amountIn}),
-                _createSwapStep({tokenIn: wrappedNative, params: params})
+                _createWrapNativeStep({wrappedNative: wrappedNative, msgValue: amountIn, forwardTo: address(0)}),
+                _createSwapStep({tokenIn: wrappedNative, tokenOut: tokenOut, params: params, forwardTo: forwardTo})
             );
         }
 
@@ -105,10 +108,10 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         if (tokenOut == NATIVE_GAS_TOKEN) {
             // Get the address of the wrapped native token.
             address wrappedNative = IDefaultPool(pool).getToken(params.tokenIndexTo);
-            // TokenIn => WrappedNative + WrappedNative => Native.
+            // TokenIn => WrappedNative + WrappedNative => Native. Forwarding is done in the second step.
             return _toStepsArray(
-                _createSwapStep({tokenIn: tokenIn, params: params}),
-                _createUnwrapNativeStep({wrappedNative: wrappedNative})
+                _createSwapStep({tokenIn: tokenIn, tokenOut: wrappedNative, params: params, forwardTo: address(0)}),
+                _createUnwrapNativeStep({wrappedNative: wrappedNative, forwardTo: forwardTo})
             );
         }
 
@@ -116,14 +119,17 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         if (IDefaultPool(pool).getToken(params.tokenIndexTo) != tokenOut) revert SIP__PoolTokenMismatch();
 
         // TokenIn => TokenOut.
-        return _toStepsArray(_createSwapStep({tokenIn: tokenIn, params: params}));
+        ISynapseIntentRouter.StepParams memory step =
+            _createSwapStep({tokenIn: tokenIn, tokenOut: tokenOut, params: params, forwardTo: forwardTo});
+        return _toStepsArray(step);
     }
 
     /// @notice Helper function to create steps for adding liquidity.
     function _createAddLiquiditySteps(
         address tokenIn,
         address tokenOut,
-        DefaultParams memory params
+        DefaultParams memory params,
+        address forwardTo
     )
         internal
         view
@@ -154,9 +160,8 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
                 msgValue: 0,
                 zapData: ZapDataV1.encodeV1({
                     target_: pool,
-                    // TODO
-                    finalToken_: address(0),
-                    forwardTo_: address(0),
+                    finalToken_: tokenOut,
+                    forwardTo_: forwardTo,
                     // addLiquidity(amounts, minToMint, deadline)
                     payload_: abi.encodeCall(IDefaultExtendedPool.addLiquidity, (amounts, 0, type(uint256).max)),
                     // amountIn is encoded within `amounts` at `TOKEN_IN_INDEX`, `amounts` is encoded after
@@ -171,7 +176,8 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
     function _createRemoveLiquiditySteps(
         address tokenIn,
         address tokenOut,
-        DefaultParams memory params
+        DefaultParams memory params,
+        address forwardTo
     )
         internal
         view
@@ -190,9 +196,8 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
                 msgValue: 0,
                 zapData: ZapDataV1.encodeV1({
                     target_: pool,
-                    // TODO
-                    finalToken_: address(0),
-                    forwardTo_: address(0),
+                    finalToken_: tokenOut,
+                    forwardTo_: forwardTo,
                     // removeLiquidityOneToken(tokenAmount, tokenIndex, minAmount, deadline)
                     payload_: abi.encodeCall(
                         IDefaultExtendedPool.removeLiquidityOneToken, (0, params.tokenIndexTo, 0, type(uint256).max)
@@ -213,7 +218,8 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
     function _createHandleHativeSteps(
         address tokenIn,
         address tokenOut,
-        uint256 amountIn
+        uint256 amountIn,
+        address forwardTo
     )
         internal
         pure
@@ -221,18 +227,22 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
     {
         if (tokenIn == NATIVE_GAS_TOKEN) {
             // tokenOut is Wrapped Native
-            return _toStepsArray(_createWrapNativeStep({wrappedNative: tokenOut, amountIn: amountIn}));
+            return _toStepsArray(
+                _createWrapNativeStep({wrappedNative: tokenOut, msgValue: amountIn, forwardTo: forwardTo})
+            );
         }
         // Sanity check tokenOut
         if (tokenOut != NATIVE_GAS_TOKEN) revert SIP__TokenNotNative();
         // tokenIn is Wrapped Native
-        return _toStepsArray(_createUnwrapNativeStep({wrappedNative: tokenIn}));
+        return _toStepsArray(_createUnwrapNativeStep({wrappedNative: tokenIn, forwardTo: forwardTo}));
     }
 
     /// @notice Helper function to create a single step for a swap.
     function _createSwapStep(
         address tokenIn,
-        DefaultParams memory params
+        address tokenOut,
+        DefaultParams memory params,
+        address forwardTo
     )
         internal
         pure
@@ -244,9 +254,8 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
             msgValue: 0,
             zapData: ZapDataV1.encodeV1({
                 target_: params.pool,
-                // TODO
-                finalToken_: address(0),
-                forwardTo_: address(0),
+                finalToken_: tokenOut,
+                forwardTo_: forwardTo,
                 // swap(tokenIndexFrom, tokenIndexTo, dx, minDy, deadline)
                 payload_: abi.encodeCall(
                     IDefaultPool.swap, (params.tokenIndexFrom, params.tokenIndexTo, 0, 0, type(uint256).max)
@@ -260,7 +269,8 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
     /// @notice Helper function to create a single step for wrapping native gas tokens.
     function _createWrapNativeStep(
         address wrappedNative,
-        uint256 amountIn
+        uint256 msgValue,
+        address forwardTo
     )
         internal
         pure
@@ -269,12 +279,11 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         return ISynapseIntentRouter.StepParams({
             token: NATIVE_GAS_TOKEN,
             amount: FULL_BALANCE,
-            msgValue: amountIn,
+            msgValue: msgValue,
             zapData: ZapDataV1.encodeV1({
                 target_: wrappedNative,
-                // TODO
-                finalToken_: address(0),
-                forwardTo_: address(0),
+                finalToken_: wrappedNative,
+                forwardTo_: forwardTo,
                 // deposit()
                 payload_: abi.encodeCall(IWETH9.deposit, ()),
                 // amountIn is not encoded
@@ -284,7 +293,10 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
     }
 
     /// @notice Helper function to create a single step for unwrapping native gas tokens.
-    function _createUnwrapNativeStep(address wrappedNative)
+    function _createUnwrapNativeStep(
+        address wrappedNative,
+        address forwardTo
+    )
         internal
         pure
         returns (ISynapseIntentRouter.StepParams memory)
@@ -295,9 +307,8 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
             msgValue: 0,
             zapData: ZapDataV1.encodeV1({
                 target_: wrappedNative,
-                // TODO
-                finalToken_: address(0),
-                forwardTo_: address(0),
+                finalToken_: NATIVE_GAS_TOKEN,
+                forwardTo_: forwardTo,
                 // withdraw(amount)
                 payload_: abi.encodeCall(IWETH9.withdraw, (0)),
                 // amountIn encoded as the first parameter
