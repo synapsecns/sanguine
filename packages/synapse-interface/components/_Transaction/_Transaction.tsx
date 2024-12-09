@@ -108,7 +108,7 @@ export const _Transaction = ({
     originChain,
     isCheckTxForRefund &&
       status === 'pending' &&
-      bridgeModuleName === 'SynapseRFQ'
+      bridgeModuleName === 'SynapseIntents'
   )
 
   useBridgeTxUpdater(
