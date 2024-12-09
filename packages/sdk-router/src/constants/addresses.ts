@@ -82,7 +82,7 @@ export const FAST_BRIDGE_V2_ADDRESS_MAP: AddressMap = generateAddressMap(
  * TokenZapV1 contract address for all chains except ones from TOKEN_ZAP_V1_EXCEPTION_MAP.
  * TODO: this is a staging TokenZapV1 deployment, update to the production deployment when ready.
  */
-const TOKEN_ZAP_V1_ADDRESS = '0xcae5baD754dC99cDA1d58415C5eeeb92e1279F69'
+const TOKEN_ZAP_V1_ADDRESS = '0x6327797F149a75D506aFda46D5fCE6E74fC409D5'
 const TOKEN_ZAP_V1_EXCEPTION_MAP: AddressMap = {}
 export const TOKEN_ZAP_V1_ADDRESS_MAP: AddressMap = generateAddressMap(
   RFQ_SUPPORTED_CHAIN_IDS,
@@ -108,7 +108,7 @@ export const SYNAPSE_INTENT_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
  * TODO: this is a staging SynapseIntentPreviewer deployment, update to the production deployment when ready.
  */
 const SYNAPSE_INTENT_PREVIEWER_ADDRESS =
-  '0xE184826D4aBC2798134abE7e2Fd72156827Fc7EA'
+  '0x9519E8D136d0a89d7e10D1a66C97249E0135544B'
 const SYNAPSE_INTENT_PREVIEWER_EXCEPTION_MAP: AddressMap = {}
 export const SYNAPSE_INTENT_PREVIEWER_ADDRESS_MAP: AddressMap =
   generateAddressMap(

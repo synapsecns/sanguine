@@ -44,7 +44,7 @@ export declare namespace ISynapseIntentRouter {
 export interface SynapseIntentPreviewerInterface extends utils.Interface {
   functions: {
     'NATIVE_GAS_TOKEN()': FunctionFragment
-    'previewIntent(address,address,address,uint256)': FunctionFragment
+    'previewIntent(address,address,address,address,uint256)': FunctionFragment
   }
 
   getFunction(
@@ -57,7 +57,7 @@ export interface SynapseIntentPreviewerInterface extends utils.Interface {
   ): string
   encodeFunctionData(
     functionFragment: 'previewIntent',
-    values: [string, string, string, BigNumberish]
+    values: [string, string, string, string, BigNumberish]
   ): string
 
   decodeFunctionResult(
@@ -103,6 +103,7 @@ export interface SynapseIntentPreviewer extends BaseContract {
 
     previewIntent(
       swapQuoter: string,
+      forwardTo: string,
       tokenIn: string,
       tokenOut: string,
       amountIn: BigNumberish,
@@ -119,6 +120,7 @@ export interface SynapseIntentPreviewer extends BaseContract {
 
   previewIntent(
     swapQuoter: string,
+    forwardTo: string,
     tokenIn: string,
     tokenOut: string,
     amountIn: BigNumberish,
@@ -135,6 +137,7 @@ export interface SynapseIntentPreviewer extends BaseContract {
 
     previewIntent(
       swapQuoter: string,
+      forwardTo: string,
       tokenIn: string,
       tokenOut: string,
       amountIn: BigNumberish,
@@ -154,6 +157,7 @@ export interface SynapseIntentPreviewer extends BaseContract {
 
     previewIntent(
       swapQuoter: string,
+      forwardTo: string,
       tokenIn: string,
       tokenOut: string,
       amountIn: BigNumberish,
@@ -166,6 +170,7 @@ export interface SynapseIntentPreviewer extends BaseContract {
 
     previewIntent(
       swapQuoter: string,
+      forwardTo: string,
       tokenIn: string,
       tokenOut: string,
       amountIn: BigNumberish,

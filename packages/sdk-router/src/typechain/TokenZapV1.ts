@@ -26,7 +26,7 @@ export interface TokenZapV1Interface extends utils.Interface {
   functions: {
     'NATIVE_GAS_TOKEN()': FunctionFragment
     'decodeZapData(bytes,uint256)': FunctionFragment
-    'encodeZapData(address,bytes,uint256)': FunctionFragment
+    'encodeZapData(address,bytes,uint256,address,address)': FunctionFragment
     'zap(address,uint256,bytes)': FunctionFragment
   }
 
@@ -48,7 +48,7 @@ export interface TokenZapV1Interface extends utils.Interface {
   ): string
   encodeFunctionData(
     functionFragment: 'encodeZapData',
-    values: [string, BytesLike, BigNumberish]
+    values: [string, BytesLike, BigNumberish, string, string]
   ): string
   encodeFunctionData(
     functionFragment: 'zap',
@@ -111,6 +111,8 @@ export interface TokenZapV1 extends BaseContract {
       target: string,
       payload: BytesLike,
       amountPosition: BigNumberish,
+      finalToken: string,
+      forwardTo: string,
       overrides?: CallOverrides
     ): Promise<[string]>
 
@@ -134,6 +136,8 @@ export interface TokenZapV1 extends BaseContract {
     target: string,
     payload: BytesLike,
     amountPosition: BigNumberish,
+    finalToken: string,
+    forwardTo: string,
     overrides?: CallOverrides
   ): Promise<string>
 
@@ -157,6 +161,8 @@ export interface TokenZapV1 extends BaseContract {
       target: string,
       payload: BytesLike,
       amountPosition: BigNumberish,
+      finalToken: string,
+      forwardTo: string,
       overrides?: CallOverrides
     ): Promise<string>
 
@@ -183,6 +189,8 @@ export interface TokenZapV1 extends BaseContract {
       target: string,
       payload: BytesLike,
       amountPosition: BigNumberish,
+      finalToken: string,
+      forwardTo: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
@@ -207,6 +215,8 @@ export interface TokenZapV1 extends BaseContract {
       target: string,
       payload: BytesLike,
       amountPosition: BigNumberish,
+      finalToken: string,
+      forwardTo: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 

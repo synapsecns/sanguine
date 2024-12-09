@@ -11,6 +11,7 @@
     "name": "previewIntent",
     "inputs": [
       { "name": "swapQuoter", "type": "address", "internalType": "address" },
+      { "name": "forwardTo", "type": "address", "internalType": "address" },
       { "name": "tokenIn", "type": "address", "internalType": "address" },
       { "name": "tokenOut", "type": "address", "internalType": "address" },
       { "name": "amountIn", "type": "uint256", "internalType": "uint256" }
@@ -35,6 +36,7 @@
     ],
     "stateMutability": "view"
   },
+  { "type": "error", "name": "SIP__NoOpForwardNotSupported", "inputs": [] },
   { "type": "error", "name": "SIP__PoolTokenMismatch", "inputs": [] },
   { "type": "error", "name": "SIP__PoolZeroAddress", "inputs": [] },
   { "type": "error", "name": "SIP__RawParamsEmpty", "inputs": [] },

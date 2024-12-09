@@ -30,7 +30,9 @@
         "name": "amountPosition",
         "type": "uint256",
         "internalType": "uint256"
-      }
+      },
+      { "name": "finalToken", "type": "address", "internalType": "address" },
+      { "name": "forwardTo", "type": "address", "internalType": "address" }
     ],
     "outputs": [{ "name": "", "type": "bytes", "internalType": "bytes" }],
     "stateMutability": "pure"
@@ -70,10 +72,16 @@
   },
   {
     "type": "error",
+    "name": "TokenZapV1__FinalTokenBalanceZero",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "TokenZapV1__PayloadLengthAboveMax",
     "inputs": []
   },
   { "type": "error", "name": "TokenZapV1__TargetZeroAddress", "inputs": [] },
+  { "type": "error", "name": "TokenZapV1__TokenZeroAddress", "inputs": [] },
   { "type": "error", "name": "ZapDataV1__InvalidEncoding", "inputs": [] },
   { "type": "error", "name": "ZapDataV1__TargetZeroAddress", "inputs": [] },
   {
