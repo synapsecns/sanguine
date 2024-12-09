@@ -197,7 +197,7 @@ const (
 	BulkQuotesRoute = "/bulk_quotes"
 	// AckRoute is the API endpoint for handling relay ack related requests.
 	AckRoute = "/ack"
-	// ContractsRoute is the API endpoint for returning a list fo contracts.
+	// ContractsRoute is the API endpoint for returning a list of contracts.
 	ContractsRoute = "/contracts"
 	// RFQStreamRoute is the API endpoint for handling active quote requests via websocket.
 	RFQStreamRoute = "/rfq_stream"
@@ -505,9 +505,9 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 
 // GetActiveRFQWebsocket handles the WebSocket connection for active quote requests.
 // GET /rfq_stream.
-// @Summary Handle WebSocket connection for active quote requests
+// @Summary Listen for Active RFQs
 // @Schemes
-// @Description Establish a WebSocket connection to receive active quote requests.
+// @Description Establish a WebSocket connection to listen for streaming active quote requests.
 // @Tags quotes
 // @Produce json
 // @Success 101 {string} string "Switching Protocols"
@@ -569,10 +569,10 @@ const (
 
 // PutRFQRequest handles a user request for a quote.
 // PUT /rfq.
-// @Summary Handle user quote request
+// @Summary Initiate an Active RFQ
 // @Schemes
-// @Description Handle user quote request and return the best quote available.
-// @Param request body model.PutRFQRequest true "User quote request"
+// @Description Initiate an Active Request-For-Quote and return the best quote available.
+// @Param request body model.PutRFQRequest true "Initiate an Active Request-For-Quote"
 // @Tags quotes
 // @Accept json
 // @Produce json

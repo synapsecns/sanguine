@@ -1,0 +1,2 @@
+# jekyll config. Jekyll is used here only for helm.
+exclude: [docs]

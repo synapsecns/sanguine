@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.12](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.11...@synapsecns/rest-api@1.8.12) (2024-12-02)
+
+
+### Bug Fixes
+
+* update klaytn/kaia rpc url ([#3426](https://github.com/synapsecns/sanguine/issues/3426)) ([590594a](https://github.com/synapsecns/sanguine/commit/590594a80d576ea916052f25e22220823623e088))
+
+
+
+
+
+## [1.8.11](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.10...@synapsecns/rest-api@1.8.11) (2024-12-01)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.8.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.9...@synapsecns/rest-api@1.8.10) (2024-12-01)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.8.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.8...@synapsecns/rest-api@1.8.9) (2024-11-30)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
 ## [1.8.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.7...@synapsecns/rest-api@1.8.8) (2024-11-19)
 
 **Note:** Version bump only for package @synapsecns/rest-api

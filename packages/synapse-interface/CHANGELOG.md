@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.40.23](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.40.22...@synapsecns/synapse-interface@0.40.23) (2024-12-06)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.40.22](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.40.21...@synapsecns/synapse-interface@0.40.22) (2024-12-02)
+
+
+### Bug Fixes
+
+* update klaytn/kaia rpc url ([#3426](https://github.com/synapsecns/sanguine/issues/3426)) ([590594a](https://github.com/synapsecns/sanguine/commit/590594a80d576ea916052f25e22220823623e088))
+
+
+
+
+
+## [0.40.21](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.40.20...@synapsecns/synapse-interface@0.40.21) (2024-12-01)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.40.20](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.40.19...@synapsecns/synapse-interface@0.40.20) (2024-11-30)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.40.19](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.40.18...@synapsecns/synapse-interface@0.40.19) (2024-11-19)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface

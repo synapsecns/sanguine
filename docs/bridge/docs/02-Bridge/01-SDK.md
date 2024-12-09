@@ -153,7 +153,7 @@ Use `bridgeQuote` to request a Bridge transaction
 
 Returns an array all possible bridge quotes, with the first item in the array being the cheapest route.
 
-Quotes are returned from various Bridge "types" such as [CCTP](/docs/Routers/CCTP) or [RFQ](/docs/Routers/RFQ). More information is available on the [Synapse Router](/docs/Routers/Synapse-Router) page, or [SynapseCNS](https://github.com/synapsecns/sdk-router) Github repository.
+Quotes are returned from various Bridge "types" such as [CCTP](/docs/Routers/CCTP) or [RFQ](/docs/RFQ). More information is available on the [Synapse Router](/docs/Routers/Synapse-Router) page, or [SynapseCNS](https://github.com/synapsecns/sdk-router) Github repository.
 
 ## Examples
 
