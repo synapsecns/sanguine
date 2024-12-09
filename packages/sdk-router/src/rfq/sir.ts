@@ -166,10 +166,12 @@ export class SynapseIntentRouter implements SynapseModule {
     // TODO: this should be multicalled?
     return Promise.all(
       rfqTokens.map(async (tokenOut) => {
-        // Get a quote and steps for the intent
+        // Get a quote and steps for the intent.
         const { amountOut, steps: stepsOutput } =
           await this.previewerContract.previewIntent(
             this.swapQuoterAddress,
+            // No forwarding is required, as these steps will be followed by the final step
+            AddressZero,
             tokenIn,
             tokenOut,
             amountIn
@@ -242,7 +244,10 @@ export class SynapseIntentRouter implements SynapseModule {
       // payload
       fastBridgeV2CallData,
       // amount position: 6-th parameter
-      4 + 32 * 5
+      4 + 32 * 5,
+      // finalToken and forwardTo are not used
+      AddressZero,
+      AddressZero
     )
     return {
       token: originToken,
