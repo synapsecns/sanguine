@@ -3,4 +3,4 @@ contracts/interfaces/IFastBridge.sol
 contracts/legacy/**/*.sol
 script/FastBridge.s.sol
 test/FastBridge.t.sol
-test/FastBridgeMock.sol
+test/mocks/FastBridgeMock.sol

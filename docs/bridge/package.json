@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/bridge-docs",
-  "version": "0.5.10",
+  "version": "0.5.13",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",

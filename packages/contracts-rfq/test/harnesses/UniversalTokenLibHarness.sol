@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {UniversalTokenLib} from "../contracts/libs/UniversalToken.sol";
+import {UniversalTokenLib} from "../../contracts/libs/UniversalToken.sol";
 
 // solhint-disable no-empty-blocks, ordering
 contract UniversalTokenLibHarness {
