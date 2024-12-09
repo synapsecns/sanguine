@@ -247,7 +247,7 @@ export const KLAYTN: Chain = {
   layer: 1,
   blockTime: 1000,
   rpcUrls: {
-    primary: 'https://klaytn.blockpi.network/v1/rpc/public',
+    primary: 'https://kaia.blockpi.network/v1/rpc/public',
     fallback: 'https://internal.klaytn.rpc.defikingdoms.com/api=654302102',
   },
   nativeCurrency: {

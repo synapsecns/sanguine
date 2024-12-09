@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.11.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.11.7...@synapsecns/sdk-router@0.11.8) (2024-12-01)
+
+
+### Reverts
+
+* Revert "reducing dependency bloat (#3411)" (#3421) ([5feb5a0](https://github.com/synapsecns/sanguine/commit/5feb5a0883e297bafa328fbe5c86935ed1ed2fa5)), closes [#3411](https://github.com/synapsecns/sanguine/issues/3411) [#3421](https://github.com/synapsecns/sanguine/issues/3421)
+
+
+
+
+
+## [0.11.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.11.6...@synapsecns/sdk-router@0.11.7) (2024-11-30)
+
+**Note:** Version bump only for package @synapsecns/sdk-router
+
+
+
+
+
 ## [0.11.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.11.5...@synapsecns/sdk-router@0.11.6) (2024-11-07)
 
 **Note:** Version bump only for package @synapsecns/sdk-router

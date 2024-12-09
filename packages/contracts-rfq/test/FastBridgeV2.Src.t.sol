@@ -998,19 +998,19 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         // V1 doesn't have any version field
         expectRevertUnsupportedVersion(0);
         vm.prank({msgSender: relayerA, txOrigin: relayerA});
-        fastBridge.claim(mockRequestV1);
+        fastBridge.claimV2(mockRequestV1);
     }
 
     function test_claim_revert_invalidRequestV2() public {
         expectRevertInvalidEncodedTx();
         vm.prank({msgSender: relayerA, txOrigin: relayerA});
-        fastBridge.claim(invalidRequestV2);
+        fastBridge.claimV2(invalidRequestV2);
     }
 
     function test_claim_revert_requestV3() public {
         expectRevertUnsupportedVersion(3);
         vm.prank({msgSender: relayerA, txOrigin: relayerA});
-        fastBridge.claim(mockRequestV3);
+        fastBridge.claimV2(mockRequestV3);
     }
 
     function test_claim_toDiffAddress_revert_requestV1() public {
@@ -1036,18 +1036,18 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         // V1 doesn't have any version field
         expectRevertUnsupportedVersion(0);
         vm.prank({msgSender: relayerA, txOrigin: relayerA});
-        fastBridge.cancel(mockRequestV1);
+        fastBridge.cancelV2(mockRequestV1);
     }
 
     function test_cancel_revert_invalidRequestV2() public {
         expectRevertInvalidEncodedTx();
         vm.prank({msgSender: relayerA, txOrigin: relayerA});
-        fastBridge.cancel(invalidRequestV2);
+        fastBridge.cancelV2(invalidRequestV2);
     }
 
     function test_cancel_revert_requestV3() public {
         expectRevertUnsupportedVersion(3);
         vm.prank({msgSender: relayerA, txOrigin: relayerA});
-        fastBridge.cancel(mockRequestV3);
+        fastBridge.cancelV2(mockRequestV3);
     }
 }

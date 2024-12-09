@@ -4,6 +4,7 @@ package rest
 import (
 	"context"
 	"encoding/json"
+	"math/big"
 
 	"fmt"
 	"net/http"
@@ -166,7 +167,7 @@ const (
 	BulkQuotesRoute = "/bulk_quotes"
 	// AckRoute is the API endpoint for handling relay ack related requests.
 	AckRoute = "/ack"
-	// ContractsRoute is the API endpoint for returning a list fo contracts.
+	// ContractsRoute is the API endpoint for returning a list of contracts.
 	ContractsRoute = "/contracts"
 	// RFQStreamRoute is the API endpoint for handling active quote requests via websocket.
 	RFQStreamRoute = "/rfq_stream"
@@ -425,9 +426,9 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 
 // GetActiveRFQWebsocket handles the WebSocket connection for active quote requests.
 // GET /rfq_stream.
-// @Summary Handle WebSocket connection for active quote requests
+// @Summary Listen for Active RFQs
 // @Schemes
-// @Description Establish a WebSocket connection to receive active quote requests.
+// @Description Establish a WebSocket connection to listen for streaming active quote requests.
 // @Tags quotes
 // @Produce json
 // @Success 101 {string} string "Switching Protocols"
@@ -489,10 +490,10 @@ const (
 
 // PutRFQRequest handles a user request for a quote.
 // PUT /rfq.
-// @Summary Handle user quote request
+// @Summary Initiate an Active RFQ
 // @Schemes
-// @Description Handle user quote request and return the best quote available.
-// @Param request body model.PutRFQRequest true "User quote request"
+// @Description Initiate an Active Request-For-Quote and return the best quote available.
+// @Param request body model.PutRFQRequest true "Initiate an Active Request-For-Quote"
 // @Tags quotes
 // @Accept json
 // @Produce json
@@ -547,20 +548,35 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 		span.SetAttributes(attribute.String("passive_quote_dest_amount", *passiveQuote.DestAmount))
 	}
 	quote := getBestQuote(activeQuote, passiveQuote)
+	var quoteType string
+	if quote == activeQuote {
+		quoteType = quoteTypeActive
+	} else if quote == passiveQuote {
+		quoteType = quoteTypePassive
+	}
 
-	// construct the response
-	var resp model.PutRFQResponse
-	if quote == nil {
+	// build and return the response
+	resp := getQuoteResponse(ctx, quote, quoteType)
+	c.JSON(http.StatusOK, resp)
+}
+
+func getQuoteResponse(ctx context.Context, quote *model.QuoteData, quoteType string) (resp model.PutRFQResponse) {
+	span := trace.SpanFromContext(ctx)
+
+	destAmount := big.NewInt(0)
+	if quote != nil && quote.DestAmount != nil {
+		amt, ok := destAmount.SetString(*quote.DestAmount, 10)
+		if ok {
+			destAmount = amt
+		}
+	}
+	if destAmount.Sign() <= 0 {
 		span.AddEvent("no quotes found")
 		resp = model.PutRFQResponse{
 			Success: false,
 			Reason:  "no quotes found",
 		}
 	} else {
-		quoteType := quoteTypeActive
-		if activeQuote == nil {
-			quoteType = quoteTypePassive
-		}
 		span.SetAttributes(
 			attribute.String("quote_type", quoteType),
 			attribute.String("quote_dest_amount", *quote.DestAmount),
@@ -573,7 +589,8 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 			RelayerAddress: *quote.RelayerAddress,
 		}
 	}
-	c.JSON(http.StatusOK, resp)
+
+	return resp
 }
 
 func (r *QuoterAPIServer) recordLatestQuoteAge(ctx context.Context, observer metric.Observer) (err error) {
