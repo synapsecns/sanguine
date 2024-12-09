@@ -231,7 +231,15 @@ func (s *PricerSuite) TestGetTotalFee() {
 	quoteRequest := &reldb.QuoteRequest{
 		RawRequest: []byte{},
 		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
-			ZapNative: big.NewInt(1 * 1e18),
+			ZapNative:          big.NewInt(1 * 1e18),
+			OriginSender:       common.HexToAddress("0xAA000000000000000000000000000000000000001"),
+			DestRecipient:      common.HexToAddress("0xAA00000000000000000000000000000000000001"),
+			OriginAmount:       big.NewInt(1 * 1e18),
+			DestAmount:         big.NewInt(1 * 1e18),
+			OriginFeeAmount:    big.NewInt(1 * 1e15),
+			Deadline:           big.NewInt(1733769166),
+			Nonce:              big.NewInt(123456),
+			ExclusivityEndTime: big.NewInt(0),
 		},
 	}
 	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true, quoteRequest)
@@ -246,9 +254,14 @@ func (s *PricerSuite) TestGetTotalFee() {
 	quoteRequest = &reldb.QuoteRequest{
 		RawRequest: []byte{},
 		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
-			ZapNative:  big.NewInt(1 * 1e18),
-			ZapData:    []byte{1},
-			DestAmount: big.NewInt(1 * 1e18),
+			ZapNative:          big.NewInt(1 * 1e18),
+			ZapData:            []byte{1},
+			OriginAmount:       big.NewInt(1 * 1e18),
+			DestAmount:         big.NewInt(1 * 1e18),
+			OriginFeeAmount:    big.NewInt(1 * 1e15),
+			Deadline:           big.NewInt(1733769166),
+			Nonce:              big.NewInt(123456),
+			ExclusivityEndTime: big.NewInt(0),
 		},
 	}
 	clientDestination.On(testsuite.GetFunctionName(clientDestination.EstimateGas), mock.Anything, mock.Anything).Once().Return(uint64(1_000_000), nil)

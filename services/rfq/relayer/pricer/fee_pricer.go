@@ -142,7 +142,7 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 
 	// Calculate the static L2 fee if it won't be incorporated by directly estimating the relay() call
 	// in addZapFees().
-	if len(quoteRequest.Transaction.ZapData) == 0 {
+	if quoteRequest == nil || len(quoteRequest.Transaction.ZapData) == 0 {
 		gasEstimate, err := f.config.GetDestGasEstimate(int(destination))
 		if err != nil {
 			return nil, fmt.Errorf("could not get dest gas estimate: %w", err)
@@ -184,7 +184,7 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomToken string, quoteRequest *reldb.QuoteRequest, fee *big.Int) (*big.Int, error) {
 	span := trace.SpanFromContext(ctx)
 
-	if len(quoteRequest.Transaction.ZapData) == 0 {
+	if quoteRequest != nil && len(quoteRequest.Transaction.ZapData) != 0 {
 		gasEstimate, err := f.getZapGasEstimate(ctx, destination, quoteRequest)
 		if err != nil {
 			return nil, err
@@ -197,7 +197,7 @@ func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomTok
 		span.SetAttributes(attribute.String("call_fee", callFee.String()))
 	}
 
-	if quoteRequest.Transaction.ZapNative != nil && quoteRequest.Transaction.ZapNative.Sign() > 0 {
+	if quoteRequest != nil && quoteRequest.Transaction.ZapNative != nil && quoteRequest.Transaction.ZapNative.Cmp(big.NewInt(0)) > 0 && quoteRequest.Transaction.ZapNative.Sign() > 0 {
 		callValueFloat := new(big.Float).SetInt(quoteRequest.Transaction.ZapNative)
 		valueDenom, err := f.getDenomFee(ctx, destination, destination, denomToken, callValueFloat)
 		if err != nil {
