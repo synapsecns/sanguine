@@ -18,16 +18,22 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     using SafeERC20 for IERC20;
 
+    /// @notice Struct for storing information about a prover.
+    /// @param id                   The ID of the prover: its position in `_allProvers` plus one,
+    ///                             or zero if the prover has never been added.
+    /// @param activeFromTimestamp  The timestamp at which the prover becomes active,
+    ///                             or zero if the prover has never been added or is no longer active.
+    struct ProverInfo {
+        uint16 id;
+        uint240 activeFromTimestamp;
+    }
+
     /// @notice The address reserved for the native gas token (ETH on Ethereum and most L2s, AVAX on Avalanche, etc.).
     address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     /// @notice The role identifier for the Quoter API's off-chain authentication.
     /// @dev Only addresses with this role can post FastBridge quotes to the API.
     bytes32 public constant QUOTER_ROLE = keccak256("QUOTER_ROLE");
-
-    /// @notice The role identifier for the Prover's on-chain authentication in FastBridge.
-    /// @dev Only addresses with this role can provide proofs that a FastBridge request has been relayed.
-    bytes32 public constant PROVER_ROLE = keccak256("PROVER_ROLE");
 
     /// @notice The role identifier for the Guard's on-chain authentication in FastBridge.
     /// @dev Only addresses with this role can dispute submitted relay proofs during the dispute period.
@@ -51,6 +57,11 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     /// @notice The default cancel delay set during contract deployment.
     uint256 public constant DEFAULT_CANCEL_DELAY = 1 days;
 
+    /// @notice The minimum dispute penalty time that can be set by the governor.
+    uint256 public constant MIN_DISPUTE_PENALTY_TIME = 1 minutes;
+    /// @notice The default dispute penalty time set during contract deployment.
+    uint256 public constant DEFAULT_DISPUTE_PENALTY_TIME = 30 minutes;
+
     /// @notice The protocol fee rate taken on the origin amount deposited in the origin chain.
     uint256 public protocolFeeRate;
 
@@ -66,6 +77,14 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     /// This is exposed for conveniece for off-chain indexers that need to know the deployment block.
     uint256 public deployBlock;
 
+    /// @notice The timeout period that is used to temporarily disactivate a disputed prover.
+    uint256 public disputePenaltyTime;
+
+    /// @notice A list of all provers ever added to the contract. Can hold up to 2^16-1 provers.
+    address[] private _allProvers;
+    /// @notice A mapping of provers to their information: id and activeFromTimestamp.
+    mapping(address => ProverInfo) private _proverInfos;
+
     /// @notice This variable is deprecated and should not be used.
     /// @dev Use ZapNative V2 requests instead.
     uint256 public immutable chainGasAmount = 0;
@@ -74,6 +93,35 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
         _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _setCancelDelay(DEFAULT_CANCEL_DELAY);
         _setDeployBlock(block.number);
+        _setDisputePenaltyTime(DEFAULT_DISPUTE_PENALTY_TIME);
+    }
+
+    /// @inheritdoc IAdminV2
+    function addProver(address prover) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (getActiveProverID(prover) != 0) revert ProverAlreadyActive();
+        ProverInfo storage $ = _proverInfos[prover];
+        // Add the prover to the list of all provers and record its id (its position + 1),
+        // if this has not already been done.
+        if ($.id == 0) {
+            _allProvers.push(prover);
+            uint256 id = _allProvers.length;
+            if (id > type(uint16).max) revert ProverCapacityExceeded();
+            // Note: this is a storage write.
+            $.id = uint16(id);
+        }
+        // Update the activeFrom timestamp.
+        // Note: this is a storage write.
+        $.activeFromTimestamp = uint240(block.timestamp);
+        emit ProverAdded(prover);
+    }
+
+    /// @inheritdoc IAdminV2
+    function removeProver(address prover) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (getActiveProverID(prover) == 0) revert ProverNotActive();
+        // We never remove provers from the list of all provers to preserve their IDs,
+        // so we just need to reset the activeFrom timestamp.
+        _proverInfos[prover].activeFromTimestamp = 0;
+        emit ProverRemoved(prover);
     }
 
     /// @inheritdoc IAdminV2
@@ -84,6 +132,11 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     /// @inheritdoc IAdminV2
     function setDeployBlock(uint256 blockNumber) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _setDeployBlock(blockNumber);
+    }
+
+    /// @inheritdoc IAdminV2
+    function setDisputePenaltyTime(uint256 newDisputePenaltyTime) external onlyRole(GOVERNOR_ROLE) {
+        _setDisputePenaltyTime(newDisputePenaltyTime);
     }
 
     /// @inheritdoc IAdminV2
@@ -110,6 +163,66 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
         }
     }
 
+    /// @inheritdoc IAdminV2
+    function getProvers() external view returns (address[] memory provers) {
+        uint256 length = _allProvers.length;
+        // Calculate the number of active provers.
+        uint256 activeProversCount = 0;
+        for (uint256 i = 0; i < length; i++) {
+            if (getActiveProverID(_allProvers[i]) != 0) {
+                activeProversCount++;
+            }
+        }
+        // Do the second pass to populate the provers array.
+        provers = new address[](activeProversCount);
+        uint256 activeProversIndex = 0;
+        for (uint256 i = 0; i < length; i++) {
+            address prover = _allProvers[i];
+            if (getActiveProverID(prover) != 0) {
+                provers[activeProversIndex++] = prover;
+            }
+        }
+    }
+
+    /// @inheritdoc IAdminV2
+    function getProverInfo(address prover) external view returns (uint16 proverID, uint256 activeFromTimestamp) {
+        proverID = _proverInfos[prover].id;
+        activeFromTimestamp = _proverInfos[prover].activeFromTimestamp;
+    }
+
+    /// @inheritdoc IAdminV2
+    function getProverInfoByID(uint16 proverID) external view returns (address prover, uint256 activeFromTimestamp) {
+        if (proverID == 0 || proverID > _allProvers.length) return (address(0), 0);
+        prover = _allProvers[proverID - 1];
+        activeFromTimestamp = _proverInfos[prover].activeFromTimestamp;
+    }
+
+    /// @inheritdoc IAdminV2
+    function getActiveProverID(address prover) public view returns (uint16) {
+        // Aggregate the read operations from the same storage slot.
+        uint16 id = _proverInfos[prover].id;
+        uint256 activeFromTimestamp = _proverInfos[prover].activeFromTimestamp;
+        // Return zero if the prover has never been added or is no longer active.
+        if (activeFromTimestamp == 0 || activeFromTimestamp > block.timestamp) return 0;
+        return id;
+    }
+
+    /// @notice Internal logic to apply the dispute penalty time to a given prover. Will make the prover inactive
+    /// for `disputePenaltyTime` seconds. No-op if the prover ID does not exist or prover is already inactive.
+    function _applyDisputePenaltyTime(uint16 proverID) internal {
+        // Check that the prover exists.
+        if (proverID == 0 || proverID > _allProvers.length) return;
+        address prover = _allProvers[proverID - 1];
+        ProverInfo storage $ = _proverInfos[prover];
+        // No-op if the prover is already inactive.
+        if ($.activeFromTimestamp == 0) return;
+        uint256 newActiveFromTimestamp = block.timestamp + disputePenaltyTime;
+        // Update the activeFrom timestamp.
+        // Note: this is a storage write.
+        $.activeFromTimestamp = uint240(newActiveFromTimestamp);
+        emit DisputePenaltyTimeApplied(prover, newActiveFromTimestamp);
+    }
+
     /// @notice Internal logic to set the cancel delay. Security checks are performed outside of this function.
     /// @dev This function is marked as private to prevent child contracts from calling it directly.
     function _setCancelDelay(uint256 newCancelDelay) private {
@@ -124,5 +237,14 @@ contract AdminV2 is AccessControlEnumerable, IAdminV2, IAdminV2Errors {
     function _setDeployBlock(uint256 blockNumber) private {
         deployBlock = blockNumber;
         emit DeployBlockSet(blockNumber);
+    }
+
+    /// @notice Internal logic to set the dispute penalty time. Security checks are performed outside of this function.
+    /// @dev This function is marked as private to prevent child contracts from calling it directly.
+    function _setDisputePenaltyTime(uint256 newDisputePenaltyTime) private {
+        if (newDisputePenaltyTime < MIN_DISPUTE_PENALTY_TIME) revert DisputePenaltyTimeBelowMin();
+        uint256 oldDisputePenaltyTime = disputePenaltyTime;
+        disputePenaltyTime = newDisputePenaltyTime;
+        emit DisputePenaltyTimeUpdated(oldDisputePenaltyTime, newDisputePenaltyTime);
     }
 }

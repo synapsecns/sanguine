@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {TokenNotContract} from "../contracts/libs/Errors.sol";
+import {TokenNotContract} from "../../contracts/libs/Errors.sol";
 
-import {MockERC20} from "./MockERC20.sol";
-import {MockRevertingRecipient} from "./MockRevertingRecipient.sol";
-import {UniversalTokenLibHarness} from "./UniversalTokenLibHarness.sol";
+import {UniversalTokenLibHarness} from "../harnesses/UniversalTokenLibHarness.sol";
+import {MockERC20} from "../mocks/MockERC20.sol";
+import {MockRevertingRecipient} from "../mocks/MockRevertingRecipient.sol";
 
 import {Test} from "forge-std/Test.sol";
 

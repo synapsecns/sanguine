@@ -6,7 +6,7 @@ import {BridgeTransactionV2Lib} from "../../contracts/libs/BridgeTransactionV2.s
 import {ZapDataV1} from "../../contracts/libs/ZapDataV1.sol";
 import {TokenZapV1} from "../../contracts/zaps/TokenZapV1.sol";
 
-import {MockERC20} from "../MockERC20.sol";
+import {MockERC20} from "../mocks/MockERC20.sol";
 import {VaultManyArguments} from "../mocks/VaultManyArguments.sol";
 
 import {Test} from "forge-std/Test.sol";
@@ -45,7 +45,7 @@ abstract contract TokenZapV1IntegrationTest is Test {
 
     function setUp() public virtual {
         fastBridge = new FastBridgeV2(address(this));
-        fastBridge.grantRole(fastBridge.PROVER_ROLE(), relayer);
+        fastBridge.addProver(relayer);
 
         srcToken = new MockERC20("SRC", 18);
         dstToken = new MockERC20("DST", 18);
