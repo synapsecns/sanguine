@@ -1,9 +1,9 @@
 {
-  "address": "0xE184826D4aBC2798134abE7e2Fd72156827Fc7EA",
+  "address": "0x9519E8D136d0a89d7e10D1a66C97249E0135544B",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0xdee35d80aa7aa61e76d152e22676067769f2923c85ed5e96d55c807ac9418277",
-    "blockNumber": 281941808
+    "hash": "0xb34f3d918399ac6fa599ecedfdd4a47bd993f4f0e401698d6256dab2fd928ab9",
+    "blockNumber": 282619262
   },
   "abi": [
     {
@@ -25,6 +25,11 @@
       "inputs": [
         {
           "name": "swapQuoter",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "forwardTo",
           "type": "address",
           "internalType": "address"
         },
@@ -79,6 +84,11 @@
         }
       ],
       "stateMutability": "view"
+    },
+    {
+      "type": "error",
+      "name": "SIP__NoOpForwardNotSupported",
+      "inputs": []
     },
     {
       "type": "error",
