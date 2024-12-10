@@ -52,14 +52,10 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     /// @notice This variable is deprecated and should not be used.
     /// @dev Replaced by senderNonces.
     uint256 public immutable nonce = 0;
-    /// @notice The block number at which this contract was deployed.
-    uint256 public immutable deployBlock;
 
     /// @notice Initializes the FastBridgeV2 contract with the provided default admin,
     /// sets the default cancel delay, and records the deploy block number.
-    constructor(address defaultAdmin) AdminV2(defaultAdmin) {
-        deployBlock = block.number;
-    }
+    constructor(address defaultAdmin) AdminV2(defaultAdmin) {}
 
     // ══════════════════════════════════════ EXTERNAL MUTABLE (USER FACING) ═══════════════════════════════════════════
 

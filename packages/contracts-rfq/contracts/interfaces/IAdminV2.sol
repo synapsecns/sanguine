@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 
 interface IAdminV2 {
     event CancelDelayUpdated(uint256 oldCancelDelay, uint256 newCancelDelay);
+    event DeployBlockSet(uint256 blockNumber);
     event DisputePenaltyTimeUpdated(uint256 oldDisputePenaltyTime, uint256 newDisputePenaltyTime);
     event FeeRateUpdated(uint256 oldFeeRate, uint256 newFeeRate);
     event FeesSwept(address token, address recipient, uint256 amount);
@@ -20,6 +21,11 @@ interface IAdminV2 {
     /// @notice Allows the governor to set the cancel delay. The cancel delay is the time period after the transaction
     /// deadline during which a transaction can be permissionlessly cancelled if it hasn't been proven by any Relayer.
     function setCancelDelay(uint256 newCancelDelay) external;
+
+    /// @notice Allows the default admin to set the deploy block.
+    /// @dev This is only relevant for chains like Arbitrum that implement the `block.number` as the underlying L1
+    /// block number rather than the chain's native block number.
+    function setDeployBlock(uint256 blockNumber) external;
 
     /// @notice Allows the governor to set the dispute penalty time. The dispute penalty time is the time period used to
     /// temporarily deactivate a prover if its proof is disputed: prover will be inactive for the dispute penalty time

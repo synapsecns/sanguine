@@ -26,6 +26,7 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
     event ProverRemoved(address prover);
 
     event CancelDelayUpdated(uint256 oldCancelDelay, uint256 newCancelDelay);
+    event DeployBlockSet(uint256 blockNumber);
     event DisputePenaltyTimeUpdated(uint256 oldDisputePenaltyTime, uint256 newDisputePenaltyTime);
     event FeeRateUpdated(uint256 oldFeeRate, uint256 newFeeRate);
     event FeesSwept(address token, address recipient, uint256 amount);
@@ -65,6 +66,11 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         fastBridge.setCancelDelay(newCancelDelay);
     }
 
+    function setDeployBlock(address caller, uint256 blockNumber) public {
+        vm.prank(caller);
+        fastBridge.setDeployBlock(blockNumber);
+    }
+
     function setDisputePenaltyTime(address caller, uint256 newDisputePenaltyTime) public {
         vm.prank(caller);
         fastBridge.setDisputePenaltyTime(newDisputePenaltyTime);
@@ -94,6 +100,7 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
 
     function test_defaultValues() public view {
         assertEq(fastBridge.cancelDelay(), DEFAULT_CANCEL_DELAY);
+        assertEq(fastBridge.deployBlock(), block.number);
         assertEq(fastBridge.disputePenaltyTime(), DEFAULT_DISPUTE_PENALTY_TIME);
         assertEq(fastBridge.protocolFeeRate(), 0);
     }
@@ -271,6 +278,21 @@ contract FastBridgeV2ManagementTest is FastBridgeV2Test {
         vm.assume(caller != governor);
         expectUnauthorized(caller, fastBridge.GOVERNOR_ROLE());
         setCancelDelay(caller, 4 days);
+    }
+
+    // ═════════════════════════════════════════════ SET DEPLOY BLOCK ══════════════════════════════════════════════════
+
+    function test_setDeployBlock() public {
+        vm.expectEmit(address(fastBridge));
+        emit DeployBlockSet(123_456);
+        setDeployBlock(admin, 123_456);
+        assertEq(fastBridge.deployBlock(), 123_456);
+    }
+
+    function test_setDeployBlock_revertNotAdmin(address caller) public {
+        vm.assume(caller != admin);
+        expectUnauthorized(caller, fastBridge.DEFAULT_ADMIN_ROLE());
+        setDeployBlock(caller, 123_456);
     }
 
     // ═════════════════════════════════════════ SET DISPUTE PENALTY TIME ══════════════════════════════════════════════
