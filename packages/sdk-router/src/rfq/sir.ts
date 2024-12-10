@@ -23,7 +23,7 @@ import { adjustValueIfNative, isNativeToken } from '../utils/handleNativeToken'
 import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
 import { decodeSavedBridgeParams } from './paramsV2'
 import { StepParams, encodeStepParams, decodeStepParams } from './steps'
-import { encodeZapDataBytes } from './zapData'
+import { encodeZapData } from './zapData'
 
 export class SynapseIntentRouter implements SynapseModule {
   static fastBridgeV2Interface = new Interface(fastBridgeV2Abi)
@@ -240,7 +240,7 @@ export class SynapseIntentRouter implements SynapseModule {
         paramsV2,
       ])
     // Amount is the 6-th parameter within the FastBridgeV2 call
-    const zapData = await encodeZapDataBytes(this.tokenZapContract, {
+    const zapData = encodeZapData({
       target: this.fastBridgeV2Contract.address,
       payload: fastBridgeV2CallData,
       amountPosition: 4 + 32 * 5,
