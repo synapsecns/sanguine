@@ -23,6 +23,7 @@ import { adjustValueIfNative, isNativeToken } from '../utils/handleNativeToken'
 import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
 import { decodeSavedBridgeParams } from './paramsV2'
 import { StepParams, encodeStepParams, decodeStepParams } from './steps'
+import { encodeZapDataBytes } from './zapData'
 
 export class SynapseIntentRouter implements SynapseModule {
   static fastBridgeV2Interface = new Interface(fastBridgeV2Abi)
@@ -227,7 +228,7 @@ export class SynapseIntentRouter implements SynapseModule {
       to,
       originToken,
       destToken: dstQuery.tokenOut,
-      // Will be set by the TokenZap
+      // Will be set in encodeZapData below
       originAmount: 0,
       destAmount: dstQuery.minAmountOut,
       sendChainGas: false,
@@ -238,17 +239,12 @@ export class SynapseIntentRouter implements SynapseModule {
         bridgeParamsV1,
         paramsV2,
       ])
-    const zapData = await this.tokenZapContract.encodeZapData(
-      // target
-      this.fastBridgeV2Contract.address,
-      // payload
-      fastBridgeV2CallData,
-      // amount position: 6-th parameter
-      4 + 32 * 5,
-      // finalToken and forwardTo are not used
-      AddressZero,
-      AddressZero
-    )
+    // Amount is the 6-th parameter within the FastBridgeV2 call
+    const zapData = await encodeZapDataBytes(this.tokenZapContract, {
+      target: this.fastBridgeV2Contract.address,
+      payload: fastBridgeV2CallData,
+      amountPosition: 4 + 32 * 5,
+    })
     return {
       token: originToken,
       // Use the full balance for the Zap action
