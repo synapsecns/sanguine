@@ -30,6 +30,15 @@ import { getAllQuotes, getBestRelayerQuote } from './api'
 import { BridgeParamsV2, encodeSavedBridgeParams } from './paramsV2'
 import { applyDefaultValues, ZapDataV1 } from './zapData'
 
+type OriginIntent = {
+  ticker: Ticker
+  originQuery: Query
+  originAmountOut: BigNumber
+  destQuery?: Query
+}
+
+type Intent = Required<OriginIntent>
+
 export class SynapseIntentRouterSet extends SynapseModuleSet {
   static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
 
@@ -101,39 +110,27 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     if (!this.getModule(originChainId) || !this.getModule(destChainId)) {
       return []
     }
-    // Get all tickers that can be used to fulfill the tokenIn -> tokenOut intent via RFQ
-    const tickers = await this.getAllTickers(
-      originChainId,
-      destChainId,
-      tokenOut
-    )
+    // Get all tickers that can be used between the two chains
+    const tickers = await this.getAllTickers(originChainId, destChainId)
     // Get queries for swaps on the origin chain from tokenIn into the "RFQ-supported token"
-    const filteredTickers = await this.filterTickersWithPossibleSwap(
+    const originQuotes = await this.filterTickersWithOriginSwap(
       originChainId,
       tokenIn,
       amountIn,
       tickers
     )
-    const protocolFeeRate = await this.getSynapseIntentRouter(
-      originChainId
-    ).getProtocolFeeRate()
-    const quotes = await Promise.all(
-      filteredTickers.map(async ({ ticker, originQuery }) => ({
-        ticker,
-        originQuery,
-        quote: await getBestRelayerQuote(
-          ticker,
-          // Get the quote for the proceeds of the origin swap with protocol fee applied
-          this.applyProtocolFeeRate(originQuery.minAmountOut, protocolFeeRate),
-          {
-            originSender: originUserAddress,
-          }
-        ),
-      }))
+    // Get queries for swaps on the destination chain from the "RFQ-supported token" into tokenOut
+    const intents: Intent[] = await this.filterQuotesWithDestSwap(
+      destChainId,
+      tokenOut,
+      originQuotes,
+      originUserAddress
     )
-    return quotes
-      .filter(({ quote }) => quote.destAmount.gt(0))
-      .map(({ ticker, originQuery, quote }) => ({
+    // Apply the quotes from the RFQ API
+    const fullQuotes = await this.applyQuotes(intents, originUserAddress)
+    return fullQuotes
+      .filter(({ destQuery }) => destQuery.minAmountOut.gt(0))
+      .map(({ ticker, originQuery, destQuery }) => ({
         originChainId,
         destChainId,
         bridgeToken: {
@@ -141,22 +138,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
           token: ticker.destToken.token,
         },
         originQuery,
-        destQuery: SynapseIntentRouterSet.createRFQDestQuery(
-          tokenOut,
-          quote.destAmount,
-          {
-            originUserAddress,
-            // TODO: non-default values
-            paramsV2: {
-              quoteRelayer: AddressZero,
-              quoteExclusivitySeconds: Zero,
-              quoteId: '0x',
-              zapNative: Zero,
-              zapData: '0x',
-            },
-            zapData: {},
-          }
-        ),
+        destQuery,
         bridgeModuleName: this.bridgeModuleName,
       }))
   }
@@ -260,12 +242,15 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
    * Filters the list of tickers to only include those that can be used for given amount of input token.
    * For every filtered ticker, the origin query is returned with the information for tokenIn -> ticker swaps.
    */
-  private async filterTickersWithPossibleSwap(
+  private async filterTickersWithOriginSwap(
     originChainId: number,
     tokenIn: string,
     amountIn: BigintIsh,
     tickers: Ticker[]
-  ): Promise<{ ticker: Ticker; originQuery: Query }[]> {
+  ): Promise<OriginIntent[]> {
+    const protocolFeeRate = await this.getSynapseIntentRouter(
+      originChainId
+    ).getProtocolFeeRate()
     // Get queries for swaps on the origin chain into the "RFQ-supported token"
     const originQueries = await this.getSynapseIntentRouter(
       originChainId
@@ -280,29 +265,96 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       .map((ticker, index) => ({
         ticker,
         originQuery: originQueries[index],
+        originAmountOut: this.applyProtocolFeeRate(
+          originQueries[index].minAmountOut,
+          protocolFeeRate
+        ),
       }))
       .filter(({ originQuery }) => originQuery.minAmountOut.gt(0))
   }
 
   /**
-   * Get all unique tickers for a given origin chain and a destination token. In other words,
-   * this is the list of all origin tokens that can be used to create a quote for a
-   * swap to the given destination token, without duplicates.
+   * Filters the list of quotes to only include those that can be used to receive teh given destination token.
+   * For every filtered quote, the origin query is returned with the information for tokenIn -> ticker swaps,
+   * and the dest query with the information for ticker -> tokenOut swap.
+   */
+  private async filterQuotesWithDestSwap(
+    destChainId: number,
+    tokenOut: string,
+    quotes: OriginIntent[],
+    originUserAddress?: string
+  ): Promise<Intent[]> {
+    // TODO: actually find swaps, for now filter by tokenOut
+    return quotes
+      .filter((quote) => quote.ticker.destToken.chainId === destChainId)
+      .filter((quote) => isSameAddress(quote.ticker.destToken.token, tokenOut))
+      .map((quote) => ({
+        ...quote,
+        destQuery: SynapseIntentRouterSet.createRFQDestQuery(
+          tokenOut,
+          quote.originAmountOut,
+          {
+            // TODO: non-default values
+            originUserAddress,
+            paramsV2: {
+              quoteRelayer: AddressZero,
+              quoteExclusivitySeconds: Zero,
+              quoteId: '0x',
+              zapNative: Zero,
+              zapData: '0x',
+            },
+            zapData: {},
+          }
+        ),
+      }))
+  }
+
+  /**
+   * Given a list of intents, fetches the best quote for each intent. THe quotes are recorded
+   * as `destQuery.minAmountOut`, while the other fields are left unchanged.
+   */
+  private async applyQuotes(
+    intents: Intent[],
+    originUserAddress?: string
+  ): Promise<Intent[]> {
+    return Promise.all(
+      intents.map(
+        async ({ ticker, originQuery, destQuery, originAmountOut }) => {
+          const quote = await getBestRelayerQuote(ticker, originAmountOut, {
+            originSender: originUserAddress,
+          })
+          const destQueryAdjusted: Query = {
+            ...destQuery,
+            minAmountOut: quote.destAmount,
+          }
+          return {
+            ticker,
+            originQuery,
+            originAmountOut,
+            destQuery: destQueryAdjusted,
+          }
+        }
+      )
+    )
+  }
+
+  /**
+   * Get all unique tickers for a given origin and destination chains. In other words,
+   * this is the list of all (originToken, destToken) pairs that can be used to create a quote
+   * for a swap between the two chains, without duplicates.
    *
    * @param originChainId - The ID of the origin chain.
    * @param destChainId - The ID of the destination chain.
-   * @param tokenOut - The final token of the cross-chain swap.
    * @returns A promise that resolves to the list of tickers.
    */
   private async getAllTickers(
     originChainId: number,
-    destChainId: number,
-    tokenOut: string
+    destChainId: number
   ): Promise<Ticker[]> {
     const allQuotes = await getAllQuotes()
     const originFB = FAST_BRIDGE_V2_ADDRESS_MAP[originChainId]
     const destFB = FAST_BRIDGE_V2_ADDRESS_MAP[destChainId]
-    // First, we filter out quotes for other chainIDs, bridges or destination token.
+    // First, we filter out quotes for other chainIDs and bridge addresses.
     // Then, we filter out quotes that are too old.
     // Finally, we remove the duplicates of the origin token.
     return allQuotes
@@ -311,8 +363,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
           quote.ticker.originToken.chainId === originChainId &&
           quote.ticker.destToken.chainId === destChainId &&
           isSameAddress(quote.originFastBridge, originFB) &&
-          isSameAddress(quote.destFastBridge, destFB) &&
-          isSameAddress(quote.ticker.destToken.token, tokenOut)
+          isSameAddress(quote.destFastBridge, destFB)
         // TODO: don't filter by age here
         const age = Date.now() - quote.updatedAt
         const isValidAge =
