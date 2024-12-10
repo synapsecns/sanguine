@@ -124,8 +124,9 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
           ticker,
           // Get the quote for the proceeds of the origin swap with protocol fee applied
           this.applyProtocolFeeRate(originQuery.minAmountOut, protocolFeeRate),
-          originUserAddress
-          // TODO: pass MAX_QUOTE_AGE here once supported by the API
+          {
+            originSender: originUserAddress,
+          }
         ),
       }))
     )

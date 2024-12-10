@@ -124,7 +124,9 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
           ticker,
           // Get the quote for the proceeds of the origin swap with protocol fee applied
           this.applyProtocolFeeRate(originQuery.minAmountOut, protocolFeeRate),
-          originUserAddress
+          {
+            originSender: originUserAddress,
+          }
         ),
       }))
     )

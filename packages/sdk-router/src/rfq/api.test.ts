@@ -121,7 +121,6 @@ describe('getBestRelayerQuote', () => {
   const bigAmountStr = '1000000000000000000000000'
   const relayerAddress = '0x0000000000000000000000000000000000001337'
   const quoteID = 'acbdef-123456'
-  const userAddress = '0x0000000000000000000000000000000000007331'
 
   const ticker: Ticker = {
     originToken: {
@@ -167,7 +166,7 @@ describe('getBestRelayerQuote', () => {
   describe('Returns a non-zero quote', () => {
     it('when the response is ok', async () => {
       fetchMock.mockResponseOnce(JSON.stringify(quoteFound))
-      const result = await getBestRelayerQuote(ticker, bigAmount, userAddress)
+      const result = await getBestRelayerQuote(ticker, bigAmount)
       expect(result).toEqual(quote)
     })
 
@@ -175,7 +174,7 @@ describe('getBestRelayerQuote', () => {
       fetchMock.mockResponseOnce(() =>
         delayedAPIPromise(JSON.stringify(quoteFound), OK_RESPONSE_TIME)
       )
-      const result = await getBestRelayerQuote(ticker, bigAmount, userAddress)
+      const result = await getBestRelayerQuote(ticker, bigAmount)
       expect(result).toEqual(quote)
     })
 
@@ -189,7 +188,7 @@ describe('getBestRelayerQuote', () => {
       const responseWithoutID = { ...quoteFound, quote_id: undefined }
       const quoteWithoutID = { ...quote, quoteID: undefined }
       fetchMock.mockResponseOnce(JSON.stringify(responseWithoutID))
-      const result = await getBestRelayerQuote(ticker, bigAmount, userAddress)
+      const result = await getBestRelayerQuote(ticker, bigAmount)
       expect(result).toEqual(quoteWithoutID)
     })
   })
@@ -207,14 +206,14 @@ describe('getBestRelayerQuote', () => {
 
     it('when the response is not ok', async () => {
       fetchMock.mockResponseOnce(JSON.stringify(quoteFound), { status: 500 })
-      const result = await getBestRelayerQuote(ticker, bigAmount, userAddress)
+      const result = await getBestRelayerQuote(ticker, bigAmount)
       expect(result).toEqual(quoteZero)
       expect(console.error).toHaveBeenCalled()
     })
 
     it('when the response success is false', async () => {
       fetchMock.mockResponseOnce(JSON.stringify(noQuotesFound))
-      const result = await getBestRelayerQuote(ticker, bigAmount, userAddress)
+      const result = await getBestRelayerQuote(ticker, bigAmount)
       expect(result).toEqual(quoteZero)
       expect(console.error).toHaveBeenCalled()
     })
@@ -223,7 +222,7 @@ describe('getBestRelayerQuote', () => {
       fetchMock.mockResponseOnce(() =>
         delayedAPIPromise(JSON.stringify(quoteFound), SLOW_RESPONSE_TIME)
       )
-      const result = await getBestRelayerQuote(ticker, bigAmount, userAddress)
+      const result = await getBestRelayerQuote(ticker, bigAmount)
       expect(result).toEqual(quoteZero)
       expect(console.error).toHaveBeenCalled()
     })
@@ -234,7 +233,7 @@ describe('getBestRelayerQuote', () => {
         dest_amount: undefined,
       }
       fetchMock.mockResponseOnce(JSON.stringify(responseWithoutDestAmount))
-      const result = await getBestRelayerQuote(ticker, bigAmount, userAddress)
+      const result = await getBestRelayerQuote(ticker, bigAmount)
       expect(result).toEqual(quoteZero)
       expect(console.error).toHaveBeenCalled()
     })
@@ -245,7 +244,7 @@ describe('getBestRelayerQuote', () => {
         relayer_address: undefined,
       }
       fetchMock.mockResponseOnce(JSON.stringify(responseWithoutRelayerAddress))
-      const result = await getBestRelayerQuote(ticker, bigAmount, userAddress)
+      const result = await getBestRelayerQuote(ticker, bigAmount)
       expect(result).toEqual(quoteZero)
       expect(console.error).toHaveBeenCalled()
     })
@@ -253,7 +252,7 @@ describe('getBestRelayerQuote', () => {
     it('when the response dest amount is zero', async () => {
       const responseWithZeroDestAmount = { ...quoteFound, dest_amount: '0' }
       fetchMock.mockResponseOnce(JSON.stringify(responseWithZeroDestAmount))
-      const result = await getBestRelayerQuote(ticker, bigAmount, userAddress)
+      const result = await getBestRelayerQuote(ticker, bigAmount)
       expect(result).toEqual(quoteZero)
       expect(console.error).toHaveBeenCalled()
     })
