@@ -5,7 +5,14 @@ import {
   encodeSavedBridgeParams,
   decodeSavedBridgeParams,
 } from './paramsV2'
-import { ETH_USDC, ETH_USDT } from '../constants/testValues'
+import { ZapDataV1, applyDefaultValues } from './zapData'
+import {
+  ETH_USDC,
+  ETH_USDT,
+  ETH_DAI,
+  ETH_SYN,
+  ETH_NUSD,
+} from '../constants/testValues'
 
 describe('paramsV2', () => {
   const ether = BigNumber.from(10).pow(18)
@@ -51,38 +58,69 @@ describe('paramsV2', () => {
     zapData: '0x',
   }
 
+  const zapData: ZapDataV1 = {
+    target: ETH_DAI,
+    payload: '0xb00b1e55',
+    amountPosition: BigNumber.from(420),
+    finalToken: ETH_SYN,
+    forwardTo: ETH_NUSD,
+  }
+
+  const zapDataDefault = applyDefaultValues({})
+
   it('roundtrip encoding', () => {
-    const encoded = encodeSavedBridgeParams(sender, paramsV2)
+    const encoded = encodeSavedBridgeParams(sender, paramsV2, zapData)
     const decoded = decodeSavedBridgeParams(encoded)
     expect(decoded.sender).toEqual(sender)
     expect(decoded.paramsV2).toEqual(paramsV2)
+    expect(decoded.zapData).toEqual(zapData)
   })
 
   it('roundtrip encoding with empty quoteId', () => {
-    const encoded = encodeSavedBridgeParams(sender, paramsV2QuoteIdEmpty)
+    const encoded = encodeSavedBridgeParams(
+      sender,
+      paramsV2QuoteIdEmpty,
+      zapData
+    )
     const decoded = decodeSavedBridgeParams(encoded)
     expect(decoded.sender).toEqual(sender)
     expect(decoded.paramsV2).toEqual(paramsV2QuoteIdEmpty)
+    expect(decoded.zapData).toEqual(zapData)
   })
 
   it('roundtrip encoding with empty zapData', () => {
-    const encoded = encodeSavedBridgeParams(sender, paramsV2ZapDataEmpty)
+    const encoded = encodeSavedBridgeParams(
+      sender,
+      paramsV2ZapDataEmpty,
+      zapDataDefault
+    )
     const decoded = decodeSavedBridgeParams(encoded)
     expect(decoded.sender).toEqual(sender)
     expect(decoded.paramsV2).toEqual(paramsV2ZapDataEmpty)
+    expect(decoded.zapData).toEqual(zapDataDefault)
   })
 
   it('roundtrip encoding with empty quoteId and zapData', () => {
-    const encoded = encodeSavedBridgeParams(sender, paramsV2AllBytesEmpty)
+    const encoded = encodeSavedBridgeParams(
+      sender,
+      paramsV2AllBytesEmpty,
+      zapDataDefault
+    )
     const decoded = decodeSavedBridgeParams(encoded)
     expect(decoded.sender).toEqual(sender)
     expect(decoded.paramsV2).toEqual(paramsV2AllBytesEmpty)
+    expect(decoded.zapData).toEqual(zapDataDefault)
   })
 
   it('roundtrip encoding with negative exclusivity', () => {
-    const encoded = encodeSavedBridgeParams(sender, paramsV2NegativeExclusivity)
+    const encoded = encodeSavedBridgeParams(
+      sender,
+      paramsV2NegativeExclusivity,
+      zapData
+    )
     const decoded = decodeSavedBridgeParams(encoded)
     expect(decoded.sender).toEqual(sender)
     expect(decoded.paramsV2).toEqual(paramsV2NegativeExclusivity)
+    expect(decoded.zapData).toEqual(zapData)
   })
 })

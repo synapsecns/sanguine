@@ -28,6 +28,7 @@ import { isSameAddress } from '../utils/addressUtils'
 import { marshallTicker, Ticker } from './ticker'
 import { getAllQuotes, getBestRelayerQuote } from './api'
 import { BridgeParamsV2, encodeSavedBridgeParams } from './paramsV2'
+import { applyDefaultValues, ZapDataV1 } from './zapData'
 
 export class SynapseIntentRouterSet extends SynapseModuleSet {
   static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
@@ -153,6 +154,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
               zapNative: Zero,
               zapData: '0x',
             },
+            zapData: {},
           }
         ),
         bridgeModuleName: this.bridgeModuleName,
@@ -330,7 +332,11 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
   public static createRFQDestQuery(
     tokenOut: string,
     amountOut: BigNumber,
-    savedParams: { originUserAddress?: string; paramsV2?: BridgeParamsV2 }
+    savedParams: {
+      originUserAddress?: string
+      paramsV2?: BridgeParamsV2
+      zapData: Partial<ZapDataV1>
+    }
   ): Query {
     // On-chain swaps are not supported for RFQ on the destination chain
     const destQuery = createNoSwapQuery(tokenOut, amountOut)
@@ -340,7 +346,8 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     }
     destQuery.rawParams = encodeSavedBridgeParams(
       savedParams.originUserAddress,
-      savedParams.paramsV2
+      savedParams.paramsV2,
+      applyDefaultValues(savedParams.zapData)
     )
     return destQuery
   }
