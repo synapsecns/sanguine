@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.14.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.7...@synapsecns/contracts-rfq@0.14.8) (2024-12-10)
+
+
+### Bug Fixes
+
+* **contracts-rfq:** FastBridge V2 prove race condition ([#3435](https://github.com/synapsecns/sanguine/issues/3435)) ([3d3530d](https://github.com/synapsecns/sanguine/commit/3d3530de4867d66458399ee146e29a6cffdc44e5))
+
+
+
+
+
 ## [0.14.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.6...@synapsecns/contracts-rfq@0.14.7) (2024-12-05)
 
 **Note:** Version bump only for package @synapsecns/contracts-rfq
