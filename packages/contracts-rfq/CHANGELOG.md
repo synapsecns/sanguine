@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.15.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.15.0...@synapsecns/contracts-rfq@0.15.1) (2024-12-11)
+
+
+### Bug Fixes
+
+* **contracts-rfq:** increase coverage ([#3453](https://github.com/synapsecns/sanguine/issues/3453)) ([c341b69](https://github.com/synapsecns/sanguine/commit/c341b696a5b1f99514735acfb993b04e4a6cd3a7))
+
+
+
+
+
 # [0.15.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.8...@synapsecns/contracts-rfq@0.15.0) (2024-12-10)
 
 
