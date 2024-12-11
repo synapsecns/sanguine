@@ -2,6 +2,7 @@ import { BigNumber } from 'ethers'
 
 import {
   BridgeParamsV2,
+  SavedParamsV1,
   encodeSavedBridgeParams,
   decodeSavedBridgeParams,
 } from './paramsV2'
@@ -12,11 +13,17 @@ import {
   ETH_DAI,
   ETH_SYN,
   ETH_NUSD,
+  ARB_USDC,
 } from '../constants/testValues'
 
 describe('paramsV2', () => {
   const ether = BigNumber.from(10).pow(18)
-  const sender = ETH_USDC
+
+  const paramsV1: SavedParamsV1 = {
+    sender: ETH_USDC,
+    destToken: ARB_USDC,
+    destAmount: ether.mul(2),
+  }
 
   const paramsV2: BridgeParamsV2 = {
     quoteRelayer: ETH_USDT,
@@ -61,7 +68,7 @@ describe('paramsV2', () => {
   const zapData: ZapDataV1 = {
     target: ETH_DAI,
     payload: '0xb00b1e55',
-    amountPosition: BigNumber.from(420),
+    amountPosition: 420,
     finalToken: ETH_SYN,
     forwardTo: ETH_NUSD,
   }
@@ -69,57 +76,57 @@ describe('paramsV2', () => {
   const zapDataDefault = applyDefaultValues({})
 
   it('roundtrip encoding', () => {
-    const encoded = encodeSavedBridgeParams(sender, paramsV2, zapData)
+    const encoded = encodeSavedBridgeParams(paramsV1, paramsV2, zapData)
     const decoded = decodeSavedBridgeParams(encoded)
-    expect(decoded.sender).toEqual(sender)
+    expect(decoded.paramsV1).toEqual(paramsV1)
     expect(decoded.paramsV2).toEqual(paramsV2)
     expect(decoded.zapData).toEqual(zapData)
   })
 
   it('roundtrip encoding with empty quoteId', () => {
     const encoded = encodeSavedBridgeParams(
-      sender,
+      paramsV1,
       paramsV2QuoteIdEmpty,
       zapData
     )
     const decoded = decodeSavedBridgeParams(encoded)
-    expect(decoded.sender).toEqual(sender)
+    expect(decoded.paramsV1).toEqual(paramsV1)
     expect(decoded.paramsV2).toEqual(paramsV2QuoteIdEmpty)
     expect(decoded.zapData).toEqual(zapData)
   })
 
   it('roundtrip encoding with empty zapData', () => {
     const encoded = encodeSavedBridgeParams(
-      sender,
+      paramsV1,
       paramsV2ZapDataEmpty,
       zapDataDefault
     )
     const decoded = decodeSavedBridgeParams(encoded)
-    expect(decoded.sender).toEqual(sender)
+    expect(decoded.paramsV1).toEqual(paramsV1)
     expect(decoded.paramsV2).toEqual(paramsV2ZapDataEmpty)
     expect(decoded.zapData).toEqual(zapDataDefault)
   })
 
   it('roundtrip encoding with empty quoteId and zapData', () => {
     const encoded = encodeSavedBridgeParams(
-      sender,
+      paramsV1,
       paramsV2AllBytesEmpty,
       zapDataDefault
     )
     const decoded = decodeSavedBridgeParams(encoded)
-    expect(decoded.sender).toEqual(sender)
+    expect(decoded.paramsV1).toEqual(paramsV1)
     expect(decoded.paramsV2).toEqual(paramsV2AllBytesEmpty)
     expect(decoded.zapData).toEqual(zapDataDefault)
   })
 
   it('roundtrip encoding with negative exclusivity', () => {
     const encoded = encodeSavedBridgeParams(
-      sender,
+      paramsV1,
       paramsV2NegativeExclusivity,
       zapData
     )
     const decoded = decodeSavedBridgeParams(encoded)
-    expect(decoded.sender).toEqual(sender)
+    expect(decoded.paramsV1).toEqual(paramsV1)
     expect(decoded.paramsV2).toEqual(paramsV2NegativeExclusivity)
     expect(decoded.zapData).toEqual(zapData)
   })

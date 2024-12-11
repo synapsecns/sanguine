@@ -1,5 +1,6 @@
 import { defaultAbiCoder } from '@ethersproject/abi'
 import { BigNumber } from '@ethersproject/bignumber'
+import { hexlify } from '@ethersproject/bytes'
 
 import { ISynapseIntentRouter } from '../typechain/SynapseIntentRouter'
 
@@ -29,4 +30,11 @@ export const decodeStepParams = (data: string): StepParams[] => {
       zapData,
     })
   )
+}
+
+export const extractSingleZapData = (steps: StepParams[]): string => {
+  if (steps.length > 1) {
+    throw new Error('extractSingleZapData: more than one step')
+  }
+  return steps.length === 0 ? '0x' : hexlify(steps[0].zapData)
 }

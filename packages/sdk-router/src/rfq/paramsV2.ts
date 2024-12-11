@@ -1,22 +1,28 @@
 import { defaultAbiCoder } from '@ethersproject/abi'
+import { BigNumber } from 'ethers'
 
 import { IFastBridgeV2 } from '../typechain/FastBridgeV2'
 import { ZapDataV1 } from './zapData'
 
+export type SavedParamsV1 = {
+  sender: string
+  destToken: string
+  destAmount: BigNumber
+}
 export type BridgeParamsV2 = IFastBridgeV2.BridgeParamsV2Struct
 const savedBridgeParams = [
-  'address',
+  'tuple(address,address,uint256)',
   'tuple(address,int256,bytes,uint256,bytes)',
   'tuple(address,bytes,uint256,address,address)',
 ]
 
 export const encodeSavedBridgeParams = (
-  sender: string,
+  paramsV1: SavedParamsV1,
   paramsV2: BridgeParamsV2,
   zapData: ZapDataV1
 ) => {
   return defaultAbiCoder.encode(savedBridgeParams, [
-    sender,
+    [paramsV1.sender, paramsV1.destToken, paramsV1.destAmount],
     [
       paramsV2.quoteRelayer,
       paramsV2.quoteExclusivitySeconds,
@@ -37,17 +43,21 @@ export const encodeSavedBridgeParams = (
 export const decodeSavedBridgeParams = (
   data: string
 ): {
-  sender: string
+  paramsV1: SavedParamsV1
   paramsV2: BridgeParamsV2
   zapData: ZapDataV1
 } => {
   const [
-    sender,
+    [sender, destToken, destAmount],
     [quoteRelayer, quoteExclusivitySeconds, quoteId, zapNative, zapData],
     [target, payload, amountPosition, finalToken, forwardTo],
   ] = defaultAbiCoder.decode(savedBridgeParams, data)
   return {
-    sender,
+    paramsV1: {
+      sender,
+      destToken,
+      destAmount,
+    },
     paramsV2: {
       quoteRelayer,
       quoteExclusivitySeconds,
@@ -58,7 +68,7 @@ export const decodeSavedBridgeParams = (
     zapData: {
       target,
       payload,
-      amountPosition,
+      amountPosition: amountPosition.toNumber(),
       finalToken,
       forwardTo,
     },

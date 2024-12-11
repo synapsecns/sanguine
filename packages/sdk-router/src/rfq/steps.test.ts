@@ -1,7 +1,12 @@
 import { BigNumber } from 'ethers'
 
 import { ETH_USDC, ETH_USDT, NATIVE_ADDRESS } from '../constants/testValues'
-import { StepParams, decodeStepParams, encodeStepParams } from './steps'
+import {
+  StepParams,
+  decodeStepParams,
+  encodeStepParams,
+  extractSingleZapData,
+} from './steps'
 
 describe('Steps', () => {
   const ether = BigNumber.from(10).pow(18)
@@ -40,5 +45,31 @@ describe('Steps', () => {
   it('roundtrip with three steps', () => {
     const data = encodeStepParams([param0, param1, param2])
     expect(decodeStepParams(data)).toEqual([param0, param1, param2])
+  })
+
+  describe('extractSingleZapData', () => {
+    it('no steps', () => {
+      expect(extractSingleZapData([])).toEqual('0x')
+    })
+
+    it('single step', () => {
+      expect(extractSingleZapData([param0])).toEqual('0x')
+      expect(extractSingleZapData([param1])).toEqual('0xdeadbeef')
+      expect(extractSingleZapData([param2])).toEqual(
+        '0x00112233445566778899aabbccddeeff'
+      )
+    })
+
+    it('multiple steps', () => {
+      expect(() => extractSingleZapData([param0, param1])).toThrowError(
+        'extractSingleZapData: more than one step'
+      )
+      expect(() => extractSingleZapData([param0, param2])).toThrowError(
+        'extractSingleZapData: more than one step'
+      )
+      expect(() => extractSingleZapData([param1, param2])).toThrowError(
+        'extractSingleZapData: more than one step'
+      )
+    })
   })
 })
