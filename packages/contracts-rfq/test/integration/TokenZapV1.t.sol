@@ -11,7 +11,7 @@ import {VaultManyArguments} from "../mocks/VaultManyArguments.sol";
 
 import {Test} from "forge-std/Test.sol";
 
-// solhint-disable ordering
+// solhint-disable no-empty-blocks, ordering
 abstract contract TokenZapV1IntegrationTest is Test {
     address internal constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
@@ -42,6 +42,9 @@ abstract contract TokenZapV1IntegrationTest is Test {
     IFastBridgeV2.BridgeParamsV2 internal depositNativeParams;
     IFastBridgeV2.BridgeParamsV2 internal depositNativeNoAmountParams;
     IFastBridgeV2.BridgeParamsV2 internal depositNativeRevertParams;
+
+    /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
+    function testTokenZapV1IntegrationTest() external {}
 
     function setUp() public virtual {
         fastBridge = new FastBridgeV2(address(this));
