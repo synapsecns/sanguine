@@ -417,6 +417,48 @@ contract TokenZapV1Test is Test {
         assertEq(weth.balanceOf(user), 2 * AMOUNT);
     }
 
+    function getZapDataTransferNative(address target) public view returns (bytes memory) {
+        return tokenZap.encodeZapData({
+            target: target,
+            payload: "",
+            amountPosition: type(uint256).max,
+            finalToken: address(0),
+            forwardTo: address(0)
+        });
+    }
+
+    function test_zap_transferNativeEOA() public {
+        bytes memory zapData = getZapDataTransferNative(user);
+        bytes4 returnValue = tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapData);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the user received the native tokens
+        assertEq(user.balance, AMOUNT);
+    }
+
+    function test_zap_transferNativeContract() public {
+        bytes memory zapData = getZapDataTransferNative(payableMock);
+        bytes4 returnValue = tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapData);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the contract received the native tokens
+        assertEq(payableMock.balance, AMOUNT);
+    }
+
+    function test_zap_transferNativeEOA_extraFunds() public {
+        // Transfer some extra tokens to the zap contract
+        weth.transfer(address(tokenZap), AMOUNT);
+        deal(address(tokenZap), AMOUNT);
+        // Should not affect the zap
+        test_zap_transferNativeEOA();
+    }
+
+    function test_zap_transferNativeContract_extraFunds() public {
+        // Transfer some extra native tokens to the zap contract
+        weth.transfer(address(tokenZap), AMOUNT);
+        deal(address(tokenZap), AMOUNT);
+        // Should not affect the zap
+        test_zap_transferNativeContract();
+    }
+
     // ═════════════════════════════════════════════════ ENCODING ══════════════════════════════════════════════════════
 
     function test_encodeZapData_roundtrip(address token, uint256 placeholderAmount, uint256 amount) public view {
@@ -542,6 +584,12 @@ contract TokenZapV1Test is Test {
         weth.transfer(address(tokenZap), AMOUNT);
         vm.expectRevert(Address.FailedInnerCall.selector);
         tokenZap.zap(address(weth), AMOUNT, zapDataWithdrawAndForward);
+    }
+
+    function test_zap_transferNative_revert_targetReverted() public {
+        bytes memory zapData = getZapDataTransferNative(nonPayableMock);
+        vm.expectRevert(Address.FailedInnerCall.selector);
+        tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapData);
     }
 
     function test_zap_native_revert_targetZeroAddress_emptyPayload() public {
