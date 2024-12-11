@@ -1,7 +1,8 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import invariant from 'tiny-invariant'
-import { AddressZero, Zero } from '@ethersproject/constants'
+import { AddressZero, MaxUint256, Zero } from '@ethersproject/constants'
+import { hexlify } from '@ethersproject/bytes'
 
 import {
   BigintIsh,
@@ -27,17 +28,32 @@ import { ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
 import { isSameAddress } from '../utils/addressUtils'
 import { marshallTicker, Ticker } from './ticker'
 import { getAllQuotes, getBestRelayerQuote } from './api'
-import { BridgeParamsV2, encodeSavedBridgeParams } from './paramsV2'
-import { applyDefaultValues, ZapDataV1 } from './zapData'
+import {
+  BridgeParamsV2,
+  SavedParamsV1,
+  encodeSavedBridgeParams,
+} from './paramsV2'
+import {
+  applyDefaultValues,
+  decodeZapData,
+  FORWARD_TO_SIMULATED,
+  ZapDataV1,
+} from './zapData'
 
 type OriginIntent = {
   ticker: Ticker
   originQuery: Query
   originAmountOut: BigNumber
-  destQuery?: Query
 }
 
-type Intent = Required<OriginIntent>
+type DestIntent = OriginIntent & {
+  encodedZapData: string
+  tokenOut: string
+}
+
+type FullIntent = DestIntent & {
+  destQuery: Query
+}
 
 export class SynapseIntentRouterSet extends SynapseModuleSet {
   static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
@@ -110,24 +126,29 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     if (!this.getModule(originChainId) || !this.getModule(destChainId)) {
       return []
     }
+    const originSIR = this.getSynapseIntentRouter(originChainId)
+    const destSIR = this.getSynapseIntentRouter(destChainId)
     // Get all tickers that can be used between the two chains
     const tickers = await this.getAllTickers(originChainId, destChainId)
     // Get queries for swaps on the origin chain from tokenIn into the "RFQ-supported token"
-    const originQuotes = await this.filterTickersWithOriginSwap(
-      originChainId,
+    const originIntents = await this.filterTickersWithOriginSwap(
+      originSIR,
+      tickers,
       tokenIn,
-      amountIn,
-      tickers
+      amountIn
     )
     // Get queries for swaps on the destination chain from the "RFQ-supported token" into tokenOut
-    const intents: Intent[] = await this.filterQuotesWithDestSwap(
-      destChainId,
-      tokenOut,
-      originQuotes,
-      originUserAddress
+    const intents: DestIntent[] = await this.filterQuotesWithDestSwap(
+      destSIR,
+      originIntents,
+      tokenOut
     )
     // Apply the quotes from the RFQ API
-    const fullQuotes = await this.applyQuotes(intents, originUserAddress)
+    const fullQuotes = await Promise.all(
+      intents.map((intent) =>
+        this.getFullIntentQuote(destSIR, intent, originUserAddress)
+      )
+    )
     return fullQuotes
       .filter(({ destQuery }) => destQuery.minAmountOut.gt(0))
       .map(({ ticker, originQuery, destQuery }) => ({
@@ -243,22 +264,18 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
    * For every filtered ticker, the origin query is returned with the information for tokenIn -> ticker swaps.
    */
   private async filterTickersWithOriginSwap(
-    originChainId: number,
+    originSIR: SynapseIntentRouter,
+    tickers: Ticker[],
     tokenIn: string,
-    amountIn: BigintIsh,
-    tickers: Ticker[]
+    amountIn: BigintIsh
   ): Promise<OriginIntent[]> {
-    const protocolFeeRate = await this.getSynapseIntentRouter(
-      originChainId
-    ).getProtocolFeeRate()
     // Get queries for swaps on the origin chain into the "RFQ-supported token"
-    const originQueries = await this.getSynapseIntentRouter(
-      originChainId
-    ).getOriginAmountOut(
+    const originQueries = await originSIR.getOriginAmountOut(
       tokenIn,
       tickers.map((ticker) => ticker.originToken.token),
       amountIn
     )
+    const protocolFeeRate = await originSIR.getProtocolFeeRate()
     // Note: tickers.length === originQueries.length
     // Zip the tickers and queries together, filter out "no path found" queries
     return tickers
@@ -279,63 +296,108 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
    * and the dest query with the information for ticker -> tokenOut swap.
    */
   private async filterQuotesWithDestSwap(
-    destChainId: number,
-    tokenOut: string,
-    quotes: OriginIntent[],
-    originUserAddress?: string
-  ): Promise<Intent[]> {
-    // TODO: actually find swaps, for now filter by tokenOut
-    return quotes
-      .filter((quote) => quote.ticker.destToken.chainId === destChainId)
-      .filter((quote) => isSameAddress(quote.ticker.destToken.token, tokenOut))
-      .map((quote) => ({
-        ...quote,
-        destQuery: SynapseIntentRouterSet.createRFQDestQuery(
+    destSIR: SynapseIntentRouter,
+    originIntents: OriginIntent[],
+    tokenOut: string
+  ): Promise<DestIntent[]> {
+    const destIntents = await Promise.all(
+      originIntents.map(async ({ ticker, originQuery, originAmountOut }) => {
+        const { amountOut: destAmountOut, steps } = await destSIR.previewIntent(
+          ticker.destToken.token,
           tokenOut,
-          quote.originAmountOut,
-          {
-            // TODO: non-default values
-            originUserAddress,
-            paramsV2: {
-              quoteRelayer: AddressZero,
-              quoteExclusivitySeconds: Zero,
-              quoteId: '0x',
-              zapNative: Zero,
-              zapData: '0x',
-            },
-            zapData: {},
-          }
-        ),
+          originAmountOut,
+          FORWARD_TO_SIMULATED
+        )
+        return {
+          ticker,
+          originQuery,
+          originAmountOut,
+          destAmountOut,
+          steps,
+        }
+      })
+    )
+    // Up to a single Zap is supported
+    return destIntents
+      .filter(({ destAmountOut }) => destAmountOut.gt(0))
+      .filter(({ steps }) => steps.length <= 1)
+      .map(({ ticker, originQuery, originAmountOut, steps }) => ({
+        ticker,
+        originQuery,
+        originAmountOut,
+        encodedZapData: steps.length > 0 ? hexlify(steps[0].zapData) : '0x',
+        tokenOut,
       }))
   }
 
   /**
-   * Given a list of intents, fetches the best quote for each intent. THe quotes are recorded
-   * as `destQuery.minAmountOut`, while the other fields are left unchanged.
+   * Gets the full quote for fulfilling the intent.
    */
-  private async applyQuotes(
-    intents: Intent[],
+  private async getFullIntentQuote(
+    destSIR: SynapseIntentRouter,
+    intent: DestIntent,
     originUserAddress?: string
-  ): Promise<Intent[]> {
-    return Promise.all(
-      intents.map(
-        async ({ ticker, originQuery, destQuery, originAmountOut }) => {
-          const quote = await getBestRelayerQuote(ticker, originAmountOut, {
-            originSender: originUserAddress,
-          })
-          const destQueryAdjusted: Query = {
-            ...destQuery,
-            minAmountOut: quote.destAmount,
-          }
-          return {
-            ticker,
-            originQuery,
-            originAmountOut,
-            destQuery: destQueryAdjusted,
-          }
-        }
-      )
+  ): Promise<FullIntent> {
+    // Unwrap the intent. Note that the zap data was generated by using `originAmountOut` as the amount.
+    const {
+      ticker,
+      originQuery,
+      originAmountOut,
+      encodedZapData: encodedZapDataSimulated,
+      tokenOut,
+    } = intent
+    const quote = await getBestRelayerQuote(ticker, originAmountOut, {
+      originSender: originUserAddress,
+      destRecipient:
+        encodedZapDataSimulated === '0x'
+          ? undefined
+          : TOKEN_ZAP_V1_ADDRESS_MAP[ticker.destToken.chainId],
+      zapData: encodedZapDataSimulated,
+    })
+    // Now that we got the quote, we need to get the final amount out and adjust the zap data.
+    // Note: zap data will still be using `FORWARD_TO_SIMULATED` address - this will be overwritten
+    // when the bridge calldata is generated (until then we don't know the final recipient).
+    const { amountOut, steps } = await destSIR.previewIntent(
+      ticker.destToken.token,
+      tokenOut,
+      quote.destAmount,
+      FORWARD_TO_SIMULATED
     )
+    // As previously mentioned, up to a single Zap is supported.
+    const destAmountOut = steps.length > 1 ? Zero : amountOut
+    const encodedZapData = steps.length > 0 ? hexlify(steps[0].zapData) : '0x'
+    const paramsV1 = originUserAddress
+      ? {
+          sender: originUserAddress,
+          destToken: ticker.destToken.token,
+          destAmount: quote.destAmount,
+        }
+      : undefined
+    return {
+      ticker,
+      originQuery,
+      originAmountOut,
+      encodedZapData,
+      tokenOut,
+      destQuery: SynapseIntentRouterSet.createRFQDestQuery(
+        destSIR,
+        ticker.destToken.token,
+        destAmountOut,
+        {
+          paramsV1,
+          paramsV2: {
+            // TODO: exclusivity
+            quoteRelayer: AddressZero,
+            quoteExclusivitySeconds: Zero,
+            // TODO: quote ID
+            quoteId: '0x',
+            zapNative: Zero,
+            zapData: encodedZapData,
+          },
+          zapData: decodeZapData(encodedZapData),
+        }
+      ),
+    }
   }
 
   /**
@@ -381,22 +443,25 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
   }
 
   public static createRFQDestQuery(
+    destSIR: SynapseIntentRouter,
     tokenOut: string,
     amountOut: BigNumber,
     savedParams: {
-      originUserAddress?: string
-      paramsV2?: BridgeParamsV2
+      paramsV1?: SavedParamsV1
+      paramsV2: BridgeParamsV2
       zapData: Partial<ZapDataV1>
     }
   ): Query {
-    // On-chain swaps are not supported for RFQ on the destination chain
+    // To preserve consistency with other modules, router adapter is not set for a no-op intent.
     const destQuery = createNoSwapQuery(tokenOut, amountOut)
-    // Don't modify the Query if there are no params to be saved
-    if (!savedParams.originUserAddress || !savedParams.paramsV2) {
+    // Don't modify the Query if there are no params to be saved.
+    if (!savedParams.paramsV1) {
       return destQuery
     }
+    destQuery.routerAdapter = destSIR.address
+    destQuery.deadline = MaxUint256
     destQuery.rawParams = encodeSavedBridgeParams(
-      savedParams.originUserAddress,
+      savedParams.paramsV1,
       savedParams.paramsV2,
       applyDefaultValues(savedParams.zapData)
     )

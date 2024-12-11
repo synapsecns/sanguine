@@ -117,7 +117,7 @@ export const getBestRelayerQuote = async (
   try {
     const rfqRequest: PutRFQRequestAPI = {
       // TODO: add active quotes once they are fixed
-      quote_types: ['passive'],
+      quote_types: ['active', 'passive'],
       data: {
         origin_chain_id: ticker.originToken.chainId,
         dest_chain_id: ticker.destToken.chainId,
@@ -127,7 +127,8 @@ export const getBestRelayerQuote = async (
         expiration_window: EXPIRATION_WINDOW,
         origin_sender: options.originSender,
         dest_recipient: options.destRecipient,
-        zap_data: options.zapData ?? '',
+        // TODO: cleanup
+        zap_data: options.zapData?.substring(2) ?? '',
         zap_native: options.zapNative?.toString() ?? '0',
       },
     }

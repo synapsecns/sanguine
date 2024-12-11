@@ -23,7 +23,8 @@ import { adjustValueIfNative, isNativeToken } from '../utils/handleNativeToken'
 import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
 import { decodeSavedBridgeParams } from './paramsV2'
 import { StepParams, encodeStepParams, decodeStepParams } from './steps'
-import { encodeZapData } from './zapData'
+import { encodeZapData, FORWARD_TO_SIMULATED } from './zapData'
+import { isSameAddress } from '../utils/addressUtils'
 
 export class SynapseIntentRouter implements SynapseModule {
   static fastBridgeV2Interface = new Interface(fastBridgeV2Abi)
@@ -168,23 +169,11 @@ export class SynapseIntentRouter implements SynapseModule {
     return Promise.all(
       rfqTokens.map(async (tokenOut) => {
         // Get a quote and steps for the intent.
-        const { amountOut, steps: stepsOutput } =
-          await this.previewerContract.previewIntent(
-            this.swapQuoterAddress,
-            // No forwarding is required, as these steps will be followed by the final step
-            AddressZero,
-            tokenIn,
-            tokenOut,
-            amountIn
-          )
-        // Remove extra fields before the encoding
-        const steps: StepParams[] = stepsOutput.map(
-          ({ token, amount, msgValue, zapData }) => ({
-            token,
-            amount,
-            msgValue,
-            zapData,
-          })
+        // No forwarding is required, as these steps will be followed by the final step.
+        const { amountOut, steps } = await this.previewIntent(
+          tokenIn,
+          tokenOut,
+          amountIn
         )
         return {
           // To preserve consistency with other modules, router adapter is not set for a no-op intent
@@ -196,6 +185,47 @@ export class SynapseIntentRouter implements SynapseModule {
         }
       })
     )
+  }
+
+  public async previewIntent(
+    tokenIn: string,
+    tokenOut: string,
+    amountIn: BigintIsh,
+    forwardTo: string = AddressZero
+  ): Promise<{ amountOut: BigNumber; steps: StepParams[] }> {
+    // Don't do any on-chain calls if it's the same token
+    if (isSameAddress(tokenIn, tokenOut)) {
+      return {
+        amountOut: BigNumber.from(amountIn),
+        steps: [],
+      }
+    }
+    // Don't do any on-chain calls if the amount is 0
+    if (BigNumber.from(amountIn).eq(Zero)) {
+      return {
+        amountOut: BigNumber.from(0),
+        steps: [],
+      }
+    }
+    // Get the quote
+    const { amountOut, steps: stepsOutput } =
+      await this.previewerContract.previewIntent(
+        this.swapQuoterAddress,
+        forwardTo,
+        tokenIn,
+        tokenOut,
+        amountIn
+      )
+    // Remove extra fields before the encoding
+    return {
+      amountOut,
+      steps: stepsOutput.map(({ token, amount, msgValue, zapData }) => ({
+        token,
+        amount,
+        msgValue,
+        zapData,
+      })),
+    }
   }
 
   /**
@@ -218,19 +248,30 @@ export class SynapseIntentRouter implements SynapseModule {
     if (dstQuery.rawParams.length <= 2) {
       throw new Error('Missing bridge params for FastBridgeV2')
     }
-    const { sender, paramsV2 } = decodeSavedBridgeParams(dstQuery.rawParams)
-    if (sender === AddressZero) {
+    const {
+      paramsV1,
+      paramsV2,
+      zapData: dstZapData,
+    } = decodeSavedBridgeParams(dstQuery.rawParams)
+    if (paramsV1.sender === AddressZero) {
       throw new Error('Missing sender address for FastBridgeV2')
+    }
+    // Override the simulated forward address if it was used.
+    if (isSameAddress(dstZapData.forwardTo, FORWARD_TO_SIMULATED)) {
+      paramsV2.zapData = encodeZapData({
+        ...dstZapData,
+        forwardTo: to,
+      })
     }
     const bridgeParamsV1: IFastBridge.BridgeParamsStruct = {
       dstChainId,
-      sender,
+      sender: paramsV1.sender,
       to,
       originToken,
-      destToken: dstQuery.tokenOut,
+      destToken: paramsV1.destToken,
       // Will be set in encodeZapData below
       originAmount: 0,
-      destAmount: dstQuery.minAmountOut,
+      destAmount: paramsV1.destAmount,
       sendChainGas: false,
       deadline: dstQuery.deadline,
     }
@@ -240,7 +281,7 @@ export class SynapseIntentRouter implements SynapseModule {
         paramsV2,
       ])
     // Amount is the 6-th parameter within the FastBridgeV2 call
-    const zapData = encodeZapData({
+    const originZapData = encodeZapData({
       target: this.fastBridgeV2Contract.address,
       payload: fastBridgeV2CallData,
       amountPosition: 4 + 32 * 5,
@@ -250,7 +291,7 @@ export class SynapseIntentRouter implements SynapseModule {
       // Use the full balance for the Zap action
       amount: MaxUint256,
       msgValue: Zero,
-      zapData,
+      zapData: originZapData,
     }
   }
 }
