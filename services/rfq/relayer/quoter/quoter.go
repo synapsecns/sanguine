@@ -294,6 +294,8 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 	return m.prepareAndSubmitQuotes(ctx, inv)
 }
 
+const chanBuffer = 1000
+
 // SubscribeActiveRFQ subscribes to the RFQ websocket API.
 // This function is blocking and will run until the context is canceled.
 func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
@@ -308,7 +310,7 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 	}
 	span.SetAttributes(attribute.IntSlice("chain_ids", chainIDs))
 
-	reqChan := make(chan *model.ActiveRFQMessage)
+	reqChan := make(chan *model.ActiveRFQMessage, chanBuffer)
 	respChan, err := m.rfqClient.SubscribeActiveQuotes(ctx, &req, reqChan)
 	if err != nil {
 		metrics.EndSpanWithErr(span, err)
@@ -320,7 +322,7 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return ctx.Err()
 		case msg, ok := <-respChan:
 			if !ok {
 				return errors.New("ws channel closed")
