@@ -53,21 +53,20 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/integralist/go-findroot/find"
+	"github.com/synapsecns/sanguine/contrib/golang-ci-lint/permissions"
 )
 
 const (
 	downloadURLTemplate = "https://github.com/golangci/golangci-lint/releases/download/v%s/golangci-lint-%s-%s-%s.tar.gz"
 	cacheDir            = "cache"
-	filePerms           = 0400
-	dirPerms            = 0750
-	execPerms           = 0500
+	filePerms           = permissions.FilePerms
+	dirPerms            = permissions.DirPerms
+	execPerms           = permissions.ExecPerms
 	maxDecompressSize   = 50 * 1024 * 1024 // 50MB limit for decompression
 	httpTimeout         = 30 * time.Second
-	defaultUmask        = 0077
 )
 
 var (
@@ -242,8 +241,18 @@ func setupLinter(ctx context.Context, version, osName, arch string) (string, err
 	return cachePath, nil
 }
 
-// findWorkDir locates the nearest directory containing a go.mod file.
+// findWorkDir locates the nearest directory containing a go.mod file or uses GIT_ROOT.
 func findWorkDir() (string, error) {
+	// Check GIT_ROOT environment variable first
+	if gitRoot := os.Getenv("GIT_ROOT"); gitRoot != "" {
+		absPath, err := filepath.Abs(gitRoot)
+		if err != nil {
+			return "", fmt.Errorf("failed to resolve GIT_ROOT path: %w", err)
+		}
+		return absPath, nil
+	}
+
+	// Fallback to current directory and look for go.mod
 	cwd, err := os.Getwd()
 	if err != nil {
 		return "", fmt.Errorf("failed to get current directory: %w", err)
@@ -261,21 +270,30 @@ func findWorkDir() (string, error) {
 
 // processArgs ensures proper argument formatting and adds default configuration.
 func processArgs(args []string, root string) []string {
+	// Process existing arguments
+	processedArgs := make([]string, 0, len(args)+3)
+
+	// Replace $(GIT_ROOT) in all arguments
+	for _, arg := range args {
+		arg = strings.ReplaceAll(arg, "$(GIT_ROOT)", root)
+		processedArgs = append(processedArgs, arg)
+	}
+
 	// Ensure "run" is the first argument if not present
 	hasRun := false
-	for _, arg := range args {
+	for _, arg := range processedArgs {
 		if arg == "run" {
 			hasRun = true
 			break
 		}
 	}
 	if !hasRun {
-		args = append([]string{"run"}, args...)
+		processedArgs = append([]string{"run"}, processedArgs...)
 	}
 
 	// Add default config if not specified
 	hasConfig := false
-	for _, arg := range args {
+	for _, arg := range processedArgs {
 		if strings.HasPrefix(arg, "--config") {
 			hasConfig = true
 			break
@@ -283,29 +301,20 @@ func processArgs(args []string, root string) []string {
 	}
 	if !hasConfig {
 		configPath := filepath.Join(root, ".golangci.yml")
-		args = append(args, "--config", configPath)
+		processedArgs = append(processedArgs, "--config", configPath)
 	}
 
-	// Add --fix if not present
-	hasFix := false
-	for _, arg := range args {
-		if arg == "--fix" {
-			hasFix = true
-			break
-		}
-	}
-	if !hasFix {
-		args = append(args, "--fix")
-	}
-
-	return args
+	return processedArgs
 }
 
 // extractTarGz extracts a specific file from a tar.gz archive.
 func extractTarGz(tr *tar.Reader, destPath string) error {
-	// Set umask to ensure files are created with correct permissions
-	oldUmask := syscall.Umask(defaultUmask)
-	defer syscall.Umask(oldUmask)
+	// Set secure permissions for file operations
+	cleanup, err := permissions.SetSecureUmask()
+	if err != nil {
+		return fmt.Errorf("failed to set secure permissions: %w", err)
+	}
+	defer cleanup()
 
 	// Create parent directory with secure permissions
 	if err := os.MkdirAll(filepath.Dir(destPath), dirPerms); err != nil {
@@ -470,6 +479,23 @@ func runLinter(ctx context.Context, binaryPath, workDir string, args []string) e
 }
 
 func main() {
+	// When running via "go run", use the GIT_ROOT environment variable
+	if len(os.Args) > 0 && strings.Contains(os.Args[0], "go-build") {
+		if gitRoot := os.Getenv("GIT_ROOT"); gitRoot != "" {
+			absPath, err := filepath.Abs(gitRoot)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error: failed to resolve GIT_ROOT path: %v\n", err)
+				os.Exit(1)
+			}
+			if err := os.Chdir(absPath); err != nil {
+				fmt.Fprintf(os.Stderr, "Error: failed to change to GIT_ROOT directory: %v\n", err)
+				os.Exit(1)
+			}
+			// Set working directory for child processes
+			os.Setenv("PWD", absPath)
+		}
+	}
+
 	if err := run(context.Background()); err != nil {
 		var exitErr *exec.ExitError
 		if errors.As(err, &exitErr) {
@@ -481,9 +507,12 @@ func main() {
 }
 
 func run(ctx context.Context) error {
-	// Set restrictive umask for all file operations
-	oldUmask := syscall.Umask(defaultUmask)
-	defer syscall.Umask(oldUmask)
+	// Set secure permissions for file operations
+	cleanup, err := permissions.SetSecureUmask()
+	if err != nil {
+		return fmt.Errorf("failed to set secure permissions: %w", err)
+	}
+	defer cleanup()
 
 	// Find repository root using go-findroot
 	root, err := find.Repo()
@@ -618,9 +647,12 @@ func downloadAndExtract(ctx context.Context, version, osName, arch, destPath str
 }
 
 func extractBinary(ctx context.Context, tarPath, destPath string) error {
-	// Set restrictive umask for file operations
-	oldUmask := syscall.Umask(defaultUmask)
-	defer syscall.Umask(oldUmask)
+	// Set secure permissions for file operations
+	cleanup, err := permissions.SetSecureUmask()
+	if err != nil {
+		return fmt.Errorf("failed to set secure permissions: %w", err)
+	}
+	defer cleanup()
 
 	// Open archive with secure permissions
 	file, err := os.OpenFile(tarPath, os.O_RDONLY, filePerms)
