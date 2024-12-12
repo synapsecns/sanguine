@@ -340,6 +340,10 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 //
 //nolint:nilnil,cyclop
 func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMessage) (resp *model.ActiveRFQMessage, err error) {
+
+	//tmpdebug
+	fmt.Printf("\nActiveRFQMessage RawMessage: %s\n", string(msg.Content))
+
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "generateActiveRFQ", trace.WithAttributes(
 		attribute.String("op", msg.Op),
 		attribute.String("content", string(msg.Content)),
@@ -364,6 +368,8 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 		return nil, fmt.Errorf("error unmarshalling quote data: %w", err)
 	}
 	span.SetAttributes(attribute.String("request_id", rfqRequest.RequestID))
+
+	fmt.Printf("RFQ Request Data: %+v\n", rfqRequest.Data)
 
 	// TODO: incorporate the user call data into the quote request and set the Transaction here
 	originAmountExact, ok := new(big.Int).SetString(rfqRequest.Data.OriginAmountExact, 10)
