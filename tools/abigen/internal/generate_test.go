@@ -5,15 +5,27 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/core"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	. "github.com/stretchr/testify/assert"
+	"github.com/ethereum/go-ethereum/common/compiler"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/tools/abigen/internal"
 )
+
+type AbiSuite struct {
+	suite.Suite
+	exampleFilePath string
+}
+
+func TestAbiSuite(t *testing.T) {
+	suite.Run(t, new(AbiSuite))
+}
 
 func TestCheckForDocker(t *testing.T) {
 	t.Helper()
@@ -24,18 +36,18 @@ func TestCheckForDocker(t *testing.T) {
 		t.Logf("Docker not available: %v", err)
 		return
 	}
-	Nil(t, err, "Docker should be available in test environment")
+	assert.Nil(t, err, "Docker should be available in test environment")
 }
 
 func (a *AbiSuite) TestCompileSolidityImplicitEVM() {
 	ctx := context.Background()
 	vals, err := internal.CompileSolidity(ctx, "0.8.4", a.exampleFilePath, 1, nil)
-	Nil(a.T(), err)
+	assert.Nil(a.T(), err)
 
-	Len(a.T(), vals, 1)
+	assert.Len(a.T(), vals, 1)
 	for _, value := range vals {
-		Equal(a.T(), value.Info.CompilerVersion, "0.8.4")
-		Equal(a.T(), value.Info.LanguageVersion, "0.8.4")
+		assert.Equal(a.T(), value.Info.CompilerVersion, "0.8.4")
+		assert.Equal(a.T(), value.Info.LanguageVersion, "0.8.4")
 	}
 }
 

@@ -319,22 +319,37 @@ func (m *BinaryManager) writeResponseToFile(resp *http.Response, tmpFile string)
 		return fmt.Errorf("invalid tmp file path: outside cache directory")
 	}
 
-	f, err := os.OpenFile(tmpFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, execPerms)
+	// Verify content length if provided
+	if resp.ContentLength > 0 {
+		if resp.ContentLength > 100*1024*1024 { // 100MB limit
+			return fmt.Errorf("binary too large: %d bytes", resp.ContentLength)
+		}
+	}
+
+	f, err := os.OpenFile(tmpFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, filePerms)
 	if err != nil {
 		return fmt.Errorf("failed to create temporary file: %w", err)
 	}
+	defer f.Close()
 
-	h := sha256.New()
-	if _, err := io.Copy(io.MultiWriter(f, h), resp.Body); err != nil {
-		if closeErr := f.Close(); closeErr != nil {
-			return fmt.Errorf("failed to close file after write error: %w", closeErr)
-		}
+	written, err := io.Copy(io.MultiWriter(f), resp.Body)
+	if err != nil {
+		os.Remove(tmpFile)
 		return fmt.Errorf("failed to write binary: %w", err)
 	}
 
-	if err := f.Close(); err != nil {
-		return fmt.Errorf("failed to close file: %w", err)
+	// Verify written bytes match content length if provided
+	if resp.ContentLength > 0 && written != resp.ContentLength {
+		os.Remove(tmpFile)
+		return fmt.Errorf("incomplete download: got %d bytes, expected %d", written, resp.ContentLength)
 	}
+
+	// Ensure all data is written to disk
+	if err := f.Sync(); err != nil {
+		os.Remove(tmpFile)
+		return fmt.Errorf("failed to sync file: %w", err)
+	}
+
 	return nil
 }
 
@@ -372,7 +387,8 @@ func (m *BinaryManager) downloadBinary(ctx context.Context, binaryInfo *BinaryIn
 	// Download and verify binary
 	tmpFile := binaryPath + ".tmp"
 	if err := m.downloadAndVerify(ctx, binaryInfo, tmpFile); err != nil {
-		if removeErr := os.Remove(tmpFile); removeErr != nil {
+		// Only log removal errors if the file exists and we fail to remove it
+		if removeErr := os.Remove(tmpFile); removeErr != nil && !os.IsNotExist(removeErr) {
 			fmt.Printf("failed to remove temporary file: %v\n", removeErr)
 		}
 		return "", fmt.Errorf("failed to download and verify binary: %w", err)
@@ -380,7 +396,8 @@ func (m *BinaryManager) downloadBinary(ctx context.Context, binaryInfo *BinaryIn
 
 	// Move temporary file to final location
 	if err := os.Rename(tmpFile, binaryPath); err != nil {
-		if removeErr := os.Remove(tmpFile); removeErr != nil {
+		// Only log removal errors if the file exists and we fail to remove it
+		if removeErr := os.Remove(tmpFile); removeErr != nil && !os.IsNotExist(removeErr) {
 			fmt.Printf("failed to remove temporary file: %v\n", removeErr)
 		}
 		return "", fmt.Errorf("failed to move binary to final location: %w", err)
@@ -405,7 +422,8 @@ func (m *BinaryManager) verifyAndInstall(ctx context.Context, tmpFile string, bi
 
 	// Verify checksums
 	if err := m.VerifyChecksums(tmpFile, binaryInfo); err != nil {
-		if removeErr := os.Remove(tmpFile); removeErr != nil {
+		// Only log removal errors if the file exists and we fail to remove it
+		if removeErr := os.Remove(tmpFile); removeErr != nil && !os.IsNotExist(removeErr) {
 			fmt.Printf("failed to remove temporary file: %v\n", removeErr)
 		}
 		return fmt.Errorf("checksum verification failed: %w", err)
@@ -413,7 +431,8 @@ func (m *BinaryManager) verifyAndInstall(ctx context.Context, tmpFile string, bi
 
 	// Make binary executable
 	if err := os.Chmod(tmpFile, execPerms); err != nil {
-		if removeErr := os.Remove(tmpFile); removeErr != nil {
+		// Only log removal errors if the file exists and we fail to remove it
+		if removeErr := os.Remove(tmpFile); removeErr != nil && !os.IsNotExist(removeErr) {
 			fmt.Printf("failed to remove temporary file: %v\n", removeErr)
 		}
 		return fmt.Errorf("failed to make binary executable: %w", err)

@@ -9,6 +9,17 @@ import (
 	"os"
 )
 
+// validateCommandNames ensures command names are unique to prevent registration conflicts
+func validateCommandNames(commands ...*cli.Command) {
+	seen := make(map[string]bool)
+	for _, cmd := range commands {
+		if seen[cmd.Name] {
+			panic(fmt.Sprintf("duplicate command name detected: %s", cmd.Name))
+		}
+		seen[cmd.Name] = true
+	}
+}
+
 var solFlag = &cli.StringFlag{
 	Name:  "sol",
 	Usage: "path to solidity file you want to compile",
@@ -84,7 +95,7 @@ var GenerateCommand = &cli.Command{
 			return nil
 		}
 		//nolint: wrapcheck
-		return internal.BuildTemplates(context.Context, context.String(solVersionFlag.Name), context.String(solFlag.Name), context.String(pkgFlag.Name), context.String(filenameFlag.Name), context.Int(optimizerRunsFlags.Name), strToPt(context.String(evmVersionFlags.Name)))
+		return internal.BuildTemplates(context.Context(), context.String(solVersionFlag.Name), context.String(solFlag.Name), context.String(pkgFlag.Name), context.String(filenameFlag.Name), context.Int(optimizerRunsFlags.Name), strToPt(context.String(evmVersionFlags.Name)))
 	},
 }
 
@@ -118,6 +129,11 @@ var EtherscanCommand = &cli.Command{
 			return nil
 		}
 		//nolint: wrapcheck
-		return internal.GenerateABIFromEtherscan(context.Context, uint32(context.Int(chainIDFlag.Name)), context.String(urlFlag.Name), common.HexToAddress(context.String(addressFlag.Name)), context.String(filenameFlag.Name), context.String(solVersionFlag.Name), context.String(pkgFlag.Name))
+		return internal.GenerateABIFromEtherscan(context.Context(), uint32(context.Int(chainIDFlag.Name)), context.String(urlFlag.Name), common.HexToAddress(context.String(addressFlag.Name)), context.String(filenameFlag.Name), context.String(solVersionFlag.Name), context.String(pkgFlag.Name))
 	},
+}
+
+func init() {
+	// Validate command names are unique before they can be used
+	validateCommandNames(GenerateCommand, EtherscanCommand)
 }

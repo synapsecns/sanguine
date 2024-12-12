@@ -133,15 +133,22 @@ func compileSolidity(ctx context.Context, version string, filePath string, optim
 	}
 
 	// Always try Docker first regardless of platform
-	contracts, err := compileWithDocker(ctx, version, filePath, optimizeRuns, evmVersion)
-	if err == nil {
+	contracts, dockerErr := compileWithDocker(ctx, version, filePath, optimizeRuns, evmVersion)
+	if dockerErr == nil {
 		return contracts, nil
 	}
 	// Log Docker failure but continue to binary fallback
-	fmt.Printf("Docker compilation failed: %v, falling back to binary compilation\n", err)
+	fmt.Printf("Docker compilation failed: %v, attempting binary compilation...\n", dockerErr)
 
 	// Only fall back to binary if Docker fails
-	return compileWithBinary(ctx, version, filePath, optimizeRuns, evmVersion)
+	contracts, binaryErr := compileWithBinary(ctx, version, filePath, optimizeRuns, evmVersion)
+	if binaryErr != nil {
+		// Return both Docker and binary errors for better debugging
+		return nil, fmt.Errorf("solidity compilation failed:\nDocker error: %v\nBinary error: %v\nVersion: %s\nFile: %s",
+			dockerErr, binaryErr, version, filePath)
+	}
+
+	return contracts, nil
 }
 
 // compileWithDocker uses Docker to compile solidity.
@@ -223,22 +230,24 @@ func executeDockerCompilation(ctx context.Context, version string, solFile *os.F
 	}
 
 	// Create new command with validated arguments
-	//nolint:gosec // Arguments are validated in prepareDockerCommand and Docker binary path is verified
-	validatedCmd := exec.CommandContext(ctx, dockerPath, cmd.Args...)
+	validatedCmd := exec.CommandContext(ctx, dockerPath, cmd.Args[1:]...)
 	validatedCmd.Stderr = &stderr
 	validatedCmd.Stdout = &stdout
 
+	cmdStr := strings.Join(cmd.Args, " ")
 	if err := validatedCmd.Run(); err != nil {
 		if stderr.Len() > 0 {
-			return nil, fmt.Errorf("docker compilation failed: %w\nstderr: %s", err, stderr.String())
+			return nil, fmt.Errorf("docker compilation failed: %w\nCommand: %s\nstderr: %s\nVersion: %s",
+				err, cmdStr, stderr.String(), version)
 		}
-		return nil, fmt.Errorf("docker execution failed: %w", err)
+		return nil, fmt.Errorf("docker execution failed: %w\nCommand: %s\nVersion: %s",
+			err, cmdStr, version)
 	}
 
-	contracts, err := compiler.ParseCombinedJSON(stdout.Bytes(), string(solContents), version, version, strings.Join(cmd.Args, " "))
+	contracts, err := compiler.ParseCombinedJSON(stdout.Bytes(), string(solContents), version, version, cmdStr)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse combined JSON output: %w\noutput: %s\nargs: %s",
-			err, stdout.String(), strings.Join(cmd.Args, " "))
+		return nil, fmt.Errorf("failed to parse combined JSON output: %w\nOutput: %s\nCommand: %s\nVersion: %s",
+			err, stdout.String(), cmdStr, version)
 	}
 	return contracts, nil
 }
