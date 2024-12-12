@@ -63,12 +63,13 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		Tag:          "latest",
 		Hostname:     "jaeger",
 		ExposedPorts: []string{"14268", "16686"},
+		PortBindings: map[docker.Port][]docker.PortBinding{
+			"14268/tcp": {{HostIP: "0.0.0.0", HostPort: "14268"}},
+			"16686/tcp": {{HostIP: "0.0.0.0", HostPort: "16686"}},
+		},
 		Env: []string{
 			"COLLECTOR_OTLP_ENABLED=true",
 			"LOG_LEVEL=debug",
-			"COLLECTOR_HTTP_PORT=0",
-			"COLLECTOR_OTLP_HTTP_PORT=0",
-			"QUERY_HTTP_PORT=0",
 		},
 		Networks: j.getNetworks(),
 		Labels: map[string]string{

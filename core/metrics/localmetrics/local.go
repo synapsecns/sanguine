@@ -231,65 +231,7 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 	return &tj
 }
 
-// purgeAllResources performs a thorough cleanup of all Docker resources
-func (j *testJaeger) purgeAllResources() error {
-	if j.pool == nil {
-		return nil
-	}
 
-	// Kill any processes using our port range
-	if err := j.cleanupPorts(); err != nil {
-		j.tb.Logf("Warning: Failed to cleanup ports: %v", err)
-	}
-
-	// List all containers without label filter for thorough cleanup
-	containers, err := j.pool.Client.ListContainers(docker.ListContainersOptions{
-		All: true,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to list containers: %v", err)
-	}
-
-	// Stop and remove containers with proper cleanup
-	for _, container := range containers {
-		// Force stop container first with increased timeout
-		err := j.pool.Client.StopContainer(container.ID, uint(10))
-		if err != nil && !strings.Contains(err.Error(), "No such container") {
-			j.tb.Logf("Warning: Failed to stop container %s: %v", container.ID, err)
-		}
-
-		// Wait for container to stop
-		time.Sleep(time.Second * 2)
-
-		// Force remove container and its volumes
-		err = j.pool.Client.RemoveContainer(docker.RemoveContainerOptions{
-			ID:            container.ID,
-			Force:         true,
-			RemoveVolumes: true,
-		})
-		if err != nil && !strings.Contains(err.Error(), "No such container") {
-			j.tb.Logf("Warning: Failed to remove container %s: %v", container.ID, err)
-		}
-	}
-
-	// Clean up all networks
-	networks, err := j.pool.Client.ListNetworks()
-	if err != nil {
-		return fmt.Errorf("failed to list networks: %v", err)
-	}
-
-	for _, network := range networks {
-		// Remove all networks, not just ones with our label
-		if err := j.pool.Client.RemoveNetwork(network.ID); err != nil {
-			j.tb.Logf("Warning: Failed to remove network %s: %v", network.ID, err)
-		}
-	}
-
-	// Wait for resources to be fully released
-	time.Sleep(time.Second * 5)
-
-	return nil
-}
 
 // getNetworks gets the networks to be associated with each container.
 func (j *testJaeger) getNetworks() []*dockertest.Network {
