@@ -387,18 +387,18 @@ func (m *BinaryManager) downloadBinary(ctx context.Context, binaryInfo *BinaryIn
 	// Download and verify binary
 	tmpFile := binaryPath + ".tmp"
 	if err := m.downloadAndVerify(ctx, binaryInfo, tmpFile); err != nil {
-		// Only log removal errors if the file exists and we fail to remove it
-		if removeErr := os.Remove(tmpFile); removeErr != nil && !os.IsNotExist(removeErr) {
-			fmt.Printf("failed to remove temporary file: %v\n", removeErr)
+		// Only attempt removal if file exists
+		if _, statErr := os.Stat(tmpFile); statErr == nil {
+			_ = os.Remove(tmpFile)
 		}
 		return "", fmt.Errorf("failed to download and verify binary: %w", err)
 	}
 
 	// Move temporary file to final location
 	if err := os.Rename(tmpFile, binaryPath); err != nil {
-		// Only log removal errors if the file exists and we fail to remove it
-		if removeErr := os.Remove(tmpFile); removeErr != nil && !os.IsNotExist(removeErr) {
-			fmt.Printf("failed to remove temporary file: %v\n", removeErr)
+		// Only attempt removal if file exists
+		if _, statErr := os.Stat(tmpFile); statErr == nil {
+			_ = os.Remove(tmpFile)
 		}
 		return "", fmt.Errorf("failed to move binary to final location: %w", err)
 	}
@@ -455,24 +455,34 @@ func (m *BinaryManager) VerifyChecksums(tmpFile string, binaryInfo *BinaryInfo) 
 		return fmt.Errorf("failed to read binary for verification: %w", err)
 	}
 
-	// Strip "0x" prefix from expected checksums and convert to lowercase
-	expectedSha := strings.ToLower(strings.TrimPrefix(binaryInfo.Sha256, "0x"))
-	expectedKeccak := strings.ToLower(strings.TrimPrefix(binaryInfo.Keccak256, "0x"))
+	// Normalize expected checksums: trim spaces, remove 0x prefix, convert to lowercase
+	expectedSha := strings.TrimSpace(strings.ToLower(strings.TrimPrefix(binaryInfo.Sha256, "0x")))
+	expectedKeccak := strings.TrimSpace(strings.ToLower(strings.TrimPrefix(binaryInfo.Keccak256, "0x")))
 
-	// Calculate SHA256 and normalize to lowercase without "0x" prefix
+	// Calculate SHA256 and normalize
 	sha256Sum := sha256.Sum256(content)
-	calculatedSha256 := strings.ToLower(hex.EncodeToString(sha256Sum[:]))
+	calculatedSha256 := strings.TrimSpace(strings.ToLower(hex.EncodeToString(sha256Sum[:])))
+
+	// Log checksum details for debugging
+	fmt.Printf("SHA256 Verification:\nCalculated: [%s]\nExpected:   [%s]\nLengths: %d vs %d\n",
+		calculatedSha256, expectedSha, len(calculatedSha256), len(expectedSha))
+
 	if calculatedSha256 != expectedSha {
-		return fmt.Errorf("sha256 checksum mismatch: got %s, want %s (with 0x: 0x%s)",
-			calculatedSha256, expectedSha, expectedSha)
+		return fmt.Errorf("sha256 checksum mismatch:\nGot:     [%s]\nWant:    [%s]\nOriginal: [%s]\nLengths:  %d vs %d",
+			calculatedSha256, expectedSha, binaryInfo.Sha256, len(calculatedSha256), len(expectedSha))
 	}
 
-	// Calculate Keccak256 and normalize to lowercase without "0x" prefix
+	// Calculate Keccak256 and normalize
 	keccak256Sum := crypto.Keccak256(content)
-	calculatedKeccak := strings.ToLower(hex.EncodeToString(keccak256Sum))
+	calculatedKeccak := strings.TrimSpace(strings.ToLower(hex.EncodeToString(keccak256Sum)))
+
+	// Log keccak details for debugging
+	fmt.Printf("Keccak256 Verification:\nCalculated: [%s]\nExpected:   [%s]\nLengths: %d vs %d\n",
+		calculatedKeccak, expectedKeccak, len(calculatedKeccak), len(expectedKeccak))
+
 	if calculatedKeccak != expectedKeccak {
-		return fmt.Errorf("keccak256 checksum mismatch: got %s, want %s (with 0x: 0x%s)",
-			calculatedKeccak, expectedKeccak, expectedKeccak)
+		return fmt.Errorf("keccak256 checksum mismatch:\nGot:     [%s]\nWant:    [%s]\nOriginal: [%s]\nLengths:  %d vs %d",
+			calculatedKeccak, expectedKeccak, binaryInfo.Keccak256, len(calculatedKeccak), len(expectedKeccak))
 	}
 
 	return nil

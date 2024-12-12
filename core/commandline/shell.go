@@ -95,13 +95,13 @@ func pruneShellCommands(commands []*cli.Command) (prunedCommands []*cli.Command)
 	for _, command := range commands {
 		if command.Name != shellCommandName {
 			// Check for duplicates before adding the command
-			if nameSet.Has(command.Name) {
+			if !nameSet.Has(command.Name) {
+				nameSet.Insert(command.Name)
+				prunedCommands = append(prunedCommands, command)
+			} else {
 				fmt.Printf("Command %s already exists, skipping\n", command.Name)
-				continue
 			}
-			prunedCommands = append(prunedCommands, command)
 		}
-		nameSet.Insert(command.Name)
 	}
 
 	return prunedCommands
