@@ -13,6 +13,11 @@ import (
 	"testing"
 )
 
+func setupTestBinaryManager(t *testing.T) *solc.BinaryManager {
+	t.Helper()
+	return solc.NewBinaryManager("0.8.20")
+}
+
 func TestIsAppleSilicon(t *testing.T) {
 	isArm := runtime.GOARCH == "arm64"
 	isDarwin := runtime.GOOS == "darwin"
@@ -31,16 +36,15 @@ func TestIsAppleSilicon(t *testing.T) {
 }
 
 func TestNewBinaryManager(t *testing.T) {
-	version := "0.8.20"
-	manager := solc.NewBinaryManager(version)
+	manager := setupTestBinaryManager(t)
 
 	expectedCacheDir := filepath.Join(os.Getenv("HOME"), ".cache", "solc")
 	if manager.CacheDir() != expectedCacheDir {
 		t.Errorf("Expected cache dir %s, got %s", expectedCacheDir, manager.CacheDir())
 	}
 
-	if manager.Version() != version {
-		t.Errorf("Expected version %s, got %s", version, manager.Version())
+	if manager.Version() != "0.8.20" {
+		t.Errorf("Expected version %s, got %s", "0.8.20", manager.Version())
 	}
 }
 
@@ -73,7 +77,7 @@ func TestGetPlatformDir(t *testing.T) {
 }
 
 func TestGetBinary(t *testing.T) {
-	manager := solc.NewBinaryManager("0.8.20")
+	manager := setupTestBinaryManager(t)
 	binary, err := manager.GetBinary()
 	if err != nil {
 		t.Fatalf("Failed to get binary: %v", err)
@@ -105,7 +109,11 @@ func TestGetBinaryInfo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Errorf("failed to cleanup test directory: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		name     string
@@ -147,7 +155,11 @@ func TestDownloadAndVerify(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Errorf("failed to cleanup test directory: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		name     string
@@ -159,6 +171,7 @@ func TestDownloadAndVerify(t *testing.T) {
 			name:    "invalid permissions",
 			version: "0.8.20",
 			setup: func(t *testing.T, dir string) (*solc.BinaryManager, error) {
+				t.Helper()
 				noWriteDir := filepath.Join(dir, "no-write")
 				if err := os.Mkdir(noWriteDir, 0500); err != nil {
 					t.Fatalf("Failed to create no-write dir: %v", err)
@@ -196,7 +209,11 @@ func TestVerifyChecksums(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Errorf("failed to cleanup test directory: %v", err)
+		}
+	}()
 
 	testContent := []byte("test content")
 	testFile := filepath.Join(tmpDir, "test-binary")
@@ -239,7 +256,7 @@ func TestVerifyChecksums(t *testing.T) {
 				Sha256:    tt.sha256,
 				Keccak256: tt.keccak256,
 			}
-			manager := solc.NewBinaryManager("0.8.20")
+			manager := setupTestBinaryManager(t)
 			err := manager.VerifyChecksums(testFile, info)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("verifyChecksums() error = %v, wantErr %v", err, tt.wantErr)
