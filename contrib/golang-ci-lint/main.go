@@ -63,7 +63,7 @@ const (
 	cacheDir            = "cache"
 	filePerms           = 0400
 	dirPerms            = 0750
-	execPerms           = 0500
+	execPerms           = 0755
 	maxDecompressSize   = 50 * 1024 * 1024 // 50MB limit for decompression
 	httpTimeout         = 30 * time.Second
 )
@@ -136,9 +136,9 @@ func validatePath(path, root string) error {
 		info, err := os.Stat(path)
 		if err == nil && !info.IsDir() {
 			perm := info.Mode().Perm()
-			// Allow read and execute permissions only (exactly 0500)
-			if perm&^0500 != 0 {
-				return fmt.Errorf("invalid binary path: file permissions must be exactly 0500 (read+execute), got: %o", perm)
+			// Allow read and execute permissions (0755)
+			if perm != execPerms {
+				return fmt.Errorf("invalid binary path: file permissions must be exactly 0755 (rwxr-xr-x), got: %o", perm)
 			}
 		}
 		return nil
