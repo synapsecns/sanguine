@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 // PutRelayerQuoteRequest contains the schema for a PUT /quote request.
 type PutRelayerQuoteRequest struct {
@@ -82,6 +85,7 @@ type SubscribeActiveRFQRequest struct {
 
 // NewWsRFQRequest creates a new WsRFQRequest.
 func NewWsRFQRequest(data QuoteData, requestID string) *WsRFQRequest {
+	fmt.Printf("NewWsRFQRequest with data: %+v\n", data)
 	return &WsRFQRequest{
 		RequestID: requestID,
 		Data:      data,

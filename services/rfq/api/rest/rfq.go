@@ -20,6 +20,7 @@ import (
 const collectionTimeout = 1 * time.Minute
 
 func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.PutRFQRequest, requestID string) (quote *model.QuoteData) {
+	fmt.Printf("handleActiveRFQ with request data: %+v\n", request.Data)
 	ctx, span := r.handler.Tracer().Start(ctx, "handleActiveRFQ", trace.WithAttributes(
 		attribute.String("user_address", request.UserAddress),
 		attribute.String("request_id", requestID),
@@ -30,6 +31,7 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 
 	// publish the quote request to all connected clients
 	relayerReq := model.NewWsRFQRequest(request.Data, requestID)
+	fmt.Printf("parsed websocket request: %+v\n", relayerReq.Data)
 	r.wsClients.Range(func(relayerAddr string, client WsClient) bool {
 		sendCtx, sendSpan := r.handler.Tracer().Start(ctx, "sendQuoteRequest", trace.WithAttributes(
 			attribute.String("relayer_address", relayerAddr),

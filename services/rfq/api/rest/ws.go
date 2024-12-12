@@ -48,6 +48,7 @@ func newWsClient(relayerAddr string, conn *websocket.Conn, pubsub PubSubManager,
 }
 
 func (c *wsClient) SendQuoteRequest(ctx context.Context, quoteRequest *model.WsRFQRequest) error {
+	fmt.Printf("wsClient.SendQuoteRequest with data: %+v\n", quoteRequest.Data)
 	select {
 	case c.requestChan <- quoteRequest:
 		// successfully sent, register a response channel
@@ -172,6 +173,7 @@ func (c *wsClient) processWs(ctx context.Context, messageChan chan []byte) (err 
 }
 
 func (c *wsClient) sendRelayerRequest(ctx context.Context, req *model.WsRFQRequest) (err error) {
+	fmt.Printf("sendRelayerRequest with data: %+v\n", req.Data)
 	_, span := c.handler.Tracer().Start(ctx, "sendRelayerRequest", trace.WithAttributes(
 		attribute.String("relayer_address", c.relayerAddr),
 		attribute.String("request_id", req.RequestID),
@@ -184,10 +186,12 @@ func (c *wsClient) sendRelayerRequest(ctx context.Context, req *model.WsRFQReque
 	if err != nil {
 		return fmt.Errorf("error marshaling quote request: %w", err)
 	}
+	fmt.Printf("rawData: %+v\n", string(rawData))
 	msg := model.ActiveRFQMessage{
 		Op:      RequestQuoteOp,
 		Content: json.RawMessage(rawData),
 	}
+	fmt.Printf("writing raw msg: %+v\n", msg)
 	err = c.conn.WriteJSON(msg)
 	if err != nil {
 		return fmt.Errorf("error sending quote request: %w", err)

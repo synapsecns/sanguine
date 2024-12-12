@@ -327,6 +327,7 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 			if msg == nil {
 				continue
 			}
+			fmt.Printf("parsed msg from respChan: %+v\n", msg.Content)
 			resp, err := m.generateActiveRFQ(ctx, msg)
 			if err != nil {
 				return fmt.Errorf("error generating active RFQ message: %w", err)
