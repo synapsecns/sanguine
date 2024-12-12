@@ -220,6 +220,8 @@ var fastBridgeV2ABI *abi.ABI
 const methodName = "relayV2"
 
 func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, quoteRequest *reldb.QuoteRequest) (gasEstimate uint64, err error) {
+	span := trace.SpanFromContext(ctx)
+
 	client, err := f.clientFetcher.GetClient(ctx, big.NewInt(int64(destination)))
 	if err != nil {
 		return 0, fmt.Errorf("could not get client: %w", err)
@@ -254,6 +256,14 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 		Value: quoteRequest.Transaction.ZapNative,
 		Data:  encodedData,
 	}
+
+	span.SetAttributes(
+		attribute.String("callMsg.From", callMsg.From.Hex()),
+		attribute.String("callMsg.To", callMsg.To.Hex()),
+		attribute.String("callMsg.Value", callMsg.Value.String()),
+		attribute.String("callMsg.Data", string(callMsg.Data)),
+	)
+
 	gasEstimate, err = client.EstimateGas(ctx, callMsg)
 	if err != nil {
 		return 0, fmt.Errorf("could not estimate gas: %w", err)
