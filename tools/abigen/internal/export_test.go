@@ -2,15 +2,14 @@ package internal
 
 import (
 	"github.com/ethereum/go-ethereum/common/compiler"
-	"os"
 )
 
-// CreateRunFile exports create run file for testing.
-func CreateRunFile(version string) (runFile *os.File, err error) {
-	return createRunFile(version)
+// CheckForDocker exports checkForDocker for testing.
+func CheckForDocker() error {
+	return checkForDocker()
 }
 
-// CompileSolidity exports compileSolidity for testingw.
+// CompileSolidity exports compileSolidity for testing.
 func CompileSolidity(version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
 	return compileSolidity(version, filePath, optimizeRuns, evmVersion)
 }

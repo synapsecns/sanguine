@@ -139,6 +139,7 @@ func TestGetBinaryInfo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Helper()
 			manager := solc.NewBinaryManager(tt.version)
 			managerValue := reflect.ValueOf(manager).Elem()
 			if platformField := managerValue.FieldByName("platform"); platformField.IsValid() && platformField.CanSet() {
@@ -194,6 +195,7 @@ func TestDownloadAndVerify(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Helper()
 			manager, err := tt.setup(t, tmpDir)
 			if err != nil {
 				t.Fatalf("Setup failed: %v", err)
@@ -254,6 +256,7 @@ func TestVerifyChecksums(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Helper()
 			info := &solc.BinaryInfo{
 				Sha256:    tt.sha256,
 				Keccak256: tt.keccak256,

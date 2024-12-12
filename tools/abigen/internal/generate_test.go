@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/core"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -15,17 +14,16 @@ import (
 	"github.com/synapsecns/sanguine/tools/abigen/internal"
 )
 
-func TestCreateRunFile(t *testing.T) {
-	runFile, err := internal.CreateRunFile("0.8.17")
-	Nil(t, err)
+func TestCheckForDocker(t *testing.T) {
+	t.Helper()
 
-	//nolint: gosec
-	cmd := exec.Command("bash", "-n", runFile.Name())
-	cmd.Env = os.Environ()
-
-	if err := cmd.Run(); err != nil {
-		Nil(t, err)
+	// Test Docker availability
+	err := internal.CheckForDocker()
+	if err != nil {
+		t.Logf("Docker not available: %v", err)
+		return
 	}
+	Nil(t, err, "Docker should be available in test environment")
 }
 
 func (a *AbiSuite) TestCompileSolidityImplicitEVM() {

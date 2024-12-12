@@ -141,71 +141,71 @@ func compileSolidity(version string, filePath string, optimizeRuns int, evmVersi
 
 // compileWithDocker uses Docker to compile solidity.
 func compileWithDocker(version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
-    // Check Docker availability first
-    if err := checkDockerAvailability(); err != nil {
-        return nil, fmt.Errorf("docker not available (falling back to binary): %w", err)
-    }
+	// Check Docker availability first
+	if err := checkForDocker(); err != nil {
+		return nil, fmt.Errorf("docker not available (falling back to binary): %w", err)
+	}
 
-    wd, err := os.Getwd()
-    if err != nil {
-        return nil, fmt.Errorf("could not determine working dir: %w", err)
-    }
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, fmt.Errorf("could not determine working dir: %w", err)
+	}
 
-    solContents, err := readSolFile(filePath)
-    if err != nil {
-        return nil, fmt.Errorf("failed to read solidity file: %w", err)
-    }
+	solContents, err := readSolFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read solidity file: %w", err)
+	}
 
-    tmpPath := filepath.Join(wd, filepath.Base(filePath))
-    solFile, err := prepareSolFile(tmpPath, filePath, solContents)
-    if err != nil {
-        return nil, fmt.Errorf("failed to prepare solidity file: %w", err)
-    }
+	tmpPath := filepath.Join(wd, filepath.Base(filePath))
+	solFile, err := prepareSolFile(tmpPath, filePath, solContents)
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare solidity file: %w", err)
+	}
 
-    if !isOriginalFile(tmpPath, filePath) {
-        defer func() {
-            if cleanupErr := os.Remove(solFile.Name()); cleanupErr != nil {
-                if err == nil {
-                    err = cleanupErr
-                }
-            }
-        }()
-    }
+	if !isOriginalFile(tmpPath, filePath) {
+		defer func() {
+			if cleanupErr := os.Remove(solFile.Name()); cleanupErr != nil {
+				if err == nil {
+					err = cleanupErr
+				}
+			}
+		}()
+	}
 
-    // Run Docker compilation with direct commands
-    var stderr, stdout bytes.Buffer
-    args := []string{
-        "run", "--rm",
-        "--platform", "linux/amd64",  // Ensure consistent platform
-        "-v", fmt.Sprintf("%s:/solidity", filepath.Dir(solFile.Name())),
-        fmt.Sprintf("ethereum/solc:%s", version),
-        "--combined-json", "bin,bin-runtime,srcmap,srcmap-runtime,abi,userdoc,devdoc,metadata,hashes",
-        "--optimize",
-        "--optimize-runs", strconv.Itoa(optimizeRuns),
-        "--allow-paths", "/solidity",
-        fmt.Sprintf("/solidity/%s", filepath.Base(solFile.Name())),
-    }
+	// Run Docker compilation with direct commands
+	var stderr, stdout bytes.Buffer
+	args := []string{
+		"run", "--rm",
+		"--platform", "linux/amd64", // Ensure consistent platform
+		"-v", fmt.Sprintf("%s:/solidity", filepath.Dir(solFile.Name())),
+		fmt.Sprintf("ethereum/solc:%s", version),
+		"--combined-json", "bin,bin-runtime,srcmap,srcmap-runtime,abi,userdoc,devdoc,metadata,hashes",
+		"--optimize",
+		"--optimize-runs", strconv.Itoa(optimizeRuns),
+		"--allow-paths", "/solidity",
+		fmt.Sprintf("/solidity/%s", filepath.Base(solFile.Name())),
+	}
 
-    if evmVersion != nil {
-        args = append(args[0:len(args)-1], fmt.Sprintf("--evm-version=%s", *evmVersion), args[len(args)-1])
-    }
+	if evmVersion != nil {
+		args = append(args[0:len(args)-1], fmt.Sprintf("--evm-version=%s", *evmVersion), args[len(args)-1])
+	}
 
-    cmd := exec.Command("docker", args...)
-    cmd.Stderr = &stderr
-    cmd.Stdout = &stdout
+	cmd := exec.Command("docker", args...)
+	cmd.Stderr = &stderr
+	cmd.Stdout = &stdout
 
-    if err := cmd.Run(); err != nil {
-        if stderr.Len() > 0 {
-            return nil, fmt.Errorf("docker compilation failed: %s", stderr.String())
-        }
-        return nil, fmt.Errorf("docker execution failed: %w", err)
-    }
+	if err := cmd.Run(); err != nil {
+		if stderr.Len() > 0 {
+			return nil, fmt.Errorf("docker compilation failed: %s", stderr.String())
+		}
+		return nil, fmt.Errorf("docker execution failed: %w", err)
+	}
 
-    contracts, err := compiler.ParseCombinedJSON(stdout.Bytes(), string(solContents), version, version, strings.Join(args, " "))
-    if err != nil {
-        return nil, fmt.Errorf("failed to parse combined JSON output: %w", err)
-    }
-    return contracts, nil
+	contracts, err := compiler.ParseCombinedJSON(stdout.Bytes(), string(solContents), version, version, strings.Join(args, " "))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse combined JSON output: %w", err)
+	}
+	return contracts, nil
 }
 
 //nolint:gosec // File operations required for reading Solidity source
@@ -248,18 +248,18 @@ func isOriginalFile(tmpPath, filePath string) bool {
 	return equal
 }
 
-
-
 // compileWithBinary uses downloaded solc binary to compile solidity.
 func compileWithBinary(version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
 	binaryManager := solc.NewBinaryManager(version)
 	ctx := context.Background() // TODO: Accept context from caller
+
+	// Get solc binary
 	binaryPath, err := binaryManager.GetBinary(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get solc binary: %w", err)
 	}
 
-	// Convert to absolute path
+	// Convert to absolute path and validate
 	absPath, err := filepath.Abs(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get absolute path for %s: %w", filePath, err)
@@ -306,8 +306,6 @@ func compileWithBinary(version string, filePath string, optimizeRuns int, evmVer
 	return contracts, nil
 }
 
-
-
 // TODO consider only building on test,	as these contracts *will* get included into production binaries.
 var metadataTemplate = template.Must(template.New("").Parse(`// Code generated by synapse abigen DO NOT EDIT.
 package {{ .PackageName }}
@@ -349,4 +347,20 @@ func filePathsAreEqual(file1 string, file2 string) (equal bool, err error) {
 
 	// check if the files are the same
 	return file1 == file2, nil
+}
+
+// checkForDocker verifies that Docker is available and running.
+func checkForDocker() error {
+	cmd := exec.Command("docker", "info")
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		if stderr.Len() > 0 {
+			return fmt.Errorf("docker not running: %s", stderr.String())
+		}
+		return fmt.Errorf("docker not installed or not in PATH: %w", err)
+	}
+
+	return nil
 }

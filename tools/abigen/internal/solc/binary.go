@@ -81,7 +81,11 @@ func (m *BinaryManager) validatePlatform(platform string) error {
 
 // NewBinaryManager creates a new BinaryManager instance.
 func NewBinaryManager(version string) *BinaryManager {
-	cacheDir := filepath.Join(os.Getenv("HOME"), ".cache", "solc")
+	// Clean and validate cache directory path
+	cacheDir := filepath.Clean(filepath.Join(os.Getenv("HOME"), ".cache", "solc"))
+	if cacheDir == "" || cacheDir == "/" {
+		cacheDir = filepath.Clean(filepath.Join(os.TempDir(), ".cache", "solc"))
+	}
 	return &BinaryManager{
 		cacheDir: cacheDir,
 		version:  version,
@@ -137,17 +141,25 @@ func (m *BinaryManager) GetBinary(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("failed to determine platform")
 	}
 
-	cacheDir := filepath.Join(m.cacheDir, m.version, platform)
+	// Clean and validate cache directory path
+	cacheDir := filepath.Clean(filepath.Join(m.cacheDir, m.version, platform))
+	if !strings.HasPrefix(cacheDir, m.cacheDir) {
+		return "", fmt.Errorf("invalid cache directory path: outside base directory")
+	}
 
 	// Create cache directory if it doesn't exist
 	if err := os.MkdirAll(cacheDir, dirPerms); err != nil {
 		return "", fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
-	// Check if binary exists in cache and is executable
-	binaryPath := filepath.Join(cacheDir, fmt.Sprintf("solc-%s-v%s", platform, m.version))
+	// Clean and validate binary path
+	binaryPath := filepath.Clean(filepath.Join(cacheDir, fmt.Sprintf("solc-%s", m.version)))
+	if !strings.HasPrefix(binaryPath, m.cacheDir) {
+		return "", fmt.Errorf("invalid binary path: outside cache directory")
+	}
+
+	// Check if binary exists and is executable
 	if info, err := os.Stat(binaryPath); err == nil {
-		// Verify the binary is executable
 		if info.Mode()&0111 == 0 {
 			if err := os.Chmod(binaryPath, execPerms); err != nil {
 				return "", fmt.Errorf("failed to make cached binary executable: %w", err)
@@ -156,39 +168,14 @@ func (m *BinaryManager) GetBinary(ctx context.Context) (string, error) {
 		return binaryPath, nil
 	}
 
-	// Download binary with provided context
-	return m.downloadBinary(ctx, platform, binaryPath)
-}
-
-// downloadBinary downloads the solc binary for the given platform.
-func (m *BinaryManager) downloadBinary(ctx context.Context, platform, binaryPath string) (string, error) {
-	// Platform validation already done in GetBinary
+	// Get binary info for platform
 	binaryInfo, err := m.getBinaryInfo(ctx, platform)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get binary info: %w", err)
 	}
 
-	// Download binary
-	tmpFile := binaryPath + ".tmp"
-	if err := m.downloadAndVerify(ctx, binaryInfo, tmpFile); err != nil {
-		return "", err
-	}
-
-	// Move temporary file to final location and make it executable
-	if err := os.Chmod(tmpFile, execPerms); err != nil {
-		if removeErr := os.Remove(tmpFile); removeErr != nil {
-			fmt.Printf("failed to remove temporary file: %v\n", removeErr)
-		}
-		return "", fmt.Errorf("failed to make binary executable: %w", err)
-	}
-	if err := os.Rename(tmpFile, binaryPath); err != nil {
-		if removeErr := os.Remove(tmpFile); removeErr != nil {
-			fmt.Printf("failed to remove temporary file: %v\n", removeErr)
-		}
-		return "", fmt.Errorf("failed to move binary to final location: %w", err)
-	}
-
-	return binaryPath, nil
+	// Download binary if it doesn't exist
+	return m.downloadBinary(ctx, binaryInfo, binaryPath)
 }
 
 // getBinaryInfo fetches and parses the list.json file to find matching version.
@@ -232,16 +219,23 @@ func (m *BinaryManager) getBinaryInfo(ctx context.Context, platform string) (*Bi
 	return nil, fmt.Errorf("version %s not found for platform %s", m.version, platform)
 }
 
-// setupCacheDir ensures the cache directory exists and is writable.
+// setupCacheDir ensures the cache directory exists and has correct permissions.
 func (m *BinaryManager) setupCacheDir(cacheDir string) error {
+	// Clean and validate directory path
+	cacheDir = filepath.Clean(cacheDir)
+	if !strings.HasPrefix(cacheDir, m.cacheDir) && !strings.HasPrefix(cacheDir, os.TempDir()) {
+		return fmt.Errorf("invalid directory path: outside allowed directories")
+	}
+
+	// Create directory with secure permissions
 	if err := os.MkdirAll(cacheDir, dirPerms); err != nil {
-		return fmt.Errorf("failed to create cache directory")
+		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
 	// Test write permissions
 	testFile := filepath.Join(cacheDir, ".write-test")
 	if err := os.WriteFile(testFile, []byte{}, filePerms); err != nil {
-		return fmt.Errorf("failed to create cache directory")
+		return fmt.Errorf("failed to verify directory permissions: %w", err)
 	}
 	_ = os.Remove(testFile)
 	return nil
@@ -249,6 +243,12 @@ func (m *BinaryManager) setupCacheDir(cacheDir string) error {
 
 // downloadFile downloads a file from the given URL and writes it to tmpFile.
 func (m *BinaryManager) downloadFile(ctx context.Context, url, tmpFile string) error {
+	// Clean and validate tmp file path
+	tmpFile = filepath.Clean(tmpFile)
+	if !strings.HasPrefix(tmpFile, m.cacheDir) {
+		return fmt.Errorf("invalid tmp file path: outside cache directory")
+	}
+
 	//nolint:gosec // HTTP request to trusted domain is required for downloading solc binaries
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -272,7 +272,7 @@ func (m *BinaryManager) downloadFile(ctx context.Context, url, tmpFile string) e
 	//nolint:gosec // File operations are required for storing downloaded binaries
 	f, err := os.OpenFile(tmpFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, execPerms)
 	if err != nil {
-		return fmt.Errorf("failed to create cache directory")
+		return fmt.Errorf("failed to create temporary file: %w", err)
 	}
 	defer func() {
 		if err := f.Close(); err != nil {
@@ -288,67 +288,101 @@ func (m *BinaryManager) downloadFile(ctx context.Context, url, tmpFile string) e
 	return nil
 }
 
-//nolint:gosec // File operations are required for storing downloaded binaries
 // downloadAndVerify downloads the binary and verifies its checksums.
+//
+//nolint:gosec // File operations are required for storing downloaded binaries
 func (m *BinaryManager) downloadAndVerify(ctx context.Context, binaryInfo *BinaryInfo, tmpFile string) error {
 	if err := m.setupCacheDir(filepath.Dir(tmpFile)); err != nil {
 		return err
 	}
-	if err := m.downloadBinary(ctx, binaryInfo, tmpFile); err != nil {
-		return err
+
+	// Download binary from URL
+	binaryURL := fmt.Sprintf("https://binaries.soliditylang.org/%s/%s", m.GetPlatformDir(), binaryInfo.Path)
+	if err := m.downloadFile(ctx, binaryURL, tmpFile); err != nil {
+		return fmt.Errorf("failed to download binary: %w", err)
 	}
+
 	return m.verifyAndInstall(tmpFile, binaryInfo)
 }
 
-// downloadBinary downloads the solc binary from the official repository.
-func (m *BinaryManager) downloadBinary(ctx context.Context, binaryInfo *BinaryInfo, tmpFile string) error {
-	platform := m.GetPlatformDir()
-	if err := m.validatePlatform(platform); err != nil {
-		return fmt.Errorf("failed to download list.json")
+// downloadBinary downloads and installs the solc binary for the given binary info.
+func (m *BinaryManager) downloadBinary(ctx context.Context, binaryInfo *BinaryInfo, binaryPath string) (string, error) {
+	// Clean and validate binary path
+	binaryPath = filepath.Clean(binaryPath)
+	if !strings.HasPrefix(binaryPath, m.cacheDir) {
+		return "", fmt.Errorf("invalid binary path: outside cache directory")
 	}
 
-	binaryURL := fmt.Sprintf("https://binaries.soliditylang.org/%s/%s", platform, binaryInfo.Path)
-	if err := m.downloadFile(ctx, binaryURL, tmpFile); err != nil {
+	// Download and verify binary
+	tmpFile := binaryPath + ".tmp"
+	if err := m.downloadAndVerify(ctx, binaryInfo, tmpFile); err != nil {
 		if removeErr := os.Remove(tmpFile); removeErr != nil {
 			fmt.Printf("failed to remove temporary file: %v\n", removeErr)
 		}
-		return err
+		return "", fmt.Errorf("failed to download and verify binary: %w", err)
 	}
-	return nil
+
+	// Move temporary file to final location
+	if err := os.Rename(tmpFile, binaryPath); err != nil {
+		if removeErr := os.Remove(tmpFile); removeErr != nil {
+			fmt.Printf("failed to remove temporary file: %v\n", removeErr)
+		}
+		return "", fmt.Errorf("failed to move binary to final location: %w", err)
+	}
+
+	return binaryPath, nil
 }
 
 // verifyAndInstall verifies the downloaded binary's checksums and installs it.
 func (m *BinaryManager) verifyAndInstall(tmpFile string, binaryInfo *BinaryInfo) error {
+	// Clean and validate tmp file path
+	tmpFile = filepath.Clean(tmpFile)
+	if !strings.HasPrefix(tmpFile, m.cacheDir) {
+		return fmt.Errorf("invalid tmp file path: outside cache directory")
+	}
+
+	// Verify checksums
 	if err := m.VerifyChecksums(tmpFile, binaryInfo); err != nil {
 		if removeErr := os.Remove(tmpFile); removeErr != nil {
 			fmt.Printf("failed to remove temporary file: %v\n", removeErr)
 		}
-		return err
+		return fmt.Errorf("checksum verification failed: %w", err)
 	}
+
+	// Make binary executable
+	if err := os.Chmod(tmpFile, execPerms); err != nil {
+		if removeErr := os.Remove(tmpFile); removeErr != nil {
+			fmt.Printf("failed to remove temporary file: %v\n", removeErr)
+		}
+		return fmt.Errorf("failed to make binary executable: %w", err)
+	}
+
 	return nil
 }
 
+// VerifyChecksums validates the downloaded binary by checking both SHA256 and Keccak256
+// checksums against the expected values from BinaryInfo. It ensures the binary has not
+// been tampered with during download by comparing against official checksums.
 func (m *BinaryManager) VerifyChecksums(tmpFile string, binaryInfo *BinaryInfo) error {
-    // For test files, allow paths in /tmp
-    cleanPath := filepath.Clean(tmpFile)
-    if !strings.HasPrefix(cleanPath, m.cacheDir) && !strings.HasPrefix(cleanPath, os.TempDir()) {
-        return fmt.Errorf("invalid binary path: attempted to access file outside allowed directories")
-    }
+	cleanPath := filepath.Clean(tmpFile)
+	if !strings.HasPrefix(cleanPath, m.cacheDir) && !strings.HasPrefix(cleanPath, os.TempDir()) {
+		return fmt.Errorf("invalid binary path: attempted to access file outside allowed directories")
+	}
 
-    content, err := os.ReadFile(tmpFile)
-    if err != nil {
-        return fmt.Errorf("failed to read binary for verification: %w", err)
-    }
+	content, err := os.ReadFile(tmpFile)
+	if err != nil {
+		return fmt.Errorf("failed to read binary for verification: %w", err)
+	}
 
-    sha256Sum := sha256.Sum256(content)
-    if hex.EncodeToString(sha256Sum[:]) != binaryInfo.Sha256 {
-        return fmt.Errorf("sha256 checksum mismatch")
-    }
+	sha256Sum := sha256.Sum256(content)
+	if hex.EncodeToString(sha256Sum[:]) != binaryInfo.Sha256 {
+		return fmt.Errorf("sha256 checksum mismatch")
+	}
 
-    keccak256Sum := crypto.Keccak256(content)
-    if hex.EncodeToString(keccak256Sum) != binaryInfo.Keccak256 {
-        return fmt.Errorf("keccak256 checksum mismatch")
-    }
+	keccak256Sum := crypto.Keccak256(content)
+	if hex.EncodeToString(keccak256Sum) != binaryInfo.Keccak256 {
+		return fmt.Errorf("keccak256 checksum mismatch")
+	}
 
-    return nil
+	return nil
 }
