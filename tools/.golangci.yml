@@ -16,8 +16,8 @@ linters-settings:
     check-exported: false  # Don't warn about exported unused functions in test files
   staticcheck:
     checks:
-      - "all"
-      - "-SA1019"  # Ignore deprecation warnings
+      - 'all'
+      - '-SA1019'  # Ignore deprecation warnings
   govet:
     check-shadowing: true
     enable-all: true
@@ -30,18 +30,18 @@ issues:
     - path: _test\.go$
       linters:
         - unused
-      text: "imported and not used"
+      text: 'imported and not used'
     # Exclude certain patterns in test files
     - path: _test\.go$
-      text: "testify/suite"
+      text: 'testify/suite'
       linters:
         - unused
     - path: _test\.go$
-      text: "testify/require"
+      text: 'testify/require'
       linters:
         - unused
     - path: _test\.go$
-      text: "testing"
+      text: 'testing'
       linters:
         - unused
 
