@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -375,14 +376,33 @@ func (m *BinaryManager) VerifyChecksums(tmpFile string, binaryInfo *BinaryInfo) 
 	}
 
 	sha256Sum := sha256.Sum256(content)
-	if hex.EncodeToString(sha256Sum[:]) != binaryInfo.Sha256 {
-		return fmt.Errorf("sha256 checksum mismatch")
+	calculatedSha256 := hex.EncodeToString(sha256Sum[:])
+	if calculatedSha256 != binaryInfo.Sha256 {
+		return fmt.Errorf("sha256 checksum mismatch: got %s, want %s", calculatedSha256, binaryInfo.Sha256)
 	}
 
 	keccak256Sum := crypto.Keccak256(content)
-	if hex.EncodeToString(keccak256Sum) != binaryInfo.Keccak256 {
-		return fmt.Errorf("keccak256 checksum mismatch")
+	calculatedKeccak := hex.EncodeToString(keccak256Sum)
+	if calculatedKeccak != binaryInfo.Keccak256 {
+		return fmt.Errorf("keccak256 checksum mismatch: got %s, want %s", calculatedKeccak, binaryInfo.Keccak256)
 	}
 
 	return nil
+}
+
+// ValidateSolcVersion checks if the version string is in a valid format.
+// It accepts versions in the format "v0.8.20" or "0.8.20" and validates
+// that all components are numeric.
+func ValidateSolcVersion(version string) bool {
+	version = strings.TrimPrefix(version, "v")
+	parts := strings.Split(version, ".")
+	if len(parts) != 3 {
+		return false
+	}
+	for _, part := range parts {
+		if _, err := strconv.Atoi(part); err != nil {
+			return false
+		}
+	}
+	return true
 }

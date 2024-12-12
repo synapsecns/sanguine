@@ -146,14 +146,30 @@ func compileWithDocker(version string, filePath string, optimizeRuns int, evmVer
 		return nil, fmt.Errorf("docker not available (falling back to binary): %w", err)
 	}
 
-	wd, err := os.Getwd()
-	if err != nil {
-		return nil, fmt.Errorf("could not determine working dir: %w", err)
-	}
-
+	// Read and validate source file first
 	solContents, err := readSolFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read solidity file: %w", err)
+	}
+	if len(solContents) == 0 {
+		return nil, fmt.Errorf("empty source file")
+	}
+
+	// Prepare solidity file
+	solFile, err := prepareSolidityFile(filePath, solContents)
+	if err != nil {
+		return nil, err
+	}
+
+	// Execute Docker compilation
+	return executeDockerCompilation(version, solFile, solContents, optimizeRuns, evmVersion)
+}
+
+// prepareSolidityFile prepares the solidity file for compilation and handles cleanup.
+func prepareSolidityFile(filePath string, solContents []byte) (*os.File, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, fmt.Errorf("could not determine working dir: %w", err)
 	}
 
 	tmpPath := filepath.Join(wd, filepath.Base(filePath))
@@ -172,25 +188,13 @@ func compileWithDocker(version string, filePath string, optimizeRuns int, evmVer
 		}()
 	}
 
-	// Run Docker compilation with direct commands
+	return solFile, nil
+}
+
+// executeDockerCompilation executes the Docker compilation command and parses the output.
+func executeDockerCompilation(version string, solFile *os.File, solContents []byte, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
 	var stderr, stdout bytes.Buffer
-	args := []string{
-		"run", "--rm",
-		"--platform", "linux/amd64", // Ensure consistent platform
-		"-v", fmt.Sprintf("%s:/solidity", filepath.Dir(solFile.Name())),
-		fmt.Sprintf("ethereum/solc:%s", version),
-		"--combined-json", "bin,bin-runtime,srcmap,srcmap-runtime,abi,userdoc,devdoc,metadata,hashes",
-		"--optimize",
-		"--optimize-runs", strconv.Itoa(optimizeRuns),
-		"--allow-paths", "/solidity",
-		fmt.Sprintf("/solidity/%s", filepath.Base(solFile.Name())),
-	}
-
-	if evmVersion != nil {
-		args = append(args[0:len(args)-1], fmt.Sprintf("--evm-version=%s", *evmVersion), args[len(args)-1])
-	}
-
-	cmd := exec.Command("docker", args...)
+	cmd := prepareDockerCommand(version, solFile.Name(), optimizeRuns, evmVersion)
 	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
 
@@ -201,11 +205,46 @@ func compileWithDocker(version string, filePath string, optimizeRuns int, evmVer
 		return nil, fmt.Errorf("docker execution failed: %w", err)
 	}
 
-	contracts, err := compiler.ParseCombinedJSON(stdout.Bytes(), string(solContents), version, version, strings.Join(args, " "))
+	contracts, err := compiler.ParseCombinedJSON(stdout.Bytes(), string(solContents), version, version, strings.Join(cmd.Args, " "))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse combined JSON output: %w", err)
 	}
 	return contracts, nil
+}
+
+// prepareDockerCommand creates the Docker command with all necessary arguments.
+func prepareDockerCommand(version, filePath string, optimizeRuns int, evmVersion *string) *exec.Cmd {
+	// Validate version format (should be like "v0.8.20" or "0.8.20")
+	if !solc.ValidateSolcVersion(version) {
+		version = "v" + strings.TrimPrefix(version, "v")
+	}
+
+	// Sanitize file path to prevent command injection
+	sanitizedPath := filepath.Clean(filePath)
+	if !filepath.IsAbs(sanitizedPath) {
+		sanitizedPath, _ = filepath.Abs(sanitizedPath)
+	}
+
+	// Prepare base arguments with validated inputs
+	args := []string{
+		"run", "--rm",
+		"--platform", "linux/amd64", // Ensure consistent platform
+		"-v", fmt.Sprintf("%s:/solidity", filepath.Dir(sanitizedPath)),
+		fmt.Sprintf("ethereum/solc:%s", version),
+		"--combined-json", "bin,bin-runtime,srcmap,srcmap-runtime,abi,userdoc,devdoc,metadata,hashes",
+		"--optimize",
+		"--optimize-runs", strconv.Itoa(optimizeRuns),
+		"--allow-paths", "/solidity",
+		fmt.Sprintf("/solidity/%s", filepath.Base(sanitizedPath)),
+	}
+
+	// Add EVM version if specified (already string, no need for extra sanitization)
+	if evmVersion != nil {
+		args = append(args[:len(args)-1], fmt.Sprintf("--evm-version=%s", *evmVersion), args[len(args)-1])
+	}
+
+	//nolint:gosec // Arguments are validated and sanitized above
+	return exec.Command("docker", args...)
 }
 
 //nolint:gosec // File operations required for reading Solidity source

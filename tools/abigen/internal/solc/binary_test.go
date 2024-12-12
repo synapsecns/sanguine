@@ -153,54 +153,74 @@ func TestGetBinaryInfo(t *testing.T) {
 	}
 }
 
-func TestDownloadAndVerify(t *testing.T) {
+func setupTestDir(t *testing.T) string {
+	t.Helper()
 	tmpDir, err := os.MkdirTemp("", "solc-test-*")
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer func() {
+	t.Cleanup(func() {
 		if err := os.RemoveAll(tmpDir); err != nil {
 			t.Errorf("failed to cleanup test directory: %v", err)
 		}
-	}()
+	})
+	return tmpDir
+}
+
+func setupNoWriteDir(t *testing.T, baseDir string) string {
+	t.Helper()
+	noWriteDir := filepath.Join(baseDir, "no-write")
+	if err := os.Mkdir(noWriteDir, 0600); err != nil {
+		t.Fatalf("Failed to create no-write dir: %v", err)
+	}
+	if err := os.Chmod(noWriteDir, 0600); err != nil {
+		t.Fatalf("Failed to set directory permissions: %v", err)
+	}
+	return noWriteDir
+}
+
+func TestDownloadAndVerify(t *testing.T) {
+	tmpDir := setupTestDir(t)
 
 	tests := []struct {
 		name    string
 		version string
-		setup   func(*testing.T, string) (*solc.BinaryManager, error)
+		setup   func(*testing.T, *solc.BinaryManager) error
 		wantErr string
 	}{
 		{
 			name:    "invalid permissions",
 			version: "0.8.20",
-			setup: func(t *testing.T, dir string) (*solc.BinaryManager, error) {
+			setup: func(t *testing.T, manager *solc.BinaryManager) error {
 				t.Helper()
-				noWriteDir := filepath.Join(dir, "no-write")
-				if err := os.Mkdir(noWriteDir, 0600); err != nil {
-					t.Fatalf("Failed to create no-write dir: %v", err)
-				}
-				if err := os.Chmod(noWriteDir, 0600); err != nil {
-					t.Fatalf("Failed to set directory permissions: %v", err)
-				}
-				manager := solc.NewBinaryManager("0.8.20")
+				noWriteDir := setupNoWriteDir(t, tmpDir)
 				managerValue := reflect.ValueOf(manager).Elem()
 				if cacheDirField := managerValue.FieldByName("cacheDir"); cacheDirField.IsValid() && cacheDirField.CanSet() {
 					cacheDirField.SetString(noWriteDir)
 				}
-				return manager, nil
+				return nil
 			},
 			wantErr: "failed to create cache directory: permission denied",
+		},
+		{
+			name:    "invalid version format",
+			version: "invalid.version",
+			setup: func(t *testing.T, manager *solc.BinaryManager) error {
+				t.Helper()
+				return nil
+			},
+			wantErr: "invalid version format",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Helper()
-			manager, err := tt.setup(t, tmpDir)
-			if err != nil {
+			manager := solc.NewBinaryManager(tt.version)
+			if err := tt.setup(t, manager); err != nil {
 				t.Fatalf("Setup failed: %v", err)
 			}
-			_, err = manager.GetBinary(context.Background())
+			_, err := manager.GetBinary(context.Background())
 			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
 				t.Errorf("GetBinary() error = %v, wantErr %v", err, tt.wantErr)
 			}
