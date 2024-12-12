@@ -1,4 +1,3 @@
-```go
 package localmetrics
 
 import (
@@ -8,11 +7,12 @@ import (
 	"time"
 
 	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
 )
 
 // cleanupExistingContainers removes any existing containers with names containing the given pattern
 func cleanupExistingContainers(pool *dockertest.Pool, pattern string) error {
-	containers, err := pool.Client.ListContainers(dockertest.ListContainersOptions{All: true})
+	containers, err := pool.Client.ListContainers(docker.ListContainersOptions{All: true})
 	if err != nil {
 		return fmt.Errorf("failed to list containers: %w", err)
 	}
@@ -30,7 +30,7 @@ func cleanupExistingContainers(pool *dockertest.Pool, pattern string) error {
 				time.Sleep(time.Second)
 
 				// Try to remove the container
-				if err := pool.Client.RemoveContainer(dockertest.RemoveContainerOptions{
+				if err := pool.Client.RemoveContainer(docker.RemoveContainerOptions{
 					ID:            container.ID,
 					Force:         true,
 					RemoveVolumes: true,
@@ -43,4 +43,3 @@ func cleanupExistingContainers(pool *dockertest.Pool, pattern string) error {
 	}
 	return nil
 }
-```
