@@ -223,10 +223,12 @@ func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err er
 	case PingOp:
 		c.lastPing = time.Now()
 		resp := c.handlePing(ctx)
+		fmt.Printf("[%v] writing pong resp: %+v\n", time.Now(), resp)
 		err = c.conn.WriteJSON(resp)
 		if err != nil {
 			return fmt.Errorf("error sending ping response: %w", err)
 		}
+		fmt.Printf("[%v] wrote pong resp: %+v\n", time.Now(), resp)
 	case SubscribeOp:
 		resp := c.handleSubscribe(ctx, rfqMsg.Content)
 		err = c.conn.WriteJSON(resp)
@@ -253,6 +255,7 @@ func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err er
 }
 
 func (c *wsClient) handlePing(ctx context.Context) (resp model.ActiveRFQMessage) {
+	fmt.Printf("[%v] handlePing", time.Now())
 	_, span := c.handler.Tracer().Start(ctx, "handlePing", trace.WithAttributes(
 		attribute.String("relayer_address", c.relayerAddr),
 	))

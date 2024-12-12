@@ -75,7 +75,7 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 }
 
 func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *model.PutRFQRequest, requestID string) (responses map[string]*model.WsRFQResponse) {
-	fmt.Printf("collectRelayerResponses with request data: %+v\n", request.Data)
+	fmt.Printf("[%v] collectRelayerResponses with requestid %v, data: %+v\n", time.Now(), requestID, request.Data)
 	ctx, span := r.handler.Tracer().Start(ctx, "collectRelayerResponses", trace.WithAttributes(
 		attribute.String("user_address", request.UserAddress),
 		attribute.String("request_id", requestID),
@@ -93,7 +93,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 	respMux := sync.Mutex{}
 	responses = map[string]*model.WsRFQResponse{}
 	r.wsClients.Range(func(relayerAddr string, client WsClient) bool {
-		fmt.Printf("processing ws client with addr: %v: client: %v\n", relayerAddr, client)
+		fmt.Printf("[%v] processing ws client with addr: %v: client: %v\n", time.Now(), relayerAddr, client)
 		wg.Add(1)
 		go func(client WsClient) {
 			var respStatus db.ActiveQuoteResponseStatus
@@ -109,7 +109,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 
 			defer wg.Done()
 			resp, err := client.ReceiveQuoteResponse(collectionCtx, requestID)
-			fmt.Printf("recved quote resp: %+v\n", resp)
+			fmt.Printf("[%v] recved quote resp: %+v\n", time.Now(), resp)
 			if err != nil {
 				logger.Errorf("Error receiving quote response: %v", err)
 				return
@@ -129,7 +129,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 			}
 
 			// record the response
-			fmt.Printf("recording resp: %+v\n", resp)
+			fmt.Printf("[%v] recording resp: %+v\n", time.Now(), resp)
 			err = r.db.InsertActiveQuoteResponse(collectionCtx, resp, relayerAddr, respStatus)
 			if err != nil {
 				logger.Errorf("Error inserting active quote response: %v", err)
@@ -141,7 +141,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 	// wait for all responses to be received, or expiration
 	select {
 	case <-expireCtx.Done():
-		fmt.Println("request expired")
+		fmt.Printf("[%v] request expired\n", time.Now())
 		// request expired before all responses were received
 	case <-func() chan struct{} {
 		ch := make(chan struct{})
@@ -152,10 +152,11 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 		return ch
 	}():
 		// all responses received
+		fmt.Printf("[%v] all responses received\n", time.Now())
 	}
 
-	fmt.Printf("responses received: %+v\n", responses)
-	fmt.Printf("num responses: %v\n", len(responses))
+	fmt.Printf("[%v] responses received: %+v\n", time.Now(), responses)
+	fmt.Printf("[%v] num responses: %v\n", time.Now(), len(responses))
 
 	return responses
 }

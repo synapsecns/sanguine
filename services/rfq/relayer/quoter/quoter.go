@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 
@@ -332,6 +333,7 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 			if err != nil {
 				return fmt.Errorf("error generating active RFQ message: %w", err)
 			}
+			fmt.Printf("[%v] generated active RFQ message: %+v\n", time.Now(), resp)
 			reqChan <- resp
 		}
 	}
@@ -430,6 +432,7 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 		Content: respBytes,
 	}
 	span.AddEvent("generated response")
+	fmt.Printf("[%v] generated response: %+v\n", time.Now(), resp)
 
 	return resp, nil
 }
