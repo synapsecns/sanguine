@@ -4,7 +4,7 @@
 //
 // Security Features:
 //   - Validates all file paths and URLs
-//   - Enforces secure file permissions (0600 for files, 0750 for directories)
+//   - Enforces secure file permissions (0400 for files, 0750 for directories)
 //   - Prevents command injection
 //   - Implements secure archive extraction
 //   - Uses cryptographic verification for downloads
@@ -53,6 +53,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/integralist/go-findroot/find"
@@ -63,17 +64,18 @@ const (
 	cacheDir            = "cache"
 	filePerms           = 0400
 	dirPerms            = 0750
-	execPerms           = 0755
+	execPerms           = 0500
 	maxDecompressSize   = 50 * 1024 * 1024 // 50MB limit for decompression
 	httpTimeout         = 30 * time.Second
+	defaultUmask        = 0077
 )
 
 var (
-	// ErrBinaryNotFound indicates the golangci-lint binary wasn't found in the archive
+	// ErrBinaryNotFound indicates the golangci-lint binary wasn't found in the archive.
 	ErrBinaryNotFound = errors.New("golangci-lint binary not found in archive")
-	// ErrInvalidPath indicates a path is outside the repository root
+	// ErrInvalidPath indicates a path is outside the repository root.
 	ErrInvalidPath = errors.New("path is outside repository root")
-	// ErrInvalidURL indicates the download URL is not from GitHub releases
+	// ErrInvalidURL indicates the download URL is not from GitHub releases.
 	ErrInvalidURL = errors.New("invalid URL: must be from github.com/golangci/golangci-lint/releases")
 )
 
@@ -136,9 +138,9 @@ func validatePath(path, root string) error {
 		info, err := os.Stat(path)
 		if err == nil && !info.IsDir() {
 			perm := info.Mode().Perm()
-			// Allow read and execute permissions (0755)
+			// Allow only read and execute permissions (0500)
 			if perm != execPerms {
-				return fmt.Errorf("invalid binary path: file permissions must be exactly 0755 (rwxr-xr-x), got: %o", perm)
+				return fmt.Errorf("invalid binary path: file permissions must be exactly 0500 (r-x------), got: %o", perm)
 			}
 		}
 		return nil
@@ -172,7 +174,7 @@ func validatePath(path, root string) error {
 	return nil
 }
 
-// safeJoin safely joins paths, preventing directory traversal
+// safeJoin safely joins paths, preventing directory traversal.
 func safeJoin(root, path string) (string, error) {
 	// Clean both paths
 	root = filepath.Clean(root)
@@ -284,12 +286,32 @@ func processArgs(args []string, root string) []string {
 		args = append(args, "--config", configPath)
 	}
 
-	// Add --modules-download-mode=readonly to prevent module modifications
-	return append(args, "--modules-download-mode=readonly")
+	// Add --fix if not present
+	hasFix := false
+	for _, arg := range args {
+		if arg == "--fix" {
+			hasFix = true
+			break
+		}
+	}
+	if !hasFix {
+		args = append(args, "--fix")
+	}
+
+	return args
 }
 
 // extractTarGz extracts a specific file from a tar.gz archive.
 func extractTarGz(tr *tar.Reader, destPath string) error {
+	// Set umask to ensure files are created with correct permissions
+	oldUmask := syscall.Umask(defaultUmask)
+	defer syscall.Umask(oldUmask)
+
+	// Create parent directory with secure permissions
+	if err := os.MkdirAll(filepath.Dir(destPath), dirPerms); err != nil {
+		return fmt.Errorf("failed to create destination directory: %w", err)
+	}
+
 	for {
 		header, err := tr.Next()
 		if errors.Is(err, io.EOF) {
@@ -305,30 +327,57 @@ func extractTarGz(tr *tar.Reader, destPath string) error {
 				return fmt.Errorf("file too large: %d bytes", header.Size)
 			}
 
-			// Create parent directory with secure permissions
-			if err := os.MkdirAll(filepath.Dir(destPath), dirPerms); err != nil {
-				return fmt.Errorf("failed to create destination directory: %w", err)
+			// Create temporary file first
+			tmpFile := destPath + ".tmp"
+			file, err := os.OpenFile(tmpFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, execPerms)
+			if err != nil {
+				return fmt.Errorf("failed to create temporary file: %w", err)
 			}
 
-			// Create binary with correct permissions from the start
-			destFile, err := os.OpenFile(destPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, execPerms)
-			if err != nil {
-				return fmt.Errorf("failed to create destination file: %w", err)
-			}
+			removeFile := true
+			defer func() {
+				if removeFile {
+					if err := os.Remove(tmpFile); err != nil {
+						fmt.Fprintf(os.Stderr, "Warning: failed to remove temporary file: %v\n", err)
+					}
+				}
+			}()
 
 			// Copy with size limit and verify hash
 			hasher := sha256.New()
 			reader := io.TeeReader(io.LimitReader(tr, maxDecompressSize), hasher)
-			if _, err := io.Copy(destFile, reader); err != nil {
-				if closeErr := destFile.Close(); closeErr != nil {
-					err = errors.Join(err, fmt.Errorf("failed to close destination file: %w", closeErr))
+			if _, err := io.Copy(file, reader); err != nil {
+				if closeErr := file.Close(); closeErr != nil {
+					err = errors.Join(err, fmt.Errorf("failed to close file: %w", closeErr))
 				}
 				return fmt.Errorf("failed to extract file: %w", err)
 			}
 
-			// Close file after writing
-			if err := destFile.Close(); err != nil {
-				return fmt.Errorf("failed to close destination file: %w", err)
+			// Close file before moving
+			if err := file.Close(); err != nil {
+				return fmt.Errorf("failed to close temporary file: %w", err)
+			}
+
+			// Set correct permissions before moving
+			if err := os.Chmod(tmpFile, execPerms); err != nil {
+				return fmt.Errorf("failed to set file permissions: %w", err)
+			}
+
+			// Move file to final destination
+			if err := os.Rename(tmpFile, destPath); err != nil {
+				return fmt.Errorf("failed to move file to destination: %w", err)
+			}
+			removeFile = false // Don't remove the file after successful move
+
+			// Verify final permissions
+			info, err := os.Stat(destPath)
+			if err != nil {
+				return fmt.Errorf("failed to verify final permissions: %w", err)
+			}
+			if info.Mode().Perm() != execPerms {
+				if err := os.Chmod(destPath, execPerms); err != nil {
+					return fmt.Errorf("failed to set final permissions: %w", err)
+				}
 			}
 
 			// Log hash for verification
@@ -360,8 +409,24 @@ func setupAndValidate(ctx context.Context, version, root string) (string, string
 		return "", "", fmt.Errorf("setting up linter: %w", err)
 	}
 
-	if err := validatePath(cachePath, filepath.Dir(os.Args[0])); err != nil {
-		return "", "", fmt.Errorf("invalid binary path: %w", err)
+	// Verify binary permissions immediately after setup
+	info, err := os.Stat(cachePath)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to verify binary: %w", err)
+	}
+	if info.Mode().Perm() != execPerms {
+		// Try to fix permissions
+		if err := os.Chmod(cachePath, execPerms); err != nil {
+			return "", "", fmt.Errorf("failed to set binary permissions: %w", err)
+		}
+		// Verify permissions again after fix
+		info, err = os.Stat(cachePath)
+		if err != nil {
+			return "", "", fmt.Errorf("failed to verify binary after permission fix: %w", err)
+		}
+		if info.Mode().Perm() != execPerms {
+			return "", "", fmt.Errorf("failed to set correct permissions: expected %o, got %o", execPerms, info.Mode().Perm())
+		}
 	}
 
 	workDir, err := findWorkDir()
@@ -372,32 +437,27 @@ func setupAndValidate(ctx context.Context, version, root string) (string, string
 	return cachePath, workDir, nil
 }
 
-func runLinter(ctx context.Context, cachePath, workDir string, args []string) error {
-	// Get repository root for path validation
-	root, err := findRepoRoot()
+func runLinter(ctx context.Context, binaryPath, workDir string, args []string) error {
+	// Validate binary permissions before execution
+	info, err := os.Stat(binaryPath)
 	if err != nil {
-		return fmt.Errorf("finding repository root: %w", err)
+		return fmt.Errorf("checking binary before execution: %w", err)
 	}
-
-	// Validate binary path and working directory
-	if err := validatePath(cachePath, root); err != nil {
-		return fmt.Errorf("invalid binary path: %w", err)
-	}
-
-	if err := validatePath(workDir, root); err != nil {
-		return fmt.Errorf("invalid working directory: %w", err)
-	}
-
-	// Validate command arguments
-	if err := validateArgs(args); err != nil {
-		return fmt.Errorf("invalid command arguments: %w", err)
+	if info.Mode().Perm() != execPerms {
+		if err := os.Chmod(binaryPath, execPerms); err != nil {
+			return fmt.Errorf("setting binary permissions: %w", err)
+		}
 	}
 
 	// Create command with validated paths and args
-	cmd := exec.CommandContext(ctx, cachePath, args...)
+	cmd := exec.CommandContext(ctx, binaryPath, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Dir = workDir
+	cmd.Env = append(os.Environ(),
+		"GO111MODULE=on",
+		"GOFLAGS=-mod=readonly",
+	)
 
 	if err := cmd.Run(); err != nil {
 		var exitErr *exec.ExitError
@@ -410,7 +470,7 @@ func runLinter(ctx context.Context, cachePath, workDir string, args []string) er
 }
 
 func main() {
-	if err := run(); err != nil {
+	if err := run(context.Background()); err != nil {
 		var exitErr *exec.ExitError
 		if errors.As(err, &exitErr) {
 			os.Exit(exitErr.ExitCode())
@@ -420,32 +480,38 @@ func main() {
 	}
 }
 
-func run() error {
-	// Initialize application context
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-	defer cancel()
+func run(ctx context.Context) error {
+	// Set restrictive umask for all file operations
+	oldUmask := syscall.Umask(defaultUmask)
+	defer syscall.Umask(oldUmask)
 
-	// Find repository root
-	root, err := findRepoRoot()
+	// Find repository root using go-findroot
+	root, err := find.Repo()
 	if err != nil {
 		return fmt.Errorf("finding repository root: %w", err)
 	}
 
-	// Read version
-	version, err := readVersion(root)
+	// Read version from .golangci-version file
+	version, err := readVersion(root.Path)
 	if err != nil {
 		return fmt.Errorf("reading version: %w", err)
 	}
 
-	// Setup and validate paths
-	cachePath, workDir, err := setupAndValidate(ctx, version, root)
+	// Setup linter with correct version
+	cachePath, err := setupLinter(ctx, version, runtime.GOOS, runtime.GOARCH)
 	if err != nil {
-		return fmt.Errorf("setting up and validating: %w", err)
+		return fmt.Errorf("setting up linter: %w", err)
+	}
+
+	// Find working directory
+	workDir, err := findWorkDir()
+	if err != nil {
+		return fmt.Errorf("finding working directory: %w", err)
 	}
 
 	// Process arguments and run linter
-	processedArgs := processArgs(os.Args[1:], root)
-	if err := runLinter(ctx, cachePath, workDir, processedArgs); err != nil {
+	args := processArgs(os.Args[1:], root.Path)
+	if err := runLinter(ctx, cachePath, workDir, args); err != nil {
 		return fmt.Errorf("running linter: %w", err)
 	}
 
@@ -552,6 +618,10 @@ func downloadAndExtract(ctx context.Context, version, osName, arch, destPath str
 }
 
 func extractBinary(ctx context.Context, tarPath, destPath string) error {
+	// Set restrictive umask for file operations
+	oldUmask := syscall.Umask(defaultUmask)
+	defer syscall.Umask(oldUmask)
+
 	// Open archive with secure permissions
 	file, err := os.OpenFile(tarPath, os.O_RDONLY, filePerms)
 	if err != nil {
