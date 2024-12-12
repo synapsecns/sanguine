@@ -9,8 +9,8 @@ import (
 
 // cleanupPorts kills any processes using our port range
 func (j *testJaeger) cleanupPorts() error {
-	// Find processes using ports in our range
-	cmd := exec.Command("lsof", "-t", "-i", ":32900-33800")
+	// Find processes using ports in our range (expanded range to catch all possible ports)
+	cmd := exec.Command("sudo", "lsof", "-t", "-i", ":32768-65535")
 	output, err := cmd.Output()
 	if err != nil {
 		// lsof returns error if no processes found, which is fine
@@ -24,17 +24,18 @@ func (j *testJaeger) cleanupPorts() error {
 		return nil
 	}
 
-	// Kill each process
+	// Kill each process with sudo
 	pids := strings.Split(strings.TrimSpace(string(output)), "\n")
 	for _, pid := range pids {
-		killCmd := exec.Command("kill", "-9", pid)
+		j.tb.Logf("Killing process %s using ports in our range", pid)
+		killCmd := exec.Command("sudo", "kill", "-9", pid)
 		if err := killCmd.Run(); err != nil {
 			j.tb.Logf("Warning: Failed to kill process %s: %v", pid, err)
 		}
 	}
 
-	// Wait for processes to be fully killed
-	time.Sleep(time.Second * 2)
+	// Wait longer for processes to be fully killed
+	time.Sleep(time.Second * 5)
 
 	return nil
 }
