@@ -1,9 +1,10 @@
-go 1.22.4
+go 1.23.3
 
 // note: new paths should be added as flags to the .codecov.yaml
 use (
 	./agents
 	./contrib/git-changes-action
+	./contrib/golang-ci-lint
 	./contrib/opbot
 	./contrib/promexporter
 	./contrib/restclient

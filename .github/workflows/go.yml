@@ -65,6 +65,7 @@ jobs:
           # note: without building a yaml tree of our workflow, we won't be able to tell if golangci version changed so any ci change triggers full lint.
           files: |
            .golangci.yml
+           .golangci-version
            .github/workflows/go.yml
 
 
@@ -336,27 +337,20 @@ jobs:
       - name: Setup cache key
         run: cp ${{matrix.package}}/go.mod go.mod -v
 
+      - name: Read golangci-lint version
+        id: golangci_version
+        run: echo "version=v$(cat .golangci-version)" >> $GITHUB_OUTPUT
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
           working-directory: ${{matrix.package}}/
-          # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
-          version: v1.60.3
-          # see: https://github.com/golangci/golangci-lint/issues/2654
+          version: ${{ steps.golangci_version.outputs.version }}
           args: --timeout=60m
         env:
-          # GitHub token for annotations (optional)
           GITHUB_TOKEN: ${{ secrets.WORKFLOW_PAT || secrets.GITHUB_TOKEN }}
           GOMEMLIMIT: 6GiB
           GOGC: -1
-  pr_metadata:
-    # this is needed to prevent us from hitting the github api rate limit
-    name: Get PR Metadata
-    runs-on: ubuntu-latest
-    # not stricly true, but this job is fast enough to not block and we want to prioritize canceling outdated because downstream jobs can use many workers
-    needs: cancel-outdated
-    # currently, this matches the logic in the go generate check. If we ever add more checks that run on all packages, we should
-    # change this to run on those pushes
     if: ${{ github.event_name != 'push' && format('refs/heads/{0}', github.event.repository.default_branch) != github.ref }}
     outputs:
       issue_number: ${{ steps.find_pr.outputs.pr }}

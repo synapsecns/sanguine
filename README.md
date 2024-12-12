@@ -94,6 +94,14 @@ Clone the repository, open it, and install nodejs packages with `yarn`:
 git clone https://github.com/synapsecns/sanguine --recurse-submodules -j10
 cd sanguine
 yarn install
+
+### Go Development Setup
+
+For Go development:
+1. The project uses a specific version of golangci-lint that is managed automatically
+2. No manual installation of golangci-lint is required
+3. The version is pinned in `.golangci-version` file
+4. Running `make lint` in any Go module will automatically handle the correct version
 ```
 
 

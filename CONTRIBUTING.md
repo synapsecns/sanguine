@@ -71,7 +71,7 @@ If you need to make a new JS/TS package, here are the steps to follow:
 
 ## Linting
 
-Linting for go is used using [golangci-lint](https://golangci-lint.run/) at the latest released version. Please upgrade or install using your package manager. and run `make lint` from your desired module.
+Linting for Go code uses [golangci-lint](https://golangci-lint.run/). The version is pinned in `.golangci-version` file and managed automatically through our tooling. Simply run `make lint` from your desired module, and the correct version will be downloaded (if not already cached) and used automatically.
 
 ## Adding a new Go Module
 
