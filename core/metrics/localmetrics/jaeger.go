@@ -61,6 +61,7 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			config.AutoRemove = true
 			config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 			config.PublishAllPorts = true
+			config.PortBindings = make(map[docker.Port][]docker.PortBinding)
 		})
 		if err != nil {
 			j.tb.Logf("Failed to start Jaeger container: %v", err)
@@ -161,6 +162,7 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 			config.AutoRemove = true
 			config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 			config.PublishAllPorts = true
+			config.PortBindings = make(map[docker.Port][]docker.PortBinding)
 		})
 		if err != nil {
 			j.tb.Logf("Failed to start Jaeger Pyroscope UI container: %v", err)
