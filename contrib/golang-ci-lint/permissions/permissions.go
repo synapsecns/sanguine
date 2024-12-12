@@ -2,6 +2,7 @@
 package permissions
 
 import (
+	"fmt"
 	"os"
 	"runtime"
 )
@@ -28,7 +29,10 @@ func SetSecureUmask() (func(), error) {
 // SetFilePermissions sets secure file permissions in a platform-specific way.
 func SetFilePermissions(path string, perm os.FileMode) error {
 	if runtime.GOOS == "windows" {
-		return os.Chmod(path, perm)
+		if err := os.Chmod(path, perm); err != nil {
+			return fmt.Errorf("failed to set file permissions on Windows: %w", err)
+		}
+		return nil
 	}
 	return setUnixPermissions(path, perm)
 }

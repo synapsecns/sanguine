@@ -3,6 +3,7 @@
 package permissions
 
 import (
+	"fmt"
 	"os"
 	"syscall"
 )
@@ -11,7 +12,10 @@ import (
 func setUnixPermissions(path string, perm os.FileMode) error {
 	oldUmask := syscall.Umask(DefaultUmask)
 	defer syscall.Umask(oldUmask)
-	return os.Chmod(path, perm)
+	if err := os.Chmod(path, perm); err != nil {
+		return fmt.Errorf("failed to set file permissions on Unix: %w", err)
+	}
+	return nil
 }
 
 // setUnixUmask sets a secure umask on Unix systems.

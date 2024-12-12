@@ -432,26 +432,12 @@ func runLinter(ctx context.Context, binaryPath, workDir string, args []string) e
 }
 
 func setupGitRoot() error {
-	if len(os.Args) == 0 || !strings.Contains(os.Args[0], "go-build") {
-		return nil
-	}
-
-	gitRoot := os.Getenv("GIT_ROOT")
-	if gitRoot == "" {
-		return nil
-	}
-
-	absPath, err := filepath.Abs(gitRoot)
+	root, err := find.Repo()
 	if err != nil {
-		return fmt.Errorf("failed to resolve GIT_ROOT path: %w", err)
+		return fmt.Errorf("failed to find repository root: %w", err)
 	}
-
-	if err := os.Chdir(absPath); err != nil {
-		return fmt.Errorf("failed to change to GIT_ROOT directory: %w", err)
-	}
-
-	if err := os.Setenv("PWD", absPath); err != nil {
-		return fmt.Errorf("failed to set PWD environment variable: %w", err)
+	if err := os.Setenv("GIT_ROOT", root.Path); err != nil {
+		return fmt.Errorf("failed to set GIT_ROOT: %w", err)
 	}
 	return nil
 }

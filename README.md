@@ -98,10 +98,19 @@ yarn install
 ### Go Development Setup
 
 For Go development:
-1. The project uses a specific version of golangci-lint that is managed automatically
+1. The project uses a specific version of golangci-lint that is managed automatically through our version management system
 2. No manual installation of golangci-lint is required
-3. The version is pinned in `.golangci-version` file
-4. Running `make lint` in any Go module will automatically handle the correct version
+3. The version is pinned in `.golangci-version` file and managed by the `contrib/golang-ci-lint` module
+4. Run `make lint` in any Go module directory to automatically download and use the correct version
+
+### Golang-CI-Lint Version Management
+The repository uses a pinned version of golangci-lint specified in `.golangci-version`. The linter is automatically downloaded and executed through `make lint`. This ensures consistent linting across all Go modules and development environments.
+
+Key features:
+- Automatic version management based on `.golangci-version`
+- Cross-platform compatibility
+- Secure download and verification
+- Caching for improved performance
 ```
 
 
