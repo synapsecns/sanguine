@@ -174,7 +174,7 @@ describe('Bridge Route with Real Synapse Service', () => {
     expect(response.body.error).toHaveProperty('field', 'amount')
   })
 
-  it('should return bridge quotes with callData when destAddress is provided', async () => {
+  it('should return bridge quotes with callData when originUserAddress and destAddress are provided', async () => {
     const response = await request(app).get('/bridge').query({
       fromChain: '1',
       toChain: '10',
@@ -182,6 +182,7 @@ describe('Bridge Route with Real Synapse Service', () => {
       toToken: USDC.addresses[10],
       amount: '1000',
       destAddress: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+      originUserAddress: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
     })
 
     expect(response.status).toBe(200)
@@ -200,6 +201,7 @@ describe('Bridge Route with Real Synapse Service', () => {
       fromToken: USDC.addresses[1],
       toToken: USDC.addresses[10],
       amount: '1000',
+      originUserAddress: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
     })
 
     expect(response.status).toBe(200)

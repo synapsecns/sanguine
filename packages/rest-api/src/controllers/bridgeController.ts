@@ -53,18 +53,19 @@ export const bridgeController = async (req, res) => {
           quote.originQuery.tokenOut
         )
 
-        const callData = destAddress
-          ? await Synapse.bridge(
-              destAddress,
-              quote.routerAddress,
-              Number(fromChain),
-              Number(toChain),
-              fromToken,
-              amountInWei,
-              quote.originQuery,
-              quote.destQuery
-            )
-          : null
+        const callData =
+          destAddress && originUserAddress
+            ? await Synapse.bridge(
+                destAddress,
+                quote.routerAddress,
+                Number(fromChain),
+                Number(toChain),
+                fromToken,
+                amountInWei,
+                quote.originQuery,
+                quote.destQuery
+              )
+            : null
 
         return {
           ...quote,
