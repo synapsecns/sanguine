@@ -11,7 +11,6 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 
@@ -330,12 +329,10 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 			if msg == nil {
 				continue
 			}
-			fmt.Printf("parsed msg from respChan: %+v\n", msg.Content)
 			resp, err := m.generateActiveRFQ(ctx, msg)
 			if err != nil {
 				return fmt.Errorf("error generating active RFQ message: %w", err)
 			}
-			fmt.Printf("[%v] generated active RFQ message: %+v\n", time.Now(), resp)
 			reqChan <- resp
 		}
 	}
@@ -345,10 +342,6 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 //
 //nolint:nilnil,cyclop
 func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMessage) (resp *model.ActiveRFQMessage, err error) {
-
-	//tmpdebug
-	fmt.Printf("\nActiveRFQMessage RawMessage: %s\n", string(msg.Content))
-
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "generateActiveRFQ", trace.WithAttributes(
 		attribute.String("op", msg.Op),
 		attribute.String("content", string(msg.Content)),
@@ -373,8 +366,6 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 		return nil, fmt.Errorf("error unmarshalling quote data: %w", err)
 	}
 	span.SetAttributes(attribute.String("request_id", rfqRequest.RequestID))
-
-	fmt.Printf("RFQ Request Data: %+v\n", rfqRequest.Data)
 
 	// TODO: incorporate the user call data into the quote request and set the Transaction here
 	originAmountExact, ok := new(big.Int).SetString(rfqRequest.Data.OriginAmountExact, 10)
@@ -434,7 +425,6 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 		Content: respBytes,
 	}
 	span.AddEvent("generated response")
-	fmt.Printf("[%v] generated response: %+v\n", time.Now(), resp)
 
 	return resp, nil
 }

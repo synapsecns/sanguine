@@ -11,7 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
@@ -221,8 +220,6 @@ var fastBridgeV2ABI *abi.ABI
 const methodName = "relayV2"
 
 func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, quoteRequest *reldb.QuoteRequest) (gasEstimate uint64, err error) {
-	fmt.Println("Starting getZapGasEstimate with destination:", destination, "and quoteRequest:", quoteRequest)
-
 	client, err := f.clientFetcher.GetClient(ctx, big.NewInt(int64(destination)))
 	if err != nil {
 		return 0, fmt.Errorf("could not get client: %w", err)
@@ -236,14 +233,7 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 		fastBridgeV2ABI = &parsedABI
 	}
 
-	//tmpdebug
-	fmt.Printf("\nquoteRequest.Transaction: %+v\n", quoteRequest.Transaction)
-
 	rawRequest, err := chain.EncodeBridgeTx(quoteRequest.Transaction)
-
-	//tmpdebug
-	fmt.Printf("\nrawRequest: %+v\n", rawRequest)
-
 	if err != nil {
 		return 0, fmt.Errorf("could not encode quote data: %w", err)
 	}
@@ -264,12 +254,6 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 		Value: quoteRequest.Transaction.ZapNative,
 		Data:  encodedData,
 	}
-
-	fmt.Printf("\nStarting getZapGasEstimate with callMsg.From: %s, callMsg.To: %s, callMsg.Value: %s, callMsg.Data: %x\n",
-		callMsg.From.Hex(), callMsg.To.Hex(), callMsg.Value.String(), callMsg.Data)
-
-	fmt.Printf("\nStarting getZapGasEstimate with callMsg.From: %s, callMsg.To: %s, callMsg.Value: %s, callMsg.Data: %s\n",
-		callMsg.From.Hex(), callMsg.To.Hex(), callMsg.Value.String(), hexutil.Encode(callMsg.Data))
 
 	gasEstimate, err = client.EstimateGas(ctx, callMsg)
 	if err != nil {

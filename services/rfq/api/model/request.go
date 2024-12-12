@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -85,7 +84,6 @@ type SubscribeActiveRFQRequest struct {
 
 // NewWsRFQRequest creates a new WsRFQRequest.
 func NewWsRFQRequest(data QuoteData, requestID string) *WsRFQRequest {
-	fmt.Printf("NewWsRFQRequest with data: %+v\n", data)
 	return &WsRFQRequest{
 		RequestID: requestID,
 		Data:      data,

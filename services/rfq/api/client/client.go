@@ -277,11 +277,8 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Printf("[%v] WEBSOCKET CANCELED: %v\n", time.Now(), ctx.Err())
-			panic("stopping")
-			// return nil
+			return ctx.Err()
 		case msg, ok := <-reqChan:
-			fmt.Printf("[%v] recved message from reqChan: %+v\n", time.Now(), msg)
 			if !ok {
 				return fmt.Errorf("error reading from reqChan: %w", ctx.Err())
 			}
@@ -290,7 +287,6 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 				return fmt.Errorf("error sending message to websocket: %w", err)
 			}
 		case msg, ok := <-readChan:
-			fmt.Printf("[%v] recved message from readChan: %+v\n", time.Now(), msg)
 			if !ok {
 				return nil
 			}
@@ -314,7 +310,6 @@ func (c *clientImpl) sendPings(ctx context.Context, reqChan chan *model.ActiveRF
 			}
 			reqChan <- &pingMsg
 		case <-ctx.Done():
-			fmt.Printf("[%v] STOPPING PINGS: %v\n", time.Now(), ctx.Err())
 			return
 		}
 	}
@@ -327,10 +322,8 @@ func (c *clientImpl) listenWsMessages(ctx context.Context, conn *websocket.Conn,
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				logger.Warnf("websocket connection closed unexpectedly: %v", err)
 			}
-			panic("stopping due to failed ws read")
-			// return
+			return
 		}
-		fmt.Printf("[%v] recved message from websocket: %+v\n", time.Now(), message)
 		select {
 		case readChan <- message:
 		case <-ctx.Done():
@@ -340,7 +333,6 @@ func (c *clientImpl) listenWsMessages(ctx context.Context, conn *websocket.Conn,
 }
 
 func (c *clientImpl) handleWsMessage(ctx context.Context, msg []byte, respChan chan *model.ActiveRFQMessage) (err error) {
-	fmt.Printf("[%v] handling message: %+v\n", time.Now(), msg)
 	var rfqMsg model.ActiveRFQMessage
 	err = json.Unmarshal(msg, &rfqMsg)
 	if err != nil {
