@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -34,69 +35,68 @@ func main() {
 	binaryName := fmt.Sprintf("golangci-lint-%s-%s-%s/golangci-lint", versionStr, osName, arch)
 	cachePath := filepath.Join(cacheDir, binaryName)
 
-	// Check cache
-	if _, err := os.Stat(cachePath); err == nil {
-		// Ensure the binary is executable
-		if err := os.Chmod(cachePath, 0755); err != nil {
-			fmt.Fprintf(os.Stderr, "Error making cached binary executable: %v\n", err)
+	// Check cache and download if needed
+	if _, err := os.Stat(cachePath); err != nil {
+		if err := downloadAndExtract(versionStr, osName, arch, cachePath); err != nil {
+			fmt.Fprintf(os.Stderr, "Error setting up golangci-lint: %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Printf("Using cached golangci-lint v%s\n", versionStr)
-		os.Exit(0)
 	}
 
-	// Download URL
-	url := fmt.Sprintf(downloadURLTemplate, versionStr, versionStr, osName, arch)
-	fmt.Printf("Downloading golangci-lint v%s from %s\n", versionStr, url)
-
-	// Create temporary file for download
-	tmpFile, err := os.CreateTemp("", "golangci-lint-*.tar.gz")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error creating temp file: %v\n", err)
-		os.Exit(1)
-	}
-	defer os.Remove(tmpFile.Name())
-
-	// Download the file
-	resp, err := http.Get(url)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error downloading golangci-lint: %v\n", err)
-		os.Exit(1)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		fmt.Fprintf(os.Stderr, "Error downloading golangci-lint: HTTP %d\n", resp.StatusCode)
-		os.Exit(1)
-	}
-
-	// Copy to temp file
-	if _, err := io.Copy(tmpFile, resp.Body); err != nil {
-		fmt.Fprintf(os.Stderr, "Error saving download: %v\n", err)
-		os.Exit(1)
-	}
-	tmpFile.Close()
-
-	// Create cache directory if it doesn't exist
-	cacheParentDir := filepath.Dir(cachePath)
-	if err := os.MkdirAll(cacheParentDir, 0755); err != nil {
-		fmt.Fprintf(os.Stderr, "Error creating cache directory: %v\n", err)
-		os.Exit(1)
-	}
-
-	// Extract the binary
-	if err := extractBinary(tmpFile.Name(), cachePath); err != nil {
-		fmt.Fprintf(os.Stderr, "Error extracting binary: %v\n", err)
-		os.Exit(1)
-	}
-
-	// Make binary executable
+	// Ensure the binary is executable
 	if err := os.Chmod(cachePath, 0755); err != nil {
 		fmt.Fprintf(os.Stderr, "Error making binary executable: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Successfully installed golangci-lint v%s\n", versionStr)
+	// Execute golangci-lint with remaining arguments
+	args := os.Args[1:]
+	cmd := exec.Command(cachePath, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			os.Exit(exitErr.ExitCode())
+		}
+		os.Exit(1)
+	}
+}
+
+func downloadAndExtract(version, osName, arch, destPath string) error {
+	// Create temporary file for download
+	tmpFile, err := os.CreateTemp("", "golangci-lint-*.tar.gz")
+	if err != nil {
+		return fmt.Errorf("error creating temp file: %v", err)
+	}
+	defer os.Remove(tmpFile.Name())
+
+	// Download URL
+	url := fmt.Sprintf(downloadURLTemplate, version, version, osName, arch)
+	fmt.Printf("Downloading golangci-lint v%s from %s\n", version, url)
+
+	// Download the file
+	resp, err := http.Get(url)
+	if err != nil {
+		return fmt.Errorf("error downloading golangci-lint: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("error downloading golangci-lint: HTTP %d", resp.StatusCode)
+	}
+
+	// Copy to temp file
+	if _, err := io.Copy(tmpFile, resp.Body); err != nil {
+		return fmt.Errorf("error saving download: %v", err)
+	}
+	tmpFile.Close()
+
+	// Create cache directory if it doesn't exist
+	if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+		return fmt.Errorf("error creating cache directory: %v", err)
+	}
+
+	return extractBinary(tmpFile.Name(), destPath)
 }
 
 func extractBinary(tarPath, destPath string) error {

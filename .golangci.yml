@@ -103,7 +103,7 @@ linters:
     # malfunctions on embedded structs
     - typecheck
     # magic numbers
-    - mnd
+    - gomnd
   fast: false
 
 issues:
@@ -138,7 +138,7 @@ issues:
         - cyclop
     - path: signoz/*
       linters:
-        - mnd
+        - gomnd
         - stylecheck
     - path: example/*
       linters:
