@@ -34,12 +34,14 @@ const pyroscopePath = "/pyroscope.yaml"
 func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 	if !j.cfg.enablePyroscope {
 		return &uiResource{
-			uiURL: core.GetEnv(internal.PyroscopeEndpoint, fmt.Sprintf("%s not found", internal.PyroscopeEndpoint)),
+			Resource: nil,
+			uiURL:    core.GetEnv(internal.PyroscopeEndpoint, "pyroscope not enabled"),
 		}
 	}
 	if core.HasEnv(internal.PyroscopeEndpoint) {
 		return &uiResource{
-			uiURL: os.Getenv(internal.PyroscopeEndpoint),
+			Resource: nil,
+			uiURL:    os.Getenv(internal.PyroscopeEndpoint),
 		}
 	}
 
@@ -51,7 +53,7 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 		},
 		Tag:          "latest",
 		Cmd:          []string{"server"},
-		ExposedPorts: []string{"4040"},
+		ExposedPorts: []string{"4040/tcp"},
 		Networks:     j.getNetworks(),
 		Labels: map[string]string{
 			appLabel:   "pyroscope",
@@ -68,47 +70,75 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 		runOptions.Env = []string{}
 	}
 
-	resource, err := j.pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
-		tmpFile := filet.TmpFile(j.tb, "", pyroscopeConfig)
-		if tmpFile == nil {
-			j.tb.Logf("Failed to create temporary pyroscope config file")
-			return
-		}
-		j.tb.Logf("Created temporary pyroscope config file at: %s", tmpFile.Name())
+	var resource *dockertest.Resource
+	var err error
 
-		config.Mounts = []docker.HostMount{
-			{
-				Type:     string(mount.TypeBind),
-				Target:   pyroscopePath,
-				Source:   tmpFile.Name(),
-				ReadOnly: true,
-			},
+	// Create container with improved retry logic
+	err = retry.WithBackoff(ctx, func(ctx context.Context) error {
+		// Wait for network stability
+		time.Sleep(time.Second * 2)
+
+		resource, err = j.pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
+			tmpFile := filet.TmpFile(j.tb, "", pyroscopeConfig)
+			if tmpFile == nil {
+				j.tb.Logf("Failed to create temporary pyroscope config file")
+				return
+			}
+			j.tb.Logf("Created temporary pyroscope config file at: %s", tmpFile.Name())
+
+			config.Mounts = []docker.HostMount{
+				{
+					Type:     string(mount.TypeBind),
+					Target:   pyroscopePath,
+					Source:   tmpFile.Name(),
+					ReadOnly: true,
+				},
+			}
+			config.VolumesFrom = []string{}
+			config.AutoRemove = true
+			config.RestartPolicy = docker.RestartPolicy{Name: "no"}
+			config.PublishAllPorts = true
+		})
+		if err != nil {
+			j.tb.Logf("Failed to start Pyroscope container: %v", err)
+			return err
 		}
-		config.VolumesFrom = []string{}
-		config.AutoRemove = true
-		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
-	})
+
+		// Validate port
+		port := dockerutil.GetPort(resource, "4040/tcp")
+		if port == "" {
+			return fmt.Errorf("failed to get Pyroscope port")
+		}
+
+		// Set environment variable
+		endpoint := fmt.Sprintf("http://localhost:%s", port)
+		if err := os.Setenv(internal.PyroscopeEndpoint, endpoint); err != nil {
+			return fmt.Errorf("failed to set Pyroscope endpoint: %v", err)
+		}
+
+		// Wait for endpoint with increased timeout
+		return retry.WithBackoff(ctx, func(ctx context.Context) error {
+			err := checkURL(endpoint)(ctx)
+			if err != nil {
+				return fmt.Errorf("pyroscope not ready: %v", err)
+			}
+			return nil
+		},
+			retry.WithMax(time.Second*5),
+			retry.WithMaxAttempts(15))
+	},
+		retry.WithMax(time.Second*5),
+		retry.WithMaxAttempts(3))
+
 	if err != nil {
-		j.tb.Logf("Failed to start Pyroscope container: %v", err)
+		j.tb.Logf("Failed to start Pyroscope container after retries: %v", err)
 		return nil
 	}
-
-	// Set environment variable for endpoint
-	j.tb.Setenv(internal.PyroscopeEndpoint, fmt.Sprintf("http://localhost:%s", dockerutil.GetPort(resource, "4040/tcp")))
 
 	if !j.cfg.keepContainers {
-		err = resource.Expire(uint(keepAliveOnFailure.Seconds()))
-		if err != nil {
+		if err = resource.Expire(uint(keepAliveOnFailure.Seconds())); err != nil {
 			j.tb.Logf("Failed to set container expiry: %v", err)
 		}
-	}
-
-	// Wait for Pyroscope endpoint to be ready with more lenient retry parameters
-	err = retry.WithBackoff(ctx, checkURL(os.Getenv(internal.PyroscopeEndpoint)),
-		retry.WithMax(time.Second*2),
-		retry.WithMaxAttempts(30))
-	if err != nil {
-		return nil
 	}
 
 	logResourceChan := make(chan *uiResource, 1)
@@ -126,13 +156,6 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 				}
 			}))
 	}()
-	// Wait for endpoint to be ready with more lenient retry parameters
-	err = retry.WithBackoff(ctx, checkURL(os.Getenv(internal.PyroscopeEndpoint)),
-		retry.WithMax(time.Second*2),
-		retry.WithMaxAttempts(30))
-	if err != nil {
-		return nil
-	}
 
 	select {
 	case <-ctx.Done():
