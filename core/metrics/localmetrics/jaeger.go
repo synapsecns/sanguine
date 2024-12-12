@@ -14,6 +14,23 @@ import (
 	"github.com/synapsecns/sanguine/core/retry"
 )
 
+// purgeAllResources cleans up all Docker resources associated with Jaeger
+func (j *testJaeger) purgeAllResources() error {
+	j.tb.Log("Cleaning up all Docker resources...")
+
+	// Clean up Jaeger containers
+	if err := cleanupExistingContainers(j.pool, "jaeger"); err != nil {
+		return fmt.Errorf("failed to clean up Jaeger containers: %w", err)
+	}
+
+	// Clean up UI containers
+	if err := cleanupExistingContainers(j.pool, "jaeger-ui"); err != nil {
+		return fmt.Errorf("failed to clean up UI containers: %w", err)
+	}
+
+	return nil
+}
+
 // StartJaegerServer starts a new jaeger instance.
 // nolint: cyclop
 func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
@@ -180,6 +197,11 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 			Resource: nil,
 			uiURL:    os.Getenv(internal.JaegerUIEndpoint),
 		}
+	}
+
+	// Clean up any existing containers before starting
+	if err := cleanupExistingContainers(j.pool, "jaeger-ui"); err != nil {
+		j.tb.Logf("Warning: Failed to clean up existing containers: %v", err)
 	}
 
 	// Set required environment variables
