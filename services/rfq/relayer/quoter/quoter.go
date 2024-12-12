@@ -455,6 +455,11 @@ func quoteDataToQuoteRequestV2(quoteData *model.QuoteData) (*reldb.QuoteRequest,
 	deadline := new(big.Int).Sub(new(big.Int).Exp(big.NewInt(2), big.NewInt(256), nil), big.NewInt(1))
 	exclusivityRelayer := common.HexToAddress("")
 
+	zapData, err := hexutil.Decode(quoteData.ZapData)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding zap data: %w", err)
+	}
+
 	quoteRequest := &reldb.QuoteRequest{
 		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
 			OriginChainId:      uint32(quoteData.OriginChainID),
@@ -471,7 +476,7 @@ func quoteDataToQuoteRequestV2(quoteData *model.QuoteData) (*reldb.QuoteRequest,
 			ExclusivityRelayer: exclusivityRelayer,
 			ExclusivityEndTime: exclusivityEndTime,
 			ZapNative:          zapNative,
-			ZapData:            []byte(quoteData.ZapData),
+			ZapData:            zapData,
 		},
 	}
 
