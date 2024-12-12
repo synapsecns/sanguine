@@ -5,7 +5,7 @@ import (
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core"
 	"go.uber.org/zap/zapcore"
-	"golang.org/x/exp/slog"
+	"log/slog"
 	"os"
 )
 
@@ -23,21 +23,21 @@ func getEthLogLevel() slog.Level {
 		if logger.Desugar().Core().Enabled(level) {
 			switch level {
 			case zapcore.DebugLevel, zapcore.InvalidLevel:
-				return gethLog.LvlDebug
+				return gethLog.LevelDebug
 			case zapcore.InfoLevel:
-				return gethLog.LvlInfo
+				return gethLog.LevelInfo
 			case zapcore.WarnLevel:
-				return gethLog.LvlDebug
+				return gethLog.LevelDebug
 			case zapcore.ErrorLevel:
-				return gethLog.LvlDebug
+				return gethLog.LevelDebug
 			case zapcore.DPanicLevel, zapcore.PanicLevel, zapcore.FatalLevel:
-				return gethLog.LvlInfo
+				return gethLog.LevelInfo
 			}
 		}
 	}
 	logger.Warn("could not get geth log level from ipfs logger")
 	// return info otherwise
-	return gethLog.LvlInfo
+	return gethLog.LevelInfo
 }
 
 // setupEthLogger sets up the eth global logger.

@@ -93,7 +93,7 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 	embedded.ethBackend, err = eth.New(embedded.Node, ethConfig)
 	assert.Nil(t, err)
 
-	// setup the consensus client
+	// setup the consensus client with initial block height 1
 	simBeacon, err := catalyst.NewSimulatedBeacon(1, embedded.ethBackend)
 	assert.Nil(t, err)
 
@@ -125,11 +125,9 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 
 	// set the backend
 	embedded.ethBackend.AccountManager().AddBackend(keystoreBackend)
-	embedded.ethBackend.SetEtherbase(acct.Address)
+	embedded.ethBackend.Miner().SetExtra(common.FromHex(acct.Address.Hex()))
 
 	embedded.ethBackend.TxPool().SetGasTip(big.NewInt(0))
-	err = embedded.ethBackend.APIBackend.StartMining()
-	assert.Nil(t, err)
 
 	// add debugger for node stop
 	go func() {
@@ -142,15 +140,17 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 		assert.Nil(t, embedded.Node.Close())
 	}()
 
-	// wait until the simulated node has started mining
-	isMiningCtx, cancelMiningCtx := context.WithCancel(ctx)
-	wait.UntilWithContext(isMiningCtx, func(ctx context.Context) {
-		if embedded.ethBackend.IsMining() {
-			cancelMiningCtx()
-		} else {
-			_ = embedded.ethBackend.APIBackend.StartMining()
-		}
-	}, time.Millisecond*50)
+	// Wait for the simulated beacon chain to create and finalize blocks
+	wait.Poll(50*time.Millisecond, 5*time.Second, func() (bool, error) {
+		currentBlock := embedded.ethBackend.BlockChain().CurrentBlock()
+		return currentBlock.Number.Uint64() >= 1, nil
+	})
+
+	// Verify block height and state
+	currentBlock := embedded.ethBackend.BlockChain().CurrentBlock()
+	if currentBlock.Number.Uint64() < 1 {
+		t.Fatalf("Failed to reach block height 1, current height: %d", currentBlock.Number.Uint64())
+	}
 
 	baseClient := embedded.makeClient(t)
 
@@ -177,7 +177,7 @@ type Backend struct {
 	ethBackend *eth.Ethereum
 }
 
-func (f *Backend) BatchWithContext(ctx context.Context, calls ...w3types.Caller) error {
+func (f *Backend) BatchWithContext(ctx context.Context, calls ...w3types.RPCCaller) error {
 	return f.BatchContext(ctx, calls...)
 }
 
@@ -270,7 +270,7 @@ func (w wrappedClient) Web3Version(ctx context.Context) (version string, err err
 	return version, nil
 }
 
-func (w wrappedClient) BatchContext(ctx context.Context, calls ...w3types.Caller) error {
+func (w wrappedClient) BatchContext(ctx context.Context, calls ...w3types.RPCCaller) error {
 	//nolint:wrapcheck
 	return w.w3Client.CallCtx(ctx, calls...)
 }

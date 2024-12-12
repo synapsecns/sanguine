@@ -63,7 +63,7 @@ func (_m *EVM) BatchCallContext(ctx context.Context, b []rpc.BatchElem) error {
 }
 
 // BatchWithContext provides a mock function with given fields: ctx, calls
-func (_m *EVM) BatchWithContext(ctx context.Context, calls ...w3types.Caller) error {
+func (_m *EVM) BatchWithContext(ctx context.Context, calls ...w3types.RPCCaller) error {
 	_va := make([]interface{}, len(calls))
 	for _i := range calls {
 		_va[_i] = calls[_i]
@@ -74,7 +74,7 @@ func (_m *EVM) BatchWithContext(ctx context.Context, calls ...w3types.Caller) er
 	ret := _m.Called(_ca...)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, ...w3types.Caller) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, ...w3types.RPCCaller) error); ok {
 		r0 = rf(ctx, calls...)
 	} else {
 		r0 = ret.Error(0)
@@ -280,13 +280,13 @@ func (_m *EVM) FeeHistory(ctx context.Context, blockCount uint64, lastBlock *big
 	return r0, r1
 }
 
-// FilterLogs provides a mock function with given fields: ctx, query
-func (_m *EVM) FilterLogs(ctx context.Context, query ethereum.FilterQuery) ([]types.Log, error) {
-	ret := _m.Called(ctx, query)
+// FilterLogs provides a mock function with given fields: ctx, q
+func (_m *EVM) FilterLogs(ctx context.Context, q ethereum.FilterQuery) ([]types.Log, error) {
+	ret := _m.Called(ctx, q)
 
 	var r0 []types.Log
 	if rf, ok := ret.Get(0).(func(context.Context, ethereum.FilterQuery) []types.Log); ok {
-		r0 = rf(ctx, query)
+		r0 = rf(ctx, q)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]types.Log)
@@ -295,7 +295,7 @@ func (_m *EVM) FilterLogs(ctx context.Context, query ethereum.FilterQuery) ([]ty
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, ethereum.FilterQuery) error); ok {
-		r1 = rf(ctx, query)
+		r1 = rf(ctx, q)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -564,13 +564,13 @@ func (_m *EVM) StorageAt(ctx context.Context, account common.Address, key common
 	return r0, r1
 }
 
-// SubscribeFilterLogs provides a mock function with given fields: ctx, query, ch
-func (_m *EVM) SubscribeFilterLogs(ctx context.Context, query ethereum.FilterQuery, ch chan<- types.Log) (ethereum.Subscription, error) {
-	ret := _m.Called(ctx, query, ch)
+// SubscribeFilterLogs provides a mock function with given fields: ctx, q, ch
+func (_m *EVM) SubscribeFilterLogs(ctx context.Context, q ethereum.FilterQuery, ch chan<- types.Log) (ethereum.Subscription, error) {
+	ret := _m.Called(ctx, q, ch)
 
 	var r0 ethereum.Subscription
 	if rf, ok := ret.Get(0).(func(context.Context, ethereum.FilterQuery, chan<- types.Log) ethereum.Subscription); ok {
-		r0 = rf(ctx, query, ch)
+		r0 = rf(ctx, q, ch)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(ethereum.Subscription)
@@ -579,7 +579,7 @@ func (_m *EVM) SubscribeFilterLogs(ctx context.Context, query ethereum.FilterQue
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, ethereum.FilterQuery, chan<- types.Log) error); ok {
-		r1 = rf(ctx, query, ch)
+		r1 = rf(ctx, q, ch)
 	} else {
 		r1 = ret.Error(1)
 	}

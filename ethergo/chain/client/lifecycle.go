@@ -576,7 +576,7 @@ func (m LifecycleClient) ChainID(ctx context.Context) (chainID *big.Int, err err
 // BatchContext calls BatchContext on the underlying client
 //
 //nolint:wrapcheck
-func (m LifecycleClient) BatchContext(ctx context.Context, calls ...w3types.Caller) error {
+func (m LifecycleClient) BatchContext(ctx context.Context, calls ...w3types.RPCCaller) error {
 	err := m.AcquirePermit(ctx)
 	if err != nil {
 		return err

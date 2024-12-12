@@ -43,7 +43,7 @@ type Backend struct {
 	chainConfig *params.ChainConfig
 }
 
-func (s *Backend) BatchWithContext(_ context.Context, _ ...w3types.Caller) error {
+func (s *Backend) BatchWithContext(_ context.Context, _ ...w3types.RPCCaller) error {
 	return errors.New("rpc calls not supported on simulated backend")
 }
 

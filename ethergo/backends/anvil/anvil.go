@@ -218,7 +218,7 @@ func (b *Backend) TearDown() {
 }
 
 // BatchWithContext is a batch RPC call with context.
-func (b *Backend) BatchWithContext(ctx context.Context, calls ...w3types.Caller) error {
+func (b *Backend) BatchWithContext(ctx context.Context, calls ...w3types.RPCCaller) error {
 	return b.BatchContext(ctx, calls...)
 }
 

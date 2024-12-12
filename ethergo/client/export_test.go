@@ -7,7 +7,7 @@ import (
 )
 
 // ParseCalls exports parsecalls for testing.
-func ParseCalls(calls []w3types.Caller) attribute.KeyValue {
+func ParseCalls(calls []w3types.RPCCaller) attribute.KeyValue {
 	return parseCalls(calls)
 }
 

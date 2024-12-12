@@ -227,9 +227,10 @@ func (t *txSubmitterImpl) checkAndSetConfirmation(ctx context.Context, chainClie
 	//
 	// the other constraint is we treat all errors as "tx not found" errors. This is fine because we only store txes in cases
 	//
-	calls := make([]w3types.Caller, len(txes))
-	receipts := make([]types.Receipt, len(txes))
+	calls := make([]w3types.RPCCaller, len(txes))
+	receipts := make([]*types.Receipt, len(txes))
 	for i := range calls {
+		receipts[i] = new(types.Receipt)
 		calls[i] = eth.TxReceipt(txes[i].Hash()).Returns(&receipts[i])
 	}
 
@@ -252,7 +253,7 @@ func (t *txSubmitterImpl) checkAndSetConfirmation(ctx context.Context, chainClie
 				txes[i].Status = db.Confirmed
 			}
 		}
-	} else if receipts[0].TxHash == txes[0].Hash() {
+	} else if receipts[0] != nil && receipts[0].TxHash == txes[0].Hash() {
 		// there must be only one tx, so we can just check the first one
 		// TODO: handle the case where there is more than one
 		txes[0].Status = db.Confirmed

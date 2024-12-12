@@ -1,0 +1,138 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import {Admin} from "./Admin.sol";
+
+import {FastBridge} from "./FastBridge.sol";
+import {IFastBridge} from "./IFastBridge.sol";
+
+contract FastBridgeMock is IFastBridge, Admin {
+    // @dev the block the contract was deployed at
+    uint256 public immutable deployBlock;
+
+    constructor(address _owner) Admin(_owner) {
+        deployBlock = block.number;
+    }
+
+    /// @dev to prevent replays
+    uint256 public nonce;
+
+    /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
+    function testFastBridgeMock() external {}
+
+    function getBridgeTransaction(bytes memory request) public pure returns (BridgeTransaction memory) {
+        return abi.decode(request, (BridgeTransaction));
+    }
+
+    // used for testing in go.
+    // see: https://ethereum.stackexchange.com/questions/21155/how-to-expose-enum-in-solidity-contract
+    // make sure to update fastbridge/status.go if this changes
+    // or underliyng enum changes.
+    //
+    // TODO: a foundry test should be added to ensure this is always in sync.
+    function getEnumKeyByValue(FastBridge.BridgeStatus keyValue) public pure returns (string memory) {
+        if (FastBridge.BridgeStatus.NULL == keyValue) return "NULL";
+        if (FastBridge.BridgeStatus.REQUESTED == keyValue) return "REQUESTED";
+        if (FastBridge.BridgeStatus.RELAYER_PROVED == keyValue) return "RELAYER_PROVED";
+        if (FastBridge.BridgeStatus.RELAYER_CLAIMED == keyValue) return "RELAYER_CLAIMED";
+        if (FastBridge.BridgeStatus.REFUNDED == keyValue) return "REFUNDED";
+        return "";
+    }
+
+    function mockBridgeRequest(bytes32 transactionId, address sender, BridgeParams memory params) external {
+        sender;
+        uint256 originFeeAmount = (params.originAmount * protocolFeeRate) / FEE_BPS;
+        params.originAmount -= originFeeAmount;
+
+        bytes memory request = abi.encode(
+            BridgeTransaction({
+                originChainId: uint32(block.chainid),
+                destChainId: params.dstChainId,
+                originSender: params.sender,
+                destRecipient: params.to,
+                originToken: params.originToken,
+                destToken: params.destToken,
+                originAmount: params.originAmount, // includes relayer fee
+                destAmount: params.destAmount,
+                originFeeAmount: originFeeAmount,
+                sendChainGas: params.sendChainGas,
+                deadline: params.deadline,
+                nonce: nonce++ // increment nonce on every bridge
+            })
+        );
+
+        emit BridgeRequested(
+            transactionId,
+            params.sender,
+            request,
+            params.dstChainId,
+            params.originToken,
+            params.destToken,
+            params.originAmount,
+            params.destAmount,
+            params.sendChainGas
+        );
+    }
+
+    function mockBridgeRequestRaw(bytes32 transactionId, address sender, bytes memory request) external {
+        sender;
+        BridgeTransaction memory transaction = getBridgeTransaction(request);
+        emit BridgeRequested(
+            transactionId,
+            transaction.originSender,
+            request,
+            transaction.destChainId,
+            transaction.originToken,
+            transaction.destToken,
+            transaction.originAmount,
+            transaction.destAmount,
+            transaction.sendChainGas
+        );
+    }
+
+    function mockBridgeRelayer(
+        bytes32 transactionId,
+        address relayer,
+        address to,
+        uint32 originChainId,
+        address originToken,
+        address destToken,
+        uint256 originAmount,
+        uint256 destAmount,
+        uint256 chainGasAmount
+    )
+        external
+    {
+        emit BridgeRelayed(
+            transactionId, relayer, to, originChainId, originToken, destToken, originAmount, destAmount, chainGasAmount
+        );
+    }
+
+    function bridge(BridgeParams memory) external payable {
+        revert("not implemented");
+    }
+
+    function relay(bytes memory) external payable {
+        revert("not implemented");
+    }
+
+    function prove(bytes memory, bytes32) external pure {
+        revert("not implemented");
+    }
+
+    function canClaim(bytes32, address) external pure returns (bool) {
+        revert("not implemented");
+    }
+
+    function claim(bytes memory, address) external pure {
+        revert("not implemented");
+    }
+
+    function dispute(bytes32) external pure {
+        revert("not implemented");
+    }
+
+    function refund(bytes memory) external pure {
+        revert("not implemented");
+    }
+}

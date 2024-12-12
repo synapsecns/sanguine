@@ -1,19 +1,3 @@
-// Copyright 2020 The go-ethereum Authors
-// This file is part of the go-ethereum library.
-//
-// The go-ethereum library is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// The go-ethereum library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
-
 package londinium_test
 
 import (
@@ -21,9 +5,6 @@ import (
 	"math"
 	"math/big"
 	"testing"
-
-	"github.com/ethereum/go-ethereum/trie"
-	"github.com/synapsecns/sanguine/ethergo/chain/gas/londinium"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus/ethash"
@@ -34,7 +15,9 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/ethereum/go-ethereum/triedb"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/ethergo/chain/gas/londinium"
 )
 
 type testBackend struct {
@@ -73,8 +56,8 @@ func newTestBackend(t *testing.T) *testBackend {
 	)
 	engine := ethash.NewFaker()
 	db := rawdb.NewMemoryDatabase()
-	triedb := trie.NewDatabase(db, nil)
-	genesis, _ := gspec.Commit(db, triedb)
+	trieDB := triedb.NewDatabase(db, nil)
+	genesis, _ := gspec.Commit(db, trieDB)
 
 	// Generate testing blocks
 	blocks, _ := core.GenerateChain(params.TestChainConfig, genesis, engine, db, 32, func(i int, b *core.BlockGen) {
@@ -87,11 +70,11 @@ func newTestBackend(t *testing.T) *testBackend {
 	})
 	// Construct testing chain
 	diskdb := rawdb.NewMemoryDatabase()
-	disktriedb := trie.NewDatabase(diskdb, nil)
-	_, err := gspec.Commit(diskdb, disktriedb)
+	trieDB = triedb.NewDatabase(diskdb, nil)
+	_, err := gspec.Commit(diskdb, trieDB)
 	Nil(t, err)
 
-	chain, err := core.NewBlockChain(diskdb, nil, gspec, nil, engine, vm.Config{}, nil, nil)
+	chain, err := core.NewBlockChain(diskdb, &core.CacheConfig{}, gspec, nil, engine, vm.Config{}, nil)
 	if err != nil {
 		t.Fatalf("Failed to create local chain, %v", err)
 	}
@@ -112,7 +95,6 @@ func (l *LondoniumSuite) TestSuggestPrice() {
 	config := londinium.Config{
 		Blocks:     3,
 		Percentile: 60,
-		Default:    big.NewInt(params.GWei),
 	}
 	backend := newTestBackend(l.T())
 	oracle := londinium.NewOracle(backend, config)

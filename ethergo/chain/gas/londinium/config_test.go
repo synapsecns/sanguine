@@ -16,7 +16,6 @@ func (l LondoniumSuite) TestLondoniumConfig() {
 		Percentile:       gofakeit.Number(1, 100),
 		MaxHeaderHistory: gofakeit.Uint64(),
 		MaxBlockHistory:  gofakeit.Uint64(),
-		Default:          defaultPrice,
 		MaxPrice:         big.NewInt(0).Mul(defaultPrice, big.NewInt(2)),
 		IgnorePrice:      big.NewInt(0).Div(defaultPrice, big.NewInt(2)),
 	}
@@ -25,6 +24,5 @@ func (l LondoniumSuite) TestLondoniumConfig() {
 
 	Equal(l.T(), newConfig.Blocks, londiniumConfig.Blocks)
 	Equal(l.T(), newConfig.Percentile, londiniumConfig.Percentile)
-	Equal(l.T(), newConfig.Default, londiniumConfig.Default)
 	Equal(l.T(), newConfig.MaxPrice, londiniumConfig.MaxPrice)
 }

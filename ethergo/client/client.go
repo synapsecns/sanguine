@@ -50,7 +50,7 @@ type EVM interface {
 	// BlockNumber gets the latest block number
 	BlockNumber(ctx context.Context) (uint64, error)
 	// BatchWithContext batches multiple w3type calls
-	BatchWithContext(ctx context.Context, calls ...w3types.Caller) error
+	BatchWithContext(ctx context.Context, calls ...w3types.RPCCaller) error
 	// Web3Version gets the web3 version
 	Web3Version(ctx context.Context) (version string, err error)
 }
@@ -101,7 +101,7 @@ func (c *clientImpl) getW3Client() *w3.Client {
 }
 
 // BatchWithContext batches multiple w3 calls.
-func (c *clientImpl) BatchWithContext(ctx context.Context, calls ...w3types.Caller) (err error) {
+func (c *clientImpl) BatchWithContext(ctx context.Context, calls ...w3types.RPCCaller) (err error) {
 	ctx, span := c.tracing.Tracer().Start(ctx, batchAttribute)
 	span.SetAttributes(parseCalls(calls))
 	span.SetAttributes(attribute.String(endpointAttribute, c.endpoint))
@@ -564,8 +564,8 @@ func (c *clientImpl) FeeHistory(ctx context.Context, blockCount uint64, lastBloc
 	return c.getEthClient().FeeHistory(requestCtx, blockCount, lastBlock, rewardPercentiles)
 }
 
-// parseCalls parses out calls from w3types.Caller.
-func parseCalls(calls []w3types.Caller) attribute.KeyValue {
+// parseCalls parses out calls from w3types.RPCCaller.
+func parseCalls(calls []w3types.RPCCaller) attribute.KeyValue {
 	res := make([]string, len(calls))
 
 	for i, call := range calls {

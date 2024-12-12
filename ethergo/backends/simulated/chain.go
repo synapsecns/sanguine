@@ -85,7 +85,7 @@ func (s Client) BatchCallContext(ctx context.Context, b []rpc.BatchElem) error {
 }
 
 // BatchContext panics here to bypass interface requirements for testing.
-func (s Client) BatchContext(ctx context.Context, calls ...w3types.Caller) error {
+func (s Client) BatchContext(ctx context.Context, calls ...w3types.RPCCaller) error {
 	panic("BatchCallContext is not supported on the simulated backend")
 }
 

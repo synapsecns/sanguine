@@ -38,7 +38,6 @@ var DefaultMaxPrice = big.NewInt(500 * params.GWei)
 type Config struct {
 	Blocks     int
 	Percentile int
-	Default    *big.Int `toml:",omitempty"`
 	MaxPrice   *big.Int `toml:",omitempty"`
 }
 
@@ -87,7 +86,7 @@ func NewOracle(backend OracleBackend, params Config) *Oracle {
 	}
 	return &Oracle{
 		backend:     backend,
-		lastPrice:   params.Default,
+		lastPrice:   big.NewInt(1000000000), // Use 1 GWei (1_000_000_000 wei) as initial price
 		maxPrice:    maxPrice,
 		checkBlocks: blocks,
 		percentile:  percent,

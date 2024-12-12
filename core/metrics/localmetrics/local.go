@@ -7,7 +7,6 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/metrics/internal"
 	"github.com/synapsecns/sanguine/core/retry"
 	"net/http"
@@ -63,26 +62,98 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 	// create the pool
 	var err error
 	tj.pool, err = dockertest.NewPool("")
-	assert.Nil(tb, err)
+	if err != nil {
+		tb.Logf("Failed to create Docker pool: %v", err)
+		tb.Fatal(err)
+	}
 
 	tj.logDir = filet.TmpDir(tb, "")
+	tb.Logf("Created log directory at: %s", tj.logDir)
 
-	var wg sync.WaitGroup
-	wg.Add(3)
-	go func() {
-		defer wg.Done()
+	// Ensure Docker daemon is responsive
+	if err := tj.pool.Client.Ping(); err != nil {
+		tb.Logf("Docker daemon not responsive: %v", err)
+		tb.Fatal(err)
+	}
+
+	// Clean up any existing containers with our labels before starting
+	containers, err := tj.pool.Client.ListContainers(docker.ListContainersOptions{All: true})
+	if err != nil {
+		tb.Logf("Failed to list containers: %v", err)
+	} else {
+		for _, container := range containers {
+			if container.Labels[runIDLabel] == tj.runID || container.Labels[appLabel] == "jaeger" ||
+			   container.Labels[appLabel] == "pyroscope" || container.Labels[appLabel] == "jaeger-ui" {
+				tb.Logf("Removing existing container: %s", container.ID)
+				err := tj.pool.Client.RemoveContainer(docker.RemoveContainerOptions{
+					ID:            container.ID,
+					Force:         true,
+					RemoveVolumes: true,
+				})
+				if err != nil {
+					tb.Logf("Error removing container %s: %v", container.ID, err)
+				}
+			}
+		}
+	}
+
+	// Start containers with retry logic
+	maxRetries := 3
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		if attempt > 0 {
+			tb.Logf("Retry attempt %d/%d after Docker cleanup", attempt+1, maxRetries)
+			// Exponential backoff
+			time.Sleep(time.Duration(attempt*2) * time.Second)
+
+			// Force cleanup between attempts
+			tj.purgeResources()
+			if tj.network != nil {
+				_ = tj.network.Close()
+				tj.network = nil
+			}
+		}
+
+		// Start containers sequentially with health checks
 		tj.jaegerResource = tj.StartJaegerServer(ctx)
-	}()
+		if tj.jaegerResource == nil || tj.jaegerResource.Resource == nil {
+			tb.Logf("Failed to start Jaeger container, retrying...")
+			continue
+		}
 
-	go func() {
-		defer wg.Done()
+		// Verify Jaeger is healthy before continuing with more lenient parameters
+		if err := retry.WithBackoff(ctx, checkURL(os.Getenv(internal.JaegerEndpoint)),
+			retry.WithMax(time.Second*2), retry.WithMaxAttempts(30)); err != nil {
+			tb.Logf("Jaeger health check failed: %v", err)
+			continue
+		}
+
 		tj.pyroscopeResource = tj.StartPyroscopeServer(ctx)
-	}()
-	go func() {
-		defer wg.Done()
+		if tj.pyroscopeResource == nil || tj.pyroscopeResource.Resource == nil {
+			tb.Logf("Failed to start Pyroscope container, retrying...")
+			continue
+		}
+
+		// Verify Pyroscope is healthy before continuing with more lenient parameters
+		if err := retry.WithBackoff(ctx, checkURL(os.Getenv(internal.PyroscopeEndpoint)),
+			retry.WithMax(time.Second*2), retry.WithMaxAttempts(30)); err != nil {
+			tb.Logf("Pyroscope health check failed: %v", err)
+			continue
+		}
+
 		tj.jaegerPyroscopeUIResource = tj.StartJaegerPyroscopeUI(ctx)
-	}()
-	wg.Wait()
+		if tj.jaegerPyroscopeUIResource == nil || tj.jaegerPyroscopeUIResource.Resource == nil {
+			tb.Logf("Failed to start Jaeger Pyroscope UI container, retrying...")
+			continue
+		}
+
+		// All containers started successfully
+		break
+	}
+
+	// Check if all containers are running
+	if tj.jaegerResource == nil || tj.pyroscopeResource == nil || tj.jaegerPyroscopeUIResource == nil {
+		tb.Fatal("Failed to start all required containers after maximum retries")
+	}
 
 	logger.Warnf(tj.buildLogMessage(true))
 
@@ -102,7 +173,7 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 	return &tj
 }
 
-// getNetworks gets the networks to be associaed with each container.
+// getNetworks gets the networks to be associated with each container.
 func (j *testJaeger) getNetworks() []*dockertest.Network {
 	// no need to hit the mutex if no network is required
 	if !j.cfg.requiresNetwork {
@@ -112,8 +183,37 @@ func (j *testJaeger) getNetworks() []*dockertest.Network {
 	j.networkMux.Lock()
 	defer j.networkMux.Unlock()
 
-	if j.network != nil {
-		return []*dockertest.Network{j.network}
+	// Clean up any existing network with the same runID
+	if networks, err := j.pool.Client.ListNetworks(); err == nil {
+		for _, network := range networks {
+			if network.Labels[runIDLabel] == j.runID {
+				// List containers connected to this network
+				containers, err := j.pool.Client.ListContainers(docker.ListContainersOptions{
+					All:     true,
+					Filters: map[string][]string{"network": {network.ID}},
+				})
+				if err != nil {
+					j.tb.Logf("Error listing containers for network %s: %v", network.ID, err)
+					continue
+				}
+
+				// Disconnect containers from network before removal
+				for _, container := range containers {
+					err := j.pool.Client.DisconnectNetwork(network.ID, docker.NetworkConnectionOptions{
+						Container: container.ID,
+						Force:     true,
+					})
+					if err != nil {
+						j.tb.Logf("Error disconnecting container %s from network %s: %v", container.ID, network.ID, err)
+					}
+				}
+
+				// Now try to remove the network
+				if err := j.pool.Client.RemoveNetwork(network.ID); err != nil {
+					j.tb.Logf("Error removing network %s: %v", network.ID, err)
+				}
+			}
+		}
 	}
 
 	var err error
@@ -125,6 +225,7 @@ func (j *testJaeger) getNetworks() []*dockertest.Network {
 	})
 
 	if err != nil {
+		j.tb.Logf("Failed to create network: %v", err)
 		j.tb.Fatal(err)
 	}
 
@@ -153,10 +254,11 @@ func (j *testJaeger) buildLogMessage(includeAuxiliary bool) string {
 
 // getDockerizedResources gets all resources that have been dockerized by this process.
 func (j *testJaeger) getDockerizedResources() (dockerizedResources []*dockertest.Resource) {
-	allResources := []*uiResource{j.jaegerResource, j.pyroscopeResource}
+	allResources := []*uiResource{j.jaegerResource, j.pyroscopeResource, j.jaegerPyroscopeUIResource}
 	for _, resource := range allResources {
 		if resource == nil || resource.Resource == nil {
-			return nil
+			j.tb.Logf("Resource is nil: %v", resource)
+			continue
 		}
 		dockerizedResources = append(dockerizedResources, resource.Resource)
 	}
@@ -168,14 +270,48 @@ func (j *testJaeger) purgeResources() {
 	var wg sync.WaitGroup
 	resources := j.getDockerizedResources()
 
-	wg.Add(len(resources))
+	// First, stop all containers to release network resources
 	for _, resource := range resources {
-		go func(resource *dockertest.Resource) {
-			_ = j.pool.Purge(resource)
-			wg.Done()
+		if resource == nil {
+			continue
+		}
+		wg.Add(1)
+		go func(r *dockertest.Resource) {
+			defer wg.Done()
+			if err := j.pool.Client.StopContainer(r.Container.ID, 1); err != nil {
+				j.tb.Logf("Error stopping container %s: %v", r.Container.ID, err)
+			}
 		}(resource)
 	}
 	wg.Wait()
+
+	// Then remove containers and their volumes
+	for _, resource := range resources {
+		if resource == nil {
+			continue
+		}
+		wg.Add(1)
+		go func(r *dockertest.Resource) {
+			defer wg.Done()
+			if err := j.pool.Purge(r); err != nil {
+				j.tb.Logf("Error purging resource: %v", err)
+			}
+		}(resource)
+	}
+	wg.Wait()
+
+	// Finally, clean up any networks associated with our runID
+	if networks, err := j.pool.Client.ListNetworks(); err == nil {
+		for _, network := range networks {
+			if network.Labels[runIDLabel] == j.runID {
+				// Add a small delay before network removal
+				time.Sleep(time.Second * 2)
+				if err := j.pool.Client.RemoveNetwork(network.ID); err != nil {
+					j.tb.Logf("Error removing network %s: %v", network.ID, err)
+				}
+			}
+		}
+	}
 }
 
 // uiResource is a wrapper around dockertest.Resource that logs the container logs to a file.

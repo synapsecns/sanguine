@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus/misc/eip4844"
 	"github.com/ethereum/go-ethereum/core"
+	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/eth/gasprice"
 	"github.com/ethereum/go-ethereum/event"
@@ -81,6 +82,12 @@ func (h HeightOracleBackend) GetReceipts(ctx context.Context, hash common.Hash) 
 // PendingBlockAndReceipts always returns nil since we can't use this cross-client in a deterministic way.
 func (h HeightOracleBackend) PendingBlockAndReceipts() (*types.Block, types.Receipts) {
 	return nil, nil
+}
+
+// Pending returns the pending block, receipts and state
+func (h HeightOracleBackend) Pending() (*types.Block, types.Receipts, *state.StateDB) {
+	// Since this is a height-based oracle, we don't track pending state
+	return nil, nil, nil
 }
 
 // ChainConfig gets the chainconfig for the chain.

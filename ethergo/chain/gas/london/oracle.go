@@ -30,10 +30,13 @@ type FeeOracle struct {
 // NewFeeOracle creates a new fee oracle.
 func NewFeeOracle(chain backend.OracleBackendChain, height uint64, config gasprice.Config) FeeOracle {
 	oracleBackend := NewOracleBackendFromHeight(chain, height)
+	// Use a reasonable default start price of 1 gwei
+	startPrice := big.NewInt(1000000000)
+	oracle := gasprice.NewOracle(oracleBackend, config, startPrice)
 	return FeeOracle{
 		height:        int(height),
 		oracleBackend: oracleBackend,
-		oracle:        gasprice.NewOracle(NewOracleBackendFromHeight(chain, height), config),
+		oracle:        oracle,
 	}
 }
 

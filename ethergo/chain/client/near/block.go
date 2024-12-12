@@ -129,5 +129,11 @@ func getBlock(ctx context.Context, c AuroraClient, method string, args ...interf
 		return nil, err
 	}
 
-	return types.NewBlockWithHeader(head).WithBody(txes, uncles), nil
+	// Create a types.Body struct as required by the new API
+	bodyStruct := types.Body{
+		Transactions: txes,
+		Uncles:       uncles,
+		Withdrawals:  nil, // Aurora doesn't support withdrawals
+	}
+	return types.NewBlockWithHeader(head).WithBody(bodyStruct), nil
 }

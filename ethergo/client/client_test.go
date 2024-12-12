@@ -27,7 +27,7 @@ type TestEVM interface {
 }
 
 func (c *ClientSuite) TestParseCalls() {
-	calls := make([]w3types.Caller, 4)
+	calls := make([]w3types.RPCCaller, 4)
 	chainID := new(uint64)
 	calls[0] = eth.ChainID().Returns(chainID)
 	maxHeight := new(big.Int)
@@ -97,9 +97,8 @@ func (c *ClientSuite) checkRequest(makeReq func(client TestEVM)) {
 //
 //nolint:maintidx
 func (c *ClientSuite) TestParseRPCPayload() {
-	/*
-	  CHECK BLOCKS
-	*/
+	calls := make([]w3types.RPCCaller, callCount)
+	res := make([]uint64, callCount)
 
 	// check latest block, should not be confirmable since
 	// rpcs might be on different  latest heights

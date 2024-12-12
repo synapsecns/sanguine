@@ -132,7 +132,7 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 		return cq.reprocessQueue[i].Nonce() < cq.reprocessQueue[j].Nonce()
 	})
 
-	calls := make([]w3types.Caller, len(cq.reprocessQueue))
+	calls := make([]w3types.RPCCaller, len(cq.reprocessQueue))
 	txHashes := make([]common.Hash, len(cq.reprocessQueue))
 	for i, tx := range cq.reprocessQueue {
 		calls[i] = eth.SendTx(tx.Transaction).Returns(&txHashes[i])
@@ -153,7 +153,7 @@ func toFloat(wei *big.Int) float64 {
 }
 
 // storeAndSubmit stores the txes in the database and submits them to the chain.
-func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller, span trace.Span) {
+func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.RPCCaller, span trace.Span) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
