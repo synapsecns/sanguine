@@ -261,23 +261,41 @@ func compileWithBinary(version string, filePath string, optimizeRuns int, evmVer
 		return nil, fmt.Errorf("failed to get solc binary: %w", err)
 	}
 
-	//nolint:gosec // File operations required for reading Solidity source
-	solContents, err := os.ReadFile(filePath)
+	// Convert to absolute path
+	absPath, err := filepath.Abs(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("could not read sol file %s: %w", filePath, err)
+		return nil, fmt.Errorf("failed to get absolute path for %s: %w", filePath, err)
+	}
+
+	//nolint:gosec // File operations required for reading Solidity source
+	solContents, err := os.ReadFile(absPath)
+	if err != nil {
+		return nil, fmt.Errorf("could not read sol file %s: %w", absPath, err)
+	}
+
+	// Check for empty file
+	if len(solContents) == 0 {
+		return nil, fmt.Errorf("empty source file")
 	}
 
 	var stderr, stdout bytes.Buffer
-	args := []string{"--combined-json", "bin,bin-runtime,srcmap,srcmap-runtime,abi,userdoc,devdoc,metadata,hashes", "--optimize", "--optimize-runs", strconv.Itoa(optimizeRuns), "--allow-paths", "., ./, ../"}
+	baseDir := filepath.Dir(absPath)
+	args := []string{
+		"--combined-json", "bin,bin-runtime,srcmap,srcmap-runtime,abi,userdoc,devdoc,metadata,hashes",
+		"--optimize",
+		"--optimize-runs", strconv.Itoa(optimizeRuns),
+		"--allow-paths", baseDir,
+	}
 
 	if evmVersion != nil {
 		args = append(args, fmt.Sprintf("--evm-version=%s", *evmVersion))
 	}
 
 	//nolint:gosec // Command execution with validated solc binary is required
-	cmd := exec.Command(binaryPath, append(args, filePath)...)
+	cmd := exec.Command(binaryPath, append(args, absPath)...)
 	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
+	cmd.Dir = baseDir
 
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("solc: %w\n%s", err, stderr.Bytes())

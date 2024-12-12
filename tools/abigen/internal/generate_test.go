@@ -3,10 +3,12 @@ package internal_test
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/synapsecns/sanguine/core"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	. "github.com/stretchr/testify/assert"
@@ -83,6 +85,99 @@ func TestFilePathsAreEqual(t *testing.T) {
 		if err != nil && !errors.Is(err, tt.err) {
 			t.Errorf("filePathsAreEqual(%v, %v) error got %v, want %v", tt.file1, tt.file2, err, tt.err)
 		}
+	}
+}
+
+func TestCompileSolidityBinaryFallback(t *testing.T) {
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "test.sol")
+	content := []byte("pragma solidity ^0.8.0; contract Test {}")
+	err := os.WriteFile(testFile, content, 0600)
+	if err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	tests := []struct {
+		name       string
+		version    string
+		evmVersion string
+		wantErr    bool
+	}{
+		{
+			name:    "valid version",
+			version: "0.8.20",
+			wantErr: false,
+		},
+		{
+			name:       "with evm version",
+			version:    "0.8.20",
+			evmVersion: "london",
+			wantErr:    false,
+		},
+		{
+			name:    "invalid version",
+			version: "999.999.999",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var evmPtr *string
+			if tt.evmVersion != "" {
+				evmPtr = &tt.evmVersion
+			}
+
+			_, err := internal.CompileSolidity(tt.version, testFile, 200, evmPtr)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CompileSolidity() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestCompileSolidityErrors(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	tests := []struct {
+		name     string
+		content  string
+		version  string
+		wantErr  string
+	}{
+		{
+			name:     "syntax error",
+			content:  "pragma solidity ^0.8.0; contract Test { function invalid ",
+			version:  "0.8.20",
+			wantErr:  "exit status 1",
+		},
+		{
+			name:     "empty file",
+			content:  "",
+			version:  "0.8.20",
+			wantErr:  "empty source file",
+		},
+		{
+			name:     "invalid pragma",
+			content:  "pragma solidity ^999.999.999; contract Test {}",
+			version:  "0.8.20",
+			wantErr:  "Source file requires different compiler version",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testFile := filepath.Join(tmpDir, fmt.Sprintf("test_%s.sol", tt.name))
+			err := os.WriteFile(testFile, []byte(tt.content), 0600)
+			if err != nil {
+				t.Fatalf("Failed to create test file: %v", err)
+			}
+
+			_, err = internal.CompileSolidity(tt.version, testFile, 200, nil)
+			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+				t.Errorf("CompileSolidity() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
 	}
 }
 
