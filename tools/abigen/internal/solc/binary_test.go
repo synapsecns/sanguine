@@ -127,7 +127,7 @@ func TestGetBinaryInfo(t *testing.T) {
 			name:     "invalid version",
 			version:  "999.999.999",
 			platform: "linux-amd64",
-			wantErr:  "version 999.999.999 not found",
+			wantErr:  "invalid version format",
 		},
 		{
 			name:     "invalid platform",
@@ -258,6 +258,12 @@ func TestVerifyChecksums(t *testing.T) {
 			name:      "valid checksums",
 			sha256:    hex.EncodeToString(sha256Sum[:]),
 			keccak256: hex.EncodeToString(keccak256Sum),
+			wantErr:   false,
+		},
+		{
+			name:      "valid checksums with 0x prefix",
+			sha256:    "0x" + hex.EncodeToString(sha256Sum[:]),
+			keccak256: "0x" + hex.EncodeToString(keccak256Sum),
 			wantErr:   false,
 		},
 		{

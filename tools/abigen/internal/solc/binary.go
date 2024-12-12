@@ -137,6 +137,11 @@ func (m *BinaryManager) GetPlatformDir() string {
 
 // GetBinary returns the path to the solc binary, downloading it if necessary.
 func (m *BinaryManager) GetBinary(ctx context.Context) (string, error) {
+	// Validate version format first
+	if !ValidateSolcVersion(m.version) {
+		return "", fmt.Errorf("invalid version format")
+	}
+
 	platform := m.GetPlatformDir()
 	if platform == "invalid-platform" {
 		return "", fmt.Errorf("failed to determine platform")
@@ -181,6 +186,12 @@ func (m *BinaryManager) GetBinary(ctx context.Context) (string, error) {
 
 // getBinaryInfo fetches and parses the list.json file to find matching version.
 func (m *BinaryManager) getBinaryInfo(ctx context.Context, platform string) (*BinaryInfo, error) {
+	select {
+	case <-ctx.Done():
+		return nil, fmt.Errorf("binary info fetch cancelled: %w", ctx.Err())
+	default:
+	}
+
 	// Platform validation already done in GetBinary
 	listURL := fmt.Sprintf("https://binaries.soliditylang.org/%s/list.json", platform)
 	//nolint:gosec // HTTP request to trusted domain is required for downloading solc binaries
@@ -244,6 +255,12 @@ func (m *BinaryManager) setupCacheDir(cacheDir string) error {
 
 // downloadFile downloads a file from the given URL and writes it to tmpFile.
 func (m *BinaryManager) downloadFile(ctx context.Context, url, tmpFile string) error {
+	select {
+	case <-ctx.Done():
+		return fmt.Errorf("download cancelled: %w", ctx.Err())
+	default:
+	}
+
 	// Clean and validate tmp file path
 	tmpFile = filepath.Clean(tmpFile)
 	if !strings.HasPrefix(tmpFile, m.cacheDir) {
@@ -293,6 +310,12 @@ func (m *BinaryManager) downloadFile(ctx context.Context, url, tmpFile string) e
 //
 //nolint:gosec // File operations are required for storing downloaded binaries
 func (m *BinaryManager) downloadAndVerify(ctx context.Context, binaryInfo *BinaryInfo, tmpFile string) error {
+	select {
+	case <-ctx.Done():
+		return fmt.Errorf("download cancelled: %w", ctx.Err())
+	default:
+	}
+
 	if err := m.setupCacheDir(filepath.Dir(tmpFile)); err != nil {
 		return err
 	}
@@ -303,7 +326,7 @@ func (m *BinaryManager) downloadAndVerify(ctx context.Context, binaryInfo *Binar
 		return fmt.Errorf("failed to download binary: %w", err)
 	}
 
-	return m.verifyAndInstall(tmpFile, binaryInfo)
+	return m.verifyAndInstall(ctx, tmpFile, binaryInfo)
 }
 
 // downloadBinary downloads and installs the solc binary for the given binary info.
@@ -335,7 +358,13 @@ func (m *BinaryManager) downloadBinary(ctx context.Context, binaryInfo *BinaryIn
 }
 
 // verifyAndInstall verifies the downloaded binary's checksums and installs it.
-func (m *BinaryManager) verifyAndInstall(tmpFile string, binaryInfo *BinaryInfo) error {
+func (m *BinaryManager) verifyAndInstall(ctx context.Context, tmpFile string, binaryInfo *BinaryInfo) error {
+	select {
+	case <-ctx.Done():
+		return fmt.Errorf("verification cancelled: %w", ctx.Err())
+	default:
+	}
+
 	// Clean and validate tmp file path
 	tmpFile = filepath.Clean(tmpFile)
 	if !strings.HasPrefix(tmpFile, m.cacheDir) {
@@ -375,16 +404,24 @@ func (m *BinaryManager) VerifyChecksums(tmpFile string, binaryInfo *BinaryInfo) 
 		return fmt.Errorf("failed to read binary for verification: %w", err)
 	}
 
+	// Strip "0x" prefix from expected checksums if present
+	expectedSha := strings.TrimPrefix(binaryInfo.Sha256, "0x")
+	expectedKeccak := strings.TrimPrefix(binaryInfo.Keccak256, "0x")
+
+	// Calculate and compare SHA256
 	sha256Sum := sha256.Sum256(content)
 	calculatedSha256 := hex.EncodeToString(sha256Sum[:])
-	if calculatedSha256 != binaryInfo.Sha256 {
-		return fmt.Errorf("sha256 checksum mismatch: got %s, want %s", calculatedSha256, binaryInfo.Sha256)
+	if calculatedSha256 != expectedSha {
+		return fmt.Errorf("sha256 checksum mismatch: got %s, want %s (with 0x: %s)",
+			calculatedSha256, expectedSha, binaryInfo.Sha256)
 	}
 
+	// Calculate and compare Keccak256
 	keccak256Sum := crypto.Keccak256(content)
 	calculatedKeccak := hex.EncodeToString(keccak256Sum)
-	if calculatedKeccak != binaryInfo.Keccak256 {
-		return fmt.Errorf("keccak256 checksum mismatch: got %s, want %s", calculatedKeccak, binaryInfo.Keccak256)
+	if calculatedKeccak != expectedKeccak {
+		return fmt.Errorf("keccak256 checksum mismatch: got %s, want %s (with 0x: %s)",
+			calculatedKeccak, expectedKeccak, binaryInfo.Keccak256)
 	}
 
 	return nil

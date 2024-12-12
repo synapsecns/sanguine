@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"github.com/ethereum/go-ethereum/common/compiler"
 )
 
@@ -10,8 +11,8 @@ func CheckForDocker() error {
 }
 
 // CompileSolidity exports compileSolidity for testing.
-func CompileSolidity(version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
-	return compileSolidity(version, filePath, optimizeRuns, evmVersion)
+func CompileSolidity(ctx context.Context, version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
+	return compileSolidity(ctx, version, filePath, optimizeRuns, evmVersion)
 }
 
 // FilePathsAreEqual exports filePathsAreEqual for testing.

@@ -57,9 +57,9 @@ func GenerateABIFromEtherscan(ctx context.Context, chainID uint32, url string, c
 }
 
 // BuildTemplates builds the templates. version is the solidity version to use and sol is the solidity file to use.
-func BuildTemplates(version, file, pkg, filename string, optimizeRuns int, evmVersion *string) error {
+func BuildTemplates(ctx context.Context, version, file, pkg, filename string, optimizeRuns int, evmVersion *string) error {
 	// TODO ast
-	contracts, err := compileSolidity(version, file, optimizeRuns, evmVersion)
+	contracts, err := compileSolidity(ctx, version, file, optimizeRuns, evmVersion)
 	if err != nil {
 		return err
 	}
@@ -99,19 +99,16 @@ func BuildTemplates(version, file, pkg, filename string, optimizeRuns int, evmVe
 		return fmt.Errorf("could not generate abigen file: %w", err)
 	}
 
-	//nolint:gosec // File operations required for abigen output
 	err = os.WriteFile(fmt.Sprintf("%s.abigen.go", filename), []byte(code), 0600)
 	if err != nil {
 		return fmt.Errorf("could not write abigen file: %w", err)
 	}
 
-	//nolint:gosec // File operations required for contract info output
 	err = os.WriteFile(fmt.Sprintf("%s.contractinfo.json", filename), marshalledContracts, 0600)
 	if err != nil {
 		return fmt.Errorf("could not write contract info file: %w", err)
 	}
 
-	//nolint:gosec // File operations required for metadata output
 	f, err := os.Create(fmt.Sprintf("%s.metadata.go", filename))
 	if err != nil {
 		return fmt.Errorf("could not create metadata file: %w", err)
@@ -128,19 +125,33 @@ func BuildTemplates(version, file, pkg, filename string, optimizeRuns int, evmVe
 
 // compileSolidity attempts to compile the given Solidity file using either Docker or direct binary.
 // nolint: cyclop
-func compileSolidity(version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
-	// Always try Docker first regardless of platform
-	contract, err := compileWithDocker(version, filePath, optimizeRuns, evmVersion)
-	if err == nil {
-		return contract, nil
+func compileSolidity(ctx context.Context, version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
+	select {
+	case <-ctx.Done():
+		return nil, fmt.Errorf("compilation cancelled: %w", ctx.Err())
+	default:
 	}
 
+	// Always try Docker first regardless of platform
+	contracts, err := compileWithDocker(ctx, version, filePath, optimizeRuns, evmVersion)
+	if err == nil {
+		return contracts, nil
+	}
+	// Log Docker failure but continue to binary fallback
+	fmt.Printf("Docker compilation failed: %v, falling back to binary compilation\n", err)
+
 	// Only fall back to binary if Docker fails
-	return compileWithBinary(version, filePath, optimizeRuns, evmVersion)
+	return compileWithBinary(ctx, version, filePath, optimizeRuns, evmVersion)
 }
 
 // compileWithDocker uses Docker to compile solidity.
-func compileWithDocker(version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
+func compileWithDocker(ctx context.Context, version, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
+	select {
+	case <-ctx.Done():
+		return nil, fmt.Errorf("docker compilation cancelled: %w", ctx.Err())
+	default:
+	}
+
 	// Check Docker availability first
 	if err := checkForDocker(); err != nil {
 		return nil, fmt.Errorf("docker not available (falling back to binary): %w", err)
@@ -161,8 +172,8 @@ func compileWithDocker(version string, filePath string, optimizeRuns int, evmVer
 		return nil, err
 	}
 
-	// Execute Docker compilation
-	return executeDockerCompilation(version, solFile, solContents, optimizeRuns, evmVersion)
+	// Execute Docker compilation with context
+	return executeDockerCompilation(ctx, version, solFile, solContents, optimizeRuns, evmVersion)
 }
 
 // prepareSolidityFile prepares the solidity file for compilation and handles cleanup.
@@ -192,9 +203,16 @@ func prepareSolidityFile(filePath string, solContents []byte) (*os.File, error) 
 }
 
 // executeDockerCompilation executes the Docker compilation command and parses the output.
-func executeDockerCompilation(version string, solFile *os.File, solContents []byte, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
+func executeDockerCompilation(ctx context.Context, version string, solFile *os.File, solContents []byte, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
+	select {
+	case <-ctx.Done():
+		return nil, fmt.Errorf("docker execution cancelled: %w", ctx.Err())
+	default:
+	}
+
 	var stderr, stdout bytes.Buffer
 	cmd := prepareDockerCommand(version, solFile.Name(), optimizeRuns, evmVersion)
+	cmd = exec.CommandContext(ctx, "docker", cmd.Args...)
 	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
 
@@ -288,11 +306,16 @@ func isOriginalFile(tmpPath, filePath string) bool {
 }
 
 // compileWithBinary uses downloaded solc binary to compile solidity.
-func compileWithBinary(version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
-	binaryManager := solc.NewBinaryManager(version)
-	ctx := context.Background() // TODO: Accept context from caller
+func compileWithBinary(ctx context.Context, version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
+	select {
+	case <-ctx.Done():
+		return nil, fmt.Errorf("binary compilation cancelled: %w", ctx.Err())
+	default:
+	}
 
-	// Get solc binary
+	binaryManager := solc.NewBinaryManager(version)
+
+	// Get solc binary with context
 	binaryPath, err := binaryManager.GetBinary(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get solc binary: %w", err)
@@ -328,14 +351,13 @@ func compileWithBinary(version string, filePath string, optimizeRuns int, evmVer
 		args = append(args, fmt.Sprintf("--evm-version=%s", *evmVersion))
 	}
 
-	//nolint:gosec // Command execution with validated solc binary is required
-	cmd := exec.Command(binaryPath, append(args, absPath)...)
+	cmd := exec.CommandContext(ctx, binaryPath, append(args, absPath)...)
 	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
 	cmd.Dir = baseDir
 
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("solc: %w\n%s", err, stderr.Bytes())
+		return nil, fmt.Errorf("solc failed: %v\nstderr: %s", err, stderr.String())
 	}
 
 	contracts, err := compiler.ParseCombinedJSON(stdout.Bytes(), string(solContents), version, version, strings.Join(args, " "))
