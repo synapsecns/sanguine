@@ -37,8 +37,12 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		Repository:   "jaegertracing/all-in-one",
 		Tag:          "latest",
 		Hostname:     "jaeger",
-		ExposedPorts: []string{"14268/tcp", "16686/tcp"},
-		Networks:     j.getNetworks(),
+		ExposedPorts: []string{"14268", "16686"},
+		Env: []string{
+			"COLLECTOR_OTLP_ENABLED=true",
+			"LOG_LEVEL=debug",
+		},
+		Networks: j.getNetworks(),
 		Labels: map[string]string{
 			appLabel:   "jaeger",
 			runIDLabel: j.runID,
@@ -134,8 +138,11 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 	runOptions := &dockertest.RunOptions{
 		Repository:   "ghcr.io/synapsecns/jaeger-ui-pyroscope",
 		Tag:          "latest",
-		ExposedPorts: []string{"80/tcp"},
-		Networks:     j.getNetworks(),
+		ExposedPorts: []string{"80"},
+		Env: []string{
+			"LOG_LEVEL=debug",
+		},
+		Networks: j.getNetworks(),
 		Labels: map[string]string{
 			appLabel:   "jaeger-ui",
 			runIDLabel: j.runID,

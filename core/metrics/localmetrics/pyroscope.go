@@ -50,11 +50,12 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 		Repository: "pyroscope/pyroscope",
 		Env: []string{
 			fmt.Sprintf("PYROSCOPE_CONFIG=%s", pyroscopePath),
+			"PYROSCOPE_LOG_LEVEL=debug",
 		},
 		Tag:          "latest",
 		Cmd:          []string{"server"},
-		ExposedPorts: []string{"4040/tcp"},
-		Networks:     j.getNetworks(),
+		ExposedPorts: []string{"4040"},
+		Networks: j.getNetworks(),
 		Labels: map[string]string{
 			appLabel:   "pyroscope",
 			runIDLabel: j.runID,
@@ -76,16 +77,17 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 	// Create container with improved retry logic
 	err = retry.WithBackoff(ctx, func(ctx context.Context) error {
 		// Wait for network stability
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 5)
 
+		// Create temporary config file
+		tmpFile := filet.TmpFile(j.tb, "", pyroscopeConfig)
+		if tmpFile == nil {
+			return fmt.Errorf("failed to create temporary pyroscope config file")
+		}
+		j.tb.Logf("Created temporary pyroscope config file at: %s", tmpFile.Name())
+
+		// Start container
 		resource, err = j.pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
-			tmpFile := filet.TmpFile(j.tb, "", pyroscopeConfig)
-			if tmpFile == nil {
-				j.tb.Logf("Failed to create temporary pyroscope config file")
-				return
-			}
-			j.tb.Logf("Created temporary pyroscope config file at: %s", tmpFile.Name())
-
 			config.Mounts = []docker.HostMount{
 				{
 					Type:     string(mount.TypeBind),
@@ -104,10 +106,21 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 			return err
 		}
 
-		// Validate port
-		port := dockerutil.GetPort(resource, "4040/tcp")
-		if port == "" {
-			return fmt.Errorf("failed to get Pyroscope port")
+		// Wait for container to initialize
+		time.Sleep(time.Second * 2)
+
+		// Validate port with retries
+		var port string
+		err = retry.WithBackoff(ctx, func(ctx context.Context) error {
+			port = dockerutil.GetPort(resource, "4040/tcp")
+			if port == "" {
+				return fmt.Errorf("port not available")
+			}
+			return nil
+		}, retry.WithMax(time.Second*5),
+			retry.WithMaxAttempts(10))
+		if err != nil {
+			return fmt.Errorf("failed to get Pyroscope port: %v", err)
 		}
 
 		// Set environment variable
@@ -116,7 +129,7 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 			return fmt.Errorf("failed to set Pyroscope endpoint: %v", err)
 		}
 
-		// Wait for endpoint with increased timeout
+		// Wait for endpoint with increased timeout and better error handling
 		return retry.WithBackoff(ctx, func(ctx context.Context) error {
 			err := checkURL(endpoint)(ctx)
 			if err != nil {
@@ -124,11 +137,11 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 			}
 			return nil
 		},
-			retry.WithMax(time.Second*5),
-			retry.WithMaxAttempts(15))
+			retry.WithMax(time.Second*10),
+			retry.WithMaxAttempts(20))
 	},
-		retry.WithMax(time.Second*5),
-		retry.WithMaxAttempts(3))
+		retry.WithMax(time.Second*15),
+		retry.WithMaxAttempts(5))
 
 	if err != nil {
 		j.tb.Logf("Failed to start Pyroscope container after retries: %v", err)
