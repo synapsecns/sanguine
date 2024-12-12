@@ -79,8 +79,7 @@ func TestGetPlatformDir(t *testing.T) {
 
 func TestGetBinary(t *testing.T) {
 	manager := setupTestBinaryManager(t)
-	ctx := context.Background()
-	binary, err := manager.GetBinary(ctx)
+	binary, err := manager.GetBinary(t.Context())
 	if err != nil {
 		t.Fatalf("Failed to get binary: %v", err)
 	}
@@ -97,7 +96,7 @@ func TestGetBinary(t *testing.T) {
 		t.Error("Binary is not executable")
 	}
 
-	binary2, err := manager.GetBinary(ctx)
+	binary2, err := manager.GetBinary(t.Context())
 	if err != nil {
 		t.Fatalf("Failed to get cached binary: %v", err)
 	}
@@ -145,7 +144,7 @@ func TestGetBinaryInfo(t *testing.T) {
 			if platformField := managerValue.FieldByName("platform"); platformField.IsValid() && platformField.CanSet() {
 				platformField.SetString(tt.platform)
 			}
-			_, err := manager.GetBinary(context.Background())
+			_, err := manager.GetBinary(t.Context())
 			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
 				t.Errorf("GetBinary() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -220,7 +219,7 @@ func TestDownloadAndVerify(t *testing.T) {
 			if err := tt.setup(t, manager); err != nil {
 				t.Fatalf("Setup failed: %v", err)
 			}
-			_, err := manager.GetBinary(context.Background())
+			_, err := manager.GetBinary(t.Context())
 			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
 				t.Errorf("GetBinary() error = %v, wantErr %v", err, tt.wantErr)
 			}
