@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
@@ -257,8 +258,11 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 		Data:  encodedData,
 	}
 
-	fmt.Printf("Starting getZapGasEstimate with callMsg.From: %s, callMsg.To: %s, callMsg.Value: %s, callMsg.Data: %s\n",
-		callMsg.From.Hex(), callMsg.To.Hex(), callMsg.Value.String(), string(callMsg.Data))
+	fmt.Printf("\nStarting getZapGasEstimate with callMsg.From: %s, callMsg.To: %s, callMsg.Value: %s, callMsg.Data: %x\n",
+		callMsg.From.Hex(), callMsg.To.Hex(), callMsg.Value.String(), callMsg.Data)
+
+	fmt.Printf("\nStarting getZapGasEstimate with callMsg.From: %s, callMsg.To: %s, callMsg.Value: %s, callMsg.Data: %s\n",
+		callMsg.From.Hex(), callMsg.To.Hex(), callMsg.Value.String(), hexutil.Encode(callMsg.Data))
 
 	gasEstimate, err = client.EstimateGas(ctx, callMsg)
 	if err != nil {
