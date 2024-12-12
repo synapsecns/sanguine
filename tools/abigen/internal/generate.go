@@ -18,6 +18,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/tools/abigen/internal/etherscan"
+	"github.com/synapsecns/sanguine/tools/abigen/internal/solc"
 )
 
 // GenerateABIFromEtherscan generates the abi for an etherscan file.
@@ -32,6 +33,7 @@ func GenerateABIFromEtherscan(ctx context.Context, chainID uint32, url string, c
 		return fmt.Errorf("could not get contract source for address %s: %w", contractAddress, err)
 	}
 
+	//nolint:gosec // File operations required for temporary solidity file
 	solFile, err := os.Create(fmt.Sprintf("%s/%s.sol", os.TempDir(), path.Base(fileName)))
 	if err != nil {
 		return fmt.Errorf("could not determine wd: %w", err)
@@ -55,9 +57,9 @@ func GenerateABIFromEtherscan(ctx context.Context, chainID uint32, url string, c
 }
 
 // BuildTemplates builds the templates. version is the solidity version to use and sol is the solidity file to use.
-func BuildTemplates(version, file, pkg, filename string, optimizerRuns int, evmVersion *string) error {
+func BuildTemplates(version, file, pkg, filename string, optimizeRuns int, evmVersion *string) error {
 	// TODO ast
-	contracts, err := compileSolidity(version, file, optimizerRuns, evmVersion)
+	contracts, err := compileSolidity(version, file, optimizeRuns, evmVersion)
 	if err != nil {
 		return err
 	}
@@ -97,16 +99,19 @@ func BuildTemplates(version, file, pkg, filename string, optimizerRuns int, evmV
 		return fmt.Errorf("could not generate abigen file: %w", err)
 	}
 
+	//nolint:gosec // File operations required for abigen output
 	err = os.WriteFile(fmt.Sprintf("%s.abigen.go", filename), []byte(code), 0600)
 	if err != nil {
 		return fmt.Errorf("could not write abigen file: %w", err)
 	}
 
+	//nolint:gosec // File operations required for contract info output
 	err = os.WriteFile(fmt.Sprintf("%s.contractinfo.json", filename), marshalledContracts, 0600)
 	if err != nil {
 		return fmt.Errorf("could not write contract info file: %w", err)
 	}
 
+	//nolint:gosec // File operations required for metadata output
 	f, err := os.Create(fmt.Sprintf("%s.metadata.go", filename))
 	if err != nil {
 		return fmt.Errorf("could not create metadata file: %w", err)
@@ -121,66 +126,147 @@ func BuildTemplates(version, file, pkg, filename string, optimizerRuns int, evmV
 	return nil
 }
 
-// compileSolidity uses docker to compile solidity.
+// compileSolidity attempts to compile the given Solidity file using either Docker or direct binary.
 // nolint: cyclop
 func compileSolidity(version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
+	// Try Docker first unless we're on Apple Silicon
+	if !solc.IsAppleSilicon() {
+		contract, err := compileWithDocker(version, filePath, optimizeRuns, evmVersion)
+		if err == nil {
+			return contract, nil
+		}
+	}
+
+	// If Docker fails or we're on Apple Silicon, try direct binary
+	return compileWithBinary(version, filePath, optimizeRuns, evmVersion)
+}
+
+// compileWithDocker uses Docker to compile solidity.
+func compileWithDocker(version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
 	runFile, err := createRunFile(version)
 	if err != nil {
 		return nil, err
 	}
-
-	_ = runFile.Close()
+	defer func() {
+		if closeErr := runFile.Close(); closeErr != nil {
+			if err == nil {
+				err = fmt.Errorf("failed to close run file: %w", closeErr)
+			}
+		}
+	}()
 
 	wd, err := os.Getwd()
 	if err != nil {
 		return nil, fmt.Errorf("could not determine working dir: %w", err)
 	}
-	//nolint: gosec
+
+	solContents, err := readSolFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	tmpPath := filepath.Join(wd, filepath.Base(filePath))
+	solFile, err := prepareSolFile(tmpPath, filePath, solContents)
+	if err != nil {
+		return nil, err
+	}
+
+	if !isOriginalFile(tmpPath, filePath) {
+		defer func() {
+			if cleanupErr := os.Remove(solFile.Name()); cleanupErr != nil {
+				if err == nil {
+					err = cleanupErr
+				}
+			}
+		}()
+	}
+
+	return compileWithSolc(solFile, version, optimizeRuns, evmVersion, solContents)
+}
+
+//nolint:gosec // File operations required for reading Solidity source
+func readSolFile(filePath string) ([]byte, error) {
 	solContents, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("could not read sol file %s: %w", filePath, err)
 	}
+	return solContents, nil
+}
 
-	// create a temporary sol file in the current dir so it can be referenced by docker
-	tmpPath := fmt.Sprintf("%s/%s", wd, path.Base(filePath))
-
-	var solFile *os.File
-
-	// whether the original file is at the temporary path already
+func prepareSolFile(tmpPath, filePath string, solContents []byte) (*os.File, error) {
 	originalAtTmpPath, err := filePathsAreEqual(tmpPath, filePath)
 	if err != nil {
 		return nil, fmt.Errorf("could not compare file paths: %w", err)
 	}
 
-	// we don't need to create a temporary file if it's already in our path!
-	//nolint: nestif
 	if !originalAtTmpPath {
-		//nolint: gosec
-		solFile, err = os.Create(tmpPath)
+		//nolint:gosec // File operations required for temporary solidity file
+		solFile, err := os.Create(tmpPath)
 		if err != nil {
 			return nil, fmt.Errorf("could not create temporary sol file: %w", err)
 		}
-		_, err = solFile.Write(solContents)
-		if err != nil {
+		if _, err = solFile.Write(solContents); err != nil {
 			return nil, fmt.Errorf("could not write to sol tmp file at %s: %w", solFile.Name(), err)
 		}
-
-		defer func() {
-			if err == nil {
-				err = os.Remove(solFile.Name())
-			} else {
-				_ = os.Remove(solFile.Name())
-			}
-		}()
-	} else {
-		// nolint: gosec
-		solFile, err = os.Open(filePath)
-		if err != nil {
-			return nil, fmt.Errorf("could not read to sol file at %s: %w", solFile.Name(), err)
-		}
+		return solFile, nil
 	}
 
-	// compile the solidity
+	//nolint:gosec // File operations required for reading Solidity source
+	solFile, err := os.Open(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("could not read to sol file at %s: %w", filePath, err)
+	}
+	return solFile, nil
+}
+
+func isOriginalFile(tmpPath, filePath string) bool {
+	equal, _ := filePathsAreEqual(tmpPath, filePath)
+	return equal
+}
+
+func compileWithSolc(solFile *os.File, version string, optimizeRuns int, evmVersion *string, solContents []byte) (map[string]*compiler.Contract, error) {
+	var stderr, stdout bytes.Buffer
+	args := []string{
+		"--combined-json", "bin,bin-runtime,srcmap,srcmap-runtime,abi,userdoc,devdoc,metadata,hashes",
+		"--optimize",
+		"--optimize-runs", strconv.Itoa(optimizeRuns),
+		"--allow-paths", ".", "./", "../",
+	}
+
+	if evmVersion != nil {
+		args = append(args, fmt.Sprintf("--evm-version=%s", *evmVersion))
+	}
+
+	//nolint:gosec // Command execution with validated solc binary is required
+	cmd := exec.Command(solFile.Name(), append(args, "--", fmt.Sprintf("/solidity/%s", filepath.Base(solFile.Name())))...)
+	cmd.Stderr = &stderr
+	cmd.Stdout = &stdout
+
+	if err := cmd.Run(); err != nil {
+		return nil, fmt.Errorf("solc: %w\n%s", err, stderr.Bytes())
+	}
+
+	contracts, err := compiler.ParseCombinedJSON(stdout.Bytes(), string(solContents), version, version, strings.Join(args, " "))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse combined JSON output: %w", err)
+	}
+	return contracts, nil
+}
+
+// compileWithBinary uses downloaded solc binary to compile solidity.
+func compileWithBinary(version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
+	binaryManager := solc.NewBinaryManager(version)
+	binaryPath, err := binaryManager.GetBinary()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get solc binary: %w", err)
+	}
+
+	//nolint:gosec // File operations required for reading Solidity source
+	solContents, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("could not read sol file %s: %w", filePath, err)
+	}
+
 	var stderr, stdout bytes.Buffer
 	args := []string{"--combined-json", "bin,bin-runtime,srcmap,srcmap-runtime,abi,userdoc,devdoc,metadata,hashes", "--optimize", "--optimize-runs", strconv.Itoa(optimizeRuns), "--allow-paths", "., ./, ../"}
 
@@ -188,19 +274,20 @@ func compileSolidity(version string, filePath string, optimizeRuns int, evmVersi
 		args = append(args, fmt.Sprintf("--evm-version=%s", *evmVersion))
 	}
 
-	//nolint: gosec
-	cmd := exec.Command(runFile.Name(), append(args, "--", fmt.Sprintf("/solidity/%s", filepath.Base(solFile.Name())))...)
+	//nolint:gosec // Command execution with validated solc binary is required
+	cmd := exec.Command(binaryPath, append(args, filePath)...)
 	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
 
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("solc: %w\n%s", err, stderr.Bytes())
 	}
-	contract, err := compiler.ParseCombinedJSON(stdout.Bytes(), string(solContents), version, version, strings.Join(args, " "))
+
+	contracts, err := compiler.ParseCombinedJSON(stdout.Bytes(), string(solContents), version, version, strings.Join(args, " "))
 	if err != nil {
-		return nil, fmt.Errorf("could not parse json: %w", err)
+		return nil, fmt.Errorf("failed to parse combined JSON output: %w", err)
 	}
-	return contract, nil
+	return contracts, nil
 }
 
 // createRunFile creates a bash file to run a command in the specified version of solidity.

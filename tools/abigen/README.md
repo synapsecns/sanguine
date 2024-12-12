@@ -126,23 +126,31 @@ func init() {
 6. Consider generating a `doc.go` if one doesn't exist documenting the package
 7. Better [vyper](https://vyperlang.org/) support
 
-### Note on macOS and Rosetta
+### Note on macOS and Apple Silicon
 
-If you are using a Mac with Apple Silicon, you might encounter issues running AMD64 Docker images due to the Rosetta translation layer. Rosetta is a dynamic binary translator that allows applications compiled for Intel processors to run on Apple Silicon. However, it may not always work seamlessly with Docker images designed for AMD64 architecture.
+If you are using a Mac with Apple Silicon (M1/M2/M3), abigen will automatically handle solc compilation in the most efficient way:
 
-To resolve this issue, you can:
+1. **Automatic Detection**: The tool detects Apple Silicon architecture and chooses the appropriate compilation method.
 
-1. **Install Rosetta**: If not already installed, run the following command in your terminal:
-   ```shell
-   softwareupdate --install-rosetta
-   ```
+2. **Compilation Methods**:
+   - First attempts Docker-based compilation (if Docker is available)
+   - If Docker fails or Apple Silicon is detected, falls back to direct binary compilation:
+     - Downloads appropriate solc binary from binaries.soliditylang.org
+     - Stores binary in local cache (~/.cache/solc/)
+     - Verifies binary integrity using both SHA256 and Keccak256 checksums
+     - Uses binary directly for compilation
 
-2. **Update Docker**: Ensure your Docker Desktop is up-to-date by navigating to **Settings** > **Software Update** > **Check for Updates**.
+3. **Binary Cache**:
+   - Binaries are cached at ~/.cache/solc/{version}/{platform}/
+   - Cached binaries are reused to avoid repeated downloads
+   - Each binary is verified using cryptographic checksums
 
-3. **Disable x86_64/amd64 Emulation**: In Docker Desktop, go to **General settings** and disable the x86_64/amd64 emulation using Rosetta.
+4. **WASM Support**:
+   - For Apple Silicon, uses WebAssembly (WASM) version of solc
+   - Provides native-like performance without architecture compatibility issues
 
-For a detailed guide on fixing this issue, refer to [this blog post](https://romanzipp.com/blog/maocs-sequoia-docker-resetta-is-only-intended-to-run-silicon).
+This implementation eliminates the need for Rosetta 2 translation layer and provides better performance and reliability on Apple Silicon Macs.
 
 ### Future Plans
 
-To mitigate these issues, we plan to implement a fallback mechanism that downloads `solc` directly, bypassing the need for Docker-based solutions on incompatible architectures. For more details on this planned improvement, see [issue #3366](https://github.com/synapsecns/sanguine/issues/3366).
+We have implemented a fallback mechanism that downloads `solc` directly, bypassing the need for Docker-based solutions on incompatible architectures. This improvement resolves the issues described in [issue #3366](https://github.com/synapsecns/sanguine/issues/3366).
