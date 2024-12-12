@@ -84,7 +84,7 @@ var GenerateCommand = &cli.Command{
 			return nil
 		}
 		//nolint: wrapcheck
-		return internal.BuildTemplates(context.String(solVersionFlag.Name), context.String(solFlag.Name), context.String(pkgFlag.Name), context.String(filenameFlag.Name), context.Int(optimizerRunsFlags.Name), strToPt(context.String(evmVersionFlags.Name)))
+		return internal.BuildTemplates(context.Context, context.String(solVersionFlag.Name), context.String(solFlag.Name), context.String(pkgFlag.Name), context.String(filenameFlag.Name), context.Int(optimizerRunsFlags.Name), strToPt(context.String(evmVersionFlags.Name)))
 	},
 }
 

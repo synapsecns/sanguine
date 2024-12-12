@@ -188,7 +188,7 @@ func (m *BinaryManager) GetBinary(ctx context.Context) (string, error) {
 func (m *BinaryManager) getBinaryInfo(ctx context.Context, platform string) (*BinaryInfo, error) {
 	select {
 	case <-ctx.Done():
-		return nil, fmt.Errorf("binary info fetch cancelled: %w", ctx.Err())
+		return nil, fmt.Errorf("binary info fetch canceled: %w", ctx.Err())
 	default:
 	}
 
@@ -255,54 +255,86 @@ func (m *BinaryManager) setupCacheDir(cacheDir string) error {
 
 // downloadFile downloads a file from the given URL and writes it to tmpFile.
 func (m *BinaryManager) downloadFile(ctx context.Context, url, tmpFile string) error {
+	if err := m.validateDownload(ctx, tmpFile); err != nil {
+		return err
+	}
+
+	req, err := m.createRequest(ctx, url)
+	if err != nil {
+		return err
+	}
+
+	resp, err := m.executeRequest(req)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			err = fmt.Errorf("failed to close response body: %w", closeErr)
+		}
+	}()
+
+	return m.writeResponseToFile(resp, tmpFile)
+}
+
+func (m *BinaryManager) validateDownload(ctx context.Context, tmpFile string) error {
 	select {
 	case <-ctx.Done():
-		return fmt.Errorf("download cancelled: %w", ctx.Err())
+		return fmt.Errorf("download canceled: %w", ctx.Err())
 	default:
 	}
 
-	// Clean and validate tmp file path
 	tmpFile = filepath.Clean(tmpFile)
 	if !strings.HasPrefix(tmpFile, m.cacheDir) {
 		return fmt.Errorf("invalid tmp file path: outside cache directory")
 	}
+	return nil
+}
 
-	//nolint:gosec // HTTP request to trusted domain is required for downloading solc binaries
+func (m *BinaryManager) createRequest(ctx context.Context, url string) (*http.Request, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
+	return req, nil
+}
 
+func (m *BinaryManager) executeRequest(req *http.Request) (*http.Response, error) {
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to download binary: %w", err)
+		return nil, fmt.Errorf("failed to download binary: %w", err)
 	}
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			fmt.Printf("failed to close response body: %v\n", err)
-		}
-	}()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to download binary: HTTP %d", resp.StatusCode)
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			return nil, fmt.Errorf("failed to close response body after error: %w", closeErr)
+		}
+		return nil, fmt.Errorf("failed to download binary: HTTP %d", resp.StatusCode)
+	}
+	return resp, nil
+}
+
+func (m *BinaryManager) writeResponseToFile(resp *http.Response, tmpFile string) error {
+	if !strings.HasPrefix(filepath.Clean(tmpFile), m.cacheDir) {
+		return fmt.Errorf("invalid tmp file path: outside cache directory")
 	}
 
-	//nolint:gosec // File operations are required for storing downloaded binaries
 	f, err := os.OpenFile(tmpFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, execPerms)
 	if err != nil {
 		return fmt.Errorf("failed to create temporary file: %w", err)
 	}
-	defer func() {
-		if err := f.Close(); err != nil {
-			fmt.Printf("failed to close file: %v\n", err)
-		}
-	}()
 
 	h := sha256.New()
 	if _, err := io.Copy(io.MultiWriter(f, h), resp.Body); err != nil {
+		if closeErr := f.Close(); closeErr != nil {
+			return fmt.Errorf("failed to close file after write error: %w", closeErr)
+		}
 		return fmt.Errorf("failed to write binary: %w", err)
 	}
 
+	if err := f.Close(); err != nil {
+		return fmt.Errorf("failed to close file: %w", err)
+	}
 	return nil
 }
 
@@ -312,7 +344,7 @@ func (m *BinaryManager) downloadFile(ctx context.Context, url, tmpFile string) e
 func (m *BinaryManager) downloadAndVerify(ctx context.Context, binaryInfo *BinaryInfo, tmpFile string) error {
 	select {
 	case <-ctx.Done():
-		return fmt.Errorf("download cancelled: %w", ctx.Err())
+		return fmt.Errorf("download canceled: %w", ctx.Err())
 	default:
 	}
 
@@ -361,7 +393,7 @@ func (m *BinaryManager) downloadBinary(ctx context.Context, binaryInfo *BinaryIn
 func (m *BinaryManager) verifyAndInstall(ctx context.Context, tmpFile string, binaryInfo *BinaryInfo) error {
 	select {
 	case <-ctx.Done():
-		return fmt.Errorf("verification cancelled: %w", ctx.Err())
+		return fmt.Errorf("verification canceled: %w", ctx.Err())
 	default:
 	}
 

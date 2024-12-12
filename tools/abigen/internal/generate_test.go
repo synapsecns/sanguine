@@ -28,7 +28,8 @@ func TestCheckForDocker(t *testing.T) {
 }
 
 func (a *AbiSuite) TestCompileSolidityImplicitEVM() {
-	vals, err := internal.CompileSolidity(context.Background(), "0.8.4", a.exampleFilePath, 1, nil)
+	ctx := context.Background()
+	vals, err := internal.CompileSolidity(ctx, "0.8.4", a.exampleFilePath, 1, nil)
 	Nil(a.T(), err)
 
 	Len(a.T(), vals, 1)
@@ -41,7 +42,8 @@ func (a *AbiSuite) TestCompileSolidityImplicitEVM() {
 func (a *AbiSuite) TestCompileSolidityExplicitEVM() {
 	// default would be shnghai
 	const testEvmVersion = "istanbul"
-	vals, err := internal.CompileSolidity(context.Background(), "0.8.20", a.exampleFilePath, 1, core.PtrTo(testEvmVersion))
+	ctx := context.Background()
+	vals, err := internal.CompileSolidity(ctx, "0.8.20", a.exampleFilePath, 1, core.PtrTo(testEvmVersion))
 	Nil(a.T(), err)
 
 	Len(a.T(), vals, 1)
@@ -88,6 +90,7 @@ func TestFilePathsAreEqual(t *testing.T) {
 }
 
 func TestCompileSolidityBinaryFallback(t *testing.T) {
+	ctx := context.Background()
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "test.sol")
 	content := []byte("pragma solidity ^0.8.0; contract Test {}")
@@ -127,7 +130,7 @@ func TestCompileSolidityBinaryFallback(t *testing.T) {
 				evmPtr = &tt.evmVersion
 			}
 
-			_, err := internal.CompileSolidity(context.Background(), tt.version, testFile, 200, evmPtr)
+			_, err := internal.CompileSolidity(ctx, tt.version, testFile, 200, evmPtr)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CompileSolidity() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -136,6 +139,7 @@ func TestCompileSolidityBinaryFallback(t *testing.T) {
 }
 
 func TestCompileSolidityErrors(t *testing.T) {
+	ctx := context.Background()
 	tmpDir := t.TempDir()
 
 	tests := []struct {
@@ -172,7 +176,7 @@ func TestCompileSolidityErrors(t *testing.T) {
 				t.Fatalf("Failed to create test file: %v", err)
 			}
 
-			_, err = internal.CompileSolidity(context.Background(), tt.version, testFile, 200, nil)
+			_, err = internal.CompileSolidity(ctx, tt.version, testFile, 200, nil)
 			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
 				t.Errorf("CompileSolidity() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -181,6 +185,7 @@ func TestCompileSolidityErrors(t *testing.T) {
 }
 
 func TestCompileSolidityDockerStrategy(t *testing.T) {
+	t.Helper()
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "test.sol")
 	content := []byte("pragma solidity ^0.8.0; contract Test {}")
@@ -191,55 +196,58 @@ func TestCompileSolidityDockerStrategy(t *testing.T) {
 
 	ctx := context.Background()
 
-	// Test with Docker available
-	if err := internal.CheckForDocker(); err == nil {
-		t.Run("docker available", func(t *testing.T) {
+	// Test Docker compilation scenarios
+	t.Run("docker scenarios", func(t *testing.T) {
+		if err := internal.CheckForDocker(); err != nil {
+			t.Skip("Docker not available")
+		}
+
+		t.Run("successful compilation", func(t *testing.T) {
 			_, err := internal.CompileSolidity(ctx, "0.8.20", testFile, 200, nil)
 			if err != nil {
 				t.Errorf("Expected successful Docker compilation, got error: %v", err)
 			}
 		})
 
-		// Test context cancellation
-		t.Run("docker context cancelled", func(t *testing.T) {
+		t.Run("context cancellation", func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
-			cancel() // Cancel immediately
+			cancel()
 			_, err := internal.CompileSolidity(ctx, "0.8.20", testFile, 200, nil)
 			if err == nil {
-				t.Error("Expected error due to cancelled context, got nil")
+				t.Error("Expected error due to canceled context, got nil")
 			}
 		})
-	}
+	})
 
-	// Test fallback when Docker is not available or fails
-	t.Run("docker unavailable", func(t *testing.T) {
-		// Force Docker to be unavailable by using an invalid Docker command
-		origPath := os.Getenv("PATH")
+	// Test binary fallback
+	t.Run("binary fallback", func(t *testing.T) {
 		tmpPath := filepath.Join(tmpDir, "fake-path")
-		err := os.Mkdir(tmpPath, 0700)
-		if err != nil {
+		if err := os.Mkdir(tmpPath, 0700); err != nil {
 			t.Fatalf("Failed to create fake PATH dir: %v", err)
 		}
-		err = os.WriteFile(filepath.Join(tmpPath, "docker"), []byte("#!/bin/sh\nexit 1"), 0700)
-		if err != nil {
+		if err := os.WriteFile(filepath.Join(tmpPath, "docker"), []byte("#!/bin/sh\nexit 1"), 0600); err != nil {
 			t.Fatalf("Failed to create fake docker binary: %v", err)
 		}
-		os.Setenv("PATH", tmpPath)
-		defer os.Setenv("PATH", origPath)
 
-		// Compilation should fall back to solc binary
-		_, err = internal.CompileSolidity(ctx, "0.8.20", testFile, 200, nil)
-		if err != nil {
-			t.Errorf("Expected successful binary fallback, got error: %v", err)
-		}
+		t.Setenv("PATH", tmpPath)
+		origPath := os.Getenv("PATH")
+		t.Cleanup(func() { t.Setenv("PATH", origPath) })
 
-		// Test context cancellation during fallback
-		ctx, cancel := context.WithCancel(context.Background())
-		cancel() // Cancel immediately
-		_, err = internal.CompileSolidity(ctx, "0.8.20", testFile, 200, nil)
-		if err == nil {
-			t.Error("Expected error due to cancelled context during fallback, got nil")
-		}
+		t.Run("successful fallback", func(t *testing.T) {
+			_, err := internal.CompileSolidity(ctx, "0.8.20", testFile, 200, nil)
+			if err != nil {
+				t.Errorf("Expected successful binary fallback, got error: %v", err)
+			}
+		})
+
+		t.Run("context cancellation", func(t *testing.T) {
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+			_, err := internal.CompileSolidity(ctx, "0.8.20", testFile, 200, nil)
+			if err == nil {
+				t.Error("Expected error due to canceled context during fallback, got nil")
+			}
+		})
 	})
 }
 

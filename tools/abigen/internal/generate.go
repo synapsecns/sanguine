@@ -53,7 +53,7 @@ func GenerateABIFromEtherscan(ctx context.Context, chainID uint32, url string, c
 		optimizerRuns = contract.Runs
 	}
 
-	return BuildTemplates(solVersion, solFile.Name(), pkgName, fileName, optimizerRuns, nil)
+	return BuildTemplates(ctx, solVersion, solFile.Name(), pkgName, fileName, optimizerRuns, nil)
 }
 
 // BuildTemplates builds the templates. version is the solidity version to use and sol is the solidity file to use.
@@ -128,7 +128,7 @@ func BuildTemplates(ctx context.Context, version, file, pkg, filename string, op
 func compileSolidity(ctx context.Context, version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
 	select {
 	case <-ctx.Done():
-		return nil, fmt.Errorf("compilation cancelled: %w", ctx.Err())
+		return nil, fmt.Errorf("compilation canceled: %w", ctx.Err())
 	default:
 	}
 
@@ -148,7 +148,7 @@ func compileSolidity(ctx context.Context, version string, filePath string, optim
 func compileWithDocker(ctx context.Context, version, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
 	select {
 	case <-ctx.Done():
-		return nil, fmt.Errorf("docker compilation cancelled: %w", ctx.Err())
+		return nil, fmt.Errorf("docker compilation canceled: %w", ctx.Err())
 	default:
 	}
 
@@ -206,26 +206,39 @@ func prepareSolidityFile(filePath string, solContents []byte) (*os.File, error) 
 func executeDockerCompilation(ctx context.Context, version string, solFile *os.File, solContents []byte, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
 	select {
 	case <-ctx.Done():
-		return nil, fmt.Errorf("docker execution cancelled: %w", ctx.Err())
+		return nil, fmt.Errorf("docker execution canceled: %w", ctx.Err())
 	default:
 	}
 
 	var stderr, stdout bytes.Buffer
 	cmd := prepareDockerCommand(version, solFile.Name(), optimizeRuns, evmVersion)
-	cmd = exec.CommandContext(ctx, "docker", cmd.Args...)
-	cmd.Stderr = &stderr
-	cmd.Stdout = &stdout
+	if cmd == nil {
+		return nil, fmt.Errorf("failed to prepare docker command")
+	}
 
-	if err := cmd.Run(); err != nil {
+	// Verify Docker binary exists and is executable
+	const dockerPath = "/usr/bin/docker"
+	if _, err := os.Stat(dockerPath); err != nil {
+		return nil, fmt.Errorf("docker binary not found at %s: %w", dockerPath, err)
+	}
+
+	// Create new command with validated arguments
+	//nolint:gosec // Arguments are validated in prepareDockerCommand and Docker binary path is verified
+	validatedCmd := exec.CommandContext(ctx, dockerPath, cmd.Args...)
+	validatedCmd.Stderr = &stderr
+	validatedCmd.Stdout = &stdout
+
+	if err := validatedCmd.Run(); err != nil {
 		if stderr.Len() > 0 {
-			return nil, fmt.Errorf("docker compilation failed: %s", stderr.String())
+			return nil, fmt.Errorf("docker compilation failed: %w\nstderr: %s", err, stderr.String())
 		}
 		return nil, fmt.Errorf("docker execution failed: %w", err)
 	}
 
 	contracts, err := compiler.ParseCombinedJSON(stdout.Bytes(), string(solContents), version, version, strings.Join(cmd.Args, " "))
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse combined JSON output: %w", err)
+		return nil, fmt.Errorf("failed to parse combined JSON output: %w\noutput: %s\nargs: %s",
+			err, stdout.String(), strings.Join(cmd.Args, " "))
 	}
 	return contracts, nil
 }
@@ -307,39 +320,103 @@ func isOriginalFile(tmpPath, filePath string) bool {
 
 // compileWithBinary uses downloaded solc binary to compile solidity.
 func compileWithBinary(ctx context.Context, version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
+	if err := validateBinaryCompilationInputs(ctx, version, filePath); err != nil {
+		return nil, err
+	}
+
+	binaryPath, solContents, err := prepareBinaryCompilation(ctx, version, filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	return executeBinaryCompilation(ctx, binaryPath, filePath, solContents, optimizeRuns, evmVersion)
+}
+
+// validateBinaryCompilationInputs validates the input parameters for binary compilation.
+func validateBinaryCompilationInputs(ctx context.Context, version, filePath string) error {
 	select {
 	case <-ctx.Done():
-		return nil, fmt.Errorf("binary compilation cancelled: %w", ctx.Err())
+		return fmt.Errorf("binary compilation canceled: %w", ctx.Err())
 	default:
 	}
 
-	binaryManager := solc.NewBinaryManager(version)
+	if version == "" || filePath == "" {
+		return fmt.Errorf("invalid input: version and filePath must not be empty")
+	}
+	return nil
+}
 
-	// Get solc binary with context
+// prepareBinaryCompilation prepares the solc binary and reads the source file.
+func prepareBinaryCompilation(ctx context.Context, version, filePath string) (string, []byte, error) {
+	binaryManager := solc.NewBinaryManager(version)
 	binaryPath, err := binaryManager.GetBinary(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get solc binary: %w", err)
+		return "", nil, fmt.Errorf("failed to get solc binary: %w", err)
 	}
 
-	// Convert to absolute path and validate
+	if !filepath.IsAbs(binaryPath) {
+		return "", nil, fmt.Errorf("solc binary path must be absolute")
+	}
+
 	absPath, err := filepath.Abs(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get absolute path for %s: %w", filePath, err)
+		return "", nil, fmt.Errorf("failed to get absolute path for %s: %w", filePath, err)
 	}
 
 	//nolint:gosec // File operations required for reading Solidity source
 	solContents, err := os.ReadFile(absPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not read sol file %s: %w", absPath, err)
+		return "", nil, fmt.Errorf("could not read sol file %s: %w", absPath, err)
 	}
 
-	// Check for empty file
 	if len(solContents) == 0 {
-		return nil, fmt.Errorf("empty source file")
+		return "", nil, fmt.Errorf("empty source file")
+	}
+
+	return binaryPath, solContents, nil
+}
+
+// executeBinaryCompilation executes the solc binary with validated arguments.
+func executeBinaryCompilation(ctx context.Context, binaryPath, filePath string, solContents []byte, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
+	absPath, err := filepath.Abs(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get absolute path for %s: %w", filePath, err)
+	}
+
+	baseDir := filepath.Dir(absPath)
+	args := prepareSolcArgs(baseDir, optimizeRuns, evmVersion)
+	args = append(args, absPath)
+
+	// Validate all paths are absolute and exist
+	for i, arg := range args {
+		if strings.HasPrefix(arg, "--allow-paths") {
+			if !filepath.IsAbs(args[i+1]) {
+				return nil, fmt.Errorf("allow-paths argument must be absolute")
+			}
+		}
 	}
 
 	var stderr, stdout bytes.Buffer
-	baseDir := filepath.Dir(absPath)
+	//nolint:gosec // Arguments are validated above
+	cmd := exec.CommandContext(ctx, binaryPath, args...)
+	cmd.Stderr = &stderr
+	cmd.Stdout = &stdout
+	cmd.Dir = baseDir
+
+	if err := cmd.Run(); err != nil {
+		return nil, fmt.Errorf("solc failed: %w\nstderr: %s", err, stderr.String())
+	}
+
+	contracts, err := compiler.ParseCombinedJSON(stdout.Bytes(), string(solContents), filepath.Base(binaryPath), filepath.Base(binaryPath), strings.Join(args, " "))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse solidity compilation output: %w\noutput: %s\nargs: %s\nbinary: %s",
+			err, stdout.String(), strings.Join(args, " "), binaryPath)
+	}
+	return contracts, nil
+}
+
+// prepareSolcArgs prepares the command line arguments for solc.
+func prepareSolcArgs(baseDir string, optimizeRuns int, evmVersion *string) []string {
 	args := []string{
 		"--combined-json", "bin,bin-runtime,srcmap,srcmap-runtime,abi,userdoc,devdoc,metadata,hashes",
 		"--optimize",
@@ -351,20 +428,7 @@ func compileWithBinary(ctx context.Context, version string, filePath string, opt
 		args = append(args, fmt.Sprintf("--evm-version=%s", *evmVersion))
 	}
 
-	cmd := exec.CommandContext(ctx, binaryPath, append(args, absPath)...)
-	cmd.Stderr = &stderr
-	cmd.Stdout = &stdout
-	cmd.Dir = baseDir
-
-	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("solc failed: %v\nstderr: %s", err, stderr.String())
-	}
-
-	contracts, err := compiler.ParseCombinedJSON(stdout.Bytes(), string(solContents), version, version, strings.Join(args, " "))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse combined JSON output: %w", err)
-	}
-	return contracts, nil
+	return args
 }
 
 // TODO consider only building on test,	as these contracts *will* get included into production binaries.
