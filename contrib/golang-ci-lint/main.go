@@ -103,10 +103,24 @@ func validateURL(rawURL string) error {
 
 // validatePath ensures a path is safe to use and within allowed directories.
 func validatePath(path string, allowedDirs ...string) error {
-	if strings.Contains(path, "..") {
-		return fmt.Errorf("path contains directory traversal: %s", path)
+	// Resolve to absolute path and handle symlinks
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return fmt.Errorf("failed to resolve absolute path: %w", err)
 	}
-	cleanPath := filepath.Clean(path)
+
+	resolvedPath, err := filepath.EvalSymlinks(absPath)
+	if err != nil {
+		// If the file doesn't exist yet, use the absolute path
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("failed to resolve symlinks: %w", err)
+		}
+		resolvedPath = absPath
+	}
+
+	if strings.Contains(resolvedPath, "..") {
+		return fmt.Errorf("path contains directory traversal: %s", resolvedPath)
+	}
 
 	// Always allow temp dir and cache dir
 	defaultDirs := []string{
@@ -117,14 +131,19 @@ func validatePath(path string, allowedDirs ...string) error {
 	// Combine default and additional allowed directories
 	allowedDirs = append(defaultDirs, allowedDirs...)
 
+	// Resolve and clean all allowed directories
 	for _, dir := range allowedDirs {
-		cleanDir := filepath.Clean(dir)
-		if strings.HasPrefix(cleanPath, cleanDir) {
+		absDir, err := filepath.Abs(dir)
+		if err != nil {
+			continue // Skip invalid directories
+		}
+		cleanDir := filepath.Clean(absDir)
+		if strings.HasPrefix(resolvedPath, cleanDir) {
 			return nil
 		}
 	}
 
-	return fmt.Errorf("path outside allowed directories: %s", path)
+	return fmt.Errorf("path outside allowed directories: %s", resolvedPath)
 }
 
 // safeJoin safely joins paths, preventing directory traversal.
