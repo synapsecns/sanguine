@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
 )
@@ -39,7 +40,7 @@ const (
 	execPerms = 0755
 )
 
-// ValidPlatforms is a list of all supported platforms
+// ValidPlatforms is a list of all supported platforms.
 var ValidPlatforms = []string{PlatformWasm32, PlatformMacOS, PlatformLinux, PlatformWin}
 
 // BinaryInfo represents the solc binary information from list.json.
@@ -63,6 +64,19 @@ type BinaryManager struct {
 	cacheDir string
 	version  string
 	platform string // Platform override for testing
+}
+
+// validatePlatform validates the given platform string against supported platforms.
+func (m *BinaryManager) validatePlatform(platform string) error {
+	if platform == "" {
+		return fmt.Errorf("platform cannot be empty")
+	}
+	for _, p := range ValidPlatforms {
+		if platform == p {
+			return nil
+		}
+	}
+	return fmt.Errorf("unsupported platform: %s", platform)
 }
 
 // NewBinaryManager creates a new BinaryManager instance.
@@ -94,15 +108,7 @@ func IsAppleSilicon() bool {
 func (m *BinaryManager) GetPlatformDir() string {
 	// Use platform override if set (for testing)
 	if m.platform != "" {
-		// Validate platform override
-		isValid := false
-		for _, p := range ValidPlatforms {
-			if m.platform == p {
-				isValid = true
-				break
-			}
-		}
-		if !isValid {
+		if err := m.validatePlatform(m.platform); err != nil {
 			return "invalid-platform"
 		}
 		return m.platform
@@ -244,8 +250,14 @@ func (m *BinaryManager) downloadAndVerify(ctx context.Context, binaryInfo *Binar
 	}
 	_ = os.Remove(testFile)
 
+	// Validate platform before downloading
+	platform := m.GetPlatformDir()
+	if err := m.validatePlatform(platform); err != nil {
+		return fmt.Errorf("failed to download list.json")
+	}
+
 	// Download binary
-	binaryURL := fmt.Sprintf("https://binaries.soliditylang.org/%s/%s", m.GetPlatformDir(), binaryInfo.Path)
+	binaryURL := fmt.Sprintf("https://binaries.soliditylang.org/%s/%s", platform, binaryInfo.Path)
 	//nolint:gosec // HTTP request to trusted domain is required for downloading solc binaries
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, binaryURL, nil)
 	if err != nil {
@@ -298,8 +310,11 @@ func (m *BinaryManager) downloadAndVerify(ctx context.Context, binaryInfo *Binar
 	return nil
 }
 
-// VerifyChecksums verifies both SHA256 and Keccak256 checksums.
 func (m *BinaryManager) VerifyChecksums(tmpFile string, binaryInfo *BinaryInfo) error {
+	// Validate file path is within cache directory
+	if !strings.HasPrefix(filepath.Clean(tmpFile), m.cacheDir) {
+		return fmt.Errorf("invalid binary path: attempted to access file outside cache directory")
+	}
 	// Read file content
 	content, err := os.ReadFile(tmpFile)
 	if err != nil {
