@@ -91,13 +91,6 @@ func main() {
 		}
 	}
 
-	// Calculate relative path from root to workDir
-	relPath, err := filepath.Rel(root, workDir)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error calculating relative path: %v\n", err)
-		os.Exit(1)
-	}
-
 	// Ensure "run" is the first argument if not present
 	hasRun := false
 	for _, arg := range args {
