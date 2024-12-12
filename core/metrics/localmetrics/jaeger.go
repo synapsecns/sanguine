@@ -41,6 +41,9 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		Env: []string{
 			"COLLECTOR_OTLP_ENABLED=true",
 			"LOG_LEVEL=debug",
+			"COLLECTOR_HTTP_PORT=0",
+			"COLLECTOR_OTLP_HTTP_PORT=0",
+			"QUERY_HTTP_PORT=0",
 		},
 		Networks: j.getNetworks(),
 		Labels: map[string]string{
@@ -62,6 +65,7 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 			config.PublishAllPorts = true
 			config.PortBindings = make(map[docker.Port][]docker.PortBinding)
+			config.NetworkMode = "bridge"
 		})
 		if err != nil {
 			j.tb.Logf("Failed to start Jaeger container: %v", err)
@@ -142,6 +146,7 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 		ExposedPorts: []string{"80"},
 		Env: []string{
 			"LOG_LEVEL=debug",
+			"HTTP_PORT=0",
 		},
 		Networks: j.getNetworks(),
 		Labels: map[string]string{
@@ -163,6 +168,7 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 			config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 			config.PublishAllPorts = true
 			config.PortBindings = make(map[docker.Port][]docker.PortBinding)
+			config.NetworkMode = "bridge"
 		})
 		if err != nil {
 			j.tb.Logf("Failed to start Jaeger Pyroscope UI container: %v", err)

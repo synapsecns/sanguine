@@ -101,6 +101,7 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 			config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 			config.PublishAllPorts = true
 			config.PortBindings = make(map[docker.Port][]docker.PortBinding)
+			config.NetworkMode = "bridge"
 		})
 		if err != nil {
 			j.tb.Logf("Failed to start Pyroscope container: %v", err)

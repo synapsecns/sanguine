@@ -2,6 +2,7 @@ package localmetrics
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
@@ -9,6 +10,7 @@ import (
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/synapsecns/sanguine/core/metrics/internal"
 	"github.com/synapsecns/sanguine/core/retry"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -59,7 +61,7 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 	// if we have a global jaegerResource env var, don't setup a local one
 	ctx, cancel := context.WithCancel(parentCtx)
 
-	// create the pool with retry
+	// create the pool with retry and increased timeout
 	var err error
 	err = retry.WithBackoff(ctx, func(ctx context.Context) error {
 		tj.pool, err = dockertest.NewPool("")
@@ -67,10 +69,19 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 			tb.Logf("Failed to create Docker pool: %v", err)
 			return err
 		}
-		return tj.pool.Client.Ping()
+
+		// Configure pool timeout
+		tj.pool.MaxWait = time.Second * 60
+
+		// Ensure Docker daemon is responsive
+		if err := tj.pool.Client.Ping(); err != nil {
+			tb.Logf("Docker daemon not responsive: %v", err)
+			return err
+		}
+		return nil
 	},
-		retry.WithMax(time.Second*5),
-		retry.WithMaxAttempts(3))
+		retry.WithMax(time.Second*15),
+		retry.WithMaxAttempts(5))
 	if err != nil {
 		tb.Fatal(err)
 	}
@@ -83,13 +94,16 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 		tb.Logf("Warning: Failed to clean up existing resources: %v", err)
 	}
 
+	// Wait for cleanup to complete
+	time.Sleep(time.Second * 3)
+
 	// Start containers with improved retry logic
 	maxRetries := 3
 	for attempt := 0; attempt < maxRetries; attempt++ {
 		if attempt > 0 {
 			tb.Logf("Retry attempt %d/%d for container startup", attempt+1, maxRetries)
 			// Add exponential backoff between retries
-			time.Sleep(time.Duration(attempt*3) * time.Second)
+			time.Sleep(time.Duration(attempt*5) * time.Second)
 
 			// Thorough cleanup between attempts
 			tj.purgeResources()
@@ -98,6 +112,34 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 				tj.network = nil
 			}
 			// Wait for resources to be fully released
+			time.Sleep(time.Second * 5)
+		}
+
+		// Create network first if needed
+		if tj.cfg.requiresNetwork {
+			networks := tj.getNetworks()
+			if len(networks) == 0 {
+				// Create network with retry
+				err := retry.WithBackoff(ctx, func(ctx context.Context) error {
+					networks = tj.getNetworks()
+					if len(networks) == 0 {
+						network, err := tj.pool.CreateNetwork(fmt.Sprintf("test-network-%s", tj.runID))
+						if err != nil {
+							tb.Logf("Failed to create network: %v", err)
+							return err
+						}
+						tj.network = network
+					}
+					return nil
+				},
+					retry.WithMax(time.Second*5),
+					retry.WithMaxAttempts(3))
+				if err != nil {
+					tb.Logf("Failed to create network after retries: %v", err)
+					continue
+				}
+			}
+			// Wait for network to stabilize
 			time.Sleep(time.Second * 3)
 		}
 
@@ -110,8 +152,8 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 
 		// Wait for Jaeger to be fully ready with increased timeout
 		if err := retry.WithBackoff(ctx, checkURL(os.Getenv(internal.JaegerEndpoint)),
-			retry.WithMax(time.Second*5),
-			retry.WithMaxAttempts(15)); err != nil {
+			retry.WithMax(time.Second*10),
+			retry.WithMaxAttempts(20)); err != nil {
 			tb.Logf("Jaeger health check failed: %v", err)
 			continue
 		}
@@ -119,7 +161,7 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 		// Start Pyroscope if enabled
 		if tj.cfg.enablePyroscope {
 			// Wait for network stability
-			time.Sleep(time.Second * 2)
+			time.Sleep(time.Second * 5)
 
 			tj.pyroscopeResource = tj.StartPyroscopeServer(ctx)
 			if tj.pyroscopeResource == nil || tj.pyroscopeResource.Resource == nil {
@@ -129,8 +171,8 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 
 			// Wait for Pyroscope with increased timeout
 			if err := retry.WithBackoff(ctx, checkURL(os.Getenv(internal.PyroscopeEndpoint)),
-				retry.WithMax(time.Second*5),
-				retry.WithMaxAttempts(15)); err != nil {
+				retry.WithMax(time.Second*10),
+				retry.WithMaxAttempts(20)); err != nil {
 				tb.Logf("Pyroscope health check failed: %v", err)
 				continue
 			}
@@ -191,48 +233,60 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 
 // purgeAllResources performs a thorough cleanup of all Docker resources
 func (j *testJaeger) purgeAllResources() error {
-	containers, err := j.pool.Client.ListContainers(docker.ListContainersOptions{All: true})
+	if j.pool == nil {
+		return nil
+	}
+
+	// Kill any processes using our port range
+	if err := j.cleanupPorts(); err != nil {
+		j.tb.Logf("Warning: Failed to cleanup ports: %v", err)
+	}
+
+	// List all containers without label filter for thorough cleanup
+	containers, err := j.pool.Client.ListContainers(docker.ListContainersOptions{
+		All: true,
+	})
 	if err != nil {
 		return fmt.Errorf("failed to list containers: %v", err)
 	}
 
-	// Stop and remove containers
+	// Stop and remove containers with proper cleanup
 	for _, container := range containers {
-		if container.Labels[runIDLabel] == j.runID ||
-			container.Labels[appLabel] == "jaeger" ||
-			container.Labels[appLabel] == "pyroscope" ||
-			container.Labels[appLabel] == "jaeger-ui" {
+		// Force stop container first with increased timeout
+		err := j.pool.Client.StopContainer(container.ID, uint(10))
+		if err != nil && !strings.Contains(err.Error(), "No such container") {
+			j.tb.Logf("Warning: Failed to stop container %s: %v", container.ID, err)
+		}
 
-			// Force stop container first
-			err := j.pool.Client.StopContainer(container.ID, 1)
-			if err != nil {
-				j.tb.Logf("Warning: Failed to stop container %s: %v", container.ID, err)
-			}
+		// Wait for container to stop
+		time.Sleep(time.Second * 2)
 
-			err = j.pool.Client.RemoveContainer(docker.RemoveContainerOptions{
-				ID:            container.ID,
-				Force:         true,
-				RemoveVolumes: true,
-			})
-			if err != nil {
-				j.tb.Logf("Warning: Failed to remove container %s: %v", container.ID, err)
-			}
+		// Force remove container and its volumes
+		err = j.pool.Client.RemoveContainer(docker.RemoveContainerOptions{
+			ID:            container.ID,
+			Force:         true,
+			RemoveVolumes: true,
+		})
+		if err != nil && !strings.Contains(err.Error(), "No such container") {
+			j.tb.Logf("Warning: Failed to remove container %s: %v", container.ID, err)
 		}
 	}
 
-	// Clean up networks
+	// Clean up all networks
 	networks, err := j.pool.Client.ListNetworks()
 	if err != nil {
 		return fmt.Errorf("failed to list networks: %v", err)
 	}
 
 	for _, network := range networks {
-		if network.Labels[runIDLabel] == j.runID {
-			if err := j.pool.Client.RemoveNetwork(network.ID); err != nil {
-				j.tb.Logf("Warning: Failed to remove network %s: %v", network.ID, err)
-			}
+		// Remove all networks, not just ones with our label
+		if err := j.pool.Client.RemoveNetwork(network.ID); err != nil {
+			j.tb.Logf("Warning: Failed to remove network %s: %v", network.ID, err)
 		}
 	}
+
+	// Wait for resources to be fully released
+	time.Sleep(time.Second * 5)
 
 	return nil
 }
@@ -365,53 +419,59 @@ func (j *testJaeger) getDockerizedResources() (dockerizedResources []*dockertest
 
 // purgeResources purges the resources from the pool.
 func (j *testJaeger) purgeResources() {
-	var wg sync.WaitGroup
+	var cleanupMutex sync.Mutex
 	resources := j.getDockerizedResources()
 
-	// First, stop all containers to release network resources
+	// First, stop all containers sequentially to avoid race conditions
 	for _, resource := range resources {
-		if resource == nil {
+		if resource == nil || resource.Container == nil {
 			continue
 		}
-		wg.Add(1)
-		go func(r *dockertest.Resource) {
-			defer wg.Done()
-			// Force stop the container
-			if err := j.pool.Client.StopContainer(r.Container.ID, 0); err != nil {
-				j.tb.Logf("Error force stopping container %s: %v", r.Container.ID, err)
+		// Stop container with timeout and proper error handling
+		if err := j.pool.Client.StopContainer(resource.Container.ID, uint(5)); err != nil {
+			if !strings.Contains(err.Error(), "No such container") {
+				j.tb.Logf("Warning: Failed to stop container %s: %v", resource.Container.ID, err)
 			}
-		}(resource)
+		}
+		// Wait for container to stop
+		time.Sleep(time.Second)
 	}
-	wg.Wait()
 
-	// Then remove containers and their volumes with force
+	// Then remove containers and their volumes sequentially
 	for _, resource := range resources {
-		if resource == nil {
+		if resource == nil || resource.Container == nil {
 			continue
 		}
-		wg.Add(1)
-		go func(r *dockertest.Resource) {
-			defer wg.Done()
-			opts := docker.RemoveContainerOptions{
-				ID:            r.Container.ID,
-				Force:         true,
-				RemoveVolumes: true,
+		cleanupMutex.Lock()
+		opts := docker.RemoveContainerOptions{
+			ID:            resource.Container.ID,
+			Force:         true,
+			RemoveVolumes: true,
+		}
+		if err := j.pool.Client.RemoveContainer(opts); err != nil {
+			if !strings.Contains(err.Error(), "No such container") &&
+				!strings.Contains(err.Error(), "removal of container") {
+				j.tb.Logf("Warning: Failed to remove container %s: %v", resource.Container.ID, err)
 			}
-			if err := j.pool.Client.RemoveContainer(opts); err != nil {
-				j.tb.Logf("Error removing container: %v", err)
-			}
-		}(resource)
+		}
+		cleanupMutex.Unlock()
+		// Wait for removal to complete
+		time.Sleep(time.Second)
 	}
-	wg.Wait()
 
-	// Finally, clean up any networks associated with our runID
+	// Finally, clean up networks with proper synchronization
 	if networks, err := j.pool.Client.ListNetworks(); err == nil {
 		for _, network := range networks {
 			if network.Labels[runIDLabel] == j.runID {
+				cleanupMutex.Lock()
+				// Wait for any remaining container operations
 				time.Sleep(time.Second * 2)
 				if err := j.pool.Client.RemoveNetwork(network.ID); err != nil {
-					j.tb.Logf("Error removing network %s: %v", network.ID, err)
+					if !strings.Contains(err.Error(), "not found") {
+						j.tb.Logf("Warning: Failed to remove network %s: %v", network.ID, err)
+					}
 				}
+				cleanupMutex.Unlock()
 			}
 		}
 	}
@@ -429,19 +489,48 @@ type uiResource struct {
 // it does not check the status code.
 func checkURL(url string) retry.RetryableFunc {
 	return func(ctx context.Context) error {
-		client := http.DefaultClient
+		if url == "" {
+			return fmt.Errorf("empty URL provided")
+		}
+
+		client := &http.Client{
+			Timeout: time.Second * 5,
+			Transport: &http.Transport{
+				DisableKeepAlives: true,
+				MaxIdleConns:      1,
+				IdleConnTimeout:   time.Second,
+				TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
+			},
+		}
+
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 		if err != nil {
-			return fmt.Errorf("could not create request: %w", err)
+			return fmt.Errorf("failed to create request for %s: %v", url, err)
 		}
 
 		resp, err := client.Do(req)
 		if err != nil {
-			return fmt.Errorf("could not get response: %w", err)
+			if os.IsTimeout(err) {
+				return fmt.Errorf("timeout connecting to %s: %v", url, err)
+			}
+			if strings.Contains(err.Error(), "connection refused") {
+				return fmt.Errorf("connection refused to %s - container may not be ready: %v", url, err)
+			}
+			return fmt.Errorf("failed to connect to %s: %v", url, err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode >= 500 {
+			return fmt.Errorf("server error at %s: status=%d", url, resp.StatusCode)
+		}
+		if resp.StatusCode >= 400 {
+			return fmt.Errorf("client error at %s: status=%d", url, resp.StatusCode)
 		}
 
-		if resp != nil {
-			_ = resp.Body.Close()
+		// Read a small portion of the body to verify the response
+		_, err = io.ReadAll(io.LimitReader(resp.Body, 1024))
+		if err != nil {
+			return fmt.Errorf("failed to read response body from %s: %v", url, err)
 		}
 
 		return nil
