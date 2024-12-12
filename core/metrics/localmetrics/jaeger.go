@@ -17,6 +17,8 @@ import (
 // StartJaegerServer starts a new jaeger instance.
 // nolint: cyclop
 func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
+	j.tb.Log("Starting Jaeger server...")
+
 	// Handle environment variables
 	if core.HasEnv(internal.JaegerEndpoint) {
 		// If JaegerEndpoint is set but JaegerUIEndpoint is empty, fail
@@ -33,6 +35,12 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		}
 	}
 
+	// Clean up any existing resources before starting
+	if err := j.purgeAllResources(); err != nil {
+		j.tb.Logf("Warning: Failed to clean up resources: %v", err)
+	}
+
+	j.tb.Log("Setting up container options...")
 	runOptions := &dockertest.RunOptions{
 		Repository:   "jaegertracing/all-in-one",
 		Tag:          "latest",
@@ -55,12 +63,24 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 	var resource *dockertest.Resource
 	var err error
 
-	// Create container with improved retry logic
-	err = retry.WithBackoff(ctx, func(ctx context.Context) error {
-		// Wait for network stability
-		time.Sleep(time.Second * 2)
+	j.tb.Log("Starting container with retry logic...")
+	// Create container with improved retry logic and shorter timeouts
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
 
+	err = retry.WithBackoff(ctx, func(ctx context.Context) error {
+		j.tb.Log("Attempting to start container...")
+
+		// Create a context with timeout for this attempt
+		attemptCtx, attemptCancel := context.WithTimeout(ctx, 5*time.Second)
+		defer attemptCancel()
+
+		// Wait for network stability (shorter wait)
+		time.Sleep(time.Second)
+
+		j.tb.Log("Running container with options...")
 		resource, err = j.pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
+			j.tb.Log("Configuring container host settings...")
 			config.AutoRemove = true
 			config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 			config.PublishAllPorts = true
@@ -68,45 +88,75 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			config.NetworkMode = "bridge"
 		})
 		if err != nil {
-			j.tb.Logf("Failed to start Jaeger container: %v", err)
-			return err
+			j.tb.Logf("Failed to start container: %v", err)
+			return fmt.Errorf("container start failed: %w", err)
 		}
 
-		// Validate ports
-		tracePort := dockerutil.GetPort(resource, "14268/tcp")
-		uiPort := dockerutil.GetPort(resource, "16686/tcp")
-		if tracePort == "" || uiPort == "" {
-			return fmt.Errorf("failed to get Jaeger ports")
+		j.tb.Log("Container started, validating ports...")
+		// Validate ports with timeout
+		portCtx, portCancel := context.WithTimeout(attemptCtx, 2*time.Second)
+		defer portCancel()
+
+		portChan := make(chan error, 1)
+		go func() {
+			tracePort := dockerutil.GetPort(resource, "14268/tcp")
+			uiPort := dockerutil.GetPort(resource, "16686/tcp")
+			if tracePort == "" || uiPort == "" {
+				portChan <- fmt.Errorf("failed to get container ports")
+				return
+			}
+
+			j.tb.Logf("Setting up endpoints with ports - trace: %s, ui: %s", tracePort, uiPort)
+			// Set environment variables
+			endpoint := fmt.Sprintf("http://localhost:%s", tracePort)
+			uiEndpoint := fmt.Sprintf("http://localhost:%s", uiPort)
+
+			if err := os.Setenv(internal.JaegerEndpoint, fmt.Sprintf("%s/api/traces", endpoint)); err != nil {
+				portChan <- fmt.Errorf("failed to set endpoint: %w", err)
+				return
+			}
+			if err := os.Setenv(internal.JaegerUIEndpoint, uiEndpoint); err != nil {
+				portChan <- fmt.Errorf("failed to set UI endpoint: %w", err)
+				return
+			}
+			portChan <- nil
+		}()
+
+		select {
+		case err := <-portChan:
+			if err != nil {
+				j.tb.Logf("Port validation failed: %v", err)
+				return err
+			}
+		case <-portCtx.Done():
+			return fmt.Errorf("port validation timed out")
 		}
 
-		// Set environment variables using os.Setenv instead of tb.Setenv
-		endpoint := fmt.Sprintf("http://localhost:%s", tracePort)
-		uiEndpoint := fmt.Sprintf("http://localhost:%s", uiPort)
-		if err := os.Setenv(internal.JaegerEndpoint, fmt.Sprintf("%s/api/traces", endpoint)); err != nil {
-			return fmt.Errorf("failed to set Jaeger endpoint: %v", err)
-		}
-		if err := os.Setenv(internal.JaegerUIEndpoint, uiEndpoint); err != nil {
-			return fmt.Errorf("failed to set Jaeger UI endpoint: %v", err)
-		}
-
-		// Wait for endpoints with increased timeout
+		j.tb.Log("Waiting for endpoints to be ready...")
+		// Wait for endpoints with shorter timeout
 		return retry.WithBackoff(ctx, func(ctx context.Context) error {
+			endpoint := os.Getenv(internal.JaegerEndpoint)
+			uiEndpoint := os.Getenv(internal.JaegerUIEndpoint)
+
 			if err := checkURL(endpoint)(ctx); err != nil {
-				return fmt.Errorf("jaeger endpoint not ready: %v", err)
+				j.tb.Logf("Endpoint not ready: %v", err)
+				return err
 			}
 			if err := checkURL(uiEndpoint)(ctx); err != nil {
-				return fmt.Errorf("jaeger UI endpoint not ready: %v", err)
+				j.tb.Logf("UI endpoint not ready: %v", err)
+				return err
 			}
+			j.tb.Log("Endpoints are ready")
 			return nil
 		},
-			retry.WithMax(time.Second*5),
-			retry.WithMaxAttempts(15))
+			retry.WithMax(time.Second*2),
+			retry.WithMaxAttempts(5))
 	},
-		retry.WithMax(time.Second*5),
-		retry.WithMaxAttempts(3))
+		retry.WithMax(time.Second*3),
+		retry.WithMaxAttempts(5))
 
 	if err != nil {
-		j.tb.Logf("Failed to start Jaeger container after retries: %v", err)
+		j.tb.Logf("Failed to start container after retries: %v", err)
 		return nil
 	}
 
@@ -115,8 +165,6 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			j.tb.Logf("Failed to set container expiry: %v", err)
 		}
 	}
-
-	// PLACEHOLDER: log resource handling and return
 
 	return &uiResource{
 		Resource: resource,
@@ -158,12 +206,23 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 	var resource *dockertest.Resource
 	var err error
 
-	// Create container with retry logic
+	// Create container with retry logic and shorter timeouts
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
 	err = retry.WithBackoff(ctx, func(ctx context.Context) error {
-		// Wait for network stability
+		j.tb.Log("Attempting to start Jaeger Pyroscope UI container...")
+
+		// Create a context with timeout for this attempt
+		attemptCtx, attemptCancel := context.WithTimeout(ctx, 5*time.Second)
+		defer attemptCancel()
+
+		// Wait for network stability (shorter wait)
 		time.Sleep(time.Second)
 
+		j.tb.Log("Running container with options...")
 		resource, err = j.pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
+			j.tb.Log("Configuring container host settings...")
 			config.AutoRemove = true
 			config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 			config.PublishAllPorts = true
@@ -172,26 +231,49 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 		})
 		if err != nil {
 			j.tb.Logf("Failed to start Jaeger Pyroscope UI container: %v", err)
-			return err
+			return fmt.Errorf("container start failed: %w", err)
 		}
 
-		// Validate port
-		uiPort := dockerutil.GetPort(resource, "80/tcp")
-		if uiPort == "" {
-			return fmt.Errorf("failed to get Jaeger UI port")
+		j.tb.Log("Container started, validating port...")
+		// Validate port with timeout
+		portCtx, portCancel := context.WithTimeout(attemptCtx, 2*time.Second)
+		defer portCancel()
+
+		portChan := make(chan error, 1)
+		go func() {
+			uiPort := dockerutil.GetPort(resource, "80/tcp")
+			if uiPort == "" {
+				portChan <- fmt.Errorf("failed to get Jaeger UI port")
+				return
+			}
+
+			// Set environment variable for endpoint
+			uiEndpoint := fmt.Sprintf("http://localhost:%s", uiPort)
+			if err := os.Setenv(internal.JaegerUIEndpoint, uiEndpoint); err != nil {
+				portChan <- fmt.Errorf("failed to set UI endpoint: %w", err)
+				return
+			}
+			portChan <- nil
+		}()
+
+		select {
+		case err := <-portChan:
+			if err != nil {
+				j.tb.Logf("Port validation failed: %v", err)
+				return err
+			}
+		case <-portCtx.Done():
+			return fmt.Errorf("port validation timed out")
 		}
 
-		// Set environment variable for endpoint
-		uiEndpoint := fmt.Sprintf("http://localhost:%s", uiPort)
-		j.tb.Setenv(internal.JaegerUIEndpoint, uiEndpoint)
-
-		// Wait for UI endpoint with increased timeout
-		return retry.WithBackoff(ctx, checkURL(uiEndpoint),
-			retry.WithMax(time.Second*5),
-			retry.WithMaxAttempts(15))
+		j.tb.Log("Waiting for UI endpoint to be ready...")
+		// Wait for UI endpoint with shorter timeout
+		return retry.WithBackoff(ctx, checkURL(os.Getenv(internal.JaegerUIEndpoint)),
+			retry.WithMax(time.Second*2),
+			retry.WithMaxAttempts(5))
 	},
-		retry.WithMax(time.Second*5),
-		retry.WithMaxAttempts(3))
+		retry.WithMax(time.Second*3),
+		retry.WithMaxAttempts(5))
 
 	if err != nil {
 		j.tb.Logf("Failed to start Jaeger Pyroscope UI container after retries: %v", err)
