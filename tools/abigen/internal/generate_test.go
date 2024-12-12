@@ -140,28 +140,28 @@ func TestCompileSolidityErrors(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	tests := []struct {
-		name     string
-		content  string
-		version  string
-		wantErr  string
+		name    string
+		content string
+		version string
+		wantErr string
 	}{
 		{
-			name:     "syntax error",
-			content:  "pragma solidity ^0.8.0; contract Test { function invalid ",
-			version:  "0.8.20",
-			wantErr:  "exit status 1",
+			name:    "syntax error",
+			content: "pragma solidity ^0.8.0; contract Test { function invalid ",
+			version: "0.8.20",
+			wantErr: "exit status 1",
 		},
 		{
-			name:     "empty file",
-			content:  "",
-			version:  "0.8.20",
-			wantErr:  "empty source file",
+			name:    "empty file",
+			content: "",
+			version: "0.8.20",
+			wantErr: "empty source file",
 		},
 		{
-			name:     "invalid pragma",
-			content:  "pragma solidity ^999.999.999; contract Test {}",
-			version:  "0.8.20",
-			wantErr:  "Source file requires different compiler version",
+			name:    "invalid pragma",
+			content: "pragma solidity ^999.999.999; contract Test {}",
+			version: "0.8.20",
+			wantErr: "Source file requires different compiler version",
 		},
 	}
 

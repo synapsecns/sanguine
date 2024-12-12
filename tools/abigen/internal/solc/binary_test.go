@@ -1,6 +1,7 @@
 package solc_test
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -78,7 +79,8 @@ func TestGetPlatformDir(t *testing.T) {
 
 func TestGetBinary(t *testing.T) {
 	manager := setupTestBinaryManager(t)
-	binary, err := manager.GetBinary()
+	ctx := context.Background()
+	binary, err := manager.GetBinary(ctx)
 	if err != nil {
 		t.Fatalf("Failed to get binary: %v", err)
 	}
@@ -95,7 +97,7 @@ func TestGetBinary(t *testing.T) {
 		t.Error("Binary is not executable")
 	}
 
-	binary2, err := manager.GetBinary()
+	binary2, err := manager.GetBinary(ctx)
 	if err != nil {
 		t.Fatalf("Failed to get cached binary: %v", err)
 	}
@@ -131,7 +133,7 @@ func TestGetBinaryInfo(t *testing.T) {
 			name:     "invalid platform",
 			version:  "0.8.20",
 			platform: "invalid-platform",
-			wantErr:  "failed to download list.json",
+			wantErr:  "failed to determine platform",
 		},
 	}
 
@@ -142,7 +144,7 @@ func TestGetBinaryInfo(t *testing.T) {
 			if platformField := managerValue.FieldByName("platform"); platformField.IsValid() && platformField.CanSet() {
 				platformField.SetString(tt.platform)
 			}
-			_, err := manager.GetBinary()
+			_, err := manager.GetBinary(context.Background())
 			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
 				t.Errorf("GetBinary() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -162,10 +164,10 @@ func TestDownloadAndVerify(t *testing.T) {
 	}()
 
 	tests := []struct {
-		name     string
-		version  string
-		setup    func(*testing.T, string) (*solc.BinaryManager, error)
-		wantErr  string
+		name    string
+		version string
+		setup   func(*testing.T, string) (*solc.BinaryManager, error)
+		wantErr string
 	}{
 		{
 			name:    "invalid permissions",
@@ -173,10 +175,10 @@ func TestDownloadAndVerify(t *testing.T) {
 			setup: func(t *testing.T, dir string) (*solc.BinaryManager, error) {
 				t.Helper()
 				noWriteDir := filepath.Join(dir, "no-write")
-				if err := os.Mkdir(noWriteDir, 0500); err != nil {
+				if err := os.Mkdir(noWriteDir, 0600); err != nil {
 					t.Fatalf("Failed to create no-write dir: %v", err)
 				}
-				if err := os.Chmod(noWriteDir, 0500); err != nil {
+				if err := os.Chmod(noWriteDir, 0600); err != nil {
 					t.Fatalf("Failed to set directory permissions: %v", err)
 				}
 				manager := solc.NewBinaryManager("0.8.20")
@@ -186,7 +188,7 @@ func TestDownloadAndVerify(t *testing.T) {
 				}
 				return manager, nil
 			},
-			wantErr: "failed to create cache directory",
+			wantErr: "failed to create cache directory: permission denied",
 		},
 	}
 
@@ -196,7 +198,7 @@ func TestDownloadAndVerify(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Setup failed: %v", err)
 			}
-			_, err = manager.GetBinary()
+			_, err = manager.GetBinary(context.Background())
 			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
 				t.Errorf("GetBinary() error = %v, wantErr %v", err, tt.wantErr)
 			}
