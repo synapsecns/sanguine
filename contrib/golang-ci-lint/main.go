@@ -18,9 +18,26 @@ const (
 	cacheDir           = "cache"
 )
 
+// findGitRoot returns the root directory of the git repository
+func findGitRoot() (string, error) {
+	cmd := exec.Command("git", "rev-parse", "--show-toplevel")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("error finding git root: %v", err)
+	}
+	return strings.TrimSpace(string(output)), nil
+}
+
 func main() {
-	// Read version from .golangci-version
-	version, err := os.ReadFile("../../.golangci-version")
+	// Find repository root
+	root, err := findGitRoot()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error finding repository root: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Read version from .golangci-version in repo root
+	version, err := os.ReadFile(filepath.Join(root, ".golangci-version"))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading .golangci-version: %v\n", err)
 		os.Exit(1)
@@ -31,9 +48,15 @@ func main() {
 	arch := runtime.GOARCH
 	osName := runtime.GOOS
 
-	// Create cache path
+	// Create cache path relative to the binary location
+	execPath, err := os.Executable()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error getting executable path: %v\n", err)
+		os.Exit(1)
+	}
+	execDir := filepath.Dir(execPath)
 	binaryName := fmt.Sprintf("golangci-lint-%s-%s-%s/golangci-lint", versionStr, osName, arch)
-	cachePath := filepath.Join(cacheDir, binaryName)
+	cachePath := filepath.Join(execDir, cacheDir, binaryName)
 
 	// Check cache and download if needed
 	if _, err := os.Stat(cachePath); err != nil {
@@ -49,11 +72,75 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Execute golangci-lint with remaining arguments
+	// Check if we're being run directly or through go run
 	args := os.Args[1:]
+
+	// Get current working directory
+	cwd, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error getting current directory: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Find nearest directory with go.mod
+	workDir := cwd
+	for dir := cwd; dir != "/" && dir != "."; dir = filepath.Dir(dir) {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+			workDir = dir
+			break
+		}
+	}
+
+	// Calculate relative path from root to workDir
+	relPath, err := filepath.Rel(root, workDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error calculating relative path: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Ensure "run" is the first argument if not present
+	hasRun := false
+	for _, arg := range args {
+		if arg == "run" {
+			hasRun = true
+			break
+		}
+	}
+	if !hasRun {
+		args = append([]string{"run"}, args...)
+	}
+
+	// Add default config if not specified
+	hasConfig := false
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--config") {
+			hasConfig = true
+			break
+		}
+	}
+	if !hasConfig {
+		configPath := filepath.Join(root, ".golangci.yml")
+		args = append(args, "--config", configPath)
+	}
+
+	// Add --modules-download-mode=readonly to prevent module modifications
+	args = append(args, "--modules-download-mode=readonly")
+
+	// If no go.mod found, disable module-specific linters
+	if workDir == cwd {
+		args = append(args, "--disable=gomodguard,depguard")
+	}
+
+	// Add path to lint if not specified
+	if len(args) == 1 || (len(args) > 1 && strings.HasPrefix(args[1], "-")) {
+		args = append(args, "./...")
+	}
+
+	// Execute golangci-lint with arguments
 	cmd := exec.Command(cachePath, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	cmd.Dir = workDir // Run from the directory with go.mod
 	if err := cmd.Run(); err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			os.Exit(exitErr.ExitCode())
