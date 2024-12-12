@@ -326,6 +326,8 @@ func createAndCopyBinary(tr *tar.Reader, tmpFile string) error {
 		return fmt.Errorf("invalid temporary file path: %w", err)
 	}
 
+	// Safe to use os.OpenFile here as path is validated by validatePath above
+	//nolint:gosec // G304: path is validated by validatePath above
 	file, err := os.OpenFile(tmpFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, execPerms)
 	if err != nil {
 		return fmt.Errorf("failed to create temporary file: %w", err)
@@ -392,6 +394,8 @@ func readVersion(root string) (string, error) {
 		return "", fmt.Errorf("invalid version file path: %w", err)
 	}
 
+	// Safe to use os.ReadFile here as path is validated by validatePath above
+	//nolint:gosec // G304: path is validated by validatePath above
 	version, err := os.ReadFile(versionPath)
 	if err != nil {
 		return "", fmt.Errorf("reading .golangci-version: %w", err)
@@ -616,6 +620,8 @@ func extractBinary(_ context.Context, tarPath, destPath string) error {
 	defer cleanup()
 
 	// Open archive with secure permissions
+	// Safe to use os.OpenFile here as path is validated by validatePath above
+	//nolint:gosec // G304: path is validated by validatePath above
 	file, err := os.OpenFile(tarPath, os.O_RDONLY, filePerms)
 	if err != nil {
 		return fmt.Errorf("failed to open archive: %w", err)
