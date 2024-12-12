@@ -62,7 +62,7 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		Repository:   "jaegertracing/all-in-one",
 		Tag:          "latest",
 		Hostname:     "jaeger",
-		ExposedPorts: []string{"14268", "16686"},
+		ExposedPorts: []string{"14268/tcp", "16686/tcp"},
 		PortBindings: map[docker.Port][]docker.PortBinding{
 			"14268/tcp": {{HostIP: "0.0.0.0", HostPort: "14268"}},
 			"16686/tcp": {{HostIP: "0.0.0.0", HostPort: "16686"}},
@@ -70,6 +70,8 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		Env: []string{
 			"COLLECTOR_OTLP_ENABLED=true",
 			"LOG_LEVEL=debug",
+			"COLLECTOR_HTTP_PORT=14268",
+			"QUERY_HTTP_PORT=16686",
 		},
 		Networks: j.getNetworks(),
 		Labels: map[string]string{
@@ -101,8 +103,8 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			j.tb.Log("Configuring container host settings...")
 			config.AutoRemove = true
 			config.RestartPolicy = docker.RestartPolicy{Name: "no"}
-			config.PublishAllPorts = true
-			config.PortBindings = make(map[docker.Port][]docker.PortBinding)
+			config.PublishAllPorts = false
+			config.PortBindings = runOptions.PortBindings
 			config.NetworkMode = "bridge"
 		})
 		if err != nil {

@@ -1,12 +1,9 @@
 package localmetrics
 
 import (
-	"fmt"
 	"os/exec"
 	"strings"
 	"time"
-
-	"github.com/ory/dockertest/v3/docker"
 )
 
 // cleanupPorts kills any processes using our specific ports
