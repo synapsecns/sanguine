@@ -455,24 +455,24 @@ func (m *BinaryManager) VerifyChecksums(tmpFile string, binaryInfo *BinaryInfo) 
 		return fmt.Errorf("failed to read binary for verification: %w", err)
 	}
 
-	// Strip "0x" prefix from expected checksums if present and convert to lowercase
+	// Strip "0x" prefix from expected checksums and convert to lowercase
 	expectedSha := strings.ToLower(strings.TrimPrefix(binaryInfo.Sha256, "0x"))
 	expectedKeccak := strings.ToLower(strings.TrimPrefix(binaryInfo.Keccak256, "0x"))
 
-	// Calculate and compare SHA256 (case-insensitive)
+	// Calculate SHA256 and normalize to lowercase without "0x" prefix
 	sha256Sum := sha256.Sum256(content)
 	calculatedSha256 := strings.ToLower(hex.EncodeToString(sha256Sum[:]))
-	if !strings.EqualFold(calculatedSha256, expectedSha) {
-		return fmt.Errorf("sha256 checksum mismatch: got %s, want %s",
-			calculatedSha256, expectedSha)
+	if calculatedSha256 != expectedSha {
+		return fmt.Errorf("sha256 checksum mismatch: got %s, want %s (with 0x: 0x%s)",
+			calculatedSha256, expectedSha, expectedSha)
 	}
 
-	// Calculate and compare Keccak256 (case-insensitive)
+	// Calculate Keccak256 and normalize to lowercase without "0x" prefix
 	keccak256Sum := crypto.Keccak256(content)
 	calculatedKeccak := strings.ToLower(hex.EncodeToString(keccak256Sum))
-	if !strings.EqualFold(calculatedKeccak, expectedKeccak) {
-		return fmt.Errorf("keccak256 checksum mismatch: got %s, want %s",
-			calculatedKeccak, expectedKeccak)
+	if calculatedKeccak != expectedKeccak {
+		return fmt.Errorf("keccak256 checksum mismatch: got %s, want %s (with 0x: 0x%s)",
+			calculatedKeccak, expectedKeccak, expectedKeccak)
 	}
 
 	return nil

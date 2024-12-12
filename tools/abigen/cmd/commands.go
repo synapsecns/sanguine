@@ -95,7 +95,7 @@ var GenerateCommand = &cliv2.Command{
 			return nil
 		}
 		//nolint: wrapcheck
-		return internal.BuildTemplates(cliCtx.Context(), cliCtx.String(solVersionFlag.Name), cliCtx.String(solFlag.Name), cliCtx.String(pkgFlag.Name), cliCtx.String(filenameFlag.Name), cliCtx.Int(optimizerRunsFlags.Name), strToPt(cliCtx.String(evmVersionFlags.Name)))
+		return internal.BuildTemplates(cliCtx.Context, cliCtx.String(solVersionFlag.Name), cliCtx.String(solFlag.Name), cliCtx.String(pkgFlag.Name), cliCtx.String(filenameFlag.Name), cliCtx.Int(optimizerRunsFlags.Name), strToPt(cliCtx.String(evmVersionFlags.Name)))
 	},
 }
 
@@ -129,7 +129,7 @@ var EtherscanCommand = &cliv2.Command{
 			return nil
 		}
 		//nolint: wrapcheck
-		return internal.GenerateABIFromEtherscan(cliCtx.Context(), uint32(cliCtx.Int(chainIDFlag.Name)), cliCtx.String(urlFlag.Name), common.HexToAddress(cliCtx.String(addressFlag.Name)), cliCtx.String(filenameFlag.Name), cliCtx.String(solVersionFlag.Name), cliCtx.String(pkgFlag.Name))
+		return internal.GenerateABIFromEtherscan(cliCtx.Context, uint32(cliCtx.Int(chainIDFlag.Name)), cliCtx.String(urlFlag.Name), common.HexToAddress(cliCtx.String(addressFlag.Name)), cliCtx.String(filenameFlag.Name), cliCtx.String(solVersionFlag.Name), cliCtx.String(pkgFlag.Name))
 	},
 }
 
