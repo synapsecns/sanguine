@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"fmt"
+	"github.com/integralist/go-findroot/find"
 	"io"
 	"net/http"
 	"os"
@@ -18,19 +19,18 @@ const (
 	cacheDir           = "cache"
 )
 
-// findGitRoot returns the root directory of the git repository
-func findGitRoot() (string, error) {
-	cmd := exec.Command("git", "rev-parse", "--show-toplevel")
-	output, err := cmd.Output()
+// findRepoRoot returns the root directory of the repository
+func findRepoRoot() (string, error) {
+	root, err := find.Repo()
 	if err != nil {
-		return "", fmt.Errorf("error finding git root: %v", err)
+		return "", fmt.Errorf("failed to find repo root: %w", err)
 	}
-	return strings.TrimSpace(string(output)), nil
+	return root.Path, nil
 }
 
 func main() {
 	// Find repository root
-	root, err := findGitRoot()
+	root, err := findRepoRoot()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error finding repository root: %v\n", err)
 		os.Exit(1)
@@ -72,9 +72,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Check if we're being run directly or through go run
-	args := os.Args[1:]
-
 	// Get current working directory
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -90,6 +87,9 @@ func main() {
 			break
 		}
 	}
+
+	// Process arguments
+	args := os.Args[1:]
 
 	// Ensure "run" is the first argument if not present
 	hasRun := false
@@ -118,16 +118,6 @@ func main() {
 
 	// Add --modules-download-mode=readonly to prevent module modifications
 	args = append(args, "--modules-download-mode=readonly")
-
-	// If no go.mod found, disable module-specific linters
-	if workDir == cwd {
-		args = append(args, "--disable=gomodguard,depguard")
-	}
-
-	// Add path to lint if not specified
-	if len(args) == 1 || (len(args) > 1 && strings.HasPrefix(args[1], "-")) {
-		args = append(args, "./...")
-	}
 
 	// Execute golangci-lint with arguments
 	cmd := exec.Command(cachePath, args...)
