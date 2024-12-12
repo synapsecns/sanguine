@@ -6,19 +6,13 @@ import (
 	"time"
 
 	"github.com/Flaque/filet"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/tools/abigen/internal/etherscan"
 )
 
-type EtherscanSuite struct {
-	suite.Suite
-}
+// PLACEHOLDER: EtherscanSuite is defined in suite_test.go
 
-func TestEtherscanSuite(t *testing.T) {
-	suite.Run(t, new(EtherscanSuite))
-}
+// PLACEHOLDER: TestEtherscanSuite function implementation
 
 func (s *EtherscanSuite) TestRateLimiter() {
 	waitTime := time.Second

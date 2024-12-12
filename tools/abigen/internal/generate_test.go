@@ -13,19 +13,11 @@ import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/tools/abigen/internal"
 )
 
-type AbiSuite struct {
-	suite.Suite
-	exampleFilePath string
-}
-
-func TestAbiSuite(t *testing.T) {
-	suite.Run(t, new(AbiSuite))
-}
+// PLACEHOLDER: AbiSuite and NewAbiSuite are defined in suite_test.go
 
 func TestCheckForDocker(t *testing.T) {
 	t.Helper()
@@ -42,26 +34,26 @@ func TestCheckForDocker(t *testing.T) {
 func (a *AbiSuite) TestCompileSolidityImplicitEVM() {
 	ctx := context.Background()
 	vals, err := internal.CompileSolidity(ctx, "0.8.4", a.exampleFilePath, 1, nil)
-	assert.Nil(a.T(), err)
+	a.Require().NoError(err)
 
-	assert.Len(a.T(), vals, 1)
+	a.Require().Len(vals, 1)
 	for _, value := range vals {
-		assert.Equal(a.T(), value.Info.CompilerVersion, "0.8.4")
-		assert.Equal(a.T(), value.Info.LanguageVersion, "0.8.4")
+		a.Equal(value.Info.CompilerVersion, "0.8.4")
+		a.Equal(value.Info.LanguageVersion, "0.8.4")
 	}
 }
 
 func (a *AbiSuite) TestCompileSolidityExplicitEVM() {
-	// default would be shnghai
+	// default would be shanghai
 	const testEvmVersion = "istanbul"
 	ctx := context.Background()
 	vals, err := internal.CompileSolidity(ctx, "0.8.20", a.exampleFilePath, 1, core.PtrTo(testEvmVersion))
-	Nil(a.T(), err)
+	a.Require().NoError(err)
 
-	Len(a.T(), vals, 1)
+	a.Require().Len(vals, 1)
 	for _, value := range vals {
-		Equal(a.T(), value.Info.CompilerVersion, "0.8.20")
-		Equal(a.T(), value.Info.LanguageVersion, "0.8.20")
+		a.Equal(value.Info.CompilerVersion, "0.8.20")
+		a.Equal(value.Info.LanguageVersion, "0.8.20")
 
 		var metadata ContractMetadata
 		err = json.Unmarshal([]byte(value.Info.Metadata), &metadata)

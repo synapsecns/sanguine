@@ -5,12 +5,12 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/tools/abigen/internal"
-	"github.com/urfave/cli/v2"
+	cliv2 "github.com/urfave/cli/v2"
 	"os"
 )
 
 // validateCommandNames ensures command names are unique to prevent registration conflicts
-func validateCommandNames(commands ...*cli.Command) {
+func validateCommandNames(commands ...*cliv2.Command) {
 	seen := make(map[string]bool)
 	for _, cmd := range commands {
 		if seen[cmd.Name] {
@@ -20,49 +20,49 @@ func validateCommandNames(commands ...*cli.Command) {
 	}
 }
 
-var solFlag = &cli.StringFlag{
+var solFlag = &cliv2.StringFlag{
 	Name:  "sol",
 	Usage: "path to solidity file you want to compile",
 }
 
-var pkgFlag = &cli.StringFlag{
+var pkgFlag = &cliv2.StringFlag{
 	Name:  "pkg",
 	Usage: "name of the package to create",
 }
 
-var filenameFlag = &cli.StringFlag{
+var filenameFlag = &cliv2.StringFlag{
 	Name:  "filename",
 	Usage: "[name].abigen.go, [name].contractinfo.json, and [name].metadata.go file",
 }
 
-var solVersionFlag = &cli.StringFlag{
+var solVersionFlag = &cliv2.StringFlag{
 	Name:  "sol-version",
 	Usage: "version of solidity to use to compile the abi. This is pulled from https://hub.docker.com/r/ethereum/solc so version must be present there",
 }
 
-var urlFlag = &cli.StringFlag{
+var urlFlag = &cliv2.StringFlag{
 	Name:  "url",
 	Usage: "url of the etherscan api to use",
 }
 
-var disableCI = &cli.BoolFlag{
+var disableCI = &cliv2.BoolFlag{
 	Name:  "disable-ci",
 	Usage: "wether or not to disable regeneration on ci",
 }
 
-var disableCIEtherscan = &cli.BoolFlag{
+var disableCIEtherscan = &cliv2.BoolFlag{
 	Name:  disableCI.Name,
 	Usage: "wether or not to disable regeneration on ci, this is disabled on etherscan by default because of api keys",
 	Value: true,
 }
 
-var optimizerRunsFlags = &cli.IntFlag{
+var optimizerRunsFlags = &cliv2.IntFlag{
 	Name:  "optimizer-runs",
 	Usage: "number of optimizations to run.",
 	Value: 10000,
 }
 
-var evmVersionFlags = &cli.StringFlag{
+var evmVersionFlags = &cliv2.StringFlag{
 	Name:  "evm-version",
 	Usage: "evm version to target",
 }
@@ -77,10 +77,10 @@ func strToPt(str string) *string {
 }
 
 // GenerateCommand generates abi using flags.
-var GenerateCommand = &cli.Command{
+var GenerateCommand = &cliv2.Command{
 	Name:  "generate",
 	Usage: "generate abi bindings from a file",
-	Flags: []cli.Flag{
+	Flags: []cliv2.Flag{
 		solFlag,
 		pkgFlag,
 		filenameFlag,
@@ -89,31 +89,31 @@ var GenerateCommand = &cli.Command{
 		evmVersionFlags,
 		disableCI,
 	},
-	Action: func(context *cli.Context) error {
-		if context.Bool(disableCI.Name) && os.Getenv("CI") != "" {
+	Action: func(cliCtx *cliv2.Context) error {
+		if cliCtx.Bool(disableCI.Name) && os.Getenv("CI") != "" {
 			fmt.Print("skipping generation")
 			return nil
 		}
 		//nolint: wrapcheck
-		return internal.BuildTemplates(context.Context(), context.String(solVersionFlag.Name), context.String(solFlag.Name), context.String(pkgFlag.Name), context.String(filenameFlag.Name), context.Int(optimizerRunsFlags.Name), strToPt(context.String(evmVersionFlags.Name)))
+		return internal.BuildTemplates(cliCtx.Context(), cliCtx.String(solVersionFlag.Name), cliCtx.String(solFlag.Name), cliCtx.String(pkgFlag.Name), cliCtx.String(filenameFlag.Name), cliCtx.Int(optimizerRunsFlags.Name), strToPt(cliCtx.String(evmVersionFlags.Name)))
 	},
 }
 
-var addressFlag = &cli.StringFlag{
+var addressFlag = &cliv2.StringFlag{
 	Name:  "address",
 	Usage: "address of the deployed contract",
 }
 
-var chainIDFlag = &cli.StringFlag{
+var chainIDFlag = &cliv2.StringFlag{
 	Name:  "chainID",
 	Usage: "chainID of the deployed contract",
 }
 
 // EtherscanCommand is used to pull abi from an etherscan-like api.
-var EtherscanCommand = &cli.Command{
+var EtherscanCommand = &cliv2.Command{
 	Name:  "generate-from-etherscan",
 	Usage: "generate abi bindings from a deployed contract on etherscan",
-	Flags: []cli.Flag{
+	Flags: []cliv2.Flag{
 		addressFlag,
 		chainIDFlag,
 		pkgFlag,
@@ -123,13 +123,13 @@ var EtherscanCommand = &cli.Command{
 		disableCIEtherscan,
 	},
 	// TODO this needs to embed optimizations, etc from the real deployed contract.
-	Action: func(context *cli.Context) error {
-		if context.Bool(disableCIEtherscan.Name) && os.Getenv("CI") != "" {
+	Action: func(cliCtx *cliv2.Context) error {
+		if cliCtx.Bool(disableCIEtherscan.Name) && os.Getenv("CI") != "" {
 			fmt.Print("skipping generation")
 			return nil
 		}
 		//nolint: wrapcheck
-		return internal.GenerateABIFromEtherscan(context.Context(), uint32(context.Int(chainIDFlag.Name)), context.String(urlFlag.Name), common.HexToAddress(context.String(addressFlag.Name)), context.String(filenameFlag.Name), context.String(solVersionFlag.Name), context.String(pkgFlag.Name))
+		return internal.GenerateABIFromEtherscan(cliCtx.Context(), uint32(cliCtx.Int(chainIDFlag.Name)), cliCtx.String(urlFlag.Name), common.HexToAddress(cliCtx.String(addressFlag.Name)), cliCtx.String(filenameFlag.Name), cliCtx.String(solVersionFlag.Name), cliCtx.String(pkgFlag.Name))
 	},
 }
 
