@@ -275,6 +275,7 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 		case <-ctx.Done():
 			return nil
 		case msg, ok := <-reqChan:
+			fmt.Printf("recved message from reqChan: %+v\n", msg)
 			if !ok {
 				return fmt.Errorf("error reading from reqChan: %w", ctx.Err())
 			}
@@ -283,6 +284,7 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 				return fmt.Errorf("error sending message to websocket: %w", err)
 			}
 		case msg, ok := <-readChan:
+			fmt.Printf("recved message from readChan: %+v\n", msg)
 			if !ok {
 				return nil
 			}

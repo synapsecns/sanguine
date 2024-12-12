@@ -297,9 +297,6 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 // This function is blocking and will run until the context is canceled.
 func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "SubscribeActiveRFQ")
-	defer func() {
-		metrics.EndSpanWithErr(span, err)
-	}()
 
 	chainIDs := []int{}
 	for chainID := range m.config.Chains {
@@ -313,9 +310,12 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 	reqChan := make(chan *model.ActiveRFQMessage)
 	respChan, err := m.rfqClient.SubscribeActiveQuotes(ctx, &req, reqChan)
 	if err != nil {
+		metrics.EndSpanWithErr(span, err)
 		return fmt.Errorf("error subscribing to active quotes: %w", err)
 	}
 	span.AddEvent("subscribed to active quotes")
+	metrics.EndSpan(span)
+
 	for {
 		select {
 		case <-ctx.Done():

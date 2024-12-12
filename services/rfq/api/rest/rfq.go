@@ -33,6 +33,7 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 	relayerReq := model.NewWsRFQRequest(request.Data, requestID)
 	fmt.Printf("parsed websocket request: %+v\n", relayerReq.Data)
 	r.wsClients.Range(func(relayerAddr string, client WsClient) bool {
+		fmt.Printf("sending quote request to client with address %v: %v\n", relayerAddr, client)
 		sendCtx, sendSpan := r.handler.Tracer().Start(ctx, "sendQuoteRequest", trace.WithAttributes(
 			attribute.String("relayer_address", relayerAddr),
 			attribute.String("request_id", requestID),
@@ -40,8 +41,10 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 		defer metrics.EndSpan(sendSpan)
 
 		subscribed := r.pubSubManager.IsSubscribed(relayerAddr, request.Data.OriginChainID, request.Data.DestChainID)
+		fmt.Printf("relayer %v subscribed: %v\n", relayerAddr, subscribed)
 		span.SetAttributes(attribute.Bool("subscribed", subscribed))
 		if subscribed {
+			fmt.Printf("sending request to relayer %v: %+v\n", relayerAddr, relayerReq)
 			err := client.SendQuoteRequest(sendCtx, relayerReq)
 			if err != nil {
 				logger.Errorf("Error sending quote request to %s: %v", relayerAddr, err)
@@ -57,10 +60,12 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 	// collect the responses and determine the best quote
 	responses := r.collectRelayerResponses(ctx, request, requestID)
 	for r, resp := range responses {
+		fmt.Printf("considering response: %+v\n", resp)
 		relayerAddr := r
 		quote = getBestQuote(quote, getRelayerQuoteData(request, resp))
 		quote.RelayerAddress = &relayerAddr
 	}
+	fmt.Printf("best quote: %+v\n", quote)
 	err = r.recordActiveQuote(ctx, quote, requestID)
 	if err != nil {
 		logger.Errorf("Error recording active quote: %v", err)
@@ -70,6 +75,7 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 }
 
 func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *model.PutRFQRequest, requestID string) (responses map[string]*model.WsRFQResponse) {
+	fmt.Printf("collectRelayerResponses with request data: %+v\n", request.Data)
 	ctx, span := r.handler.Tracer().Start(ctx, "collectRelayerResponses", trace.WithAttributes(
 		attribute.String("user_address", request.UserAddress),
 		attribute.String("request_id", requestID),
@@ -87,6 +93,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 	respMux := sync.Mutex{}
 	responses = map[string]*model.WsRFQResponse{}
 	r.wsClients.Range(func(relayerAddr string, client WsClient) bool {
+		fmt.Printf("processing ws client with addr: %v: client: %v\n", relayerAddr, client)
 		wg.Add(1)
 		go func(client WsClient) {
 			var respStatus db.ActiveQuoteResponseStatus
@@ -102,6 +109,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 
 			defer wg.Done()
 			resp, err := client.ReceiveQuoteResponse(collectionCtx, requestID)
+			fmt.Printf("recved quote resp: %+v\n", resp)
 			if err != nil {
 				logger.Errorf("Error receiving quote response: %v", err)
 				return
@@ -121,6 +129,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 			}
 
 			// record the response
+			fmt.Printf("recording resp: %+v\n", resp)
 			err = r.db.InsertActiveQuoteResponse(collectionCtx, resp, relayerAddr, respStatus)
 			if err != nil {
 				logger.Errorf("Error inserting active quote response: %v", err)
@@ -132,6 +141,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 	// wait for all responses to be received, or expiration
 	select {
 	case <-expireCtx.Done():
+		fmt.Println("request expired")
 		// request expired before all responses were received
 	case <-func() chan struct{} {
 		ch := make(chan struct{})
@@ -143,6 +153,9 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 	}():
 		// all responses received
 	}
+
+	fmt.Printf("responses received: %+v\n", responses)
+	fmt.Printf("num responses: %v\n", len(responses))
 
 	return responses
 }
