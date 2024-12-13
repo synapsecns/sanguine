@@ -158,14 +158,14 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			endpoint := fmt.Sprintf("http://localhost:%s", tracePort)
 			uiEndpoint := fmt.Sprintf("http://localhost:%s", uiPort)
 
-			// Verify endpoints are responding
-			if err := j.verifyEndpoint(endpoint+"/api/traces", 5); err != nil {
-				portChan <- fmt.Errorf("trace endpoint not ready: %w", err)
+			// Verify endpoints are responding using simplified check
+			if !isEndpointReady(endpoint+"/api/traces") {
+				portChan <- fmt.Errorf("trace endpoint not ready")
 				return
 			}
 
-			if err := j.verifyEndpoint(uiEndpoint, 5); err != nil {
-				portChan <- fmt.Errorf("UI endpoint not ready: %w", err)
+			if !isEndpointReady(uiEndpoint) {
+				portChan <- fmt.Errorf("UI endpoint not ready")
 				return
 			}
 
