@@ -25,7 +25,7 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 			return err
 		}
 
-		if container.State.Health != nil {
+		if container.State.Health != nil && container.State.Health.Status != "" {
 			if container.State.Health.Status == "healthy" {
 				return nil
 			}
