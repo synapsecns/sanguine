@@ -67,17 +67,15 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 			j.tb.Log("Query endpoint not ready")
 		}
 
-		otlpGrpcReady := isEndpointReady(otlpGrpcEndpoint)
-		if !otlpGrpcReady {
-			j.tb.Log("OTLP gRPC endpoint not ready")
-		}
+		// Skip OTLP gRPC endpoint check as it's not an HTTP endpoint
+		j.tb.Log("Skipping OTLP gRPC endpoint check (not HTTP)")
 
 		otlpHttpReady := isEndpointReady(otlpHttpEndpoint)
 		if !otlpHttpReady {
 			j.tb.Log("OTLP HTTP endpoint not ready")
 		}
 
-		if !collectorReady || !queryReady || !otlpGrpcReady || !otlpHttpReady {
+		if !collectorReady || !queryReady || !otlpHttpReady {
 			// Get container logs on failure using Docker API
 			if resource.Container != nil {
 				var buf bytes.Buffer
@@ -94,8 +92,8 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 					j.tb.Logf("Failed to get container logs: %v", err)
 				}
 			}
-			return fmt.Errorf("endpoints not ready - collector: %v, query: %v, otlp-grpc: %v, otlp-http: %v (waited %v)",
-				collectorReady, queryReady, otlpGrpcReady, otlpHttpReady, time.Since(startTime))
+			return fmt.Errorf("endpoints not ready - collector: %v, query: %v, otlp-http: %v (waited %v)",
+				collectorReady, queryReady, otlpHttpReady, time.Since(startTime))
 		}
 
 		j.tb.Logf("Container health check passed after %v", time.Since(startTime))
@@ -112,16 +110,24 @@ func isEndpointReady(endpoint string) bool {
 	client := &http.Client{
 		Timeout: time.Second * 10, // Increased timeout for endpoint checks
 	}
+
+	// For the collector endpoint, we need to send a POST request with a minimal trace
+	if strings.Contains(endpoint, "/api/traces") {
+		minimalTrace := []byte(`{"data":[{"name":"test"}]}`)
+		resp, err := client.Post(endpoint, "application/json", bytes.NewReader(minimalTrace))
+		if err != nil {
+			return false
+		}
+		defer resp.Body.Close()
+		return resp.StatusCode < 400
+	}
+
+	// For other endpoints, use GET request
 	resp, err := client.Get(endpoint)
 	if err != nil {
 		return false
 	}
 	defer resp.Body.Close()
-
-	// For the collector endpoint, we need to check if it accepts traces
-	if strings.Contains(endpoint, "/api/traces") {
-		return resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusAccepted
-	}
 
 	// For other endpoints, any response below 500 is considered ready
 	return resp.StatusCode < 500
