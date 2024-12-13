@@ -22,16 +22,29 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 	j.tb.Log("Waiting for initial container warmup...")
 	time.Sleep(time.Second * 10)
 
+	// Check container status and get initial logs
+	container := resource.Container
+	if container == nil {
+		return fmt.Errorf("container reference is nil")
+	}
+
+	// Get initial container logs
+	var buf bytes.Buffer
+	err := j.pool.Client.Logs(docker.LogsOptions{
+		Container:    container.ID,
+		OutputStream: &buf,
+		Follow:       false,
+		Stdout:       true,
+		Stderr:       true,
+	})
+	if err == nil && buf.Len() > 0 {
+		j.tb.Logf("Initial container logs:\n%s", buf.String())
+	}
+
 	// Use pool's retry mechanism with timeout and detailed logging
 	if err := j.pool.Retry(func() error {
 		// Add delay between retries
 		time.Sleep(time.Second * 2)
-
-		// Check container status first
-		container := resource.Container
-		if container == nil {
-			return fmt.Errorf("container reference is nil")
-		}
 
 		j.tb.Logf("Container status: %s (running for %v)", container.State.Status, time.Since(startTime))
 		if container.State.Status != "running" {
