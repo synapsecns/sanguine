@@ -94,6 +94,13 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 		tb.Logf("Warning: Failed to clean up existing resources: %v", err)
 	}
 
+	// Ensure ports are free before starting containers
+	if err := tj.cleanupPorts(); err != nil {
+		tb.Logf("Warning: Failed to clean up ports: %v", err)
+		// Even if port cleanup fails, continue with container startup
+		// as the container itself might handle port conflicts
+	}
+
 	// Wait for cleanup to complete
 	time.Sleep(time.Second * 3)
 
@@ -106,9 +113,15 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 			time.Sleep(time.Duration(attempt*5) * time.Second)
 
 			// Thorough cleanup between attempts
-			tj.purgeResources()
-			if tj.network != nil {
-				_ = tj.network.Close()
+			if err := tj.purgeResources(); err != nil {
+				tb.Logf("Warning: Failed to clean up resources between attempts: %v", err)
+			}
+			if tj.network != nil && tj.pool != nil && tj.pool.Client != nil {
+				if err := tj.pool.Client.RemoveNetwork(tj.network.Network.ID); err != nil {
+					if !strings.Contains(err.Error(), "not found") {
+						tb.Logf("Warning: Failed to remove network %s: %v", tj.network.Network.ID, err)
+					}
+				}
 				tj.network = nil
 			}
 			// Wait for resources to be fully released
@@ -117,30 +130,95 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 
 		// Create network first if needed
 		if tj.cfg.requiresNetwork {
-			networks := tj.getNetworks()
-			if len(networks) == 0 {
-				// Create network with retry
-				err := retry.WithBackoff(ctx, func(ctx context.Context) error {
-					networks = tj.getNetworks()
-					if len(networks) == 0 {
-						network, err := tj.pool.CreateNetwork(fmt.Sprintf("test-network-%s", tj.runID))
-						if err != nil {
-							tb.Logf("Failed to create network: %v", err)
-							return err
-						}
-						tj.network = network
-					}
-					return nil
-				},
-					retry.WithMax(time.Second*5),
-					retry.WithMaxAttempts(3))
+			// Create network with retry
+			err := retry.WithBackoff(ctx, func(ctx context.Context) error {
+				networkName := fmt.Sprintf("test-network-%s", tj.runID)
+
+				// Clean up all stale test networks first
+				networks, err := tj.pool.Client.ListNetworks()
 				if err != nil {
-					tb.Logf("Failed to create network after retries: %v", err)
-					continue
+					tb.Logf("Failed to list networks: %v", err)
+					return err
 				}
+
+				// Clean up any existing test networks to prevent subnet conflicts
+				for _, n := range networks {
+					if strings.HasPrefix(n.Name, "test-network-") {
+						if err := tj.pool.Client.RemoveNetwork(n.ID); err != nil {
+							if !strings.Contains(err.Error(), "not found") {
+								tb.Logf("Warning: Failed to remove existing network %s: %v", n.ID, err)
+							}
+						}
+					}
+				}
+
+				// Wait for network cleanup to complete
+				time.Sleep(time.Second * 3)
+
+				// Create new network with specific subnet
+				network, err := tj.pool.Client.CreateNetwork(docker.CreateNetworkOptions{
+					Name: networkName,
+					Labels: map[string]string{
+						runIDLabel: tj.runID,
+					},
+					Driver: "bridge",
+					IPAM: &docker.IPAMOptions{
+						Driver: "default",
+						Config: []docker.IPAMConfig{
+							{
+								Subnet:  "172.21.0.0/16",
+								Gateway: "172.21.0.1",
+							},
+						},
+					},
+					CheckDuplicate: true,
+					EnableIPv6:     false,
+				})
+				if err != nil {
+					tb.Logf("Failed to create network: %v", err)
+					// Try to clean up the failed network
+					if cleanupErr := tj.pool.Client.RemoveNetwork(network.ID); cleanupErr != nil {
+						tb.Logf("Warning: Failed to clean up failed network: %v", cleanupErr)
+					}
+					return err
+				}
+
+				// Verify network was created
+				createdNetwork, err := tj.pool.Client.NetworkInfo(network.ID)
+				if err != nil {
+					tb.Logf("Failed to verify network creation: %v", err)
+					return err
+				}
+
+				// Additional network validation
+				if createdNetwork == nil {
+					return fmt.Errorf("network created but info returned nil")
+				}
+
+				// Verify network is in expected state
+				if createdNetwork.Driver != "bridge" {
+					return fmt.Errorf("network driver mismatch: expected bridge, got %s", createdNetwork.Driver)
+				}
+
+				tj.network = &dockertest.Network{Network: createdNetwork}
+				return nil
+			},
+				retry.WithMax(time.Second*15),
+				retry.WithMaxAttempts(5))
+
+			if err != nil {
+				tb.Logf("Failed to create network after retries: %v", err)
+				return nil // Fail fast if network creation fails
 			}
+
+			// Verify network exists and is ready
+			if tj.network == nil || tj.network.Network == nil {
+				tb.Logf("Network creation succeeded but network reference is nil")
+				return nil // Fail fast if network validation fails
+			}
+
 			// Wait for network to stabilize
-			time.Sleep(time.Second * 3)
+			time.Sleep(time.Second * 5)
 		}
 
 		// Start Jaeger first
@@ -221,9 +299,16 @@ func startServer(parentCtx context.Context, tb testing.TB, options ...Option) *t
 		if tb.Failed() && os.Getenv("CI") == "" {
 			logger.Warn("Test failed, will temporarily continue serving \n" + tj.buildLogMessage(false))
 		} else if !tj.cfg.keepContainers {
-			tj.purgeResources()
-			if tj.network != nil {
-				_ = tj.network.Close()
+			if err := tj.purgeResources(); err != nil {
+				logger.Warnf("Failed to clean up resources during cleanup: %v", err)
+			}
+			if tj.network != nil && tj.pool != nil && tj.pool.Client != nil {
+				if err := tj.pool.Client.RemoveNetwork(tj.network.Network.ID); err != nil {
+					if !strings.Contains(err.Error(), "not found") {
+						logger.Warnf("Failed to remove network %s: %v", tj.network.Network.ID, err)
+					}
+				}
+				tj.network = nil
 			}
 		}
 	})
@@ -243,140 +328,87 @@ func (j *testJaeger) getNetworks() []*dockertest.Network {
 	j.networkMux.Lock()
 	defer j.networkMux.Unlock()
 
-	// Try to use existing jaeger-test-net network first
+	// First, ensure cleanup of any existing networks
 	networks, err := j.pool.Client.ListNetworks()
 	if err != nil {
 		j.tb.Logf("Error listing networks: %v", err)
-	} else {
-		for _, network := range networks {
-			if network.Name == "jaeger-test-net" {
-				// Found existing network, wrap it in dockertest.Network
-				networkPtr := &network
-				return []*dockertest.Network{{Network: networkPtr}}
+		return []*dockertest.Network{}
+	}
+
+	// Clean up existing networks with retries
+	for _, network := range networks {
+		if network.Labels[runIDLabel] == j.runID || strings.HasPrefix(network.Name, "test-network") {
+			// Disconnect all containers first
+			containers, err := j.pool.Client.ListContainers(docker.ListContainersOptions{
+				All:     true,
+				Filters: map[string][]string{"network": {network.ID}},
+			})
+			if err != nil {
+				j.tb.Logf("Warning: Failed to list containers for network %s: %v", network.ID, err)
+				continue
+			}
+
+			for _, container := range containers {
+				if err := j.pool.Client.DisconnectNetwork(network.ID, docker.NetworkConnectionOptions{
+					Container: container.ID,
+					Force:     true,
+				}); err != nil {
+					j.tb.Logf("Warning: Failed to disconnect container %s from network %s: %v",
+						container.ID, network.ID, err)
+				}
+			}
+
+			// Wait for disconnections to complete
+			time.Sleep(time.Second * 2)
+
+			if err := j.pool.Client.RemoveNetwork(network.ID); err != nil {
+				j.tb.Logf("Warning: Failed to remove network %s: %v", network.ID, err)
 			}
 		}
 	}
 
-	// Clean up existing test networks with retry
-	err = retry.WithBackoff(context.Background(), func(ctx context.Context) error {
-		networks, err := j.pool.Client.ListNetworks()
-		if err != nil {
-			j.tb.Logf("Error listing networks: %v", err)
-			return err
-		}
-
-		for _, network := range networks {
-			if network.Labels[runIDLabel] == j.runID {
-				// List and disconnect containers
-				containers, err := j.pool.Client.ListContainers(docker.ListContainersOptions{
-					All:     true,
-					Filters: map[string][]string{"network": {network.ID}},
-				})
-				if err != nil {
-					j.tb.Logf("Error listing containers for network %s: %v", network.ID, err)
-					continue
-				}
-
-				for _, container := range containers {
-					err := j.pool.Client.DisconnectNetwork(network.ID, docker.NetworkConnectionOptions{
-						Container: container.ID,
-						Force:     true,
-					})
-					if err != nil {
-						j.tb.Logf("Error disconnecting container %s from network %s: %v", container.ID, network.ID, err)
-					}
-				}
-
-				// Wait for disconnections to complete
-				time.Sleep(time.Second)
-
-				if err := j.pool.Client.RemoveNetwork(network.ID); err != nil {
-					j.tb.Logf("Error removing network %s: %v", network.ID, err)
-					return err
-				}
-			}
-		}
-		return nil
-	},
-		retry.WithMax(time.Second*2),
-		retry.WithMaxAttempts(3))
-
-	if err != nil {
-		j.tb.Logf("Warning: Failed to clean up existing networks: %v", err)
+	// If we already have a network, return it
+	if j.network != nil {
+		return []*dockertest.Network{j.network}
 	}
 
-	// Use existing jaeger-test-net network if available
-	if networkExists("jaeger-test-net") {
-		network, err := j.pool.Client.NetworkInfo("jaeger-test-net")
-		if err == nil {
-			j.tb.Log("Using existing jaeger-test-net network")
-			return []*dockertest.Network{{Network: network}}
-		}
-		j.tb.Logf("Error getting jaeger-test-net info: %v", err)
-	}
-
-	// Create new network with retry and specific subnet
+	// Create a new network with retries
+	networkName := fmt.Sprintf("test-network-%s", j.runID)
+	var network *docker.Network
 	err = retry.WithBackoff(context.Background(), func(ctx context.Context) error {
 		var createErr error
-
-		// Try different subnets if we encounter pool overlap errors
-		subnets := []string{
-			"172.20.0.0/16",
-			"172.21.0.0/16",
-			"172.22.0.0/16",
-			"172.23.0.0/16",
-		}
-
-		for _, subnet := range subnets {
-			j.network, createErr = j.pool.CreateNetwork(j.runID, func(config *docker.CreateNetworkOptions) {
-				config.Driver = "bridge"
-				config.IPAM = &docker.IPAMOptions{
-					Config: []docker.IPAMConfig{{
-						Subnet:  subnet,
-						Gateway: strings.Replace(subnet, "0.0/16", "0.1", 1),
-					}},
-				}
-				config.Labels = map[string]string{
-					runIDLabel: j.runID,
-				}
-				config.CheckDuplicate = true
-			})
-
-			if createErr == nil {
-				// Successfully created network
-				break
-			}
-
-			if !strings.Contains(createErr.Error(), "Pool overlaps") {
-				// If error is not pool overlap, return immediately
-				return createErr
-			}
-
-			j.tb.Logf("Failed to create network with subnet %s: %v, trying next subnet", subnet, createErr)
-		}
-
+		network, createErr = j.pool.Client.CreateNetwork(docker.CreateNetworkOptions{
+			Name: networkName,
+			Labels: map[string]string{
+				runIDLabel: j.runID,
+				appLabel:   "jaeger-test",
+			},
+			Driver: "bridge",
+			IPAM: &docker.IPAMOptions{
+				Driver: "default",
+				Config: []docker.IPAMConfig{
+					{
+						Subnet: "172.21.0.0/16",
+					},
+				},
+			},
+			CheckDuplicate: true,
+		})
 		if createErr != nil {
-			j.tb.Logf("Failed to create network with any subnet: %v", createErr)
+			j.tb.Logf("Network creation attempt failed: %v", createErr)
 			return createErr
-		}
-
-		// Verify network exists
-		_, err := j.pool.Client.NetworkInfo(j.network.Network.ID)
-		if err != nil {
-			j.tb.Logf("Network verification failed: %v", err)
-			return err
 		}
 		return nil
 	},
-		retry.WithMax(time.Second*2),
-		retry.WithMaxAttempts(4))
+		retry.WithMax(time.Second*30),
+		retry.WithMaxAttempts(5))
 
 	if err != nil {
 		j.tb.Logf("Failed to create network after retries: %v", err)
-		j.tb.Fatal(err)
+		return []*dockertest.Network{}
 	}
 
-	j.tb.Logf("Successfully created network: %s", j.network.Network.ID)
+	j.network = &dockertest.Network{Network: network}
 	return []*dockertest.Network{j.network}
 }
 
@@ -413,13 +445,25 @@ func (j *testJaeger) getDockerizedResources() (dockerizedResources []*dockertest
 	return dockerizedResources
 }
 
-// purgeResources purges the resources from the pool.
-func (j *testJaeger) purgeResources() {
+// purgeResources purges the resources from the pool and returns any errors encountered.
+func (j *testJaeger) purgeResources() error {
+	if j == nil {
+		return fmt.Errorf("testJaeger instance is nil")
+	}
+	if j.pool == nil {
+		return fmt.Errorf("Docker pool is nil")
+	}
+	if j.pool.Client == nil {
+		return fmt.Errorf("Docker client is nil")
+	}
+
 	var cleanupMutex sync.Mutex
+	var errs []error
 	resources := j.getDockerizedResources()
 
 	// Clean up ports first to ensure they're released
 	if err := j.cleanupPorts(); err != nil {
+		errs = append(errs, fmt.Errorf("port cleanup failed: %w", err))
 		j.tb.Logf("Warning: Failed to clean up ports: %v", err)
 	}
 
@@ -432,11 +476,11 @@ func (j *testJaeger) purgeResources() {
 		// Stop container with timeout and proper error handling
 		if err := j.pool.Client.StopContainer(resource.Container.ID, uint(5)); err != nil {
 			if !strings.Contains(err.Error(), "No such container") {
+				errs = append(errs, fmt.Errorf("failed to stop container %s: %w", resource.Container.ID, err))
 				j.tb.Logf("Warning: Failed to stop container %s: %v", resource.Container.ID, err)
 			}
 		}
 		cleanupMutex.Unlock()
-		// Wait for container to stop
 		time.Sleep(time.Second)
 	}
 
@@ -454,50 +498,98 @@ func (j *testJaeger) purgeResources() {
 		if err := j.pool.Client.RemoveContainer(opts); err != nil {
 			if !strings.Contains(err.Error(), "No such container") &&
 				!strings.Contains(err.Error(), "removal of container") {
+				errs = append(errs, fmt.Errorf("failed to remove container %s: %w", resource.Container.ID, err))
 				j.tb.Logf("Warning: Failed to remove container %s: %v", resource.Container.ID, err)
 			}
 		}
 		cleanupMutex.Unlock()
-		// Wait for removal to complete
 		time.Sleep(time.Second)
 	}
 
-	// Finally, clean up networks with proper synchronization
-	if networks, err := j.pool.Client.ListNetworks(); err == nil {
-		for _, network := range networks {
-			if network.Labels[runIDLabel] == j.runID {
-				cleanupMutex.Lock()
-				// Ensure all containers are disconnected from network
-				containers, _ := j.pool.Client.ListContainers(docker.ListContainersOptions{
-					All:     true,
-					Filters: map[string][]string{"network": {network.ID}},
-				})
-				for _, container := range containers {
-					if err := j.pool.Client.DisconnectNetwork(network.ID, docker.NetworkConnectionOptions{
-						Container: container.ID,
-						Force:     true,
-					}); err != nil {
-						j.tb.Logf("Warning: Failed to disconnect container %s from network %s: %v", container.ID, network.ID, err)
-					}
+	// Finally, clean up networks with proper synchronization and retries
+	if j.pool != nil && j.pool.Client != nil {
+		networks, err := j.pool.Client.ListNetworks()
+		if err != nil {
+			errs = append(errs, fmt.Errorf("failed to list networks: %w", err))
+			j.tb.Logf("Warning: Failed to list networks: %v", err)
+		} else {
+			for _, network := range networks {
+				// Check network validity using ID and Name fields
+				if network.ID == "" || network.Name == "" || network.Labels == nil {
+					continue
 				}
-				// Wait for disconnections to complete
-				time.Sleep(time.Second * 2)
-				if err := j.pool.Client.RemoveNetwork(network.ID); err != nil {
-					if !strings.Contains(err.Error(), "not found") {
-						j.tb.Logf("Warning: Failed to remove network %s: %v", network.ID, err)
+				if network.Labels[runIDLabel] == j.runID {
+					cleanupMutex.Lock()
+					// Disconnect all containers with retries
+					containers, err := j.pool.Client.ListContainers(docker.ListContainersOptions{
+						All:     true,
+						Filters: map[string][]string{"network": {network.ID}},
+					})
+					if err != nil {
+						errs = append(errs, fmt.Errorf("failed to list containers for network %s: %w", network.ID, err))
+						j.tb.Logf("Warning: Failed to list containers for network %s: %v", network.ID, err)
+						cleanupMutex.Unlock()
+						continue
 					}
+
+					// Wait for network operations to stabilize
+					time.Sleep(time.Second * 2)
+
+					for _, container := range containers {
+						// Retry disconnection up to 3 times with increasing backoff
+						var disconnectErr error
+						for attempt := 0; attempt < 3; attempt++ {
+							disconnectErr = j.pool.Client.DisconnectNetwork(network.ID, docker.NetworkConnectionOptions{
+								Container: container.ID,
+								Force:     true,
+							})
+							if disconnectErr == nil || strings.Contains(disconnectErr.Error(), "No such container") {
+								break
+							}
+							time.Sleep(time.Second * time.Duration(attempt+1))
+						}
+						if disconnectErr != nil && !strings.Contains(disconnectErr.Error(), "No such container") {
+							errs = append(errs, fmt.Errorf("failed to disconnect container %s from network %s: %w", container.ID, network.ID, disconnectErr))
+							j.tb.Logf("Warning: Failed to disconnect container %s from network %s: %v", container.ID, network.ID, disconnectErr)
+						}
+					}
+
+					// Wait for disconnections to complete
+					time.Sleep(time.Second * 3)
+
+					// Retry network removal up to 5 times with increasing backoff
+					var removeErr error
+					for attempt := 0; attempt < 5; attempt++ {
+						removeErr = j.pool.Client.RemoveNetwork(network.ID)
+						if removeErr == nil || strings.Contains(removeErr.Error(), "not found") {
+							removeErr = nil
+							break
+						}
+						time.Sleep(time.Second * time.Duration(attempt+1))
+					}
+					if removeErr != nil {
+						errs = append(errs, fmt.Errorf("failed to remove network %s: %w", network.ID, removeErr))
+						j.tb.Logf("Warning: Failed to remove network %s: %v", network.ID, removeErr)
+					}
+					cleanupMutex.Unlock()
 				}
-				cleanupMutex.Unlock()
 			}
 		}
 	}
 
-	// Final port cleanup and verification
+	// Final port cleanup
 	if err := j.cleanupPorts(); err != nil {
+		errs = append(errs, fmt.Errorf("final port cleanup failed: %w", err))
 		j.tb.Logf("Warning: Failed in final port cleanup: %v", err)
 	}
+
 	// Wait for all cleanup operations to complete
 	time.Sleep(time.Second * 3)
+
+	if len(errs) > 0 {
+		return fmt.Errorf("resource cleanup encountered errors: %v", errs)
+	}
+	return nil
 }
 
 // uiResource is a wrapper around dockertest.Resource that logs the container logs to a file.

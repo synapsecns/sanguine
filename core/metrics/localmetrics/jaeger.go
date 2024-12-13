@@ -1,6 +1,7 @@
 package localmetrics
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -57,6 +58,18 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		j.tb.Logf("Warning: Failed to clean up resources: %v", err)
 	}
 
+	// Create a new network if one doesn't exist
+	if j.network == nil {
+		networkName := fmt.Sprintf("jaeger-network-%s", j.runID)
+		network, err := j.pool.CreateNetwork(networkName)
+		if err != nil {
+			j.tb.Logf("Failed to create network: %v", err)
+			return nil
+		}
+		j.network = network
+		j.tb.Logf("Created new network: %s", networkName)
+	}
+
 	// Ensure ports are available
 	if err := j.cleanupPorts(); err != nil {
 		j.tb.Logf("Warning: Failed to clean up ports: %v", err)
@@ -86,17 +99,29 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		Env: []string{
 			"COLLECTOR_OTLP_ENABLED=true",
 			"LOG_LEVEL=debug",
+			"SPAN_STORAGE_TYPE=memory",
 			"COLLECTOR_HTTP_PORT=14268",
 			"QUERY_HTTP_PORT=16686",
 			"HEALTH_CHECK_HTTP_PORT=14269",
-			"METRICS_STORAGE_TYPE=prometheus",
-			"COLLECTOR_OTLP_GRPC_HOST_PORT=0.0.0.0:4317",
-			"COLLECTOR_OTLP_HTTP_HOST_PORT=0.0.0.0:4318",
-			"COLLECTOR_ZIPKIN_HOST_PORT=0.0.0.0:14268",
-			"COLLECTOR_ZIPKIN_HTTP_PORT=14268",
-			"SPAN_STORAGE_TYPE=memory",
+			"METRICS_HTTP_PORT=14269",
+			"COLLECTOR_OTLP_GRPC_PORT=4317",
+			"COLLECTOR_OTLP_HTTP_PORT=4318",
+			"COLLECTOR_ZIPKIN_HOST_PORT=:9411",
+			"COLLECTOR_OTLP_PROTOCOLS=grpc,http",
+			"COLLECTOR_OTLP_TRACES_ENABLED=true",
+			"COLLECTOR_OTLP_TRACES_HOST=0.0.0.0",
+			"COLLECTOR_OTLP_TRACES_PORT=4317",
+			"COLLECTOR_OTLP_HTTP_TRACES_ENABLED=true",
+			"COLLECTOR_OTLP_HTTP_TRACES_HOST=0.0.0.0",
+			"COLLECTOR_OTLP_HTTP_TRACES_PORT=4318",
 		},
-		Networks: j.getNetworks(),
+		// Only include network if it exists
+		Networks: func() []*dockertest.Network {
+			if j.network != nil {
+				return []*dockertest.Network{j.network}
+			}
+			return nil
+		}(),
 		Labels: map[string]string{
 			appLabel:   "jaeger",
 			runIDLabel: j.runID,
@@ -131,7 +156,15 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 			config.PublishAllPorts = false
 			config.PortBindings = runOptions.PortBindings
-			config.NetworkMode = "bridge"
+
+			// Set network mode based on network configuration
+			if j.network != nil {
+				config.NetworkMode = j.network.Network.Name
+				j.tb.Logf("Using network: %s", j.network.Network.Name)
+			} else {
+				config.NetworkMode = "bridge"
+				j.tb.Log("Using bridge network mode")
+			}
 		})
 		if err != nil {
 			j.tb.Logf("Failed to start container: %v", err)
@@ -144,12 +177,32 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		// Wait for container to be healthy
 		j.tb.Log("Waiting for container to be healthy...")
 		if err := j.waitForContainerHealth(resource); err != nil {
+			// Get container logs before reporting failure
+			var buf bytes.Buffer
+			logErr := j.pool.Client.Logs(docker.LogsOptions{
+				Container:    resource.Container.ID,
+				OutputStream: &buf,
+				Follow:      false,
+				Stdout:      true,
+				Stderr:      true,
+				Timestamps:  true,
+			})
+			if logErr == nil && buf.Len() > 0 {
+				j.tb.Logf("Container logs during health check failure:\n%s", buf.String())
+			}
 			j.tb.Logf("Container health check failed: %v", err)
+			// Get container state for debugging
+			if resource.Container != nil {
+				j.tb.Logf("Container state: Status=%s, Running=%v, StartedAt=%s",
+					resource.Container.State.Status,
+					resource.Container.State.Running,
+					resource.Container.State.StartedAt)
+			}
 			return err
 		}
 
 		// Validate ports with increased timeout
-		portCtx, portCancel := context.WithTimeout(ctx, 10*time.Second)
+		portCtx, portCancel := context.WithTimeout(ctx, 60*time.Second)
 		defer portCancel()
 
 		portChan := make(chan error, 1)
@@ -211,8 +264,8 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 
 		return nil
 	},
-		retry.WithMax(time.Second*60),
-		retry.WithMaxAttempts(5))
+		retry.WithMax(time.Second*60),  // Increase timeout for container startup
+		retry.WithMaxAttempts(5))    // Increase retry attempts
 
 	if err != nil {
 		j.tb.Logf("Failed to start container after retries: %v", err)
