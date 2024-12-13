@@ -39,12 +39,12 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 		}
 
 		// Try to connect to all endpoints with increased timeouts
-		collectorEndpoint := fmt.Sprintf("http://localhost:%s/api/traces", resource.GetPort("14268/tcp"))
-		collectorHealthEndpoint := fmt.Sprintf("http://localhost:%s/health", resource.GetPort("14269/tcp"))
-		queryEndpoint := fmt.Sprintf("http://localhost:%s", resource.GetPort("16686/tcp"))
-		healthEndpoint := fmt.Sprintf("http://localhost:%s/health", resource.GetPort("14269/tcp")) // Added /health path
-		otlpGrpcEndpoint := fmt.Sprintf("http://localhost:%s", resource.GetPort("4317/tcp"))
-		otlpHttpEndpoint := fmt.Sprintf("http://localhost:%s", resource.GetPort("4318/tcp"))
+		collectorEndpoint := fmt.Sprintf("http://127.0.0.1:%s/api/traces", resource.GetPort("14268/tcp"))
+		collectorHealthEndpoint := fmt.Sprintf("http://127.0.0.1:%s/health", resource.GetPort("14269/tcp"))
+		queryEndpoint := fmt.Sprintf("http://127.0.0.1:%s", resource.GetPort("16686/tcp"))
+		healthEndpoint := fmt.Sprintf("http://127.0.0.1:%s/health", resource.GetPort("14269/tcp")) // Added /health path
+		otlpGrpcEndpoint := fmt.Sprintf("http://127.0.0.1:%s", resource.GetPort("4317/tcp"))
+		otlpHttpEndpoint := fmt.Sprintf("http://127.0.0.1:%s", resource.GetPort("4318/tcp"))
 
 		j.tb.Logf("Checking endpoints - collector: %s, collector health: %s, query: %s, health: %s, otlp-grpc: %s, otlp-http: %s",
 			collectorEndpoint, collectorHealthEndpoint, queryEndpoint, healthEndpoint, otlpGrpcEndpoint, otlpHttpEndpoint)
