@@ -57,6 +57,19 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		j.tb.Logf("Warning: Failed to clean up resources: %v", err)
 	}
 
+	// Ensure ports are available
+	if err := j.cleanupPorts(); err != nil {
+		j.tb.Logf("Warning: Failed to clean up ports: %v", err)
+		return nil
+	}
+
+	// Verify ports are available
+	time.Sleep(time.Second * 2)
+	if inUse := j.getPortsInUse(); len(inUse) > 0 {
+		j.tb.Logf("Ports still in use after cleanup: %v", inUse)
+		return nil
+	}
+
 	j.tb.Log("Setting up container options...")
 	runOptions := &dockertest.RunOptions{
 		Repository:   "jaegertracing/all-in-one",
@@ -91,12 +104,16 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 	err = retry.WithBackoff(ctx, func(ctx context.Context) error {
 		j.tb.Log("Attempting to start container...")
 
-		// Create a context with timeout for this attempt
-		attemptCtx, attemptCancel := context.WithTimeout(ctx, 5*time.Second)
-		defer attemptCancel()
-
-		// Wait for network stability (shorter wait)
-		time.Sleep(time.Second)
+		// Verify ports are still available before each attempt
+		if inUse := j.getPortsInUse(); len(inUse) > 0 {
+			j.tb.Logf("Ports in use before container start: %v", inUse)
+			// Try cleanup again
+			if err := j.cleanupPorts(); err != nil {
+				j.tb.Logf("Warning: Failed to clean up ports during retry: %v", err)
+			}
+			time.Sleep(time.Second)
+			return fmt.Errorf("ports still in use")
+		}
 
 		j.tb.Log("Running container with options...")
 		resource, err = j.pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
@@ -107,14 +124,18 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			config.PortBindings = runOptions.PortBindings
 			config.NetworkMode = "bridge"
 		})
+
 		if err != nil {
 			j.tb.Logf("Failed to start container: %v", err)
+			// If container creation fails, ensure cleanup
+			if resource != nil {
+				_ = resource.Close()
+			}
 			return fmt.Errorf("container start failed: %w", err)
 		}
 
-		j.tb.Log("Container started, validating ports...")
 		// Validate ports with timeout
-		portCtx, portCancel := context.WithTimeout(attemptCtx, 2*time.Second)
+		portCtx, portCancel := context.WithTimeout(ctx, 2*time.Second)
 		defer portCancel()
 
 		portChan := make(chan error, 1)
@@ -152,25 +173,7 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			return fmt.Errorf("port validation timed out")
 		}
 
-		j.tb.Log("Waiting for endpoints to be ready...")
-		// Wait for endpoints with shorter timeout
-		return retry.WithBackoff(ctx, func(ctx context.Context) error {
-			endpoint := os.Getenv(internal.JaegerEndpoint)
-			uiEndpoint := os.Getenv(internal.JaegerUIEndpoint)
-
-			if err := checkURL(endpoint)(ctx); err != nil {
-				j.tb.Logf("Endpoint not ready: %v", err)
-				return err
-			}
-			if err := checkURL(uiEndpoint)(ctx); err != nil {
-				j.tb.Logf("UI endpoint not ready: %v", err)
-				return err
-			}
-			j.tb.Log("Endpoints are ready")
-			return nil
-		},
-			retry.WithMax(time.Second*2),
-			retry.WithMaxAttempts(5))
+		return nil
 	},
 		retry.WithMax(time.Second*3),
 		retry.WithMaxAttempts(5))

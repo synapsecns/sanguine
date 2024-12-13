@@ -364,17 +364,24 @@ func (j *testJaeger) purgeResources() {
 	var cleanupMutex sync.Mutex
 	resources := j.getDockerizedResources()
 
+	// Clean up ports first to ensure they're released
+	if err := j.cleanupPorts(); err != nil {
+		j.tb.Logf("Warning: Failed to clean up ports: %v", err)
+	}
+
 	// First, stop all containers sequentially to avoid race conditions
 	for _, resource := range resources {
 		if resource == nil || resource.Container == nil {
 			continue
 		}
+		cleanupMutex.Lock()
 		// Stop container with timeout and proper error handling
 		if err := j.pool.Client.StopContainer(resource.Container.ID, uint(5)); err != nil {
 			if !strings.Contains(err.Error(), "No such container") {
 				j.tb.Logf("Warning: Failed to stop container %s: %v", resource.Container.ID, err)
 			}
 		}
+		cleanupMutex.Unlock()
 		// Wait for container to stop
 		time.Sleep(time.Second)
 	}
@@ -406,7 +413,20 @@ func (j *testJaeger) purgeResources() {
 		for _, network := range networks {
 			if network.Labels[runIDLabel] == j.runID {
 				cleanupMutex.Lock()
-				// Wait for any remaining container operations
+				// Ensure all containers are disconnected from network
+				containers, _ := j.pool.Client.ListContainers(docker.ListContainersOptions{
+					All:     true,
+					Filters: map[string][]string{"network": {network.ID}},
+				})
+				for _, container := range containers {
+					if err := j.pool.Client.DisconnectNetwork(network.ID, docker.NetworkConnectionOptions{
+						Container: container.ID,
+						Force:     true,
+					}); err != nil {
+						j.tb.Logf("Warning: Failed to disconnect container %s from network %s: %v", container.ID, network.ID, err)
+					}
+				}
+				// Wait for disconnections to complete
 				time.Sleep(time.Second * 2)
 				if err := j.pool.Client.RemoveNetwork(network.ID); err != nil {
 					if !strings.Contains(err.Error(), "not found") {
@@ -417,6 +437,13 @@ func (j *testJaeger) purgeResources() {
 			}
 		}
 	}
+
+	// Final port cleanup and verification
+	if err := j.cleanupPorts(); err != nil {
+		j.tb.Logf("Warning: Failed in final port cleanup: %v", err)
+	}
+	// Wait for all cleanup operations to complete
+	time.Sleep(time.Second * 3)
 }
 
 // uiResource is a wrapper around dockertest.Resource that logs the container logs to a file.
@@ -428,7 +455,7 @@ type uiResource struct {
 }
 
 // checkURL is a helper function that checks if a url is alive.
-// it does not check the status code.
+// it accepts 405 Method Not Allowed for trace endpoints.
 func checkURL(url string) retry.RetryableFunc {
 	return func(ctx context.Context) error {
 		if url == "" {
@@ -445,7 +472,13 @@ func checkURL(url string) retry.RetryableFunc {
 			},
 		}
 
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		// Determine HTTP method based on endpoint
+		method := http.MethodGet
+		if strings.Contains(url, "/api/traces") {
+			method = http.MethodPost
+		}
+
+		req, err := http.NewRequestWithContext(ctx, method, url, nil)
 		if err != nil {
 			return fmt.Errorf("failed to create request for %s: %v", url, err)
 		}
@@ -465,7 +498,12 @@ func checkURL(url string) retry.RetryableFunc {
 		if resp.StatusCode >= 500 {
 			return fmt.Errorf("server error at %s: status=%d", url, resp.StatusCode)
 		}
+
+		// For trace endpoints, accept 405 Method Not Allowed as valid
 		if resp.StatusCode >= 400 {
+			if strings.Contains(url, "/api/traces") && resp.StatusCode == http.StatusMethodNotAllowed {
+				return nil
+			}
 			return fmt.Errorf("client error at %s: status=%d", url, resp.StatusCode)
 		}
 
