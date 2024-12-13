@@ -87,7 +87,7 @@ The real-time nature of WebSockets dramatically reduces quote latency. Rather th
 
 :::info
 
-The Synapse Intent Network is backwards combatible with the original Fastbridge Contracts.
+The Synapse Intent Network is backwards compatible with the original Fastbridge Contracts.
 
 :::
 

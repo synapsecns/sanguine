@@ -18,6 +18,8 @@
     "Please select Destination network": "宛先ネットワークを選択してください",
     "Please select an Origin token": "オリジントークンを選択してください",
     "Bridge {symbol}": "{symbol}をブリッジ",
+    "Deposit {symbol}": "デポジット {symbol}",
+    "Depositing": "入金",
     "Connect Wallet to Bridge": "ウォレットを接続してブリッジ",
     "Amount must be greater than fee": "金額は手数料より大きくなければなりません",
     "Error in bridge quote": "ブリッジ見積もりでエラーが発生しました",
