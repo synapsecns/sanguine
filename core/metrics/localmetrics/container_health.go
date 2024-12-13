@@ -18,6 +18,10 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 	startTime := time.Now()
 	j.tb.Log("Starting container health check...")
 
+	// Initial warmup period
+	j.tb.Log("Waiting for initial container warmup...")
+	time.Sleep(time.Second * 10)
+
 	// Use pool's retry mechanism with timeout and detailed logging
 	if err := j.pool.Retry(func() error {
 		// Add delay between retries
