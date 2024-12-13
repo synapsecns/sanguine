@@ -14,14 +14,16 @@ import {
   ETH_SYN,
   ETH_NUSD,
   ARB_USDC,
+  ARB_USDT,
 } from '../constants/testValues'
 
 describe('paramsV2', () => {
   const ether = BigNumber.from(10).pow(18)
 
   const paramsV1: SavedParamsV1 = {
-    sender: ETH_USDC,
-    destToken: ARB_USDC,
+    originSender: ARB_USDC,
+    destRecipient: ARB_USDT,
+    destToken: ETH_USDC,
     destAmount: ether.mul(2),
   }
 

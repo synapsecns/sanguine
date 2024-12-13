@@ -5,13 +5,14 @@ import { IFastBridgeV2 } from '../typechain/FastBridgeV2'
 import { ZapDataV1 } from './zapData'
 
 export type SavedParamsV1 = {
-  sender: string
+  originSender: string
+  destRecipient: string
   destToken: string
   destAmount: BigNumber
 }
 export type BridgeParamsV2 = IFastBridgeV2.BridgeParamsV2Struct
 const savedBridgeParams = [
-  'tuple(address,address,uint256)',
+  'tuple(address,address,address,uint256)',
   'tuple(address,int256,bytes,uint256,bytes)',
   'tuple(address,bytes,uint256,address,address)',
 ]
@@ -22,7 +23,12 @@ export const encodeSavedBridgeParams = (
   zapData: ZapDataV1
 ) => {
   return defaultAbiCoder.encode(savedBridgeParams, [
-    [paramsV1.sender, paramsV1.destToken, paramsV1.destAmount],
+    [
+      paramsV1.originSender,
+      paramsV1.destRecipient,
+      paramsV1.destToken,
+      paramsV1.destAmount,
+    ],
     [
       paramsV2.quoteRelayer,
       paramsV2.quoteExclusivitySeconds,
@@ -48,13 +54,14 @@ export const decodeSavedBridgeParams = (
   zapData: ZapDataV1
 } => {
   const [
-    [sender, destToken, destAmount],
+    [originSender, destRecipient, destToken, destAmount],
     [quoteRelayer, quoteExclusivitySeconds, quoteId, zapNative, zapData],
     [target, payload, amountPosition, finalToken, forwardTo],
   ] = defaultAbiCoder.decode(savedBridgeParams, data)
   return {
     paramsV1: {
-      sender,
+      originSender,
+      destRecipient,
       destToken,
       destAmount,
     },

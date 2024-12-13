@@ -346,12 +346,13 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       encodedZapData: encodedZapDataSimulated,
       tokenOut,
     } = intent
+    const destRecipient =
+      encodedZapDataSimulated === '0x'
+        ? FORWARD_TO_SIMULATED
+        : TOKEN_ZAP_V1_ADDRESS_MAP[ticker.destToken.chainId]
     const quote = await getBestRelayerQuote(ticker, originAmountOut, {
       originSender: originUserAddress,
-      destRecipient:
-        encodedZapDataSimulated === '0x'
-          ? undefined
-          : TOKEN_ZAP_V1_ADDRESS_MAP[ticker.destToken.chainId],
+      destRecipient,
       zapData: encodedZapDataSimulated,
     })
     // Now that we got the quote, we need to get the final amount out and adjust the zap data.
@@ -368,7 +369,8 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     const encodedZapData = steps.length > 0 ? hexlify(steps[0].zapData) : '0x'
     const paramsV1 = originUserAddress
       ? {
-          sender: originUserAddress,
+          originSender: originUserAddress,
+          destRecipient,
           destToken: ticker.destToken.token,
           destAmount: quote.destAmount,
         }

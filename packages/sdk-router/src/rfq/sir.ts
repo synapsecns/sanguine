@@ -253,10 +253,16 @@ export class SynapseIntentRouter implements SynapseModule {
       paramsV2,
       zapData: dstZapData,
     } = decodeSavedBridgeParams(dstQuery.rawParams)
-    if (paramsV1.sender === AddressZero) {
+    if (paramsV1.originSender === AddressZero) {
       throw new Error('Missing sender address for FastBridgeV2')
     }
+    if (paramsV1.destRecipient === AddressZero) {
+      throw new Error('Missing recipient address for FastBridgeV2')
+    }
     // Override the simulated forward address if it was used.
+    if (isSameAddress(paramsV1.destRecipient, FORWARD_TO_SIMULATED)) {
+      paramsV1.destRecipient = to
+    }
     if (isSameAddress(dstZapData.forwardTo, FORWARD_TO_SIMULATED)) {
       paramsV2.zapData = encodeZapData({
         ...dstZapData,
@@ -265,8 +271,8 @@ export class SynapseIntentRouter implements SynapseModule {
     }
     const bridgeParamsV1: IFastBridge.BridgeParamsStruct = {
       dstChainId,
-      sender: paramsV1.sender,
-      to,
+      sender: paramsV1.originSender,
+      to: paramsV1.destRecipient,
       originToken,
       destToken: paramsV1.destToken,
       // Will be set in encodeZapData below
