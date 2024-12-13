@@ -38,7 +38,7 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 		collectorEndpoint := fmt.Sprintf("http://localhost:%s/api/traces", resource.GetPort("14268/tcp"))
 		collectorHealthEndpoint := fmt.Sprintf("http://localhost:%s/health", resource.GetPort("14269/tcp"))
 		queryEndpoint := fmt.Sprintf("http://localhost:%s", resource.GetPort("16686/tcp"))
-		healthEndpoint := fmt.Sprintf("http://localhost:%s", resource.GetPort("14269/tcp"))
+		healthEndpoint := fmt.Sprintf("http://localhost:%s/health", resource.GetPort("14269/tcp")) // Added /health path
 		otlpGrpcEndpoint := fmt.Sprintf("http://localhost:%s", resource.GetPort("4317/tcp"))
 		otlpHttpEndpoint := fmt.Sprintf("http://localhost:%s", resource.GetPort("4318/tcp"))
 
@@ -47,14 +47,30 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 
 		// Check health endpoint first with retries
 		healthReady := false
-		maxRetries := 10 // Increased from 3 to 10
+		maxRetries := 10
 		for i := 0; i < maxRetries; i++ {
 			healthReady = isEndpointReady(healthEndpoint)
 			if healthReady {
 				break
 			}
 			j.tb.Logf("Health check attempt %d/%d failed, waiting before retry...", i+1, maxRetries)
-			time.Sleep(time.Second * 3) // Increased from 1 to 3 seconds
+
+			// Get container logs after each failed attempt
+			if resource.Container != nil {
+				var buf bytes.Buffer
+				err := j.pool.Client.Logs(docker.LogsOptions{
+					Container:    resource.Container.ID,
+					OutputStream: &buf,
+					Follow:       false,
+					Stdout:       true,
+					Stderr:       true,
+				})
+				if err == nil && buf.Len() > 0 {
+					j.tb.Logf("Container logs after failed attempt %d:\n%s", i+1, buf.String())
+				}
+			}
+
+			time.Sleep(time.Second * 3)
 		}
 		if !healthReady {
 			j.tb.Log("Health endpoint not ready")
