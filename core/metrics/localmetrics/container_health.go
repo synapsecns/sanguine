@@ -113,7 +113,18 @@ func isEndpointReady(endpoint string) bool {
 
 	// For the collector endpoint, we need to send a POST request with a minimal trace
 	if strings.Contains(endpoint, "/api/traces") {
-		minimalTrace := []byte(`{"data":[{"name":"test"}]}`)
+		// Minimal valid Jaeger trace format
+		minimalTrace := []byte(`{
+			"data": [{
+				"traceID": "0123456789abcdef0123456789abcdef",
+				"spanID": "0123456789abcdef",
+				"operationName": "test",
+				"startTime": 1,
+				"process": {
+					"serviceName": "test-service"
+				}
+			}]
+		}`)
 		resp, err := client.Post(endpoint, "application/json", bytes.NewReader(minimalTrace))
 		if err != nil {
 			return false
