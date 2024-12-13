@@ -2,16 +2,69 @@ package localmetrics
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/jaegertracing/jaeger/thrift-gen/jaeger"
+	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 )
+
+// generateJaegerThriftTrace creates a minimal Jaeger trace in Thrift format
+func generateJaegerThriftTrace() []byte {
+	// Create a timestamp in microseconds
+	timestamp := time.Now().UnixNano() / 1000
+
+	// Create a test span
+	span := &jaeger.Span{
+		TraceIdLow:    rand.Int63(),
+		TraceIdHigh:   rand.Int63(),
+		SpanId:        rand.Int63(),
+		OperationName: "test-operation",
+		StartTime:     timestamp,
+		Duration:      1000, // 1ms
+		Tags: []*jaeger.Tag{
+			{
+				Key:   "test.key",
+				VType: jaeger.TagType_STRING,
+				VStr:  stringPtr("test-value"),
+			},
+		},
+	}
+
+	// Create a batch with the span
+	batch := &jaeger.Batch{
+		Process: &jaeger.Process{
+			ServiceName: "test-service",
+			Tags: []*jaeger.Tag{
+				{
+					Key:   "service.version",
+					VType: jaeger.TagType_STRING,
+					VStr:  stringPtr("1.0.0"),
+				},
+			},
+		},
+		Spans: []*jaeger.Span{span},
+	}
+
+	// Serialize the batch to Thrift
+	transport := thrift.NewTMemoryBufferLen(1024)
+	protocol := thrift.NewTBinaryProtocolTransport(transport)
+
+	if err := batch.Write(protocol); err != nil {
+		log.Printf("Failed to serialize Jaeger batch: %v", err)
+		return nil
+	}
+
+	return transport.Bytes()
+}
 
 // waitForContainerHealth waits for the container to be healthy
 func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error {
@@ -20,15 +73,14 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 
 	// Initial warmup period - increased to allow for full initialization
 	j.tb.Log("Waiting for initial container warmup...")
-	time.Sleep(time.Second * 30)
-
+	time.Sleep(time.Second * 15)
 	// Check container status and get initial logs
 	container := resource.Container
 	if container == nil {
 		return fmt.Errorf("container reference is nil")
 	}
 
-	// Get initial container logs
+	// Get initial container logs immediately after startup
 	var buf bytes.Buffer
 	err := j.pool.Client.Logs(docker.LogsOptions{
 		Container:    container.ID,
@@ -36,8 +88,12 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 		Follow:       false,
 		Stdout:       true,
 		Stderr:       true,
+		Timestamps:   true,
+		Since:        0,
 	})
-	if err == nil && buf.Len() > 0 {
+	if err != nil {
+		j.tb.Logf("Warning: Failed to get initial container logs: %v", err)
+	} else if buf.Len() > 0 {
 		j.tb.Logf("Initial container logs:\n%s", buf.String())
 	}
 
@@ -160,23 +216,30 @@ func isEndpointReady(endpoint string) bool {
 		Timeout: time.Second * 10, // Increased timeout for endpoint checks
 	}
 
-	// For the collector endpoint, we need to send a POST request with minimal trace data
+	// For the collector endpoint, we need to send a POST request with Jaeger format
 	if strings.Contains(endpoint, "/api/traces") {
-		payload := []byte(`{"data":[{"id":"test"}]}`)
-		resp, err := client.Post(endpoint, "application/json", bytes.NewBuffer(payload))
+		payload := generateJaegerThriftTrace()
+		if payload == nil {
+			log.Printf("Failed to generate Jaeger trace payload")
+			return false
+		}
+
+		req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(payload))
 		if err != nil {
-			log.Printf("Collector endpoint check failed for %s: %v", endpoint, err)
+			log.Printf("Failed to create request: %v", err)
+			return false
+		}
+
+		req.Header.Set("Content-Type", "application/x-thrift")
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Printf("Failed to send request: %v", err)
 			return false
 		}
 		defer resp.Body.Close()
 
-		// Read and log response for debugging
-		body, err := io.ReadAll(resp.Body)
-		if err == nil {
-			log.Printf("Collector endpoint response: status=%d, body=%s", resp.StatusCode, string(body))
-		}
-
-		return resp.StatusCode < 500
+		// Jaeger accepts both 200 and 202 status codes for traces
+		return resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusAccepted
 	}
 
 	// For health endpoints, require 200 OK
