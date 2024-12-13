@@ -230,13 +230,20 @@ func isEndpointReady(endpoint string) bool {
 			return false
 		}
 
-		req.Header.Set("Content-Type", "application/x-thrift")
+		// Set the correct content type for Thrift binary encoding
+		req.Header.Set("Content-Type", "application/vnd.apache.thrift.binary")
 		resp, err := client.Do(req)
 		if err != nil {
 			log.Printf("Failed to send request: %v", err)
 			return false
 		}
 		defer resp.Body.Close()
+
+		// Read response body for debugging
+		body, err := io.ReadAll(resp.Body)
+		if err == nil {
+			log.Printf("Collector endpoint response: status=%d, body=%s", resp.StatusCode, string(body))
+		}
 
 		// Jaeger accepts both 200 and 202 status codes for traces
 		return resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusAccepted
