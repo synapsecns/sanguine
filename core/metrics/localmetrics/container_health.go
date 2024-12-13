@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/ory/dockertest/v3"
@@ -17,6 +18,9 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 
 	// Use pool's retry mechanism with timeout and detailed logging
 	if err := j.pool.Retry(func() error {
+		// Add delay between retries
+		time.Sleep(time.Second * 2)
+
 		// Check container status first
 		container := resource.Container
 		if container == nil {
@@ -38,8 +42,15 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 		j.tb.Logf("Checking endpoints - collector: %s, query: %s, health: %s, otlp-grpc: %s, otlp-http: %s",
 			collectorEndpoint, queryEndpoint, healthEndpoint, otlpGrpcEndpoint, otlpHttpEndpoint)
 
-		// Check health endpoint first
-		healthReady := isEndpointReady(healthEndpoint)
+		// Check health endpoint first with retries
+		healthReady := false
+		for i := 0; i < 3; i++ {
+			healthReady = isEndpointReady(healthEndpoint)
+			if healthReady {
+				break
+			}
+			time.Sleep(time.Second)
+		}
 		if !healthReady {
 			j.tb.Log("Health endpoint not ready")
 			return fmt.Errorf("health endpoint not ready (waited %v)", time.Since(startTime))
@@ -106,5 +117,12 @@ func isEndpointReady(endpoint string) bool {
 		return false
 	}
 	defer resp.Body.Close()
-	return resp.StatusCode < 500 // Accept 2xx, 3xx, and 4xx as "ready"
+
+	// For the collector endpoint, we need to check if it accepts traces
+	if strings.Contains(endpoint, "/api/traces") {
+		return resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusAccepted
+	}
+
+	// For other endpoints, any response below 500 is considered ready
+	return resp.StatusCode < 500
 }

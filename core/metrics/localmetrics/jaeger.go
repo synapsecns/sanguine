@@ -196,8 +196,8 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 
 		return nil
 	},
-		retry.WithMax(time.Second*30),
-		retry.WithMaxAttempts(3))
+		retry.WithMax(time.Second*60),
+		retry.WithMaxAttempts(5))
 
 	if err != nil {
 		j.tb.Logf("Failed to start container after retries: %v", err)
