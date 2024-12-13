@@ -18,7 +18,7 @@
     "Please select Destination network": "请选择目标网络",
     "Please select an Origin token": "请选择来源代币",
     "Bridge {symbol}": "桥接 {symbol}",
-    "Deposit {symbol}": "订金 {symbol}",
+    "Deposit {symbol}": "存入 {symbol}",
     "Depositing": "存款",
     "Connect Wallet to Bridge": "连接钱包以桥接",
     "Amount must be greater than fee": "金额必须大于费用",

@@ -168,7 +168,7 @@ const StateManagedBridge = () => {
           fetchBridgeQuote({
             synapseSDK,
             fromChainId,
-            toChainId: toChainId === HYPERLIQUID.id ? 42161 : toChainId,
+            toChainId: toChainId === HYPERLIQUID.id ? ARBITRUM.id : toChainId,
             fromToken,
             toToken,
             debouncedFromValue,
