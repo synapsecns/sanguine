@@ -3,6 +3,8 @@ package localmetrics
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -34,13 +36,14 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 
 		// Try to connect to all endpoints with increased timeouts
 		collectorEndpoint := fmt.Sprintf("http://localhost:%s/api/traces", resource.GetPort("14268/tcp"))
+		collectorHealthEndpoint := fmt.Sprintf("http://localhost:%s/health", resource.GetPort("14269/tcp"))
 		queryEndpoint := fmt.Sprintf("http://localhost:%s", resource.GetPort("16686/tcp"))
 		healthEndpoint := fmt.Sprintf("http://localhost:%s", resource.GetPort("14269/tcp"))
 		otlpGrpcEndpoint := fmt.Sprintf("http://localhost:%s", resource.GetPort("4317/tcp"))
 		otlpHttpEndpoint := fmt.Sprintf("http://localhost:%s", resource.GetPort("4318/tcp"))
 
-		j.tb.Logf("Checking endpoints - collector: %s, query: %s, health: %s, otlp-grpc: %s, otlp-http: %s",
-			collectorEndpoint, queryEndpoint, healthEndpoint, otlpGrpcEndpoint, otlpHttpEndpoint)
+		j.tb.Logf("Checking endpoints - collector: %s, collector health: %s, query: %s, health: %s, otlp-grpc: %s, otlp-http: %s",
+			collectorEndpoint, collectorHealthEndpoint, queryEndpoint, healthEndpoint, otlpGrpcEndpoint, otlpHttpEndpoint)
 
 		// Check health endpoint first with retries
 		healthReady := false
@@ -54,6 +57,13 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 		if !healthReady {
 			j.tb.Log("Health endpoint not ready")
 			return fmt.Errorf("health endpoint not ready (waited %v)", time.Since(startTime))
+		}
+
+		// Check collector health endpoint
+		collectorHealthReady := isEndpointReady(collectorHealthEndpoint)
+		if !collectorHealthReady {
+			j.tb.Log("Collector health endpoint not ready")
+			return fmt.Errorf("collector health endpoint not ready (waited %v)", time.Since(startTime))
 		}
 
 		// Quick check all endpoints with detailed logging
@@ -111,26 +121,35 @@ func isEndpointReady(endpoint string) bool {
 		Timeout: time.Second * 10, // Increased timeout for endpoint checks
 	}
 
-	// For the collector endpoint, we need to send a POST request with a minimal trace
+	// For the collector endpoint, we need to check its admin health endpoint
 	if strings.Contains(endpoint, "/api/traces") {
-		// Minimal valid Jaeger trace format
-		minimalTrace := []byte(`{
-			"data": [{
-				"traceID": "0123456789abcdef0123456789abcdef",
-				"spanID": "0123456789abcdef",
-				"operationName": "test",
-				"startTime": 1,
-				"process": {
-					"serviceName": "test-service"
-				}
-			}]
-		}`)
-		resp, err := client.Post(endpoint, "application/json", bytes.NewReader(minimalTrace))
+		resp, err := client.Get(endpoint)
 		if err != nil {
+			log.Printf("Collector endpoint check failed for %s: %v", endpoint, err)
 			return false
 		}
 		defer resp.Body.Close()
-		return resp.StatusCode < 400
+		return resp.StatusCode < 500
+	}
+
+	// For health endpoints, require 200 OK
+	if strings.Contains(endpoint, "/health") {
+		resp, err := client.Get(endpoint)
+		if err != nil {
+			log.Printf("Health check failed for %s: %v", endpoint, err)
+			return false
+		}
+		defer resp.Body.Close()
+
+		// Read and log response body for debugging
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Printf("Failed to read response body: %v", err)
+			return false
+		}
+		log.Printf("Health check response from %s: status=%d, body=%s", endpoint, resp.StatusCode, string(body))
+
+		return resp.StatusCode == http.StatusOK
 	}
 
 	// For other endpoints, use GET request
