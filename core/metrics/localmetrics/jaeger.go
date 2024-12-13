@@ -85,6 +85,7 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			"LOG_LEVEL=debug",
 			"COLLECTOR_HTTP_PORT=14268",
 			"QUERY_HTTP_PORT=16686",
+			"HEALTH_CHECK_HTTP_PORT=14269",
 		},
 		Networks: j.getNetworks(),
 		Labels: map[string]string{
@@ -97,8 +98,8 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 	var err error
 
 	j.tb.Log("Starting container with retry logic...")
-	// Create container with improved retry logic and shorter timeouts
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	// Create container with improved retry logic and longer timeouts
+	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
 	err = retry.WithBackoff(ctx, func(ctx context.Context) error {
@@ -127,15 +128,21 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 
 		if err != nil {
 			j.tb.Logf("Failed to start container: %v", err)
-			// If container creation fails, ensure cleanup
 			if resource != nil {
 				_ = resource.Close()
 			}
 			return fmt.Errorf("container start failed: %w", err)
 		}
 
-		// Validate ports with timeout
-		portCtx, portCancel := context.WithTimeout(ctx, 2*time.Second)
+		// Wait for container to be healthy
+		j.tb.Log("Waiting for container to be healthy...")
+		if err := j.waitForContainerHealth(resource); err != nil {
+			j.tb.Logf("Container health check failed: %v", err)
+			return err
+		}
+
+		// Validate ports with increased timeout
+		portCtx, portCancel := context.WithTimeout(ctx, 10*time.Second)
 		defer portCancel()
 
 		portChan := make(chan error, 1)
@@ -148,9 +155,19 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			}
 
 			j.tb.Logf("Setting up endpoints with ports - trace: %s, ui: %s", tracePort, uiPort)
-			// Set environment variables
 			endpoint := fmt.Sprintf("http://localhost:%s", tracePort)
 			uiEndpoint := fmt.Sprintf("http://localhost:%s", uiPort)
+
+			// Verify endpoints are responding
+			if err := j.verifyEndpoint(endpoint+"/api/traces", 5); err != nil {
+				portChan <- fmt.Errorf("trace endpoint not ready: %w", err)
+				return
+			}
+
+			if err := j.verifyEndpoint(uiEndpoint, 5); err != nil {
+				portChan <- fmt.Errorf("UI endpoint not ready: %w", err)
+				return
+			}
 
 			if err := os.Setenv(internal.JaegerEndpoint, fmt.Sprintf("%s/api/traces", endpoint)); err != nil {
 				portChan <- fmt.Errorf("failed to set endpoint: %w", err)
@@ -175,8 +192,8 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 
 		return nil
 	},
-		retry.WithMax(time.Second*3),
-		retry.WithMaxAttempts(5))
+		retry.WithMax(time.Second*10),
+		retry.WithMaxAttempts(10))
 
 	if err != nil {
 		j.tb.Logf("Failed to start container after retries: %v", err)
