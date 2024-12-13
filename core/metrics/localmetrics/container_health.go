@@ -58,7 +58,7 @@ func generateJaegerThriftTrace() []byte {
 	transport := thrift.NewTMemoryBufferLen(1024)
 	protocol := thrift.NewTBinaryProtocolTransport(transport)
 
-	if err := batch.Write(protocol); err != nil {
+	if err := batch.Write(context.Background(), protocol); err != nil {
 		log.Printf("Failed to serialize Jaeger batch: %v", err)
 		return nil
 	}
