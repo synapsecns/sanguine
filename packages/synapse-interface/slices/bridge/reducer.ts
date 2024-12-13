@@ -12,7 +12,6 @@ import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
 import { getToTokens } from '@/utils/routeMaker/getToTokens'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 import { findValidToken } from '@/utils/findValidToken'
-import { ARBITRUM, HYPERLIQUID } from '@/constants/chains/master'
 
 export interface BridgeState {
   fromChainId: number
@@ -45,9 +44,6 @@ const {
   toChainId: null,
   toToken: null,
 })
-
-const transformToChainId = (chainId: number | null) =>
-  chainId === HYPERLIQUID.id ? ARBITRUM.id : chainId
 
 export const initialState: BridgeState = {
   fromChainId,
