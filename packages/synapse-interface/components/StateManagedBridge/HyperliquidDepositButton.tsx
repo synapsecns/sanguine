@@ -22,6 +22,7 @@ import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { addPendingBridgeTransaction } from '@/slices/transactions/actions'
 import { getUnixTimeMinutesFromNow } from '@/utils/time'
+import { HYPERLIQUID_MINIMUM_DEPOSIT } from '@/constants'
 
 const HYPERLIQUID_DEPOSIT_ADDRESS = '0x2Df1c51E09aECF9cacB7bc98cB1742757f163dF7'
 
@@ -87,7 +88,8 @@ export const HyperliquidTransactionButton = ({
   const { hasValidInput, hasSufficientBalance, onSelectedChain } =
     useBridgeValidations()
 
-  const depositingMinimumAmount = Number(debouncedFromValue) >= 5
+  const depositingMinimumAmount =
+    Number(debouncedFromValue) >= HYPERLIQUID_MINIMUM_DEPOSIT
 
   const t = useTranslations('Bridge')
 
@@ -178,7 +180,7 @@ export const HyperliquidTransactionButton = ({
     }
   } else if (!depositingMinimumAmount) {
     buttonProperties = {
-      label: '5 USDC Minimum',
+      label: `${HYPERLIQUID_MINIMUM_DEPOSIT} USDC Minimum`,
       onClick: null,
     }
   } else if (!isConnected && hasValidInput) {
