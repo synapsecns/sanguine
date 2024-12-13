@@ -75,11 +75,13 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		Repository:   "jaegertracing/all-in-one",
 		Tag:          "latest",
 		Hostname:     "jaeger",
-		ExposedPorts: []string{"14268/tcp", "16686/tcp", "14269/tcp"},
+		ExposedPorts: []string{"14268/tcp", "16686/tcp", "14269/tcp", "4317/tcp", "4318/tcp"},
 		PortBindings: map[docker.Port][]docker.PortBinding{
 			"14268/tcp": {{HostIP: "0.0.0.0", HostPort: "14268"}},
 			"16686/tcp": {{HostIP: "0.0.0.0", HostPort: "16686"}},
 			"14269/tcp": {{HostIP: "0.0.0.0", HostPort: "14269"}},
+			"4317/tcp":  {{HostIP: "0.0.0.0", HostPort: "4317"}},
+			"4318/tcp":  {{HostIP: "0.0.0.0", HostPort: "4318"}},
 		},
 		Env: []string{
 			"COLLECTOR_OTLP_ENABLED=true",
@@ -87,7 +89,9 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			"COLLECTOR_HTTP_PORT=14268",
 			"QUERY_HTTP_PORT=16686",
 			"HEALTH_CHECK_HTTP_PORT=14269",
-			"METRICS_STORAGE_TYPE=memory",
+			"METRICS_STORAGE_TYPE=prometheus",
+			"COLLECTOR_OTLP_GRPC_HOST_PORT=:4317",
+			"COLLECTOR_OTLP_HTTP_HOST_PORT=:4318",
 		},
 		Networks: j.getNetworks(),
 		Labels: map[string]string{
@@ -192,8 +196,8 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 
 		return nil
 	},
-		retry.WithMax(time.Second*10),
-		retry.WithMaxAttempts(10))
+		retry.WithMax(time.Second*30),
+		retry.WithMaxAttempts(3))
 
 	if err != nil {
 		j.tb.Logf("Failed to start container after retries: %v", err)

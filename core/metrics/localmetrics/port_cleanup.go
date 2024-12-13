@@ -10,7 +10,7 @@ import (
 // cleanupPorts kills any processes using our specific ports
 func (j *testJaeger) cleanupPorts() error {
 	// Define specific ports we want to use
-	ports := []string{"14268", "16686"}
+	ports := []string{"14268", "16686", "14269", "4317", "4318"}
 
 	// First, try to cleanup Docker-specific processes
 	if err := j.cleanupDockerPorts(ports); err != nil {
