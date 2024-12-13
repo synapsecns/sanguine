@@ -92,6 +92,9 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			"METRICS_STORAGE_TYPE=prometheus",
 			"COLLECTOR_OTLP_GRPC_HOST_PORT=:4317",
 			"COLLECTOR_OTLP_HTTP_HOST_PORT=:4318",
+			"COLLECTOR_ZIPKIN_HOST_PORT=:14268",
+			"COLLECTOR_ZIPKIN_HTTP_PORT=14268",
+			"SPAN_STORAGE_TYPE=memory",
 		},
 		Networks: j.getNetworks(),
 		Labels: map[string]string{
