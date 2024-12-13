@@ -117,7 +117,6 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			time.Sleep(time.Second)
 			return fmt.Errorf("ports still in use")
 		}
-
 		j.tb.Log("Running container with options...")
 		resource, err = j.pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
 			j.tb.Log("Configuring container host settings...")
@@ -126,12 +125,6 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			config.PublishAllPorts = false
 			config.PortBindings = runOptions.PortBindings
 			config.NetworkMode = "bridge"
-			config.HealthCheck = &docker.HealthConfig{
-				Test:     []string{"CMD", "wget", "--spider", "-q", "localhost:14269"},
-				Interval: 1 * time.Second,
-				Timeout:  2 * time.Second,
-				Retries:  10,
-			}
 		})
 		if err != nil {
 			j.tb.Logf("Failed to start container: %v", err)

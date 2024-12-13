@@ -1,10 +1,13 @@
 package localmetrics
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
+	"github.com/docker/docker/api/types"
 	"github.com/ory/dockertest/v3"
 )
 
@@ -48,19 +51,26 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 		}
 
 		if !collectorReady || !queryReady {
+			// Get container logs on failure
+			if resource.Container != nil {
+				logsOptions := types.ContainerLogsOptions{
+					ShowStdout: true,
+					ShowStderr: true,
+					Follow:     false,
+				}
+				reader, err := j.pool.Client.ContainerLogs(context.Background(), resource.Container.ID, logsOptions)
+				if err == nil {
+					logs, _ := io.ReadAll(reader)
+					reader.Close()
+					j.tb.Logf("Container logs: %s", string(logs))
+				}
+			}
 			return fmt.Errorf("endpoints not ready - collector: %v, query: %v", collectorReady, queryReady)
 		}
 
 		j.tb.Log("Container health check passed")
 		return nil
 	}); err != nil {
-		// Get container logs on failure
-		if resource.Container != nil {
-			logs, logErr := j.pool.Client.Logs(resource.Container.ID)
-			if logErr == nil {
-				j.tb.Logf("Container logs: %s", logs)
-			}
-		}
 		return fmt.Errorf("container health check failed: %v", err)
 	}
 
