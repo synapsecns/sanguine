@@ -36,7 +36,7 @@ func (j *testJaeger) cleanupDockerResources() error {
 	}
 
 	// Then remove any existing jaeger networks
-	cmd := exec.Command("docker", "network", "ls", "--format", "{{.ID}}")
+	cmd := exec.Command("docker", "network", "ls", "--format", "{{.Name}}")
 	output, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("failed to list networks: %w", err)
@@ -48,6 +48,17 @@ func (j *testJaeger) cleanupDockerResources() error {
 			if network == "bridge" || network == "host" || network == "none" {
 				continue // Skip default networks
 			}
+
+			// First disconnect all containers from the network
+			disconnectCmd := exec.Command("docker", "network", "disconnect", "-f", network)
+			if err := disconnectCmd.Run(); err != nil {
+				j.tb.Logf("Warning: Failed to disconnect containers from network %s: %v", network, err)
+			}
+
+			// Wait a bit for disconnection to complete
+			time.Sleep(time.Second)
+
+			// Then remove the network
 			j.tb.Logf("Removing network %s", network)
 			rmCmd := exec.Command("docker", "network", "rm", network)
 			if err := rmCmd.Run(); err != nil {

@@ -18,9 +18,9 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 	startTime := time.Now()
 	j.tb.Log("Starting container health check...")
 
-	// Initial warmup period
+	// Initial warmup period - increased to allow for full initialization
 	j.tb.Log("Waiting for initial container warmup...")
-	time.Sleep(time.Second * 10)
+	time.Sleep(time.Second * 30)
 
 	// Check container status and get initial logs
 	container := resource.Container
@@ -44,7 +44,7 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 	// Use pool's retry mechanism with timeout and detailed logging
 	if err := j.pool.Retry(func() error {
 		// Add delay between retries
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 5)
 
 		j.tb.Logf("Container status: %s (running for %v)", container.State.Status, time.Since(startTime))
 		if container.State.Status != "running" {
@@ -61,9 +61,9 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 		j.tb.Logf("Checking endpoints - collector: %s, query: %s, health: %s, otlp-grpc: %s, otlp-http: %s",
 			collectorEndpoint, queryEndpoint, healthEndpoint, otlpGrpcEndpoint, otlpHttpEndpoint)
 
-		// Check health endpoint first
+		// Check health endpoint first with increased retries and longer intervals
 		healthReady := false
-		maxRetries := 10
+		maxRetries := 15 // Increased from 10
 		for i := 0; i < maxRetries; i++ {
 			healthReady = isEndpointReady(healthEndpoint)
 			if healthReady {
@@ -87,14 +87,14 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 				}
 			}
 
-			time.Sleep(time.Second * 3)
+			time.Sleep(time.Second * 5) // Increased from 3
 		}
 		if !healthReady {
 			j.tb.Log("Health endpoint not ready")
 			return fmt.Errorf("health endpoint not ready (waited %v)", time.Since(startTime))
 		}
 
-		// Now check collector endpoint
+		// Now check collector endpoint with increased retries
 		collectorReady := false
 		for i := 0; i < maxRetries; i++ {
 			collectorReady = isEndpointReady(collectorEndpoint)
@@ -103,7 +103,7 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 				break
 			}
 			j.tb.Logf("Collector check attempt %d/%d failed, waiting before retry...", i+1, maxRetries)
-			time.Sleep(time.Second * 3)
+			time.Sleep(time.Second * 5) // Increased from 3
 		}
 		if !collectorReady {
 			j.tb.Log("Collector endpoint not ready")

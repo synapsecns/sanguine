@@ -5,6 +5,8 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/ory/dockertest/v3"
 )
 
 // cleanupPorts kills any processes using our specific ports
@@ -12,9 +14,34 @@ func (j *testJaeger) cleanupPorts() error {
 	// Define specific ports we want to use
 	ports := []string{"14268", "16686", "14269", "4317", "4318"}
 
-	// First, cleanup all Docker networks and containers
-	if err := j.cleanupDockerResources(); err != nil {
-		j.tb.Logf("Warning: Docker resource cleanup failed: %v", err)
+	// First, cleanup all Docker resources using dockertest API
+	containers, err := j.pool.Client.ListContainers(dockertest.ListContainersOptions{All: true})
+	if err != nil {
+		j.tb.Logf("Warning: Failed to list containers: %v", err)
+	} else {
+		for _, container := range containers {
+			// Check if container is using any of our ports
+			for _, port := range ports {
+				for exposed := range container.Ports {
+					if strings.Contains(exposed.PrivatePort, port) || strings.Contains(exposed.PublicPort, port) {
+						j.tb.Logf("Found container %s using port %s, stopping...", container.ID[:12], port)
+						timeout := uint(10)
+						err := j.pool.Client.StopContainer(container.ID, &timeout)
+						if err != nil {
+							j.tb.Logf("Warning: Failed to stop container %s: %v", container.ID[:12], err)
+						}
+						err = j.pool.Client.RemoveContainer(dockertest.RemoveContainerOptions{
+							ID:            container.ID,
+							Force:         true,
+							RemoveVolumes: true,
+						})
+						if err != nil {
+							j.tb.Logf("Warning: Failed to remove container %s: %v", container.ID[:12], err)
+						}
+					}
+				}
+			}
+		}
 	}
 
 	// Then cleanup system-wide processes
@@ -37,6 +64,15 @@ func (j *testJaeger) cleanupPorts() error {
 
 	// Wait for ports to be fully released
 	time.Sleep(time.Second * 5)
+
+	// Verify ports are actually free
+	for _, port := range ports {
+		cmd := exec.Command("lsof", "-i", ":"+port)
+		if output, err := cmd.Output(); err == nil && len(output) > 0 {
+			j.tb.Logf("Warning: Port %s is still in use after cleanup", port)
+			return fmt.Errorf("port %s still in use after cleanup", port)
+		}
+	}
 
 	return nil
 }

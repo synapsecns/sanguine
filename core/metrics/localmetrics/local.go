@@ -318,21 +318,45 @@ func (j *testJaeger) getNetworks() []*dockertest.Network {
 	// Create new network with retry and specific subnet
 	err = retry.WithBackoff(context.Background(), func(ctx context.Context) error {
 		var createErr error
-		j.network, createErr = j.pool.CreateNetwork(j.runID, func(config *docker.CreateNetworkOptions) {
-			config.Driver = "bridge"
-			config.IPAM = &docker.IPAMOptions{
-				Config: []docker.IPAMConfig{{
-					Subnet:  "172.20.0.0/16",
-					Gateway: "172.20.0.1",
-				}},
+
+		// Try different subnets if we encounter pool overlap errors
+		subnets := []string{
+			"172.20.0.0/16",
+			"172.21.0.0/16",
+			"172.22.0.0/16",
+			"172.23.0.0/16",
+		}
+
+		for _, subnet := range subnets {
+			j.network, createErr = j.pool.CreateNetwork(j.runID, func(config *docker.CreateNetworkOptions) {
+				config.Driver = "bridge"
+				config.IPAM = &docker.IPAMOptions{
+					Config: []docker.IPAMConfig{{
+						Subnet:  subnet,
+						Gateway: strings.Replace(subnet, "0.0/16", "0.1", 1),
+					}},
+				}
+				config.Labels = map[string]string{
+					runIDLabel: j.runID,
+				}
+				config.CheckDuplicate = true
+			})
+
+			if createErr == nil {
+				// Successfully created network
+				break
 			}
-			config.Labels = map[string]string{
-				runIDLabel: j.runID,
+
+			if !strings.Contains(createErr.Error(), "Pool overlaps") {
+				// If error is not pool overlap, return immediately
+				return createErr
 			}
-			config.CheckDuplicate = true
-		})
+
+			j.tb.Logf("Failed to create network with subnet %s: %v, trying next subnet", subnet, createErr)
+		}
+
 		if createErr != nil {
-			j.tb.Logf("Failed to create network, retrying: %v", createErr)
+			j.tb.Logf("Failed to create network with any subnet: %v", createErr)
 			return createErr
 		}
 
@@ -345,7 +369,7 @@ func (j *testJaeger) getNetworks() []*dockertest.Network {
 		return nil
 	},
 		retry.WithMax(time.Second*2),
-		retry.WithMaxAttempts(3))
+		retry.WithMaxAttempts(4))
 
 	if err != nil {
 		j.tb.Logf("Failed to create network after retries: %v", err)
