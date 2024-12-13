@@ -31,7 +31,7 @@ func generateJaegerThriftTrace() []byte {
 	traceIDHigh := rand.Uint64()
 	spanID := rand.Uint64()
 
-	// Create process info first
+	// Create process info with all required fields explicitly set
 	process := &jaeger.Process{
 		ServiceName: "jaeger-health-check",
 		Tags: []*jaeger.Tag{
@@ -44,6 +44,11 @@ func generateJaegerThriftTrace() []byte {
 				Key:   "hostname",
 				VType: jaeger.TagType_STRING,
 				VStr:  stringPtr("localhost"),
+			},
+			{
+				Key:   "client-uuid",
+				VType: jaeger.TagType_STRING,
+				VStr:  stringPtr("test-client"),
 			},
 		},
 	}
@@ -79,23 +84,47 @@ func generateJaegerThriftTrace() []byte {
 		Logs: []*jaeger.Log{},
 	}
 
-	// Create batch with explicit initialization
+	// Create batch
 	batch := &jaeger.Batch{
 		Process: process,
 		Spans:   []*jaeger.Span{span},
 	}
 
-	// Use TMemoryBuffer for serialization
+	// Log batch details for debugging
+	log.Printf("Batch details - Process: %+v", batch.Process)
+	log.Printf("Batch details - Process ServiceName: %s", batch.Process.ServiceName)
+	log.Printf("Batch details - Process Tags count: %d", len(batch.Process.Tags))
+	log.Printf("Batch details - Spans count: %d", len(batch.Spans))
+
+	// Use TMemoryBuffer for serialization with TBinaryProtocol
 	memBuffer := thrift.NewTMemoryBufferLen(4096)
 	protocol := thrift.NewTBinaryProtocolConf(memBuffer, &thrift.TConfiguration{
 		MaxFrameSize:   16384000,
 		MaxMessageSize: 16384000,
 	})
 
-	// Write the batch using explicit struct writing
+	// Write Thrift message envelope for emitBatch
 	ctx := context.Background()
+	if err := protocol.WriteMessageBegin(ctx, "emitBatch", thrift.CALL, 1); err != nil {
+		log.Printf("Failed to write message begin: %v", err)
+		return nil
+	}
+
+	// Write emitBatch_args struct begin
+	if err := protocol.WriteStructBegin(ctx, "emitBatch_args"); err != nil {
+		log.Printf("Failed to write args struct begin: %v", err)
+		return nil
+	}
+
+	// Write batch field (field 1)
+	if err := protocol.WriteFieldBegin(ctx, "batch", thrift.STRUCT, 1); err != nil {
+		log.Printf("Failed to write batch field begin: %v", err)
+		return nil
+	}
+
+	// Write batch struct begin
 	if err := protocol.WriteStructBegin(ctx, "Batch"); err != nil {
-		log.Printf("Failed to write struct begin: %v", err)
+		log.Printf("Failed to write batch struct begin: %v", err)
 		return nil
 	}
 
@@ -104,8 +133,139 @@ func generateJaegerThriftTrace() []byte {
 		log.Printf("Failed to write process field begin: %v", err)
 		return nil
 	}
-	if err := process.Write(ctx, protocol); err != nil {
-		log.Printf("Failed to write process: %v", err)
+
+	// Write Process struct
+	if err := protocol.WriteStructBegin(ctx, "Process"); err != nil {
+		log.Printf("Failed to write process struct begin: %v", err)
+		return nil
+	}
+
+	// Write ServiceName field (field 1)
+	if err := protocol.WriteFieldBegin(ctx, "serviceName", thrift.STRING, 1); err != nil {
+		log.Printf("Failed to write serviceName field begin: %v", err)
+		return nil
+	}
+
+	if err := protocol.WriteString(ctx, batch.Process.ServiceName); err != nil {
+		log.Printf("Failed to write serviceName: %v", err)
+		return nil
+	}
+
+	if err := protocol.WriteFieldEnd(ctx); err != nil {
+		log.Printf("Failed to write serviceName field end: %v", err)
+		return nil
+	}
+
+	// Write Tags field (field 2)
+	if err := protocol.WriteFieldBegin(ctx, "tags", thrift.LIST, 2); err != nil {
+		log.Printf("Failed to write tags field begin: %v", err)
+		return nil
+	}
+
+	// Write tags list
+	if err := protocol.WriteListBegin(ctx, thrift.STRUCT, len(batch.Process.Tags)); err != nil {
+		log.Printf("Failed to write tags list begin: %v", err)
+		return nil
+	}
+
+	for _, tag := range batch.Process.Tags {
+		// Write Tag struct begin
+		if err := protocol.WriteStructBegin(ctx, "Tag"); err != nil {
+			log.Printf("Failed to write tag struct begin: %v", err)
+			return nil
+		}
+
+		// Write key field (field 1)
+		if err := protocol.WriteFieldBegin(ctx, "key", thrift.STRING, 1); err != nil {
+			log.Printf("Failed to write tag key field begin: %v", err)
+			return nil
+		}
+		if err := protocol.WriteString(ctx, tag.Key); err != nil {
+			log.Printf("Failed to write tag key: %v", err)
+			return nil
+		}
+		if err := protocol.WriteFieldEnd(ctx); err != nil {
+			log.Printf("Failed to write tag key field end: %v", err)
+			return nil
+		}
+
+		// Write vType field (field 2)
+		if err := protocol.WriteFieldBegin(ctx, "vType", thrift.I32, 2); err != nil {
+			log.Printf("Failed to write tag vType field begin: %v", err)
+			return nil
+		}
+		if err := protocol.WriteI32(ctx, int32(tag.VType)); err != nil {
+			log.Printf("Failed to write tag vType: %v", err)
+			return nil
+		}
+		if err := protocol.WriteFieldEnd(ctx); err != nil {
+			log.Printf("Failed to write tag vType field end: %v", err)
+			return nil
+		}
+
+		// Write value field based on vType
+		switch tag.VType {
+		case jaeger.TagType_STRING:
+			if tag.VStr != nil {
+				if err := protocol.WriteFieldBegin(ctx, "vStr", thrift.STRING, 3); err != nil {
+					log.Printf("Failed to write tag vStr field begin: %v", err)
+					return nil
+				}
+				if err := protocol.WriteString(ctx, *tag.VStr); err != nil {
+					log.Printf("Failed to write tag vStr: %v", err)
+					return nil
+				}
+				if err := protocol.WriteFieldEnd(ctx); err != nil {
+					log.Printf("Failed to write tag vStr field end: %v", err)
+					return nil
+				}
+			}
+		case jaeger.TagType_BOOL:
+			if tag.VBool != nil {
+				if err := protocol.WriteFieldBegin(ctx, "vBool", thrift.BOOL, 5); err != nil {
+					log.Printf("Failed to write tag vBool field begin: %v", err)
+					return nil
+				}
+				if err := protocol.WriteBool(ctx, *tag.VBool); err != nil {
+					log.Printf("Failed to write tag vBool: %v", err)
+					return nil
+				}
+				if err := protocol.WriteFieldEnd(ctx); err != nil {
+					log.Printf("Failed to write tag vBool field end: %v", err)
+					return nil
+				}
+			}
+		}
+
+		// End Tag struct
+		if err := protocol.WriteFieldStop(ctx); err != nil {
+			log.Printf("Failed to write tag field stop: %v", err)
+			return nil
+		}
+		if err := protocol.WriteStructEnd(ctx); err != nil {
+			log.Printf("Failed to write tag struct end: %v", err)
+			return nil
+		}
+	}
+
+	if err := protocol.WriteListEnd(ctx); err != nil {
+		log.Printf("Failed to write tags list end: %v", err)
+		return nil
+	}
+
+	if err := protocol.WriteFieldEnd(ctx); err != nil {
+		log.Printf("Failed to write tags field end: %v", err)
+		return nil
+	}
+
+	// End Process struct
+	if err := protocol.WriteFieldStop(ctx); err != nil {
+		log.Printf("Failed to write process field stop: %v", err)
+		return nil
+	}
+
+	if err := protocol.WriteStructEnd(ctx); err != nil {
+		log.Printf("Failed to write process struct end: %v", err)
 		return nil
 	}
 	if err := protocol.WriteFieldEnd(ctx); err != nil {
@@ -118,32 +278,276 @@ func generateJaegerThriftTrace() []byte {
 		log.Printf("Failed to write spans field begin: %v", err)
 		return nil
 	}
+
+	// Write spans list
 	if err := protocol.WriteListBegin(ctx, thrift.STRUCT, len(batch.Spans)); err != nil {
 		log.Printf("Failed to write spans list begin: %v", err)
 		return nil
 	}
-	for _, s := range batch.Spans {
-		if err := s.Write(ctx, protocol); err != nil {
-			log.Printf("Failed to write span: %v", err)
+
+	for _, span := range batch.Spans {
+		// Write Span struct begin
+		if err := protocol.WriteStructBegin(ctx, "Span"); err != nil {
+			log.Printf("Failed to write span struct begin: %v", err)
+			return nil
+		}
+
+		// Write traceIdLow (field 1)
+		if err := protocol.WriteFieldBegin(ctx, "traceIdLow", thrift.I64, 1); err != nil {
+			log.Printf("Failed to write traceIdLow field begin: %v", err)
+			return nil
+		}
+		if err := protocol.WriteI64(ctx, span.TraceIdLow); err != nil {
+			log.Printf("Failed to write traceIdLow: %v", err)
+			return nil
+		}
+		if err := protocol.WriteFieldEnd(ctx); err != nil {
+			log.Printf("Failed to write traceIdLow field end: %v", err)
+			return nil
+		}
+
+		// Write traceIdHigh (field 2)
+		if err := protocol.WriteFieldBegin(ctx, "traceIdHigh", thrift.I64, 2); err != nil {
+			log.Printf("Failed to write traceIdHigh field begin: %v", err)
+			return nil
+		}
+		if err := protocol.WriteI64(ctx, span.TraceIdHigh); err != nil {
+			log.Printf("Failed to write traceIdHigh: %v", err)
+			return nil
+		}
+		if err := protocol.WriteFieldEnd(ctx); err != nil {
+			log.Printf("Failed to write traceIdHigh field end: %v", err)
+			return nil
+		}
+
+		// Write spanId (field 3)
+		if err := protocol.WriteFieldBegin(ctx, "spanId", thrift.I64, 3); err != nil {
+			log.Printf("Failed to write spanId field begin: %v", err)
+			return nil
+		}
+		if err := protocol.WriteI64(ctx, span.SpanId); err != nil {
+			log.Printf("Failed to write spanId: %v", err)
+			return nil
+		}
+		if err := protocol.WriteFieldEnd(ctx); err != nil {
+			log.Printf("Failed to write spanId field end: %v", err)
+			return nil
+		}
+
+		// Write parentSpanId (field 4)
+		if err := protocol.WriteFieldBegin(ctx, "parentSpanId", thrift.I64, 4); err != nil {
+			log.Printf("Failed to write parentSpanId field begin: %v", err)
+			return nil
+		}
+		if err := protocol.WriteI64(ctx, span.ParentSpanId); err != nil {
+			log.Printf("Failed to write parentSpanId: %v", err)
+			return nil
+		}
+		if err := protocol.WriteFieldEnd(ctx); err != nil {
+			log.Printf("Failed to write parentSpanId field end: %v", err)
+			return nil
+		}
+
+		// Write operationName (field 5)
+		if err := protocol.WriteFieldBegin(ctx, "operationName", thrift.STRING, 5); err != nil {
+			log.Printf("Failed to write operationName field begin: %v", err)
+			return nil
+		}
+		if err := protocol.WriteString(ctx, span.OperationName); err != nil {
+			log.Printf("Failed to write operationName: %v", err)
+			return nil
+		}
+		if err := protocol.WriteFieldEnd(ctx); err != nil {
+			log.Printf("Failed to write operationName field end: %v", err)
+			return nil
+		}
+
+		// Write flags (field 7)
+		if err := protocol.WriteFieldBegin(ctx, "flags", thrift.I32, 7); err != nil {
+			log.Printf("Failed to write flags field begin: %v", err)
+			return nil
+		}
+		if err := protocol.WriteI32(ctx, span.Flags); err != nil {
+			log.Printf("Failed to write flags: %v", err)
+			return nil
+		}
+		if err := protocol.WriteFieldEnd(ctx); err != nil {
+			log.Printf("Failed to write flags field end: %v", err)
+			return nil
+		}
+
+		// Write startTime (field 8)
+		if err := protocol.WriteFieldBegin(ctx, "startTime", thrift.I64, 8); err != nil {
+			log.Printf("Failed to write startTime field begin: %v", err)
+			return nil
+		}
+		if err := protocol.WriteI64(ctx, span.StartTime); err != nil {
+			log.Printf("Failed to write startTime: %v", err)
+			return nil
+		}
+		if err := protocol.WriteFieldEnd(ctx); err != nil {
+			log.Printf("Failed to write startTime field end: %v", err)
+			return nil
+		}
+
+		// Write duration (field 9)
+		if err := protocol.WriteFieldBegin(ctx, "duration", thrift.I64, 9); err != nil {
+			log.Printf("Failed to write duration field begin: %v", err)
+			return nil
+		}
+		if err := protocol.WriteI64(ctx, span.Duration); err != nil {
+			log.Printf("Failed to write duration: %v", err)
+			return nil
+		}
+		if err := protocol.WriteFieldEnd(ctx); err != nil {
+			log.Printf("Failed to write duration field end: %v", err)
+			return nil
+		}
+
+		// Write optional tags (field 10)
+		if len(span.Tags) > 0 {
+			if err := protocol.WriteFieldBegin(ctx, "tags", thrift.LIST, 10); err != nil {
+				log.Printf("Failed to write span tags field begin: %v", err)
+				return nil
+			}
+			if err := protocol.WriteListBegin(ctx, thrift.STRUCT, len(span.Tags)); err != nil {
+				log.Printf("Failed to write span tags list begin: %v", err)
+				return nil
+			}
+			for _, tag := range span.Tags {
+				// Write Tag struct begin
+				if err := protocol.WriteStructBegin(ctx, "Tag"); err != nil {
+					log.Printf("Failed to write tag struct begin: %v", err)
+					return nil
+				}
+
+				// Write key field (field 1)
+				if err := protocol.WriteFieldBegin(ctx, "key", thrift.STRING, 1); err != nil {
+					log.Printf("Failed to write tag key field begin: %v", err)
+					return nil
+				}
+				if err := protocol.WriteString(ctx, tag.Key); err != nil {
+					log.Printf("Failed to write tag key: %v", err)
+					return nil
+				}
+				if err := protocol.WriteFieldEnd(ctx); err != nil {
+					log.Printf("Failed to write tag key field end: %v", err)
+					return nil
+				}
+
+				// Write vType field (field 2)
+				if err := protocol.WriteFieldBegin(ctx, "vType", thrift.I32, 2); err != nil {
+					log.Printf("Failed to write tag vType field begin: %v", err)
+					return nil
+				}
+				if err := protocol.WriteI32(ctx, int32(tag.VType)); err != nil {
+					log.Printf("Failed to write tag vType: %v", err)
+					return nil
+				}
+				if err := protocol.WriteFieldEnd(ctx); err != nil {
+					log.Printf("Failed to write tag vType field end: %v", err)
+					return nil
+				}
+
+				// Write value field based on vType
+				switch tag.VType {
+				case jaeger.TagType_STRING:
+					if tag.VStr != nil {
+						if err := protocol.WriteFieldBegin(ctx, "vStr", thrift.STRING, 3); err != nil {
+							log.Printf("Failed to write tag vStr field begin: %v", err)
+							return nil
+						}
+						if err := protocol.WriteString(ctx, *tag.VStr); err != nil {
+							log.Printf("Failed to write tag vStr: %v", err)
+							return nil
+						}
+						if err := protocol.WriteFieldEnd(ctx); err != nil {
+							log.Printf("Failed to write tag vStr field end: %v", err)
+							return nil
+						}
+					}
+				case jaeger.TagType_BOOL:
+					if tag.VBool != nil {
+						if err := protocol.WriteFieldBegin(ctx, "vBool", thrift.BOOL, 5); err != nil {
+							log.Printf("Failed to write tag vBool field begin: %v", err)
+							return nil
+						}
+						if err := protocol.WriteBool(ctx, *tag.VBool); err != nil {
+							log.Printf("Failed to write tag vBool: %v", err)
+							return nil
+						}
+						if err := protocol.WriteFieldEnd(ctx); err != nil {
+							log.Printf("Failed to write tag vBool field end: %v", err)
+							return nil
+						}
+					}
+				}
+
+				// End Tag struct
+				if err := protocol.WriteFieldStop(ctx); err != nil {
+					log.Printf("Failed to write tag field stop: %v", err)
+					return nil
+				}
+				if err := protocol.WriteStructEnd(ctx); err != nil {
+					log.Printf("Failed to write tag struct end: %v", err)
+					return nil
+				}
+			}
+			if err := protocol.WriteListEnd(ctx); err != nil {
+				log.Printf("Failed to write span tags list end: %v", err)
+				return nil
+			}
+			if err := protocol.WriteFieldEnd(ctx); err != nil {
+				log.Printf("Failed to write span tags field end: %v", err)
+				return nil
+			}
+		}
+
+		// End Span struct
+		if err := protocol.WriteFieldStop(ctx); err != nil {
+			log.Printf("Failed to write span field stop: %v", err)
+			return nil
+		}
+		if err := protocol.WriteStructEnd(ctx); err != nil {
+			log.Printf("Failed to write span struct end: %v", err)
 			return nil
 		}
 	}
+
 	if err := protocol.WriteListEnd(ctx); err != nil {
 		log.Printf("Failed to write spans list end: %v", err)
 		return nil
 	}
+
 	if err := protocol.WriteFieldEnd(ctx); err != nil {
 		log.Printf("Failed to write spans field end: %v", err)
 		return nil
 	}
 
-	// Write struct end
+	// End batch struct
 	if err := protocol.WriteFieldStop(ctx); err != nil {
-		log.Printf("Failed to write field stop: %v", err)
+		log.Printf("Failed to write batch field stop: %v", err)
+		return nil
+	}
+
+	if err := protocol.WriteStructEnd(ctx); err != nil {
+		log.Printf("Failed to write batch struct end: %v", err)
+		return nil
+	}
+
+	// End emitBatch_args struct
+	if err := protocol.WriteFieldStop(ctx); err != nil {
+		log.Printf("Failed to write args field stop: %v", err)
 		return nil
 	}
 	if err := protocol.WriteStructEnd(ctx); err != nil {
-		log.Printf("Failed to write struct end: %v", err)
+		log.Printf("Failed to write args struct end: %v", err)
+		return nil
+	}
+
+	// End message
+	if err := protocol.WriteMessageEnd(ctx); err != nil {
+		log.Printf("Failed to write message end: %v", err)
 		return nil
 	}
 
@@ -325,7 +729,7 @@ func isEndpointReady(endpoint string) bool {
 		}
 
 		// Set required headers for Jaeger collector
-		req.Header.Set("Content-Type", "application/vnd.apache.thrift.binary")
+		req.Header.Set("Content-Type", "application/x-thrift")
 		req.Header.Set("User-Agent", "jaeger-go/2.30.0")
 		log.Printf("Sending trace to collector %s with headers: %v", endpoint, req.Header)
 		log.Printf("Trace payload size: %d bytes", len(traceData))

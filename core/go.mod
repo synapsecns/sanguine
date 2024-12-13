@@ -76,7 +76,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
 	github.com/ProtonMail/go-crypto v1.0.0 // indirect
-	github.com/apache/thrift v0.16.0 // indirect
+	github.com/apache/thrift v0.21.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
@@ -123,7 +123,7 @@ require (
 	github.com/hashicorp/golang-lru v1.0.2 // indirect
 	github.com/holiman/uint256 v1.3.2 // indirect
 	github.com/ipfs/go-log/v2 v2.5.1 // indirect
-	github.com/jaegertracing/jaeger v1.38.0 // indirect
+	github.com/jaegertracing/jaeger v1.64.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
