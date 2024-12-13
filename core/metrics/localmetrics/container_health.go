@@ -53,21 +53,37 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 
 		// Try to connect to all endpoints with increased timeouts
 		collectorEndpoint := fmt.Sprintf("http://127.0.0.1:%s/api/traces", resource.GetPort("14268/tcp"))
-		collectorHealthEndpoint := fmt.Sprintf("http://127.0.0.1:%s/health", resource.GetPort("14269/tcp"))
 		queryEndpoint := fmt.Sprintf("http://127.0.0.1:%s", resource.GetPort("16686/tcp"))
-		healthEndpoint := fmt.Sprintf("http://127.0.0.1:%s/health", resource.GetPort("14269/tcp")) // Added /health path
+		healthEndpoint := fmt.Sprintf("http://127.0.0.1:%s/health", resource.GetPort("14269/tcp"))
 		otlpGrpcEndpoint := fmt.Sprintf("http://127.0.0.1:%s", resource.GetPort("4317/tcp"))
 		otlpHttpEndpoint := fmt.Sprintf("http://127.0.0.1:%s", resource.GetPort("4318/tcp"))
 
-		j.tb.Logf("Checking endpoints - collector: %s, collector health: %s, query: %s, health: %s, otlp-grpc: %s, otlp-http: %s",
-			collectorEndpoint, collectorHealthEndpoint, queryEndpoint, healthEndpoint, otlpGrpcEndpoint, otlpHttpEndpoint)
+		j.tb.Logf("Checking endpoints - collector: %s, query: %s, health: %s, otlp-grpc: %s, otlp-http: %s",
+			collectorEndpoint, queryEndpoint, healthEndpoint, otlpGrpcEndpoint, otlpHttpEndpoint)
 
-		// Check health endpoint first with retries
-		healthReady := false
+		// Check collector endpoint first
+		collectorReady := false
 		maxRetries := 10
+		for i := 0; i < maxRetries; i++ {
+			collectorReady = isEndpointReady(collectorEndpoint)
+			if collectorReady {
+				j.tb.Log("Collector endpoint is ready")
+				break
+			}
+			j.tb.Logf("Collector check attempt %d/%d failed, waiting before retry...", i+1, maxRetries)
+			time.Sleep(time.Second * 3)
+		}
+		if !collectorReady {
+			j.tb.Log("Collector endpoint not ready")
+			return fmt.Errorf("collector endpoint not ready (waited %v)", time.Since(startTime))
+		}
+
+		// Now check health endpoint
+		healthReady := false
 		for i := 0; i < maxRetries; i++ {
 			healthReady = isEndpointReady(healthEndpoint)
 			if healthReady {
+				j.tb.Log("Health endpoint is ready")
 				break
 			}
 			j.tb.Logf("Health check attempt %d/%d failed, waiting before retry...", i+1, maxRetries)
@@ -94,19 +110,7 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 			return fmt.Errorf("health endpoint not ready (waited %v)", time.Since(startTime))
 		}
 
-		// Check collector health endpoint
-		collectorHealthReady := isEndpointReady(collectorHealthEndpoint)
-		if !collectorHealthReady {
-			j.tb.Log("Collector health endpoint not ready")
-			return fmt.Errorf("collector health endpoint not ready (waited %v)", time.Since(startTime))
-		}
-
 		// Quick check all endpoints with detailed logging
-		collectorReady := isEndpointReady(collectorEndpoint)
-		if !collectorReady {
-			j.tb.Log("Collector endpoint not ready")
-		}
-
 		queryReady := isEndpointReady(queryEndpoint)
 		if !queryReady {
 			j.tb.Log("Query endpoint not ready")
@@ -120,7 +124,7 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 			j.tb.Log("OTLP HTTP endpoint not ready")
 		}
 
-		if !collectorReady || !queryReady || !otlpHttpReady {
+		if !queryReady || !otlpHttpReady {
 			// Get container logs on failure using Docker API
 			if resource.Container != nil {
 				var buf bytes.Buffer
@@ -137,8 +141,8 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 					j.tb.Logf("Failed to get container logs: %v", err)
 				}
 			}
-			return fmt.Errorf("endpoints not ready - collector: %v, query: %v, otlp-http: %v (waited %v)",
-				collectorReady, queryReady, otlpHttpReady, time.Since(startTime))
+			return fmt.Errorf("endpoints not ready - query: %v, otlp-http: %v (waited %v)",
+				queryReady, otlpHttpReady, time.Since(startTime))
 		}
 
 		j.tb.Logf("Container health check passed after %v", time.Since(startTime))
@@ -156,14 +160,22 @@ func isEndpointReady(endpoint string) bool {
 		Timeout: time.Second * 10, // Increased timeout for endpoint checks
 	}
 
-	// For the collector endpoint, we need to check its admin health endpoint
+	// For the collector endpoint, we need to send a POST request with minimal trace data
 	if strings.Contains(endpoint, "/api/traces") {
-		resp, err := client.Get(endpoint)
+		payload := []byte(`{"data":[{"id":"test"}]}`)
+		resp, err := client.Post(endpoint, "application/json", bytes.NewBuffer(payload))
 		if err != nil {
 			log.Printf("Collector endpoint check failed for %s: %v", endpoint, err)
 			return false
 		}
 		defer resp.Body.Close()
+
+		// Read and log response for debugging
+		body, err := io.ReadAll(resp.Body)
+		if err == nil {
+			log.Printf("Collector endpoint response: status=%d, body=%s", resp.StatusCode, string(body))
+		}
+
 		return resp.StatusCode < 500
 	}
 
@@ -190,9 +202,16 @@ func isEndpointReady(endpoint string) bool {
 	// For other endpoints, use GET request
 	resp, err := client.Get(endpoint)
 	if err != nil {
+		log.Printf("Endpoint check failed for %s: %v", endpoint, err)
 		return false
 	}
 	defer resp.Body.Close()
+
+	// Read and log response for debugging
+	body, err := io.ReadAll(resp.Body)
+	if err == nil {
+		log.Printf("Endpoint response from %s: status=%d, body=%s", endpoint, resp.StatusCode, string(body))
+	}
 
 	// For other endpoints, any response below 500 is considered ready
 	return resp.StatusCode < 500
