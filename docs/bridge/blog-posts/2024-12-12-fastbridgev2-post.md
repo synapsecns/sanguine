@@ -26,18 +26,22 @@ This major protocol upgrade represents a fundamental shift in the architecture, 
 ## Key Improvements At-A-Glance
 
 * **Gas Optimization Revolution**
-  * Achieved 30-50% reduction in transaction costs
-  * Single-slot storage optimizations save up to 20,000 gas per operation
+  * Achieved 30-50% reduction in transaction costs through storage and execution improvements
+  * Built-In Multicall allows efficient batching to save 21,000+ gas per operation
 
 * **Powerful Intent-Based Routing**
-  * New architecture enables complex multi-step transactions to be executed atomically
+  * New "Zap" architecture enables complex actions to be atomically executed after the intent is fulfilled
   * Reduces cross-contract calls
   * Allows for sophisticated bridging scenarios
 
-* **Advanced Batching Capabilities**
-  * Multicall support with selective result processing
-  * Reduces base transaction costs by 21,000 gas per operation
-  * Enables atomic execution of complex operations
+* **Exclusive Relayer Functionality**
+  * Intents can be assigned for exclusive fulfillment only by the Relayer who provided the best quote.
+  * This eliminates wasteful on-chain competition while still incentivizing low fees and fast fills.
+
+* **Operational Flexibility**
+  * Relayers can now Relay, Prove, and Claim all from different addresses.
+  * This offers throughput & efficiency improvements for advanced Relayers
+  * Multiple Quoting options for relayers to choose from to maximize competitiveness
 
 ## Synapse Intent Network: Technical Improvements
 
