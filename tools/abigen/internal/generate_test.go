@@ -70,17 +70,18 @@ func (a *AbiSuite) TestCompileSolidityExplicitEVM() {
 
 func TestFilePathsAreEqual(t *testing.T) {
 	tests := []struct {
-		file1 string // String fields (8-byte alignment)
-		file2 string // String fields (8-byte alignment)
-		err   error  // Interface type (8-byte alignment)
-		want  bool   // Bool field (1-byte alignment, moved to end)
+		file1 string  // String fields (8-byte alignment)
+		file2 string  // String fields (8-byte alignment)
+		want  bool    // Bool field (1-byte alignment)
+		_     [7]byte // padding
+		err   error   // Interface type (16-byte alignment)
 	}{
-		{"path/to/file1.txt", "path/to/file2.txt", nil, false},
-		{"path/to/file1.txt", "path/to/file1.txt", nil, true},
-		{"path/to/file2.txt", "path/to/file2.txt", nil, true},
-		{"path/to/file1.txt", "", filepath.ErrBadPattern, false},
-		{"", "path/to/file2.txt", filepath.ErrBadPattern, false},
-		{"nonexistent/file.txt", "path/to/file.txt", nil, false},
+		{"path/to/file1.txt", "path/to/file2.txt", false, [7]byte{}, nil},
+		{"path/to/file1.txt", "path/to/file1.txt", true, [7]byte{}, nil},
+		{"path/to/file2.txt", "path/to/file2.txt", true, [7]byte{}, nil},
+		{"path/to/file1.txt", "", false, [7]byte{}, filepath.ErrBadPattern},
+		{"", "path/to/file2.txt", false, [7]byte{}, filepath.ErrBadPattern},
+		{"nonexistent/file.txt", "path/to/file.txt", false, [7]byte{}, nil},
 	}
 
 	for _, tt := range tests {
@@ -226,9 +227,9 @@ func TestCompileSolidityDockerStrategy(t *testing.T) {
 		})
 
 		t.Run("context cancellation", func(t *testing.T) {
-			ctx, cancel := context.WithCancel(context.Background())
+			testCtx, cancel := context.WithCancel(context.Background())
 			cancel()
-			_, err := internal.CompileSolidity(ctx, "0.8.20", absTestFile, 200, nil)
+			_, err := internal.CompileSolidity(testCtx, "0.8.20", absTestFile, 200, nil)
 			if err == nil {
 				t.Error("Expected error due to canceled context, got nil")
 			}
@@ -257,9 +258,9 @@ func TestCompileSolidityDockerStrategy(t *testing.T) {
 		})
 
 		t.Run("context cancellation", func(t *testing.T) {
-			ctx, cancel := context.WithCancel(context.Background())
+			testCtx, cancel := context.WithCancel(context.Background())
 			cancel()
-			_, err := internal.CompileSolidity(ctx, "0.8.20", absTestFile, 200, nil)
+			_, err := internal.CompileSolidity(testCtx, "0.8.20", absTestFile, 200, nil)
 			if err == nil {
 				t.Error("Expected error due to canceled context during fallback, got nil")
 			}
@@ -268,24 +269,24 @@ func TestCompileSolidityDockerStrategy(t *testing.T) {
 }
 
 type ContractSettings struct {
-	CompilationTarget map[string]string `json:"compilationTarget"`
-	Metadata          map[string]string `json:"metadata"`
-	Remappings        []interface{}     `json:"remappings"`
-	EvmVersion        string            `json:"evmVersion"`
-	Libraries         struct{}          `json:"libraries"`
+	CompilationTarget map[string]string `json:"compilationTarget"` // Map (16-byte alignment)
+	Metadata          map[string]string `json:"metadata"`          // Map (16-byte alignment)
+	Libraries         struct{}          `json:"libraries"`         // Struct (8-byte alignment)
 	Optimizer         struct {
-		Runs    int  `json:"runs"`
-		Enabled bool `json:"enabled"`
+		Enabled bool `json:"enabled"` // Bool (1-byte alignment)
+		Runs    int  `json:"runs"`    // Int (8-byte alignment)
 	} `json:"optimizer"`
+	EvmVersion string        `json:"evmVersion"` // String (8-byte alignment)
+	Remappings []interface{} `json:"remappings"` // Slice (16-byte alignment)
 }
 
 type ContractMetadata struct {
-	Sources  map[string]interface{} `json:"sources"`
-	Output   interface{}            `json:"output"`
-	Settings ContractSettings       `json:"settings"`
-	Language string                 `json:"language"`
+	Sources  map[string]interface{} `json:"sources"`  // Map (16-byte alignment)
+	Output   interface{}            `json:"output"`   // Interface (16-byte alignment)
+	Settings ContractSettings       `json:"settings"` // Struct (aligned based on ContractSettings)
+	Version  int                    `json:"version"`  // Int (8-byte alignment)
+	Language string                 `json:"language"` // String (8-byte alignment)
 	Compiler struct {
-		Version string `json:"version"`
+		Version string `json:"version"` // String (8-byte alignment)
 	} `json:"compiler"`
-	Version int `json:"version"`
 }

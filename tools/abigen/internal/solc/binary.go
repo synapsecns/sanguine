@@ -190,7 +190,8 @@ func (m *BinaryManager) GetBinary(ctx context.Context) (string, error) {
 	}
 
 	// Clean and validate binary path
-	binaryPath := filepath.Clean(filepath.Join(cacheDir, fmt.Sprintf("solc-%s", m.version)))
+	// Note: Don't add solc- prefix here as it's already in m.version
+	binaryPath := filepath.Clean(filepath.Join(cacheDir, m.version))
 	if !strings.HasPrefix(binaryPath, m.cacheDir) {
 		return "", fmt.Errorf("invalid binary path: outside cache directory")
 	}
