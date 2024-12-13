@@ -11,34 +11,56 @@ import (
 // waitForContainerHealth waits for the container to be healthy
 func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error {
 	// Set container expiration
-	if err := resource.Expire(uint(time.Second * 30)); err != nil {
+	if err := resource.Expire(uint(time.Second * 60)); err != nil {
 		return fmt.Errorf("failed to set container expiration: %v", err)
 	}
 
 	j.tb.Log("Starting container health check...")
 
-	// Use dockertest's built-in wait strategy
-	err := resource.Wait(func() (bool, error) {
+	// Use pool's retry mechanism with timeout and detailed logging
+	if err := j.pool.Retry(func() error {
+		// Check container status first
+		container := resource.Container
+		if container == nil {
+			return fmt.Errorf("container reference is nil")
+		}
+
+		j.tb.Logf("Container status: %s", container.State.Status)
+		if container.State.Status != "running" {
+			return fmt.Errorf("container is not running, status: %s", container.State.Status)
+		}
+
 		// Try to connect to both endpoints
 		collectorEndpoint := fmt.Sprintf("http://localhost:%s/api/traces", resource.GetPort("14268/tcp"))
 		queryEndpoint := fmt.Sprintf("http://localhost:%s", resource.GetPort("16686/tcp"))
 
 		j.tb.Logf("Checking endpoints - collector: %s, query: %s", collectorEndpoint, queryEndpoint)
 
-		// Quick check both endpoints
+		// Quick check both endpoints with detailed logging
 		collectorReady := isEndpointReady(collectorEndpoint)
+		if !collectorReady {
+			j.tb.Log("Collector endpoint not ready")
+		}
+
 		queryReady := isEndpointReady(queryEndpoint)
+		if !queryReady {
+			j.tb.Log("Query endpoint not ready")
+		}
 
 		if !collectorReady || !queryReady {
-			j.tb.Logf("Endpoints not ready - collector: %v, query: %v", collectorReady, queryReady)
-			return false, nil
+			return fmt.Errorf("endpoints not ready - collector: %v, query: %v", collectorReady, queryReady)
 		}
 
 		j.tb.Log("Container health check passed")
-		return true, nil
-	}, 30*time.Second)
-
-	if err != nil {
+		return nil
+	}); err != nil {
+		// Get container logs on failure
+		if resource.Container != nil {
+			logs, logErr := j.pool.Client.ContainerLogs(resource.Container.ID)
+			if logErr == nil {
+				j.tb.Logf("Container logs: %s", logs)
+			}
+		}
 		return fmt.Errorf("container health check failed: %v", err)
 	}
 

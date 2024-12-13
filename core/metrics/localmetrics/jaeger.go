@@ -75,10 +75,11 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		Repository:   "jaegertracing/all-in-one",
 		Tag:          "latest",
 		Hostname:     "jaeger",
-		ExposedPorts: []string{"14268/tcp", "16686/tcp"},
+		ExposedPorts: []string{"14268/tcp", "16686/tcp", "14269/tcp"},
 		PortBindings: map[docker.Port][]docker.PortBinding{
 			"14268/tcp": {{HostIP: "0.0.0.0", HostPort: "14268"}},
 			"16686/tcp": {{HostIP: "0.0.0.0", HostPort: "16686"}},
+			"14269/tcp": {{HostIP: "0.0.0.0", HostPort: "14269"}},
 		},
 		Env: []string{
 			"COLLECTOR_OTLP_ENABLED=true",
@@ -86,6 +87,7 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			"COLLECTOR_HTTP_PORT=14268",
 			"QUERY_HTTP_PORT=16686",
 			"HEALTH_CHECK_HTTP_PORT=14269",
+			"METRICS_STORAGE_TYPE=memory",
 		},
 		Networks: j.getNetworks(),
 		Labels: map[string]string{
@@ -119,11 +121,17 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		j.tb.Log("Running container with options...")
 		resource, err = j.pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
 			j.tb.Log("Configuring container host settings...")
-			config.AutoRemove = true
+			config.AutoRemove = false
 			config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 			config.PublishAllPorts = false
 			config.PortBindings = runOptions.PortBindings
 			config.NetworkMode = "bridge"
+			config.Healthcheck = &docker.HealthConfig{
+				Test:     []string{"CMD", "wget", "--spider", "-q", "localhost:14269"},
+				Interval: 1 * time.Second,
+				Timeout:  2 * time.Second,
+				Retries:  10,
+			}
 		})
 
 		if err != nil {
