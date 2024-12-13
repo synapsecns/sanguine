@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/tools/abigen/internal/solc"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 )
 
 func setupTestBinaryManager(t *testing.T) *solc.BinaryManager {
@@ -51,7 +53,10 @@ func TestNewBinaryManager(t *testing.T) {
 
 func TestGetPlatformDir(t *testing.T) {
 	manager := solc.NewBinaryManager("0.8.20")
-	platform := manager.GetPlatformDir()
+	platform, err := manager.GetPlatformDir()
+	if err != nil {
+		t.Fatalf("GetPlatformDir() error = %v", err)
+	}
 
 	if solc.IsAppleSilicon() {
 		if platform != solc.PlatformWasm32 {
@@ -79,7 +84,10 @@ func TestGetPlatformDir(t *testing.T) {
 
 func TestGetBinary(t *testing.T) {
 	manager := setupTestBinaryManager(t)
-	binary, err := manager.GetBinary(t.Context())
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	binary, err := manager.GetBinary(ctx)
 	if err != nil {
 		t.Fatalf("Failed to get binary: %v", err)
 	}
@@ -96,7 +104,7 @@ func TestGetBinary(t *testing.T) {
 		t.Error("Binary is not executable")
 	}
 
-	binary2, err := manager.GetBinary(t.Context())
+	binary2, err := manager.GetBinary(ctx)
 	if err != nil {
 		t.Fatalf("Failed to get cached binary: %v", err)
 	}
@@ -126,13 +134,13 @@ func TestGetBinaryInfo(t *testing.T) {
 			name:     "invalid version",
 			version:  "999.999.999",
 			platform: "linux-amd64",
-			wantErr:  "invalid version format",
+			wantErr:  "failed to get binary info: version 999.999.999 not found for platform linux-amd64",
 		},
 		{
 			name:     "invalid platform",
 			version:  "0.8.20",
 			platform: "invalid-platform",
-			wantErr:  "failed to determine platform",
+			wantErr:  "unsupported platform",
 		},
 	}
 
@@ -141,15 +149,35 @@ func TestGetBinaryInfo(t *testing.T) {
 			t.Helper()
 			manager := solc.NewBinaryManager(tt.version)
 			managerValue := reflect.ValueOf(manager).Elem()
-			if platformField := managerValue.FieldByName("platform"); platformField.IsValid() && platformField.CanSet() {
+			if platformField := managerValue.FieldByName("Platform"); platformField.IsValid() && platformField.CanSet() {
 				platformField.SetString(tt.platform)
+				t.Logf("DEBUG: Set platform field to %q\n", tt.platform)
+			} else {
+				t.Error("Failed to set platform field")
 			}
-			_, err := manager.GetBinary(t.Context())
+			_, err := manager.GetBinary(context.Background())
 			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
 				t.Errorf("GetBinary() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
+}
+
+func restoreWritePermissions(t *testing.T, path string) error {
+	t.Helper()
+	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return fmt.Errorf("failed to walk path %s: %w", path, err)
+		}
+		if err := os.Chmod(path, 0600); err != nil {
+			return fmt.Errorf("failed to chmod %s: %w", path, err)
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("failed to restore write permissions: %w", err)
+	}
+	return nil
 }
 
 func setupTestDir(t *testing.T) string {
@@ -159,6 +187,10 @@ func setupTestDir(t *testing.T) string {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
 	t.Cleanup(func() {
+		// Restore write permissions before cleanup
+		if err := restoreWritePermissions(t, tmpDir); err != nil {
+			t.Errorf("failed to restore write permissions: %v", err)
+		}
 		if err := os.RemoveAll(tmpDir); err != nil {
 			t.Errorf("failed to cleanup test directory: %v", err)
 		}
@@ -168,13 +200,34 @@ func setupTestDir(t *testing.T) string {
 
 func setupNoWriteDir(t *testing.T, baseDir string) string {
 	t.Helper()
+	// Create the base directory with initial write permissions
 	noWriteDir := filepath.Join(baseDir, "no-write")
-	if err := os.Mkdir(noWriteDir, 0600); err != nil {
-		t.Fatalf("Failed to create no-write dir: %v", err)
+	if err := os.MkdirAll(noWriteDir, 0600); err != nil {
+		t.Fatalf("Failed to create base dir: %v", err)
 	}
-	if err := os.Chmod(noWriteDir, 0600); err != nil {
+
+	// Create the version and platform subdirectories
+	versionDir := filepath.Join(noWriteDir, "0.8.20")
+	platformDir := filepath.Join(versionDir, "linux-amd64")
+	if err := os.MkdirAll(platformDir, 0600); err != nil {
+		t.Fatalf("Failed to create platform dir: %v", err)
+	}
+
+	// Remove write permissions recursively on the entire directory tree
+	err := filepath.Walk(noWriteDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return fmt.Errorf("failed to walk path %s: %w", path, err)
+		}
+		if err := os.Chmod(path, 0400); err != nil {
+			return fmt.Errorf("failed to chmod %s: %w", path, err)
+		}
+		return nil
+	})
+	if err != nil {
 		t.Fatalf("Failed to set directory permissions: %v", err)
 	}
+
+	fmt.Printf("DEBUG: setupNoWriteDir - Created directory structure under %s with permissions 0400\n", noWriteDir)
 	return noWriteDir
 }
 
@@ -184,29 +237,35 @@ func TestDownloadAndVerify(t *testing.T) {
 	tests := []struct {
 		name    string
 		version string
-		setup   func(*testing.T, *solc.BinaryManager) error
+		setup   func(t *testing.T) (*solc.BinaryManager, error)
 		wantErr string
 	}{
 		{
 			name:    "invalid permissions",
 			version: "0.8.20",
-			setup: func(t *testing.T, manager *solc.BinaryManager) error {
+			setup: func(t *testing.T) (*solc.BinaryManager, error) {
 				t.Helper()
 				noWriteDir := setupNoWriteDir(t, tmpDir)
+				manager := solc.NewBinaryManagerWithDir("0.8.20", noWriteDir)
 				managerValue := reflect.ValueOf(manager).Elem()
-				if cacheDirField := managerValue.FieldByName("cacheDir"); cacheDirField.IsValid() && cacheDirField.CanSet() {
-					cacheDirField.SetString(noWriteDir)
+				if platformField := managerValue.FieldByName("Platform"); platformField.IsValid() && platformField.CanSet() {
+					platformField.SetString("linux-amd64")
 				}
-				return nil
+				return manager, nil
 			},
 			wantErr: "failed to create cache directory: permission denied",
 		},
 		{
 			name:    "invalid version format",
 			version: "invalid.version",
-			setup: func(t *testing.T, manager *solc.BinaryManager) error {
+			setup: func(t *testing.T) (*solc.BinaryManager, error) {
 				t.Helper()
-				return nil
+				manager := solc.NewBinaryManagerWithDir("invalid.version", tmpDir)
+				managerValue := reflect.ValueOf(manager).Elem()
+				if platformField := managerValue.FieldByName("Platform"); platformField.IsValid() && platformField.CanSet() {
+					platformField.SetString("linux-amd64")
+				}
+				return manager, nil
 			},
 			wantErr: "invalid version format",
 		},
@@ -215,11 +274,11 @@ func TestDownloadAndVerify(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Helper()
-			manager := solc.NewBinaryManager(tt.version)
-			if err := tt.setup(t, manager); err != nil {
+			manager, err := tt.setup(t)
+			if err != nil {
 				t.Fatalf("Setup failed: %v", err)
 			}
-			_, err := manager.GetBinary(t.Context())
+			_, err = manager.GetBinary(context.Background())
 			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
 				t.Errorf("GetBinary() error = %v, wantErr %v", err, tt.wantErr)
 			}

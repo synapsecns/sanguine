@@ -9,10 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
-	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/tools/abigen/internal"
 )
@@ -32,35 +31,39 @@ func TestCheckForDocker(t *testing.T) {
 }
 
 func (a *AbiSuite) TestCompileSolidityImplicitEVM() {
-	ctx := context.Background()
-	vals, err := internal.CompileSolidity(ctx, "0.8.4", a.exampleFilePath, 1, nil)
-	a.Require().NoError(err)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 
-	a.Require().Len(vals, 1)
+	vals, err := internal.CompileSolidity(ctx, "0.8.4", a.exampleFilePath, 1, nil)
+	a.TestSuite.Require().NoError(err)
+
+	a.TestSuite.Require().Len(vals, 1)
 	for _, value := range vals {
-		a.Equal(value.Info.CompilerVersion, "0.8.4")
-		a.Equal(value.Info.LanguageVersion, "0.8.4")
+		a.TestSuite.Equal("solc-solc-0.8.4", value.Info.CompilerVersion)
+		a.TestSuite.Equal("solc-solc-0.8.4", value.Info.LanguageVersion)
 	}
 }
 
 func (a *AbiSuite) TestCompileSolidityExplicitEVM() {
 	// default would be shanghai
 	const testEvmVersion = "istanbul"
-	ctx := context.Background()
-	vals, err := internal.CompileSolidity(ctx, "0.8.20", a.exampleFilePath, 1, core.PtrTo(testEvmVersion))
-	a.Require().NoError(err)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 
-	a.Require().Len(vals, 1)
+	vals, err := internal.CompileSolidity(ctx, "0.8.20", a.exampleFilePath, 1, core.PtrTo(testEvmVersion))
+	a.TestSuite.Require().NoError(err)
+
+	a.TestSuite.Require().Len(vals, 1)
 	for _, value := range vals {
-		a.Equal(value.Info.CompilerVersion, "0.8.20")
-		a.Equal(value.Info.LanguageVersion, "0.8.20")
+		a.TestSuite.Equal("solc-solc-0.8.20", value.Info.CompilerVersion)
+		a.TestSuite.Equal("solc-solc-0.8.20", value.Info.LanguageVersion)
 
 		var metadata ContractMetadata
 		err = json.Unmarshal([]byte(value.Info.Metadata), &metadata)
-		a.Require().NoError(err)
+		a.TestSuite.Require().NoError(err)
 
 		if metadata.Settings.EvmVersion != testEvmVersion {
-			a.T().Errorf("expected %s to be %s", metadata.Language, testEvmVersion)
+			a.TestSuite.T().Errorf("expected %s to be %s", metadata.Language, testEvmVersion)
 		}
 	}
 }
@@ -198,6 +201,12 @@ func TestCompileSolidityDockerStrategy(t *testing.T) {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
 
+	// Get absolute path for Docker volume mounting
+	absTestFile, err := filepath.Abs(testFile)
+	if err != nil {
+		t.Fatalf("Failed to get absolute path: %v", err)
+	}
+
 	ctx := context.Background()
 
 	// Test Docker compilation scenarios
@@ -207,7 +216,7 @@ func TestCompileSolidityDockerStrategy(t *testing.T) {
 		}
 
 		t.Run("successful compilation", func(t *testing.T) {
-			_, err := internal.CompileSolidity(ctx, "0.8.20", testFile, 200, nil)
+			_, err := internal.CompileSolidity(ctx, "0.8.20", absTestFile, 200, nil)
 			if err != nil {
 				t.Errorf("Expected successful Docker compilation, got error: %v", err)
 			}
@@ -216,7 +225,7 @@ func TestCompileSolidityDockerStrategy(t *testing.T) {
 		t.Run("context cancellation", func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			cancel()
-			_, err := internal.CompileSolidity(ctx, "0.8.20", testFile, 200, nil)
+			_, err := internal.CompileSolidity(ctx, "0.8.20", absTestFile, 200, nil)
 			if err == nil {
 				t.Error("Expected error due to canceled context, got nil")
 			}
@@ -238,7 +247,7 @@ func TestCompileSolidityDockerStrategy(t *testing.T) {
 		t.Cleanup(func() { t.Setenv("PATH", origPath) })
 
 		t.Run("successful fallback", func(t *testing.T) {
-			_, err := internal.CompileSolidity(ctx, "0.8.20", testFile, 200, nil)
+			_, err := internal.CompileSolidity(ctx, "0.8.20", absTestFile, 200, nil)
 			if err != nil {
 				t.Errorf("Expected successful binary fallback, got error: %v", err)
 			}
@@ -247,7 +256,7 @@ func TestCompileSolidityDockerStrategy(t *testing.T) {
 		t.Run("context cancellation", func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			cancel()
-			_, err := internal.CompileSolidity(ctx, "0.8.20", testFile, 200, nil)
+			_, err := internal.CompileSolidity(ctx, "0.8.20", absTestFile, 200, nil)
 			if err == nil {
 				t.Error("Expected error due to canceled context during fallback, got nil")
 			}

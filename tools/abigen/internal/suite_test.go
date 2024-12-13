@@ -24,7 +24,7 @@ func NewAbiSuite(tb testing.TB) *AbiSuite {
 func (a *AbiSuite) SetupTest() {
 	a.TestSuite.SetupTest()
 
-	tempFile := filet.TmpFile(a.T(), "", testFileContents)
+	tempFile := filet.TmpFile(a.TestSuite.T(), "", testFileContents)
 
 	_ = tempFile.Close()
 	a.exampleFilePath = tempFile.Name()
