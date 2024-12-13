@@ -2,11 +2,12 @@ package localmetrics
 
 import (
 	"fmt"
+	"net"
 	"os/exec"
 	"strings"
 	"time"
 
-	"github.com/ory/dockertest/v3"
+	dc "github.com/ory/dockertest/v3/docker"
 )
 
 // cleanupPorts kills any processes using our specific ports
@@ -14,23 +15,24 @@ func (j *testJaeger) cleanupPorts() error {
 	// Define specific ports we want to use
 	ports := []string{"14268", "16686", "14269", "4317", "4318"}
 
-	// First, cleanup all Docker resources using dockertest API
-	containers, err := j.pool.Client.ListContainers(dockertest.ListContainersOptions{All: true})
+	// First, cleanup all Docker resources
+	containers, err := j.pool.Client.ListContainers(dc.ListContainersOptions{
+		All: true,
+		Filters: map[string][]string{
+			"label": {"app=jaeger"},
+		},
+	})
 	if err != nil {
 		j.tb.Logf("Warning: Failed to list containers: %v", err)
 	} else {
 		for _, container := range containers {
 			// Check if container is using any of our ports
 			for _, port := range ports {
-				for exposed := range container.Ports {
-					if strings.Contains(exposed.PrivatePort, port) || strings.Contains(exposed.PublicPort, port) {
+				for _, p := range container.Ports {
+					if fmt.Sprint(p.PublicPort) == port {
 						j.tb.Logf("Found container %s using port %s, stopping...", container.ID[:12], port)
-						timeout := uint(10)
-						err := j.pool.Client.StopContainer(container.ID, &timeout)
-						if err != nil {
-							j.tb.Logf("Warning: Failed to stop container %s: %v", container.ID[:12], err)
-						}
-						err = j.pool.Client.RemoveContainer(dockertest.RemoveContainerOptions{
+						// Remove the container using dockertest's purge method
+						err := j.pool.Client.RemoveContainer(dc.RemoveContainerOptions{
 							ID:            container.ID,
 							Force:         true,
 							RemoveVolumes: true,
@@ -45,36 +47,60 @@ func (j *testJaeger) cleanupPorts() error {
 	}
 
 	// Then cleanup system-wide processes
-	for _, port := range ports {
-		// Try lsof first
-		if err := j.killProcessesWithLsof(port); err != nil {
-			j.tb.Logf("Warning: lsof cleanup for port %s failed: %v", port, err)
+	maxRetries := 3
+	for retry := 0; retry < maxRetries; retry++ {
+		allPortsFree := true
+		for _, port := range ports {
+			// Try lsof first
+			if err := j.killProcessesWithLsof(port); err != nil {
+				j.tb.Logf("Warning: lsof cleanup for port %s failed: %v", port, err)
+			}
+
+			// Then try fuser
+			if err := j.killProcessesWithFuser(port); err != nil {
+				j.tb.Logf("Warning: fuser cleanup for port %s failed: %v", port, err)
+			}
+
+			// Double-check with netstat
+			if err := j.killProcessesWithNetstat(port); err != nil {
+				j.tb.Logf("Warning: netstat cleanup for port %s failed: %v", port, err)
+			}
+
+			// Verify port is free by attempting to bind to it
+			if !j.isPortFree(port) {
+				allPortsFree = false
+				j.tb.Logf("Port %s is still in use after cleanup attempt %d", port, retry+1)
+			}
 		}
 
-		// Then try fuser
-		if err := j.killProcessesWithFuser(port); err != nil {
-			j.tb.Logf("Warning: fuser cleanup for port %s failed: %v", port, err)
+		if allPortsFree {
+			j.tb.Logf("All ports are free after cleanup attempt %d", retry+1)
+			return nil
 		}
 
-		// Double-check with netstat
-		if err := j.killProcessesWithNetstat(port); err != nil {
-			j.tb.Logf("Warning: netstat cleanup for port %s failed: %v", port, err)
-		}
+		// Wait between retries
+		time.Sleep(time.Second * 5)
 	}
 
-	// Wait for ports to be fully released
-	time.Sleep(time.Second * 5)
-
-	// Verify ports are actually free
+	// Final verification
 	for _, port := range ports {
-		cmd := exec.Command("lsof", "-i", ":"+port)
-		if output, err := cmd.Output(); err == nil && len(output) > 0 {
-			j.tb.Logf("Warning: Port %s is still in use after cleanup", port)
-			return fmt.Errorf("port %s still in use after cleanup", port)
+		if !j.isPortFree(port) {
+			return fmt.Errorf("port %s still in use after %d cleanup attempts", port, maxRetries)
 		}
 	}
 
 	return nil
+}
+
+// isPortFree checks if a port is available by attempting to bind to it
+func (j *testJaeger) isPortFree(port string) bool {
+	addr := fmt.Sprintf(":%s", port)
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return false
+	}
+	ln.Close()
+	return true
 }
 
 // killProcessesWithLsof uses lsof to find and kill processes
