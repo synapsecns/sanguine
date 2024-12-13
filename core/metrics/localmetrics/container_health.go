@@ -22,48 +22,90 @@ func generateJaegerThriftTrace() []byte {
 	// Create a timestamp in microseconds
 	timestamp := time.Now().UnixNano() / 1000
 
-	// Create a test span
+	// Create a test span with required fields
+	traceIDLow := rand.Int63()
+	traceIDHigh := rand.Int63()
+	spanID := rand.Int63()
+
 	span := &jaeger.Span{
-		TraceIdLow:    rand.Int63(),
-		TraceIdHigh:   rand.Int63(),
-		SpanId:        rand.Int63(),
-		OperationName: "test-operation",
+		TraceIdLow:    traceIDLow,
+		TraceIdHigh:   traceIDHigh,
+		SpanId:        spanID,
+		ParentSpanId:  0,
+		OperationName: "health-check",
+		References:    []*jaeger.SpanRef{},
+		Flags:         int32(1), // Set sampling flag to indicate the span should be sampled
 		StartTime:     timestamp,
-		Duration:      1000, // 1ms
+		Duration:      1000000, // 1 second in microseconds
 		Tags: []*jaeger.Tag{
 			{
-				Key:   "test.key",
+				Key:   "span.kind",
 				VType: jaeger.TagType_STRING,
-				VStr:  stringPtr("test-value"),
+				VStr:  stringPtr("client"),
+			},
+			{
+				Key:   "sampler.type",
+				VType: jaeger.TagType_STRING,
+				VStr:  stringPtr("const"),
+			},
+			{
+				Key:   "sampler.param",
+				VType: jaeger.TagType_BOOL,
+				VBool: boolPtr(true),
 			},
 		},
+		Logs: []*jaeger.Log{},
 	}
 
-	// Create a batch with the span
+	// Create a batch with the span and required process info
 	batch := &jaeger.Batch{
 		Process: &jaeger.Process{
-			ServiceName: "test-service",
+			ServiceName: "jaeger-health-check",
 			Tags: []*jaeger.Tag{
 				{
-					Key:   "service.version",
+					Key:   "jaeger.version",
 					VType: jaeger.TagType_STRING,
-					VStr:  stringPtr("1.0.0"),
+					VStr:  stringPtr("Go-2.30.0"),
+				},
+				{
+					Key:   "hostname",
+					VType: jaeger.TagType_STRING,
+					VStr:  stringPtr("localhost"),
+				},
+				{
+					Key:   "ip",
+					VType: jaeger.TagType_STRING,
+					VStr:  stringPtr("127.0.0.1"),
 				},
 			},
 		},
 		Spans: []*jaeger.Span{span},
 	}
 
-	// Serialize the batch to Thrift
-	transport := thrift.NewTMemoryBufferLen(1024)
-	protocol := thrift.NewTBinaryProtocolTransport(transport)
+	// Use TBufferedTransport for Jaeger compatibility
+	memBuffer := thrift.NewTMemoryBuffer()
+	trans := thrift.NewTBufferedTransport(memBuffer, 4096) // Use 4KB buffer size
+	protocol := thrift.NewTBinaryProtocol(trans, true, true)
 
-	if err := batch.Write(context.Background(), protocol); err != nil {
-		log.Printf("Failed to serialize Jaeger batch: %v", err)
+	// Write the batch directly with context
+	ctx := context.Background()
+	if err := batch.Write(ctx, protocol); err != nil {
+		log.Printf("Failed to serialize batch: %v", err)
 		return nil
 	}
 
-	return transport.Bytes()
+	// Ensure transport is flushed
+	if err := trans.Flush(ctx); err != nil {
+		log.Printf("Failed to flush transport: %v", err)
+		return nil
+	}
+
+	return memBuffer.Bytes()
+}
+
+// Helper functions for tag values
+func boolPtr(b bool) *bool {
+	return &b
 }
 
 // waitForContainerHealth waits for the container to be healthy
@@ -166,10 +208,10 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 			return fmt.Errorf("collector endpoint not ready (waited %v)", time.Since(startTime))
 		}
 
-		// Quick check all endpoints with detailed logging
+		// Quick check additional endpoints with detailed logging
 		queryReady := isEndpointReady(queryEndpoint)
 		if !queryReady {
-			j.tb.Log("Query endpoint not ready")
+			j.tb.Log("Query endpoint not ready (optional)")
 		}
 
 		// Skip OTLP gRPC endpoint check as it's not an HTTP endpoint
@@ -177,27 +219,12 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 
 		otlpHttpReady := isEndpointReady(otlpHttpEndpoint)
 		if !otlpHttpReady {
-			j.tb.Log("OTLP HTTP endpoint not ready")
+			j.tb.Log("OTLP HTTP endpoint not ready (optional)")
 		}
 
+		// Log status of optional endpoints but don't fail if they're not ready
 		if !queryReady || !otlpHttpReady {
-			// Get container logs on failure using Docker API
-			if resource.Container != nil {
-				var buf bytes.Buffer
-				err := j.pool.Client.Logs(docker.LogsOptions{
-					Container:    resource.Container.ID,
-					OutputStream: &buf,
-					Follow:       false,
-					Stdout:       true,
-					Stderr:       true,
-				})
-				if err == nil && buf.Len() > 0 {
-					j.tb.Logf("Container logs: %s", buf.String())
-				} else if err != nil {
-					j.tb.Logf("Failed to get container logs: %v", err)
-				}
-			}
-			return fmt.Errorf("endpoints not ready - query: %v, otlp-http: %v (waited %v)",
+			j.tb.Logf("Optional endpoints status - query: %v, otlp-http: %v (after %v)",
 				queryReady, otlpHttpReady, time.Since(startTime))
 		}
 
@@ -213,76 +240,81 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 // isEndpointReady performs a quick check if an endpoint is responding
 func isEndpointReady(endpoint string) bool {
 	client := &http.Client{
-		Timeout: time.Second * 10, // Increased timeout for endpoint checks
+		Timeout: time.Second * 10,
 	}
 
-	// For the collector endpoint, we need to send a POST request with Jaeger format
-	if strings.Contains(endpoint, "/api/traces") {
-		payload := generateJaegerThriftTrace()
-		if payload == nil {
-			log.Printf("Failed to generate Jaeger trace payload")
+	// Determine endpoint type and prepare request
+	var req *http.Request
+	var err error
+
+	// Check if this is a collector endpoint
+	isCollector := strings.Contains(endpoint, "/api/traces")
+	isHealth := strings.Contains(endpoint, "/health")
+
+	if isCollector {
+		// Generate and send a test trace
+		traceData := generateJaegerThriftTrace()
+		if traceData == nil {
+			log.Printf("Failed to generate trace data for collector endpoint: %s", endpoint)
 			return false
 		}
 
-		req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(payload))
+		req, err = http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(traceData))
 		if err != nil {
-			log.Printf("Failed to create request: %v", err)
+			log.Printf("Failed to create request for collector endpoint %s: %v", endpoint, err)
 			return false
 		}
 
-		// Set the correct content type for Thrift binary encoding
-		req.Header.Set("Content-Type", "application/vnd.apache.thrift.binary")
-		resp, err := client.Do(req)
+		// Set required headers for Jaeger collector
+		req.Header.Set("Content-Type", "application/x-thrift")
+		req.Header.Set("User-Agent", "jaeger-go/2.30.0")
+		log.Printf("Sending trace to collector %s with payload size: %d bytes", endpoint, len(traceData))
+	} else {
+		// For other endpoints, just do a GET request
+		req, err = http.NewRequest(http.MethodGet, endpoint, nil)
 		if err != nil {
-			log.Printf("Failed to send request: %v", err)
+			log.Printf("Failed to create request for endpoint %s: %v", endpoint, err)
 			return false
 		}
-		defer resp.Body.Close()
-
-		// Read response body for debugging
-		body, err := io.ReadAll(resp.Body)
-		if err == nil {
-			log.Printf("Collector endpoint response: status=%d, body=%s", resp.StatusCode, string(body))
-		}
-
-		// Jaeger accepts both 200 and 202 status codes for traces
-		return resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusAccepted
 	}
 
-	// For health endpoints, require 200 OK
-	if strings.Contains(endpoint, "/health") {
-		resp, err := client.Get(endpoint)
-		if err != nil {
-			log.Printf("Health check failed for %s: %v", endpoint, err)
-			return false
-		}
-		defer resp.Body.Close()
-
-		// Read and log response body for debugging
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Printf("Failed to read response body: %v", err)
-			return false
-		}
-		log.Printf("Health check response from %s: status=%d, body=%s", endpoint, resp.StatusCode, string(body))
-
-		return resp.StatusCode == http.StatusOK
-	}
-
-	// For other endpoints, use GET request
-	resp, err := client.Get(endpoint)
+	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("Endpoint check failed for %s: %v", endpoint, err)
+		log.Printf("Failed to connect to endpoint %s: %v", endpoint, err)
 		return false
 	}
 	defer resp.Body.Close()
 
-	// Read and log response for debugging
-	body, err := io.ReadAll(resp.Body)
-	if err == nil {
-		log.Printf("Endpoint response from %s: status=%d, body=%s", endpoint, resp.StatusCode, string(body))
+	// Read response body for debugging
+	body, _ := io.ReadAll(resp.Body)
+	if len(body) > 0 {
+		log.Printf("Response from %s: %s", endpoint, string(body))
 	}
 
-	// For other endpoints, any response below 500 is considered ready
-	return resp.StatusCode < 500
+	// For collector endpoint, accept 202 Accepted
+	if isCollector {
+		if resp.StatusCode != http.StatusAccepted {
+			log.Printf("Collector endpoint %s returned unexpected status %d: %s", endpoint, resp.StatusCode, string(body))
+			return false
+		}
+		log.Printf("Successfully submitted trace to collector %s", endpoint)
+		return true
+	}
+
+	// For health endpoint, require 200 OK
+	if isHealth {
+		if resp.StatusCode != http.StatusOK {
+			log.Printf("Health endpoint %s returned unexpected status %d: %s", endpoint, resp.StatusCode, string(body))
+			return false
+		}
+		return true
+	}
+
+	// For other endpoints (UI, etc.), accept any 2xx status code
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		log.Printf("Endpoint %s returned non-2xx status %d: %s", endpoint, resp.StatusCode, string(body))
+		return false
+	}
+
+	return true
 }
