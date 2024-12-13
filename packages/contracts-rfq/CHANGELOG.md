@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.15.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.15.0...@synapsecns/contracts-rfq@0.15.1) (2024-12-11)
+
+
+### Bug Fixes
+
+* **contracts-rfq:** increase coverage ([#3453](https://github.com/synapsecns/sanguine/issues/3453)) ([c341b69](https://github.com/synapsecns/sanguine/commit/c341b696a5b1f99514735acfb993b04e4a6cd3a7))
+
+
+
+
+
+# [0.15.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.8...@synapsecns/contracts-rfq@0.15.0) (2024-12-10)
+
+
+### Bug Fixes
+
+* **contracts-rfq:** configurable `deployBlock` ([#3437](https://github.com/synapsecns/sanguine/issues/3437)) ([cb43466](https://github.com/synapsecns/sanguine/commit/cb43466ceb7106eeee11ce615b556f8012228f39))
+
+
+### Features
+
+* **contracts-rfq:** Synapse Intent Router ([#3433](https://github.com/synapsecns/sanguine/issues/3433)) ([9900167](https://github.com/synapsecns/sanguine/commit/9900167792b5d5a59013cab7a77f5b72459e17ce)), closes [#3434](https://github.com/synapsecns/sanguine/issues/3434) [#3451](https://github.com/synapsecns/sanguine/issues/3451)
+
+
+
+
+
+## [0.14.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.7...@synapsecns/contracts-rfq@0.14.8) (2024-12-10)
+
+
+### Bug Fixes
+
+* **contracts-rfq:** FastBridge V2 prove race condition ([#3435](https://github.com/synapsecns/sanguine/issues/3435)) ([3d3530d](https://github.com/synapsecns/sanguine/commit/3d3530de4867d66458399ee146e29a6cffdc44e5))
+
+
+
+
+
 ## [0.14.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.14.6...@synapsecns/contracts-rfq@0.14.7) (2024-12-05)
 
 **Note:** Version bump only for package @synapsecns/contracts-rfq

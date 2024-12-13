@@ -42,7 +42,7 @@ contract TokenZapV1GasBenchmarkTest is Test {
 
     function getZapData(bytes memory originalPayload) public view returns (bytes memory) {
         // Amount is the second argument of the deposit function.
-        return tokenZap.encodeZapData(address(vault), originalPayload, 4 + 32);
+        return tokenZap.encodeZapData(address(vault), originalPayload, 4 + 32, address(0), address(0));
     }
 
     function test_deposit_erc20() public {

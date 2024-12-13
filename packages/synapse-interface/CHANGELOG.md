@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.41.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.40.24...@synapsecns/synapse-interface@0.41.0) (2024-12-13)
+
+
+### Features
+
+* **synapse-interface:** Adds Hyperliquid bridge & deposit support ([#3461](https://github.com/synapsecns/sanguine/issues/3461)) ([7e73687](https://github.com/synapsecns/sanguine/commit/7e73687f707191d138c3f9f65d9428e03454194b))
+
+
+
+
+
+## [0.40.24](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.40.23...@synapsecns/synapse-interface@0.40.24) (2024-12-12)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.40.23](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.40.22...@synapsecns/synapse-interface@0.40.23) (2024-12-06)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
