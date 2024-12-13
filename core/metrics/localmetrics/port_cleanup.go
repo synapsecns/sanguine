@@ -12,7 +12,12 @@ func (j *testJaeger) cleanupPorts() error {
 	// Define specific ports we want to use
 	ports := []string{"14268", "16686", "14269", "4317", "4318"}
 
-	// First, try to cleanup Docker-specific processes
+	// First, cleanup all Docker networks and containers
+	if err := j.cleanupDockerResources(); err != nil {
+		j.tb.Logf("Warning: Docker resource cleanup failed: %v", err)
+	}
+
+	// Then cleanup Docker-specific processes
 	if err := j.cleanupDockerPorts(ports); err != nil {
 		j.tb.Logf("Warning: Docker port cleanup failed: %v", err)
 	}
@@ -33,15 +38,58 @@ func (j *testJaeger) cleanupPorts() error {
 		if err := j.killProcessesWithNetstat(port); err != nil {
 			j.tb.Logf("Warning: netstat cleanup for port %s failed: %v", port, err)
 		}
-
-		// Force cleanup zombie processes
-		if err := j.cleanupZombieProcesses(port); err != nil {
-			j.tb.Logf("Warning: zombie process cleanup for port %s failed: %v", port, err)
-		}
 	}
 
 	// Wait for ports to be fully released
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 5)
+
+	return nil
+}
+
+// cleanupDockerResources attempts to cleanup all Docker resources that might interfere with testing
+func (j *testJaeger) cleanupDockerResources() error {
+	// First, stop and remove all containers with our labels
+	cmd := exec.Command("docker", "ps", "-aq", "--filter", "label=app=jaeger")
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("failed to list containers: %w", err)
+	}
+
+	if len(output) > 0 {
+		containers := strings.Split(strings.TrimSpace(string(output)), "\n")
+		for _, container := range containers {
+			j.tb.Logf("Stopping container %s", container)
+			stopCmd := exec.Command("docker", "stop", container)
+			if err := stopCmd.Run(); err != nil {
+				j.tb.Logf("Warning: Failed to stop container %s: %v", container, err)
+			}
+			rmCmd := exec.Command("docker", "rm", "-f", container)
+			if err := rmCmd.Run(); err != nil {
+				j.tb.Logf("Warning: Failed to remove container %s: %v", container, err)
+			}
+		}
+	}
+
+	// Remove any existing jaeger networks
+	cmd = exec.Command("docker", "network", "ls", "--filter", "name=jaeger", "--format", "{{.ID}}")
+	output, err = cmd.Output()
+	if err != nil {
+		return fmt.Errorf("failed to list networks: %w", err)
+	}
+
+	if len(output) > 0 {
+		networks := strings.Split(strings.TrimSpace(string(output)), "\n")
+		for _, network := range networks {
+			j.tb.Logf("Removing network %s", network)
+			rmCmd := exec.Command("docker", "network", "rm", network)
+			if err := rmCmd.Run(); err != nil {
+				j.tb.Logf("Warning: Failed to remove network %s: %v", network, err)
+			}
+		}
+	}
+
+	// Wait a bit for Docker to cleanup
+	time.Sleep(time.Second * 2)
 
 	return nil
 }
@@ -129,35 +177,5 @@ func (j *testJaeger) killProcessesWithNetstat(port string) error {
 			}
 		}
 	}
-	return nil
-}
-
-// cleanupZombieProcesses attempts to cleanup zombie processes that might be holding ports
-func (j *testJaeger) cleanupZombieProcesses(port string) error {
-	// Use ps to find zombie processes
-	cmd := exec.Command("ps", "-eo", "pid,stat,command")
-	output, err := cmd.Output()
-	if err != nil {
-		return fmt.Errorf("ps command failed: %w", err)
-	}
-
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
-		// Check for zombie processes (status Z)
-		if strings.Contains(line, " Z ") {
-			fields := strings.Fields(line)
-			if len(fields) >= 1 {
-				pid := fields[0]
-				j.tb.Logf("Found zombie process %s, attempting cleanup", pid)
-
-				// Try to kill the zombie process and its parent
-				killCmd := exec.Command("sudo", "kill", "-9", pid)
-				if err := killCmd.Run(); err != nil {
-					j.tb.Logf("Warning: Failed to kill zombie process %s: %v", pid, err)
-				}
-			}
-		}
-	}
-
 	return nil
 }
