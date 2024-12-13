@@ -164,18 +164,30 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			j.tb.Logf("Setting up endpoints with ports - trace: %s, ui: %s", tracePort, uiPort)
 			endpoint := fmt.Sprintf("http://localhost:%s", tracePort)
 			uiEndpoint := fmt.Sprintf("http://localhost:%s", uiPort)
+			healthEndpoint := fmt.Sprintf("http://localhost:%s/health", resource.GetPort("14269/tcp"))
 
-			// Verify endpoints are responding using simplified check
+			// Check health endpoint first as it's more reliable during startup
+			if !isEndpointReady(healthEndpoint) {
+				portChan <- fmt.Errorf("health endpoint not ready")
+				return
+			}
+			j.tb.Log("Health endpoint is ready")
+
+			// Now check trace endpoint
 			if !isEndpointReady(endpoint+"/api/traces") {
 				portChan <- fmt.Errorf("trace endpoint not ready")
 				return
 			}
+			j.tb.Log("Trace endpoint is ready")
 
+			// Finally check UI endpoint
 			if !isEndpointReady(uiEndpoint) {
 				portChan <- fmt.Errorf("UI endpoint not ready")
 				return
 			}
+			j.tb.Log("UI endpoint is ready")
 
+			// Set environment variables after all endpoints are confirmed ready
 			if err := os.Setenv(internal.JaegerEndpoint, fmt.Sprintf("%s/api/traces", endpoint)); err != nil {
 				portChan <- fmt.Errorf("failed to set endpoint: %w", err)
 				return

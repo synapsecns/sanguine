@@ -61,25 +61,9 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 		j.tb.Logf("Checking endpoints - collector: %s, query: %s, health: %s, otlp-grpc: %s, otlp-http: %s",
 			collectorEndpoint, queryEndpoint, healthEndpoint, otlpGrpcEndpoint, otlpHttpEndpoint)
 
-		// Check collector endpoint first
-		collectorReady := false
-		maxRetries := 10
-		for i := 0; i < maxRetries; i++ {
-			collectorReady = isEndpointReady(collectorEndpoint)
-			if collectorReady {
-				j.tb.Log("Collector endpoint is ready")
-				break
-			}
-			j.tb.Logf("Collector check attempt %d/%d failed, waiting before retry...", i+1, maxRetries)
-			time.Sleep(time.Second * 3)
-		}
-		if !collectorReady {
-			j.tb.Log("Collector endpoint not ready")
-			return fmt.Errorf("collector endpoint not ready (waited %v)", time.Since(startTime))
-		}
-
-		// Now check health endpoint
+		// Check health endpoint first
 		healthReady := false
+		maxRetries := 10
 		for i := 0; i < maxRetries; i++ {
 			healthReady = isEndpointReady(healthEndpoint)
 			if healthReady {
@@ -108,6 +92,22 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 		if !healthReady {
 			j.tb.Log("Health endpoint not ready")
 			return fmt.Errorf("health endpoint not ready (waited %v)", time.Since(startTime))
+		}
+
+		// Now check collector endpoint
+		collectorReady := false
+		for i := 0; i < maxRetries; i++ {
+			collectorReady = isEndpointReady(collectorEndpoint)
+			if collectorReady {
+				j.tb.Log("Collector endpoint is ready")
+				break
+			}
+			j.tb.Logf("Collector check attempt %d/%d failed, waiting before retry...", i+1, maxRetries)
+			time.Sleep(time.Second * 3)
+		}
+		if !collectorReady {
+			j.tb.Log("Collector endpoint not ready")
+			return fmt.Errorf("collector endpoint not ready (waited %v)", time.Since(startTime))
 		}
 
 		// Quick check all endpoints with detailed logging
