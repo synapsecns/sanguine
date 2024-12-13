@@ -9,6 +9,7 @@ import {
   getWalletClient,
   getPublicClient,
   waitForTransactionReceipt,
+  switchChain,
 } from '@wagmi/core'
 import { useTranslations } from 'next-intl'
 
@@ -69,6 +70,9 @@ import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejecte
 import { BridgeQuoteResetTimer } from '@/components/StateManagedBridge/BridgeQuoteResetTimer'
 import { useBridgeValidations } from '@/components/StateManagedBridge/hooks/useBridgeValidations'
 import { useStaleQuoteUpdater } from '@/components/StateManagedBridge/hooks/useStaleQuoteUpdater'
+import { ARBITRUM, HYPERLIQUID } from '@/constants/chains/master'
+import { HyperliquidTransactionButton } from '@/components/StateManagedBridge/HyperliquidDepositButton'
+import { USDC } from '@/constants/tokens/bridgeable'
 
 const StateManagedBridge = () => {
   const dispatch = useAppDispatch()
@@ -154,7 +158,7 @@ const StateManagedBridge = () => {
           fetchBridgeQuote({
             synapseSDK,
             fromChainId,
-            toChainId,
+            toChainId: toChainId === HYPERLIQUID.id ? 42161 : toChainId,
             fromToken,
             toToken,
             debouncedFromValue,
@@ -182,7 +186,10 @@ const StateManagedBridge = () => {
           quoteToastRef.current.id = toast(message, { duration: 3000 })
         }
 
-        if (fetchBridgeQuote.rejected.match(result)) {
+        if (
+          fetchBridgeQuote.rejected.match(result) &&
+          !(fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id)
+        ) {
           const message = t(
             'No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}',
             {
@@ -275,7 +282,8 @@ const StateManagedBridge = () => {
       {
         id: bridgeQuote.id,
         originChainId: fromChainId,
-        destinationChainId: toChainId,
+        destinationChainId:
+          toChainId === HYPERLIQUID.id ? ARBITRUM.id : toChainId,
         inputAmount: debouncedFromValue,
         expectedReceivedAmount: bridgeQuote.outputAmountString,
         slippage: bridgeQuote.exchangeRate,
@@ -294,7 +302,8 @@ const StateManagedBridge = () => {
         originChain: CHAINS_BY_ID[fromChainId],
         originToken: fromToken,
         originValue: debouncedFromValue,
-        destinationChain: CHAINS_BY_ID[toChainId],
+        destinationChain:
+          CHAINS_BY_ID[toChainId === HYPERLIQUID.id ? ARBITRUM.id : toChainId],
         destinationToken: toToken,
         transactionHash: undefined,
         timestamp: undefined,
@@ -319,7 +328,7 @@ const StateManagedBridge = () => {
         toAddress,
         bridgeQuote.routerAddress,
         fromChainId,
-        toChainId,
+        toChainId === HYPERLIQUID.id ? ARBITRUM.id : toChainId,
         fromToken?.addresses[fromChainId as keyof Token['addresses']],
         stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]),
         bridgeQuote.originQuery,
@@ -356,7 +365,8 @@ const StateManagedBridge = () => {
       segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
         id: bridgeQuote.id,
         originChainId: fromChainId,
-        destinationChainId: toChainId,
+        destinationChainId:
+          toChainId === HYPERLIQUID.id ? ARBITRUM.id : toChainId,
         inputAmount: debouncedFromValue,
         expectedReceivedAmount: bridgeQuote.outputAmountString,
         slippage: bridgeQuote.exchangeRate,
@@ -410,6 +420,13 @@ const StateManagedBridge = () => {
         hash: tx as Address,
         timeout: 60_000,
       })
+
+      if (toChainId === HYPERLIQUID.id) {
+        dispatch(setFromChainId(ARBITRUM.id))
+        dispatch(setFromToken(USDC))
+        dispatch(setToChainId(HYPERLIQUID.id))
+        switchChain(wagmiConfig, { chainId: ARBITRUM.id })
+      }
 
       /** Update Origin Chain token balances after resolved tx or timeout reached */
       /** Assume tx has been actually resolved if above times out */
@@ -489,17 +506,23 @@ const StateManagedBridge = () => {
               <OutputContainer isQuoteStale={isQuoteStale} />
               <Warning />
               <BridgeMaintenanceWarningMessage />
-              <BridgeExchangeRateInfo />
+              {!(
+                fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
+              ) && <BridgeExchangeRateInfo />}
               <ConfirmDestinationAddressWarning />
               <div className="relative flex items-center">
-                <BridgeTransactionButton
-                  isTyping={isTyping}
-                  isApproved={isApproved}
-                  approveTxn={approveTxn}
-                  executeBridge={executeBridge}
-                  isBridgePaused={isBridgePaused}
-                  isQuoteStale={isQuoteStale}
-                />
+                {fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id ? (
+                  <HyperliquidTransactionButton isTyping={isTyping} />
+                ) : (
+                  <BridgeTransactionButton
+                    isTyping={isTyping}
+                    isApproved={isApproved}
+                    approveTxn={approveTxn}
+                    executeBridge={executeBridge}
+                    isBridgePaused={isBridgePaused}
+                    isQuoteStale={isQuoteStale}
+                  />
+                )}
                 <div className="absolute flex items-center !right-10 pointer-events-none">
                   <BridgeQuoteResetTimer
                     bridgeQuote={bridgeQuote}
