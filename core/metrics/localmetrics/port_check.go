@@ -8,7 +8,7 @@ import (
 
 // getPortsInUse checks if the Jaeger ports are currently in use
 func (j *testJaeger) getPortsInUse() []string {
-	ports := []string{"14268", "16686"}
+	ports := []string{"14268", "16686", "14269", "4317", "4318"}
 	inUse := make([]string, 0)
 
 	for _, port := range ports {
