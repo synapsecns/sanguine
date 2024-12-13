@@ -243,8 +243,22 @@ func (j *testJaeger) getNetworks() []*dockertest.Network {
 	j.networkMux.Lock()
 	defer j.networkMux.Unlock()
 
-	// Clean up existing networks with retry
-	err := retry.WithBackoff(context.Background(), func(ctx context.Context) error {
+	// Try to use existing jaeger-test-net network first
+	networks, err := j.pool.Client.ListNetworks()
+	if err != nil {
+		j.tb.Logf("Error listing networks: %v", err)
+	} else {
+		for _, network := range networks {
+			if network.Name == "jaeger-test-net" {
+				// Found existing network, wrap it in dockertest.Network
+				networkPtr := &network
+				return []*dockertest.Network{{Network: networkPtr}}
+			}
+		}
+	}
+
+	// Clean up existing test networks with retry
+	err = retry.WithBackoff(context.Background(), func(ctx context.Context) error {
 		networks, err := j.pool.Client.ListNetworks()
 		if err != nil {
 			j.tb.Logf("Error listing networks: %v", err)
@@ -291,11 +305,27 @@ func (j *testJaeger) getNetworks() []*dockertest.Network {
 		j.tb.Logf("Warning: Failed to clean up existing networks: %v", err)
 	}
 
-	// Create new network with retry
+	// Use existing jaeger-test-net network if available
+	if networkExists("jaeger-test-net") {
+		network, err := j.pool.Client.NetworkInfo("jaeger-test-net")
+		if err == nil {
+			j.tb.Log("Using existing jaeger-test-net network")
+			return []*dockertest.Network{{Network: &network}}
+		}
+		j.tb.Logf("Error getting jaeger-test-net info: %v", err)
+	}
+
+	// Create new network with retry and specific subnet
 	err = retry.WithBackoff(context.Background(), func(ctx context.Context) error {
 		var createErr error
 		j.network, createErr = j.pool.CreateNetwork(j.runID, func(config *docker.CreateNetworkOptions) {
 			config.Driver = "bridge"
+			config.IPAM = &docker.IPAMOptions{
+				Config: []docker.IPAMConfig{{
+					Subnet:  "172.20.0.0/16",
+					Gateway: "172.20.0.1",
+				}},
+			}
 			config.Labels = map[string]string{
 				runIDLabel: j.runID,
 			}
