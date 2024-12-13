@@ -47,12 +47,14 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 
 		// Check health endpoint first with retries
 		healthReady := false
-		for i := 0; i < 3; i++ {
+		maxRetries := 10 // Increased from 3 to 10
+		for i := 0; i < maxRetries; i++ {
 			healthReady = isEndpointReady(healthEndpoint)
 			if healthReady {
 				break
 			}
-			time.Sleep(time.Second)
+			j.tb.Logf("Health check attempt %d/%d failed, waiting before retry...", i+1, maxRetries)
+			time.Sleep(time.Second * 3) // Increased from 1 to 3 seconds
 		}
 		if !healthReady {
 			j.tb.Log("Health endpoint not ready")
