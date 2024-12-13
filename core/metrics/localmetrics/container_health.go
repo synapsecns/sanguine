@@ -3,6 +3,7 @@ package localmetrics
 import (
 	"bytes"
 	"context"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"log"
@@ -11,30 +12,51 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jaegertracing/jaeger/thrift-gen/jaeger"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/jaegertracing/jaeger/thrift-gen/jaeger"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 )
 
 // generateJaegerThriftTrace creates a minimal Jaeger trace in Thrift format
 func generateJaegerThriftTrace() []byte {
+	// Initialize random seed
+	rand.Seed(time.Now().UnixNano())
+
 	// Create a timestamp in microseconds
 	timestamp := time.Now().UnixNano() / 1000
 
-	// Create a test span with required fields
-	traceIDLow := rand.Int63()
-	traceIDHigh := rand.Int63()
-	spanID := rand.Int63()
+	// Create trace and span IDs
+	traceIDLow := rand.Uint64()
+	traceIDHigh := rand.Uint64()
+	spanID := rand.Uint64()
 
+	// Create process info first
+	process := &jaeger.Process{
+		ServiceName: "jaeger-health-check",
+		Tags: []*jaeger.Tag{
+			{
+				Key:   "jaeger.version",
+				VType: jaeger.TagType_STRING,
+				VStr:  stringPtr("Go-2.30.0"),
+			},
+			{
+				Key:   "hostname",
+				VType: jaeger.TagType_STRING,
+				VStr:  stringPtr("localhost"),
+			},
+		},
+	}
+
+	// Create a test span
 	span := &jaeger.Span{
-		TraceIdLow:    traceIDLow,
-		TraceIdHigh:   traceIDHigh,
-		SpanId:        spanID,
-		ParentSpanId:  0,
+		TraceIdLow:    int64(traceIDLow),
+		TraceIdHigh:   int64(traceIDHigh),
+		SpanId:        int64(spanID),
+		ParentSpanId:  0, // Root span
 		OperationName: "health-check",
 		References:    []*jaeger.SpanRef{},
-		Flags:         int32(1), // Set sampling flag to indicate the span should be sampled
+		Flags:         1, // Sampled
 		StartTime:     timestamp,
 		Duration:      1000000, // 1 second in microseconds
 		Tags: []*jaeger.Tag{
@@ -57,55 +79,91 @@ func generateJaegerThriftTrace() []byte {
 		Logs: []*jaeger.Log{},
 	}
 
-	// Create a batch with the span and required process info
+	// Create batch with explicit initialization
 	batch := &jaeger.Batch{
-		Process: &jaeger.Process{
-			ServiceName: "jaeger-health-check",
-			Tags: []*jaeger.Tag{
-				{
-					Key:   "jaeger.version",
-					VType: jaeger.TagType_STRING,
-					VStr:  stringPtr("Go-2.30.0"),
-				},
-				{
-					Key:   "hostname",
-					VType: jaeger.TagType_STRING,
-					VStr:  stringPtr("localhost"),
-				},
-				{
-					Key:   "ip",
-					VType: jaeger.TagType_STRING,
-					VStr:  stringPtr("127.0.0.1"),
-				},
-			},
-		},
-		Spans: []*jaeger.Span{span},
+		Process: process,
+		Spans:   []*jaeger.Span{span},
 	}
 
-	// Use TBufferedTransport for Jaeger compatibility
-	memBuffer := thrift.NewTMemoryBuffer()
-	trans := thrift.NewTBufferedTransport(memBuffer, 4096) // Use 4KB buffer size
-	protocol := thrift.NewTBinaryProtocol(trans, true, true)
+	// Use TMemoryBuffer for serialization
+	memBuffer := thrift.NewTMemoryBufferLen(4096)
+	protocol := thrift.NewTBinaryProtocolConf(memBuffer, &thrift.TConfiguration{
+		MaxFrameSize:   16384000,
+		MaxMessageSize: 16384000,
+	})
 
-	// Write the batch directly with context
+	// Write the batch using explicit struct writing
 	ctx := context.Background()
-	if err := batch.Write(ctx, protocol); err != nil {
-		log.Printf("Failed to serialize batch: %v", err)
+	if err := protocol.WriteStructBegin(ctx, "Batch"); err != nil {
+		log.Printf("Failed to write struct begin: %v", err)
 		return nil
 	}
 
-	// Ensure transport is flushed
-	if err := trans.Flush(ctx); err != nil {
-		log.Printf("Failed to flush transport: %v", err)
+	// Write Process field (field 1)
+	if err := protocol.WriteFieldBegin(ctx, "process", thrift.STRUCT, 1); err != nil {
+		log.Printf("Failed to write process field begin: %v", err)
+		return nil
+	}
+	if err := process.Write(ctx, protocol); err != nil {
+		log.Printf("Failed to write process: %v", err)
+		return nil
+	}
+	if err := protocol.WriteFieldEnd(ctx); err != nil {
+		log.Printf("Failed to write process field end: %v", err)
 		return nil
 	}
 
-	return memBuffer.Bytes()
-}
+	// Write Spans field (field 2)
+	if err := protocol.WriteFieldBegin(ctx, "spans", thrift.LIST, 2); err != nil {
+		log.Printf("Failed to write spans field begin: %v", err)
+		return nil
+	}
+	if err := protocol.WriteListBegin(ctx, thrift.STRUCT, len(batch.Spans)); err != nil {
+		log.Printf("Failed to write spans list begin: %v", err)
+		return nil
+	}
+	for _, s := range batch.Spans {
+		if err := s.Write(ctx, protocol); err != nil {
+			log.Printf("Failed to write span: %v", err)
+			return nil
+		}
+	}
+	if err := protocol.WriteListEnd(ctx); err != nil {
+		log.Printf("Failed to write spans list end: %v", err)
+		return nil
+	}
+	if err := protocol.WriteFieldEnd(ctx); err != nil {
+		log.Printf("Failed to write spans field end: %v", err)
+		return nil
+	}
 
-// Helper functions for tag values
-func boolPtr(b bool) *bool {
-	return &b
+	// Write struct end
+	if err := protocol.WriteFieldStop(ctx); err != nil {
+		log.Printf("Failed to write field stop: %v", err)
+		return nil
+	}
+	if err := protocol.WriteStructEnd(ctx); err != nil {
+		log.Printf("Failed to write struct end: %v", err)
+		return nil
+	}
+
+	// Ensure protocol is flushed
+	if err := protocol.Flush(ctx); err != nil {
+		log.Printf("Failed to flush protocol: %v", err)
+		return nil
+	}
+
+	// Get the serialized payload
+	payload := memBuffer.Bytes()
+	payloadSize := len(payload)
+
+	// Create the final message with size header
+	msg := make([]byte, 4+payloadSize)
+	binary.BigEndian.PutUint32(msg[0:4], uint32(payloadSize))
+	copy(msg[4:], payload)
+
+	log.Printf("Generated trace batch of size: %d bytes (frame: 4, payload: %d)", len(msg), payloadSize)
+	return msg
 }
 
 // waitForContainerHealth waits for the container to be healthy
@@ -116,6 +174,7 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 	// Initial warmup period - increased to allow for full initialization
 	j.tb.Log("Waiting for initial container warmup...")
 	time.Sleep(time.Second * 15)
+
 	// Check container status and get initial logs
 	container := resource.Container
 	if container == nil {
@@ -266,9 +325,10 @@ func isEndpointReady(endpoint string) bool {
 		}
 
 		// Set required headers for Jaeger collector
-		req.Header.Set("Content-Type", "application/x-thrift")
+		req.Header.Set("Content-Type", "application/vnd.apache.thrift.binary")
 		req.Header.Set("User-Agent", "jaeger-go/2.30.0")
-		log.Printf("Sending trace to collector %s with payload size: %d bytes", endpoint, len(traceData))
+		log.Printf("Sending trace to collector %s with headers: %v", endpoint, req.Header)
+		log.Printf("Trace payload size: %d bytes", len(traceData))
 	} else {
 		// For other endpoints, just do a GET request
 		req, err = http.NewRequest(http.MethodGet, endpoint, nil)
@@ -286,15 +346,22 @@ func isEndpointReady(endpoint string) bool {
 	defer resp.Body.Close()
 
 	// Read response body for debugging
-	body, _ := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("Failed to read response body from %s: %v", endpoint, err)
+	}
+
+	// Log response details
+	log.Printf("Response from %s - Status: %d, Headers: %v", endpoint, resp.StatusCode, resp.Header)
 	if len(body) > 0 {
-		log.Printf("Response from %s: %s", endpoint, string(body))
+		log.Printf("Response body from %s: %s", endpoint, string(body))
 	}
 
 	// For collector endpoint, accept 202 Accepted
 	if isCollector {
 		if resp.StatusCode != http.StatusAccepted {
-			log.Printf("Collector endpoint %s returned unexpected status %d: %s", endpoint, resp.StatusCode, string(body))
+			log.Printf("Collector endpoint %s returned unexpected status %d with headers: %v",
+				endpoint, resp.StatusCode, resp.Header)
 			return false
 		}
 		log.Printf("Successfully submitted trace to collector %s", endpoint)
@@ -304,7 +371,8 @@ func isEndpointReady(endpoint string) bool {
 	// For health endpoint, require 200 OK
 	if isHealth {
 		if resp.StatusCode != http.StatusOK {
-			log.Printf("Health endpoint %s returned unexpected status %d: %s", endpoint, resp.StatusCode, string(body))
+			log.Printf("Health endpoint %s returned unexpected status %d: %s",
+				endpoint, resp.StatusCode, string(body))
 			return false
 		}
 		return true
@@ -312,7 +380,8 @@ func isEndpointReady(endpoint string) bool {
 
 	// For other endpoints (UI, etc.), accept any 2xx status code
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		log.Printf("Endpoint %s returned non-2xx status %d: %s", endpoint, resp.StatusCode, string(body))
+		log.Printf("Endpoint %s returned non-2xx status %d: %s",
+			endpoint, resp.StatusCode, string(body))
 		return false
 	}
 
