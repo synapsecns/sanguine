@@ -2,7 +2,7 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import invariant from 'tiny-invariant'
 import { AddressZero, MaxUint256, Zero } from '@ethersproject/constants'
-import { hexlify } from '@ethersproject/bytes'
+import { hexlify, hexDataLength } from '@ethersproject/bytes'
 
 import {
   BigintIsh,
@@ -31,6 +31,7 @@ import { getAllQuotes, getBestRelayerQuote } from './api'
 import {
   BridgeParamsV2,
   SavedParamsV1,
+  decodeSavedBridgeParams,
   encodeSavedBridgeParams,
 } from './paramsV2'
 import {
@@ -206,34 +207,56 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     slipNumerator: number,
     slipDenominator: number
   ): { originQuery: Query; destQuery: Query } {
-    // Max slippage for origin swap is 5% of the fixed fee
-    // Relayer is using a 10% buffer for the fixed fee, so if origin swap slippage
-    // is under 5% of the fixed fee, the relayer will still honor the quote.
-    let maxOriginSlippage = originQueryPrecise.minAmountOut
-      .sub(destQueryPrecise.minAmountOut)
+    // We should have saved neccessary params within dstQuery.rawParams
+    if (hexDataLength(destQueryPrecise.rawParams) === 0) {
+      console.warn(
+        'No params saved in destQuery.rawParams, slippage is not applied'
+      )
+      return {
+        originQuery: originQueryPrecise,
+        destQuery: destQueryPrecise,
+      }
+    }
+    // Find out the quoted destAmount for the RFQ token
+    const { paramsV1 } = decodeSavedBridgeParams(destQueryPrecise.rawParams)
+    if (
+      isSameAddress(paramsV1.destToken, AddressZero) ||
+      paramsV1.destAmount.eq(0)
+    ) {
+      console.warn(
+        'No destToken or destAmount saved in destQuery.rawParams, slippage is not applied'
+      )
+      return {
+        originQuery: originQueryPrecise,
+        destQuery: destQueryPrecise,
+      }
+    }
+    // Max slippage for the origin swap is 5% of the (destAmount - originAmount).
+    // Anything over that might lead to quote that the Relayers will not process.
+    const maxOriginSlippage = originQueryPrecise.minAmountOut
+      .sub(paramsV1.destAmount)
       .div(20)
     // TODO: figure out a better way to handle destAmount > originAmount
-    if (maxOriginSlippage.isNegative()) {
-      maxOriginSlippage = BigNumber.from(0)
-    }
+    const minAmountWithSlippage = maxOriginSlippage.isNegative()
+      ? originQueryPrecise.minAmountOut
+      : originQueryPrecise.minAmountOut.sub(maxOriginSlippage)
     const originQuery = applySlippageToQuery(
       originQueryPrecise,
       slipNumerator,
       slipDenominator
     )
-    if (
-      originQuery.minAmountOut
-        .add(maxOriginSlippage)
-        .lt(originQueryPrecise.minAmountOut)
-    ) {
-      originQuery.minAmountOut =
-        originQueryPrecise.minAmountOut.sub(maxOriginSlippage)
+    if (originQuery.minAmountOut.lt(minAmountWithSlippage)) {
+      originQuery.minAmountOut = minAmountWithSlippage
     }
-    // Never modify the dest query, as the exact amount from it will always be used by the Relayer
-    // So applying slippage there will only reduce the user proceeds on the destination chain
+    // The is no harm in modifying the destQuery, as we use saved paramsV1.destAmount for bridging purposes,
+    // as opposed to FastBridgeRouter module.
     return {
       originQuery,
-      destQuery: destQueryPrecise,
+      destQuery: applySlippageToQuery(
+        destQueryPrecise,
+        slipNumerator,
+        slipDenominator
+      ),
     }
   }
 
