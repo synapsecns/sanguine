@@ -92,7 +92,7 @@ func TestGetBinary(t *testing.T) {
 		t.Fatalf("Failed to get binary: %v", err)
 	}
 
-	if _, err := os.Stat(binary); os.IsNotExist(err) {
+	if _, statErr := os.Stat(binary); os.IsNotExist(statErr) {
 		t.Error("Binary file does not exist")
 	}
 

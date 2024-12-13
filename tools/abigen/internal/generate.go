@@ -80,9 +80,9 @@ func BuildTemplates(ctx context.Context, version, file, pkg, filename string, op
 
 	// Gather all non-excluded contract for binding
 	for name, contract := range contracts {
-		abi, err := json.Marshal(contract.Info.AbiDefinition) // Flatten the compiler parse
-		if err != nil {
-			panic(fmt.Errorf("failed to parse ABIs from compiler output: %w", err))
+		abi, marshalErr := json.Marshal(contract.Info.AbiDefinition) // Flatten the compiler parse
+		if marshalErr != nil {
+			panic(fmt.Errorf("failed to parse ABIs from compiler output: %w", marshalErr))
 		}
 		abis = append(abis, string(abi))
 		bins = append(bins, contract.Code)
@@ -284,14 +284,14 @@ func prepareDockerCommand(version, filePath string, optimizeRuns int, evmVersion
 
 	// Get source directory and ensure it exists
 	sourceDir := filepath.Dir(absPath)
-	if _, err := os.Stat(sourceDir); err != nil {
+	if _, statErr := os.Stat(sourceDir); statErr != nil {
 		return nil
 	}
 
 	// Create Docker mount path and source file path
 	dockerMountPath := "/solidity"
-	relPath, err := filepath.Rel(sourceDir, absPath)
-	if err != nil {
+	relPath, pathErr := filepath.Rel(sourceDir, absPath)
+	if pathErr != nil {
 		return nil
 	}
 	dockerSourcePath := filepath.Join(dockerMountPath, relPath)
@@ -412,8 +412,8 @@ func executeBinaryCompilation(ctx context.Context, binaryPath, filePath string, 
 	cmd.Stdout = &stdout
 	cmd.Dir = baseDir
 
-	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("solc failed: %w\nstderr: %s", err, stderr.String())
+	if cmdErr := cmd.Run(); cmdErr != nil {
+		return nil, fmt.Errorf("solc failed: %w\nstderr: %s", cmdErr, stderr.String())
 	}
 
 	contracts, err := compiler.ParseCombinedJSON(stdout.Bytes(), string(solContents), filepath.Base(binaryPath), filepath.Base(binaryPath), strings.Join(args, " "))

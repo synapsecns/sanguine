@@ -70,18 +70,18 @@ func (a *AbiSuite) TestCompileSolidityExplicitEVM() {
 
 func TestFilePathsAreEqual(t *testing.T) {
 	tests := []struct {
+		err   error   // Interface type (16-byte alignment)
 		file1 string  // String fields (8-byte alignment)
 		file2 string  // String fields (8-byte alignment)
 		want  bool    // Bool field (1-byte alignment)
 		_     [7]byte // padding
-		err   error   // Interface type (16-byte alignment)
 	}{
-		{"path/to/file1.txt", "path/to/file2.txt", false, [7]byte{}, nil},
-		{"path/to/file1.txt", "path/to/file1.txt", true, [7]byte{}, nil},
-		{"path/to/file2.txt", "path/to/file2.txt", true, [7]byte{}, nil},
-		{"path/to/file1.txt", "", false, [7]byte{}, filepath.ErrBadPattern},
-		{"", "path/to/file2.txt", false, [7]byte{}, filepath.ErrBadPattern},
-		{"nonexistent/file.txt", "path/to/file.txt", false, [7]byte{}, nil},
+		{err: nil, file1: "path/to/file1.txt", file2: "path/to/file2.txt", want: false},
+		{err: nil, file1: "path/to/file1.txt", file2: "path/to/file1.txt", want: true},
+		{err: nil, file1: "path/to/file2.txt", file2: "path/to/file2.txt", want: true},
+		{err: filepath.ErrBadPattern, file1: "path/to/file1.txt", file2: "", want: false},
+		{err: filepath.ErrBadPattern, file1: "", file2: "path/to/file2.txt", want: false},
+		{err: nil, file1: "nonexistent/file.txt", file2: "path/to/file.txt", want: false},
 	}
 
 	for _, tt := range tests {
@@ -271,13 +271,14 @@ func TestCompileSolidityDockerStrategy(t *testing.T) {
 type ContractSettings struct {
 	CompilationTarget map[string]string `json:"compilationTarget"` // Map (16-byte alignment)
 	Metadata          map[string]string `json:"metadata"`          // Map (16-byte alignment)
-	Libraries         struct{}          `json:"libraries"`         // Struct (8-byte alignment)
+	Remappings        []interface{}     `json:"remappings"`        // Slice (16-byte alignment)
+	EvmVersion        string            `json:"evmVersion"`        // String (8-byte alignment)
+	Libraries         struct{}          `json:"libraries"`         // Empty struct (0-byte)
 	Optimizer         struct {
-		Enabled bool `json:"enabled"` // Bool (1-byte alignment)
-		Runs    int  `json:"runs"`    // Int (8-byte alignment)
+		Runs    int     `json:"runs"`    // Int (8-byte alignment)
+		Enabled bool    `json:"enabled"` // Bool (1-byte alignment)
+		_       [7]byte // padding
 	} `json:"optimizer"`
-	EvmVersion string        `json:"evmVersion"` // String (8-byte alignment)
-	Remappings []interface{} `json:"remappings"` // Slice (16-byte alignment)
 }
 
 type ContractMetadata struct {

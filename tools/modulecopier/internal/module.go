@@ -23,8 +23,8 @@ func GetModulePath(dependencyName string) (modPath string, err error) {
 	}
 
 	// make sure the module is not a replace which we don't have functionality for yet
-	if _, err := hasUnsupportedDirective(modFile, dependencyName); err != nil {
-		return "", fmt.Errorf("module has unupoorted directive: %w", err)
+	if _, directiveErr := hasUnsupportedDirective(modFile, dependencyName); directiveErr != nil {
+		return "", fmt.Errorf("module has unupoorted directive: %w", directiveErr)
 	}
 
 	var resolvedModule *modfile.Require

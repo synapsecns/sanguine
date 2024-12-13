@@ -14,11 +14,11 @@ import (
 
 // fileRateLimiter implements a file based rate limiter for limiting requests across abi generate commands.
 type fileRateLimiter struct {
+	mux                 sync.Mutex    // Mutex (40-byte alignment)
+	waitBetweenRequests time.Duration // Duration (8-byte alignment)
 	flock               *flock.Flock  // Pointer (8-byte alignment)
 	lastRequestFile     *os.File      // Pointer (8-byte alignment)
-	waitBetweenRequests time.Duration // Duration (8-byte alignment)
 	lockFolderPath      string        // String (8-byte alignment)
-	mux                 sync.Mutex    // Mutex (1-byte alignment, moved to end)
 }
 
 // fileRateTimeout is how long to wait for file rate limiting.

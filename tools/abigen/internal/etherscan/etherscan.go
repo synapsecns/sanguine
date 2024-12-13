@@ -58,8 +58,8 @@ func newEtherscanABIClient(parentCtx context.Context, chainID uint32, url string
 		}
 
 		customization.BeforeRequest = func(_, _ string, _ map[string]interface{}) error {
-			_, err := client.rateLimiter.obtainLock(ctx)
-			return err
+			_, lockErr := client.rateLimiter.obtainLock(ctx)
+			return lockErr
 		}
 
 		customization.AfterRequest = func(_, action string, _ map[string]interface{}, _ interface{}, _ error) {
