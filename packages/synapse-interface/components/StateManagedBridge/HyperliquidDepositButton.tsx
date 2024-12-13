@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useTranslations } from 'next-intl'
-import { Address, erc20Abi } from 'viem'
+import { erc20Abi } from 'viem'
 import {
   simulateContract,
   waitForTransactionReceipt,
@@ -25,22 +25,6 @@ import { getUnixTimeMinutesFromNow } from '@/utils/time'
 import { HYPERLIQUID_MINIMUM_DEPOSIT } from '@/constants'
 
 const HYPERLIQUID_DEPOSIT_ADDRESS = '0x2Df1c51E09aECF9cacB7bc98cB1742757f163dF7'
-
-const approve = async (address: Address, amount: bigint) => {
-  const { request } = await simulateContract(wagmiConfig, {
-    chainId: ARBITRUM.id,
-    address: USDC.addresses[ARBITRUM.id],
-    abi: erc20Abi,
-    functionName: 'approve',
-    args: [address, amount],
-  })
-
-  const hash = await writeContract(wagmiConfig, request)
-
-  const txReceipt = await waitForTransactionReceipt(wagmiConfig, { hash })
-
-  return txReceipt
-}
 
 const deposit = async (amount: bigint) => {
   try {
@@ -68,8 +52,6 @@ export const HyperliquidTransactionButton = ({
   hasDepositedOnHyperliquid,
   setHasDepositedOnHyperliquid,
 }) => {
-  const [isApproved, setIsApproved] = useState(false)
-  const [isApproving, setIsApproving] = useState(false)
   const [isDepositing, setIsDepositing] = useState(false)
 
   const { address } = useAccount()
@@ -98,19 +80,6 @@ export const HyperliquidTransactionButton = ({
     fromToken?.decimals[fromChainId]
   )
 
-  const handleApprove = async () => {
-    setIsApproving(true)
-
-    try {
-      await approve(address, amount)
-      setIsApproved(true)
-    } catch (error) {
-      console.error('Approval error:', error)
-    } finally {
-      setIsApproving(false)
-    }
-  }
-
   const handleDeposit = async () => {
     setIsDepositing(true)
     const currentTimestamp: number = getUnixTimeMinutesFromNow(0)
@@ -118,7 +87,6 @@ export const HyperliquidTransactionButton = ({
       const txReceipt = await deposit(amount)
 
       setHasDepositedOnHyperliquid(true)
-      setIsApproved(false)
       segmentAnalyticsEvent(`[Hyperliquid Deposit]`, {
         inputAmount: debouncedFromValue,
       })
@@ -164,7 +132,6 @@ export const HyperliquidTransactionButton = ({
 
   const isButtonDisabled =
     isTyping ||
-    isApproving ||
     isDepositing ||
     !depositingMinimumAmount ||
     isWalletPending ||
@@ -195,12 +162,6 @@ export const HyperliquidTransactionButton = ({
       }),
       onClick: () => switchChain({ chainId: fromChainId }),
       pendingLabel: t('Switching chains'),
-    }
-  } else if (!isApproved && hasValidInput) {
-    buttonProperties = {
-      onClick: handleApprove,
-      label: t('Approve {symbol}', { symbol: fromToken?.symbol }),
-      pendingLabel: t('Approving'),
     }
   } else {
     buttonProperties = {
