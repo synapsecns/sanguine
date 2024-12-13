@@ -48,7 +48,10 @@ import { Token } from '@/utils/types'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { approveToken } from '@/utils/approveToken'
 import { stringToBigInt } from '@/utils/bigint/format'
-import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
+import {
+  fetchAndStoreSingleNetworkPortfolioBalances,
+  usePortfolioState,
+} from '@/slices/portfolio/hooks'
 import {
   updatePendingBridgeTransaction,
   addPendingBridgeTransaction,
@@ -73,10 +76,14 @@ import { useStaleQuoteUpdater } from '@/components/StateManagedBridge/hooks/useS
 import { ARBITRUM, HYPERLIQUID } from '@/constants/chains/master'
 import { HyperliquidTransactionButton } from '@/components/StateManagedBridge/HyperliquidDepositButton'
 import { USDC } from '@/constants/tokens/bridgeable'
+import { CheckCircleIcon } from '@heroicons/react/outline'
+import Image from 'next/image'
+import { HyperliquidDepositInfo } from '@/components/HyperliquidDepositInfo'
 
 const StateManagedBridge = () => {
   const dispatch = useAppDispatch()
-  const { address, isConnected } = useAccount()
+  const { address, isConnected, chain: connectedChain } = useAccount()
+  const { balances } = usePortfolioState()
   const { synapseSDK } = useSynapseContext()
   const router = useRouter()
   const { query, pathname } = router
@@ -89,6 +96,9 @@ const StateManagedBridge = () => {
   const t = useTranslations('Bridge')
 
   const [isTyping, setIsTyping] = useState(false)
+
+  const [hasDepositedOnHyperliquid, setHasDepositedOnHyperliquid] =
+    useState(false)
 
   const {
     fromChainId,
@@ -509,10 +519,21 @@ const StateManagedBridge = () => {
               {!(
                 fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
               ) && <BridgeExchangeRateInfo />}
+              {toChainId === HYPERLIQUID.id && (
+                <HyperliquidDepositInfo
+                  fromChainId={fromChainId}
+                  isOnArbitrum={connectedChain?.id === ARBITRUM.id}
+                  hasDepositedOnHyperliquid={hasDepositedOnHyperliquid}
+                />
+              )}
               <ConfirmDestinationAddressWarning />
               <div className="relative flex items-center">
                 {fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id ? (
-                  <HyperliquidTransactionButton isTyping={isTyping} />
+                  <HyperliquidTransactionButton
+                    isTyping={isTyping}
+                    hasDepositedOnHyperliquid={hasDepositedOnHyperliquid}
+                    setHasDepositedOnHyperliquid={setHasDepositedOnHyperliquid}
+                  />
                 ) : (
                   <BridgeTransactionButton
                     isTyping={isTyping}

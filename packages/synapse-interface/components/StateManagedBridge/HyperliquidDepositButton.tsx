@@ -2,7 +2,14 @@ import { useEffect, useState } from 'react'
 import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useTranslations } from 'next-intl'
+import { Address, erc20Abi } from 'viem'
+import {
+  simulateContract,
+  waitForTransactionReceipt,
+  writeContract,
+} from '@wagmi/core'
 
+import { wagmiConfig } from '@/wagmiConfig'
 import { useAppDispatch } from '@/store/hooks'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -10,23 +17,11 @@ import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { USDC } from '@/constants/tokens/bridgeable'
 import { ARBITRUM, HYPERLIQUID } from '@/constants/chains/master'
-import { Address, erc20Abi } from 'viem'
-import { MAX_UINT256 } from '@/constants'
-import { wagmiConfig } from '@/wagmiConfig'
-import {
-  simulateContract,
-  waitForTransactionReceipt,
-  writeContract,
-} from '@wagmi/core'
 import { stringToBigInt } from '@/utils/bigint/format'
-import { set } from 'lodash'
-import { arbitrum } from 'viem/chains'
-import { ArrowRightIcon, CheckCircleIcon } from '@heroicons/react/outline'
-import { ArrowUpRightIcon } from '../icons/ArrowUpRightIcon'
-import { shortenAddress } from '@/utils/shortenAddress'
-import Image from 'next/image'
-import { CopyButton } from '../ui/CopyButton'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { addPendingBridgeTransaction } from '@/slices/transactions/actions'
+import { getUnixTimeMinutesFromNow } from '@/utils/time'
 
 const HYPERLIQUID_DEPOSIT_ADDRESS = '0x2Df1c51E09aECF9cacB7bc98cB1742757f163dF7'
 
@@ -67,12 +62,14 @@ const deposit = async (amount: bigint) => {
   }
 }
 
-export const HyperliquidTransactionButton = ({ isTyping }) => {
+export const HyperliquidTransactionButton = ({
+  isTyping,
+  hasDepositedOnHyperliquid,
+  setHasDepositedOnHyperliquid,
+}) => {
   const [isApproved, setIsApproved] = useState(false)
   const [isApproving, setIsApproving] = useState(false)
   const [isDepositing, setIsDepositing] = useState(false)
-  const [hasDeposited, setHasDeposited] = useState(false)
-  const [depositHash, setDepositHash] = useState('')
 
   const { address } = useAccount()
 
@@ -114,16 +111,36 @@ export const HyperliquidTransactionButton = ({ isTyping }) => {
 
   const handleDeposit = async () => {
     setIsDepositing(true)
+    const currentTimestamp: number = getUnixTimeMinutesFromNow(0)
     try {
       const txReceipt = await deposit(amount)
 
-      setDepositHash(txReceipt.transactionHash)
-      setHasDeposited(true)
+      setHasDepositedOnHyperliquid(true)
       setIsApproved(false)
+      segmentAnalyticsEvent(`[Hyperliquid Deposit]`, {
+        inputAmount: debouncedFromValue,
+      })
       dispatch(
         fetchAndStoreSingleNetworkPortfolioBalances({
           address,
           chainId: ARBITRUM.id,
+        })
+      )
+      dispatch(
+        addPendingBridgeTransaction({
+          id: currentTimestamp,
+          originChain: ARBITRUM,
+          originToken: fromToken,
+          originValue: debouncedFromValue,
+          destinationChain: HYPERLIQUID,
+          destinationToken: undefined,
+          transactionHash: txReceipt.transactionHash,
+          timestamp: undefined,
+          isSubmitted: false,
+          estimatedTime: undefined,
+          bridgeModuleName: undefined,
+          destinationAddress: undefined,
+          routerAddress: undefined,
         })
       )
     } catch (error) {
@@ -132,10 +149,6 @@ export const HyperliquidTransactionButton = ({ isTyping }) => {
       setIsDepositing(false)
     }
   }
-
-  useEffect(() => {
-    // refresh balances
-  }, [])
 
   useAccountEffect({
     onDisconnect() {
@@ -170,7 +183,7 @@ export const HyperliquidTransactionButton = ({ isTyping }) => {
     }
   } else if (!isConnected && hasValidInput) {
     buttonProperties = {
-      label: t('Connect Wallet to Deposit'),
+      label: t('Connect Wallet to Bridge'),
       onClick: openConnectModal,
     }
   } else if (!onSelectedChain && hasValidInput) {
@@ -199,49 +212,6 @@ export const HyperliquidTransactionButton = ({ isTyping }) => {
     buttonProperties && (
       <>
         <div className="flex flex-col w-full">
-          {hasDeposited && (
-            <div className="flex flex-col p-2 mb-2 text-sm border rounded border-zinc-300 dark:border-separator">
-              <div className="flex items-center mb-2 space-x-2 ">
-                <Image
-                  loading="lazy"
-                  src={HYPERLIQUID.chainImg}
-                  alt="Switch Network"
-                  width="16"
-                  height="16"
-                  className="w-4 h-4 max-w-fit"
-                />
-
-                <div>Hyperliquid Deposit</div>
-              </div>
-              <div className="flex items-center justify-between space-x-4 text-sm ">
-                <div className="">
-                  <span className="text-white/65">Receipt: </span>{' '}
-                  {shortenAddress(depositHash, 8)}{' '}
-                  <span className="text-white/65">/ </span>
-                  <CopyButton text={depositHash} />
-                </div>
-                <a
-                  href={`${arbitrum.blockExplorers.default.url}/tx/${depositHash}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-cortex-yellow hover:underline"
-                >
-                  <div className="flex items-center space-x-1">
-                    <Image
-                      src={ARBITRUM.explorerImg}
-                      alt="Arbiscan"
-                      width="12"
-                      height="12"
-                      className="w-3 h-3"
-                    />
-                    <div>{arbitrum.blockExplorers.default.name} </div>
-                    <ArrowUpRightIcon className="w-2.5 h-2.5" />
-                  </div>
-                </a>
-              </div>
-            </div>
-          )}
-
           <TransactionButton
             {...buttonProperties}
             disabled={isButtonDisabled}
