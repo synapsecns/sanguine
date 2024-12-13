@@ -56,7 +56,7 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 	}); err != nil {
 		// Get container logs on failure
 		if resource.Container != nil {
-			logs, logErr := j.pool.Client.ContainerLogs(resource.Container.ID)
+			logs, logErr := j.pool.Client.Logs(resource.Container.ID)
 			if logErr == nil {
 				j.tb.Logf("Container logs: %s", logs)
 			}

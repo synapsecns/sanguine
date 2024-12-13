@@ -126,14 +126,13 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 			config.PublishAllPorts = false
 			config.PortBindings = runOptions.PortBindings
 			config.NetworkMode = "bridge"
-			config.Healthcheck = &docker.HealthConfig{
+			config.HealthCheck = &docker.HealthConfig{
 				Test:     []string{"CMD", "wget", "--spider", "-q", "localhost:14269"},
 				Interval: 1 * time.Second,
 				Timeout:  2 * time.Second,
 				Retries:  10,
 			}
 		})
-
 		if err != nil {
 			j.tb.Logf("Failed to start container: %v", err)
 			if resource != nil {
