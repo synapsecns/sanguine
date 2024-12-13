@@ -93,7 +93,7 @@ export const HyperliquidTransactionButton = ({
 
   const amount = stringToBigInt(
     debouncedFromValue,
-    fromToken.decimals[fromChainId]
+    fromToken?.decimals[fromChainId]
   )
 
   const handleApprove = async () => {
