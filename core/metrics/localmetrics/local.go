@@ -310,7 +310,7 @@ func (j *testJaeger) getNetworks() []*dockertest.Network {
 		network, err := j.pool.Client.NetworkInfo("jaeger-test-net")
 		if err == nil {
 			j.tb.Log("Using existing jaeger-test-net network")
-			return []*dockertest.Network{{Network: &network}}
+			return []*dockertest.Network{{Network: network}}
 		}
 		j.tb.Logf("Error getting jaeger-test-net info: %v", err)
 	}
