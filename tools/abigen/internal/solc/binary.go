@@ -165,9 +165,9 @@ func (m *BinaryManager) GetBinary(ctx context.Context) (string, error) {
 	}
 
 	// Validate platform first, before any other operations
-	platform, err := m.GetPlatformDir()
-	if err != nil {
-		return "", err // Return platform validation errors without wrapping
+	platform, platformErr := m.GetPlatformDir()
+	if platformErr != nil {
+		return "", platformErr // Return platform validation errors without wrapping
 	}
 
 	// Strip any existing solc- or solc-solc- prefixes for validation
@@ -184,9 +184,9 @@ func (m *BinaryManager) GetBinary(ctx context.Context) (string, error) {
 	}
 
 	// Create cache directory if it doesn't exist, propagate permission errors directly
-	if err := m.setupCacheDir(cacheDir); err != nil {
-		fmt.Printf("DEBUG: GetBinary - setupCacheDir error: %v\n", err)
-		return "", err // Return permission errors without wrapping
+	if setupErr := m.setupCacheDir(cacheDir); setupErr != nil {
+		fmt.Printf("DEBUG: GetBinary - setupCacheDir error: %v\n", setupErr)
+		return "", setupErr // Return permission errors without wrapping
 	}
 
 	// Clean and validate binary path
@@ -196,10 +196,10 @@ func (m *BinaryManager) GetBinary(ctx context.Context) (string, error) {
 	}
 
 	// Check if binary exists and is executable
-	if info, err := os.Stat(binaryPath); err == nil {
+	if info, statErr := os.Stat(binaryPath); statErr == nil {
 		if info.Mode()&0111 == 0 {
-			if err := os.Chmod(binaryPath, execPerms); err != nil {
-				return "", fmt.Errorf("failed to make cached binary executable: %w", err)
+			if chmodErr := os.Chmod(binaryPath, execPerms); chmodErr != nil {
+				return "", fmt.Errorf("failed to make cached binary executable: %w", chmodErr)
 			}
 		}
 		return binaryPath, nil
@@ -241,8 +241,8 @@ func (m *BinaryManager) getBinaryInfo(ctx context.Context, platform string) (*Bi
 		return nil, fmt.Errorf("failed to download list.json: %w", err)
 	}
 	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			fmt.Printf("failed to close response body: %v\n", err)
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			fmt.Printf("failed to close response body: %v\n", closeErr)
 		}
 	}()
 
@@ -271,8 +271,8 @@ func (m *BinaryManager) getBinaryInfo(ctx context.Context, platform string) (*Bi
 func (m *BinaryManager) setupCacheDir(cacheDir string) error {
 	fmt.Printf("DEBUG: setupCacheDir - Checking directory: %s\n", cacheDir)
 	// Check if directory exists
-	info, err := os.Stat(cacheDir)
-	if err == nil {
+	info, statErr := os.Stat(cacheDir)
+	if statErr == nil {
 		// Directory exists, check write permissions
 		fmt.Printf("DEBUG: setupCacheDir - Directory exists with permissions: %o\n", info.Mode().Perm())
 		if info.Mode().Perm()&0200 == 0 {
@@ -281,35 +281,35 @@ func (m *BinaryManager) setupCacheDir(cacheDir string) error {
 		}
 		// Try to create a test file to verify write permissions
 		testFile := filepath.Join(cacheDir, ".write-test")
-		if err := os.WriteFile(testFile, []byte{}, 0600); err != nil {
-			fmt.Printf("DEBUG: setupCacheDir - Failed to create test file: %v\n", err)
-			if os.IsPermission(err) {
+		if writeErr := os.WriteFile(testFile, []byte{}, 0600); writeErr != nil {
+			fmt.Printf("DEBUG: setupCacheDir - Failed to create test file: %v\n", writeErr)
+			if os.IsPermission(writeErr) {
 				return fmt.Errorf("failed to create cache directory: permission denied")
 			}
-			return fmt.Errorf("failed to verify cache directory permissions: %w", err)
+			return fmt.Errorf("failed to verify cache directory permissions: %w", writeErr)
 		}
 		// Clean up test file
 		_ = os.Remove(testFile)
 		return nil
 	}
 
-	if !os.IsNotExist(err) {
+	if !os.IsNotExist(statErr) {
 		// Error other than not exists (e.g., permission denied)
-		fmt.Printf("DEBUG: setupCacheDir - Error checking directory: %v\n", err)
-		if os.IsPermission(err) {
+		fmt.Printf("DEBUG: setupCacheDir - Error checking directory: %v\n", statErr)
+		if os.IsPermission(statErr) {
 			return fmt.Errorf("failed to create cache directory: permission denied")
 		}
-		return fmt.Errorf("failed to check cache directory: %w", err)
+		return fmt.Errorf("failed to check cache directory: %w", statErr)
 	}
 
 	// Create directory with secure permissions
 	fmt.Printf("DEBUG: setupCacheDir - Creating directory with permissions %o\n", dirPerms)
-	if err := os.MkdirAll(cacheDir, dirPerms); err != nil {
-		fmt.Printf("DEBUG: setupCacheDir - Failed to create directory: %v\n", err)
-		if os.IsPermission(err) {
+	if mkdirErr := os.MkdirAll(cacheDir, dirPerms); mkdirErr != nil {
+		fmt.Printf("DEBUG: setupCacheDir - Failed to create directory: %v\n", mkdirErr)
+		if os.IsPermission(mkdirErr) {
 			return fmt.Errorf("failed to create cache directory: permission denied")
 		}
-		return fmt.Errorf("failed to create cache directory: %w", err)
+		return fmt.Errorf("failed to create cache directory: %w", mkdirErr)
 	}
 	return nil
 }
@@ -442,18 +442,18 @@ func (m *BinaryManager) downloadAndVerify(ctx context.Context, binaryInfo *Binar
 	default:
 	}
 
-	if err := m.setupCacheDir(filepath.Dir(tmpFile)); err != nil {
-		return err
+	if setupErr := m.setupCacheDir(filepath.Dir(tmpFile)); setupErr != nil {
+		return setupErr
 	}
 
 	// Download binary from URL
-	platform, err := m.GetPlatformDir()
-	if err != nil {
-		return fmt.Errorf("failed to get platform directory: %w", err)
+	platform, platformErr := m.GetPlatformDir()
+	if platformErr != nil {
+		return fmt.Errorf("failed to get platform directory: %w", platformErr)
 	}
 	binaryURL := fmt.Sprintf("https://binaries.soliditylang.org/%s/%s", platform, binaryInfo.Path)
-	if err := m.downloadFile(ctx, binaryURL, tmpFile); err != nil {
-		return fmt.Errorf("failed to download binary: %w", err)
+	if downloadErr := m.downloadFile(ctx, binaryURL, tmpFile); downloadErr != nil {
+		return fmt.Errorf("failed to download binary: %w", downloadErr)
 	}
 
 	return m.verifyAndInstall(ctx, tmpFile, binaryInfo)
@@ -469,21 +469,21 @@ func (m *BinaryManager) downloadBinary(ctx context.Context, binaryInfo *BinaryIn
 
 	// Download and verify binary
 	tmpFile := binaryPath + ".tmp"
-	if err := m.downloadAndVerify(ctx, binaryInfo, tmpFile); err != nil {
+	if downloadErr := m.downloadAndVerify(ctx, binaryInfo, tmpFile); downloadErr != nil {
 		// Only attempt removal if file exists
 		if _, statErr := os.Stat(tmpFile); statErr == nil {
 			_ = os.Remove(tmpFile)
 		}
-		return "", fmt.Errorf("failed to download and verify binary: %w", err)
+		return "", fmt.Errorf("failed to download and verify binary: %w", downloadErr)
 	}
 
 	// Move temporary file to final location
-	if err := os.Rename(tmpFile, binaryPath); err != nil {
+	if renameErr := os.Rename(tmpFile, binaryPath); renameErr != nil {
 		// Only attempt removal if file exists
 		if _, statErr := os.Stat(tmpFile); statErr == nil {
 			_ = os.Remove(tmpFile)
 		}
-		return "", fmt.Errorf("failed to move binary to final location: %w", err)
+		return "", fmt.Errorf("failed to move binary to final location: %w", renameErr)
 	}
 
 	return binaryPath, nil
@@ -504,21 +504,21 @@ func (m *BinaryManager) verifyAndInstall(ctx context.Context, tmpFile string, bi
 	}
 
 	// Verify checksums
-	if err := m.VerifyChecksums(tmpFile, binaryInfo); err != nil {
+	if verifyErr := m.VerifyChecksums(tmpFile, binaryInfo); verifyErr != nil {
 		// Only log removal errors if the file exists and we fail to remove it
 		if removeErr := os.Remove(tmpFile); removeErr != nil && !os.IsNotExist(removeErr) {
 			fmt.Printf("failed to remove temporary file: %v\n", removeErr)
 		}
-		return fmt.Errorf("checksum verification failed: %w", err)
+		return fmt.Errorf("checksum verification failed: %w", verifyErr)
 	}
 
 	// Make binary executable
-	if err := os.Chmod(tmpFile, execPerms); err != nil {
+	if chmodErr := os.Chmod(tmpFile, execPerms); chmodErr != nil {
 		// Only log removal errors if the file exists and we fail to remove it
 		if removeErr := os.Remove(tmpFile); removeErr != nil && !os.IsNotExist(removeErr) {
 			fmt.Printf("failed to remove temporary file: %v\n", removeErr)
 		}
-		return fmt.Errorf("failed to make binary executable: %w", err)
+		return fmt.Errorf("failed to make binary executable: %w", chmodErr)
 	}
 
 	return nil

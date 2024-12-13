@@ -163,13 +163,17 @@ func TestGetBinaryInfo(t *testing.T) {
 	}
 }
 
-func restoreWritePermissions(t *testing.T, path string) error {
-	t.Helper()
+func restoreWritePermissions(path string) error {
 	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return fmt.Errorf("failed to walk path %s: %w", path, err)
 		}
-		if err := os.Chmod(path, 0600); err != nil {
+		// Use 0700 for directories (rwx) and 0600 (rw) for files
+		mode := os.FileMode(0600)
+		if info != nil && info.IsDir() {
+			mode = os.FileMode(0700)
+		}
+		if err := os.Chmod(path, mode); err != nil {
 			return fmt.Errorf("failed to chmod %s: %w", path, err)
 		}
 		return nil
@@ -188,7 +192,7 @@ func setupTestDir(t *testing.T) string {
 	}
 	t.Cleanup(func() {
 		// Restore write permissions before cleanup
-		if err := restoreWritePermissions(t, tmpDir); err != nil {
+		if err := restoreWritePermissions(tmpDir); err != nil {
 			t.Errorf("failed to restore write permissions: %v", err)
 		}
 		if err := os.RemoveAll(tmpDir); err != nil {
@@ -200,34 +204,20 @@ func setupTestDir(t *testing.T) string {
 
 func setupNoWriteDir(t *testing.T, baseDir string) string {
 	t.Helper()
-	// Create the base directory with initial write permissions
+	// Create the base directory with writable permissions initially
 	noWriteDir := filepath.Join(baseDir, "no-write")
-	if err := os.MkdirAll(noWriteDir, 0600); err != nil {
+	if err := os.MkdirAll(noWriteDir, 0700); err != nil {
 		t.Fatalf("Failed to create base dir: %v", err)
 	}
 
-	// Create the version and platform subdirectories
-	versionDir := filepath.Join(noWriteDir, "0.8.20")
-	platformDir := filepath.Join(versionDir, "linux-amd64")
-	if err := os.MkdirAll(platformDir, 0600); err != nil {
-		t.Fatalf("Failed to create platform dir: %v", err)
-	}
-
-	// Remove write permissions recursively on the entire directory tree
-	err := filepath.Walk(noWriteDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return fmt.Errorf("failed to walk path %s: %w", path, err)
-		}
-		if err := os.Chmod(path, 0400); err != nil {
-			return fmt.Errorf("failed to chmod %s: %w", path, err)
-		}
-		return nil
-	})
-	if err != nil {
+	// Set both parent and test directory to read-only (0400)
+	// This satisfies the linter requirement and ensures the test will fail
+	// when BinaryManager tries to create subdirectories
+	if err := os.Chmod(noWriteDir, 0400); err != nil {
 		t.Fatalf("Failed to set directory permissions: %v", err)
 	}
 
-	fmt.Printf("DEBUG: setupNoWriteDir - Created directory structure under %s with permissions 0400\n", noWriteDir)
+	fmt.Printf("DEBUG: setupNoWriteDir - Created directory %s with read-only permissions\n", noWriteDir)
 	return noWriteDir
 }
 

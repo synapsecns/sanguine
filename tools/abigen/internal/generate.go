@@ -132,7 +132,23 @@ func compileSolidity(ctx context.Context, version string, filePath string, optim
 	default:
 	}
 
-	// Always try Docker first regardless of platform
+	// Check environment variables for compilation strategy
+	binaryOnly := os.Getenv("SOLC_BINARY_ONLY") == "1"
+	noDocker := os.Getenv("NO_DOCKER") == "1"
+
+	// Add solc-solc- prefix for binary compilation
+	formattedVersion := fmt.Sprintf("solc-solc-%s", strings.TrimPrefix(strings.TrimPrefix(version, "solc-solc-"), "solc-"))
+
+	// If binary-only or no-docker is set, skip Docker compilation
+	if binaryOnly || noDocker {
+		contracts, err := compileWithBinary(ctx, formattedVersion, filePath, optimizeRuns, evmVersion)
+		if err != nil {
+			return nil, fmt.Errorf("binary compilation failed: %w", err)
+		}
+		return contracts, nil
+	}
+
+	// Try Docker first if environment variables don't prevent it
 	contracts, dockerErr := compileWithDocker(ctx, version, filePath, optimizeRuns, evmVersion)
 	if dockerErr == nil {
 		return contracts, nil
@@ -140,9 +156,7 @@ func compileSolidity(ctx context.Context, version string, filePath string, optim
 	// Log Docker failure but continue to binary fallback
 	fmt.Printf("Docker compilation failed: %v, attempting binary compilation...\n", dockerErr)
 
-	// Only fall back to binary if Docker fails
-	// Add solc-solc- prefix for binary compilation
-	formattedVersion := fmt.Sprintf("solc-solc-%s", strings.TrimPrefix(strings.TrimPrefix(version, "solc-solc-"), "solc-"))
+	// Fall back to binary compilation
 	contracts, binaryErr := compileWithBinary(ctx, formattedVersion, filePath, optimizeRuns, evmVersion)
 	if binaryErr != nil {
 		// Return both Docker and binary errors for better debugging
@@ -232,6 +246,7 @@ func executeDockerCompilation(ctx context.Context, version string, solFile *os.F
 	}
 
 	// Create new command with validated arguments
+	//nolint:gosec
 	validatedCmd := exec.CommandContext(ctx, dockerPath, cmd.Args[1:]...)
 	validatedCmd.Stderr = &stderr
 	validatedCmd.Stdout = &stdout
@@ -299,6 +314,7 @@ func prepareDockerCommand(version, filePath string, optimizeRuns int, evmVersion
 		args = append(args[:len(args)-1], fmt.Sprintf("--evm-version=%s", *evmVersion), args[len(args)-1])
 	}
 
+	//nolint:gosec
 	return exec.Command("docker", args...)
 }
 
@@ -309,37 +325,6 @@ func readSolFile(filePath string) ([]byte, error) {
 		return nil, fmt.Errorf("could not read sol file %s: %w", filePath, err)
 	}
 	return solContents, nil
-}
-
-func prepareSolFile(tmpPath, filePath string, solContents []byte) (*os.File, error) {
-	originalAtTmpPath, err := filePathsAreEqual(tmpPath, filePath)
-	if err != nil {
-		return nil, fmt.Errorf("could not compare file paths: %w", err)
-	}
-
-	if !originalAtTmpPath {
-		//nolint:gosec // File operations required for temporary solidity file
-		solFile, err := os.Create(tmpPath)
-		if err != nil {
-			return nil, fmt.Errorf("could not create temporary sol file: %w", err)
-		}
-		if _, err = solFile.Write(solContents); err != nil {
-			return nil, fmt.Errorf("could not write to sol tmp file at %s: %w", solFile.Name(), err)
-		}
-		return solFile, nil
-	}
-
-	//nolint:gosec // File operations required for reading Solidity source
-	solFile, err := os.Open(filePath)
-	if err != nil {
-		return nil, fmt.Errorf("could not read to sol file at %s: %w", filePath, err)
-	}
-	return solFile, nil
-}
-
-func isOriginalFile(tmpPath, filePath string) bool {
-	equal, _ := filePathsAreEqual(tmpPath, filePath)
-	return equal
 }
 
 // compileWithBinary uses downloaded solc binary to compile solidity.

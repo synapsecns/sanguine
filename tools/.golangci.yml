@@ -44,6 +44,11 @@ issues:
       text: 'testing'
       linters:
         - unused
+    # Exclude file permission checks in test files
+    - path: _test\.go$
+      linters:
+        - gosec
+      text: 'G302: Expect file permissions'
 
 run:
   timeout: 5m

@@ -70,20 +70,21 @@ func (a *AbiSuite) TestCompileSolidityExplicitEVM() {
 
 func TestFilePathsAreEqual(t *testing.T) {
 	tests := []struct {
-		file1 string
-		file2 string
-		want  bool
-		err   error
+		file1 string // String fields (8-byte alignment)
+		file2 string // String fields (8-byte alignment)
+		err   error  // Interface type (8-byte alignment)
+		want  bool   // Bool field (1-byte alignment, moved to end)
 	}{
-		{"path/to/file1.txt", "path/to/file2.txt", false, nil},
-		{"path/to/file1.txt", "path/to/file1.txt", true, nil},
-		{"path/to/file2.txt", "path/to/file2.txt", true, nil},
-		{"path/to/file1.txt", "", false, filepath.ErrBadPattern},
-		{"", "path/to/file2.txt", false, filepath.ErrBadPattern},
-		{"nonexistent/file.txt", "path/to/file.txt", false, nil},
+		{"path/to/file1.txt", "path/to/file2.txt", nil, false},
+		{"path/to/file1.txt", "path/to/file1.txt", nil, true},
+		{"path/to/file2.txt", "path/to/file2.txt", nil, true},
+		{"path/to/file1.txt", "", filepath.ErrBadPattern, false},
+		{"", "path/to/file2.txt", filepath.ErrBadPattern, false},
+		{"nonexistent/file.txt", "path/to/file.txt", nil, false},
 	}
 
 	for _, tt := range tests {
+		tt := tt // Create new variable in loop scope
 		got, err := internal.FilePathsAreEqual(tt.file1, tt.file2)
 
 		if got != tt.want {
@@ -131,6 +132,7 @@ func TestCompileSolidityBinaryFallback(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt // Create new variable in loop scope
 		t.Run(tt.name, func(t *testing.T) {
 			var evmPtr *string
 			if tt.evmVersion != "" {
@@ -176,6 +178,7 @@ func TestCompileSolidityErrors(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt // Create new variable in loop scope
 		t.Run(tt.name, func(t *testing.T) {
 			testFile := filepath.Join(tmpDir, fmt.Sprintf("test_%s.sol", tt.name))
 			err := os.WriteFile(testFile, []byte(tt.content), 0600)
@@ -264,28 +267,25 @@ func TestCompileSolidityDockerStrategy(t *testing.T) {
 	})
 }
 
-// ContractSettings outed by solc.
 type ContractSettings struct {
 	CompilationTarget map[string]string `json:"compilationTarget"`
+	Metadata          map[string]string `json:"metadata"`
+	Remappings        []interface{}     `json:"remappings"`
 	EvmVersion        string            `json:"evmVersion"`
-	// TODO implement w/ ast
-	Libraries struct{}          `json:"libraries"`
-	Metadata  map[string]string `json:"metadata"`
-	Optimizer struct {
-		Enabled bool `json:"enabled"`
+	Libraries         struct{}          `json:"libraries"`
+	Optimizer         struct {
 		Runs    int  `json:"runs"`
+		Enabled bool `json:"enabled"`
 	} `json:"optimizer"`
-	Remappings []interface{} `json:"remappings"`
 }
 
-// ContractMetadata is metadata produced by solc.
 type ContractMetadata struct {
+	Sources  map[string]interface{} `json:"sources"`
+	Output   interface{}            `json:"output"`
+	Settings ContractSettings       `json:"settings"`
+	Language string                 `json:"language"`
 	Compiler struct {
 		Version string `json:"version"`
 	} `json:"compiler"`
-	Language string                 `json:"language"`
-	Output   interface{}            `json:"output"`
-	Settings ContractSettings       `json:"settings"`
-	Sources  map[string]interface{} `json:"sources"`
-	Version  int                    `json:"version"`
+	Version int `json:"version"`
 }
