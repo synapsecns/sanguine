@@ -48,10 +48,10 @@ func (j *testJaeger) waitForContainerHealth(resource *dockertest.Resource) error
 		}
 
 		if !collectorReady || !queryReady {
-			// Get container logs on failure using dockertest's container logs
+			// Get container logs on failure using dockertest's resource helper
 			if resource.Container != nil {
-				logs := resource.Container.Logs
-				if logs != "" {
+				logs, err := resource.GetLog()
+				if err == nil && logs != "" {
 					j.tb.Logf("Container logs: %s", logs)
 				}
 			}
