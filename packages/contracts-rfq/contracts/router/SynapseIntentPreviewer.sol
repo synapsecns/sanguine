@@ -57,6 +57,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         if (amountOut == 0) {
             return (0, new ISynapseIntentRouter.StepParams[](0));
         }
+        uint256 lastStepMinAmountOut = strictOut ? amountOut : 0;
 
         // At this point we have a quote for a non-trivial action, therefore `query.rawParams` is not empty.
         if (query.rawParams.length == 0) revert SIP__RawParamsEmpty();
@@ -64,11 +65,11 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
 
         // Create the steps for the intent based on the action type.
         if (params.action == Action.Swap) {
-            steps = _createSwapSteps(tokenIn, tokenOut, amountIn, params, forwardTo);
+            steps = _createSwapSteps(tokenIn, tokenOut, amountIn, params, forwardTo, lastStepMinAmountOut);
         } else if (params.action == Action.AddLiquidity) {
-            steps = _createAddLiquiditySteps(tokenIn, tokenOut, params, forwardTo);
+            steps = _createAddLiquiditySteps(tokenIn, tokenOut, params, forwardTo, lastStepMinAmountOut);
         } else if (params.action == Action.RemoveLiquidity) {
-            steps = _createRemoveLiquiditySteps(tokenIn, tokenOut, params, forwardTo);
+            steps = _createRemoveLiquiditySteps(tokenIn, tokenOut, params, forwardTo, lastStepMinAmountOut);
         } else {
             steps = _createHandleHativeSteps(tokenIn, tokenOut, amountIn, forwardTo);
         }
@@ -80,7 +81,8 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         address tokenOut,
         uint256 amountIn,
         DefaultParams memory params,
-        address forwardTo
+        address forwardTo,
+        uint256 lastStepMinAmountOut
     )
         internal
         view
@@ -98,7 +100,13 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
             // Native => WrappedNative + WrappedNative => TokenOut. Forwarding is done in the second step.
             return _toStepsArray(
                 _createWrapNativeStep({wrappedNative: wrappedNative, msgValue: amountIn, forwardTo: address(0)}),
-                _createSwapStep({tokenIn: wrappedNative, tokenOut: tokenOut, params: params, forwardTo: forwardTo})
+                _createSwapStep({
+                    tokenIn: wrappedNative,
+                    tokenOut: tokenOut,
+                    params: params,
+                    forwardTo: forwardTo,
+                    minAmountOut: lastStepMinAmountOut
+                })
             );
         }
 
@@ -109,9 +117,15 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         if (tokenOut == NATIVE_GAS_TOKEN) {
             // Get the address of the wrapped native token.
             address wrappedNative = IDefaultPool(pool).getToken(params.tokenIndexTo);
-            // TokenIn => WrappedNative + WrappedNative => Native. Forwarding is done in the second step.
+            // TokenIn => WrappedNative + WrappedNative => Native. Forwarding/minAmountOut is done in the second step.
             return _toStepsArray(
-                _createSwapStep({tokenIn: tokenIn, tokenOut: wrappedNative, params: params, forwardTo: address(0)}),
+                _createSwapStep({
+                    tokenIn: tokenIn,
+                    tokenOut: wrappedNative,
+                    params: params,
+                    forwardTo: address(0),
+                    minAmountOut: 0
+                }),
                 _createUnwrapNativeStep({wrappedNative: wrappedNative, forwardTo: forwardTo})
             );
         }
@@ -120,8 +134,13 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         if (IDefaultPool(pool).getToken(params.tokenIndexTo) != tokenOut) revert SIP__PoolTokenMismatch();
 
         // TokenIn => TokenOut.
-        ISynapseIntentRouter.StepParams memory step =
-            _createSwapStep({tokenIn: tokenIn, tokenOut: tokenOut, params: params, forwardTo: forwardTo});
+        ISynapseIntentRouter.StepParams memory step = _createSwapStep({
+            tokenIn: tokenIn,
+            tokenOut: tokenOut,
+            params: params,
+            forwardTo: forwardTo,
+            minAmountOut: lastStepMinAmountOut
+        });
         return _toStepsArray(step);
     }
 
@@ -130,7 +149,8 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         address tokenIn,
         address tokenOut,
         DefaultParams memory params,
-        address forwardTo
+        address forwardTo,
+        uint256 lastStepMinAmountOut
     )
         internal
         view
@@ -164,7 +184,9 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
                     finalToken_: tokenOut,
                     forwardTo_: forwardTo,
                     // addLiquidity(amounts, minToMint, deadline)
-                    payload_: abi.encodeCall(IDefaultExtendedPool.addLiquidity, (amounts, 0, type(uint256).max)),
+                    payload_: abi.encodeCall(
+                        IDefaultExtendedPool.addLiquidity, (amounts, lastStepMinAmountOut, type(uint256).max)
+                    ),
                     // amountIn is encoded within `amounts` at `TOKEN_IN_INDEX`, `amounts` is encoded after
                     // (amounts.offset, minToMint, deadline, amounts.length).
                     amountPosition_: 4 + 32 * 4 + 32 * uint16(params.tokenIndexFrom)
@@ -178,7 +200,8 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         address tokenIn,
         address tokenOut,
         DefaultParams memory params,
-        address forwardTo
+        address forwardTo,
+        uint256 lastStepMinAmountOut
     )
         internal
         view
@@ -201,7 +224,8 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
                     forwardTo_: forwardTo,
                     // removeLiquidityOneToken(tokenAmount, tokenIndex, minAmount, deadline)
                     payload_: abi.encodeCall(
-                        IDefaultExtendedPool.removeLiquidityOneToken, (0, params.tokenIndexTo, 0, type(uint256).max)
+                        IDefaultExtendedPool.removeLiquidityOneToken,
+                        (0, params.tokenIndexTo, lastStepMinAmountOut, type(uint256).max)
                     ),
                     // amountIn is encoded as the first parameter: tokenAmount
                     amountPosition_: 4
@@ -243,7 +267,8 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         address tokenIn,
         address tokenOut,
         DefaultParams memory params,
-        address forwardTo
+        address forwardTo,
+        uint256 minAmountOut
     )
         internal
         pure
@@ -259,7 +284,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
                 forwardTo_: forwardTo,
                 // swap(tokenIndexFrom, tokenIndexTo, dx, minDy, deadline)
                 payload_: abi.encodeCall(
-                    IDefaultPool.swap, (params.tokenIndexFrom, params.tokenIndexTo, 0, 0, type(uint256).max)
+                    IDefaultPool.swap, (params.tokenIndexFrom, params.tokenIndexTo, 0, minAmountOut, type(uint256).max)
                 ),
                 // amountIn is encoded as the third parameter: `dx`
                 amountPosition_: 4 + 32 * 2
