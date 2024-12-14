@@ -1,9 +1,9 @@
 {
-  "address": "0x9519E8D136d0a89d7e10D1a66C97249E0135544B",
+  "address": "0x89ed77DcEaFBc4F92DAB2e865e11E7885F8daAf9",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0x928a7db8741fb992934302f73e076f7630075151384529b538cb133e797c4bac",
-    "blockNumber": 129029951
+    "hash": "0xa525aa65479aae46377a908d4451af3951e7ae05ba98609beadbae051222a744",
+    "blockNumber": 129285056
   },
   "abi": [
     {
@@ -32,6 +32,11 @@
           "name": "forwardTo",
           "type": "address",
           "internalType": "address"
+        },
+        {
+          "name": "strictOut",
+          "type": "bool",
+          "internalType": "bool"
         },
         {
           "name": "tokenIn",
