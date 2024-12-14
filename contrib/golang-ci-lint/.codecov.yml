@@ -1,0 +1,15 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+    patch:
+      default:
+        target: 80%
+
+ignore:
+  - "**/testdata/**"
+  - "**/mocks/**"
+  - "**/*_test.go"
+  - "**/cmd/**"
+  - "**/docs/**"

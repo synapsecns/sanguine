@@ -28,15 +28,20 @@ func newEtherscanABIClient(parentCtx context.Context, chainID uint32, url string
 	var client Client
 	ctx, cancel := context.WithCancel(parentCtx)
 
+	// Try chain-specific key first, fall back to generic ETHERSCAN_KEY
 	apiKeyEnv := strings.ToUpper(fmt.Sprintf("%d_KEY", chainID))
 	apiKey := os.Getenv(apiKeyEnv)
+	if apiKey == "" {
+		apiKey = os.Getenv("ETHERSCAN_KEY")
+	}
 
 	customization := etherscan.Customization{
 		Client: &http.Client{
 			Timeout: timeout,
 		},
 		BaseURL: url,
-		Key:     apiKey, // Add API key to customization
+		Key:     apiKey,
+		Verbose: true, // Enable verbose logging
 	}
 
 	// waitBetweenRequest is how long to wait between requests. If an analytics key is enabled, rate limiting is disabled

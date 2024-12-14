@@ -241,14 +241,14 @@ func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.P
 func getPassiveQuote(cfg config.Config, quotes []*db.Quote, request *model.PutRFQRequest) (*model.QuoteData, error) {
 	quotes = filterQuoteAge(cfg, quotes)
 
-	originAmount, ok := new(big.Int).SetString(request.Data.OriginAmountExact, 10)
+	originAmount, ok := new(big.Int).SetString(request.Data.OriginAmountExact, base10)
 	if !ok {
 		return nil, errors.New("invalid origin amount exact")
 	}
 
 	var bestQuote *model.QuoteData
 	for _, quote := range quotes {
-		quoteOriginAmount, ok := new(big.Int).SetString(quote.MaxOriginAmount.String(), 10)
+		quoteOriginAmount, ok := new(big.Int).SetString(quote.MaxOriginAmount.String(), base10)
 		if !ok {
 			continue
 		}

@@ -9,7 +9,13 @@ monorepo:
 builds:
   - id: golang-ci-lint
     binary: golang-ci-lint
-    ldflags: -installsuffix static
+    gcflags:
+      - all=-dwarflocationlists=true
+    ldflags:
+      - -s -w -extldflags "-static"
+    tags:
+      - netgo
+      - osusergo
     env:
       - CGO_ENABLED=0
     main: main.go
@@ -17,30 +23,28 @@ builds:
       - -trimpath
     goos:
       - linux
-      - darwin
-      - windows
     goarch:
       - amd64
-      - arm64
 
 dockers:
-  - use: buildx
-    goos: linux
+  - goos: linux
     goarch: amd64
     image_templates:
       - 'ghcr.io/synapsecns/sanguine/golang-ci-lint:latest'
       - 'ghcr.io/synapsecns/sanguine/golang-ci-lint:{{ .FullCommit }}'
       - 'ghcr.io/synapsecns/sanguine/golang-ci-lint:{{ .Tag }}'
-    dockerfile: ../../docker/golang-ci-lint.Dockerfile
     build_flag_templates:
-      - '--platform=linux/amd64'
-      - '--cache-from=type=gha'
-      - '--cache-to=type=gha,mode=max'
       - '--label=org.opencontainers.image.created={{.Date}}'
       - '--label=org.opencontainers.image.name={{.ProjectName}}'
       - '--label=org.opencontainers.image.revision={{.FullCommit}}'
       - '--label=org.opencontainers.image.version={{.Version}}'
       - '--label=org.opencontainers.image.source={{.GitURL}}'
+      - '--label=org.opencontainers.image.licenses=MIT'
+      - '--label=org.opencontainers.image.vendor=Synapse Labs'
+      - '--label=org.opencontainers.image.documentation=https://github.com/synapsecns/sanguine/tree/master/contrib/golang-ci-lint'
+    dockerfile: ../../docker/golang-ci-lint.Dockerfile
+    ids:
+      - golang-ci-lint
 
 archives:
   - format: tar.gz
@@ -66,3 +70,14 @@ changelog:
       - '^test:'
       - '^ci:'
       - '^chore:'
+
+source:
+  enabled: true
+
+sboms:
+  - artifacts: archive
+
+report_sizes: true
+
+metadata:
+  mod_timestamp: '{{ .CommitTimestamp }}'

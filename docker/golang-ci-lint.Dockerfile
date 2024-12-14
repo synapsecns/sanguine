@@ -1,21 +1,25 @@
 # syntax=docker/dockerfile:1.4
 
-FROM ghcr.io/synapsecns/sanguine-goreleaser:latest as builder
+FROM golang:1.21-alpine AS builder
 
 WORKDIR /app
 COPY . .
 RUN --mount=type=cache,target=/root/go/pkg/mod \
     cd contrib/golang-ci-lint && \
-    go build -o /app/bin/golang-ci-lint
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -o /app/bin/golang-ci-lint \
+    -ldflags="-s -w -extldflags '-static'" \
+    -tags netgo,osusergo \
+    -trimpath
 
 FROM alpine:3.18
 
-LABEL org.label-schema.description="Golang-CI-Lint Docker Image"
-LABEL org.label-schema.name="ghcr.io/synapsecns/sanguine/golang-ci-lint"
-LABEL org.label-schema.schema-version="1.0.0"
-LABEL org.label-schema.vcs-url="https://github.com/synapsecns/sanguine"
 LABEL org.opencontainers.image.source="https://github.com/synapsecns/sanguine"
-LABEL org.opencontainers.image.description="Golang-CI-Lint Docker image"
+LABEL org.opencontainers.image.description="Golang-CI-Lint version manager for Sanguine"
+LABEL org.opencontainers.image.name="ghcr.io/synapsecns/sanguine/golang-ci-lint"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.vendor="Synapse Labs"
+LABEL org.opencontainers.image.documentation="https://github.com/synapsecns/sanguine/tree/master/contrib/golang-ci-lint"
 
 COPY --from=builder /app/bin/golang-ci-lint /usr/local/bin/
 RUN chmod +x /usr/local/bin/golang-ci-lint
