@@ -17,7 +17,7 @@ definitions:
         type: string
       expiration_window:
         type: integer
-      origin_amount:
+      origin_amount_exact:
         type: string
       origin_chain_id:
         type: integer
@@ -136,7 +136,7 @@ definitions:
         type: string
       expiration_window:
         type: integer
-      origin_amount:
+      origin_amount_exact:
         type: string
       origin_chain_id:
         type: integer
@@ -310,9 +310,10 @@ paths:
     put:
       consumes:
       - application/json
-      description: Initiate an Active Request-For-Quote return the best quote available.
+      description: Initiate an Active Request-For-Quote and return the best quote
+        available.
       parameters:
-      - description: User quote request
+      - description: Initiate an Active Request-For-Quote
         in: body
         name: request
         required: true
@@ -334,7 +335,8 @@ paths:
       - quotes
   /rfq_stream:
     get:
-      description: Establish a WebSocket connection to listen for Active Requests-For-Quote.
+      description: Establish a WebSocket connection to listen for streaming active
+        quote requests.
       produces:
       - application/json
       responses:
