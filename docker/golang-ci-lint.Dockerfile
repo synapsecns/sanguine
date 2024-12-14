@@ -2,11 +2,10 @@
 
 FROM golang:1.21-alpine AS builder
 
-WORKDIR /app
-COPY . .
-RUN cd contrib/golang-ci-lint && \
-    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -o /app/bin/golang-ci-lint \
+WORKDIR /build
+COPY contrib/golang-ci-lint/ .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -o /build/bin/golang-ci-lint \
     -ldflags="-s -w -extldflags '-static'" \
     -tags netgo,osusergo \
     -trimpath
@@ -20,7 +19,7 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="Synapse Labs"
 LABEL org.opencontainers.image.documentation="https://github.com/synapsecns/sanguine/tree/master/contrib/golang-ci-lint"
 
-COPY --from=builder /app/bin/golang-ci-lint /usr/local/bin/
+COPY --from=builder /build/bin/golang-ci-lint /usr/local/bin/
 RUN chmod +x /usr/local/bin/golang-ci-lint
 
 ENTRYPOINT ["/usr/local/bin/golang-ci-lint"]
