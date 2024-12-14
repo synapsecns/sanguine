@@ -3,7 +3,7 @@
 FROM golang:1.21-alpine AS builder
 
 WORKDIR /build
-COPY contrib/golang-ci-lint/ .
+COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build -o /build/bin/golang-ci-lint \
     -ldflags="-s -w -extldflags '-static'" \
