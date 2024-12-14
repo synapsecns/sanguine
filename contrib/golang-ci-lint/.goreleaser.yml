@@ -16,14 +16,11 @@ builds:
       - osusergo
     env:
       - CGO_ENABLED=0
-      - CC=gcc
-      - CXX=g++
     main: main.go
     flags:
       - -trimpath
     goos:
       - linux
-      - windows
     goarch:
       - amd64
 
@@ -41,13 +38,8 @@ dockers:
       - '--label=org.opencontainers.image.version={{.Version}}'
       - '--label=org.opencontainers.image.source={{.GitURL}}'
     dockerfile: ../../docker/golang-ci-lint.Dockerfile
-    use: buildx
-    build_context: true
-    extra_files:
-      - go.mod
-      - go.sum
-      - main.go
-      - permissions/
+    ids:
+      - golang-ci-lint
 
 source:
   enabled: true
