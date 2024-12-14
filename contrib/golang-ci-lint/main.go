@@ -196,9 +196,9 @@ func setupLinter(ctx context.Context, version, osName, arch string) (string, err
 	return cachePath, nil
 }
 
-// findWorkDir locates the nearest directory containing a go.mod file or uses GIT_ROOT.
+// findWorkDir locates the repository root using go-findroot.
 func findWorkDir() (string, error) {
-	// Check GIT_ROOT environment variable first
+	// Check GIT_ROOT environment variable first as it might be set by setupGitRoot
 	if gitRoot := os.Getenv("GIT_ROOT"); gitRoot != "" {
 		absPath, err := filepath.Abs(gitRoot)
 		if err != nil {
@@ -207,20 +207,18 @@ func findWorkDir() (string, error) {
 		return absPath, nil
 	}
 
-	// Fallback to current directory and look for go.mod
-	cwd, err := os.Getwd()
+	// Use go-findroot to locate repository root
+	root, err := find.Repo()
 	if err != nil {
-		return "", fmt.Errorf("failed to get current directory: %w", err)
+		return "", fmt.Errorf("failed to find repository root: %w", err)
 	}
 
-	dir := cwd
-	for dir != "/" && dir != "." {
-		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
-			return dir, nil
-		}
-		dir = filepath.Dir(dir)
+	// Validate the path before returning
+	if err := validatePath(root.Path); err != nil {
+		return "", fmt.Errorf("invalid repository root path: %w", err)
 	}
-	return cwd, nil
+
+	return root.Path, nil
 }
 
 // processArgs ensures proper argument formatting and adds default configuration.

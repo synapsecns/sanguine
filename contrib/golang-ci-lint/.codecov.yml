@@ -8,8 +8,8 @@ coverage:
         target: 80%
 
 ignore:
-  - "**/testdata/**"
-  - "**/mocks/**"
-  - "**/*_test.go"
-  - "**/cmd/**"
-  - "**/docs/**"
+  - '**/testdata/**'
+  - '**/mocks/**'
+  - '**/*_test.go'
+  - '**/cmd/**'
+  - '**/docs/**'
