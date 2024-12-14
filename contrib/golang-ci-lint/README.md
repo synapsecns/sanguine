@@ -95,12 +95,19 @@ jobs:
 
 3. **Architecture Issues**
    - The tool automatically detects and downloads the correct binary
-   - Supported: linux-amd64, linux-arm64, darwin-amd64, darwin-arm64, windows-amd64
+   - Supported architectures: linux-amd64, linux-arm64, darwin-amd64, darwin-arm64, windows-amd64
+   - MacOS (/private/var) symlink handling:
+     - Properly resolves /private/var to /var for temp directories
+     - Maintains secure path validation across symlinked paths
+     - Handles platform-specific temp directory structures
 
 ## Contributing
 
 Contributions are welcome! Please ensure:
-- Cross-platform compatibility (Linux, macOS, Windows)
+- Cross-platform compatibility:
+  - Linux: Standard path resolution
+  - MacOS: Handles /private/var symlinks and temp directories
+  - Windows: Supports standard Windows paths
 - Backward compatibility with existing `.golangci-version` files
 - Proper error handling and user feedback
 
