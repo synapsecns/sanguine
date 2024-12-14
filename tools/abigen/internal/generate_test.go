@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/tools/abigen/internal"
+	"github.com/synapsecns/sanguine/tools/abigen/internal/solc"
 )
 
 // PLACEHOLDER: AbiSuite and NewAbiSuite are defined in suite_test.go
@@ -239,16 +240,22 @@ func TestCompileSolidityDockerStrategy(t *testing.T) {
 	// Test binary fallback
 	t.Run("binary fallback", func(t *testing.T) {
 		tmpPath := filepath.Join(tmpDir, "fake-path")
-		if err := os.Mkdir(tmpPath, 0700); err != nil {
+		if err := os.MkdirAll(tmpPath, solc.DirPerms); err != nil {
 			t.Fatalf("Failed to create fake PATH dir: %v", err)
 		}
-		if err := os.WriteFile(filepath.Join(tmpPath, "docker"), []byte("#!/bin/sh\nexit 1"), 0600); err != nil {
+		if err := os.WriteFile(filepath.Join(tmpPath, "docker"), []byte("#!/bin/sh\nexit 1"), solc.ExecPerms); err != nil {
 			t.Fatalf("Failed to create fake docker binary: %v", err)
 		}
 
 		t.Setenv("PATH", tmpPath)
 		origPath := os.Getenv("PATH")
 		t.Cleanup(func() { t.Setenv("PATH", origPath) })
+
+		// Ensure solc binary is downloaded before running tests
+		solcManager := solc.NewBinaryManager("0.8.20")
+		if _, err := solcManager.GetBinary(ctx); err != nil {
+			t.Fatalf("Failed to download solc binary: %v", err)
+		}
 
 		t.Run("successful fallback", func(t *testing.T) {
 			_, err := internal.CompileSolidity(ctx, "0.8.20", absTestFile, 200, nil)
@@ -269,25 +276,31 @@ func TestCompileSolidityDockerStrategy(t *testing.T) {
 }
 
 type ContractSettings struct {
-	CompilationTarget map[string]string `json:"compilationTarget"` // Map (16-byte alignment)
-	Metadata          map[string]string `json:"metadata"`          // Map (16-byte alignment)
-	Remappings        []interface{}     `json:"remappings"`        // Slice (16-byte alignment)
-	EvmVersion        string            `json:"evmVersion"`        // String (8-byte alignment)
-	Libraries         struct{}          `json:"libraries"`         // Empty struct (0-byte)
-	Optimizer         struct {
-		Runs    int     `json:"runs"`    // Int (8-byte alignment)
-		Enabled bool    `json:"enabled"` // Bool (1-byte alignment)
-		_       [7]byte // padding
+	// 16-byte aligned fields
+	CompilationTarget map[string]string `json:"compilationTarget"`
+	Metadata          map[string]string `json:"metadata"`
+	Remappings        []interface{}     `json:"remappings"`
+	// Embedded struct (8-byte alignment)
+	Libraries  struct{} `json:"libraries"`
+	EvmVersion string   `json:"evmVersion"`
+	Optimizer  struct {
+		Runs    int  `json:"runs"`
+		Enabled bool `json:"enabled"`
+		_       [7]byte
 	} `json:"optimizer"`
 }
 
 type ContractMetadata struct {
-	Sources  map[string]interface{} `json:"sources"`  // Map (16-byte alignment)
-	Output   interface{}            `json:"output"`   // Interface (16-byte alignment)
-	Settings ContractSettings       `json:"settings"` // Struct (aligned based on ContractSettings)
-	Version  int                    `json:"version"`  // Int (8-byte alignment)
-	Language string                 `json:"language"` // String (8-byte alignment)
+	// 16-byte aligned fields
+	Sources  map[string]interface{} `json:"sources"`
+	Output   interface{}            `json:"output"`
+	Settings ContractSettings       `json:"settings"`
+	// 8-byte aligned fields
+	Language string `json:"language"`
+	Version  int    `json:"version"`
+	// Embedded struct last to minimize padding
 	Compiler struct {
-		Version string `json:"version"` // String (8-byte alignment)
+		Version string `json:"version"`
+		_       [8]byte
 	} `json:"compiler"`
 }
