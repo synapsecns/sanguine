@@ -351,6 +351,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.WORKFLOW_PAT || secrets.GITHUB_TOKEN }}
           GOMEMLIMIT: 6GiB
           GOGC: -1
+
+  pr_metadata:
+    # this is needed to prevent us from hitting the github api rate limit
+    name: Get PR Metadata
+    runs-on: ubuntu-latest
+    # not stricly true, but this job is fast enough to not block and we want to prioritize canceling outdated because downstream jobs can use many workers
+    needs: cancel-outdated
+    # currently, this matches the logic in the go generate check. If we ever add more checks that run on all packages, we should
+    # change this to run on those pushes
     if: ${{ github.event_name != 'push' && format('refs/heads/{0}', github.event.repository.default_branch) != github.ref }}
     outputs:
       issue_number: ${{ steps.find_pr.outputs.pr }}
