@@ -42,7 +42,9 @@ contract SynapseIntentPreviewerTest is Test {
     address internal routerAdapterMock = makeAddr("Router Adapter Mock");
     address internal user = makeAddr("User");
 
-    function setUp() public {
+    bool public strictOut;
+
+    function setUp() public virtual {
         sip = new SynapseIntentPreviewer();
 
         defaultPoolMock = address(new DefaultPoolMock());
@@ -54,6 +56,7 @@ contract SynapseIntentPreviewerTest is Test {
         lpToken = address(new MockERC20("LP", 18));
 
         zapDataLib = new ZapDataV1Harness();
+        strictOut = false;
 
         vm.label(defaultPoolMock, "DefaultPoolMock");
         vm.label(swapQuoterMock, "SwapQuoterMock");
@@ -68,6 +71,20 @@ contract SynapseIntentPreviewerTest is Test {
             data: abi.encodeCall(DefaultPoolMock.swapStorage, ()),
             returnData: abi.encode(0, 0, 0, 0, 0, 0, lpToken)
         });
+    }
+
+    function previewIntent(
+        address swapQuoter,
+        address forwardTo,
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn
+    )
+        public
+        view
+        returns (uint256 amountOut, ISynapseIntentRouter.StepParams[] memory steps)
+    {
+        return sip.previewIntent(swapQuoter, forwardTo, strictOut, tokenIn, tokenOut, amountIn);
     }
 
     function mockGetAmountOut(address tokenIn, address tokenOut, uint256 amountIn, SwapQuery memory mockQuery) public {
@@ -104,17 +121,27 @@ contract SynapseIntentPreviewerTest is Test {
         });
     }
 
-    function getSwapZapData(address forwardTo) public view returns (bytes memory) {
-        return getSwapZapData(TOKEN_IN_INDEX, TOKEN_OUT_INDEX, forwardTo);
+    function getSwapZapData(address forwardTo, bool useExactAmountOut) public view returns (bytes memory) {
+        return getSwapZapData(TOKEN_IN_INDEX, TOKEN_OUT_INDEX, forwardTo, useExactAmountOut);
     }
 
-    function getSwapZapData(uint8 indexIn, uint8 indexOut, address forwardTo) public view returns (bytes memory) {
+    function getSwapZapData(
+        uint8 indexIn,
+        uint8 indexOut,
+        address forwardTo,
+        bool useExactAmountOut
+    )
+        public
+        view
+        returns (bytes memory)
+    {
+        uint256 minDy = useExactAmountOut ? SWAP_AMOUNT_OUT : 0;
         return zapDataLib.encodeV1({
             target_: defaultPoolMock,
             finalToken_: DefaultPoolMock(defaultPoolMock).getToken(indexOut),
             forwardTo_: forwardTo,
             // swap(tokenIndexFrom, tokenIndexTo, dx, minDy, deadline)
-            payload_: abi.encodeCall(DefaultPoolMock.swap, (indexIn, indexOut, 0, 0, type(uint256).max)),
+            payload_: abi.encodeCall(DefaultPoolMock.swap, (indexIn, indexOut, 0, minDy, type(uint256).max)),
             // Amount (dx) is encoded as the third parameter
             amountPosition_: 4 + 32 * 2
         });
@@ -123,10 +150,11 @@ contract SynapseIntentPreviewerTest is Test {
     function checkSwapZapData(address forwardTo) public view {
         for (uint8 i = 0; i < TOKENS; i++) {
             for (uint8 j = 0; j < TOKENS; j++) {
-                bytes memory zapData = getSwapZapData(i, j, forwardTo);
+                bytes memory zapData = getSwapZapData(i, j, forwardTo, strictOut);
                 bytes memory payload = zapDataLib.payload(zapData, AMOUNT_IN);
+                uint256 minDy = strictOut ? SWAP_AMOUNT_OUT : 0;
                 // swap(tokenIndexFrom, tokenIndexTo, dx, minDy, deadline)
-                assertEq(payload, abi.encodeCall(DefaultPoolMock.swap, (i, j, AMOUNT_IN, 0, type(uint256).max)));
+                assertEq(payload, abi.encodeCall(DefaultPoolMock.swap, (i, j, AMOUNT_IN, minDy, type(uint256).max)));
                 assertEq(zapDataLib.forwardTo(zapData), forwardTo);
             }
         }
@@ -157,18 +185,28 @@ contract SynapseIntentPreviewerTest is Test {
         });
     }
 
-    function getAddLiquidityZapData(address forwardTo) public view returns (bytes memory) {
-        return getAddLiquidityZapData(TOKEN_IN_INDEX, forwardTo);
+    function getAddLiquidityZapData(address forwardTo, bool useExactAmountOut) public view returns (bytes memory) {
+        return getAddLiquidityZapData(TOKEN_IN_INDEX, forwardTo, useExactAmountOut);
     }
 
-    function getAddLiquidityZapData(uint8 indexIn, address forwardTo) public view returns (bytes memory) {
+    function getAddLiquidityZapData(
+        uint8 indexIn,
+        address forwardTo,
+        bool useExactAmountOut
+    )
+        public
+        view
+        virtual
+        returns (bytes memory)
+    {
         uint256[] memory amounts = new uint256[](TOKENS);
+        uint256 minToMint = useExactAmountOut ? SWAP_AMOUNT_OUT : 0;
         return zapDataLib.encodeV1({
             target_: defaultPoolMock,
             finalToken_: lpToken,
             forwardTo_: forwardTo,
             // addLiquidity(amounts, minToMint, deadline)
-            payload_: abi.encodeCall(IDefaultExtendedPool.addLiquidity, (amounts, 0, type(uint256).max)),
+            payload_: abi.encodeCall(IDefaultExtendedPool.addLiquidity, (amounts, minToMint, type(uint256).max)),
             // Amount is encoded within `amounts` at `TOKEN_IN_INDEX`, `amounts` is encoded after
             // (amounts.offset, minToMint, deadline, amounts.length)
             amountPosition_: 4 + 32 * (4 + indexIn)
@@ -177,12 +215,15 @@ contract SynapseIntentPreviewerTest is Test {
 
     function checkAddLiquidityZapData(address forwardTo) public view {
         for (uint8 i = 0; i < TOKENS; i++) {
-            bytes memory zapData = getAddLiquidityZapData(i, forwardTo);
+            bytes memory zapData = getAddLiquidityZapData(i, forwardTo, strictOut);
             bytes memory payload = zapDataLib.payload(zapData, AMOUNT_IN);
             uint256[] memory amounts = new uint256[](TOKENS);
             amounts[i] = AMOUNT_IN;
+            uint256 minToMint = strictOut ? SWAP_AMOUNT_OUT : 0;
             // addLiquidity(amounts, minToMint, deadline)
-            assertEq(payload, abi.encodeCall(IDefaultExtendedPool.addLiquidity, (amounts, 0, type(uint256).max)));
+            assertEq(
+                payload, abi.encodeCall(IDefaultExtendedPool.addLiquidity, (amounts, minToMint, type(uint256).max))
+            );
             assertEq(zapDataLib.forwardTo(zapData), forwardTo);
         }
     }
@@ -212,17 +253,28 @@ contract SynapseIntentPreviewerTest is Test {
         });
     }
 
-    function getRemoveLiquidityZapData(address forwardTo) public view returns (bytes memory) {
-        return getRemoveLiquidityZapData(TOKEN_OUT_INDEX, forwardTo);
+    function getRemoveLiquidityZapData(address forwardTo, bool useExactAmountOut) public view returns (bytes memory) {
+        return getRemoveLiquidityZapData(TOKEN_OUT_INDEX, forwardTo, useExactAmountOut);
     }
 
-    function getRemoveLiquidityZapData(uint8 indexOut, address forwardTo) public view returns (bytes memory) {
+    function getRemoveLiquidityZapData(
+        uint8 indexOut,
+        address forwardTo,
+        bool useExactAmountOut
+    )
+        public
+        view
+        returns (bytes memory)
+    {
+        uint256 minAmount = useExactAmountOut ? SWAP_AMOUNT_OUT : 0;
         return zapDataLib.encodeV1({
             target_: defaultPoolMock,
             finalToken_: DefaultPoolMock(defaultPoolMock).getToken(indexOut),
             forwardTo_: forwardTo,
             // removeLiquidityOneToken(tokenAmount, tokenIndex, minAmount, deadline)
-            payload_: abi.encodeCall(IDefaultExtendedPool.removeLiquidityOneToken, (0, indexOut, 0, type(uint256).max)),
+            payload_: abi.encodeCall(
+                IDefaultExtendedPool.removeLiquidityOneToken, (0, indexOut, minAmount, type(uint256).max)
+            ),
             // Amount (tokenAmount) is encoded as the first parameter
             amountPosition_: 4
         });
@@ -230,12 +282,15 @@ contract SynapseIntentPreviewerTest is Test {
 
     function checkRemoveLiquidityZapData(address forwardTo) public view {
         for (uint8 i = 0; i < TOKENS; i++) {
-            bytes memory zapData = getRemoveLiquidityZapData(i, forwardTo);
+            bytes memory zapData = getRemoveLiquidityZapData(i, forwardTo, strictOut);
             bytes memory payload = zapDataLib.payload(zapData, AMOUNT_IN);
+            uint256 minAmount = strictOut ? SWAP_AMOUNT_OUT : 0;
             // removeLiquidityOneToken(tokenAmount, tokenIndex, minAmount, deadline)
             assertEq(
                 payload,
-                abi.encodeCall(IDefaultExtendedPool.removeLiquidityOneToken, (AMOUNT_IN, i, 0, type(uint256).max))
+                abi.encodeCall(
+                    IDefaultExtendedPool.removeLiquidityOneToken, (AMOUNT_IN, i, minAmount, type(uint256).max)
+                )
             );
             assertEq(zapDataLib.forwardTo(zapData), forwardTo);
         }
@@ -349,7 +404,7 @@ contract SynapseIntentPreviewerTest is Test {
     // ════════════════════════════════════════════════ ZERO STEPS ═════════════════════════════════════════════════════
 
     function test_previewIntent_noOp_token() public view {
-        (uint256 amountOut, ISynapseIntentRouter.StepParams[] memory steps) = sip.previewIntent({
+        (uint256 amountOut, ISynapseIntentRouter.StepParams[] memory steps) = previewIntent({
             swapQuoter: swapQuoterMock,
             forwardTo: address(0),
             tokenIn: tokenA,
@@ -364,7 +419,7 @@ contract SynapseIntentPreviewerTest is Test {
     function test_previewIntent_noOp_token_revert_withForward() public {
         // forwardTo is not allowed for no-op intents
         vm.expectRevert(SynapseIntentPreviewer.SIP__NoOpForwardNotSupported.selector);
-        sip.previewIntent({
+        previewIntent({
             swapQuoter: swapQuoterMock,
             forwardTo: user,
             tokenIn: tokenA,
@@ -374,7 +429,7 @@ contract SynapseIntentPreviewerTest is Test {
     }
 
     function test_previewIntent_noOp_native() public view {
-        (uint256 amountOut, ISynapseIntentRouter.StepParams[] memory steps) = sip.previewIntent({
+        (uint256 amountOut, ISynapseIntentRouter.StepParams[] memory steps) = previewIntent({
             swapQuoter: swapQuoterMock,
             forwardTo: address(0),
             tokenIn: NATIVE_GAS_TOKEN,
@@ -389,7 +444,7 @@ contract SynapseIntentPreviewerTest is Test {
     function test_previewIntent_noOp_native_revert_withForward() public {
         // forwardTo is not allowed for no-op intents
         vm.expectRevert(SynapseIntentPreviewer.SIP__NoOpForwardNotSupported.selector);
-        sip.previewIntent({
+        previewIntent({
             swapQuoter: swapQuoterMock,
             forwardTo: user,
             tokenIn: NATIVE_GAS_TOKEN,
@@ -403,7 +458,7 @@ contract SynapseIntentPreviewerTest is Test {
         SwapQuery memory emptyQuery;
         emptyQuery.tokenOut = tokenB;
         mockGetAmountOut({tokenIn: tokenA, tokenOut: tokenB, amountIn: AMOUNT_IN, mockQuery: emptyQuery});
-        (uint256 amountOut, ISynapseIntentRouter.StepParams[] memory steps) = sip.previewIntent({
+        (uint256 amountOut, ISynapseIntentRouter.StepParams[] memory steps) = previewIntent({
             swapQuoter: swapQuoterMock,
             forwardTo: address(0),
             tokenIn: tokenA,
@@ -420,7 +475,7 @@ contract SynapseIntentPreviewerTest is Test {
         SwapQuery memory emptyQuery;
         emptyQuery.tokenOut = tokenB;
         mockGetAmountOut({tokenIn: tokenA, tokenOut: tokenB, amountIn: AMOUNT_IN, mockQuery: emptyQuery});
-        (uint256 amountOut, ISynapseIntentRouter.StepParams[] memory steps) = sip.previewIntent({
+        (uint256 amountOut, ISynapseIntentRouter.StepParams[] memory steps) = previewIntent({
             swapQuoter: swapQuoterMock,
             forwardTo: user,
             tokenIn: tokenA,
@@ -445,7 +500,7 @@ contract SynapseIntentPreviewerTest is Test {
         view
     {
         // Preview intent
-        (uint256 amountOut, ISynapseIntentRouter.StepParams[] memory steps) = sip.previewIntent({
+        (uint256 amountOut, ISynapseIntentRouter.StepParams[] memory steps) = previewIntent({
             swapQuoter: swapQuoterMock,
             forwardTo: forwardTo,
             tokenIn: tokenIn,
@@ -467,7 +522,7 @@ contract SynapseIntentPreviewerTest is Test {
             token: tokenA,
             amount: FULL_AMOUNT,
             msgValue: 0,
-            zapData: getSwapZapData(forwardTo)
+            zapData: getSwapZapData(forwardTo, strictOut)
         });
         checkSingleStepIntent(tokenA, tokenB, SWAP_AMOUNT_OUT, expectedStep, forwardTo);
     }
@@ -488,7 +543,7 @@ contract SynapseIntentPreviewerTest is Test {
             token: tokenA,
             amount: FULL_AMOUNT,
             msgValue: 0,
-            zapData: getAddLiquidityZapData(forwardTo)
+            zapData: getAddLiquidityZapData(forwardTo, strictOut)
         });
         checkSingleStepIntent(tokenA, lpToken, SWAP_AMOUNT_OUT, expectedStep, forwardTo);
     }
@@ -509,7 +564,7 @@ contract SynapseIntentPreviewerTest is Test {
             token: lpToken,
             amount: FULL_AMOUNT,
             msgValue: 0,
-            zapData: getRemoveLiquidityZapData(forwardTo)
+            zapData: getRemoveLiquidityZapData(forwardTo, strictOut)
         });
         checkSingleStepIntent(lpToken, tokenB, SWAP_AMOUNT_OUT, expectedStep, forwardTo);
     }
@@ -576,7 +631,7 @@ contract SynapseIntentPreviewerTest is Test {
         view
     {
         // Preview intent
-        (uint256 amountOut, ISynapseIntentRouter.StepParams[] memory steps) = sip.previewIntent({
+        (uint256 amountOut, ISynapseIntentRouter.StepParams[] memory steps) = previewIntent({
             swapQuoter: swapQuoterMock,
             forwardTo: forwardTo,
             tokenIn: tokenIn,
@@ -595,12 +650,12 @@ contract SynapseIntentPreviewerTest is Test {
         mockGetToken(TOKEN_IN_INDEX, tokenA);
         mockGetToken(TOKEN_OUT_INDEX, weth);
         mockGetAmountOut({tokenIn: tokenA, tokenOut: NATIVE_GAS_TOKEN, amountIn: AMOUNT_IN, mockQuery: mockQuery});
-        // step0: tokenA -> weth, always no forwaring
+        // step0: tokenA -> weth, always no forwaring, no strictOut
         ISynapseIntentRouter.StepParams memory expectedStep0 = ISynapseIntentRouter.StepParams({
             token: tokenA,
             amount: FULL_AMOUNT,
             msgValue: 0,
-            zapData: getSwapZapData(address(0))
+            zapData: getSwapZapData(address(0), false)
         });
         // step1: weth -> NATIVE_GAS_TOKEN, optional forwarding
         ISynapseIntentRouter.StepParams memory expectedStep1 = ISynapseIntentRouter.StepParams({
@@ -632,12 +687,12 @@ contract SynapseIntentPreviewerTest is Test {
             msgValue: AMOUNT_IN,
             zapData: getWrapETHZapData(address(0))
         });
-        // step1: weth -> tokenB, optional forwarding
+        // step1: weth -> tokenB, optional forwarding and strictOut
         ISynapseIntentRouter.StepParams memory expectedStep1 = ISynapseIntentRouter.StepParams({
             token: weth,
             amount: FULL_AMOUNT,
             msgValue: 0,
-            zapData: getSwapZapData(forwardTo)
+            zapData: getSwapZapData(forwardTo, strictOut)
         });
         checkDoubleStepIntent(NATIVE_GAS_TOKEN, tokenB, SWAP_AMOUNT_OUT, expectedStep0, expectedStep1, forwardTo);
     }

@@ -32,6 +32,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
     function previewIntent(
         address swapQuoter,
         address forwardTo,
+        bool strictOut,
         address tokenIn,
         address tokenOut,
         uint256 amountIn
