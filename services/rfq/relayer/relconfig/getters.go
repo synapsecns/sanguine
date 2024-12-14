@@ -782,7 +782,7 @@ func (c Config) GetMaxRelayAmount(chainID int, addr common.Address) *big.Int {
 	}
 
 	// Scale the minQuoteAmount by the token decimals.
-	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil) //nolint:gomnd // 10 is the standard base for token decimals
+	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(tokenDecimalsBase), big.NewInt(int64(tokenCfg.Decimals)), nil)
 	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
 	return quoteAmountScaled
 }

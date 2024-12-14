@@ -258,7 +258,7 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	passiveQuotes := []db.Quote{
 		{
 			RelayerAddr:     c.relayerWallets[0].Address().Hex(),
-			OriginChainID:   uint64(c.originChainID),
+			OriginChainID:   uint64(c.originChainID), //nolint:gosec // Test chainID is always positive and within uint64 range
 			OriginTokenAddr: originTokenAddr,
 			DestChainID:     uint64(c.destChainID),
 			DestTokenAddr:   destTokenAddr,

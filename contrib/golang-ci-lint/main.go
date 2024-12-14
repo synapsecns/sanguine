@@ -103,6 +103,13 @@ func validateURL(rawURL string) error {
 
 // validatePath ensures a path is safe to use and within allowed directories.
 func validatePath(path string, allowedDirs ...string) error {
+	// Get repository root using go-findroot
+	root, err := find.Repo()
+	if err == nil {
+		// Add repository root to allowed directories
+		allowedDirs = append(allowedDirs, root.Path)
+	}
+
 	// Resolve to absolute path and handle symlinks
 	absPath, err := filepath.Abs(path)
 	if err != nil {
@@ -194,16 +201,23 @@ func validateBinaryPermissions(path string) error {
 
 // setupLinter prepares the golangci-lint binary, downloading it if necessary.
 func setupLinter(ctx context.Context, version, osName, arch string) (string, error) {
-	execPath, err := os.Executable()
+	root, err := find.Repo()
 	if err != nil {
-		return "", fmt.Errorf("failed to get executable path: %w", err)
+		return "", fmt.Errorf("failed to get repository root: %w", err)
 	}
 
-	execDir := filepath.Clean(filepath.Dir(execPath))
+	// Create cache directory first with proper permissions
+	cacheDir := filepath.Join(root.Path, "contrib/golang-ci-lint/cache")
+	if err := os.MkdirAll(cacheDir, dirPerms); err != nil {
+		return "", fmt.Errorf("failed to create cache directory: %w", err)
+	}
+
 	binaryName := fmt.Sprintf("golangci-lint-%s-%s-%s/golangci-lint", version, osName, arch)
-	cachePath, err := safeJoin(execDir, filepath.Join(cacheDir, binaryName))
-	if err != nil {
-		return "", fmt.Errorf("failed to create cache path: %w", err)
+	cachePath := filepath.Join(cacheDir, binaryName)
+
+	// Create binary directory if it doesn't exist
+	if err := os.MkdirAll(filepath.Dir(cachePath), dirPerms); err != nil {
+		return "", fmt.Errorf("failed to create binary directory: %w", err)
 	}
 
 	// Check cache and download if needed
@@ -216,40 +230,47 @@ func setupLinter(ctx context.Context, version, osName, arch string) (string, err
 	return cachePath, nil
 }
 
-// findWorkDir locates the repository root using go-findroot.
+// findWorkDir locates the current working directory.
 func findWorkDir() (string, error) {
-	// Check GIT_ROOT environment variable first as it might be set by setupGitRoot
-	if gitRoot := os.Getenv("GIT_ROOT"); gitRoot != "" {
-		absPath, err := filepath.Abs(gitRoot)
-		if err != nil {
-			return "", fmt.Errorf("failed to resolve GIT_ROOT path: %w", err)
-		}
-		return absPath, nil
-	}
-
-	// Use go-findroot to locate repository root
+	// Get repository root using go-findroot
 	root, err := find.Repo()
 	if err != nil {
-		return "", fmt.Errorf("failed to find repository root: %w", err)
+		return "", fmt.Errorf("failed to get repository root: %w", err)
 	}
 
-	// Validate the path before returning
-	if err := validatePath(root.Path); err != nil {
-		return "", fmt.Errorf("invalid repository root path: %w", err)
+	// Use current directory as working directory
+	workDir, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("failed to get current directory: %w", err)
 	}
 
-	return root.Path, nil
+	// Validate the path
+	if err := validatePath(workDir, root.Path); err != nil {
+		return "", fmt.Errorf("invalid working directory: %w", err)
+	}
+
+	return workDir, nil
 }
 
 // processArgs ensures proper argument formatting and adds default configuration.
-func processArgs(args []string, root string) []string {
-	// Process existing arguments
+func processArgs(args []string, root string) ([]string, string) {
+	var workDir string
 	processedArgs := make([]string, 0, len(args)+defaultArgCapacity)
 
-	// Replace $(GIT_ROOT) in all arguments
-	for _, arg := range args {
-		arg = strings.ReplaceAll(arg, "$(GIT_ROOT)", root)
-		processedArgs = append(processedArgs, arg)
+	// Process arguments
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		switch {
+		case arg == "--path":
+			if i+1 < len(args) {
+				workDir = args[i+1]
+				i++ // Skip the next argument since we consumed it
+			}
+		default:
+			// Replace $(GIT_ROOT) in all arguments
+			arg = strings.ReplaceAll(arg, "$(GIT_ROOT)", root)
+			processedArgs = append(processedArgs, arg)
+		}
 	}
 
 	// Ensure "run" is the first argument if not present
@@ -277,7 +298,7 @@ func processArgs(args []string, root string) []string {
 		processedArgs = append(processedArgs, "--config", configPath)
 	}
 
-	return processedArgs
+	return processedArgs, workDir
 }
 
 // extractTarGz extracts a specific file from a tar.gz archive.
@@ -433,6 +454,29 @@ func runLinter(ctx context.Context, binaryPath, workDir string, args []string) e
 		}
 	}
 
+	// Find repository root for go.work
+	root, err := find.Repo()
+	if err != nil {
+		return fmt.Errorf("finding repository root: %w", err)
+	}
+
+	// If workDir is specified, validate and use it
+	if workDir != "" {
+		if err := validatePath(workDir); err != nil {
+			return fmt.Errorf("invalid working directory: %w", err)
+		}
+		// Check if workDir contains go.mod
+		if _, err := os.Stat(filepath.Join(workDir, "go.mod")); err != nil {
+			return fmt.Errorf("working directory must contain go.mod file: %w", err)
+		}
+	} else {
+		// Use current directory if no workDir specified
+		workDir, err = os.Getwd()
+		if err != nil {
+			return fmt.Errorf("getting current directory: %w", err)
+		}
+	}
+
 	// Create command with validated paths and args
 	cmd := exec.CommandContext(ctx, binaryPath, args...)
 	cmd.Stdout = os.Stdout
@@ -440,7 +484,7 @@ func runLinter(ctx context.Context, binaryPath, workDir string, args []string) e
 	cmd.Dir = workDir
 	cmd.Env = append(os.Environ(),
 		"GO111MODULE=on",
-		"GOFLAGS=-mod=readonly",
+		fmt.Sprintf("GOWORK=%s", filepath.Join(root.Path, "go.work")),
 	)
 
 	if err := cmd.Run(); err != nil {
@@ -506,14 +550,18 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("setting up linter: %w", err)
 	}
 
-	// Find working directory
-	workDir, err := findWorkDir()
-	if err != nil {
-		return fmt.Errorf("finding working directory: %w", err)
+	// Process arguments first to get working directory
+	args, workDir := processArgs(os.Args[1:], root.Path)
+
+	// If no working directory specified via --path, use current directory
+	if workDir == "" {
+		workDir, err = findWorkDir()
+		if err != nil {
+			return fmt.Errorf("finding working directory: %w", err)
+		}
 	}
 
-	// Process arguments and run linter
-	args := processArgs(os.Args[1:], root.Path)
+	// Run linter with processed arguments and working directory
 	if err := runLinter(ctx, cachePath, workDir, args); err != nil {
 		return fmt.Errorf("running linter: %w", err)
 	}
