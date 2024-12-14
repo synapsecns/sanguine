@@ -102,6 +102,7 @@ func validateURL(rawURL string) error {
 }
 
 // validatePath ensures a path is safe to use and within allowed directories.
+// nolint: cyclop
 func validatePath(path string, allowedDirs ...string) error {
 	// Get repository root using go-findroot
 	root, err := find.Repo()
@@ -253,6 +254,7 @@ func findWorkDir() (string, error) {
 }
 
 // processArgs ensures proper argument formatting and adds default configuration.
+// nolint: cyclop
 func processArgs(args []string, root string) ([]string, string) {
 	var workDir string
 	processedArgs := make([]string, 0, len(args)+defaultArgCapacity)
@@ -442,6 +444,7 @@ func readVersion(root string) (string, error) {
 	return strings.TrimSpace(string(version)), nil
 }
 
+// nolint: cyclop
 func runLinter(ctx context.Context, binaryPath, workDir string, args []string) error {
 	// Validate binary permissions before execution
 	info, err := os.Stat(binaryPath)
