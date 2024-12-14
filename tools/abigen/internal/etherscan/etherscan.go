@@ -36,6 +36,7 @@ func newEtherscanABIClient(parentCtx context.Context, chainID uint32, url string
 			Timeout: timeout,
 		},
 		BaseURL: url,
+		Key:     apiKey, // Add API key to customization
 	}
 
 	// waitBetweenRequest is how long to wait between requests. If an analytics key is enabled, rate limiting is disabled

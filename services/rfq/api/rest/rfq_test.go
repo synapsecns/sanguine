@@ -62,9 +62,9 @@ func runMockRelayer(c *ServerSuite, respCtx context.Context, relayerWallet walle
 }
 
 func verifyActiveQuoteRequest(c *ServerSuite, userReq *model.PutRFQRequest, activeQuoteRequest *db.ActiveQuoteRequest, status db.ActiveQuoteRequestStatus) {
-	c.Assert().Equal(uint64(userReq.Data.OriginChainID), activeQuoteRequest.OriginChainID)
+	c.Assert().Equal(uint64(userReq.Data.OriginChainID), activeQuoteRequest.OriginChainID) //nolint:gosec // Chain IDs are validated by the API
 	c.Assert().Equal(userReq.Data.OriginTokenAddr, activeQuoteRequest.OriginTokenAddr)
-	c.Assert().Equal(uint64(userReq.Data.DestChainID), activeQuoteRequest.DestChainID)
+	c.Assert().Equal(uint64(userReq.Data.DestChainID), activeQuoteRequest.DestChainID) //nolint:gosec // Chain IDs are validated by the API
 	c.Assert().Equal(userReq.Data.DestTokenAddr, activeQuoteRequest.DestTokenAddr)
 	c.Assert().Equal(userReq.Data.OriginAmountExact, activeQuoteRequest.OriginAmountExact.String())
 	c.Assert().Equal(status, activeQuoteRequest.Status)
