@@ -16,6 +16,8 @@ builds:
       - osusergo
     env:
       - CGO_ENABLED=0
+      - CC=gcc
+      - CXX=g++
     main: main.go
     flags:
       - -trimpath

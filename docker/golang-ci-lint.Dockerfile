@@ -4,8 +4,7 @@ FROM golang:1.21-alpine AS builder
 
 WORKDIR /app
 COPY . .
-RUN --mount=type=cache,target=/root/go/pkg/mod \
-    cd contrib/golang-ci-lint && \
+RUN cd contrib/golang-ci-lint && \
     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build -o /app/bin/golang-ci-lint \
     -ldflags="-s -w -extldflags '-static'" \
