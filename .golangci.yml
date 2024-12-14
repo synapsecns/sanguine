@@ -103,7 +103,9 @@ linters:
     # malfunctions on embedded structs
     - typecheck
     # magic numbers
-    - gomnd
+    - mnd
+    # constants
+    - goconst
   fast: false
 
 issues:
