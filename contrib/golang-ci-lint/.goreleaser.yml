@@ -13,7 +13,6 @@ builds:
       - -s -w -extldflags '-static'
     tags:
       - netgo
-      - osusergo
     env:
       - CGO_ENABLED=0
     main: main.go
@@ -38,11 +37,6 @@ dockers:
       - '--label=org.opencontainers.image.version={{.Version}}'
       - '--label=org.opencontainers.image.source={{.GitURL}}'
     dockerfile: ../../docker/golang-ci-lint.Dockerfile
-    extra_files:
-      - go.mod
-      - go.sum
-      - main.go
-      - permissions/
     ids:
       - golang-ci-lint
 
