@@ -109,41 +109,61 @@ func validatePath(path string, allowedDirs ...string) error {
 		return fmt.Errorf("failed to resolve absolute path: %w", err)
 	}
 
-	resolvedPath, err := filepath.EvalSymlinks(absPath)
+	// Get the real path, following all symlinks
+	realPath, err := filepath.EvalSymlinks(absPath)
 	if err != nil {
 		// If the file doesn't exist yet, use the absolute path
 		if !os.IsNotExist(err) {
 			return fmt.Errorf("failed to resolve symlinks: %w", err)
 		}
-		resolvedPath = absPath
+		realPath = absPath
 	}
 
-	if strings.Contains(resolvedPath, "..") {
-		return fmt.Errorf("path contains directory traversal: %s", resolvedPath)
+	// Normalize paths for MacOS by removing /private prefix from /var paths
+	if runtime.GOOS == "darwin" {
+		if strings.HasPrefix(realPath, "/private/var") {
+			realPath = strings.Replace(realPath, "/private/var", "/var", 1)
+		}
+		if strings.HasPrefix(absPath, "/private/var") {
+			absPath = strings.Replace(absPath, "/private/var", "/var", 1)
+		}
+	}
+
+	if strings.Contains(realPath, "..") {
+		return fmt.Errorf("path contains directory traversal: %s", realPath)
 	}
 
 	// Always allow temp dir and cache dir
+	tmpDir := filepath.Clean(os.TempDir())
+	if runtime.GOOS == "darwin" && strings.HasPrefix(tmpDir, "/private/var") {
+		tmpDir = strings.Replace(tmpDir, "/private/var", "/var", 1)
+	}
+
 	defaultDirs := []string{
-		filepath.Clean(os.TempDir()),
+		tmpDir,
 		filepath.Clean(cacheDir),
 	}
 
 	// Combine default and additional allowed directories
 	allowedDirs = append(defaultDirs, allowedDirs...)
 
-	// Resolve and clean all allowed directories
+	// Check against allowed directories
 	for _, dir := range allowedDirs {
 		absDir, err := filepath.Abs(dir)
 		if err != nil {
-			continue // Skip invalid directories
+			continue
 		}
 		cleanDir := filepath.Clean(absDir)
-		if strings.HasPrefix(resolvedPath, cleanDir) {
+		if runtime.GOOS == "darwin" && strings.HasPrefix(cleanDir, "/private/var") {
+			cleanDir = strings.Replace(cleanDir, "/private/var", "/var", 1)
+		}
+		// Check both realPath and absPath for compatibility
+		if strings.HasPrefix(realPath, cleanDir) || strings.HasPrefix(absPath, cleanDir) {
 			return nil
 		}
 	}
 
-	return fmt.Errorf("path outside allowed directories: %s", resolvedPath)
+	return fmt.Errorf("path outside allowed directories: %s", realPath)
 }
 
 // safeJoin safely joins paths, preventing directory traversal.
