@@ -15,6 +15,14 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 )
 
+// validateChainID ensures safe conversion of chain IDs from int to uint64.
+func validateChainID(chainID int) uint64 {
+	if chainID < 0 {
+		panic(fmt.Sprintf("chain ID must be non-negative, got %d", chainID))
+	}
+	return uint64(chainID)
+}
+
 func runMockRelayer(c *ServerSuite, respCtx context.Context, relayerWallet wallet.Wallet, quoteResp *model.WsRFQResponse, url string) {
 	// Create a relayer client
 	relayerSigner := localsigner.NewSigner(relayerWallet.PrivateKey())
@@ -62,9 +70,9 @@ func runMockRelayer(c *ServerSuite, respCtx context.Context, relayerWallet walle
 }
 
 func verifyActiveQuoteRequest(c *ServerSuite, userReq *model.PutRFQRequest, activeQuoteRequest *db.ActiveQuoteRequest, status db.ActiveQuoteRequestStatus) {
-	c.Assert().Equal(uint64(userReq.Data.OriginChainID), activeQuoteRequest.OriginChainID) //nolint:gosec // Chain IDs are validated by the API
+	c.Assert().Equal(validateChainID(userReq.Data.OriginChainID), activeQuoteRequest.OriginChainID)
 	c.Assert().Equal(userReq.Data.OriginTokenAddr, activeQuoteRequest.OriginTokenAddr)
-	c.Assert().Equal(uint64(userReq.Data.DestChainID), activeQuoteRequest.DestChainID) //nolint:gosec // Chain IDs are validated by the API
+	c.Assert().Equal(validateChainID(userReq.Data.DestChainID), activeQuoteRequest.DestChainID)
 	c.Assert().Equal(userReq.Data.DestTokenAddr, activeQuoteRequest.DestTokenAddr)
 	c.Assert().Equal(userReq.Data.OriginAmountExact, activeQuoteRequest.OriginAmountExact.String())
 	c.Assert().Equal(status, activeQuoteRequest.Status)
@@ -258,9 +266,9 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	passiveQuotes := []db.Quote{
 		{
 			RelayerAddr:     c.relayerWallets[0].Address().Hex(),
-			OriginChainID:   uint64(c.originChainID), //nolint:gosec // Test chainID is always positive and within uint64 range
+			OriginChainID:   validateChainID(c.originChainID),
 			OriginTokenAddr: originTokenAddr,
-			DestChainID:     uint64(c.destChainID),
+			DestChainID:     validateChainID(c.destChainID),
 			DestTokenAddr:   destTokenAddr,
 			DestAmount:      decimal.NewFromBigInt(new(big.Int).Sub(userRequestAmount, big.NewInt(1000)), 0),
 			MaxOriginAmount: decimal.NewFromBigInt(userRequestAmount, 0),
@@ -337,9 +345,9 @@ func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
 	passiveQuotes := []db.Quote{
 		{
 			RelayerAddr:     c.relayerWallets[0].Address().Hex(),
-			OriginChainID:   uint64(c.originChainID),
+			OriginChainID:   validateChainID(c.originChainID),
 			OriginTokenAddr: originTokenAddr,
-			DestChainID:     uint64(c.destChainID),
+			DestChainID:     validateChainID(c.destChainID),
 			DestTokenAddr:   destTokenAddr,
 			DestAmount:      decimal.NewFromBigInt(new(big.Int).Sub(userRequestAmount, big.NewInt(100)), 0),
 			MaxOriginAmount: decimal.NewFromBigInt(userRequestAmount, 0),
