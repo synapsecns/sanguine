@@ -30,6 +30,5 @@ lint: ## lint lints the code with golangci-lint
 	cd $(GIT_ROOT)
 	go work sync
 	cd $(CURRENT_PATH)
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.61.0
-	$(HOME)/go/bin/golangci-lint run --fix --config=$(GIT_ROOT)/.golangci.yml
+	go run $(GIT_ROOT)/contrib/golang-ci-lint/main.go run --fix --config=$(GIT_ROOT)/.golangci.yml
 
