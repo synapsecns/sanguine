@@ -210,6 +210,22 @@ describe('Bridge Route with Real Synapse Service', () => {
     expect(response.body[0].callData).toBeNull()
   }, 15000)
 
+  it('should return bridge quotes without callData when originUserAddress is not provided', async () => {
+    const response = await request(app).get('/bridge').query({
+      fromChain: '1',
+      toChain: '10',
+      fromToken: USDC.addresses[1],
+      toToken: USDC.addresses[10],
+      amount: '1000',
+      destAddress: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+    })
+
+    expect(response.status).toBe(200)
+    expect(Array.isArray(response.body)).toBe(true)
+    expect(response.body.length).toBeGreaterThan(0)
+    expect(response.body[0].callData).toBeNull()
+  }, 15000)
+
   it('should return 400 for invalid destAddress', async () => {
     const response = await request(app).get('/bridge').query({
       fromChain: '1',
