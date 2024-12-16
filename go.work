@@ -6,6 +6,7 @@ toolchain go1.23.3
 use (
 	./agents
 	./contrib/git-changes-action
+	./contrib/golang-ci-lint
 	./contrib/opbot
 	./contrib/promexporter
 	./contrib/restclient

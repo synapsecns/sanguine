@@ -53,7 +53,7 @@ export const HOW_TO_STAKE_URL =
 export const BUILD_ON_URL =
   'https://docs.synapseprotocol.com/synapse-interchain-network-sin/build-on-the-synapse-interchain-network'
 export const TRANSACTION_SUPPORT_URL =
-  'https://docs.synapseprotocol.com/synapse-bridge/synapse-bridge/transaction-support-faq'
+  'https://docs.synapseprotocol.com/docs/Support/Transaction-Support'
 
 /** Construct URL Helper Functions */
 export const getPoolUrl = (token: Token) => {

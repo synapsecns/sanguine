@@ -17,7 +17,10 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-const collectionTimeout = 1 * time.Minute
+const (
+	collectionTimeout = 1 * time.Minute
+	base10            = 10 // Base for string to integer conversion
+)
 
 func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.PutRFQRequest, requestID string) (quote *model.QuoteData) {
 	ctx, span := r.handler.Tracer().Start(ctx, "handleActiveRFQ", trace.WithAttributes(
@@ -167,8 +170,8 @@ func getBestQuote(a, b *model.QuoteData) *model.QuoteData {
 	if b == nil {
 		return a
 	}
-	aAmount, _ := new(big.Int).SetString(*a.DestAmount, 10)
-	bAmount, _ := new(big.Int).SetString(*b.DestAmount, 10)
+	aAmount, _ := new(big.Int).SetString(*a.DestAmount, base10)
+	bAmount, _ := new(big.Int).SetString(*b.DestAmount, base10)
 	if aAmount.Cmp(bAmount) > 0 {
 		return a
 	}
@@ -188,7 +191,7 @@ func getQuoteResponseStatus(ctx context.Context, resp *model.WsRFQResponse) db.A
 }
 
 func validateRelayerQuoteResponse(resp *model.WsRFQResponse) error {
-	_, ok := new(big.Int).SetString(resp.DestAmount, 10)
+	_, ok := new(big.Int).SetString(resp.DestAmount, base10)
 	if !ok {
 		return fmt.Errorf("dest amount is invalid")
 	}
@@ -222,7 +225,7 @@ func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.P
 	))
 	defer metrics.EndSpan(span)
 
-	quotes, err := r.db.GetQuotesByOriginAndDestination(ctx, uint64(request.Data.OriginChainID), request.Data.OriginTokenAddr, uint64(request.Data.DestChainID), request.Data.DestTokenAddr)
+	quotes, err := r.db.GetQuotesByOriginAndDestination(ctx, uint64(request.Data.OriginChainID), request.Data.OriginTokenAddr, uint64(request.Data.DestChainID), request.Data.DestTokenAddr) //nolint:gosec // Chain IDs are validated by the API
 	if err != nil {
 		return nil, fmt.Errorf("failed to get quotes: %w", err)
 	}
@@ -238,14 +241,14 @@ func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.P
 func getPassiveQuote(cfg config.Config, quotes []*db.Quote, request *model.PutRFQRequest) (*model.QuoteData, error) {
 	quotes = filterQuoteAge(cfg, quotes)
 
-	originAmount, ok := new(big.Int).SetString(request.Data.OriginAmountExact, 10)
+	originAmount, ok := new(big.Int).SetString(request.Data.OriginAmountExact, base10)
 	if !ok {
 		return nil, errors.New("invalid origin amount exact")
 	}
 
 	var bestQuote *model.QuoteData
 	for _, quote := range quotes {
-		quoteOriginAmount, ok := new(big.Int).SetString(quote.MaxOriginAmount.String(), 10)
+		quoteOriginAmount, ok := new(big.Int).SetString(quote.MaxOriginAmount.String(), base10)
 		if !ok {
 			continue
 		}
