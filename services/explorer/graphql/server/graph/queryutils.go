@@ -1872,13 +1872,23 @@ func (r *queryResolver) getContractAddressFromType(chainID uint32, contractType 
 	}
 }
 
+// Module type constants for bridge event classification.
+const (
+	// ModuleSynapseBridge represents events with type less than 10, indicating standard bridge operations.
+	ModuleSynapseBridge = 0
+	// ModuleSynapseCCTP represents CCTP (Cross-Chain Transfer Protocol) bridge events.
+	ModuleSynapseCCTP = 10
+	// ModuleSynapseRFQ represents RFQ (Request for Quote) bridge events.
+	ModuleSynapseRFQ = 12
+)
+
 func getBridgeModule(eventType int) string {
 	switch {
-	case eventType < 10:
+	case eventType < ModuleSynapseCCTP:
 		return "SynapseBridge"
-	case eventType == 10:
+	case eventType == ModuleSynapseCCTP:
 		return "SynapseCCTP"
-	case eventType == 12:
+	case eventType == ModuleSynapseRFQ:
 		return "SynapseRFQ"
 	default:
 		return ""
