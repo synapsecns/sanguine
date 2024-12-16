@@ -201,7 +201,7 @@
           {
             "in": "query",
             "name": "destAddress",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
             },
