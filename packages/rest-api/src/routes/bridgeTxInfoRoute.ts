@@ -20,7 +20,7 @@ const router: express.Router = express.Router()
  * /bridgeTxInfo:
  *   get:
  *     summary: "[Deprecated] in favor of using the /bridge endpoint, which now returns call data"
- *     description: "[Deprecated] Originally used to get Bridge transaction information"
+ *     description: "[Deprecated] Originally used to get Bridge transaction information" test
  *     parameters:
  *       - in: query
  *         name: fromChain
