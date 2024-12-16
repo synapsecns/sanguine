@@ -473,7 +473,7 @@ export const CANTO_POOL_SWAP_TOKEN = new Token({
   display: true,
   priorityRank: 6,
   chainId: CHAINS.CANTO.id,
-  incentivized: true,
+  incentivized: false,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.CANTO.id],
 })
 
@@ -522,7 +522,7 @@ export const CANTO_WRAPPER_POOL_SWAP_TOKEN = new Token({
   priorityPool: true,
   priorityRank: 6,
   chainId: CHAINS.CANTO.id,
-  incentivized: true,
+  incentivized: false,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.CANTO.id],
 })
 
