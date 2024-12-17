@@ -12,6 +12,7 @@
     "inputs": [
       { "name": "swapQuoter", "type": "address", "internalType": "address" },
       { "name": "forwardTo", "type": "address", "internalType": "address" },
+      { "name": "strictOut", "type": "bool", "internalType": "bool" },
       { "name": "tokenIn", "type": "address", "internalType": "address" },
       { "name": "tokenOut", "type": "address", "internalType": "address" },
       { "name": "amountIn", "type": "uint256", "internalType": "uint256" }

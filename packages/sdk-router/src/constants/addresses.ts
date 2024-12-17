@@ -108,7 +108,7 @@ export const SYNAPSE_INTENT_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
  * TODO: this is a staging SynapseIntentPreviewer deployment, update to the production deployment when ready.
  */
 const SYNAPSE_INTENT_PREVIEWER_ADDRESS =
-  '0x9519E8D136d0a89d7e10D1a66C97249E0135544B'
+  '0x89ed77DcEaFBc4F92DAB2e865e11E7885F8daAf9'
 const SYNAPSE_INTENT_PREVIEWER_EXCEPTION_MAP: AddressMap = {}
 export const SYNAPSE_INTENT_PREVIEWER_ADDRESS_MAP: AddressMap =
   generateAddressMap(

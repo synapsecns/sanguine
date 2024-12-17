@@ -55,6 +55,7 @@ export class EngineSet {
       address: this.getTokenZap(chainId),
     }
     // Find the route for each token and each engine.
+    const strictOut = true
     const allRoutes = await Promise.all(
       tokensOut.map(async (tokenOut) =>
         Promise.all(
@@ -64,7 +65,8 @@ export class EngineSet {
               tokenIn.address,
               tokenOut,
               tokenIn.amount,
-              recipient
+              recipient,
+              strictOut
             )
           )
         )
@@ -87,6 +89,9 @@ export class EngineSet {
     }
     // Find the route for each token and each engine.
     // Remove the routes that have more than one Zap step.
+    // Note: for Relayer simulation purposes we disable strict slippage on this step.
+    // This will be set after the Relayer quotes have been obtained.
+    const strictOut = false
     const allRoutes = await Promise.all(
       tokensIn.map(async (tokenIn) =>
         Promise.all(
@@ -96,7 +101,8 @@ export class EngineSet {
               tokenIn.address,
               tokenOut,
               tokenIn.amount,
-              recipient
+              recipient,
+              strictOut
             )
             return this.limitSingleZap(route)
           })
@@ -112,14 +118,16 @@ export class EngineSet {
     chainId: number,
     tokenIn: TokenInput,
     tokenOut: string,
-    finalRecipient: Recipient
+    finalRecipient: Recipient,
+    strictOut: boolean
   ): Promise<SwapEngineRoute> {
     return this._getEngine(engineID).findRoute(
       chainId,
       tokenIn.address,
       tokenOut,
       tokenIn.amount,
-      finalRecipient
+      finalRecipient,
+      strictOut
     )
   }
 

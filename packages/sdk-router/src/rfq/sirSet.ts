@@ -462,7 +462,9 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       route.ticker.destToken.chainId,
       { address: route.ticker.destToken.token, amount: quote.destAmount },
       tokenOut,
-      destFinalRecipient
+      destFinalRecipient,
+      // Use strict slippage for the final destination swap
+      true
     )
     return {
       ...route,

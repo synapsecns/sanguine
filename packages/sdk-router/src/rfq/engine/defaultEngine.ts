@@ -72,7 +72,8 @@ export class DefaultEngine implements SwapEngine {
     tokenIn: string,
     tokenOut: string,
     amountIn: BigintIsh,
-    finalRecipient: Recipient
+    finalRecipient: Recipient,
+    strictOut: boolean
   ): Promise<SwapEngineRoute> {
     const { previewer, swapQuoter } = this.contracts[chainId]
     if (
@@ -88,6 +89,7 @@ export class DefaultEngine implements SwapEngine {
     const { amountOut, steps: stepsOutput } = await previewer.previewIntent(
       swapQuoter,
       forwardTo,
+      strictOut,
       tokenIn,
       tokenOut,
       amountIn

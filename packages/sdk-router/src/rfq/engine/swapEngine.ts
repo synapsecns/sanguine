@@ -46,7 +46,8 @@ export interface SwapEngine {
     tokenIn: string,
     tokenOut: string,
     amountIn: BigintIsh,
-    finalRecipient: Recipient
+    finalRecipient: Recipient,
+    strictOut: boolean
   ): Promise<SwapEngineRoute>
 
   modifyMinAmountOut(
