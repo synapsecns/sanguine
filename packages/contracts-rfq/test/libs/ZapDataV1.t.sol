@@ -18,6 +18,8 @@ contract ZapDataV1Test is Test {
     function encodeZapData(
         uint16 version,
         uint16 amountPosition,
+        address finalToken,
+        address forwardTo,
         address target,
         bytes memory payload
     )
@@ -25,10 +27,12 @@ contract ZapDataV1Test is Test {
         pure
         returns (bytes memory)
     {
-        return abi.encodePacked(version, amountPosition, target, payload);
+        return abi.encodePacked(version, amountPosition, finalToken, forwardTo, target, payload);
     }
 
     function test_roundtrip_withAmount(
+        address finalToken,
+        address forwardTo,
         address target,
         uint256 amount,
         bytes memory prefix,
@@ -46,37 +50,54 @@ contract ZapDataV1Test is Test {
         // We expect the correct amount to be substituted in the payload at the time of Zap.
         bytes memory finalPayload = abi.encodePacked(prefix, amount, postfix);
 
-        bytes memory zapData = harness.encodeV1(amountPosition, target, encodedPayload);
+        bytes memory zapData = harness.encodeV1(amountPosition, finalToken, forwardTo, target, encodedPayload);
 
         harness.validateV1(zapData);
         assertEq(harness.version(zapData), 1);
+        assertEq(harness.finalToken(zapData), finalToken);
+        assertEq(harness.forwardTo(zapData), forwardTo);
         assertEq(harness.target(zapData), target);
         assertEq(harness.payload(zapData, amount), finalPayload);
         // Check against manually encoded ZapData.
-        assertEq(zapData, encodeZapData(EXPECTED_VERSION, amountPosition, target, encodedPayload));
+        assertEq(
+            zapData, encodeZapData(EXPECTED_VERSION, amountPosition, finalToken, forwardTo, target, encodedPayload)
+        );
     }
 
-    function test_roundtrip_noAmount(address target, uint256 amount, bytes memory payload) public view {
+    function test_roundtrip_noAmount(
+        address finalToken,
+        address forwardTo,
+        address target,
+        uint256 amount,
+        bytes memory payload
+    )
+        public
+        view
+    {
         vm.assume(payload.length < type(uint16).max);
         vm.assume(target != address(0));
 
         uint16 amountPosition = type(uint16).max;
-        bytes memory zapData = harness.encodeV1(amountPosition, target, payload);
+        bytes memory zapData = harness.encodeV1(amountPosition, finalToken, forwardTo, target, payload);
 
         harness.validateV1(zapData);
         assertEq(harness.version(zapData), 1);
+        assertEq(harness.finalToken(zapData), finalToken);
+        assertEq(harness.forwardTo(zapData), forwardTo);
         assertEq(harness.target(zapData), target);
         assertEq(harness.payload(zapData, amount), payload);
         // Check against manually encoded ZapData.
-        assertEq(zapData, encodeZapData(EXPECTED_VERSION, amountPosition, target, payload));
+        assertEq(zapData, encodeZapData(EXPECTED_VERSION, amountPosition, finalToken, forwardTo, target, payload));
     }
 
     function test_encodeV1_revert_targetZeroAddress() public {
         vm.expectRevert(ZapDataV1.ZapDataV1__TargetZeroAddress.selector);
-        harness.encodeV1(type(uint16).max, address(0), "");
+        harness.encodeV1(type(uint16).max, address(0), address(0), address(0), "");
     }
 
     function test_encodeDecodeV1_revert_invalidAmountPosition(
+        address finalToken,
+        address forwardTo,
         address target,
         uint16 amountPosition,
         uint256 amount,
@@ -90,13 +111,16 @@ contract ZapDataV1Test is Test {
         uint16 incorrectMin = payload.length > 31 ? uint16(payload.length) - 31 : 0;
         uint16 incorrectMax = type(uint16).max - 1;
         amountPosition = uint16(bound(uint256(amountPosition), incorrectMin, incorrectMax));
-        bytes memory invalidEncodedZapData = abi.encodePacked(uint16(1), amountPosition, target, payload);
+        bytes memory invalidEncodedZapData =
+            encodeZapData(uint16(1), amountPosition, finalToken, forwardTo, target, payload);
 
         vm.expectRevert(ZapDataV1.ZapDataV1__InvalidEncoding.selector);
-        harness.encodeV1(amountPosition, target, payload);
+        harness.encodeV1(amountPosition, finalToken, forwardTo, target, payload);
 
         // Validation should pass
         harness.validateV1(invalidEncodedZapData);
+        harness.finalToken(invalidEncodedZapData);
+        harness.forwardTo(invalidEncodedZapData);
         harness.target(invalidEncodedZapData);
         // But payload extraction should revert
         vm.expectRevert(ZapDataV1.ZapDataV1__InvalidEncoding.selector);
@@ -105,6 +129,8 @@ contract ZapDataV1Test is Test {
 
     function test_validateV1_revert_unsupportedVersion_withAmount(
         uint16 version,
+        address finalToken,
+        address forwardTo,
         address target,
         bytes memory prefix,
         bytes memory postfix
@@ -117,7 +143,8 @@ contract ZapDataV1Test is Test {
         uint16 amountPosition = uint16(prefix.length);
         bytes memory encodedPayload = abi.encodePacked(prefix, uint256(0), postfix);
 
-        bytes memory invalidEncodedZapData = encodeZapData(version, amountPosition, target, encodedPayload);
+        bytes memory invalidEncodedZapData =
+            encodeZapData(version, amountPosition, finalToken, forwardTo, target, encodedPayload);
 
         vm.expectRevert(abi.encodeWithSelector(ZapDataV1.ZapDataV1__UnsupportedVersion.selector, version));
         harness.validateV1(invalidEncodedZapData);
@@ -125,6 +152,8 @@ contract ZapDataV1Test is Test {
 
     function test_validateV1_revert_unsupportedVersion_noAmount(
         uint16 version,
+        address finalToken,
+        address forwardTo,
         address target,
         bytes memory payload
     )
@@ -134,14 +163,16 @@ contract ZapDataV1Test is Test {
         vm.assume(payload.length < type(uint16).max);
 
         uint16 amountPosition = type(uint16).max;
-        bytes memory invalidEncodedZapData = encodeZapData(version, amountPosition, target, payload);
+        bytes memory invalidEncodedZapData =
+            encodeZapData(version, amountPosition, finalToken, forwardTo, target, payload);
 
         vm.expectRevert(abi.encodeWithSelector(ZapDataV1.ZapDataV1__UnsupportedVersion.selector, version));
         harness.validateV1(invalidEncodedZapData);
     }
 
     function test_validateV1_revert_invalidLength(bytes calldata fuzzData) public {
-        bytes memory minimumValidZapData = encodeZapData(EXPECTED_VERSION, type(uint16).max, address(0), "");
+        bytes memory minimumValidZapData =
+            encodeZapData(EXPECTED_VERSION, type(uint16).max, address(0), address(0), address(0), "");
         uint256 invalidLength = fuzzData.length % minimumValidZapData.length;
         bytes calldata invalidEncodedZapData = fuzzData[:invalidLength];
 

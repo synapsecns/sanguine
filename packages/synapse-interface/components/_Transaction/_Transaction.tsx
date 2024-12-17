@@ -20,6 +20,7 @@ import { RightArrow } from '@/components/icons/RightArrow'
 import { Address } from 'viem'
 import { useIsTxReverted } from './helpers/useIsTxReverted'
 import { useTxRefundStatus } from './helpers/useTxRefundStatus'
+import { HYPERLIQUID } from '@/constants/chains/master'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -185,13 +186,15 @@ export const _Transaction = ({
                 iconUrl={originChain?.explorerImg}
               />
             )}
-            {!isNull(destExplorerAddressLink) && !isTxReverted && (
-              <MenuItem
-                text={destExplorerName}
-                link={destExplorerAddressLink}
-                iconUrl={destinationChain?.explorerImg}
-              />
-            )}
+            {destinationChain.id !== HYPERLIQUID.id &&
+              !isNull(destExplorerAddressLink) &&
+              !isTxReverted && (
+                <MenuItem
+                  text={destExplorerName}
+                  link={destExplorerAddressLink}
+                  iconUrl={destinationChain?.explorerImg}
+                />
+              )}
             <MenuItem
               text={t('Contact Support (Discord)')}
               link="https://discord.gg/synapseprotocol"

@@ -11,7 +11,7 @@ import {VaultManyArguments} from "../mocks/VaultManyArguments.sol";
 
 import {Test} from "forge-std/Test.sol";
 
-// solhint-disable ordering
+// solhint-disable no-empty-blocks, ordering
 abstract contract TokenZapV1IntegrationTest is Test {
     address internal constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
@@ -43,9 +43,12 @@ abstract contract TokenZapV1IntegrationTest is Test {
     IFastBridgeV2.BridgeParamsV2 internal depositNativeNoAmountParams;
     IFastBridgeV2.BridgeParamsV2 internal depositNativeRevertParams;
 
+    /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
+    function testTokenZapV1IntegrationTest() external {}
+
     function setUp() public virtual {
         fastBridge = new FastBridgeV2(address(this));
-        fastBridge.grantRole(fastBridge.PROVER_ROLE(), relayer);
+        fastBridge.addProver(relayer);
 
         srcToken = new MockERC20("SRC", 18);
         dstToken = new MockERC20("DST", 18);
@@ -84,7 +87,9 @@ abstract contract TokenZapV1IntegrationTest is Test {
         bytes memory zapData = dstZap.encodeZapData({
             target: address(dstVault),
             payload: getDepositPayload(address(dstToken)),
-            amountPosition: 4 + 32 * 2
+            amountPosition: 4 + 32 * 2,
+            finalToken: address(0),
+            forwardTo: address(0)
         });
         depositTokenParams.zapData = zapData;
         depositTokenWithZapNativeParams.zapData = zapData;
@@ -93,24 +98,32 @@ abstract contract TokenZapV1IntegrationTest is Test {
         depositNativeParams.zapData = dstZap.encodeZapData({
             target: address(dstVault),
             payload: getDepositPayload(NATIVE_GAS_TOKEN),
-            amountPosition: 4 + 32 * 2
+            amountPosition: 4 + 32 * 2,
+            finalToken: address(0),
+            forwardTo: address(0)
         });
         // Deposit no amount
         depositNativeNoAmountParams.zapData = dstZap.encodeZapData({
             target: address(dstVault),
             payload: getDepositNoAmountPayload(),
-            amountPosition: ZapDataV1.AMOUNT_NOT_PRESENT
+            amountPosition: ZapDataV1.AMOUNT_NOT_PRESENT,
+            finalToken: address(0),
+            forwardTo: address(0)
         });
         // Deposit revert
         depositTokenRevertParams.zapData = dstZap.encodeZapData({
             target: address(dstVault),
             payload: getDepositRevertPayload(),
-            amountPosition: ZapDataV1.AMOUNT_NOT_PRESENT
+            amountPosition: ZapDataV1.AMOUNT_NOT_PRESENT,
+            finalToken: address(0),
+            forwardTo: address(0)
         });
         depositNativeRevertParams.zapData = dstZap.encodeZapData({
             target: address(dstVault),
             payload: getDepositRevertPayload(),
-            amountPosition: ZapDataV1.AMOUNT_NOT_PRESENT
+            amountPosition: ZapDataV1.AMOUNT_NOT_PRESENT,
+            finalToken: address(0),
+            forwardTo: address(0)
         });
     }
 

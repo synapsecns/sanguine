@@ -4,6 +4,7 @@ go 1.22.4
 use (
 	./agents
 	./contrib/git-changes-action
+	./contrib/golang-ci-lint
 	./contrib/opbot
 	./contrib/promexporter
 	./contrib/restclient

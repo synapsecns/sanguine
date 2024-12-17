@@ -17,7 +17,6 @@ const API_TIMEOUT = 2000
 const EXPIRATION_WINDOW = 1000
 
 export type PutRFQRequestAPI = {
-  user_address?: string
   // TODO: make integrator_id required
   integrator_id?: string
   quote_types: string[]
@@ -28,6 +27,10 @@ export type PutRFQRequestAPI = {
     dest_token_addr: string
     origin_amount_exact: string
     expiration_window: number
+    origin_sender?: string
+    dest_recipient?: string
+    zap_data?: string
+    zap_native?: string
   }
 }
 
@@ -44,6 +47,13 @@ export type RelayerQuote = {
   destAmount: BigNumber
   relayerAddress?: string
   quoteID?: string
+}
+
+export type QuoteRequestOptions = {
+  originSender?: string
+  destRecipient?: string
+  zapData?: string
+  zapNative?: BigNumber
 }
 
 const ZeroQuote: RelayerQuote = {
@@ -102,13 +112,12 @@ export const getAllQuotes = async (): Promise<FastBridgeQuote[]> => {
 export const getBestRelayerQuote = async (
   ticker: Ticker,
   originAmount: BigNumber,
-  originUserAddress?: string
+  options: QuoteRequestOptions = {}
 ): Promise<RelayerQuote> => {
   try {
     const rfqRequest: PutRFQRequestAPI = {
-      user_address: originUserAddress,
       // TODO: add active quotes once they are fixed
-      quote_types: ['passive'],
+      quote_types: ['active', 'passive'],
       data: {
         origin_chain_id: ticker.originToken.chainId,
         dest_chain_id: ticker.destToken.chainId,
@@ -116,6 +125,11 @@ export const getBestRelayerQuote = async (
         dest_token_addr: ticker.destToken.token,
         origin_amount_exact: originAmount.toString(),
         expiration_window: EXPIRATION_WINDOW,
+        origin_sender: options.originSender,
+        dest_recipient: options.destRecipient,
+        // TODO: cleanup
+        zap_data: options.zapData ?? '0x',
+        zap_native: options.zapNative?.toString() ?? '0',
       },
     }
     const response = await fetchWithTimeout(`${API_URL}/rfq`, API_TIMEOUT, {

@@ -1,5 +1,8 @@
+import _ from 'lodash'
+
 import { BRIDGE_MAP } from '@/constants/bridgeMap'
 import { flattenPausedTokens } from '@/utils/flattenPausedTokens'
+import { HYPERLIQUID } from './chains/master'
 
 export type BridgeRoutes = Record<string, string[]>
 
@@ -46,9 +49,19 @@ const constructJSON = (swappableMap, exclusionList) => {
   return result
 }
 
+const addUSDCHyperLiquid = (routes) => {
+  const usdcHyperliquid = `USDC-${HYPERLIQUID.id}`
+
+  return _.mapValues(routes, (innerList, key) => {
+    // If the key is USDC-42161 OR if the innerList includes USDC-42161
+    if (key === 'USDC-42161' || innerList.includes('USDC-42161')) {
+      return [...innerList, usdcHyperliquid]
+    }
+    return innerList
+  })
+}
 const PAUSED_TOKENS = flattenPausedTokens()
 
-export const EXISTING_BRIDGE_ROUTES: BridgeRoutes = constructJSON(
-  BRIDGE_MAP,
-  PAUSED_TOKENS
+export const EXISTING_BRIDGE_ROUTES: BridgeRoutes = addUSDCHyperLiquid(
+  constructJSON(BRIDGE_MAP, PAUSED_TOKENS)
 )

@@ -26,7 +26,7 @@ export const MAX_UINT256 =
   115792089237316195423570985008687907853269984665640564039457584007913129639935n
 
 export const TRANSACTION_SUPPORT_URL =
-  'https://docs.synapseprotocol.com/synapse-bridge/synapse-bridge/transaction-support-faq'
+  'https://docs.synapseprotocol.com/docs/Support/Transaction-Support'
 
 export const PAUSED_CHAINS_URL =
   'https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-chains.json'

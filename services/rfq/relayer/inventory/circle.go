@@ -242,8 +242,8 @@ func (c *rebalanceManagerCircleCCTP) Execute(parentCtx context.Context, rebalanc
 
 	// store the rebalance in the db
 	rebalanceModel := reldb.Rebalance{
-		Origin:          uint64(rebalance.OriginMetadata.ChainID),
-		Destination:     uint64(rebalance.DestMetadata.ChainID),
+		Origin:          uint64(rebalance.OriginMetadata.ChainID), //nolint:gosec // Chain IDs are validated by the API
+		Destination:     uint64(rebalance.DestMetadata.ChainID),   //nolint:gosec // Chain IDs are validated by the API
 		OriginAmount:    rebalance.Amount,
 		Status:          reldb.RebalanceInitiated,
 		OriginTokenAddr: rebalance.OriginMetadata.Addr,

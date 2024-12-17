@@ -3,6 +3,7 @@ import invariant from 'tiny-invariant'
 import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
 import { BigNumber } from '@ethersproject/bignumber'
+import { hexlify } from '@ethersproject/bytes'
 import { AddressZero, MaxUint256, Zero } from '@ethersproject/constants'
 
 import fastBridgeV2Abi from '../abi/FastBridgeV2.json'
@@ -13,7 +14,6 @@ import {
   FastBridgeV2 as FastBridgeV2Contract,
   IFastBridge,
 } from '../typechain/FastBridgeV2'
-import { SynapseIntentPreviewer as PreviewerContract } from '../typechain/SynapseIntentPreviewer'
 import { SynapseIntentRouter as SIRContract } from '../typechain/SynapseIntentRouter'
 import { TokenZapV1 as TokenZapV1Contract } from '../typechain/TokenZapV1'
 import { BigintIsh } from '../constants'
@@ -21,8 +21,11 @@ import { SynapseModule, CCTPRouterQuery } from '../module'
 import { getMatchingTxLog } from '../utils/logs'
 import { adjustValueIfNative, isNativeToken } from '../utils/handleNativeToken'
 import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
+import { USER_SIMULATED_ADDRESS } from './engine'
 import { decodeSavedBridgeParams } from './paramsV2'
-import { StepParams, encodeStepParams, decodeStepParams } from './steps'
+import { StepParams, decodeStepParams } from './steps'
+import { decodeZapData, encodeZapData } from './zapData'
+import { isSameAddress } from '../utils/addressUtils'
 
 export class SynapseIntentRouter implements SynapseModule {
   static fastBridgeV2Interface = new Interface(fastBridgeV2Abi)
@@ -35,9 +38,7 @@ export class SynapseIntentRouter implements SynapseModule {
   public readonly provider: Provider
 
   private readonly fastBridgeV2Contract: FastBridgeV2Contract
-  private readonly previewerContract: PreviewerContract
   private readonly sirContract: SIRContract
-  private readonly swapQuoterAddress: string
   private readonly tokenZapContract: TokenZapV1Contract
 
   // All possible events emitted by the FastBridgeV2 contract in the origin transaction (in alphabetical order)
@@ -68,19 +69,12 @@ export class SynapseIntentRouter implements SynapseModule {
     this.chainId = chainId
     this.provider = provider
     this.address = contracts.sirAddress
-    this.swapQuoterAddress = contracts.swapQuoterAddress
 
     this.fastBridgeV2Contract = new Contract(
       contracts.fastBridgeV2Address,
       fastBridgeV2Abi,
       provider
     ) as FastBridgeV2Contract
-
-    this.previewerContract = new Contract(
-      contracts.previewerAddress,
-      SynapseIntentRouter.previewerInterface,
-      provider
-    ) as PreviewerContract
 
     this.sirContract = new Contract(
       contracts.sirAddress,
@@ -158,45 +152,6 @@ export class SynapseIntentRouter implements SynapseModule {
 
   // ══════════════════════════════════════════════ FAST BRIDGE V2 ═══════════════════════════════════════════════════
 
-  public async getOriginAmountOut(
-    tokenIn: string,
-    rfqTokens: string[],
-    amountIn: BigintIsh
-  ): Promise<CCTPRouterQuery[]> {
-    // TODO: this should be multicalled?
-    return Promise.all(
-      rfqTokens.map(async (tokenOut) => {
-        // Get a quote and steps for the intent.
-        const { amountOut, steps: stepsOutput } =
-          await this.previewerContract.previewIntent(
-            this.swapQuoterAddress,
-            // No forwarding is required, as these steps will be followed by the final step
-            AddressZero,
-            tokenIn,
-            tokenOut,
-            amountIn
-          )
-        // Remove extra fields before the encoding
-        const steps: StepParams[] = stepsOutput.map(
-          ({ token, amount, msgValue, zapData }) => ({
-            token,
-            amount,
-            msgValue,
-            zapData,
-          })
-        )
-        return {
-          // To preserve consistency with other modules, router adapter is not set for a no-op intent
-          routerAdapter: steps.length > 0 ? this.address : AddressZero,
-          tokenOut,
-          minAmountOut: amountOut,
-          deadline: MaxUint256,
-          rawParams: encodeStepParams(steps),
-        }
-      })
-    )
-  }
-
   /**
    * @returns The protocol fee rate, multiplied by 1_000_000 (e.g. 1 basis point = 100).
    */
@@ -217,19 +172,33 @@ export class SynapseIntentRouter implements SynapseModule {
     if (dstQuery.rawParams.length <= 2) {
       throw new Error('Missing bridge params for FastBridgeV2')
     }
-    const { sender, paramsV2 } = decodeSavedBridgeParams(dstQuery.rawParams)
-    if (sender === AddressZero) {
+    const { paramsV1, paramsV2 } = decodeSavedBridgeParams(dstQuery.rawParams)
+    const dstZapData = decodeZapData(hexlify(paramsV2.zapData))
+    if (paramsV1.originSender === AddressZero) {
       throw new Error('Missing sender address for FastBridgeV2')
+    }
+    if (paramsV1.destRecipient === AddressZero) {
+      throw new Error('Missing recipient address for FastBridgeV2')
+    }
+    // Override the simulated forward address if it was used.
+    if (isSameAddress(paramsV1.destRecipient, USER_SIMULATED_ADDRESS)) {
+      paramsV1.destRecipient = to
+    }
+    if (isSameAddress(dstZapData.forwardTo, USER_SIMULATED_ADDRESS)) {
+      paramsV2.zapData = encodeZapData({
+        ...dstZapData,
+        forwardTo: to,
+      })
     }
     const bridgeParamsV1: IFastBridge.BridgeParamsStruct = {
       dstChainId,
-      sender,
-      to,
+      sender: paramsV1.originSender,
+      to: paramsV1.destRecipient,
       originToken,
-      destToken: dstQuery.tokenOut,
-      // Will be set by the TokenZap
+      destToken: paramsV1.destToken,
+      // Will be set in encodeZapData below
       originAmount: 0,
-      destAmount: dstQuery.minAmountOut,
+      destAmount: paramsV1.destAmount,
       sendChainGas: false,
       deadline: dstQuery.deadline,
     }
@@ -238,23 +207,18 @@ export class SynapseIntentRouter implements SynapseModule {
         bridgeParamsV1,
         paramsV2,
       ])
-    const zapData = await this.tokenZapContract.encodeZapData(
-      // target
-      this.fastBridgeV2Contract.address,
-      // payload
-      fastBridgeV2CallData,
-      // amount position: 6-th parameter
-      4 + 32 * 5,
-      // finalToken and forwardTo are not used
-      AddressZero,
-      AddressZero
-    )
+    // Amount is the 6-th parameter within the FastBridgeV2 call
+    const originZapData = encodeZapData({
+      target: this.fastBridgeV2Contract.address,
+      payload: fastBridgeV2CallData,
+      amountPosition: 4 + 32 * 5,
+    })
     return {
       token: originToken,
       // Use the full balance for the Zap action
       amount: MaxUint256,
       msgValue: Zero,
-      zapData,
+      zapData: originZapData,
     }
   }
 }
