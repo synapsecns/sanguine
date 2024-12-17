@@ -62,3 +62,7 @@ export interface SwapEngine {
     finalRecipient: Recipient
   ): SwapEngineRoute
 }
+
+export const validateEngineID = (engineID: number): engineID is EngineID => {
+  return Object.values(EngineID).includes(engineID)
+}

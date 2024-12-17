@@ -36,7 +36,7 @@ import {
   USER_SIMULATED_ADDRESS,
   Recipient,
   RecipientEntity,
-  EngineID,
+  validateEngineID,
 } from './engine'
 import {
   BridgeParamsV2,
@@ -308,6 +308,10 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     slipNumerator: number,
     slipDenominator: number
   ): Query {
+    // Check that engineID is within range
+    if (!validateEngineID(paramsV1.destEngineID)) {
+      throw new Error(`Invalid engineID: ${paramsV1.destEngineID}`)
+    }
     const destZapData = decodeZapData(hexlify(paramsV2.zapData))
     // Do nothing if there is no Zap on the destination chain.
     if (!destZapData.target) {
@@ -321,8 +325,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     const destRoute = this.engineSet.modifyMinAmountOut(
       destChainId,
       {
-        // TODO: need to save engineID once there's more than one no-op engine
-        engineID: EngineID.Default,
+        engineID: paramsV1.destEngineID,
         expectedAmountOut: destQueryPrecise.minAmountOut,
         minAmountOut: destQueryPrecise.minAmountOut,
         steps: [
@@ -537,6 +540,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
         originSender: originUserAddress,
         destRecipient: intent.destRelayRecipient,
         destChainId,
+        destEngineID: intent.destRoute.engineID,
         destToken: intent.destRelayToken,
         destAmount: intent.destRelayAmount,
       },
