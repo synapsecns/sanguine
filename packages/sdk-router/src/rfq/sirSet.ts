@@ -147,7 +147,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     )
 
     // Get routes for swaps on the destination chain from the "RFQ-supported token" into tokenOut
-    const destRoutes = await this.getIntentsWithDestSwap(
+    const destRoutes = await this.getIntentsWithDestRoute(
       destChainId,
       originRoutes,
       tokenOut
@@ -401,7 +401,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       .filter(({ originRoute }) => originRoute.expectedAmountOut.gt(Zero))
   }
 
-  private async getIntentsWithDestSwap(
+  private async getIntentsWithDestRoute(
     destChainId: number,
     intents: OriginIntent[],
     tokenOut: string
