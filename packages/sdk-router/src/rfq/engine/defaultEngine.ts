@@ -181,23 +181,6 @@ export class DefaultEngine implements SwapEngine {
     return route
   }
 
-  public modifyRecipient(
-    _chainId: number,
-    route: SwapEngineRoute,
-    finalRecipient: Recipient
-  ): SwapEngineRoute {
-    const decodedZapData = this.getLastStepZapData(route)
-    if (!decodedZapData.forwardTo) {
-      throw new Error(
-        'modifyRecipient: no forwardTo address in the last step zapData'
-      )
-    }
-    decodedZapData.forwardTo = this.getForwardTo(finalRecipient)
-    // Last step exists after `getLastStepZapData`
-    route.steps[route.steps.length - 1].zapData = encodeZapData(decodedZapData)
-    return route
-  }
-
   private getLastStepZapData(route: SwapEngineRoute): Partial<ZapDataV1> {
     const stepsCount = route.steps.length
     if (stepsCount === 0) {

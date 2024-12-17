@@ -55,12 +55,6 @@ export interface SwapEngine {
     route: SwapEngineRoute,
     minAmountOut: BigintIsh
   ): SwapEngineRoute
-
-  modifyRecipient(
-    chainId: number,
-    route: SwapEngineRoute,
-    finalRecipient: Recipient
-  ): SwapEngineRoute
 }
 
 export const validateEngineID = (engineID: number): engineID is EngineID => {

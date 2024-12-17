@@ -164,18 +164,6 @@ export class EngineSet {
     )
   }
 
-  public modifyRecipient(
-    chainId: number,
-    route: SwapEngineRoute,
-    finalRecipient: Recipient
-  ): SwapEngineRoute {
-    return this._getEngine(route.engineID).modifyRecipient(
-      chainId,
-      route,
-      finalRecipient
-    )
-  }
-
   public getTokenZap(chainId: number): string {
     const tokenZap = this.tokenZaps[chainId]
     if (!tokenZap) {
