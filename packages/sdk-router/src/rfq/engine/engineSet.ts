@@ -1,3 +1,4 @@
+import { AddressZero, Zero } from '@ethersproject/constants'
 import invariant from 'tiny-invariant'
 
 import { BigintIsh, TOKEN_ZAP_V1_ADDRESS_MAP } from '../../constants'
@@ -12,6 +13,8 @@ import {
   EmptyRoute,
   USER_SIMULATED_ADDRESS,
 } from './swapEngine'
+import { CCTPRouterQuery } from '../../module'
+import { encodeStepParams } from '../steps'
 
 export type TokenInput = {
   address: string
@@ -95,13 +98,50 @@ export class EngineSet {
               tokenIn.amount,
               recipient
             )
-            return route.steps.length > 1 ? EmptyRoute : route
+            return this.limitSingleZap(route)
           })
         )
       )
     )
     // Select the best response for each tokenIn.
     return this._selectBestRoutes(allRoutes)
+  }
+
+  public async findRoute(
+    engineID: number,
+    chainId: number,
+    tokenIn: TokenInput,
+    tokenOut: string,
+    finalRecipient: Recipient
+  ): Promise<SwapEngineRoute> {
+    return this._getEngine(engineID).findRoute(
+      chainId,
+      tokenIn.address,
+      tokenOut,
+      tokenIn.amount,
+      finalRecipient
+    )
+  }
+
+  public getOriginQuery(
+    chainId: number,
+    route: SwapEngineRoute,
+    tokenOut: string
+  ): CCTPRouterQuery {
+    // To preserve consistency with other modules, router adapter is not set for a no-op intent
+    return {
+      routerAdapter:
+        route.steps.length > 0 ? this.getTokenZap(chainId) : AddressZero,
+      tokenOut,
+      minAmountOut: route.minAmountOut,
+      // The default deadline will be overridden later in `finalizeBridgeRoute`
+      deadline: Zero,
+      rawParams: encodeStepParams(route.steps),
+    }
+  }
+
+  public limitSingleZap(route: SwapEngineRoute): SwapEngineRoute {
+    return route.steps.length > 1 ? EmptyRoute : route
   }
 
   public modifyMinAmountOut(

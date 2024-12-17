@@ -3,7 +3,6 @@ import { hexConcat, hexDataSlice, hexDataLength } from '@ethersproject/bytes'
 
 export const ZAP_DATA_VERSION = 1
 export const AMOUNT_NOT_PRESENT = 0xffff
-export const FORWARD_TO_SIMULATED = '0x0000000000000000000000000000000000000001'
 
 const OFFSET_AMOUNT_POSITION = 2
 const OFFSET_FINAL_TOKEN = 4

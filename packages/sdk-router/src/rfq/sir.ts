@@ -14,7 +14,6 @@ import {
   FastBridgeV2 as FastBridgeV2Contract,
   IFastBridge,
 } from '../typechain/FastBridgeV2'
-import { SynapseIntentPreviewer as PreviewerContract } from '../typechain/SynapseIntentPreviewer'
 import { SynapseIntentRouter as SIRContract } from '../typechain/SynapseIntentRouter'
 import { TokenZapV1 as TokenZapV1Contract } from '../typechain/TokenZapV1'
 import { BigintIsh } from '../constants'
@@ -22,9 +21,10 @@ import { SynapseModule, CCTPRouterQuery } from '../module'
 import { getMatchingTxLog } from '../utils/logs'
 import { adjustValueIfNative, isNativeToken } from '../utils/handleNativeToken'
 import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
+import { USER_SIMULATED_ADDRESS } from './engine'
 import { decodeSavedBridgeParams } from './paramsV2'
-import { StepParams, encodeStepParams, decodeStepParams } from './steps'
-import { decodeZapData, encodeZapData, FORWARD_TO_SIMULATED } from './zapData'
+import { StepParams, decodeStepParams } from './steps'
+import { decodeZapData, encodeZapData } from './zapData'
 import { isSameAddress } from '../utils/addressUtils'
 
 export class SynapseIntentRouter implements SynapseModule {
@@ -38,9 +38,7 @@ export class SynapseIntentRouter implements SynapseModule {
   public readonly provider: Provider
 
   private readonly fastBridgeV2Contract: FastBridgeV2Contract
-  private readonly previewerContract: PreviewerContract
   private readonly sirContract: SIRContract
-  private readonly swapQuoterAddress: string
   private readonly tokenZapContract: TokenZapV1Contract
 
   // All possible events emitted by the FastBridgeV2 contract in the origin transaction (in alphabetical order)
@@ -71,19 +69,12 @@ export class SynapseIntentRouter implements SynapseModule {
     this.chainId = chainId
     this.provider = provider
     this.address = contracts.sirAddress
-    this.swapQuoterAddress = contracts.swapQuoterAddress
 
     this.fastBridgeV2Contract = new Contract(
       contracts.fastBridgeV2Address,
       fastBridgeV2Abi,
       provider
     ) as FastBridgeV2Contract
-
-    this.previewerContract = new Contract(
-      contracts.previewerAddress,
-      SynapseIntentRouter.previewerInterface,
-      provider
-    ) as PreviewerContract
 
     this.sirContract = new Contract(
       contracts.sirAddress,
@@ -161,74 +152,6 @@ export class SynapseIntentRouter implements SynapseModule {
 
   // ══════════════════════════════════════════════ FAST BRIDGE V2 ═══════════════════════════════════════════════════
 
-  public async getOriginAmountOut(
-    tokenIn: string,
-    rfqTokens: string[],
-    amountIn: BigintIsh
-  ): Promise<CCTPRouterQuery[]> {
-    // TODO: this should be multicalled?
-    return Promise.all(
-      rfqTokens.map(async (tokenOut) => {
-        // Get a quote and steps for the intent.
-        // No forwarding is required, as these steps will be followed by the final step.
-        const { amountOut, steps } = await this.previewIntent(
-          tokenIn,
-          tokenOut,
-          amountIn
-        )
-        return {
-          // To preserve consistency with other modules, router adapter is not set for a no-op intent
-          routerAdapter: steps.length > 0 ? this.address : AddressZero,
-          tokenOut,
-          minAmountOut: amountOut,
-          deadline: MaxUint256,
-          rawParams: encodeStepParams(steps),
-        }
-      })
-    )
-  }
-
-  public async previewIntent(
-    tokenIn: string,
-    tokenOut: string,
-    amountIn: BigintIsh,
-    forwardTo: string = AddressZero
-  ): Promise<{ amountOut: BigNumber; steps: StepParams[] }> {
-    // Don't do any on-chain calls if it's the same token
-    if (isSameAddress(tokenIn, tokenOut)) {
-      return {
-        amountOut: BigNumber.from(amountIn),
-        steps: [],
-      }
-    }
-    // Don't do any on-chain calls if the amount is 0
-    if (BigNumber.from(amountIn).eq(Zero)) {
-      return {
-        amountOut: BigNumber.from(0),
-        steps: [],
-      }
-    }
-    // Get the quote
-    const { amountOut, steps: stepsOutput } =
-      await this.previewerContract.previewIntent(
-        this.swapQuoterAddress,
-        forwardTo,
-        tokenIn,
-        tokenOut,
-        amountIn
-      )
-    // Remove extra fields before the encoding
-    return {
-      amountOut,
-      steps: stepsOutput.map(({ token, amount, msgValue, zapData }) => ({
-        token,
-        amount,
-        msgValue,
-        zapData,
-      })),
-    }
-  }
-
   /**
    * @returns The protocol fee rate, multiplied by 1_000_000 (e.g. 1 basis point = 100).
    */
@@ -258,10 +181,10 @@ export class SynapseIntentRouter implements SynapseModule {
       throw new Error('Missing recipient address for FastBridgeV2')
     }
     // Override the simulated forward address if it was used.
-    if (isSameAddress(paramsV1.destRecipient, FORWARD_TO_SIMULATED)) {
+    if (isSameAddress(paramsV1.destRecipient, USER_SIMULATED_ADDRESS)) {
       paramsV1.destRecipient = to
     }
-    if (isSameAddress(dstZapData.forwardTo, FORWARD_TO_SIMULATED)) {
+    if (isSameAddress(dstZapData.forwardTo, USER_SIMULATED_ADDRESS)) {
       paramsV2.zapData = encodeZapData({
         ...dstZapData,
         forwardTo: to,
