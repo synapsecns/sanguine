@@ -38,6 +38,10 @@ import (
 
 var logger = log.Logger("quoter")
 
+const (
+	base10 = 10
+)
+
 // Quoter submits quotes to the RFQ API.
 //
 //go:generate go run github.com/vektra/mockery/v2 --name Quoter --output ./mocks --case=underscore
@@ -364,7 +368,7 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 	}
 	span.SetAttributes(attribute.String("request_id", rfqRequest.RequestID))
 
-	originAmountExact, ok := new(big.Int).SetString(rfqRequest.Data.OriginAmountExact, 10)
+	originAmountExact, ok := new(big.Int).SetString(rfqRequest.Data.OriginAmountExact, base10)
 	if !ok {
 		return nil, fmt.Errorf("invalid rfq request deposit amount: %s", rfqRequest.Data.OriginAmountExact)
 	}

@@ -18,6 +18,8 @@
     "Please select Destination network": "Veuillez sélectionner le réseau de destination",
     "Please select an Origin token": "Veuillez sélectionner un jeton d'origine",
     "Bridge {symbol}": "Bridge {symbol}",
+    "Deposit {symbol}": "Dépôt {symbol}",
+    "Depositing": "Dépôt",
     "Connect Wallet to Bridge": "Connecter le portefeuille au bridge",
     "Amount must be greater than fee": "Le montant doit être supérieur aux frais",
     "Error in bridge quote": "Erreur dans la citation du bridge",

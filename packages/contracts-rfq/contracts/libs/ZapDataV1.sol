@@ -12,13 +12,17 @@ library ZapDataV1 {
     // Offsets of the fields in the packed ZapData struct
     // uint16   version                 [000 .. 002)
     // uint16   amountPosition          [002 .. 004)
-    // address  target                  [004 .. 024)
-    // bytes    payload                 [024 .. ***)
+    // address  finalToken              [004 .. 024)
+    // address  forwardTo               [024 .. 044)
+    // address  target                  [044 .. 064)
+    // bytes    payload                 [064 .. ***)
 
     // forgefmt: disable-start
     uint256 private constant OFFSET_AMOUNT_POSITION = 2;
-    uint256 private constant OFFSET_TARGET          = 4;
-    uint256 private constant OFFSET_PAYLOAD         = 24;
+    uint256 private constant OFFSET_FINAL_TOKEN     = 4;
+    uint256 private constant OFFSET_FORWARD_TO      = 24;
+    uint256 private constant OFFSET_TARGET          = 44;
+    uint256 private constant OFFSET_PAYLOAD         = 64;
     // forgefmt: disable-end
 
     error ZapDataV1__InvalidEncoding();
@@ -44,6 +48,14 @@ library ZapDataV1 {
     ///                         This will usually be `4 + 32 * n`, where `n` is the position of the token amount in
     ///                         the list of parameters of the target function (starting from 0).
     ///                         Or `AMOUNT_NOT_PRESENT` if the token amount is not encoded within `payload_`.
+    /// @param finalToken_      The token produced as a result of the Zap action (ERC20 or native gas token).
+    ///                         A zero address value signals that the Zap action doesn't result in any asset per se,
+    ///                         like bridging or depositing into a vault without an LP token.
+    ///                         Note: this parameter must be set to a non-zero value if the `forwardTo_` parameter is
+    ///                         set to a non-zero value.
+    /// @param forwardTo_       The address to which `finalToken` should be forwarded. This parameter is required only
+    ///                         if the Zap action does not automatically transfer the token to the intended recipient.
+    ///                         Otherwise, it must be set to address(0).
     /// @param target_          Address of the target contract.
     /// @param payload_         ABI-encoded calldata to be used for the `target_` contract call.
     ///                         If the target function has the token amount as an argument, any placeholder amount value
@@ -51,6 +63,8 @@ library ZapDataV1 {
     ///                         be replaced with the actual amount, when the Zap Data is decoded.
     function encodeV1(
         uint16 amountPosition_,
+        address finalToken_,
+        address forwardTo_,
         address target_,
         bytes memory payload_
     )
@@ -63,7 +77,7 @@ library ZapDataV1 {
         if (amountPosition_ != AMOUNT_NOT_PRESENT && (uint256(amountPosition_) + 32 > payload_.length)) {
             revert ZapDataV1__InvalidEncoding();
         }
-        return abi.encodePacked(VERSION, amountPosition_, target_, payload_);
+        return abi.encodePacked(VERSION, amountPosition_, finalToken_, forwardTo_, target_, payload_);
     }
 
     /// @notice Extracts the version from the encoded Zap Data.
@@ -71,6 +85,22 @@ library ZapDataV1 {
         // Load 32 bytes from the start and shift it 240 bits to the right to get the highest 16 bits.
         assembly {
             version_ := shr(240, calldataload(encodedZapData.offset))
+        }
+    }
+
+    /// @notice Extracts the finalToken address from the encoded Zap Data.
+    function finalToken(bytes calldata encodedZapData) internal pure returns (address finalToken_) {
+        // Load 32 bytes from the offset and shift it 96 bits to the right to get the highest 160 bits.
+        assembly {
+            finalToken_ := shr(96, calldataload(add(encodedZapData.offset, OFFSET_FINAL_TOKEN)))
+        }
+    }
+
+    /// @notice Extracts the forwardTo address from the encoded Zap Data.
+    function forwardTo(bytes calldata encodedZapData) internal pure returns (address forwardTo_) {
+        // Load 32 bytes from the offset and shift it 96 bits to the right to get the highest 160 bits.
+        assembly {
+            forwardTo_ := shr(96, calldataload(add(encodedZapData.offset, OFFSET_FORWARD_TO)))
         }
     }
 

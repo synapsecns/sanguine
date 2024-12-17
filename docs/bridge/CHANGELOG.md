@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.6.1...@synapsecns/bridge-docs@0.6.2) (2024-12-16)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
+## [0.6.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.6.0...@synapsecns/bridge-docs@0.6.1) (2024-12-16)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
+# [0.6.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.5.14...@synapsecns/bridge-docs@0.6.0) (2024-12-13)
+
+
+### Features
+
+* **synapse-interface:** Adds Hyperliquid bridge & deposit support ([#3461](https://github.com/synapsecns/sanguine/issues/3461)) ([7e73687](https://github.com/synapsecns/sanguine/commit/7e73687f707191d138c3f9f65d9428e03454194b))
+
+
+
+
+
+## [0.5.14](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.5.13...@synapsecns/bridge-docs@0.5.14) (2024-12-13)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
 ## [0.5.13](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.5.12...@synapsecns/bridge-docs@0.5.13) (2024-12-08)
 
 **Note:** Version bump only for package @synapsecns/bridge-docs

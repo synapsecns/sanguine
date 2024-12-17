@@ -18,6 +18,8 @@
     "Please select Destination network": "يرجى اختيار شبكة الوجهة",
     "Please select an Origin token": "يرجى اختيار رمز المصدر",
     "Bridge {symbol}": "جسر {symbol}",
+    "Deposit {symbol}": "إيداع {symbol}",
+    "Depositing": "الإيداع",
     "Connect Wallet to Bridge": "اتصل بالمحفظة للجسر",
     "Amount must be greater than fee": "يجب أن يكون المبلغ أكبر من الرسوم",
     "Error in bridge quote": "خطأ في عرض الجسر",
