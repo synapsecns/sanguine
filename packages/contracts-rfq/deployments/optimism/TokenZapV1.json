@@ -1,0 +1,203 @@
+{
+  "address": "0x6327797F149a75D506aFda46D5fCE6E74fC409D5",
+  "constructorArgs": "0x",
+  "receipt": {
+    "hash": "0xc306e272b5daa98006c1d9009246fac697c258ed8fb6012ab19f5ef5376899b9",
+    "blockNumber": 129029951
+  },
+  "abi": [
+    {
+      "type": "receive",
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "NATIVE_GAS_TOKEN",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "decodeZapData",
+      "inputs": [
+        {
+          "name": "zapData",
+          "type": "bytes",
+          "internalType": "bytes"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "target",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "payload",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "stateMutability": "pure"
+    },
+    {
+      "type": "function",
+      "name": "encodeZapData",
+      "inputs": [
+        {
+          "name": "target",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "payload",
+          "type": "bytes",
+          "internalType": "bytes"
+        },
+        {
+          "name": "amountPosition",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "finalToken",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "forwardTo",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "stateMutability": "pure"
+    },
+    {
+      "type": "function",
+      "name": "zap",
+      "inputs": [
+        {
+          "name": "token",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "zapData",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes4",
+          "internalType": "bytes4"
+        }
+      ],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "error",
+      "name": "AddressEmptyCode",
+      "inputs": [
+        {
+          "name": "target",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "AddressInsufficientBalance",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "FailedInnerCall",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "SafeERC20FailedOperation",
+      "inputs": [
+        {
+          "name": "token",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "TokenZapV1__FinalTokenBalanceZero",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "TokenZapV1__PayloadLengthAboveMax",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "TokenZapV1__TargetZeroAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "TokenZapV1__TokenZeroAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ZapDataV1__InvalidEncoding",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ZapDataV1__TargetZeroAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ZapDataV1__UnsupportedVersion",
+      "inputs": [
+        {
+          "name": "version",
+          "type": "uint16",
+          "internalType": "uint16"
+        }
+      ]
+    }
+  ]
+}

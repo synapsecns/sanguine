@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.14](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.13...@synapsecns/rest-api@1.8.14) (2024-12-16)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.8.13](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.12...@synapsecns/rest-api@1.8.13) (2024-12-16)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
 ## [1.8.12](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.11...@synapsecns/rest-api@1.8.12) (2024-12-02)
 
 

@@ -56,13 +56,13 @@ const router: express.Router = express.Router()
  *         required: false
  *         schema:
  *           type: string
- *         description: The address of the user on the origin chain
+ *         description: The address of the user on the origin chain (required to generate callData)
  *       - in: query
  *         name: destAddress
  *         required: false
  *         schema:
  *           type: string
- *         description: The destination address for the bridge transaction
+ *         description: The destination address for the bridge transaction (required to generate callData)
  *     responses:
  *       200:
  *         description: Successful response

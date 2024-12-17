@@ -7,6 +7,7 @@ import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 import { ALL_TOKENS } from '@/constants/tokens/master'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { useWalletState } from '@/slices/wallet/hooks'
+import { HYPERLIQUID } from '@/constants/chains/master'
 
 /** TODO: Update naming once refactoring of previous Activity/Tx flow is done */
 export const _Transactions = ({
@@ -61,7 +62,11 @@ export const _Transactions = ({
               kappa={tx?.kappa}
               timestamp={tx.timestamp}
               currentTime={currentTime}
-              status={tx.status}
+              status={
+                tx.destinationChain.id === HYPERLIQUID.id
+                  ? 'completed'
+                  : tx.status
+              }
               disabled={isWalletPending}
             />
           )

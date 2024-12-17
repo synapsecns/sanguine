@@ -3,7 +3,11 @@ pragma solidity 0.8.24;
 
 import {BridgeTransactionV2Lib, IFastBridgeV2} from "../../contracts/libs/BridgeTransactionV2.sol";
 
+// solhint-disable no-empty-blocks
 contract BridgeTransactionV2Harness {
+    /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
+    function testBridgeTransactionV2Harness() external {}
+
     function encodeV2(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public pure returns (bytes memory) {
         return BridgeTransactionV2Lib.encodeV2(bridgeTx);
     }

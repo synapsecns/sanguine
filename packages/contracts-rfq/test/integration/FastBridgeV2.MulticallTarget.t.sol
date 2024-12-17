@@ -6,11 +6,15 @@ import {BridgeTransactionV2Lib} from "../../contracts/libs/BridgeTransactionV2.s
 
 import {IFastBridge, MulticallTargetIntegrationTest} from "./MulticallTarget.t.sol";
 
+// solhint-disable no-empty-blocks
 contract FastBridgeV2MulticallTargetTest is MulticallTargetIntegrationTest {
+    /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
+    function testFastBridgeV2MulticallTargetTest() external {}
+
     function deployAndConfigureFastBridge() public override returns (address) {
-        FastBridgeV2 fastBridge = new FastBridgeV2(address(this));
-        fastBridge.grantRole(fastBridge.PROVER_ROLE(), relayer);
-        return address(fastBridge);
+        FastBridgeV2 fb = new FastBridgeV2(address(this));
+        fb.addProver(relayer);
+        return address(fb);
     }
 
     function getEncodedBridgeTx(IFastBridge.BridgeTransaction memory bridgeTx)

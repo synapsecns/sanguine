@@ -130,3 +130,6 @@ main
 .devnet/
 
 **/__debug_bin*
+
+# golang-ci-lint binary
+contrib/golang-ci-lint/golang-ci-lint

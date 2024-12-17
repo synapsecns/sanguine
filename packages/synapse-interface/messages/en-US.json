@@ -18,6 +18,8 @@
     "Please select Destination network": "Please select Destination network",
     "Please select an Origin token": "Please select an Origin token",
     "Bridge {symbol}": "Bridge {symbol}",
+    "Deposit {symbol}": "Deposit {symbol}",
+    "Depositing": "Depositing",
     "Connect Wallet to Bridge": "Connect Wallet to Bridge",
     "Amount must be greater than fee": "Amount must be greater than fee",
     "Error in bridge quote": "Error in bridge quote",

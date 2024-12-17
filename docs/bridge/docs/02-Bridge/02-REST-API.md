@@ -26,7 +26,8 @@ The API is available at [`https://api.synapseprotocol.com/`](https://api.synapse
 | Date                   | Description                                                                                                                                                        |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 2024&#8209;10&#8209;01 | [https://synapse-rest-api-v2.herokuapp.com/](https://synapse-rest-api-v2.herokuapp.com/) is no longer maintained and has been fully deprecated as of October 2024. |
-| 2024&#8209;11&#8209;19 | [https://api.synapseprotocol.com/](https://api.synapseprotocol.com/) the /bridgeTxInfo endpoint has been consolidated into the /bridge endpoint, which now returns call data                   |
+| 2024&#8209;11&#8209;19 | [https://api.synapseprotocol.com/](https://api.synapseprotocol.com/) the /bridgeTxInfo endpoint has been consolidated into the /bridge endpoint, which now returns call data                 |
+| 2024&#8209;12&#8209;12 | [https://api.synapseprotocol.com/](https://api.synapseprotocol.com/bridge) the /bridge endpoint now requires both `originUserAddress` and `destAddress` to generate call data.                   |
 
 ## Support
 

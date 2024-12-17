@@ -254,7 +254,7 @@ const docTemplate = `{
         },
         "/rfq": {
             "put": {
-                "description": "Handle Active request-for-quote and return the best quote available.",
+                "description": "Initiate an Active Request-For-Quote and return the best quote available.",
                 "consumes": [
                     "application/json"
                 ],
@@ -267,7 +267,7 @@ const docTemplate = `{
                 "summary": "Initiate an Active RFQ",
                 "parameters": [
                     {
-                        "description": "Initiate an Active Request-for-Quote",
+                        "description": "Initiate an Active Request-For-Quote",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -294,7 +294,7 @@ const docTemplate = `{
         },
         "/rfq_stream": {
             "get": {
-                "description": "Establish a WebSocket connection to listen for Active Requests-For-Quote.",
+                "description": "Establish a WebSocket connection to listen for streaming active quote requests.",
                 "produces": [
                     "application/json"
                 ],

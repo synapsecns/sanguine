@@ -13,6 +13,8 @@ import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useConfirmNewBridgePrice } from './hooks/useConfirmNewBridgePrice'
+import { HYPERLIQUID } from '@/constants/chains/master'
+import { HYPERLIQUID_MINIMUM_DEPOSIT } from '@/constants'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -57,6 +59,13 @@ export const BridgeTransactionButton = ({
   const { showDestinationWarning, isDestinationWarningAccepted } =
     useBridgeDisplayState()
 
+  const hasHyperliquidMinDeposit =
+    toChainId === HYPERLIQUID.id
+      ? Number(debouncedFromValue) > HYPERLIQUID_MINIMUM_DEPOSIT
+        ? true
+        : false
+      : true
+
   const {
     hasValidInput,
     hasValidQuote,
@@ -78,7 +87,8 @@ export const BridgeTransactionButton = ({
     (isConnected && !hasValidQuote) ||
     (isConnected && !hasSufficientBalance) ||
     (isConnected && isQuoteStale) ||
-    (destinationAddress && !isAddress(destinationAddress))
+    (destinationAddress && !isAddress(destinationAddress)) ||
+    !hasHyperliquidMinDeposit
 
   let buttonProperties
 
@@ -136,6 +146,11 @@ export const BridgeTransactionButton = ({
   } else if (!isLoading && isBridgeFeeGreaterThanInput && hasValidInput) {
     buttonProperties = {
       label: t('Amount must be greater than fee'),
+      onClick: null,
+    }
+  } else if (!hasHyperliquidMinDeposit) {
+    buttonProperties = {
+      label: `${HYPERLIQUID_MINIMUM_DEPOSIT} USDC Minimum`,
       onClick: null,
     }
   } else if (

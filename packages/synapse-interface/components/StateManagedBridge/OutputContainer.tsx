@@ -16,6 +16,7 @@ import { useWalletState } from '@/slices/wallet/hooks'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { useTranslations } from 'next-intl'
+import { ARBITRUM, HYPERLIQUID } from '@/constants/chains/master'
 
 interface OutputContainerProps {
   isQuoteStale: boolean
@@ -26,6 +27,7 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
   const { showDestinationAddress } = useBridgeDisplayState()
   const { hasValidInput, hasValidQuote } = useBridgeValidations()
+  const { debouncedFromValue, fromChainId, toChainId } = useBridgeState()
 
   const showValue = useMemo(() => {
     if (!hasValidInput) {
@@ -43,7 +45,7 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
     <BridgeSectionContainer>
       <div className="flex items-center justify-between">
         <ToChainSelector />
-        {showDestinationAddress ? (
+        {showDestinationAddress && toChainId !== HYPERLIQUID.id ? (
           <DestinationAddressInput connectedAddress={address} />
         ) : null}
       </div>
@@ -52,7 +54,11 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
         <ToTokenSelector />
         <AmountInput
           disabled={true}
-          showValue={showValue}
+          showValue={
+            fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
+              ? debouncedFromValue
+              : showValue
+          }
           isLoading={isLoading}
           className={inputClassName}
         />

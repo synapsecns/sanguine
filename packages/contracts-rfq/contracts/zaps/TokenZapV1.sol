@@ -26,8 +26,10 @@ contract TokenZapV1 is IZapRecipient {
 
     address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
+    error TokenZapV1__FinalTokenBalanceZero();
     error TokenZapV1__PayloadLengthAboveMax();
     error TokenZapV1__TargetZeroAddress();
+    error TokenZapV1__TokenZeroAddress();
 
     /// @notice Allows the contract to receive ETH.
     /// @dev Leftover ETH can be claimed by anyone. Ensure the full balance is spent during Zaps.
@@ -46,6 +48,7 @@ contract TokenZapV1 is IZapRecipient {
     /// @param zapData      Encoded Zap Data containing the target address and calldata for the Zap action.
     /// @return selector    Selector of this function to signal the caller about the success of the Zap action.
     function zap(address token, uint256 amount, bytes calldata zapData) external payable returns (bytes4) {
+        if (token == address(0)) revert TokenZapV1__TokenZeroAddress();
         // Validate the ZapData format and extract the target address.
         zapData.validateV1();
         address target = zapData.target();
@@ -81,6 +84,11 @@ contract TokenZapV1 is IZapRecipient {
             // Note: this will bubble up any revert from the target contract, and revert if target is EOA.
             Address.functionCallWithValue({target: target, data: payload, value: msgValue});
         }
+        // Forward the final token to the specified recipient, if required.
+        address forwardTo = zapData.forwardTo();
+        if (forwardTo != address(0)) {
+            _forwardToken(zapData.finalToken(), forwardTo);
+        }
         // Return function selector to indicate successful execution
         return this.zap.selector;
     }
@@ -100,10 +108,20 @@ contract TokenZapV1 is IZapRecipient {
     ///                         the list of parameters of the target function (starting from 0).
     ///                         Any value greater than or equal to `payload.length` can be used if the token amount is
     ///                         not an argument of the target function.
+    /// @param finalToken       The token produced as a result of the Zap action (ERC20 or native gas token).
+    ///                         A zero address value signals that the Zap action doesn't result in any asset per se,
+    ///                         like bridging or depositing into a vault without an LP token.
+    ///                         Note: this parameter must be set to a non-zero value if the `forwardTo` parameter is
+    ///                         set to a non-zero value.
+    /// @param forwardTo        The address to which `finalToken` should be forwarded. This parameter is required only
+    ///                         if the Zap action does not automatically transfer the token to the intended recipient.
+    ///                         Otherwise, it must be set to address(0).
     function encodeZapData(
         address target,
         bytes memory payload,
-        uint256 amountPosition
+        uint256 amountPosition,
+        address finalToken,
+        address forwardTo
     )
         external
         pure
@@ -112,6 +130,10 @@ contract TokenZapV1 is IZapRecipient {
         if (payload.length > ZapDataV1.AMOUNT_NOT_PRESENT) {
             revert TokenZapV1__PayloadLengthAboveMax();
         }
+        // Final token needs to be specified if forwarding is required.
+        if (forwardTo != address(0) && finalToken == address(0)) {
+            revert TokenZapV1__TokenZeroAddress();
+        }
         // External integrations do not need to understand the specific `AMOUNT_NOT_PRESENT` semantics.
         // Therefore, they can specify any value greater than or equal to `payload.length` to indicate
         // that the amount is not present in the payload.
@@ -119,7 +141,13 @@ contract TokenZapV1 is IZapRecipient {
             amountPosition = ZapDataV1.AMOUNT_NOT_PRESENT;
         }
         // At this point, we have checked that both `amountPosition` and `payload.length` fit in uint16.
-        return ZapDataV1.encodeV1(uint16(amountPosition), target, payload);
+        return ZapDataV1.encodeV1({
+            amountPosition_: uint16(amountPosition),
+            finalToken_: finalToken,
+            forwardTo_: forwardTo,
+            target_: target,
+            payload_: payload
+        });
     }
 
     /// @notice Decodes the ZapData for a Zap action. Replaces the placeholder amount with the actual amount,
@@ -137,5 +165,19 @@ contract TokenZapV1 is IZapRecipient {
         zapData.validateV1();
         target = zapData.target();
         payload = zapData.payload(amount);
+    }
+
+    /// @notice Forwards the proceeds of the Zap action to the specified non-zero recipient.
+    function _forwardToken(address token, address forwardTo) internal {
+        // Check the token address and its balance to be safely forwarded.
+        if (token == address(0)) revert TokenZapV1__TokenZeroAddress();
+        uint256 amount = token == NATIVE_GAS_TOKEN ? address(this).balance : IERC20(token).balanceOf(address(this));
+        if (amount == 0) revert TokenZapV1__FinalTokenBalanceZero();
+        // Forward the full balance of the final token to the specified recipient.
+        if (token == NATIVE_GAS_TOKEN) {
+            Address.sendValue({recipient: payable(forwardTo), amount: amount});
+        } else {
+            IERC20(token).safeTransfer(forwardTo, amount);
+        }
     }
 }

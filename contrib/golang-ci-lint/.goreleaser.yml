@@ -1,0 +1,68 @@
+project_name: golang-ci-lint
+
+monorepo:
+  tag_prefix: contrib/golang-ci-lint/
+  dir: contrib/golang-ci-lint/
+
+builds:
+  - id: golang-ci-lint
+    binary: golang-ci-lint
+    gcflags:
+      - all=-dwarflocationlists=true
+    ldflags:
+      - -s -w -extldflags '-static'
+    tags:
+      - netgo
+    env:
+      - CGO_ENABLED=0
+    main: main.go
+    flags:
+      - -trimpath
+    goos:
+      - linux
+    goarch:
+      - amd64
+
+dockers:
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - 'ghcr.io/synapsecns/sanguine/golang-ci-lint:latest'
+      - 'ghcr.io/synapsecns/sanguine/golang-ci-lint:{{ .FullCommit }}'
+      - 'ghcr.io/synapsecns/sanguine/golang-ci-lint:{{ .Tag }}'
+    build_flag_templates:
+      - '--label=org.opencontainers.image.created={{.Date}}'
+      - '--label=org.opencontainers.image.name={{.ProjectName}}'
+      - '--label=org.opencontainers.image.revision={{.FullCommit}}'
+      - '--label=org.opencontainers.image.version={{.Version}}'
+      - '--label=org.opencontainers.image.source={{.GitURL}}'
+    dockerfile: ../../docker/golang-ci-lint.Dockerfile
+    ids:
+      - golang-ci-lint
+
+source:
+  enabled: true
+
+archives:
+  - format: tar.gz
+    wrap_in_directory: true
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: '{{.ProjectName}}-{{.Version}}_{{.Os}}_{{.Arch}}'
+    files:
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+
+report_sizes: true
+
+metadata:
+  mod_timestamp: '{{ .CommitTimestamp }}'
+
+sboms:
+  - artifacts: archive
