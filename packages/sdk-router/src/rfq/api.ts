@@ -128,7 +128,7 @@ export const getBestRelayerQuote = async (
         origin_sender: options.originSender,
         dest_recipient: options.destRecipient,
         // TODO: cleanup
-        zap_data: options.zapData?.substring(2) ?? '',
+        zap_data: options.zapData ?? '0x',
         zap_native: options.zapNative?.toString() ?? '0',
       },
     }
