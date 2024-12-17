@@ -1,6 +1,7 @@
 # Synapse REST API
 To make requests, use https://api.synapseprotocol.com/
 
+
 To run locally:
 ```bash
 yarn dev
