@@ -4,15 +4,21 @@ import { Zero } from '@ethersproject/constants'
 import { StepParams } from '../steps'
 import { BigintIsh } from '../../constants'
 
+export enum EngineID {
+  Null,
+  NoOp,
+  Default,
+}
+
 export type SwapEngineRoute = {
-  id: number
+  engineID: EngineID
   expectedAmountOut: BigNumber
   minAmountOut: BigNumber
   steps: StepParams[]
 }
 
 export const EmptyRoute: SwapEngineRoute = {
-  id: 0,
+  engineID: EngineID.Null,
   expectedAmountOut: Zero,
   minAmountOut: Zero,
   steps: [],
@@ -33,7 +39,7 @@ export const USER_SIMULATED_ADDRESS =
   '0xFAcefaCEFACefACeFaCefacEFaCeFACEFAceFAcE'
 
 export interface SwapEngine {
-  readonly id: number
+  readonly id: EngineID
 
   findRoute(
     chainId: number,

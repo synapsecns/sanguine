@@ -109,7 +109,7 @@ export class EngineSet {
     route: SwapEngineRoute,
     minAmountOut: BigintIsh
   ): SwapEngineRoute {
-    return this._getEngine(route.id).modifyMinAmountOut(
+    return this._getEngine(route.engineID).modifyMinAmountOut(
       chainId,
       route,
       minAmountOut
@@ -121,7 +121,7 @@ export class EngineSet {
     route: SwapEngineRoute,
     finalRecipient: Recipient
   ): SwapEngineRoute {
-    return this._getEngine(route.id).modifyRecipient(
+    return this._getEngine(route.engineID).modifyRecipient(
       chainId,
       route,
       finalRecipient

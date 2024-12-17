@@ -22,6 +22,7 @@ import {
   EmptyRoute,
   Recipient,
   RecipientEntity,
+  EngineID,
 } from './swapEngine'
 
 export class DefaultEngine implements SwapEngine {
@@ -30,7 +31,7 @@ export class DefaultEngine implements SwapEngine {
   ) as IDefaultActionsInterface
   static previewerInterface = new Interface(previewerAbi)
 
-  public readonly id = 2
+  public readonly id = EngineID.Default
 
   private contracts: {
     [chainId: number]: {
@@ -93,7 +94,7 @@ export class DefaultEngine implements SwapEngine {
     )
     // Remove extra fields before the encoding
     return {
-      id: this.id,
+      engineID: this.id,
       expectedAmountOut: amountOut,
       minAmountOut: amountOut,
       steps: stepsOutput.map(({ token, amount, msgValue, zapData }) => ({
