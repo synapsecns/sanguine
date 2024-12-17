@@ -32,6 +32,11 @@ describe('Steps', () => {
     zapData: '0x00112233445566778899aabbccddeeff',
   }
 
+  it('roundtrip empty', () => {
+    const data = encodeStepParams([])
+    expect(decodeStepParams(data)).toEqual([])
+  })
+
   it('roundtrip with one step', () => {
     const data = encodeStepParams([param0])
     expect(decodeStepParams(data)).toEqual([param0])

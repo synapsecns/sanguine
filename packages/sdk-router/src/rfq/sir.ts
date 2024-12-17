@@ -3,6 +3,7 @@ import invariant from 'tiny-invariant'
 import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
 import { BigNumber } from '@ethersproject/bignumber'
+import { hexlify } from '@ethersproject/bytes'
 import { AddressZero, MaxUint256, Zero } from '@ethersproject/constants'
 
 import fastBridgeV2Abi from '../abi/FastBridgeV2.json'
@@ -23,7 +24,7 @@ import { adjustValueIfNative, isNativeToken } from '../utils/handleNativeToken'
 import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
 import { decodeSavedBridgeParams } from './paramsV2'
 import { StepParams, encodeStepParams, decodeStepParams } from './steps'
-import { encodeZapData, FORWARD_TO_SIMULATED } from './zapData'
+import { decodeZapData, encodeZapData, FORWARD_TO_SIMULATED } from './zapData'
 import { isSameAddress } from '../utils/addressUtils'
 
 export class SynapseIntentRouter implements SynapseModule {
@@ -248,11 +249,8 @@ export class SynapseIntentRouter implements SynapseModule {
     if (dstQuery.rawParams.length <= 2) {
       throw new Error('Missing bridge params for FastBridgeV2')
     }
-    const {
-      paramsV1,
-      paramsV2,
-      zapData: dstZapData,
-    } = decodeSavedBridgeParams(dstQuery.rawParams)
+    const { paramsV1, paramsV2 } = decodeSavedBridgeParams(dstQuery.rawParams)
+    const dstZapData = decodeZapData(hexlify(paramsV2.zapData))
     if (paramsV1.originSender === AddressZero) {
       throw new Error('Missing sender address for FastBridgeV2')
     }

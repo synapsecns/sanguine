@@ -8,6 +8,10 @@ export type StepParams = ISynapseIntentRouter.StepParamsStruct
 const stepParamsArray = ['tuple(address,uint256,uint256,bytes)[]']
 
 export const encodeStepParams = (steps: StepParams[]): string => {
+  // Check if there are any steps
+  if (steps.length === 0) {
+    return '0x'
+  }
   // Unwrap every struct into a tuple
   return defaultAbiCoder.encode(stepParamsArray, [
     steps.map((step) => [step.token, step.amount, step.msgValue, step.zapData]),
@@ -15,6 +19,10 @@ export const encodeStepParams = (steps: StepParams[]): string => {
 }
 
 export const decodeStepParams = (data: string): StepParams[] => {
+  // Check if there are any steps
+  if (data === '0x') {
+    return []
+  }
   const decoded = defaultAbiCoder.decode(stepParamsArray, data)
   // decoded is [[[token0, amount0, msgValue0, zapData0], [token1, amount1, msgValue1, zapData1], ...]]
   return decoded[0].map(
