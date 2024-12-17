@@ -8,6 +8,7 @@ export enum EngineID {
   Null,
   NoOp,
   Default,
+  ParaSwap,
 }
 
 export type SwapEngineRoute = {
