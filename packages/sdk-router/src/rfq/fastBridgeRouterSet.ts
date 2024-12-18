@@ -100,6 +100,10 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     if (!this.getModule(originChainId) || !this.getModule(destChainId)) {
       return []
     }
+    // TODO: revert (temporarily disable this module)
+    if (this.getModule(originChainId)) {
+      return []
+    }
     // Get all tickers that can be used to fulfill the tokenIn -> tokenOut intent via RFQ
     const tickers = await this.getAllTickers(
       originChainId,
