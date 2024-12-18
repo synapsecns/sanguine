@@ -19,6 +19,7 @@ import {
   AVAX_GOHM,
   AVAX_USDC,
   AVAX_USDC_E,
+  BOBA_USDC,
   BSC_GOHM,
   BSC_USDC,
   ETH_DAI,
@@ -1836,7 +1837,7 @@ describe('Paused Chain Tests', () => {
         synapseSDK.bridgeQuote(
           SupportedChainId.BOBA, // Paused chain as origin
           SupportedChainId.ETH,
-          ARB_USDC, // Example token addresses
+          BOBA_USDC, // Example token addresses
           ETH_USDC,
           parseFixed('100', 6)
         )
@@ -1849,7 +1850,7 @@ describe('Paused Chain Tests', () => {
           SupportedChainId.ETH,
           SupportedChainId.BOBA, // Paused chain as destination
           ETH_USDC,
-          ARB_USDC,
+          BOBA_USDC,
           parseFixed('100', 6)
         )
       ).rejects.toThrow('No route found')
@@ -1859,7 +1860,7 @@ describe('Paused Chain Tests', () => {
       const quotes = await synapseSDK.allBridgeQuotes(
         SupportedChainId.BOBA, // Paused chain
         SupportedChainId.ETH,
-        ARB_USDC,
+        BOBA_USDC,
         ETH_USDC,
         parseFixed('100', 6)
       )
