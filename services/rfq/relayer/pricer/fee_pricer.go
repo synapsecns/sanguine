@@ -18,6 +18,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -249,10 +250,15 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 	}
 
 	callMsg := ethereum.CallMsg{
-		From:  f.relayerAddress,
-		To:    &rfqAddr,
-		Value: quoteRequest.Transaction.ZapNative,
-		Data:  encodedData,
+		From: f.relayerAddress,
+		To:   &rfqAddr,
+		Data: encodedData,
+	}
+	// Tx.value needs to match `DestAmount` for native gas token, or `ZapNative` for ERC20s.
+	if util.IsGasToken(quoteRequest.Transaction.DestToken) {
+		callMsg.Value = quoteRequest.Transaction.DestAmount
+	} else {
+		callMsg.Value = quoteRequest.Transaction.ZapNative
 	}
 
 	gasEstimate, err = client.EstimateGas(ctx, callMsg)
