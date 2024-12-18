@@ -72,7 +72,7 @@ export const fetchBridgeQuote = createAsyncThunk(
     )
 
     const nonRfqQuote = activeQuotes.find(
-      (quote) => quote.bridgeModuleName !== 'SynapseRFQ'
+      (quote) => quote.bridgeModuleName !== 'SynapseIntents'
     )
 
     let quote
