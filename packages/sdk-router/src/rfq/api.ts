@@ -60,7 +60,7 @@ const ZeroQuote: RelayerQuote = {
   destAmount: BigNumber.from(0),
 }
 
-const fetchWithTimeout = async (
+export const fetchWithTimeout = async (
   url: string,
   timeout: number,
   init?: RequestInit

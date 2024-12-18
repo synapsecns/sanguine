@@ -76,3 +76,14 @@ export interface SwapEngine {
 export const validateEngineID = (engineID: number): engineID is EngineID => {
   return Object.values(EngineID).includes(engineID)
 }
+
+export const toBasisPoints = (slippage: Slippage): number => {
+  return (slippage.numerator * 10000) / slippage.denominator
+}
+
+export const applySlippage = (
+  amount: BigNumber,
+  slippage: Slippage
+): BigNumber => {
+  return amount.sub(amount.mul(slippage.numerator).div(slippage.denominator))
+}

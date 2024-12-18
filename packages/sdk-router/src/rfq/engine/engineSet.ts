@@ -38,7 +38,7 @@ export class EngineSet {
     this.engines = {}
     this._addEngine(new NoOpEngine())
     this._addEngine(new DefaultEngine(chains))
-    this._addEngine(new ParaSwapEngine())
+    this._addEngine(new ParaSwapEngine(chains, TOKEN_ZAP_V1_ADDRESS_MAP))
 
     this.tokenZaps = {}
     chains.forEach(({ chainId }) => {
@@ -145,7 +145,7 @@ export class EngineSet {
       routerAdapter:
         route.steps.length > 0 ? this.getTokenZap(chainId) : AddressZero,
       tokenOut,
-      minAmountOut: route.minAmountOut,
+      minAmountOut: route.expectedAmountOut,
       // The default deadline will be overridden later in `finalizeBridgeRoute`
       deadline: Zero,
       rawParams: encodeStepParams(route.steps),
