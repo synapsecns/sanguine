@@ -308,8 +308,8 @@ export const BRIDGE_MAP = {
     '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
       decimals: 6,
       symbol: 'USDC',
-      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD'],
-      destination: ['CCTP.USDC', 'RFQ.USDC'],
+      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD', 'Intents'],
+      destination: ['CCTP.USDC', 'RFQ.USDC', 'Intents'],
       swappable: [
         '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
         '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
@@ -345,8 +345,8 @@ export const BRIDGE_MAP = {
     '0x5A5fFf6F753d7C11A56A52FE47a177a87e431655': {
       decimals: 18,
       symbol: 'SYN',
-      origin: ['SYN'],
-      destination: ['SYN'],
+      origin: ['SYN', 'Intents'],
+      destination: ['SYN', 'Intents'],
       swappable: [],
     },
     '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
@@ -365,8 +365,8 @@ export const BRIDGE_MAP = {
     '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
       decimals: 6,
       symbol: 'USDC.e',
-      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD'],
-      destination: ['CCTP.USDC', 'nUSD'],
+      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD', 'Intents'],
+      destination: ['CCTP.USDC', 'nUSD', 'Intents'],
       swappable: [
         '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
         '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
@@ -388,8 +388,8 @@ export const BRIDGE_MAP = {
     '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
       decimals: 18,
       symbol: 'sUSD',
-      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD'],
-      destination: ['CCTP.USDC'],
+      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD', 'Intents'],
+      destination: ['CCTP.USDC', 'Intents'],
       swappable: [
         '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
         '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
@@ -401,8 +401,8 @@ export const BRIDGE_MAP = {
     '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
       decimals: 6,
       symbol: 'USDT',
-      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD'],
-      destination: ['CCTP.USDC'],
+      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD', 'Intents'],
+      destination: ['CCTP.USDC', 'Intents'],
       swappable: [
         '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
         '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
@@ -421,8 +421,8 @@ export const BRIDGE_MAP = {
     '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
       decimals: 18,
       symbol: 'DAI',
-      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD'],
-      destination: ['CCTP.USDC'],
+      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD', 'Intents'],
+      destination: ['CCTP.USDC', 'Intents'],
       swappable: [
         '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
         '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
@@ -441,8 +441,8 @@ export const BRIDGE_MAP = {
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
       decimals: 18,
       symbol: 'ETH',
-      origin: ['RFQ.ETH', 'nETH'],
-      destination: ['nETH', 'RFQ.ETH'],
+      origin: ['RFQ.ETH', 'nETH', 'Intents'],
+      destination: ['nETH', 'RFQ.ETH', 'Intents'],
       swappable: [
         '0x121ab82b49B2BC4c7901CA46B8277962b4350204',
         '0x809DC529f07651bD43A172e8dB6f4a7a0d771036',
@@ -1418,8 +1418,8 @@ export const BRIDGE_MAP = {
     '0x080F6AEd32Fc474DD5717105Dba5ea57268F46eb': {
       decimals: 18,
       symbol: 'SYN',
-      origin: ['SYN'],
-      destination: ['SYN'],
+      origin: ['SYN', 'Intents'],
+      destination: ['SYN', 'Intents'],
       swappable: [],
     },
     '0x0877154a755B24D499B8e2bD7ecD54d3c92BA433': {
@@ -1527,8 +1527,8 @@ export const BRIDGE_MAP = {
     '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
       decimals: 18,
       symbol: 'DAI',
-      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD'],
-      destination: ['CCTP.USDC'],
+      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD', 'Intents'],
+      destination: ['CCTP.USDC', 'Intents'],
       swappable: [
         '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
         '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688',
@@ -1540,8 +1540,8 @@ export const BRIDGE_MAP = {
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
       decimals: 18,
       symbol: 'ETH',
-      origin: ['RFQ.ETH', 'nETH'],
-      destination: ['nETH', 'RFQ.ETH'],
+      origin: ['RFQ.ETH', 'nETH', 'Intents'],
+      destination: ['nETH', 'RFQ.ETH', 'Intents'],
       swappable: [
         '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e',
         '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
@@ -1550,8 +1550,8 @@ export const BRIDGE_MAP = {
     '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8': {
       decimals: 6,
       symbol: 'USDC.e',
-      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD'],
-      destination: ['CCTP.USDC', 'nUSD'],
+      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD', 'Intents'],
+      destination: ['CCTP.USDC', 'nUSD', 'Intents'],
       swappable: [
         '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
         '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688',
@@ -1563,8 +1563,8 @@ export const BRIDGE_MAP = {
     '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9': {
       decimals: 6,
       symbol: 'USDT',
-      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD'],
-      destination: ['CCTP.USDC', 'nUSD'],
+      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD', 'Intents'],
+      destination: ['CCTP.USDC', 'nUSD', 'Intents'],
       swappable: [
         '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
         '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688',
@@ -1583,8 +1583,8 @@ export const BRIDGE_MAP = {
     '0xaf88d065e77c8cC2239327C5EDb3A432268e5831': {
       decimals: 6,
       symbol: 'USDC',
-      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD'],
-      destination: ['CCTP.USDC', 'RFQ.USDC'],
+      origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD', 'Intents'],
+      destination: ['CCTP.USDC', 'RFQ.USDC', 'Intents'],
       swappable: [
         '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
         '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688',
@@ -1596,8 +1596,8 @@ export const BRIDGE_MAP = {
     '0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a': {
       decimals: 18,
       symbol: 'GMX',
-      origin: ['GMX'],
-      destination: ['GMX'],
+      origin: ['GMX', 'Intents'],
+      destination: ['GMX', 'Intents'],
       swappable: [],
     },
   },
