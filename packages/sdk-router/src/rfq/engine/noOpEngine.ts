@@ -24,7 +24,7 @@ export class NoOpEngine implements SwapEngine {
     }
   }
 
-  public modifyMinAmountOut(
+  public applySlippage(
     _chainId: number,
     route: SwapEngineRoute
   ): SwapEngineRoute {

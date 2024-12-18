@@ -22,7 +22,6 @@ import {
   createNoSwapQuery,
   applySlippageToQuery,
   CCTPRouterQuery,
-  applySlippage,
 } from '../module'
 import { SynapseIntentRouter } from './sir'
 import { ChainProvider } from '../router'
@@ -37,6 +36,7 @@ import {
   Recipient,
   RecipientEntity,
   validateEngineID,
+  Slippage,
 } from './engine'
 import {
   BridgeParamsV2,
@@ -252,20 +252,22 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
         destQuery: destQueryPrecise,
       }
     }
+    const slippage = {
+      numerator: slipNumerator,
+      denominator: slipDenominator,
+    }
     return {
       originQuery: this.applyOriginSlippage(
         originQueryPrecise,
         paramsV1.destAmount,
-        slipNumerator,
-        slipDenominator
+        slippage
       ),
       destQuery: this.applyDestinationSlippage(
         paramsV1.destChainId,
         destQueryPrecise,
         paramsV1,
         paramsV2,
-        slipNumerator,
-        slipDenominator
+        slippage
       ),
     }
   }
@@ -273,8 +275,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
   private applyOriginSlippage(
     originQueryPrecise: Query,
     destRelayAmount: BigNumber,
-    slipNumerator: number,
-    slipDenominator: number
+    slippage: Slippage
   ): Query {
     // Do nothing if there are no Zap steps.
     if (hexDataLength(originQueryPrecise.rawParams) === 0) {
@@ -291,8 +292,8 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       : originQueryPrecise.minAmountOut.sub(maxOriginSlippage)
     const originQuery = applySlippageToQuery(
       originQueryPrecise,
-      slipNumerator,
-      slipDenominator
+      slippage.numerator,
+      slippage.denominator
     )
     if (originQuery.minAmountOut.lt(minAmountFinalAmount)) {
       originQuery.minAmountOut = minAmountFinalAmount
@@ -305,8 +306,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     destQueryPrecise: Query,
     paramsV1: SavedParamsV1,
     paramsV2: BridgeParamsV2,
-    slipNumerator: number,
-    slipDenominator: number
+    slippage: Slippage
   ): Query {
     // Check that engineID is within range
     if (!validateEngineID(paramsV1.destEngineID)) {
@@ -317,12 +317,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     if (!destZapData.target) {
       return destQueryPrecise
     }
-    const adjMinAmountOut = applySlippage(
-      destQueryPrecise.minAmountOut,
-      slipNumerator,
-      slipDenominator
-    )
-    const destRoute = this.engineSet.modifyMinAmountOut(
+    const destRoute = this.engineSet.applySlippage(
       destChainId,
       {
         engineID: paramsV1.destEngineID,
@@ -338,7 +333,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
           },
         ],
       },
-      adjMinAmountOut
+      slippage
     )
     return this.getRFQDestinationQuery(
       destChainId,
@@ -465,9 +460,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       route.ticker.destToken.chainId,
       { address: route.ticker.destToken.token, amount: quote.destAmount },
       tokenOut,
-      destFinalRecipient,
-      // Use strict slippage for the final destination swap
-      true
+      destFinalRecipient
     )
     return {
       ...route,

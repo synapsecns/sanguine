@@ -35,6 +35,21 @@ export type Recipient = {
   address: string
 }
 
+export type Slippage = {
+  numerator: number
+  denominator: number
+}
+
+export const SlippageDefault: Slippage = {
+  numerator: 10,
+  denominator: 10000,
+}
+
+export const SlippageFull: Slippage = {
+  numerator: 1,
+  denominator: 1,
+}
+
 export const USER_SIMULATED_ADDRESS =
   '0xFAcefaCEFACefACeFaCefacEFaCeFACEFAceFAcE'
 
@@ -47,13 +62,13 @@ export interface SwapEngine {
     tokenOut: string,
     amountIn: BigintIsh,
     finalRecipient: Recipient,
-    strictOut: boolean
+    slippage: Slippage
   ): Promise<SwapEngineRoute>
 
-  modifyMinAmountOut(
+  applySlippage(
     chainId: number,
     route: SwapEngineRoute,
-    minAmountOut: BigintIsh
+    slippage: Slippage
   ): SwapEngineRoute
 }
 

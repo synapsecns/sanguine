@@ -23,7 +23,9 @@ import {
   Recipient,
   RecipientEntity,
   EngineID,
+  Slippage,
 } from './swapEngine'
+import { applySlippage } from '../../module'
 
 export class DefaultEngine implements SwapEngine {
   static defaultActions = new Interface(
@@ -73,8 +75,10 @@ export class DefaultEngine implements SwapEngine {
     tokenOut: string,
     amountIn: BigintIsh,
     finalRecipient: Recipient,
-    strictOut: boolean
+    slippage: Slippage
   ): Promise<SwapEngineRoute> {
+    // TODO: Previewer should take slippage into account
+    const strictOut = slippage.numerator !== slippage.denominator
     const { previewer, swapQuoter } = this.contracts[chainId]
     if (
       !previewer ||
@@ -95,7 +99,7 @@ export class DefaultEngine implements SwapEngine {
       amountIn
     )
     // Remove extra fields before the encoding
-    return {
+    const route = {
       engineID: this.id,
       expectedAmountOut: amountOut,
       minAmountOut: amountOut,
@@ -106,16 +110,28 @@ export class DefaultEngine implements SwapEngine {
         zapData,
       })),
     }
+    return strictOut ? this.applySlippage(chainId, route, slippage) : route
   }
 
-  public modifyMinAmountOut(
+  public applySlippage(
     _chainId: number,
     route: SwapEngineRoute,
-    minAmountOut: BigintIsh
+    slippage: Slippage
   ): SwapEngineRoute {
+    const minAmountOut = applySlippage(
+      route.expectedAmountOut,
+      slippage.numerator,
+      slippage.denominator
+    )
+    if (minAmountOut.eq(route.minAmountOut)) {
+      // Nothing to do
+      return route
+    }
     const decodedZapData = this.getLastStepZapData(route)
     if (!decodedZapData.payload) {
-      throw new Error('modifyMinAmountOut: no payload in the last step zapData')
+      throw new Error(
+        'DefaultEngine.applySlippage: no payload in the last step zapData'
+      )
     }
     let newPayload
 
@@ -169,7 +185,7 @@ export class DefaultEngine implements SwapEngine {
 
     if (!newPayload) {
       throw new Error(
-        'modifyMinAmountOut: no matching payload for the last step'
+        'DefaultEngine.applySlippage: no matching payload for the last step'
       )
     }
     // Last step exists after `getLastStepZapData`
