@@ -7,12 +7,13 @@ export type SavedParamsV1 = {
   originSender: string
   destRecipient: string
   destChainId: number
+  destEngineID: number
   destToken: string
   destAmount: BigNumber
 }
 export type BridgeParamsV2 = IFastBridgeV2.BridgeParamsV2Struct
 const savedBridgeParams = [
-  'tuple(address,address,uint256,address,uint256)',
+  'tuple(address,address,uint256,uint256,address,uint256)',
   'tuple(address,int256,bytes,uint256,bytes)',
 ]
 
@@ -25,6 +26,7 @@ export const encodeSavedBridgeParams = (
       paramsV1.originSender,
       paramsV1.destRecipient,
       paramsV1.destChainId,
+      paramsV1.destEngineID,
       paramsV1.destToken,
       paramsV1.destAmount,
     ],
@@ -45,7 +47,14 @@ export const decodeSavedBridgeParams = (
   paramsV2: BridgeParamsV2
 } => {
   const [
-    [originSender, destRecipient, destChainId, destToken, destAmount],
+    [
+      originSender,
+      destRecipient,
+      destChainId,
+      destEngineID,
+      destToken,
+      destAmount,
+    ],
     [quoteRelayer, quoteExclusivitySeconds, quoteId, zapNative, zapData],
   ] = defaultAbiCoder.decode(savedBridgeParams, data)
   return {
@@ -53,6 +62,7 @@ export const decodeSavedBridgeParams = (
       originSender,
       destRecipient,
       destChainId: destChainId.toNumber(),
+      destEngineID: destEngineID.toNumber(),
       destToken,
       destAmount,
     },

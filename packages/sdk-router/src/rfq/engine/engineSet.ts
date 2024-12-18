@@ -12,9 +12,13 @@ import {
   RecipientEntity,
   EmptyRoute,
   USER_SIMULATED_ADDRESS,
+  Slippage,
+  SlippageDefault,
+  SlippageFull,
 } from './swapEngine'
 import { CCTPRouterQuery } from '../../module'
 import { encodeStepParams } from '../steps'
+import { ParaSwapEngine } from './paraSwapEngine'
 
 export type TokenInput = {
   address: string
@@ -34,6 +38,7 @@ export class EngineSet {
     this.engines = {}
     this._addEngine(new NoOpEngine())
     this._addEngine(new DefaultEngine(chains))
+    this._addEngine(new ParaSwapEngine(chains, TOKEN_ZAP_V1_ADDRESS_MAP))
 
     this.tokenZaps = {}
     chains.forEach(({ chainId }) => {
@@ -55,7 +60,7 @@ export class EngineSet {
       address: this.getTokenZap(chainId),
     }
     // Find the route for each token and each engine.
-    const strictOut = true
+    // Origin slippage is checked after the Zap steps are executed, so we disable it within the steps.
     const allRoutes = await Promise.all(
       tokensOut.map(async (tokenOut) =>
         Promise.all(
@@ -66,7 +71,7 @@ export class EngineSet {
               tokenOut,
               tokenIn.amount,
               recipient,
-              strictOut
+              SlippageFull
             )
           )
         )
@@ -89,9 +94,8 @@ export class EngineSet {
     }
     // Find the route for each token and each engine.
     // Remove the routes that have more than one Zap step.
-    // Note: for Relayer simulation purposes we disable strict slippage on this step.
+    // Note: for Relayer simulation purposes we disable slippage checks on this step.
     // This will be set after the Relayer quotes have been obtained.
-    const strictOut = false
     const allRoutes = await Promise.all(
       tokensIn.map(async (tokenIn) =>
         Promise.all(
@@ -102,7 +106,7 @@ export class EngineSet {
               tokenOut,
               tokenIn.amount,
               recipient,
-              strictOut
+              SlippageFull
             )
             return this.limitSingleZap(route)
           })
@@ -119,7 +123,7 @@ export class EngineSet {
     tokenIn: TokenInput,
     tokenOut: string,
     finalRecipient: Recipient,
-    strictOut: boolean
+    slippage: Slippage = SlippageDefault
   ): Promise<SwapEngineRoute> {
     return this._getEngine(engineID).findRoute(
       chainId,
@@ -127,7 +131,7 @@ export class EngineSet {
       tokenOut,
       tokenIn.amount,
       finalRecipient,
-      strictOut
+      slippage
     )
   }
 
@@ -141,7 +145,7 @@ export class EngineSet {
       routerAdapter:
         route.steps.length > 0 ? this.getTokenZap(chainId) : AddressZero,
       tokenOut,
-      minAmountOut: route.minAmountOut,
+      minAmountOut: route.expectedAmountOut,
       // The default deadline will be overridden later in `finalizeBridgeRoute`
       deadline: Zero,
       rawParams: encodeStepParams(route.steps),
@@ -152,27 +156,15 @@ export class EngineSet {
     return route.steps.length > 1 ? EmptyRoute : route
   }
 
-  public modifyMinAmountOut(
+  public applySlippage(
     chainId: number,
     route: SwapEngineRoute,
-    minAmountOut: BigintIsh
+    slippage: Slippage
   ): SwapEngineRoute {
-    return this._getEngine(route.engineID).modifyMinAmountOut(
+    return this._getEngine(route.engineID).applySlippage(
       chainId,
       route,
-      minAmountOut
-    )
-  }
-
-  public modifyRecipient(
-    chainId: number,
-    route: SwapEngineRoute,
-    finalRecipient: Recipient
-  ): SwapEngineRoute {
-    return this._getEngine(route.engineID).modifyRecipient(
-      chainId,
-      route,
-      finalRecipient
+      slippage
     )
   }
 

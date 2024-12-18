@@ -130,7 +130,10 @@ export abstract class RouterSet extends SynapseModuleSet {
           originChainId,
           destChainId,
           originQuery: originRoute.originQuery,
+          originAmountOut: originRoute.originQuery.minAmountOut,
           destQuery: destQueries[index],
+          destAmountIn: originRoute.originQuery.minAmountOut,
+          destAmountOut: destQueries[index].minAmountOut,
           bridgeToken: originRoute.bridgeToken,
           bridgeModuleName: this.bridgeModuleName,
         })

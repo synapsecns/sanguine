@@ -24,19 +24,11 @@ export class NoOpEngine implements SwapEngine {
     }
   }
 
-  public modifyMinAmountOut(
+  public applySlippage(
     _chainId: number,
     route: SwapEngineRoute
   ): SwapEngineRoute {
     // Slippage settings are ignored for NoOpEngine
-    return route
-  }
-
-  public modifyRecipient(
-    _chainId: number,
-    route: SwapEngineRoute
-  ): SwapEngineRoute {
-    // Recipient settings are ignored for NoOpEngine
     return route
   }
 }

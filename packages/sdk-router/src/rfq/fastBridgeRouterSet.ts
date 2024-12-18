@@ -140,11 +140,14 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
           token: ticker.destToken.token,
         },
         originQuery,
+        originAmountOut: originQuery.minAmountOut,
         destQuery: FastBridgeRouterSet.createRFQDestQuery(
           tokenOut,
           quote.destAmount,
           originUserAddress
         ),
+        destAmountIn: quote.destAmount,
+        destAmountOut: quote.destAmount,
         bridgeModuleName: this.bridgeModuleName,
       }))
   }
@@ -156,11 +159,10 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     feeAmount: BigNumber
     feeConfig: FeeConfig
   }> {
-    // Origin Out vs Dest Out is the effective fee
+    // Origin Out vs Dest In is the effective fee
+    const feeAmount = bridgeRoute.originAmountOut.sub(bridgeRoute.destAmountIn)
     return {
-      feeAmount: bridgeRoute.originQuery.minAmountOut.sub(
-        bridgeRoute.destQuery.minAmountOut
-      ),
+      feeAmount: feeAmount.lt(Zero) ? Zero : feeAmount,
       feeConfig: {
         bridgeFee: 0,
         minFee: BigNumber.from(0),

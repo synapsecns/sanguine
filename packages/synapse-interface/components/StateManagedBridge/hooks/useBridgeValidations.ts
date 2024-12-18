@@ -78,7 +78,7 @@ export const useBridgeValidations = () => {
 
   const isBridgeQuoteAmountGreaterThanInputForRfq = useMemo(() => {
     return (
-      bridgeQuote.bridgeModuleName === 'SynapseIntents' &&
+      bridgeQuote.bridgeModuleName === 'SynapseRFQ' &&
       bridgeQuote.outputAmount > debouncedFromValueBigInt
     )
   }, [

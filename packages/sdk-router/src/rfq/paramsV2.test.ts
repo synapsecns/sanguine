@@ -15,6 +15,7 @@ describe('paramsV2', () => {
     originSender: ARB_USDC,
     destRecipient: ARB_USDT,
     destChainId: 1234,
+    destEngineID: 4321,
     destToken: ETH_USDC,
     destAmount: ether.mul(2),
   }
