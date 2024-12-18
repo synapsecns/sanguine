@@ -76,7 +76,10 @@ export type BridgeRoute = {
   originChainId: number
   destChainId: number
   originQuery: Query
+  originAmountOut: BigNumber
   destQuery: Query
+  destAmountIn: BigNumber
+  destAmountOut: BigNumber
   bridgeToken: BridgeToken
   bridgeModuleName: string
 }

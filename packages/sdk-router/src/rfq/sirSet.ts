@@ -173,6 +173,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
           intent.originRoute,
           intent.ticker.originToken.token
         ),
+        originAmountOut: intent.originAmountOut,
         destQuery: this.getRFQDestinationQuery(
           destChainId,
           intent,
@@ -181,6 +182,8 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
           Zero,
           originUserAddress
         ),
+        destAmountIn: intent.destRelayAmount,
+        destAmountOut: intent.destRoute.expectedAmountOut,
       }))
   }
 
@@ -191,11 +194,10 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     feeAmount: BigNumber
     feeConfig: FeeConfig
   }> {
-    // Origin Out vs Dest Out is the effective fee
+    // Origin Out vs Dest In is the effective fee
+    const feeAmount = bridgeRoute.originAmountOut.sub(bridgeRoute.destAmountIn)
     return {
-      feeAmount: bridgeRoute.originQuery.minAmountOut.sub(
-        bridgeRoute.destQuery.minAmountOut
-      ),
+      feeAmount: feeAmount.lt(Zero) ? Zero : feeAmount,
       feeConfig: {
         bridgeFee: 0,
         minFee: BigNumber.from(0),

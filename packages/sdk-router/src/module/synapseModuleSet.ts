@@ -212,7 +212,7 @@ export abstract class SynapseModuleSet {
       feeAmount,
       feeConfig,
       routerAddress: originModule.address,
-      maxAmountOut: destQuery.minAmountOut,
+      maxAmountOut: bridgeRoute.destAmountOut,
       originQuery,
       destQuery,
       estimatedTime: this.getEstimatedTime(bridgeRoute.originChainId),
