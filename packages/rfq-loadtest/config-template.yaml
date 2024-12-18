@@ -1,70 +1,113 @@
+# IMPORTANT:
+#This tool is not intended to be used for anything other than testing with inconsequentially small 
+# amounts of assets on EOAs that were created for the sole & explicit purpose of testing.
+
+###### PRIVATE KEYS
+############################################################################################################
 
 # create & fund however many wallets you want to test with.
-# only supports native ETH bridges on chains that use ETH as gas.
-# if you only fund ETH on one of the test chains it will auto-rebalance the funds to the others before beginning tests.
+# Rebalancing & Asset management is not part of this utility. 
+# Wallets should be funded outside of this tool & given enough assets to play with.
+PRIVATE_KEY_1: "0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd"
+PRIVATE_KEY_2: "0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd"
+PRIVATE_KEY_3: "0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd"
+PRIVATE_KEY_4: "0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd"
+PRIVATE_KEY_5: "0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd"
 
-# Startup example w/ pyRepeater to auto-restart the process if anything kills it
+# Startup example w/ pyRepeater to auto-restart the process if anything kills it.
 # python3 pyRepeater.py 'node index.js --configFile ../config-prod.yaml --pKeyIndex 1'
 
-PRIVATE_KEY_1: '0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd'
-PRIVATE_KEY_2: '0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd'
-PRIVATE_KEY_3: '0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd'
-PRIVATE_KEY_4: '0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd'
-PRIVATE_KEY_5: '0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd'
+# Optional - only required if you are performing Relayer tests
+RELAYER_PRIVATE_KEY: "0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd"
 
-##### TEST PACE
+
+###### TEST BEHAVIOR
+############################################################################################################
+
+# In debug mode, all actions will perform normally except for actually sending bridges.
+DEBUG_MODE: true
+
+# Populating this will execute a single bridge followed by the indicated relayer test.
+# Note: Relayer address must also be properly authorized on FastBridge
+#
+# Options:
+#   <blank>     - Do not execute any relayer test
+#   falseProve  - Submit an incorrect proof for the bridge
+RELAYER_TEST: 
+
+
+###### BRIDGE API
+############################################################################################################
+
+BRIDGE_API_URL: 'https://api.synapseprotocol.com' 
+
+# Which bridge modules should be included in testing? Options: SynapseRFQ, SynapseIntents
+BRIDGE_MODULES:
+  - SynapseRFQ
+  - SynapseIntents
+
+
+###### LOADTEST PACE
+############################################################################################################
 # these settings are a pace of about 100K deposits per day
 #
-# how long to wait in btwn each volley?
+# how long to wait in between each volley?
 VOLLEY_MILLISECONDS_BETWEEN: 5500
-# each volley sends a batch of between {min} and {max} transactions
+# each volley sends a batch of between {min} and {max} transactions that are identical except for the amount
 VOLLEY_MIN_COUNT: 1
 VOLLEY_MAX_COUNT: 5
 
-# these settings are a pace of about 150K deposits per day
-#VOLLEY_MILLISECONDS_BETWEEN: 5500
-#VOLLEY_MIN_COUNT: 1
-#VOLLEY_MAX_COUNT: 5
 
-# approx how much ETH to send on each test bridge? 0.00007
-TEST_BRIDGE_AMOUNT_UNITS: 0.00007
 
-# trigger a rebalance when gas reaches this value or lower
-MINIMUM_GAS_UNITS: 0.003
+###### ASSETS
+############################################################################################################
 
-# when a rebalance is triggered, resupply the deficit chain to this amount
-REBALANCE_TO_UNITS: 0.01
+# Test routes will be randomly selected between all of the assets+chains listed below.
+ASSETS:
+  ETH:
+    10:
+      # Note: 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE = Placeholder for native chain gas (ETH for most EVMs)
+      TOKEN_ADDRESS: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' 
+
+      DECIMALS: 18
+
+      # approx how many units of this asset to send on each test bridge?
+      TEST_BRIDGE_AMOUNT_UNITS: 0.00007 
+      
+    42161:
+      TOKEN_ADDRESS: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+      DECIMALS: 18
+      TEST_BRIDGE_AMOUNT_UNITS: 0.00007
+
+  USDC:
+    10:
+      TOKEN_ADDRESS: '0x0b2c639c533813f4aa9d7837caf62653d097ff85'
+      DECIMALS: 6
+      TEST_BRIDGE_AMOUNT_UNITS: 0.25
+
+    42161:
+      TOKEN_ADDRESS: '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
+      DECIMALS: 6
+      TEST_BRIDGE_AMOUNT_UNITS: 0.25
+
+###### CHAINS
+############################################################################################################
 
 CHAINS:
   10:
-    FastRouterAddr: '0x00cd000000003f7f682be4813200893d4e690000'
+    label: OPT
+    FastRouterAddr: '0x5849dC2fe58EcCB9EA76aA8D77dc127d89dE9b4d'
+    SinRouterAddr: '0x57203c65DeA2ded4EE4E303a9494bee04df030BF'
     # urls used for Reading / Tx Simulation / Tx Submit -- respectively. Change to others as needed.
     rpcUrl_Read: 'https://mainnet.optimism.io'
     rpcUrl_Sim: 'https://mainnet.optimism.io'
     rpcUrl_Write: 'https://mainnet.optimism.io'
-  8453:
-    FastRouterAddr: '0x00cd000000003f7f682be4813200893d4e690000'
+  42161:
+    label: ARB
+    FastRouterAddr: '0x5849dC2fe58EcCB9EA76aA8D77dc127d89dE9b4d'
+    SinRouterAddr: '0x57203c65DeA2ded4EE4E303a9494bee04df030BF'
     # urls used for Reading / Tx Simulation / Tx Submit -- respectively. Change to others as needed.
-    rpcUrl_Read: 'https://mainnet.base.org'
-    rpcUrl_Sim: 'https://mainnet.base.org'
-    rpcUrl_Write: 'https://mainnet.base.org'
-  480:
-    FastRouterAddr: '0x00cd000000003f7f682be4813200893d4e690000'
-    # urls used for Reading / Tx Simulation / Tx Submit -- respectively. Change to others as needed.
-    rpcUrl_Read: 'https://worldchain-mainnet.g.alchemy.com/public'
-    rpcUrl_Sim: 'https://worldchain-mainnet.g.alchemy.com/public'
-    rpcUrl_Write: 'https://worldchain-mainnet.g.alchemy.com/public'
+    rpcUrl_Read: 'https://arbitrum.llamarpc.com'
+    rpcUrl_Sim: 'https://arbitrum.llamarpc.com'
+    rpcUrl_Write: 'https://arb1.arbitrum.io/rpc'
 
-TEST_ROUTES:
-  480>10:
-    fromChainId: 480
-    toChainId: 10
-    testDistributionPercentage: 70
-  10>480:
-    fromChainId: 10
-    toChainId: 480
-    testDistributionPercentage: 15
-  8453>480:
-    fromChainId: 8453
-    toChainId: 480
-    testDistributionPercentage: 15

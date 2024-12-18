@@ -3,8 +3,11 @@ import fs from 'fs/promises'
 import * as viemChains from 'viem/chains'
 import { privateKeyToAccount } from 'viem/accounts'
 import {
+  Address,
+  ContractFunctionExecutionError,
   createPublicClient,
   createWalletClient,
+  decodeFunctionData,
   formatUnits,
   http,
   parseUnits,
@@ -36,6 +39,7 @@ const argv = await yargs(hideBin(process.argv))
   })
   .help().argv
 
+
 const configFilePath = argv.configFile
 const configFileContent = await fs.readFile(configFilePath, 'utf-8')
 
@@ -59,34 +63,20 @@ try {
     throw new Error('Invalid configuration for CHAINS')
   }
 
-  if (typeof config.TEST_ROUTES !== 'object' || config.TEST_ROUTES === null) {
-    throw new Error('Invalid configuration for TEST_ROUTES')
-  }
-
-  if (typeof config.TEST_BRIDGE_AMOUNT_UNITS !== 'number') {
-    throw new Error('Invalid configuration for TEST_BRIDGE_AMOUNT_UNITS')
-  }
-  if (typeof config.MINIMUM_GAS_UNITS !== 'number') {
-    throw new Error('Invalid configuration for MINIMUM_GAS_UNITS')
-  }
-  if (typeof config.REBALANCE_TO_UNITS !== 'number') {
-    throw new Error('Invalid configuration for REBALANCE_TO_UNITS')
-  }
-
-  Object.entries(config.TEST_ROUTES).forEach(
-    ([route, details]: [string, any]) => {
-      if (typeof details !== 'object' || details === null) {
-        throw new Error(`Invalid configuration for route: ${route}`)
-      }
-      if (
-        typeof details.fromChainId !== 'number' ||
-        typeof details.toChainId !== 'number' ||
-        typeof details.testDistributionPercentage !== 'number'
-      ) {
-        throw new Error(`Invalid configuration values for route: ${route}`)
-      }
+  Object.entries(config.ASSETS).forEach(([asset, chains]: [string, any]) => {
+    if (typeof chains !== 'object' || chains === null) {
+      throw new Error(`Invalid ASSETS configuration for asset: ${asset}`)
     }
-  )
+    Object.entries(chains).forEach(([chainId, chainDetails]: [string, any]) => {
+      if (typeof chainDetails !== 'object' || chainDetails === null) {
+        throw new Error(`Invalid ASSETS>CHAINS configuration under ${asset}>${chainId}`)
+      }
+      if (typeof chainDetails.TEST_BRIDGE_AMOUNT_UNITS !== 'number') {
+        throw new Error(`Invalid configuration for TEST_BRIDGE_AMOUNT_UNITS under ${asset}>${chainId}`)
+      }
+    })
+  })
+
 } catch (error: any) {
   throw new Error(
     `Failed to parse ${configFilePath}. Check your syntax, structure, data, and for duplicates. \n${error.message}`
@@ -99,10 +89,17 @@ if (typeof privateKeyIndex !== 'number' || privateKeyIndex < 1) {
 }
 
 const privateKeyName = `PRIVATE_KEY_${privateKeyIndex}`
-const privateKey: `0x${string}` = config[privateKeyName] as `0x${string}`
+const privateKey_bridger: Address = config[privateKeyName] as Address
 
-if (!privateKey) {
+const privateKey_relayer: Address = config['RELAYER_PRIVATE_KEY'] as Address
+
+if (!privateKey_bridger) {
   throw new Error(`${privateKeyName} is not defined in the config file`)
+}
+
+
+if (!privateKey_relayer && config.RELAYER_TEST) {
+  throw new Error(`RELAYER_TEST = ${config.RELAYER_TEST}, but no RELAYER_PRIVATE_KEY supplied.`)
 }
 
 // construct enriched versions of viem chain objects ("vChains") based on what was supplied in config file
@@ -124,17 +121,24 @@ Object.entries(config.CHAINS).forEach(
       vCliRead: {} as PublicClient,
       vCliSim: {} as WalletClient,
       vCliWrite: {} as WalletClient,
+      assets: Object.keys(config.ASSETS).reduce((acc: any, asset: string) => {
+        if (config.ASSETS[asset][chainId]) {
+          acc[asset] = { ...config.ASSETS[asset][chainId], label: asset }
+        }
+        return acc
+      }, {})
     }
   }
 )
 
-const nonceManager = createNonceManager({
-  source: jsonRpc(),
-})
 
-const walletAccount = privateKeyToAccount(privateKey, { nonceManager })
+const account_bridger = privateKeyToAccount(privateKey_bridger, { nonceManager: createNonceManager({ source: jsonRpc() })})
 
-print(`Using ${privateKeyName}: ${walletAccount.address}`)
+const account_relayer = privateKeyToAccount(privateKey_relayer, { nonceManager: createNonceManager({ source: jsonRpc() })})
+
+if(account_relayer) print(`Using Relayer ${account_relayer.address}`)
+
+print(`Using Bridger ${account_bridger.address} (Key #${privateKeyIndex})`)
 
 Object.keys(vChains).forEach((chainId: string) => {
   const chain = vChains[chainId]
@@ -172,215 +176,258 @@ Object.keys(vChains).forEach((chainId: string) => {
       bigint,
       bigint
     ]) => {
+      // Write fastBridgeAddr back to the chain object
+      chain.fastBridgeAddr = fastBridgeAddr;
+
       print(
-        `Connected to chain ID ${chainId
-          .toString()
-          .padStart(7)}. FastBridge at: ${fastBridgeAddr.slice(
-          0,
-          6
-        )}... Current block height: ${blockNumber_Read}`
+        `Connected to chain ID ${chainId.toString().padStart(7)}... Current block height: ${blockNumber_Read}`
       )
     }
   )
 })
 
-let cachedResponseRFQ: any
+const testRoutes:any = []
+
+//construct all possible routes from all available chains & assets
+for (const [fromAsset, fromChains] of Object.entries(config.ASSETS) as [any, any]) {
+  for (const [toAsset, toChains] of Object.entries(config.ASSETS) as [any, any]) {
+    for (const [fromChainId, fromChainDetails] of Object.entries(fromChains)) {
+      for (const [toChainId, toChainDetails] of Object.entries(toChains)) {
+        if (fromChainId !== toChainId) {
+          testRoutes.push({
+            fromChain: vChains[fromChainId],
+            toChain: vChains[toChainId],
+            fromAsset: vChains[fromChainId].assets[fromAsset],
+            toAsset: vChains[toChainId].assets[toAsset],
+          })
+        }
+      }
+    }
+    
+  }
+}
 
 let sendCounter = 0
-
-let lastAction: string = 'none'
-
-const testBridgeAmountUnits = config.TEST_BRIDGE_AMOUNT_UNITS
 
 mainFlow()
 
 async function mainFlow() {
   await delay(1500)
 
-  while (!walletAccount.address) {
+  while (!account_bridger.address) {
     print(`%ts Awaiting Initialization...`)
     await delay(5000)
   }
 
-  checkBals()
+  loopBridges()
+}
 
-  looper_getRequestParams()
+async function erc20_allowance_check_and_set(chain: any, asset: any, approveSpenderAddress: Address)
+{
+    // Check allowance of target contract to spend the token for bridgeAccount
+    const allowance = await chain.vCliRead.readContract({
+      address: asset.TOKEN_ADDRESS,
+      abi: ABI.erc20min,
+      functionName: 'allowance',
+      args: [account_bridger.address, approveSpenderAddress]
+    });
 
-  await delay(2500)
+    if (allowance < BigInt('0xffffffffffffffffffffffffffffffffffffffffffff')) {
+      try {
+        const txHash = await chain.vCliWrite.writeContract({
+          address: asset.TOKEN_ADDRESS,
+          abi: ABI.erc20min,
+          functionName: 'approve',
+          args: [approveSpenderAddress, BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')],
+          account: account_bridger
+        });
 
-  while (!cachedResponseRFQ) {
-    print(`%ts Awaiting cached RFQ API response to populate...`)
-    await delay(5000)
-  }
+        const printLabel = `%ts Allowing ${asset.label} spender ${approveSpenderAddress.slice(0,8)}...${approveSpenderAddress.slice(-4)} on Chain ${chain.id} Tx: ${txHash}`;
+        print(`${printLabel} ...`);
 
-  bridgeLooper()
+        await chain.vCliRead.waitForTransactionReceipt({ hash: txHash });
+        print(`${printLabel} SUCCESS`);
+
+      } catch (error: any) {
+        throw new Error(`Error Allowing ${asset.label} spender ${approveSpenderAddress.slice(0,8)}...${approveSpenderAddress.slice(-4)} on Chain ${chain.id} Err: ${error.message}`);
+      }
+    }
 }
 
 async function checkBals() {
-  for (;;) {
     await Promise.all(
-      Object.keys(vChains).map(async (chainId: string) => {
-        const chain = vChains[chainId]
-        try {
-          const balance = await chain.vCliRead.getBalance({
-            address: walletAccount.address,
-          })
-          chain.balanceRaw = balance
-          chain.balanceUnits = formatUnits(balance, 18)
-        } catch (error: any) {
-          print(
-            `Error fetching balance for chain ID ${chainId}: ${error.message}`
-          )
-        }
-      })
-    )
+      Object.keys(config.ASSETS).map(async (asset) => {
+        const assetChains = config.ASSETS[asset];
+        await Promise.all(
+          Object.keys(assetChains).map(async (chainId) => {
+            const chain = vChains[chainId];
+            const mappedAsset:any= chain.assets[asset]
+            try {
+              let balance;
+              if (assetChains[chainId].TOKEN_ADDRESS === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') {
+                // Native asset, use getBalance
+                balance = await chain.vCliRead.getBalance({
+                  address: account_bridger.address,
+                });
+              } else {
+                // ERC20 token, use balanceOf
+                balance = await chain.vCliRead.readContract({
+                  address: assetChains[chainId].TOKEN_ADDRESS,
+                  abi: ABI.erc20min,
+                  functionName: 'balanceOf',
+                  args: [account_bridger.address]
+                });
 
-    await delay(15_000)
-  }
+                if(mappedAsset.balanceRaw==undefined) //not initialize = we can perform our single start-up check & set for allowances. will not run on each invoke.
+                {
+                    await erc20_allowance_check_and_set(chain, mappedAsset, config.CHAINS[chainId].FastRouterAddr)
+                    await erc20_allowance_check_and_set(chain, mappedAsset, config.CHAINS[chainId].SinRouterAddr)
+                }
+              }
+              mappedAsset.balanceRaw = balance;
+              mappedAsset.balanceUnits = formatUnits(balance, mappedAsset.DECIMALS);
+            } catch (error: any) {
+              print(
+                `checkBals error for asset ${asset} on chain ID ${chainId}: ${error.message}`
+              );
+              return
+            }
+          })
+        );
+      })
+    );
 }
 
-const minGasUnits = config.MINIMUM_GAS_UNITS
-const rebalToUnits = config.REBALANCE_TO_UNITS
-async function bridgeLooper() {
 
-    let retryCount = 0
+async function falseProve(printLabel: string, txHash_bridgePromise: Promise<Address>, fromChain: any)
+{
+      const txHash_bridge = await txHash_bridgePromise
+
+      printLabel += ' falseProve'
+
+        var receipt_bridge
+
+        try {
+          receipt_bridge = await fromChain.vCliRead.waitForTransactionReceipt({hash: txHash_bridge})
+        } catch (error:any) {
+          print(`${printLabel} Error waiting for bridge transaction receipt: ${error.message}`)
+          return
+        }
+
+        // bridge tx confirmed. prepare & send a false proof for it.
+
+        // 2nd topic of 1st log = synapse transaction Id
+        const transaction_id = receipt_bridge.logs[0].topics[1]
+
+        const contractCall = {
+          address: fromChain.fastBridgeAddr as Address,
+          abi: ABI.fastBridgeV2,
+          functionName: 'proveV2',
+          args: [
+            transaction_id, // transaction_id
+            '0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd', //destTxHash
+            account_relayer.address // assert self as relayer
+          ],
+          account: account_relayer
+        }
+
+        await delay(3_000) // brief delay for bridge to settle before sending proof
+
+        try {
+          const txHash_falseProve = await fromChain.vCliWrite.writeContract(contractCall)
+          print(`${printLabel} Sent: ${txHash_falseProve}`)
+        } catch (error: any) {
+          print(`${printLabel} Error sending false prove transaction: ${error.message}`)
+        }
+        
+}
+
+async function loopBridges() {
+  
+  await delay(2_000)
 
   for (;;) {
-    // Find the chain with the lowest balance below our minimum gas -- if any
-    const rebalToChain: any = Object.values(vChains).find(
-      (chain: any) => chain.balanceUnits < minGasUnits
-    )
 
-    if (rebalToChain) {
-      const rebalFromChain: any = Object.values(vChains).reduce(
-        (prev: any, current: any) => {
-          return prev.balanceUnits > current.balanceUnits ? prev : current
-        }
-      )
+    await checkBals()
 
-      const rebalLabel = `%ts Rebal: ${rebalFromChain.id} > ${rebalToChain.id}`
+    // only consider tests where we actually have sufficient balance of the input token to execute it
+    const validRoutes = testRoutes.filter((route:any) => {
+      const fromAssetBalance = route.fromChain.assets[route.fromAsset.label].balanceUnits;
+      const minimumUnits = route.fromChain.assets[route.fromAsset.label].TEST_BRIDGE_AMOUNT_UNITS;
+      return fromAssetBalance > (minimumUnits * 1.01); // require slightly more than the bare minimum
+    });
 
-      print(rebalLabel)
-
-      // avoid repeating rebal actions. just loop until it lands on-chain.
-      if (lastAction === `rebal${rebalFromChain.id}>${rebalToChain.id}`) {
-        print(
-          `${rebalLabel} Last action was identical (${lastAction}). Not repeating. Re-evaluating momentarily...`
-        )
-
-        if (retryCount > 5) {
-          // abort after X attempts - if running in repeater mode this will effectively re-send the rebal tx if it is still needed
-          print(`${rebalLabel} Max retries. Exiting process...`)
-          await delay(1500)
-          process.exit()
-        }
-
-        await delay(7500)
-        retryCount++
-        continue
-      }
-
-      retryCount=0
-
-      // leave rebalFrom chain with X units
-      const rebalAmount = rebalToUnits - rebalToChain.balanceUnits
-
-      if (rebalFromChain.balanceUnits < rebalToUnits * 1.1) {
-        // if we hit this point, it indicates the wallet has no funds left to keep playing. hang process.
-        print(
-          `${rebalLabel} - Insuff Funds on From Chain ${rebalFromChain.balanceUnits}. Ending tests.`
-        )
-        await delay(60_000)
-        return
-      }
-
-      await sendBridge(
-        rebalFromChain,
-        rebalToChain,
-        Number(rebalAmount.toFixed(18)),
-        false,
-        rebalLabel
-      )
-
-      lastAction = `rebal${rebalFromChain.id}>${rebalToChain.id}`
-
-      await delay(config.VOLLEY_MILLISECONDS_BETWEEN)
-      continue
+    if (validRoutes.length === 0) {
+      print('No test routes with sufficient balance found. Unable to perform any tests.');
+      return;
     }
 
-    let fromChain: any
-    let toChain: any
-
-    const totalPercentage: number = Object.values(config.TEST_ROUTES).reduce(
-      (acc: number, route: any) => acc + route.testDistributionPercentage,
-      0
-    )
-    const randomizer: number = getRandomInt(1, totalPercentage)
-    let cumulative = 0
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    for (const [route, details] of Object.entries(config.TEST_ROUTES) as [
-      string,
-      any
-    ][]) {
-      cumulative += details.testDistributionPercentage
-      if (randomizer <= cumulative) {
-        fromChain = vChains[`${details.fromChainId}`]
-        toChain = vChains[`${details.toChainId}`]
-        break
-      }
-    }
+    const randomIndex = getRandomInt(0, validRoutes.length - 1);
+    const testRoute = validRoutes[randomIndex];
 
     const countToSend = getRandomInt(
       config.VOLLEY_MIN_COUNT,
       config.VOLLEY_MAX_COUNT
     )
-    const printLabel = `%ts Batch${(sendCounter + countToSend)
-      .toString()
-      .padStart(5, '0')} of ${countToSend} : ${fromChain.id
-      .toString()
-      .padStart(7)} >> ${toChain.id.toString().padEnd(7)}`
+
+    const batchLabel = config.VOLLEY_MAX_COUNT==1 ? `` : `Batch${(sendCounter + countToSend).toString().padStart(3, '0')} of ${countToSend} : `
+
 
     for (let i = 0; i < countToSend; i++) {
+      // add a random dust amount to help unq identify each bridge
+      const dustFactor = 1 + Math.random() * 0.00089 + 0.00001;
+      const sendAmountUnits = Number((testRoute.fromAsset.TEST_BRIDGE_AMOUNT_UNITS * dustFactor).toFixed(testRoute.fromAsset.DECIMALS));
+
+      const printLabel = `%ts ${batchLabel}` +
+      `${sendAmountUnits.toString().padEnd(20)} ` +
+      `${testRoute.fromChain.label.slice(0,4).padStart(4)}.${testRoute.fromAsset.label.slice(0,6).padEnd(6)}` +
+      ` ► ` +
+      `${testRoute.toChain.label.slice(0,4).padStart(4)}.${testRoute.toAsset.label.slice(0,6).padEnd(6)}`
+
+
       // sendCounter is applied as a tag on the amount just for sloppy tracking purposes. not actually important.
-      sendBridge(
-        fromChain,
-        toChain,
-        Number(
-          (testBridgeAmountUnits + sendCounter / 100000000000).toFixed(18)
-        ),
-        true,
-        printLabel
-      )
+      let txHash_bridge;
+      try {
+        txHash_bridge = await sendBridge(
+          testRoute,
+          sendAmountUnits,
+          printLabel
+        );
+      } catch (error: any) {
+        print(`${printLabel} sendBridge failed: 
+        ${error.message}`);
+        continue; // Skip to the next iteration if there's an error
+      }
       sendCounter++
       await delay(50)
+
+      // if we're running a relayer test, wait for bridge to land, submit relayer test txn, and exit test
+      if(config.RELAYER_TEST)
+      {
+        if(config.RELAYER_TEST.toLowerCase() == 'falseProve') falseProve(printLabel, txHash_bridge, testRoute.fromChain)
+
+        return
+      }
     }
 
-    lastAction = 'testVolley'
     await delay(config.VOLLEY_MILLISECONDS_BETWEEN)
   }
 }
 
 async function getRequestParams(
-  fromChain: any,
-  toChain: any,
+  route: any,
   sendAmountUnits: number
 ) {
-  // 480 is not supported currently on the API - using Opti/Base as proxies. Can be improved later as needed.
-  if (toChain.id === 480) {
-    toChain = fromChain.id === 8453 ? vChains['10'] : vChains['8453']
-  }
-  if (fromChain.id === 480) {
-    fromChain = toChain.id === 8453 ? vChains['10'] : vChains['8453']
-  }
 
-  const requestURL = `https://api.synapseprotocol.com/bridge?fromChain=${
-    fromChain.id
-  }&toChain=${
-    toChain.id
-  }&fromToken=${'0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'}&toToken=${'0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'}&amount=${sendAmountUnits}&destAddress=${
-    walletAccount.address
-  }`
+  const requestURL = 
+    `${config.BRIDGE_API_URL}/bridge?` +
+    `fromChain=${route.fromChain.id}` +
+    `&toChain=${route.toChain.id}` +
+    `&fromToken=${route.fromAsset.TOKEN_ADDRESS}&toToken=${route.toAsset.TOKEN_ADDRESS}` +
+    `&amount=${sendAmountUnits}` +
+    `&originUserAddress=${account_bridger.address}` +
+    `&destAddress=${account_bridger.address}` +
+    `&expirationWindow=250`
 
   let responseRFQ: any
   let response: any
@@ -390,16 +437,26 @@ async function getRequestParams(
     })
 
     if ((response.data?.length ?? 0) === 0) {
-      throw new Error(`No data returned from api`)
+      throw new Error(`No data returned from API`)
     }
 
-    responseRFQ = Array.isArray(response.data)
-      ? response.data.find(
-          (item: any) => item.bridgeModuleName === 'SynapseRFQ'
-        )
-      : null
+    if (Array.isArray(response.data)) {
+      // find response w/ bridge module that matches those which we are testing
+      const matchingModules = response.data.filter((item: any) =>
+        config.BRIDGE_MODULES.includes(item.bridgeModuleName)
+      );
+      // if mult candidates found, randomly pick one
+      if (matchingModules.length > 0) {
+        const randomIndex = Math.floor(Math.random() * matchingModules.length);
+        responseRFQ = matchingModules[randomIndex];
+      } else {
+        responseRFQ = null;
+      }
+    } else {
+      responseRFQ = null;
+    }
     if (!responseRFQ) {
-      throw new Error(`No RFQ response returned from api`)
+      throw new Error(`No response returned from API that matches BRIDGE_MODULES`)
     }
   } catch (error: any) {
     throw new Error(
@@ -410,87 +467,62 @@ async function getRequestParams(
   return responseRFQ
 }
 
-async function looper_getRequestParams() {
-  for (;;) {
-    // in future iteration, this could be improved to dynamically pull a response for each route that is involved w/ testing.
-    // for now, all tests just use a cached route btwn two OP stacks as proxies for Worldchain tests -- because this is close enough.
-    cachedResponseRFQ = await getRequestParams(
-      vChains['8453'],
-      vChains['10'],
-      testBridgeAmountUnits
-    )
-
-    await delay(10_000)
-  }
-}
-
 async function sendBridge(
-  fromChain: any,
-  toChain: any,
+  route:any,
   sendAmountUnits: number,
-  useCachedRequest: boolean,
   printLabel: string
 ) {
-  const sendAmountRaw = parseUnits(sendAmountUnits.toString(), 18)
 
-  printLabel = printLabel + ` ${sendAmountUnits} ETH`
-
-  const _responseRFQ = useCachedRequest
-    ? cachedResponseRFQ
-    : await getRequestParams(fromChain, toChain, sendAmountUnits)
-
-  const contractCall: any = {
-    address: fromChain.FastRouterAddr as `0x${string}`,
-    abi: ABI.fastRouterV2,
-    functionName: 'bridge',
-    account: walletAccount,
-    chain: fromChain,
-    args: [
-      walletAccount.address, //recipient
-      toChain.id, // chainId
-      '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', // token
-      sendAmountRaw, // amount
-      [
-        //originQuery
-        '0x0000000000000000000000000000000000000000', //routerAdapter
-        _responseRFQ.originQuery.tokenOut, //tokenOut
-        sendAmountRaw, //minAmountOut
-        BigInt(_responseRFQ.originQuery.deadline.hex), //deadline
-        _responseRFQ.originQuery.rawParams, //rawParms
-      ],
-      [
-        //destQuery
-        '0x0000000000000000000000000000000000000000', //routerAdapter
-        _responseRFQ.destQuery.tokenOut, //tokenOut
-        BigInt(_responseRFQ.destQuery.minAmountOut.hex), //minAmountOut
-        BigInt(_responseRFQ.destQuery.deadline.hex), //deadline
-        _responseRFQ.destQuery.rawParams, //rawParms
-      ],
-    ],
-    value: sendAmountRaw,
+  let _responseRFQ;
+  try {
+    _responseRFQ = await getRequestParams(route, sendAmountUnits);
+  } catch (error: any) {
+    throw new Error(`getRequestParams fail: ${error.message}`);
   }
+
+  const sendAmountRaw = parseUnits(sendAmountUnits.toString(), route.fromAsset.DECIMALS);
+
+  const bridgeModuleLabel = _responseRFQ.bridgeModuleName.replace('SynapseIntents', 'SIN').replace('SynapseRFQ', 'RFQ')
+
+  printLabel = printLabel + ` ${bridgeModuleLabel}`
 
   let estGasUnits
 
+  let txData:any = {
+    to: _responseRFQ.callData.to,
+    data: _responseRFQ.callData.data,
+    account: account_bridger,
+    chain: route.fromChain,
+    value: route.fromAsset.TOKEN_ADDRESS=='0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' ? sendAmountRaw : 0n
+  }
+
   try {
-    //@ts-ignore
-    estGasUnits = await fromChain.vCliSim.estimateContractGas(contractCall)
+    estGasUnits = await route.fromChain.vCliSim.estimateGas(txData)
+      
+    if (estGasUnits <= 50000n) throw new Error(`Gas units too low ${estGasUnits}. Sim failure?`)
+
   } catch (error: any) {
-    throw new Error(`${printLabel} Bridge Sim error: ${error.message}`)
+    print (`${printLabel} Bridge Sim error: ${error.cause.details ?? error.details ?? error.message}`)
+    return
   }
 
-  if (estGasUnits <= 50000n) {
-    throw new Error(`${printLabel} estimated gas units too low. possible error`)
-  }
+  txData.gas = Math.floor(Number(estGasUnits) * 1.3)
 
-  contractCall.gas = Math.floor(Number(estGasUnits) * 1.3)
+  if(config.DEBUG_MODE==true)
+  {
+    print(`${printLabel} DEBUG MODE - Not actually submitted to chain`)
+    return
+  }
 
   let txHash
   try {
-    txHash = await fromChain.vCliWrite.writeContract(contractCall)
+    txHash = await route.fromChain.vCliWrite.sendTransaction(txData)
   } catch (error: any) {
     throw new Error(`${printLabel} Send failed: ${error.message}`)
   }
 
   print(`${printLabel} Submitted ${txHash}`)
+
+  return txHash
 }
+

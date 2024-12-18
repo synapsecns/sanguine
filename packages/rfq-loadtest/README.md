@@ -1,14 +1,12 @@
-> :warning: **Warning**: This tool is not intended to be used for anything other than testing with inconsequentially small amounts of ETH on EOAs that were created for the sole & explicit purpose of testing.
+> :warning: **Warning**: This tool is not intended to be used for anything other than testing with inconsequentially small amounts of assets on EOAs that were created for the sole & explicit purpose of testing.
 
 # RFQ Load Test Configuration Guide
 
-This guide outlines the steps and requirements for setting up the RFQ load testing tool. The tool is designed to send many ETH bridges in rapid succession.
+This guide outlines the steps and requirements for setting up the RFQ load testing tool. The tool is designed to send large varieties/volumes of actual bridges.
 
 ## Wallet Configuration
 
-- **Create and Fund Wallets:** You are required to create and fund as many wallets as you wish to test with. This tool only supports native ETH bridges on chains that use ETH as the gas currency.
-
-- **Auto-Rebalance:** If you only initially fund ETH on one of the test chains, the tool will automatically rebalance the funds to the other chains before beginning the tests. It will also rebalance as needed while the tests are operating until none of the test chains have enough ETH to effectively rebalance to the others - at which point it will cease the process. The RFQ system is also used for these rebalance actions.
+- **Create and Fund Wallets:** You are required to create and fund as many wallets as you wish to test with. They will need sufficient gas and whatever other tokens you wish to test.
 
 
 # Script Configuration
@@ -39,19 +37,11 @@ Follow these steps to configure your load testing environment for blockchain tra
 
 ## Step 4: Specify Test Bridge Amount
 
-4. Define the amount of ETH to be sent in each test transaction under `TEST_BRIDGE_AMOUNT_UNITS`. The default is set to `0.00007`.
-
-## Step 5: Configure Gas and Rebalance Settings
-
-5. Set the `MINIMUM_GAS_UNITS` to the desired threshold for triggering a rebalance of funds across chains. Specify the `REBALANCE_TO_UNITS` to determine the target amount for each chain after rebalancing.
+4. Define each asset to be sent in test transactions under the `ASSETS` section. 
 
 ## Step 6: Define Chain Settings
 
-6. In the `CHAINS` section, configure the `FastRouterAddr` and `rpcUrl` settings for each chain involved in your tests. These settings include URLs for reading, simulation, and submitting transactions.
-
-## Step 7: Configure Test Routes
-
-7. Under `TEST_ROUTES`, define the routes for your test transactions, including `fromChainId`, `toChainId`, and `testDistributionPercentage` to control the flow and distribution of transactions between chains.
+6. In the `CHAINS` section, configure the `Label`, Router addresses, and `rpcUrl` settings for each chain involved in your tests. These settings include URLs for reading, simulation, and submitting transactions.
 
 ## Step 8: Save and Run
 
