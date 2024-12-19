@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/ory/dockertest/v3"
@@ -34,8 +35,11 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		Repository:   "jaegertracing/all-in-one",
 		Tag:          "latest",
 		Hostname:     "jaeger",
-		ExposedPorts: []string{"14268", "16686"},
-		Networks:     j.getNetworks(),
+		PortBindings: map[docker.Port][]docker.PortBinding{
+			"14268/tcp": {{HostIP: "0.0.0.0", HostPort: ""}},
+			"16686/tcp": {{HostIP: "0.0.0.0", HostPort: ""}},
+		},
+		Networks: j.getNetworks(),
 		Labels: map[string]string{
 			appLabel:   "jaeger",
 			runIDLabel: j.runID,
@@ -46,7 +50,13 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 	})
 	if err != nil {
-		j.tb.Logf("Failed to start Jaeger container: %v", err)
+		if strings.Contains(err.Error(), "toomanyrequests") {
+			j.tb.Logf("Docker rate limit exceeded: %v", err)
+		} else if strings.Contains(err.Error(), "address already in use") {
+			j.tb.Logf("Port conflict detected: %v", err)
+		} else {
+			j.tb.Logf("Failed to start Jaeger container: %v", err)
+		}
 		return nil
 	}
 
@@ -119,8 +129,10 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 	runOptions := &dockertest.RunOptions{
 		Repository:   "ghcr.io/synapsecns/jaeger-ui-pyroscope",
 		Tag:          "latest",
-		ExposedPorts: []string{"80"},
-		Networks:     j.getNetworks(),
+		PortBindings: map[docker.Port][]docker.PortBinding{
+			"80/tcp": {{HostIP: "0.0.0.0", HostPort: ""}},
+		},
+		Networks: j.getNetworks(),
 		Labels: map[string]string{
 			appLabel:   "jaeger-ui",
 			runIDLabel: j.runID,
@@ -131,7 +143,13 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 	})
 	if err != nil {
-		j.tb.Logf("Failed to start Jaeger Pyroscope UI container: %v", err)
+		if strings.Contains(err.Error(), "toomanyrequests") {
+			j.tb.Logf("Docker rate limit exceeded when starting Pyroscope UI: %v", err)
+		} else if strings.Contains(err.Error(), "address already in use") {
+			j.tb.Logf("Port conflict detected when starting Pyroscope UI: %v", err)
+		} else {
+			j.tb.Logf("Failed to start Jaeger Pyroscope UI container: %v", err)
+		}
 		return nil
 	}
 

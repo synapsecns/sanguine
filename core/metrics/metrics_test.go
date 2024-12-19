@@ -14,16 +14,18 @@ func TestSetupFromEnv(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Try to set up test Jaeger, skip if it fails
+	// Set up test Jaeger once for all tests
 	ts := localmetrics.SetupTestJaeger(ctx, t)
-	if ts == nil {
-		t.Skip("Failed to set up test Jaeger, skipping test")
-		return
-	}
+	jaegerAvailable := ts != nil
 
 	for _, handler := range metrics.AllHandlerTypes {
 		handler := handler // capture func literal
 		t.Run(handler.String(), func(t *testing.T) {
+			if handler.String() == "Jaeger" && !jaegerAvailable {
+				t.Skip("Skipping Jaeger test due to container startup failure")
+				return
+			}
+
 			assert.NotPanics(t, func() {
 				ctx, cancel := context.WithCancel(context.Background())
 				defer cancel()

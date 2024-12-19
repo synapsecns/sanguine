@@ -18,6 +18,7 @@ func SetupTestJaeger(ctx context.Context, tb testing.TB, opts ...Option) *TestSe
 
 	tj := startServer(ctx, tb, opts...)
 	if tj == nil {
+		tb.Logf("Failed to set up test Jaeger - continuing with limited functionality")
 		return nil
 	}
 	return &TestServer{jaeger: tj}
