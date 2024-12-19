@@ -32,7 +32,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
     function previewIntent(
         address swapQuoter,
         address forwardTo,
-        bool strictOut,
+        uint256 slippageWei,
         address tokenIn,
         address tokenOut,
         uint256 amountIn
@@ -41,6 +41,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         view
         returns (uint256 amountOut, ISynapseIntentRouter.StepParams[] memory steps)
     {
+        bool strictOut = slippageWei == 0;
         // First, check if the intent is a no-op.
         if (tokenIn == tokenOut) {
             if (forwardTo != address(0)) revert SIP__NoOpForwardNotSupported();

@@ -10,8 +10,7 @@ interface ISynapseIntentPreviewer {
     /// @param swapQuoter   Peripheral contract to use for swap quoting
     /// @param forwardTo    The address to which the proceeds of the intent should be forwarded to.
     ///                     Note: if no forwarding is required (or done within the intent), use address(0).
-    /// @param strictOut    Whether to use returned `amountOut` as minimum amount out when encoding the intent steps.
-    ///                     Minimum is set to 0 if false (slippage must be checked after the steps are executed).
+    /// @param slippageWei  Slippage settings to apply when encoding the intent steps. Capped at 100%.
     /// @param tokenIn      Initial token for the intent
     /// @param tokenOut     Final token for the intent
     /// @param amountIn     Initial amount of tokens to use for the intent
@@ -21,7 +20,7 @@ interface ISynapseIntentPreviewer {
     function previewIntent(
         address swapQuoter,
         address forwardTo,
-        bool strictOut,
+        uint256 slippageWei,
         address tokenIn,
         address tokenOut,
         uint256 amountIn

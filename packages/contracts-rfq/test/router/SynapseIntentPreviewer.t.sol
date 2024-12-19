@@ -43,6 +43,7 @@ contract SynapseIntentPreviewerTest is Test {
     address internal user = makeAddr("User");
 
     uint256 public swapMinAmountOut = 0;
+    uint256 public slippageWei = 1e18;
 
     function setUp() public virtual {
         sip = new SynapseIntentPreviewer();
@@ -83,8 +84,7 @@ contract SynapseIntentPreviewerTest is Test {
         view
         returns (uint256 amountOut, ISynapseIntentRouter.StepParams[] memory steps)
     {
-        bool strictOut = swapMinAmountOut == SWAP_AMOUNT_OUT;
-        return sip.previewIntent(swapQuoter, forwardTo, strictOut, tokenIn, tokenOut, amountIn);
+        return sip.previewIntent(swapQuoter, forwardTo, slippageWei, tokenIn, tokenOut, amountIn);
     }
 
     function mockGetAmountOut(address tokenIn, address tokenOut, uint256 amountIn, SwapQuery memory mockQuery) public {
