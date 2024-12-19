@@ -6,6 +6,6 @@ import {SynapseIntentPreviewerTest} from "./SynapseIntentPreviewer.t.sol";
 contract SynapseIntentPreviewerStrictOutTest is SynapseIntentPreviewerTest {
     function setUp() public virtual override {
         super.setUp();
-        strictOut = true;
+        swapMinAmountOut = SWAP_AMOUNT_OUT;
     }
 }
