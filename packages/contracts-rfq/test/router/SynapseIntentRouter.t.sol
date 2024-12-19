@@ -78,22 +78,33 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
             // Amount is not encoded
             amountPosition: type(uint256).max,
             finalToken: address(weth),
-            forwardTo: address(0)
+            forwardTo: address(0),
+            minFwdAmount: 0
         });
     }
 
-    function getUnwrapZapData(address forwardTo) public view returns (bytes memory) {
+    function getUnwrapZapData(address forwardTo, uint256 minFwdAmount) public view returns (bytes memory) {
         return tokenZap.encodeZapData({
             target: address(weth),
-            payload: abi.encodeCall(weth.withdraw, (AMOUNT)),
+            // Use placeholder zero amount
+            payload: abi.encodeCall(weth.withdraw, (0)),
             // Amount is encoded as the first parameter
             amountPosition: 4,
             finalToken: NATIVE_GAS_TOKEN,
-            forwardTo: forwardTo
+            forwardTo: forwardTo,
+            minFwdAmount: minFwdAmount
         });
     }
 
-    function getSwapZapData(address token, address forwardTo) public view returns (bytes memory) {
+    function getSwapZapData(
+        address token,
+        address forwardTo,
+        uint256 minFwdAmount
+    )
+        public
+        view
+        returns (bytes memory)
+    {
         address otherToken = token == address(weth) ? address(erc20) : address(weth);
         return tokenZap.encodeZapData({
             target: address(pool),
@@ -102,7 +113,8 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
             // Amount is encoded as the first parameter
             amountPosition: 4,
             finalToken: otherToken,
-            forwardTo: forwardTo
+            forwardTo: forwardTo,
+            minFwdAmount: minFwdAmount
         });
     }
 
@@ -114,7 +126,8 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
             // Amount is encoded as the second parameter
             amountPosition: 4 + 32,
             finalToken: address(0),
-            forwardTo: address(0)
+            forwardTo: address(0),
+            minFwdAmount: 0
         });
     }
 
@@ -235,6 +248,23 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
             msgValue: msgValue,
             amountIn: AMOUNT,
             minLastStepAmountIn: lastStepAmountIn + 1,
+            deadline: block.timestamp,
+            steps: steps
+        });
+    }
+
+    function checkRevertForwardAmountInsufficient(
+        uint256 msgValue,
+        uint256 lastStepAmountIn,
+        ISynapseIntentRouter.StepParams[] memory steps
+    )
+        public
+    {
+        vm.expectRevert(TokenZapV1.TokenZapV1__ForwardAmountBelowMin.selector);
+        completeUserIntent({
+            msgValue: msgValue,
+            amountIn: AMOUNT,
+            minLastStepAmountIn: lastStepAmountIn,
             deadline: block.timestamp,
             steps: steps
         });
@@ -428,7 +458,10 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
 
     // ═══════════════════════════════════════════ SWAP & FORWARD ERC20 ════════════════════════════════════════════════
 
-    function getSwapForwardERC20Steps(uint256 amountSwap)
+    function getSwapForwardERC20Steps(
+        uint256 amountSwap,
+        uint256 minFwdAmount
+    )
         public
         view
         returns (ISynapseIntentRouter.StepParams[] memory)
@@ -439,14 +472,14 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
                 token: address(weth),
                 amount: amountSwap,
                 msgValue: 0,
-                zapData: getSwapZapData(address(weth), user)
+                zapData: getSwapZapData(address(weth), user, minFwdAmount)
             })
         );
     }
 
     function test_swapForwardERC20_exactAmount() public {
         uint256 initialBalance = erc20.balanceOf(user);
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT);
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT, AMOUNT * TOKEN_PRICE);
         completeUserIntent({
             msgValue: 0,
             amountIn: AMOUNT,
@@ -461,7 +494,7 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     /// @notice Extra funds should be used with "forward" instructions.
     function test_swapForwardERC20_exactAmount_extraFunds() public withExtraFunds {
         uint256 initialBalance = erc20.balanceOf(user);
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT);
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT, AMOUNT * TOKEN_PRICE);
         completeUserIntent({
             msgValue: 0,
             amountIn: AMOUNT,
@@ -474,23 +507,28 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     }
 
     function test_swapForwardERC20_exactAmount_revert_deadlineExceeded() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT);
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT, AMOUNT * TOKEN_PRICE);
         checkRevertDeadlineExceeded({msgValue: 0, lastStepAmountIn: AMOUNT, steps: steps});
     }
 
     function test_swapForwardERC20_exactAmount_revert_lastStepAmountInsufficient() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT);
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT, AMOUNT * TOKEN_PRICE);
         checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: AMOUNT + 1, steps: steps});
     }
 
+    function test_swapForwardERC20_exactAmount_revert_forwardAmountInsufficient() public {
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT, AMOUNT * TOKEN_PRICE + 1);
+        checkRevertForwardAmountInsufficient({msgValue: 0, lastStepAmountIn: AMOUNT, steps: steps});
+    }
+
     function test_swapForwardERC20_exactAmount_revert_msgValueAboveExpected() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT);
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT, AMOUNT * TOKEN_PRICE);
         checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: AMOUNT});
     }
 
     function test_swapForwardERC20_fullBalance() public {
         uint256 initialBalance = erc20.balanceOf(user);
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE);
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE, AMOUNT * TOKEN_PRICE);
         completeUserIntent({
             msgValue: 0,
             amountIn: AMOUNT,
@@ -505,7 +543,7 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     /// @notice Extra funds should be used with "full balance" instructions.
     function test_swapForwardERC20_fullBalance_extraFunds() public withExtraFunds {
         uint256 initialBalance = erc20.balanceOf(user);
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE);
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE, AMOUNT * TOKEN_PRICE);
         completeUserIntent({
             msgValue: 0,
             amountIn: AMOUNT,
@@ -518,17 +556,23 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     }
 
     function test_swapForwardERC20_fullBalance_revert_deadlineExceeded() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE);
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE, AMOUNT * TOKEN_PRICE);
         checkRevertDeadlineExceeded({msgValue: 0, lastStepAmountIn: AMOUNT, steps: steps});
     }
 
     function test_swapForwardERC20_fullBalance_revert_lastStepAmountInsufficient() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE);
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE, AMOUNT * TOKEN_PRICE);
         checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: AMOUNT + 1, steps: steps});
     }
 
+    function test_swapForwardERC20_fullBalance_revert_forwardAmountInsufficient() public {
+        ISynapseIntentRouter.StepParams[] memory steps =
+            getSwapForwardERC20Steps(FULL_BALANCE, AMOUNT * TOKEN_PRICE + 1);
+        checkRevertForwardAmountInsufficient({msgValue: 0, lastStepAmountIn: AMOUNT, steps: steps});
+    }
+
     function test_swapForwardERC20_fullBalance_revert_msgValueAboveExpected() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE);
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE, AMOUNT * TOKEN_PRICE);
         checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: AMOUNT});
     }
 
@@ -542,20 +586,32 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
         view
         returns (ISynapseIntentRouter.StepParams[] memory)
     {
+        return getSwapUnwrapForwardNativeSteps(amountSwap, amountUnwrap, AMOUNT / TOKEN_PRICE);
+    }
+
+    function getSwapUnwrapForwardNativeSteps(
+        uint256 amountSwap,
+        uint256 amountUnwrap,
+        uint256 minFwdAmount
+    )
+        public
+        view
+        returns (ISynapseIntentRouter.StepParams[] memory)
+    {
         return toArray(
             // ERC20 -> WETH
             ISynapseIntentRouter.StepParams({
                 token: address(erc20),
                 amount: amountSwap,
                 msgValue: 0,
-                zapData: getSwapZapData(address(erc20), address(0))
+                zapData: getSwapZapData(address(erc20), address(0), 0)
             }),
             // WETH -> ETH
             ISynapseIntentRouter.StepParams({
                 token: address(weth),
                 amount: amountUnwrap,
                 msgValue: 0,
-                zapData: getUnwrapZapData(user)
+                zapData: getUnwrapZapData(user, minFwdAmount)
             })
         );
     }
@@ -652,6 +708,13 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
         checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: amountSwap + 1, steps: steps});
     }
 
+    function test_swapUnwrapForwardNative_exactAmount0_revert_forwardAmountInsufficient() public {
+        uint256 amountSwap = AMOUNT / TOKEN_PRICE;
+        ISynapseIntentRouter.StepParams[] memory steps =
+            getSwapUnwrapForwardNativeSteps(AMOUNT, FULL_BALANCE, amountSwap + 1);
+        checkRevertForwardAmountInsufficient({msgValue: 0, lastStepAmountIn: amountSwap, steps: steps});
+    }
+
     function test_swapUnwrapForwardNative_exactAmount0_revert_msgValueAboveExpected() public {
         uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(AMOUNT, FULL_BALANCE);
@@ -706,6 +769,13 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
         checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: amountSwap + 1, steps: steps});
     }
 
+    function test_swapUnwrapForwardNative_exactAmount1_revert_forwardAmountInsufficient() public {
+        uint256 amountSwap = AMOUNT / TOKEN_PRICE;
+        ISynapseIntentRouter.StepParams[] memory steps =
+            getSwapUnwrapForwardNativeSteps(FULL_BALANCE, amountSwap, amountSwap + 1);
+        checkRevertForwardAmountInsufficient({msgValue: 0, lastStepAmountIn: amountSwap, steps: steps});
+    }
+
     function test_swapUnwrapForwardNative_exactAmount1_revert_msgValueAboveExpected() public {
         uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(FULL_BALANCE, amountSwap);
@@ -755,6 +825,13 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
         checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: amountSwap + 1, steps: steps});
     }
 
+    function test_swapUnwrapForwardNative_fullBalances_revert_forwardAmountInsufficient() public {
+        uint256 amountSwap = AMOUNT / TOKEN_PRICE;
+        ISynapseIntentRouter.StepParams[] memory steps =
+            getSwapUnwrapForwardNativeSteps(FULL_BALANCE, FULL_BALANCE, amountSwap + 1);
+        checkRevertForwardAmountInsufficient({msgValue: 0, lastStepAmountIn: amountSwap, steps: steps});
+    }
+
     function test_swapUnwrapForwardNative_fullBalances_revert_msgValueAboveExpected() public {
         uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(FULL_BALANCE, FULL_BALANCE);
@@ -777,7 +854,7 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
                 token: address(weth),
                 amount: amountSwap,
                 msgValue: 0,
-                zapData: getSwapZapData(address(weth), address(0))
+                zapData: getSwapZapData(address(weth), address(0), 0)
             }),
             // deposit ERC20
             ISynapseIntentRouter.StepParams({
@@ -1170,7 +1247,7 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
                 token: address(weth),
                 amount: amountUnwrap,
                 msgValue: 0,
-                zapData: getUnwrapZapData(address(0))
+                zapData: getUnwrapZapData(address(0), 0)
             }),
             // Deposit ETH
             ISynapseIntentRouter.StepParams({

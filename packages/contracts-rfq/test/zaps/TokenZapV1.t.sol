@@ -56,11 +56,12 @@ contract TokenZapV1Test is Test {
 
     function getZapDataDeposit(bytes memory originalPayload) public view returns (bytes memory) {
         // Amount is the third argument of the deposit function
-        return tokenZap.encodeZapData(address(vault), originalPayload, 4 + 32 * 2, address(0), address(0));
+        return tokenZap.encodeZapData(address(vault), originalPayload, 4 + 32 * 2, address(0), address(0), 0);
     }
 
     function getZapDataDepositNoAmount(bytes memory originalPayload) public view returns (bytes memory) {
-        return tokenZap.encodeZapData(address(vault), originalPayload, originalPayload.length, address(0), address(0));
+        return
+            tokenZap.encodeZapData(address(vault), originalPayload, originalPayload.length, address(0), address(0), 0);
     }
 
     function checkERC20HappyPath(bytes memory zapData, uint256 msgValue) public {
@@ -180,14 +181,15 @@ contract TokenZapV1Test is Test {
 
     function getZapDataUnwrap(uint256 amount) public view returns (bytes memory) {
         return tokenZap.encodeZapData(
-            address(weth), abi.encodeCall(WETHMock.withdraw, (amount)), 4, nativeGasToken, address(0)
+            address(weth), abi.encodeCall(WETHMock.withdraw, (amount)), 4, nativeGasToken, address(0), 0
         );
     }
 
     function getZapDataUnwrapAndForward(
         uint256 amount,
         address finalToken,
-        address forwardTo
+        address forwardTo,
+        uint256 minFwdAmount
     )
         public
         view
@@ -198,23 +200,33 @@ contract TokenZapV1Test is Test {
             payload: abi.encodeCall(WETHMock.withdraw, (amount)),
             amountPosition: 4,
             finalToken: finalToken,
-            forwardTo: forwardTo
+            forwardTo: forwardTo,
+            minFwdAmount: minFwdAmount
         });
     }
 
     function getZapDataWrap() public view returns (bytes memory) {
         return tokenZap.encodeZapData(
-            address(weth), abi.encodeCall(WETHMock.deposit, ()), type(uint256).max, address(0), address(0)
+            address(weth), abi.encodeCall(WETHMock.deposit, ()), type(uint256).max, address(0), address(0), 0
         );
     }
 
-    function getZapDataWrapAndForward(address finalToken, address forwardTo) public view returns (bytes memory) {
+    function getZapDataWrapAndForward(
+        address finalToken,
+        address forwardTo,
+        uint256 minFwdAmount
+    )
+        public
+        view
+        returns (bytes memory)
+    {
         return tokenZap.encodeZapData({
             target: address(weth),
             payload: abi.encodeCall(WETHMock.deposit, ()),
             amountPosition: type(uint256).max,
             finalToken: finalToken,
-            forwardTo: forwardTo
+            forwardTo: forwardTo,
+            minFwdAmount: minFwdAmount
         });
     }
 
@@ -262,7 +274,7 @@ contract TokenZapV1Test is Test {
     }
 
     function test_zap_unwrapForwardNativeEOA_placeholderZero() public {
-        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(0, nativeGasToken, user);
+        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(0, nativeGasToken, user, AMOUNT);
         weth.transfer(address(tokenZap), AMOUNT);
         bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataUnwrapAndForward);
         assertEq(returnValue, tokenZap.zap.selector);
@@ -272,7 +284,7 @@ contract TokenZapV1Test is Test {
 
     function test_zap_unwrapForwardNativeEOA_placeholderNonZero() public {
         // Use the approximate amount of tokens as placeholder
-        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(1 ether, nativeGasToken, user);
+        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(1 ether, nativeGasToken, user, AMOUNT);
         weth.transfer(address(tokenZap), AMOUNT);
         bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataUnwrapAndForward);
         assertEq(returnValue, tokenZap.zap.selector);
@@ -285,7 +297,7 @@ contract TokenZapV1Test is Test {
         weth.transfer(address(tokenZap), AMOUNT);
         deal(address(tokenZap), AMOUNT);
         // Extra funds will be used when forwarding the proceeds
-        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(0, nativeGasToken, user);
+        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(0, nativeGasToken, user, AMOUNT);
         weth.transfer(address(tokenZap), AMOUNT);
         bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataUnwrapAndForward);
         assertEq(returnValue, tokenZap.zap.selector);
@@ -299,7 +311,7 @@ contract TokenZapV1Test is Test {
         weth.transfer(address(tokenZap), AMOUNT);
         deal(address(tokenZap), AMOUNT);
         // Extra funds will be used when forwarding the proceeds
-        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(1 ether, nativeGasToken, user);
+        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(1 ether, nativeGasToken, user, AMOUNT);
         weth.transfer(address(tokenZap), AMOUNT);
         bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataUnwrapAndForward);
         assertEq(returnValue, tokenZap.zap.selector);
@@ -309,7 +321,7 @@ contract TokenZapV1Test is Test {
     }
 
     function test_zap_unwrapForwardNativeContract_placeholderZero() public {
-        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(0, nativeGasToken, payableMock);
+        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(0, nativeGasToken, payableMock, AMOUNT);
         weth.transfer(address(tokenZap), AMOUNT);
         bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataUnwrapAndForward);
         assertEq(returnValue, tokenZap.zap.selector);
@@ -319,7 +331,7 @@ contract TokenZapV1Test is Test {
 
     function test_zap_unwrapForwardNativeContract_placeholderNonZero() public {
         // Use the approximate amount of tokens as placeholder
-        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(1 ether, nativeGasToken, payableMock);
+        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(1 ether, nativeGasToken, payableMock, AMOUNT);
         weth.transfer(address(tokenZap), AMOUNT);
         bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataUnwrapAndForward);
         assertEq(returnValue, tokenZap.zap.selector);
@@ -332,7 +344,7 @@ contract TokenZapV1Test is Test {
         weth.transfer(address(tokenZap), AMOUNT);
         deal(address(tokenZap), AMOUNT);
         // Extra funds will be used when forwarding the proceeds
-        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(0, nativeGasToken, payableMock);
+        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(0, nativeGasToken, payableMock, AMOUNT);
         weth.transfer(address(tokenZap), AMOUNT);
         bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataUnwrapAndForward);
         assertEq(returnValue, tokenZap.zap.selector);
@@ -346,7 +358,7 @@ contract TokenZapV1Test is Test {
         weth.transfer(address(tokenZap), AMOUNT);
         deal(address(tokenZap), AMOUNT);
         // Extra funds will be used when forwarding the proceeds
-        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(1 ether, nativeGasToken, payableMock);
+        bytes memory zapDataUnwrapAndForward = getZapDataUnwrapAndForward(1 ether, nativeGasToken, payableMock, AMOUNT);
         weth.transfer(address(tokenZap), AMOUNT);
         bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapDataUnwrapAndForward);
         assertEq(returnValue, tokenZap.zap.selector);
@@ -397,7 +409,7 @@ contract TokenZapV1Test is Test {
     }
 
     function test_zap_wrapForward() public {
-        bytes memory zapDataWrapAndForward = getZapDataWrapAndForward(address(weth), user);
+        bytes memory zapDataWrapAndForward = getZapDataWrapAndForward(address(weth), user, AMOUNT);
         bytes4 returnValue = tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapDataWrapAndForward);
         assertEq(returnValue, tokenZap.zap.selector);
         // Check that the user received WETH
@@ -409,7 +421,7 @@ contract TokenZapV1Test is Test {
         weth.transfer(address(tokenZap), AMOUNT);
         deal(address(tokenZap), AMOUNT);
         // Extra funds will be used when forwarding the proceeds
-        bytes memory zapDataWrapAndForward = getZapDataWrapAndForward(address(weth), user);
+        bytes memory zapDataWrapAndForward = getZapDataWrapAndForward(address(weth), user, AMOUNT);
         bytes4 returnValue = tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapDataWrapAndForward);
         assertEq(returnValue, tokenZap.zap.selector);
         // Check that the user received WETH with extra funds
@@ -423,7 +435,8 @@ contract TokenZapV1Test is Test {
             payload: "",
             amountPosition: type(uint256).max,
             finalToken: address(0),
-            forwardTo: address(0)
+            forwardTo: address(0),
+            minFwdAmount: 0
         });
     }
 
@@ -477,7 +490,8 @@ contract TokenZapV1Test is Test {
         // Any value >= payload.length could be used to signal that the amount is not an argument of the target function
         amountPosition = bound(amountPosition, payload.length, type(uint256).max);
 
-        bytes memory zapData = tokenZap.encodeZapData(address(vault), payload, amountPosition, address(0), address(0));
+        bytes memory zapData =
+            tokenZap.encodeZapData(address(vault), payload, amountPosition, address(0), address(0), 0);
         (address target, bytes memory decodedPayload) = tokenZap.decodeZapData(zapData, 0);
         assertEq(target, address(vault));
         assertEq(decodedPayload, payload);
@@ -487,21 +501,40 @@ contract TokenZapV1Test is Test {
 
     function getZeroTargetZapData(bytes memory payload, uint16 amountPosition) public pure returns (bytes memory) {
         // Encode manually as the library checks for zero address
-        return abi.encodePacked(ZapDataV1.VERSION, amountPosition, address(0), address(0), address(0), payload);
+        address zero = address(0);
+        return abi.encodePacked(ZapDataV1.VERSION, amountPosition, zero, zero, uint256(0), zero, payload);
     }
 
     function getZeroFinalTokenZapData(
         bytes memory payload,
         uint16 amountPosition,
         address target,
-        address forwardTo
+        address forwardTo,
+        uint256 minFwdAmount
     )
         public
         pure
         returns (bytes memory)
     {
         // Encode manually as the library checks for zero address
-        return abi.encodePacked(ZapDataV1.VERSION, amountPosition, address(0), forwardTo, target, payload);
+        address zero = address(0);
+        return abi.encodePacked(ZapDataV1.VERSION, amountPosition, zero, forwardTo, minFwdAmount, target, payload);
+    }
+
+    function getZeroForwardToZapData(
+        bytes memory payload,
+        uint16 amountPosition,
+        address finalToken,
+        uint256 minFwdAmount,
+        address target
+    )
+        public
+        pure
+        returns (bytes memory)
+    {
+        // Encode manually as the library checks for zero address
+        address zero = address(0);
+        return abi.encodePacked(ZapDataV1.VERSION, amountPosition, finalToken, zero, minFwdAmount, target, payload);
     }
 
     function test_zap_erc20_revert_notEnoughTokens() public {
@@ -543,7 +576,8 @@ contract TokenZapV1Test is Test {
             payload: getVaultPayload(address(erc20), 0),
             amountPosition: 4 + 32 * 2,
             finalToken: address(0),
-            forwardTo: address(0)
+            forwardTo: address(0),
+            minFwdAmount: 0
         });
         // Transfer tokens to the zap contract first
         erc20.transfer(address(tokenZap), AMOUNT);
@@ -557,7 +591,8 @@ contract TokenZapV1Test is Test {
             payload: "",
             amountPosition: 0,
             finalToken: address(0),
-            forwardTo: address(0)
+            forwardTo: address(0),
+            minFwdAmount: 0
         });
         // Transfer tokens to the zap contract first
         erc20.transfer(address(tokenZap), AMOUNT);
@@ -580,7 +615,7 @@ contract TokenZapV1Test is Test {
     }
 
     function test_zap_unwrapForwardNative_revert_targetReverted() public {
-        bytes memory zapDataWithdrawAndForward = getZapDataUnwrapAndForward(0, nativeGasToken, nonPayableMock);
+        bytes memory zapDataWithdrawAndForward = getZapDataUnwrapAndForward(0, nativeGasToken, nonPayableMock, AMOUNT);
         weth.transfer(address(tokenZap), AMOUNT);
         vm.expectRevert(Address.FailedInnerCall.selector);
         tokenZap.zap(address(weth), AMOUNT, zapDataWithdrawAndForward);
@@ -604,21 +639,59 @@ contract TokenZapV1Test is Test {
         tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapData);
     }
 
+    function test_zap_wrapForward_revert_lessThanMinFwdAmount() public {
+        bytes memory zapData = getZapDataWrapAndForward(address(weth), user, AMOUNT + 1);
+        vm.expectRevert(TokenZapV1.TokenZapV1__ForwardAmountBelowMin.selector);
+        tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapData);
+    }
+
     function test_zap_wrapForward_revert_zeroFinalToken() public {
         bytes memory zapData = getZeroFinalTokenZapData({
             payload: abi.encodeCall(WETHMock.deposit, ()),
             amountPosition: type(uint16).max,
             target: address(weth),
-            forwardTo: user
+            forwardTo: user,
+            minFwdAmount: AMOUNT
         });
-        vm.expectRevert(TokenZapV1.TokenZapV1__TokenZeroAddress.selector);
+        vm.expectRevert(TokenZapV1.TokenZapV1__ForwardParamsIncorrect.selector);
+        tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapData);
+    }
+
+    function test_zap_wrap_zeroForwardToZeroMinFwdAmount() public {
+        bytes memory zapData = getZeroForwardToZapData({
+            payload: abi.encodeCall(WETHMock.deposit, ()),
+            amountPosition: ZapDataV1.AMOUNT_NOT_PRESENT,
+            target: address(weth),
+            finalToken: address(weth),
+            minFwdAmount: 0
+        });
+        tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapData);
+        assertEq(weth.balanceOf(address(tokenZap)), AMOUNT);
+    }
+
+    function test_zap_wrapForward_revert_zeroForwardToWithMinFwdAmount() public {
+        bytes memory zapData = getZeroForwardToZapData({
+            payload: abi.encodeCall(WETHMock.deposit, ()),
+            amountPosition: ZapDataV1.AMOUNT_NOT_PRESENT,
+            target: address(weth),
+            finalToken: address(weth),
+            minFwdAmount: AMOUNT
+        });
+        vm.expectRevert(TokenZapV1.TokenZapV1__ForwardParamsIncorrect.selector);
         tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapData);
     }
 
     function test_zap_wrapForward_revert_incorrectFinalToken() public {
-        bytes memory zapData = getZapDataWrapAndForward(nativeGasToken, user);
-        vm.expectRevert(TokenZapV1.TokenZapV1__FinalTokenBalanceZero.selector);
+        bytes memory zapData = getZapDataWrapAndForward(nativeGasToken, user, AMOUNT);
+        vm.expectRevert(TokenZapV1.TokenZapV1__ForwardAmountBelowMin.selector);
         tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapData);
+    }
+
+    function test_zap_unwrapForward_revert_lessThanMinFwdAmount() public {
+        bytes memory zapData = getZapDataUnwrapAndForward(0, nativeGasToken, user, AMOUNT + 1);
+        weth.transfer(address(tokenZap), AMOUNT);
+        vm.expectRevert(TokenZapV1.TokenZapV1__ForwardAmountBelowMin.selector);
+        tokenZap.zap(address(weth), AMOUNT, zapData);
     }
 
     function test_zap_unwrapForward_revert_zeroFinalToken() public {
@@ -626,17 +699,44 @@ contract TokenZapV1Test is Test {
             payload: abi.encodeCall(WETHMock.withdraw, (0)),
             amountPosition: 4,
             target: address(weth),
-            forwardTo: user
+            forwardTo: user,
+            minFwdAmount: AMOUNT
         });
         weth.transfer(address(tokenZap), AMOUNT);
-        vm.expectRevert(TokenZapV1.TokenZapV1__TokenZeroAddress.selector);
+        vm.expectRevert(TokenZapV1.TokenZapV1__ForwardParamsIncorrect.selector);
+        tokenZap.zap(address(weth), AMOUNT, zapData);
+    }
+
+    function test_zap_unwrap_zeroForwardToZeroMinFwdAmount() public {
+        bytes memory zapData = getZeroForwardToZapData({
+            payload: abi.encodeCall(WETHMock.withdraw, (0)),
+            amountPosition: 4,
+            target: address(weth),
+            finalToken: nativeGasToken,
+            minFwdAmount: 0
+        });
+        weth.transfer(address(tokenZap), AMOUNT);
+        tokenZap.zap(address(weth), AMOUNT, zapData);
+        assertEq(address(tokenZap).balance, AMOUNT);
+    }
+
+    function test_zap_unwrapForward_revert_zeroForwardToWithMinFwdAmount() public {
+        bytes memory zapData = getZeroForwardToZapData({
+            payload: abi.encodeCall(WETHMock.withdraw, (0)),
+            amountPosition: 4,
+            target: address(weth),
+            finalToken: nativeGasToken,
+            minFwdAmount: AMOUNT
+        });
+        weth.transfer(address(tokenZap), AMOUNT);
+        vm.expectRevert(TokenZapV1.TokenZapV1__ForwardParamsIncorrect.selector);
         tokenZap.zap(address(weth), AMOUNT, zapData);
     }
 
     function test_zap_unwrapForward_revert_incorrectFinalToken() public {
-        bytes memory zapData = getZapDataUnwrapAndForward(0, address(weth), user);
+        bytes memory zapData = getZapDataUnwrapAndForward(0, address(weth), user, AMOUNT);
         weth.transfer(address(tokenZap), AMOUNT);
-        vm.expectRevert(TokenZapV1.TokenZapV1__FinalTokenBalanceZero.selector);
+        vm.expectRevert(TokenZapV1.TokenZapV1__ForwardAmountBelowMin.selector);
         tokenZap.zap(address(weth), AMOUNT, zapData);
     }
 
@@ -647,7 +747,8 @@ contract TokenZapV1Test is Test {
             payload: getVaultPayloadNoAmount(),
             amountPosition: 0,
             finalToken: address(0),
-            forwardTo: address(0)
+            forwardTo: address(0),
+            minFwdAmount: 0
         });
         weth.transfer(address(tokenZap), AMOUNT);
         tokenZap.zap(address(weth), AMOUNT, zapDataUnwrap);
@@ -664,19 +765,25 @@ contract TokenZapV1Test is Test {
     function test_encodeZapData_revert_payloadLengthAboveMax() public {
         bytes memory tooLongPayload = new bytes(2 ** 16);
         vm.expectRevert(TokenZapV1.TokenZapV1__PayloadLengthAboveMax.selector);
-        tokenZap.encodeZapData(address(vault), tooLongPayload, 0, address(0), address(0));
+        tokenZap.encodeZapData(address(vault), tooLongPayload, 0, address(0), address(0), 0);
     }
 
     function test_encodeZapData_revert_targetZeroAddress() public {
         bytes memory payload = getVaultPayloadNoAmount();
 
         vm.expectRevert(ZapDataV1.ZapDataV1__TargetZeroAddress.selector);
-        tokenZap.encodeZapData(address(0), payload, payload.length, address(0), address(0));
+        tokenZap.encodeZapData(address(0), payload, payload.length, address(0), address(0), 0);
     }
 
     function test_encodeZapData_revert_finalTokenZeroAddressWithForwardTo() public {
         bytes memory payload = getVaultPayloadNoAmount();
-        vm.expectRevert(TokenZapV1.TokenZapV1__TokenZeroAddress.selector);
-        tokenZap.encodeZapData(address(vault), payload, payload.length, address(0), user);
+        vm.expectRevert(TokenZapV1.TokenZapV1__ForwardParamsIncorrect.selector);
+        tokenZap.encodeZapData(address(vault), payload, payload.length, address(0), user, 0);
+    }
+
+    function test_encodeZapData_revert_forwardToZeroAddressWithMinFwdAmount() public {
+        bytes memory payload = getVaultPayloadNoAmount();
+        vm.expectRevert(TokenZapV1.TokenZapV1__ForwardParamsIncorrect.selector);
+        tokenZap.encodeZapData(address(vault), payload, payload.length, address(weth), address(0), 1);
     }
 }

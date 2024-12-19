@@ -220,7 +220,11 @@ contract SynapseIntentRouterBalanceChecksTest is SynapseIntentRouterTest {
 
     function test_swapUnwrapForwardNative_exactAmounts_revert_unspentWETH() public {
         uint256 amountReduced = AMOUNT / TOKEN_PRICE - 1;
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(AMOUNT, amountReduced);
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps({
+            amountSwap: AMOUNT,
+            amountUnwrap: amountReduced,
+            minFwdAmount: amountReduced
+        });
         vm.expectRevert(SIR__UnspentFunds.selector);
         completeUserIntent({
             msgValue: 0,
