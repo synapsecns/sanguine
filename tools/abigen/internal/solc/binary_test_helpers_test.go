@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// testConcurrentDownload is a helper function that tests concurrent download handling
+// testConcurrentDownload is a helper function that tests concurrent download handling.
 func testConcurrentDownload(t *testing.T, manager *solc.BinaryManager) {
 	t.Helper()
 
@@ -43,7 +43,7 @@ func testConcurrentDownload(t *testing.T, manager *solc.BinaryManager) {
 	}
 }
 
-// testBackoffWithJitter is a helper function that tests the backoff with jitter functionality
+// testBackoffWithJitter is a helper function that tests the backoff with jitter functionality.
 func testBackoffWithJitter(t *testing.T, manager *solc.BinaryManager) {
 	t.Helper()
 	attempt := 2
@@ -62,7 +62,7 @@ func testBackoffWithJitter(t *testing.T, manager *solc.BinaryManager) {
 	if shift > 63 { // Prevent overflow on large attempts
 		shift = 63
 	}
-	baseDelay := time.Duration(baseMs * (1 << shift)) * time.Millisecond
+	baseDelay := time.Duration(baseMs*(1<<shift)) * time.Millisecond
 	maxJitter := baseDelay / 2
 
 	if delay < baseDelay || delay > baseDelay+maxJitter {
@@ -78,7 +78,7 @@ func testBackoffWithJitter(t *testing.T, manager *solc.BinaryManager) {
 	}
 }
 
-// testRetryableError is a helper function that tests the IsRetryableError functionality
+// testRetryableError is a helper function that tests the IsRetryableError functionality.
 func testRetryableError(t *testing.T) {
 	t.Helper()
 	tests := []struct {
@@ -122,7 +122,7 @@ func testRetryableError(t *testing.T) {
 	}
 }
 
-// testConcurrentDownloadHandling tests the concurrent download handling through GetBinary
+// testConcurrentDownloadHandling tests the concurrent download handling through GetBinary.
 func testConcurrentDownloadHandling(t *testing.T, manager *solc.BinaryManager) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -166,7 +166,7 @@ func testConcurrentDownloadHandling(t *testing.T, manager *solc.BinaryManager) {
 	}
 }
 
-// testTempFileErrorHandling tests error handling for temp files through GetBinary
+// testTempFileErrorHandling tests error handling for temp files through GetBinary.
 func testTempFileErrorHandling(t *testing.T, manager *solc.BinaryManager) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)

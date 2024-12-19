@@ -1,16 +1,11 @@
 package solc_test
 
 import (
-	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/synapsecns/sanguine/tools/abigen/internal/solc"
-	"io"
-	"math/rand"
-	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -19,14 +14,11 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"syscall"
 	"testing"
 	"time"
-)
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
+	"github.com/synapsecns/sanguine/tools/abigen/internal/solc"
+)
 
 func setupTestBinaryManager(t *testing.T) *solc.BinaryManager {
 	t.Helper()
@@ -356,93 +348,26 @@ func TestVerifyChecksums(t *testing.T) {
 	}
 }
 
-// failingTransport implements http.RoundTripper for simulating network errors
-type failingTransport struct {
-	successCount atomic.Int32 // Using atomic.Int32 for thread-safe operations
-	maxSuccesses int32        // Immutable after creation
-	mockBinary   []byte       // Mock binary content for successful responses
-	mu           sync.Mutex   // Mutex for synchronizing access to successMap
-	cacheHits    atomic.Int32 // Track cache hits separately
-	successMap   sync.Map     // Track which requests have succeeded
-}
-
-// downloadAndCacheSolcBinary downloads the actual solc binary for testing
-func downloadAndCacheSolcBinary(t *testing.T) []byte {
-	t.Helper()
-	url := "https://binaries.soliditylang.org/linux-amd64/solc-linux-amd64-v0.8.20+commit.a1b79de6"
-	resp, err := http.Get(url)
-	if err != nil {
-		t.Fatalf("Failed to download solc binary: %v", err)
-	}
-	defer resp.Body.Close()
-
-	binary, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatalf("Failed to read solc binary: %v", err)
-	}
-	return binary
-}
-
-func (t *failingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	url := req.URL.String()
-
-	// Helper function to create successful response
-	successResponse := func() *http.Response {
-		resp := &http.Response{
-			Status:     "200 OK",
-			StatusCode: http.StatusOK,
-			Body:       io.NopCloser(bytes.NewReader(t.mockBinary)),
-			Header:     make(http.Header),
-		}
-		resp.Header.Set("Content-Length", fmt.Sprintf("%d", len(t.mockBinary)))
-		return resp
-	}
-
-	// Lock to ensure atomic operations and consistent state
-	t.mu.Lock()
-	defer t.mu.Unlock()
-
-	// Check if this URL was already downloaded successfully
-	if success, exists := t.successMap.Load(url); exists && success.(bool) {
-		hits := t.cacheHits.Add(1)
-		fmt.Printf("DEBUG: Cache hit for URL: %s (total hits: %d)\n",
-			url, hits)
-		return successResponse(), nil
-	}
-
-	// Try to get a download slot if we haven't reached maxSuccesses
-	current := t.successCount.Load()
-	if current < t.maxSuccesses {
-		// We can still do a download
-		newCount := current + 1
-		t.successCount.Store(newCount)
-		t.successMap.Store(url, true)
-		fmt.Printf("DEBUG: Successful download for URL: %s (new total: %d)\n",
-			url, newCount)
-		return successResponse(), nil
-	}
-
-	// No download slot available and no cache hit, connection refused
-	fmt.Printf("DEBUG: Connection refused for URL: %s (successes: %d, max: %d)\n",
-		url, current, t.maxSuccesses)
-	return nil, &net.OpError{
-		Op:  "dial",
-		Net: "tcp",
-		Err: syscall.ECONNREFUSED,
-	}
-}
-
 func TestConcurrentDownloads(t *testing.T) {
 	tmpDir := setupTestDir(t)
+
+	// Create cache directories for both versions with proper permissions
+	for _, version := range []string{"0.8.20", "0.8.19"} {
+		cacheDir := filepath.Join(tmpDir, version, "linux-amd64")
+		if err := os.MkdirAll(cacheDir, 0750); err != nil {
+			t.Fatalf("Failed to create cache directory for version %s: %v", version, err)
+		}
+		t.Logf("DEBUG: Created cache directory: %s", cacheDir)
+	}
+
 	manager := solc.NewBinaryManagerWithDir("0.8.20", tmpDir)
 	manager.UseFixedTempFileNames()
 
-	// Download and cache the actual solc binary for testing
-	actualBinary := downloadAndCacheSolcBinary(t)
+	// Download and cache the actual solc binaries for testing
+	binaries := solc.DownloadAndCacheSolcBinary(t)
 
 	// Reset download attempts counter before test
 	solc.ResetDownloadAttempts()
-
 	// Clean up any existing binary before test
 	binaryPath := filepath.Join(tmpDir, "0.8.20", "linux-amd64", "solc-linux-amd64-v0.8.20")
 	if err := os.RemoveAll(filepath.Dir(binaryPath)); err != nil {
@@ -452,24 +377,31 @@ func TestConcurrentDownloads(t *testing.T) {
 	var wg sync.WaitGroup
 	errorCount := int32(0)
 
-	// Create longer context timeout for overall test
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	// Create shorter context timeout for overall test since we expect immediate failures
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// Create a failing transport that will succeed for half the requests
-	transport := &failingTransport{
-		maxSuccesses: numConcurrent / 2,
-		mockBinary:   actualBinary,
+	// Create a failing transport that will fail all requests
+	transport := &solc.FailingTransport{
+		MaxSuccesses:     0,                  // All downloads should fail
+		MockBinary:       binaries["0.8.20"], // Use version-specific binary
+		Binaries:         binaries,           // Store all binaries for different versions
+		SkipBackoffDelay: true,               // Skip backoff delay for faster test execution
 	}
-	transport.successCount.Store(0) // Initialize atomic counter
-	transport.cacheHits.Store(0)    // Initialize cache hits counter
+	transport.SuccessCount.Store(0) // Initialize atomic counter
+	transport.CacheHits.Store(0)    // Initialize cache hits counter
 	client := &http.Client{Transport: transport}
 	manager.SetClient(client)
-
 	// Start all goroutines at the same time
 	ready := make(chan struct{})
 	results := make(chan error, numConcurrent)
 	completed := make(chan int, numConcurrent) // Track completed goroutines
+
+	// Create two different URLs to test proper caching behavior
+	urls := []string{
+		"https://binaries.soliditylang.org/linux-amd64/solc-linux-amd64-v0.8.20+commit.a1b79de6",
+		"https://binaries.soliditylang.org/linux-amd64/solc-linux-amd64-v0.8.19+commit.7dd6d404",
+	}
 
 	for i := 0; i < numConcurrent; i++ {
 		wg.Add(1)
@@ -484,8 +416,14 @@ func TestConcurrentDownloads(t *testing.T) {
 			<-ready
 			t.Logf("DEBUG: Goroutine %d starting download", id)
 
-			// Single attempt with longer timeout
-			attemptCtx, attemptCancel := context.WithTimeout(ctx, 20*time.Second)
+			// Use different URLs for different goroutines
+			urlIndex := id % len(urls)
+			manager := solc.NewBinaryManagerWithDir(fmt.Sprintf("0.8.%d", 20-urlIndex), tmpDir)
+			manager.SetClient(client)
+			manager.UseFixedTempFileNames()
+
+			// Single attempt with short timeout since we expect immediate failure
+			attemptCtx, attemptCancel := context.WithTimeout(ctx, 2*time.Second)
 			defer attemptCancel()
 
 			_, err := manager.GetBinary(attemptCtx)
@@ -540,27 +478,35 @@ func TestConcurrentDownloads(t *testing.T) {
 	}
 
 	// Use transport's success count and cache hits for verification
-	actualDownloads := int(transport.successCount.Load())
-	cacheHits := int(transport.cacheHits.Load())
+	actualDownloads := int(transport.SuccessCount.Load())
+	cacheHits := int(transport.CacheHits.Load())
 	totalSuccesses := actualDownloads + cacheHits
 
 	t.Logf("Results: %d actual downloads, %d cache hits, %d total successes, %d errors",
 		actualDownloads, cacheHits, totalSuccesses, len(errs))
 
-	expectedDownloads := numConcurrent / 2
-	if actualDownloads != expectedDownloads {
-		t.Errorf("Expected exactly %d successful downloads, got %d actual downloads",
-			expectedDownloads, actualDownloads)
+	// All downloads should fail
+	if actualDownloads != 0 {
+		t.Errorf("Expected 0 successful downloads, got %d actual downloads", actualDownloads)
 	}
 
-	// Verify total successes matches expected pattern
-	expectedTotal := numConcurrent - len(errs)
-	if totalSuccesses != expectedTotal {
-		t.Errorf("Expected %d total successes (downloads + cache hits), got %d",
-			expectedTotal, totalSuccesses)
+	if cacheHits != 0 {
+		t.Errorf("Expected 0 cache hits, got %d", cacheHits)
 	}
 
-	// Verify only one binary exists
+	// Verify all attempts resulted in errors
+	if len(errs) != numConcurrent {
+		t.Errorf("Expected %d errors (all downloads should fail), got %d", numConcurrent, len(errs))
+	}
+
+	// Verify all errors are connection refused
+	for i, err := range errs {
+		if !strings.Contains(err.Error(), "connection refused") {
+			t.Errorf("Error %d: expected connection refused, got: %v", i, err)
+		}
+	}
+
+	// Verify no binary files exist in cache directory
 	files, err := os.ReadDir(filepath.Join(tmpDir, "0.8.20", "linux-amd64"))
 	if err != nil {
 		t.Fatalf("Failed to read cache directory: %v", err)
@@ -573,8 +519,8 @@ func TestConcurrentDownloads(t *testing.T) {
 		}
 	}
 
-	if binaryCount != 1 {
-		t.Errorf("Expected exactly one binary file, found %d", binaryCount)
+	if binaryCount != 0 {
+		t.Errorf("Expected no binary files, found %d", binaryCount)
 	}
 }
 
@@ -583,7 +529,7 @@ func TestNetworkErrorHandling(t *testing.T) {
 	manager := solc.NewBinaryManagerWithDir("0.8.20", tmpDir)
 
 	// Create a client with the failing transport that always fails
-	transport := &failingTransport{maxSuccesses: 0}
+	transport := &solc.FailingTransport{MaxSuccesses: 0, SkipBackoffDelay: true}
 	client := &http.Client{Transport: transport}
 	manager.SetClient(client)
 

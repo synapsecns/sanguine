@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-// validateCommandNames ensures command names are unique to prevent registration conflicts
+// validateCommandNames ensures command names are unique to prevent registration conflicts.
 func validateCommandNames(commands ...*cliv2.Command) {
 	seen := make(map[string]bool)
 	for _, cmd := range commands {

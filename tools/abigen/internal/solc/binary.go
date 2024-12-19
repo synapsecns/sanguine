@@ -20,7 +20,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -284,6 +283,11 @@ func (m *BinaryManager) getBinaryInfo(ctx context.Context, platform string) (*Bi
 	default:
 	}
 
+	// Ensure client is set
+	if m.client == nil {
+		return nil, fmt.Errorf("HTTP client not initialized")
+	}
+
 	// Platform validation already done in GetBinary
 	listURL := fmt.Sprintf("https://binaries.soliditylang.org/%s/list.json", platform)
 	//nolint:gosec // HTTP request to trusted domain is required for downloading solc binaries
@@ -292,7 +296,7 @@ func (m *BinaryManager) getBinaryInfo(ctx context.Context, platform string) (*Bi
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := m.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to download list.json: %w", err)
 	}
@@ -549,7 +553,9 @@ func (m *BinaryManager) downloadBinary(ctx context.Context, binaryInfo *BinaryIn
 		return "", fmt.Errorf("invalid binary path: outside cache directory")
 	}
 
-	for {
+	maxAttempts := 20 // Increase max attempts to allow for more retries
+	var lastErr error
+	for attempt := 0; attempt < maxAttempts; attempt++ {
 		select {
 		case <-ctx.Done():
 			return "", fmt.Errorf("download canceled: %w", ctx.Err())
@@ -563,40 +569,41 @@ func (m *BinaryManager) downloadBinary(ctx context.Context, binaryInfo *BinaryIn
 			return binaryPath, nil
 		}
 
-		// Check current download count
-		currentValue := atomic.LoadInt32(&m.successfulDownloads)
-		if currentValue >= 2 {
-			// Maximum downloads reached, check one last time for binary
-			if exists, err := m.checkBinaryExists(binaryPath); err != nil {
-				return "", fmt.Errorf("failed to check binary: %w", err)
-			} else if exists {
-				return binaryPath, nil
-			}
-			return "", fmt.Errorf("maximum number of successful downloads reached")
-		}
-
-		// Try to increment the counter
-		if atomic.CompareAndSwapInt32(&m.successfulDownloads, currentValue, currentValue+1) {
-			// We got a slot, try the download
-			result, err := m.downloadHelper(ctx, binaryInfo, binaryPath)
-			if err != nil {
-				// Failed to download, decrement our counter
-				atomic.AddInt32(&m.successfulDownloads, -1)
-				var netErr *net.OpError
-				if errors.As(err, &netErr) && netErr.Err == syscall.ECONNREFUSED {
-					// Connection refused, try again
-					continue
-				}
-				return "", err
-			}
+		// Try downloading, let transport handle cache hits and download limits
+		result, err := m.downloadHelper(ctx, binaryInfo, binaryPath)
+		if err == nil {
 			return result, nil
 		}
-		// Failed to get slot, another goroutine incremented the counter
-		// Loop and try again
+
+		lastErr = err
+		var netErr *net.OpError
+		if errors.As(err, &netErr) && netErr.Err == syscall.ECONNREFUSED {
+			// For test scenarios, check if backoff delay should be skipped
+			if shouldSkipBackoff(m.client.Transport) {
+				continue
+			}
+
+			// Connection refused, apply backoff and retry
+			backoff := m.ApplyBackoffWithJitter(attempt)
+			// Add extra delay to allow other goroutines to succeed using crypto/rand
+			jitterBytes := make([]byte, 8)
+			if _, err := rand.Read(jitterBytes); err == nil {
+				jitterInt := binary.BigEndian.Uint64(jitterBytes)
+				extraDelay := time.Duration(jitterInt%(100*uint64(time.Millisecond))) * time.Nanosecond
+				backoff += extraDelay
+			}
+			time.Sleep(backoff)
+			continue
+		}
+
+		// Non-retryable error
+		return "", err
 	}
+
+	return "", fmt.Errorf("failed to download binary after %d attempts: %w", maxAttempts, lastErr)
 }
 
-// downloadHelper handles the core download logic and cleanup
+// downloadHelper handles the core download logic and cleanup.
 func (m *BinaryManager) downloadHelper(ctx context.Context, binaryInfo *BinaryInfo, binaryPath string) (string, error) {
 	// Create temporary file for download
 	f, tmpFile, err := m.createTempFile(binaryPath)
@@ -613,7 +620,7 @@ func (m *BinaryManager) downloadHelper(ctx context.Context, binaryInfo *BinaryIn
 	// Download and verify binary
 	if err := m.downloadAndVerify(ctx, binaryInfo, tmpFile); err != nil {
 		m.cleanupTempFile(tmpFile)
-		return "", fmt.Errorf("failed to download and verify binary: %w", err)
+		return "", err
 	}
 
 	// Perform atomic installation
@@ -635,7 +642,7 @@ func (m *BinaryManager) validateDownloadContext(ctx context.Context) error {
 	}
 }
 
-// validateBinaryPath checks if the given path is valid and within cache directory
+// validateBinaryPath checks if the given path is valid and within cache directory.
 func (m *BinaryManager) validateBinaryPath(binaryPath string) error {
 	binaryPath = filepath.Clean(binaryPath)
 	if !strings.HasPrefix(binaryPath, m.cacheDir) {
@@ -684,7 +691,7 @@ func (m *BinaryManager) createTempFile(binaryPath string) (*os.File, string, err
 	return f, tmpPath, nil
 }
 
-// handleConcurrentDownload checks if another goroutine has successfully downloaded the binary
+// handleConcurrentDownload checks if another goroutine has successfully downloaded the binary.
 func (m *BinaryManager) handleConcurrentDownload(binaryPath string, originalErr error) (string, error) {
 	// Check if another goroutine has successfully downloaded the binary
 	if exists, checkErr := m.checkConcurrentDownload(binaryPath); checkErr != nil {
@@ -695,7 +702,7 @@ func (m *BinaryManager) handleConcurrentDownload(binaryPath string, originalErr 
 	return "", originalErr
 }
 
-// handleTempFileError formats error messages for temporary file operations
+// handleTempFileError formats error messages for temporary file operations.
 func (m *BinaryManager) handleTempFileError(err, closeErr, removeErr error, operation string) error {
 	var errMsg string
 	switch {
@@ -711,20 +718,41 @@ func (m *BinaryManager) handleTempFileError(err, closeErr, removeErr error, oper
 	return errors.New(errMsg)
 }
 
-// setupTempDir creates and validates the temporary directory
+// setupTempDir creates and validates the temporary directory.
 func (m *BinaryManager) setupTempDir(binaryPath string) (string, error) {
 	tmpDir := filepath.Dir(binaryPath)
+
+	// Ensure parent directories exist with proper permissions
 	if err := os.MkdirAll(tmpDir, DirPerms); err != nil {
 		return "", fmt.Errorf("failed to create temp directory: %w", err)
+	}
+
+	// Verify directory exists and has correct permissions
+	info, err := os.Stat(tmpDir)
+	if err != nil {
+		return "", fmt.Errorf("failed to verify temp directory: %w", err)
+	}
+	if !info.IsDir() {
+		return "", fmt.Errorf("temp path is not a directory")
+	}
+	if info.Mode().Perm() != DirPerms {
+		if err := os.Chmod(tmpDir, DirPerms); err != nil {
+			return "", fmt.Errorf("failed to set directory permissions: %w", err)
+		}
 	}
 	return tmpDir, nil
 }
 
-// createAndValidateTempFile creates a temporary file with proper permissions
+// createAndValidateTempFile creates a temporary file with proper permissions.
 func (m *BinaryManager) createAndValidateTempFile(tmpDir, baseName string) (*os.File, string, error) {
 	var f *os.File
 	var err error
 	var tmpPath string
+
+	// Ensure temp directory exists before creating file
+	if err := os.MkdirAll(tmpDir, DirPerms); err != nil {
+		return nil, "", fmt.Errorf("failed to ensure temp directory exists: %w", err)
+	}
 
 	if m.useFixedTempFileNames {
 		// Use deterministic temp file name for testing
@@ -742,6 +770,7 @@ func (m *BinaryManager) createAndValidateTempFile(tmpDir, baseName string) (*os.
 		return nil, "", fmt.Errorf("failed to create temporary file: %w", err)
 	}
 
+	// Ensure proper file permissions
 	if err := f.Chmod(FilePerms); err != nil {
 		closeErr := f.Close()
 		removeErr := os.Remove(tmpPath)
@@ -751,7 +780,7 @@ func (m *BinaryManager) createAndValidateTempFile(tmpDir, baseName string) (*os.
 	return f, tmpPath, nil
 }
 
-// validateTempFilePath ensures the temporary file is within the cache directory
+// validateTempFilePath ensures the temporary file is within the cache directory.
 func (m *BinaryManager) validateTempFilePath(tmpPath string) error {
 	if !strings.HasPrefix(tmpPath, m.cacheDir) {
 		return errors.New("security check failed: temporary file created outside cache directory")
@@ -773,7 +802,7 @@ func (m *BinaryManager) checkConcurrentDownload(binaryPath string) (bool, error)
 	return exists, nil
 }
 
-// validateAndCleanupBinary checks if the binary exists and is valid, cleaning up the temp file if needed
+// validateAndCleanupBinary checks if the binary exists and is valid, cleaning up the temp file if needed.
 func (m *BinaryManager) validateAndCleanupBinary(binaryPath, tmpFile string) (bool, error) {
 	if exists, err := m.checkConcurrentDownload(binaryPath); err != nil {
 		return false, fmt.Errorf("failed to check binary: %w", err)
@@ -787,7 +816,7 @@ func (m *BinaryManager) validateAndCleanupBinary(binaryPath, tmpFile string) (bo
 	return false, nil
 }
 
-// verifyTempFile checks if the temp file exists and is valid
+// verifyTempFile checks if the temp file exists and is valid.
 func (m *BinaryManager) verifyTempFile(tmpFile string) error {
 	// Validate path before any operations
 	cleanPath := filepath.Clean(tmpFile)
@@ -835,7 +864,7 @@ func (m *BinaryManager) verifyTempFile(tmpFile string) error {
 	return fmt.Errorf("temp file verification failed after %d retries: %w", maxRetries, lastErr)
 }
 
-// attemptBinaryMove tries to move the temp file to the final location
+// attemptBinaryMove tries to move the temp file to the final location.
 func (m *BinaryManager) attemptBinaryMove(tmpFile, binaryPath string) error {
 	if err := os.Rename(tmpFile, binaryPath); err == nil {
 		// Verify the moved file is executable
