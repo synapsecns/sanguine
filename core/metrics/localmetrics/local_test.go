@@ -1,10 +1,27 @@
 package localmetrics_test
 
 import (
+	"context"
+	"testing"
+
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics/internal"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 )
+
+type LocalServerSuite struct {
+	suite.Suite
+	ctx context.Context
+}
+
+func (s *LocalServerSuite) SetupTest() {
+	s.ctx = context.Background()
+}
+
+func (s *LocalServerSuite) GetTestContext() context.Context {
+	return s.ctx
+}
 
 func (l *LocalServerSuite) TestFullJaeger() {
 	ts := localmetrics.StartTestServer(l.GetTestContext(), l.T())
@@ -27,8 +44,44 @@ func (l *LocalServerSuite) TestFullJaeger() {
 	}
 }
 
-// TestStartServerJaegerPreset tests the start server function with jaeger preset.
-// only pyroscope should run.
+func (s *LocalServerSuite) TestStartServerWithDockerErrors() {
+	tests := []struct {
+		name    string
+		setup   func()
+		wantErr bool
+	}{
+		{
+			name: "docker rate limit error",
+			setup: func() {
+				s.T().Setenv("DOCKER_RATE_LIMIT", "true")
+			},
+			wantErr: true,
+		},
+		{
+			name: "port binding error",
+			setup: func() {
+				s.T().Setenv("FORCE_PORT_CONFLICT", "true")
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+			if tt.setup != nil {
+				tt.setup()
+			}
+
+			ts := localmetrics.StartTestServer(s.GetTestContext(), s.T())
+			if tt.wantErr {
+				s.Nil(ts, "expected nil server due to error")
+			} else {
+				s.NotNil(ts, "expected non-nil server")
+			}
+		})
+	}
+}
+
 func (l *LocalServerSuite) TestStartServerJaegerPreset() {
 	l.T().Setenv(internal.JaegerEndpoint, gofakeit.URL())
 	l.T().Setenv(internal.JaegerUIEndpoint, gofakeit.URL())
@@ -74,4 +127,8 @@ func (l *LocalServerSuite) TestStartServerPyroscopePreset() {
 	for _, container := range containers {
 		l.Require().Equal("jaeger", container.Labels[localmetrics.AppLabel])
 	}
+}
+
+func TestLocalServerSuite(t *testing.T) {
+	suite.Run(t, new(LocalServerSuite))
 }
