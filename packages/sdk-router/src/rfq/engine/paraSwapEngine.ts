@@ -17,7 +17,6 @@ import {
   Slippage,
   SwapEngine,
   SwapEngineRoute,
-  toBasisPoints,
 } from './swapEngine'
 import { StepParams } from '../steps'
 import { AMOUNT_NOT_PRESENT, encodeZapData } from '../zapData'
@@ -118,7 +117,8 @@ export class ParaSwapEngine implements SwapEngine {
       side: 'SELL',
       userAddress: tokenZap,
       network: chainId.toString(),
-      slippage: toBasisPoints(slippage),
+      // slippage settings are applied when generating the zap data as minFwdAmount
+      slippage: MAX_SLIPPAGE,
       version: '6.2',
     }
     const response = await this.getResponse(request)
@@ -126,17 +126,19 @@ export class ParaSwapEngine implements SwapEngine {
     if (expectedAmountOut.eq(Zero)) {
       return EmptyRoute
     }
+    const minAmountOut = applySlippage(expectedAmountOut, slippage)
     return {
       engineID: this.id,
       expectedAmountOut,
-      minAmountOut: applySlippage(expectedAmountOut, slippage),
+      minAmountOut,
       steps: [
         this.generateParaSwapStep(
           tokenIn,
           tokenOut,
           amountIn,
           response,
-          finalRecipient
+          finalRecipient,
+          minAmountOut
         ),
       ],
     }
@@ -183,7 +185,8 @@ export class ParaSwapEngine implements SwapEngine {
     tokenOut: string,
     amountIn: BigintIsh,
     response: ParaSwapResponse,
-    finalRecipient: Recipient
+    finalRecipient: Recipient,
+    minAmountOut: BigNumber
   ): StepParams {
     if (isSameAddress(finalRecipient.address, AddressZero)) {
       throw new Error('Missing recipient address for ParaSwap')
@@ -194,6 +197,7 @@ export class ParaSwapEngine implements SwapEngine {
       amountPosition: AMOUNT_NOT_PRESENT,
       finalToken: tokenOut,
       forwardTo: finalRecipient.address,
+      minFwdAmount: minAmountOut,
     })
     return {
       token: tokenIn,
