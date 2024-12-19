@@ -1,5 +1,6 @@
 import express from 'express'
 import swaggerUi from 'swagger-ui-express'
+import { startPyroscope, initializeTracing, tracingMiddleware } from '@synapsecns/tracing'
 
 import { specs } from './swagger'
 import routes from './routes'
@@ -11,8 +12,26 @@ import {
   rfqIndexerProxy,
 } from './utils/isGatewayRoute'
 
+// Initialize tracing
+const sdk = initializeTracing({
+  serviceName: 'rest-api',
+  version: process.env.VERSION || '0.0.0',
+});
+
+// Start pyroscope
+startPyroscope({
+  applicationName: 'rest-api',
+  serverAddress: process.env.PYROSCOPE_ENDPOINT,
+  tags: {
+    version: process.env.VERSION,
+  },
+});
+
 const app = express()
 const port = process.env.PORT || 3000
+
+// Add middleware
+app.use(tracingMiddleware());
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -111,3 +130,12 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason, promise) => {
   logger.error('Unhandled Rejection at:', promise, 'reason:', reason)
 })
+
+process.on('SIGTERM', () => {
+  sdk.shutdown()
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.log('Error shutting down SDK', error);
+      process.exit(1);
+    });
+});

@@ -6,7 +6,7 @@
     "node": ">=18.17.0"
   },
   "scripts": {
-    "build": "tsc",
+    "npm run build": "tsc",
     "build:go": " ",
     "build:slither": " ",
     "dev": "NODE_ENV=development nodemon --watch src --exec ts-node src/app.ts",
@@ -24,6 +24,7 @@
     "@ethersproject/units": "5.7.0",
     "@synapsecns/sdk-router": "^0.11.9",
     "@synapsecns/synapse-constants": "^1.8.6",
+    "@synapsecns/tracing": "^0.1.0",
     "bignumber": "^1.1.0",
     "cross-fetch": "^4.0.0",
     "dotenv": "^16.4.5",
