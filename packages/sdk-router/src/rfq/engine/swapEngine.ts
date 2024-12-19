@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers'
-import { Zero } from '@ethersproject/constants'
+import { Zero, WeiPerEther } from '@ethersproject/constants'
 
 import { StepParams } from '../steps'
 import { BigintIsh } from '../../constants'
@@ -79,6 +79,20 @@ export const validateEngineID = (engineID: number): engineID is EngineID => {
 
 export const toBasisPoints = (slippage: Slippage): number => {
   return (slippage.numerator * 10000) / slippage.denominator
+}
+
+export const toWei = (slippage: Slippage): BigNumber => {
+  return BigNumber.from(slippage.numerator)
+    .mul(WeiPerEther)
+    .div(slippage.denominator)
+}
+
+export const isCorrectSlippage = (slippage: Slippage): boolean => {
+  return (
+    slippage.numerator >= 0 &&
+    slippage.numerator <= slippage.denominator &&
+    slippage.denominator > 0
+  )
 }
 
 export const applySlippage = (

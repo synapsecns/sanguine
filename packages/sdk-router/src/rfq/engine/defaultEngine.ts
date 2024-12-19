@@ -24,8 +24,10 @@ import {
   RecipientEntity,
   EngineID,
   Slippage,
+  toWei,
+  applySlippage,
+  isCorrectSlippage,
 } from './swapEngine'
-import { applySlippage } from '../../module'
 
 export class DefaultEngine implements SwapEngine {
   static defaultActions = new Interface(
@@ -77,14 +79,13 @@ export class DefaultEngine implements SwapEngine {
     finalRecipient: Recipient,
     slippage: Slippage
   ): Promise<SwapEngineRoute> {
-    // TODO: Previewer should take slippage into account
-    const strictOut = slippage.numerator !== slippage.denominator
     const { previewer, swapQuoter } = this.contracts[chainId]
     if (
       !previewer ||
       !swapQuoter ||
       isSameAddress(tokenIn, tokenOut) ||
-      BigNumber.from(amountIn).eq(Zero)
+      BigNumber.from(amountIn).eq(Zero) ||
+      !isCorrectSlippage(slippage)
     ) {
       return EmptyRoute
     }
@@ -93,16 +94,17 @@ export class DefaultEngine implements SwapEngine {
     const { amountOut, steps: stepsOutput } = await previewer.previewIntent(
       swapQuoter,
       forwardTo,
-      strictOut,
+      toWei(slippage),
       tokenIn,
       tokenOut,
       amountIn
     )
+    const minAmountOut = applySlippage(amountOut, slippage)
     // Remove extra fields before the encoding
-    const route = {
+    return {
       engineID: this.id,
       expectedAmountOut: amountOut,
-      minAmountOut: amountOut,
+      minAmountOut,
       steps: stepsOutput.map(({ token, amount, msgValue, zapData }) => ({
         token,
         amount,
@@ -110,7 +112,6 @@ export class DefaultEngine implements SwapEngine {
         zapData,
       })),
     }
-    return strictOut ? this.applySlippage(chainId, route, slippage) : route
   }
 
   public applySlippage(
@@ -118,11 +119,7 @@ export class DefaultEngine implements SwapEngine {
     route: SwapEngineRoute,
     slippage: Slippage
   ): SwapEngineRoute {
-    const minAmountOut = applySlippage(
-      route.expectedAmountOut,
-      slippage.numerator,
-      slippage.denominator
-    )
+    const minAmountOut = applySlippage(route.expectedAmountOut, slippage)
     if (minAmountOut.eq(route.minAmountOut)) {
       // Nothing to do
       return route

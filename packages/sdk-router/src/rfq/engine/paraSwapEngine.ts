@@ -12,6 +12,7 @@ import {
   applySlippage,
   EmptyRoute,
   EngineID,
+  isCorrectSlippage,
   Recipient,
   Slippage,
   SwapEngine,
@@ -94,14 +95,13 @@ export class ParaSwapEngine implements SwapEngine {
     finalRecipient: Recipient,
     slippage: Slippage
   ): Promise<SwapEngineRoute> {
-    if (isSameAddress(tokenIn, tokenOut)) {
-      return EmptyRoute
-    }
-    if (BigNumber.from(amountIn).eq(Zero)) {
-      return EmptyRoute
-    }
     const tokenZap = this.tokenZapAddressMap[chainId]
-    if (!tokenZap) {
+    if (
+      !tokenZap ||
+      isSameAddress(tokenIn, tokenOut) ||
+      BigNumber.from(amountIn).eq(Zero) ||
+      !isCorrectSlippage(slippage)
+    ) {
       return EmptyRoute
     }
     const srcDecimals = await this.getTokenDecimals(chainId, tokenIn)
