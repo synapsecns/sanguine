@@ -12,7 +12,10 @@
   "scripts": {
     "prepare": "rollup -c --bundleConfigAsCjs",
     "build": "rollup -c --bundleConfigAsCjs",
-    "prepublish": "yarn build"
+    "prepublish": "yarn build",
+    "lint:check": "eslint . --max-warnings=0",
+    "ci:lint": "npm run lint:check",
+    "test:coverage": "echo 'No tests defined.'"
   },
   "dependencies": {
     "@opentelemetry/api": "1.8.0",
