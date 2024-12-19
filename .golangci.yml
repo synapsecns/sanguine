@@ -104,8 +104,6 @@ linters:
     - typecheck
     # magic numbers
     - mnd
-    # constants
-    - goconst
   fast: false
 
 issues:
@@ -140,7 +138,7 @@ issues:
         - cyclop
     - path: signoz/*
       linters:
-        - gomnd
+        - mnd
         - stylecheck
     - path: example/*
       linters:
