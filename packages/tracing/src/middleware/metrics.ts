@@ -8,7 +8,7 @@ export interface MetricsMiddlewareConfig {
   serviceName: string;
 }
 
-export function metricsMiddleware(config: MetricsMiddlewareConfig) {
+export function metricsMiddleware(config: MetricsMiddlewareConfig): (req: Request, res: Response, next: NextFunction) => void {
   const meter = metrics.getMeter(config.serviceName);
 
   const requestDuration = meter.createHistogram(HTTP_REQUEST_DURATION, {

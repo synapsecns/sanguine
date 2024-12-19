@@ -5,7 +5,7 @@ export interface TracingMiddlewareConfig {
   serviceName?: string;
 }
 
-export function tracingMiddleware(config: TracingMiddlewareConfig = {}) {
+export function tracingMiddleware(config: TracingMiddlewareConfig = {}): (req: Request, res: Response, next: NextFunction) => void {
   const tracer = trace.getTracer(config.serviceName || 'rest-api');
 
   return (req: Request, res: Response, next: NextFunction) => {
