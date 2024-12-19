@@ -21,6 +21,9 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
     /// @dev Amount value that signals that the Zap step should be performed using the full ZapRecipient balance.
     uint256 internal constant FULL_BALANCE = type(uint256).max;
 
+    /// @dev Maximum allowed slippage for the intent preview (100%). Use extreme caution when using this value.
+    uint256 internal constant MAX_SLIPPAGE = 10 ** 18;
+
     error SIP__NoOpForwardNotSupported();
     error SIP__PoolTokenMismatch();
     error SIP__PoolZeroAddress();
@@ -41,7 +44,6 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         view
         returns (uint256 amountOut, ISynapseIntentRouter.StepParams[] memory steps)
     {
-        bool strictOut = slippageWei == 0;
         // First, check if the intent is a no-op.
         if (tokenIn == tokenOut) {
             if (forwardTo != address(0)) revert SIP__NoOpForwardNotSupported();
@@ -58,7 +60,10 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         if (amountOut == 0) {
             return (0, new ISynapseIntentRouter.StepParams[](0));
         }
-        uint256 lastStepMinAmountOut = strictOut ? amountOut : 0;
+        uint256 lastStepMinAmountOut = 0;
+        if (slippageWei < MAX_SLIPPAGE) {
+            lastStepMinAmountOut = amountOut - (amountOut * slippageWei) / MAX_SLIPPAGE;
+        }
 
         // At this point we have a quote for a non-trivial action, therefore `query.rawParams` is not empty.
         if (query.rawParams.length == 0) revert SIP__RawParamsEmpty();
