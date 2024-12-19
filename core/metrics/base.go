@@ -215,14 +215,8 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 	// will do nothing if not enabled.
 	StartPyroscope(buildInfo)
 
-	startRookout()
-
 	propagator := b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))
 	return newBaseHandlerWithTracerProvider(rsr, buildInfo, unwrappedTP, tp, propagator)
-}
-
-func startRookout() {
-
 }
 
 // newBaseHandlerWithTracerProvider creates a new baseHandler for any opentelemtry tracer.
