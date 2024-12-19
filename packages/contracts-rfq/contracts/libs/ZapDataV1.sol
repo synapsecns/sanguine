@@ -14,15 +14,17 @@ library ZapDataV1 {
     // uint16   amountPosition          [002 .. 004)
     // address  finalToken              [004 .. 024)
     // address  forwardTo               [024 .. 044)
-    // address  target                  [044 .. 064)
-    // bytes    payload                 [064 .. ***)
+    // uint256  minFwdAmount            [044 .. 076)
+    // address  target                  [076 .. 096)
+    // bytes    payload                 [096 .. ***)
 
     // forgefmt: disable-start
     uint256 private constant OFFSET_AMOUNT_POSITION = 2;
     uint256 private constant OFFSET_FINAL_TOKEN     = 4;
     uint256 private constant OFFSET_FORWARD_TO      = 24;
-    uint256 private constant OFFSET_TARGET          = 44;
-    uint256 private constant OFFSET_PAYLOAD         = 64;
+    uint256 private constant OFFSET_MIN_FWD_AMOUNT  = 44;
+    uint256 private constant OFFSET_TARGET          = 76;
+    uint256 private constant OFFSET_PAYLOAD         = 96;
     // forgefmt: disable-end
 
     error ZapDataV1__InvalidEncoding();
@@ -56,6 +58,8 @@ library ZapDataV1 {
     /// @param forwardTo_       The address to which `finalToken` should be forwarded. This parameter is required only
     ///                         if the Zap action does not automatically transfer the token to the intended recipient.
     ///                         Otherwise, it must be set to address(0).
+    /// @param minFwdAmount_    The minimum amount of `finalToken` that must be forwarded to the `forwardTo_` address.
+    ///                         This value is respected only if the `forwardTo_` parameter is set to a non-zero value.
     /// @param target_          Address of the target contract.
     /// @param payload_         ABI-encoded calldata to be used for the `target_` contract call.
     ///                         If the target function has the token amount as an argument, any placeholder amount value
@@ -65,6 +69,7 @@ library ZapDataV1 {
         uint16 amountPosition_,
         address finalToken_,
         address forwardTo_,
+        uint256 minFwdAmount_,
         address target_,
         bytes memory payload_
     )
@@ -77,7 +82,7 @@ library ZapDataV1 {
         if (amountPosition_ != AMOUNT_NOT_PRESENT && (uint256(amountPosition_) + 32 > payload_.length)) {
             revert ZapDataV1__InvalidEncoding();
         }
-        return abi.encodePacked(VERSION, amountPosition_, finalToken_, forwardTo_, target_, payload_);
+        return abi.encodePacked(VERSION, amountPosition_, finalToken_, forwardTo_, minFwdAmount_, target_, payload_);
     }
 
     /// @notice Extracts the version from the encoded Zap Data.
@@ -101,6 +106,14 @@ library ZapDataV1 {
         // Load 32 bytes from the offset and shift it 96 bits to the right to get the highest 160 bits.
         assembly {
             forwardTo_ := shr(96, calldataload(add(encodedZapData.offset, OFFSET_FORWARD_TO)))
+        }
+    }
+
+    /// @notice Extracts the minimum forward amount from the encoded Zap Data.
+    function minFwdAmount(bytes calldata encodedZapData) internal pure returns (uint256 minFwdAmount_) {
+        // Load 32 bytes from the offset. No shift is applied, as we need the full 256 bits.
+        assembly {
+            minFwdAmount_ := calldataload(add(encodedZapData.offset, OFFSET_MIN_FWD_AMOUNT))
         }
     }
 

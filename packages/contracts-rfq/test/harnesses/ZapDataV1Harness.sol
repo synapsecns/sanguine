@@ -19,6 +19,7 @@ contract ZapDataV1Harness {
         uint16 amountPosition_,
         address finalToken_,
         address forwardTo_,
+        uint256 minFwdAmount_,
         address target_,
         bytes memory payload_
     )
@@ -26,7 +27,7 @@ contract ZapDataV1Harness {
         pure
         returns (bytes memory encodedZapData)
     {
-        return ZapDataV1.encodeV1(amountPosition_, finalToken_, forwardTo_, target_, payload_);
+        return ZapDataV1.encodeV1(amountPosition_, finalToken_, forwardTo_, minFwdAmount_, target_, payload_);
     }
 
     function version(bytes calldata encodedZapData) public pure returns (uint16) {
@@ -39,6 +40,10 @@ contract ZapDataV1Harness {
 
     function forwardTo(bytes calldata encodedZapData) public pure returns (address) {
         return ZapDataV1.forwardTo(encodedZapData);
+    }
+
+    function minFwdAmount(bytes calldata encodedZapData) public pure returns (uint256) {
+        return ZapDataV1.minFwdAmount(encodedZapData);
     }
 
     function target(bytes calldata encodedZapData) public pure returns (address) {
