@@ -2,7 +2,7 @@ module github.com/synapsecns/sanguine/tools
 
 go 1.22.1
 
-toolchain go1.22.4
+toolchain go1.23.3
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088

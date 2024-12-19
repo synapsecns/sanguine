@@ -35,3 +35,58 @@
   - Replaced filePerms with FilePerms (0600) in writeResponseToFile, createAndValidateTempFile, verifyFileReadable, verifyFileAttributes
   - Replaced execPerms with ExecPerms (0750) in attemptBinaryMove, verifyAndInstall
 - Improved test reliability by letting platform detection work naturally
+
+## Coverage Analysis Findings
+
+### Zero Coverage Functions (0.0%)
+1. handleConcurrentDownload
+   - Not triggered in TestConcurrentDownloads due to semaphore limiting concurrent access
+   - Need test cases for actual concurrent download collisions
+   - Should remove/increase semaphore limit in tests
+
+2. handleTempFileError
+   - Not covered in TestErrorHandling
+   - Missing test cases for temp file permission errors, disk space errors
+   - Need to simulate various temp file error conditions
+
+3. applyBackoffWithJitter
+   - BackoffWithJitter test exists but doesn't reach implementation
+   - Need to trigger actual retry scenarios with backoff
+   - Should test different attempt counts and delays
+
+### Low Coverage Functions
+1. downloadFile (53.8%) and executeRequest (50.0%)
+   - Missing network error scenarios
+   - Need tests for timeout, connection refused
+   - Need tests for invalid HTTP responses
+
+2. atomicInstall (48.1%)
+   - Missing failure modes in atomic file operations
+   - Need tests for permission errors during move
+   - Need tests for concurrent access during installation
+
+3. verifyTempFile (43.5%)
+   - Missing checksum verification edge cases
+   - Need tests for corrupted files
+   - Need tests for partial downloads
+
+4. downloadHelper (42.9%)
+   - Missing retry logic coverage
+   - Need tests for temporary network issues
+   - Need tests for backoff behavior
+
+### Required Test Improvements
+1. Concurrent Downloads
+   - Remove/increase semaphore limit in TestConcurrentDownloads
+   - Add test cases for actual concurrent access
+   - Test race conditions in binary installation
+
+2. Error Handling
+   - Add comprehensive temp file error scenarios
+   - Test network failures and retries
+   - Test filesystem permission issues
+
+3. Atomic Operations
+   - Test concurrent access during installation
+   - Test partial writes and corruption
+   - Test cleanup after failed operations

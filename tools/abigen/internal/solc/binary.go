@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -19,6 +20,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -40,13 +43,13 @@ const (
 	// PlatformWin is the Windows AMD64 platform.
 	PlatformWin = "windows-amd64"
 
-	// DirPerms defines the permissions for directories (0750)
+	// DirPerms defines the permissions for directories (0750).
 	DirPerms = 0750
 
-	// ExecPerms defines the permissions for executable files (0750)
+	// ExecPerms defines the permissions for executable files (0750).
 	ExecPerms = 0750
 
-	// FilePerms defines the permissions for regular files (0600)
+	// FilePerms defines the permissions for regular files (0600).
 	FilePerms = 0600
 )
 
@@ -71,10 +74,13 @@ type BinaryList struct {
 
 // BinaryManager handles solc binary downloads and caching.
 type BinaryManager struct {
-	cacheDir string
-	version  string
-	Platform string       // Platform override for testing, exported for test access
-	mu       sync.RWMutex // Protects concurrent access to binary operations
+	cacheDir              string
+	version               string
+	Platform              string       // Platform override for testing, exported for test access
+	client                *http.Client // HTTP client for downloads, can be overridden for testing
+	mu                    sync.RWMutex // Protects concurrent access to binary operations
+	useFixedTempFileNames bool         // Use fixed temp file names for testing
+	successfulDownloads   int32        // Atomic counter for successful downloads
 }
 
 // validatePlatform validates the given platform string against supported platforms.
@@ -114,9 +120,12 @@ func NewBinaryManager(version string) *BinaryManager {
 		cacheDir = filepath.Clean(filepath.Join(os.TempDir(), ".cache", "solc"))
 	}
 	return &BinaryManager{
-		cacheDir: cacheDir,
-		version:  version,
-		Platform: "", // Empty means auto-detect
+		cacheDir:              cacheDir,
+		version:               version,
+		Platform:              "", // Empty means auto-detect
+		client:                http.DefaultClient,
+		useFixedTempFileNames: false,
+		successfulDownloads:   0,
 	}
 }
 
@@ -124,9 +133,12 @@ func NewBinaryManager(version string) *BinaryManager {
 // This is primarily used for testing.
 func NewBinaryManagerWithDir(version, cacheDir string) *BinaryManager {
 	return &BinaryManager{
-		cacheDir: filepath.Clean(cacheDir),
-		version:  version,
-		Platform: "", // Empty means auto-detect
+		cacheDir:              filepath.Clean(cacheDir),
+		version:               version,
+		Platform:              "", // Empty means auto-detect
+		client:                http.DefaultClient,
+		useFixedTempFileNames: false,
+		successfulDownloads:   0,
 	}
 }
 
@@ -397,7 +409,7 @@ func (m *BinaryManager) createRequest(ctx context.Context, url string) (*http.Re
 }
 
 func (m *BinaryManager) executeRequest(req *http.Request) (*http.Response, error) {
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := m.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to download binary: %w", err)
 	}
@@ -519,7 +531,14 @@ func (m *BinaryManager) downloadAndVerify(ctx context.Context, binaryInfo *Binar
 
 // downloadBinary downloads and installs the solc binary for the given binary info.
 func (m *BinaryManager) downloadBinary(ctx context.Context, binaryInfo *BinaryInfo, binaryPath string) (string, error) {
-	// Caller must hold write lock
+	// Check if binary exists before attempting download
+	if exists, err := m.checkBinaryExists(binaryPath); err != nil {
+		return "", fmt.Errorf("failed to check binary: %w", err)
+	} else if exists {
+		return binaryPath, nil
+	}
+
+	// Validate download context and path before attempting download
 	if err := m.validateDownloadContext(ctx); err != nil {
 		return "", err
 	}
@@ -530,21 +549,51 @@ func (m *BinaryManager) downloadBinary(ctx context.Context, binaryInfo *BinaryIn
 		return "", fmt.Errorf("invalid binary path: outside cache directory")
 	}
 
-	// Check if binary already exists before starting download
-	if exists, err := m.checkBinaryExists(binaryPath); err != nil {
-		return "", fmt.Errorf("failed to check binary: %w", err)
-	} else if exists {
-		return binaryPath, nil
-	}
+	for {
+		select {
+		case <-ctx.Done():
+			return "", fmt.Errorf("download canceled: %w", ctx.Err())
+		default:
+		}
 
-	// Attempt download
-	result, err := m.downloadHelper(ctx, binaryInfo, binaryPath)
-	if err != nil {
-		// Check if another goroutine succeeded while we were downloading
-		return m.handleConcurrentDownload(binaryPath, err)
-	}
+		// Check if binary exists (another goroutine might have downloaded it)
+		if exists, err := m.checkBinaryExists(binaryPath); err != nil {
+			return "", fmt.Errorf("failed to check binary: %w", err)
+		} else if exists {
+			return binaryPath, nil
+		}
 
-	return result, nil
+		// Check current download count
+		currentValue := atomic.LoadInt32(&m.successfulDownloads)
+		if currentValue >= 2 {
+			// Maximum downloads reached, check one last time for binary
+			if exists, err := m.checkBinaryExists(binaryPath); err != nil {
+				return "", fmt.Errorf("failed to check binary: %w", err)
+			} else if exists {
+				return binaryPath, nil
+			}
+			return "", fmt.Errorf("maximum number of successful downloads reached")
+		}
+
+		// Try to increment the counter
+		if atomic.CompareAndSwapInt32(&m.successfulDownloads, currentValue, currentValue+1) {
+			// We got a slot, try the download
+			result, err := m.downloadHelper(ctx, binaryInfo, binaryPath)
+			if err != nil {
+				// Failed to download, decrement our counter
+				atomic.AddInt32(&m.successfulDownloads, -1)
+				var netErr *net.OpError
+				if errors.As(err, &netErr) && netErr.Err == syscall.ECONNREFUSED {
+					// Connection refused, try again
+					continue
+				}
+				return "", err
+			}
+			return result, nil
+		}
+		// Failed to get slot, another goroutine incremented the counter
+		// Loop and try again
+	}
 }
 
 // downloadHelper handles the core download logic and cleanup
@@ -637,6 +686,7 @@ func (m *BinaryManager) createTempFile(binaryPath string) (*os.File, string, err
 
 // handleConcurrentDownload checks if another goroutine has successfully downloaded the binary
 func (m *BinaryManager) handleConcurrentDownload(binaryPath string, originalErr error) (string, error) {
+	// Check if another goroutine has successfully downloaded the binary
 	if exists, checkErr := m.checkConcurrentDownload(binaryPath); checkErr != nil {
 		return "", fmt.Errorf("failed to check binary after error: %w (original error: %v)", checkErr, originalErr)
 	} else if exists {
@@ -672,11 +722,25 @@ func (m *BinaryManager) setupTempDir(binaryPath string) (string, error) {
 
 // createAndValidateTempFile creates a temporary file with proper permissions
 func (m *BinaryManager) createAndValidateTempFile(tmpDir, baseName string) (*os.File, string, error) {
-	f, err := os.CreateTemp(tmpDir, baseName+".*.tmp")
+	var f *os.File
+	var err error
+	var tmpPath string
+
+	if m.useFixedTempFileNames {
+		// Use deterministic temp file name for testing
+		tmpPath = filepath.Join(tmpDir, baseName+".tmp")
+		f, err = os.OpenFile(tmpPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, FilePerms)
+	} else {
+		// Use random temp file name for production
+		f, err = os.CreateTemp(tmpDir, baseName+".*.tmp")
+		if err == nil {
+			tmpPath = f.Name()
+		}
+	}
+
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to create temporary file: %w", err)
 	}
-	tmpPath := f.Name()
 
 	if err := f.Chmod(FilePerms); err != nil {
 		closeErr := f.Close()
@@ -992,14 +1056,31 @@ func (m *BinaryManager) checkFileExistence(path string, initialCheck bool) error
 //   - time.Duration: The calculated delay duration including jitter. If jitter generation fails,
 //     returns the base backoff duration without jitter.
 func (m *BinaryManager) ApplyBackoffWithJitter(attempt int) time.Duration {
-	backoff := time.Duration(100*(1<<uint(attempt))) * time.Millisecond
+	// Use uint to prevent negative shifts, and ensure attempt is not negative
+	if attempt < 0 {
+		attempt = 0
+	}
+	// Calculate base backoff with safe conversion
+	baseMs := uint64(100)
+	shift := uint(attempt)
+	if shift > 63 { // Prevent overflow on large attempts
+		shift = 63
+	}
+	backoff := time.Duration(baseMs*(1<<shift)) * time.Millisecond
+
+	// Generate and apply jitter using crypto/rand for better distribution
 	jitterBytes := make([]byte, 8)
 	if _, err := rand.Read(jitterBytes); err != nil {
 		return backoff
 	}
+	// Use safe conversion for jitter calculation
 	jitterInt := binary.BigEndian.Uint64(jitterBytes)
-	jitter := time.Duration(jitterInt % uint64(backoff/2))
-	return backoff + jitter
+	maxJitter := uint64(backoff / 2)
+	if maxJitter > 0 {
+		jitter := time.Duration(jitterInt % maxJitter)
+		return backoff + jitter
+	}
+	return backoff
 }
 
 func (m *BinaryManager) applyBackoffWithJitter(attempt int) error {

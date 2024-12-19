@@ -1,5 +1,7 @@
 go 1.22.4
 
+toolchain go1.22.7
+
 // note: new paths should be added as flags to the .codecov.yaml
 use (
 	./agents
