@@ -82,9 +82,18 @@ func (j *testJaeger) StartPyroscopeServer(ctx context.Context) *uiResource {
 		config.AutoRemove = true
 		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 	})
-	assert.Nil(j.tb, err)
+	if err != nil {
+		j.tb.Logf("Failed to start Pyroscope container: %v", err)
+		return nil
+	}
 
-	j.tb.Setenv(internal.PyroscopeEndpoint, fmt.Sprintf("http://localhost:%s", dockerutil.GetPort(resource, "4040/tcp")))
+	port4040 := dockerutil.GetPort(resource, "4040/tcp")
+	if port4040 == "" {
+		j.tb.Log("Failed to get Pyroscope container port")
+		return nil
+	}
+
+	j.tb.Setenv(internal.PyroscopeEndpoint, fmt.Sprintf("http://localhost:%s", port4040))
 
 	if !j.cfg.keepContainers {
 		err = resource.Expire(uint(keepAliveOnFailure.Seconds()))

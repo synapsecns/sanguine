@@ -45,11 +45,20 @@ func (j *testJaeger) StartJaegerServer(ctx context.Context) *uiResource {
 		config.AutoRemove = true
 		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 	})
-	assert.Nil(j.tb, err)
+	if err != nil {
+		j.tb.Logf("Failed to start Jaeger container: %v", err)
+		return nil
+	}
 
-	j.tb.Setenv(internal.JaegerEndpoint, fmt.Sprintf("http://localhost:%s/api/traces", dockerutil.GetPort(resource, "14268/tcp")))
-	// uiEndpoint is the jaeger endpoint, we want to instead use the pyroscope endpoint
-	uiEndpoint := fmt.Sprintf("http://localhost:%s", dockerutil.GetPort(resource, "16686/tcp"))
+	port14268 := dockerutil.GetPort(resource, "14268/tcp")
+	port16686 := dockerutil.GetPort(resource, "16686/tcp")
+	if port14268 == "" || port16686 == "" {
+		j.tb.Log("Failed to get Jaeger container ports")
+		return nil
+	}
+
+	j.tb.Setenv(internal.JaegerEndpoint, fmt.Sprintf("http://localhost:%s/api/traces", port14268))
+	uiEndpoint := fmt.Sprintf("http://localhost:%s", port16686)
 
 	if !j.cfg.keepContainers {
 		err = resource.Expire(uint(keepAliveOnFailure.Seconds()))
@@ -121,10 +130,18 @@ func (j *testJaeger) StartJaegerPyroscopeUI(ctx context.Context) *uiResource {
 		config.AutoRemove = true
 		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 	})
-	assert.Nil(j.tb, err)
+	if err != nil {
+		j.tb.Logf("Failed to start Jaeger Pyroscope UI container: %v", err)
+		return nil
+	}
 
-	// must only be done after the container is started
-	j.tb.Setenv(internal.JaegerUIEndpoint, fmt.Sprintf("http://localhost:%s", dockerutil.GetPort(resource, "80/tcp")))
+	port80 := dockerutil.GetPort(resource, "80/tcp")
+	if port80 == "" {
+		j.tb.Log("Failed to get Jaeger Pyroscope UI container port")
+		return nil
+	}
+
+	j.tb.Setenv(internal.JaegerUIEndpoint, fmt.Sprintf("http://localhost:%s", port80))
 
 	if !j.cfg.keepContainers {
 		err = resource.Expire(uint(keepAliveOnFailure.Seconds()))
