@@ -139,8 +139,9 @@ contract SynapseIntentPreviewerTest is Test {
             target_: defaultPoolMock,
             finalToken_: DefaultPoolMock(defaultPoolMock).getToken(indexOut),
             forwardTo_: forwardTo,
+            minFwdAmount_: minAmountOut,
             // swap(tokenIndexFrom, tokenIndexTo, dx, minDy, deadline)
-            payload_: abi.encodeCall(DefaultPoolMock.swap, (indexIn, indexOut, 0, minAmountOut, type(uint256).max)),
+            payload_: abi.encodeCall(DefaultPoolMock.swap, (indexIn, indexOut, 0, 0, type(uint256).max)),
             // Amount (dx) is encoded as the third parameter
             amountPosition_: 4 + 32 * 2
         });
@@ -152,10 +153,7 @@ contract SynapseIntentPreviewerTest is Test {
                 bytes memory zapData = getSwapZapData(i, j, forwardTo, swapMinAmountOut);
                 bytes memory payload = zapDataLib.payload(zapData, AMOUNT_IN);
                 // swap(tokenIndexFrom, tokenIndexTo, dx, minDy, deadline)
-                assertEq(
-                    payload,
-                    abi.encodeCall(DefaultPoolMock.swap, (i, j, AMOUNT_IN, swapMinAmountOut, type(uint256).max))
-                );
+                assertEq(payload, abi.encodeCall(DefaultPoolMock.swap, (i, j, AMOUNT_IN, 0, type(uint256).max)));
                 assertEq(zapDataLib.forwardTo(zapData), forwardTo);
             }
         }
@@ -205,8 +203,9 @@ contract SynapseIntentPreviewerTest is Test {
             target_: defaultPoolMock,
             finalToken_: lpToken,
             forwardTo_: forwardTo,
+            minFwdAmount_: minAmountOut,
             // addLiquidity(amounts, minToMint, deadline)
-            payload_: abi.encodeCall(IDefaultExtendedPool.addLiquidity, (amounts, minAmountOut, type(uint256).max)),
+            payload_: abi.encodeCall(IDefaultExtendedPool.addLiquidity, (amounts, 0, type(uint256).max)),
             // Amount is encoded within `amounts` at `TOKEN_IN_INDEX`, `amounts` is encoded after
             // (amounts.offset, minToMint, deadline, amounts.length)
             amountPosition_: 4 + 32 * (4 + indexIn)
@@ -220,10 +219,7 @@ contract SynapseIntentPreviewerTest is Test {
             uint256[] memory amounts = new uint256[](TOKENS);
             amounts[i] = AMOUNT_IN;
             // addLiquidity(amounts, minToMint, deadline)
-            assertEq(
-                payload,
-                abi.encodeCall(IDefaultExtendedPool.addLiquidity, (amounts, swapMinAmountOut, type(uint256).max))
-            );
+            assertEq(payload, abi.encodeCall(IDefaultExtendedPool.addLiquidity, (amounts, 0, type(uint256).max)));
             assertEq(zapDataLib.forwardTo(zapData), forwardTo);
         }
     }
@@ -270,10 +266,9 @@ contract SynapseIntentPreviewerTest is Test {
             target_: defaultPoolMock,
             finalToken_: DefaultPoolMock(defaultPoolMock).getToken(indexOut),
             forwardTo_: forwardTo,
+            minFwdAmount_: minAmountOut,
             // removeLiquidityOneToken(tokenAmount, tokenIndex, minAmount, deadline)
-            payload_: abi.encodeCall(
-                IDefaultExtendedPool.removeLiquidityOneToken, (0, indexOut, minAmountOut, type(uint256).max)
-            ),
+            payload_: abi.encodeCall(IDefaultExtendedPool.removeLiquidityOneToken, (0, indexOut, 0, type(uint256).max)),
             // Amount (tokenAmount) is encoded as the first parameter
             amountPosition_: 4
         });
@@ -286,9 +281,7 @@ contract SynapseIntentPreviewerTest is Test {
             // removeLiquidityOneToken(tokenAmount, tokenIndex, minAmount, deadline)
             assertEq(
                 payload,
-                abi.encodeCall(
-                    IDefaultExtendedPool.removeLiquidityOneToken, (AMOUNT_IN, i, swapMinAmountOut, type(uint256).max)
-                )
+                abi.encodeCall(IDefaultExtendedPool.removeLiquidityOneToken, (AMOUNT_IN, i, 0, type(uint256).max))
             );
             assertEq(zapDataLib.forwardTo(zapData), forwardTo);
         }
@@ -319,11 +312,12 @@ contract SynapseIntentPreviewerTest is Test {
         });
     }
 
-    function getWrapETHZapData(address forwardTo) public view returns (bytes memory) {
+    function getWrapETHZapData(address forwardTo, uint256 minAmountOut) public view returns (bytes memory) {
         return zapDataLib.encodeV1({
             target_: weth,
             finalToken_: weth,
             forwardTo_: forwardTo,
+            minFwdAmount_: minAmountOut,
             // deposit()
             payload_: abi.encodeCall(WETHMock.deposit, ()),
             // Amount is not encoded
@@ -332,7 +326,7 @@ contract SynapseIntentPreviewerTest is Test {
     }
 
     function checkWrapETHZapData(address forwardTo) public view {
-        bytes memory zapData = getWrapETHZapData(forwardTo);
+        bytes memory zapData = getWrapETHZapData(forwardTo, swapMinAmountOut);
         bytes memory payload = zapDataLib.payload(zapData, AMOUNT_IN);
         // deposit()
         assertEq(payload, abi.encodeCall(WETHMock.deposit, ()));
@@ -364,11 +358,12 @@ contract SynapseIntentPreviewerTest is Test {
         });
     }
 
-    function getUnwrapWETHZapData(address forwardTo) public view returns (bytes memory) {
+    function getUnwrapWETHZapData(address forwardTo, uint256 minAmountOut) public view returns (bytes memory) {
         return zapDataLib.encodeV1({
             target_: weth,
             finalToken_: NATIVE_GAS_TOKEN,
             forwardTo_: forwardTo,
+            minFwdAmount_: minAmountOut,
             // withdraw(amount)
             payload_: abi.encodeCall(WETHMock.withdraw, (0)),
             // Amount is encoded as the first parameter
@@ -377,7 +372,7 @@ contract SynapseIntentPreviewerTest is Test {
     }
 
     function checkUnwrapWETHZapData(address forwardTo) public view {
-        bytes memory zapData = getUnwrapWETHZapData(forwardTo);
+        bytes memory zapData = getUnwrapWETHZapData(forwardTo, swapMinAmountOut);
         bytes memory payload = zapDataLib.payload(zapData, AMOUNT_IN);
         // withdraw(amount)
         assertEq(payload, abi.encodeCall(WETHMock.withdraw, (AMOUNT_IN)));
@@ -582,7 +577,7 @@ contract SynapseIntentPreviewerTest is Test {
             token: NATIVE_GAS_TOKEN,
             amount: FULL_AMOUNT,
             msgValue: AMOUNT_IN,
-            zapData: getWrapETHZapData(forwardTo)
+            zapData: getWrapETHZapData(forwardTo, AMOUNT_IN * swapMinAmountOut / SWAP_AMOUNT_OUT)
         });
         checkSingleStepIntent(NATIVE_GAS_TOKEN, weth, AMOUNT_IN, expectedStep, forwardTo);
     }
@@ -602,7 +597,7 @@ contract SynapseIntentPreviewerTest is Test {
             token: weth,
             amount: FULL_AMOUNT,
             msgValue: 0,
-            zapData: getUnwrapWETHZapData(forwardTo)
+            zapData: getUnwrapWETHZapData(forwardTo, AMOUNT_IN * swapMinAmountOut / SWAP_AMOUNT_OUT)
         });
         checkSingleStepIntent(weth, NATIVE_GAS_TOKEN, AMOUNT_IN, expectedStep, forwardTo);
     }
@@ -660,7 +655,7 @@ contract SynapseIntentPreviewerTest is Test {
             token: weth,
             amount: FULL_AMOUNT,
             msgValue: 0,
-            zapData: getUnwrapWETHZapData(forwardTo)
+            zapData: getUnwrapWETHZapData(forwardTo, swapMinAmountOut)
         });
         checkDoubleStepIntent(tokenA, NATIVE_GAS_TOKEN, SWAP_AMOUNT_OUT, expectedStep0, expectedStep1, forwardTo);
     }
@@ -678,12 +673,12 @@ contract SynapseIntentPreviewerTest is Test {
         mockGetToken(TOKEN_IN_INDEX, weth);
         mockGetToken(TOKEN_OUT_INDEX, tokenB);
         mockGetAmountOut({tokenIn: NATIVE_GAS_TOKEN, tokenOut: tokenB, amountIn: AMOUNT_IN, mockQuery: mockQuery});
-        // step0: NATIVE_GAS_TOKEN -> weth, always no forwaring
+        // step0: NATIVE_GAS_TOKEN -> weth, always no forwaring and minAmountOut
         ISynapseIntentRouter.StepParams memory expectedStep0 = ISynapseIntentRouter.StepParams({
             token: NATIVE_GAS_TOKEN,
             amount: FULL_AMOUNT,
             msgValue: AMOUNT_IN,
-            zapData: getWrapETHZapData(address(0))
+            zapData: getWrapETHZapData(address(0), 0)
         });
         // step1: weth -> tokenB, optional forwarding and minAmountOut
         ISynapseIntentRouter.StepParams memory expectedStep1 = ISynapseIntentRouter.StepParams({
