@@ -5,8 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -60,9 +58,9 @@ func TestTestServer_Cleanup(t *testing.T) {
 
 	server := &TestServer{
 		jaeger: &testJaeger{
-			runID:      "test-cleanup",
+			runID:       "test-cleanup",
 			containerID: "test-container",
-			client:     mockClient,
+			client:      mockClient,
 		},
 	}
 
