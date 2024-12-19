@@ -16,7 +16,7 @@ func _() {
 
 const _ActiveQuoteRequestStatus_name = "ReceivedPendingExpiredClosed"
 
-var _ActiveQuoteRequestStatus_index = [...]uint8{0, 8, 15, 22, 31}
+var _ActiveQuoteRequestStatus_index = [...]uint8{0, 8, 15, 22, 28}
 
 func (i ActiveQuoteRequestStatus) String() string {
 	i -= 1

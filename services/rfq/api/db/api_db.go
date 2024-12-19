@@ -167,9 +167,9 @@ func FromUserRequest(req *model.PutRFQRequest, requestID string) (*ActiveQuoteRe
 		RequestID:         requestID,
 		IntegratorID:      req.IntegratorID,
 		UserAddress:       req.UserAddress,
-		OriginChainID:     uint64(req.Data.OriginChainID),
+		OriginChainID:     uint64(req.Data.OriginChainID), //nolint:gosec
 		OriginTokenAddr:   req.Data.OriginTokenAddr,
-		DestChainID:       uint64(req.Data.DestChainID),
+		DestChainID:       uint64(req.Data.DestChainID), //nolint:gosec
 		DestTokenAddr:     req.Data.DestTokenAddr,
 		OriginAmountExact: originAmountExact,
 		ExpirationWindow:  time.Duration(req.Data.ExpirationWindow),

@@ -42,7 +42,7 @@ const AnimatedLoadingCircle = () => {
       fill="none"
       className="absolute block -rotate-90"
     >
-      <circle r="8" pathLength="1" stroke-dashArray="0.05" stroke-opacity=".5">
+      <circle r="8" pathLength="1" strokeDasharray="0.05" stroke-opacity=".5">
         <animate
           attributeName="stroke-dashoffset"
           to="-1"
@@ -95,7 +95,7 @@ const AnimatedProgressCircle = ({
           begin={`${convertMsToSeconds(duration)}s`}
         />
       </circle>
-      <circle r="8" stroke-dasharray="1" pathLength="1">
+      <circle r="8" strokeDasharray="1" pathLength="1">
         <animate
           attributeName="stroke-dashoffset"
           values="2; 1"

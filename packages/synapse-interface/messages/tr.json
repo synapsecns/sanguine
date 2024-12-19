@@ -18,6 +18,8 @@
     "Please select Destination network": "Lütfen Hedef ağı seçin",
     "Please select an Origin token": "Lütfen bir Kaynak token seçin",
     "Bridge {symbol}": "{symbol} Köprüsü",
+    "Deposit {symbol}": "Depozito {symbol}",
+    "Depositing": "Para yatırma",
     "Connect Wallet to Bridge": "Köprü için Cüzdanı Bağla",
     "Amount must be greater than fee": "Miktar ücretten büyük olmalıdır",
     "Error in bridge quote": "Köprü teklifinde hata",
