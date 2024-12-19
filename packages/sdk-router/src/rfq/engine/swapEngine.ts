@@ -65,12 +65,6 @@ export interface SwapEngine {
     finalRecipient: Recipient,
     slippage: Slippage
   ): Promise<SwapEngineRoute>
-
-  applySlippage(
-    chainId: number,
-    route: SwapEngineRoute,
-    slippage: Slippage
-  ): SwapEngineRoute
 }
 
 export const validateEngineID = (engineID: number): engineID is EngineID => {

@@ -144,16 +144,6 @@ export class ParaSwapEngine implements SwapEngine {
     }
   }
 
-  public applySlippage(
-    _chainId: number,
-    route: SwapEngineRoute
-  ): SwapEngineRoute {
-    console.log(
-      'Custom slippage settings are not supported for ParaSwap at the moment, default 0.1% will be used'
-    )
-    return route
-  }
-
   public async getResponse(
     request: ParaSwapRequest
   ): Promise<ParaSwapResponse> {

@@ -168,12 +168,12 @@ export class SynapseIntentRouter implements SynapseModule {
     if (paramsV1.originSender === AddressZero) {
       throw new Error('Missing sender address for FastBridgeV2')
     }
-    if (paramsV1.destRecipient === AddressZero) {
+    if (paramsV1.destRelayRecipient === AddressZero) {
       throw new Error('Missing recipient address for FastBridgeV2')
     }
     // Override the simulated forward address if it was used.
-    if (isSameAddress(paramsV1.destRecipient, USER_SIMULATED_ADDRESS)) {
-      paramsV1.destRecipient = to
+    if (isSameAddress(paramsV1.destRelayRecipient, USER_SIMULATED_ADDRESS)) {
+      paramsV1.destRelayRecipient = to
     }
     if (isSameAddress(dstZapData.forwardTo, USER_SIMULATED_ADDRESS)) {
       paramsV2.zapData = encodeZapData({
@@ -184,12 +184,12 @@ export class SynapseIntentRouter implements SynapseModule {
     const bridgeParamsV1: IFastBridge.BridgeParamsStruct = {
       dstChainId,
       sender: paramsV1.originSender,
-      to: paramsV1.destRecipient,
+      to: paramsV1.destRelayRecipient,
       originToken,
-      destToken: paramsV1.destToken,
+      destToken: paramsV1.destRelayToken,
       // Will be set in encodeZapData below
       originAmount: 0,
-      destAmount: paramsV1.destAmount,
+      destAmount: paramsV1.destRelayAmount,
       sendChainGas: false,
       deadline: dstQuery.deadline,
     }
