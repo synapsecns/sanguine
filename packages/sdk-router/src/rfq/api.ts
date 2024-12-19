@@ -66,7 +66,8 @@ export const fetchWithTimeout = async (
   init?: RequestInit
 ): Promise<Response> => {
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), timeout)
+  const reason = `Timeout of ${timeout}ms exceeded for ${url}`
+  const timeoutId = setTimeout(() => (controller.abort as any)(reason), timeout)
   return fetch(url, { signal: controller.signal, ...init }).finally(() =>
     clearTimeout(timeoutId)
   )
