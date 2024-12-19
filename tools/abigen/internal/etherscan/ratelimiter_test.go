@@ -1,37 +1,32 @@
 package etherscan_test
 
 import (
-	"context"
-	"time"
-
 	"github.com/Flaque/filet"
+	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/tools/abigen/internal/etherscan"
+	"time"
 )
 
-// PLACEHOLDER: EtherscanSuite is defined in suite_test.go
+var waitTime = time.Second
 
-// PLACEHOLDER: TestEtherscanSuite function implementation
+func (s EtherscanSuite) TestRateLimiter() {
+	lockPath := filet.TmpDir(s.T(), "")
 
-func (s *EtherscanSuite) TestRateLimiter() {
-	waitTime := time.Second
-	lockPath := filet.TmpDir(s.TestSuite.T(), "")
-
-	rateLimiter, err := etherscan.NewFileRateLimiter(context.Background(), lockPath, waitTime)
-	s.TestSuite.Require().NoError(err)
+	rateLimiter, err := etherscan.NewFileRateLimiter(s.GetTestContext(), lockPath, waitTime)
+	Nil(s.T(), err)
 
 	for lockCount := 0; lockCount < 2; lockCount++ {
 		expectedEndTime := time.Now().Add(waitTime)
+		// obtain lock obtains the lcok
+		ok, err := rateLimiter.ObtainLock(s.GetTestContext())
+		True(s.T(), ok)
+		Nil(s.T(), err)
 
-		// obtain lock obtains the lock
-		ok, err := rateLimiter.ObtainLock(context.Background())
-		s.TestSuite.Assert().True(ok)
-		s.TestSuite.Require().NoError(err)
-
-		// release lock releases the lock
+		// release lock releases the lcok
 		ok, err = rateLimiter.ReleaseLock()
-		s.TestSuite.Assert().True(ok)
-		s.TestSuite.Require().NoError(err)
+		True(s.T(), ok)
+		Nil(s.T(), err)
 
-		s.TestSuite.Assert().GreaterOrEqual(expectedEndTime.UnixNano(), time.Now().UnixNano())
+		GreaterOrEqual(s.T(), expectedEndTime.UnixNano(), time.Now().UnixNano())
 	}
 }
