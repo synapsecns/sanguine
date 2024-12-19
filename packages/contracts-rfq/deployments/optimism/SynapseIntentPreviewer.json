@@ -1,9 +1,9 @@
 {
-  "address": "0x89ed77DcEaFBc4F92DAB2e865e11E7885F8daAf9",
+  "address": "0xfC2352150681A96E591F3a1ea511970FEF005A55",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0xa525aa65479aae46377a908d4451af3951e7ae05ba98609beadbae051222a744",
-    "blockNumber": 129285056
+    "hash": "0x496691fca76f0340530a86f5b043721c33b76317d18e4f5a6d53912ad82c7120",
+    "blockNumber": 129513100
   },
   "abi": [
     {
@@ -34,9 +34,9 @@
           "internalType": "address"
         },
         {
-          "name": "strictOut",
-          "type": "bool",
-          "internalType": "bool"
+          "name": "slippageWei",
+          "type": "uint256",
+          "internalType": "uint256"
         },
         {
           "name": "tokenIn",

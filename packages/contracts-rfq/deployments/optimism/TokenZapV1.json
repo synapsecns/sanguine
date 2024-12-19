@@ -1,9 +1,9 @@
 {
-  "address": "0x6327797F149a75D506aFda46D5fCE6E74fC409D5",
+  "address": "0x289db76b9E19487190D356ecB64324A5c716fFe1",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0xc306e272b5daa98006c1d9009246fac697c258ed8fb6012ab19f5ef5376899b9",
-    "blockNumber": 129029951
+    "hash": "0x4367b69cb6a1318ac12360b21232c504706335fa3e747379623f949a24ef94f3",
+    "blockNumber": 129513100
   },
   "abi": [
     {
@@ -80,6 +80,11 @@
           "name": "forwardTo",
           "type": "address",
           "internalType": "address"
+        },
+        {
+          "name": "minFwdAmount",
+          "type": "uint256",
+          "internalType": "uint256"
         }
       ],
       "outputs": [
@@ -160,7 +165,12 @@
     },
     {
       "type": "error",
-      "name": "TokenZapV1__FinalTokenBalanceZero",
+      "name": "TokenZapV1__ForwardAmountBelowMin",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "TokenZapV1__ForwardParamsIncorrect",
       "inputs": []
     },
     {
