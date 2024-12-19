@@ -5,8 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTestServer_GetRunID(t *testing.T) {
@@ -50,24 +51,28 @@ func TestTestServer_GetRunID(t *testing.T) {
 }
 
 func TestTestServer_Cleanup(t *testing.T) {
-	mockClient := new(MockDockerClient)
-	mockClient.On("ContainerStop", mock.Anything, "test-container", mock.Anything).
-		Return(nil)
-	mockClient.On("ContainerRemove", mock.Anything, "test-container", mock.Anything).
-		Return(nil)
+	pool, err := dockertest.NewPool("")
+	require.NoError(t, err)
+
+	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
+		Repository: "jaegertracing/all-in-one",
+		Tag:        "1.22",
+	})
+	require.NoError(t, err)
 
 	server := &TestServer{
 		jaeger: &testJaeger{
-			runID:       "test-cleanup",
-			containerID: "test-container",
-			client:      mockClient,
+			runID: "test-cleanup",
+			pool:  pool,
+			jaegerResource: &uiResource{
+				Resource: resource,
+			},
 		},
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := server.Cleanup(ctx)
+	server.jaeger.purgeResources()
 	assert.NoError(t, err)
-	mockClient.AssertExpectations(t)
 }
