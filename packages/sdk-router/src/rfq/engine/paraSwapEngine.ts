@@ -151,6 +151,7 @@ export class ParaSwapEngine implements SwapEngine {
       if (request.slippage > MAX_SLIPPAGE) {
         request.slippage = MAX_SLIPPAGE
       }
+      console.log('Fetching ParaSwap response', { request })
       // Stringify every value in the request
       const params = new URLSearchParams(
         Object.entries(request).map(([k, v]) => {
@@ -158,20 +159,16 @@ export class ParaSwapEngine implements SwapEngine {
         })
       )
       const url = `${PARASWAP_API_URL}?${params.toString()}`
-      console.log(`Fetching ParaSwap response from ${url}`)
       const response = await fetchWithTimeout(url, PARASWAP_API_TIMEOUT)
       if (!response.ok) {
-        console.error(`Error fetching ParaSwap response from ${url}:`, response)
+        console.error('Error fetching ParaSwap response', { url, response })
         return EmptyParaSwapResponse
       }
       const paraSwapResponse: ParaSwapResponse = await response.json()
-      console.log(
-        `Fetched ParaSwap response from ${url}:`,
-        JSON.stringify(paraSwapResponse, null, 2)
-      )
+      console.log('Fetched ParaSwap response', { url, paraSwapResponse })
       return paraSwapResponse
     } catch (error) {
-      console.error('Error fetching ParaSwap response:', error)
+      console.error('Error fetching ParaSwap response', { error })
       return EmptyParaSwapResponse
     }
   }

@@ -88,10 +88,7 @@ export const getAllQuotes = async (): Promise<FastBridgeQuote[]> => {
     }
     // The response is a list of quotes in the FastBridgeQuoteAPI format
     const quotes: FastBridgeQuoteAPI[] = await response.json()
-    console.log(
-      `${API_URL}/quotes with response:`,
-      JSON.stringify(quotes, null, 2)
-    )
+    console.log(`${API_URL}/quotes`, { quotes })
     return quotes
       .map((quote) => {
         try {
@@ -145,35 +142,28 @@ export const getBestRelayerQuote = async (
       },
     })
     if (!response.ok) {
-      console.error('Error fetching quote:', response.statusText)
+      console.error('Error fetching quote', { response })
       return ZeroQuote
     }
     // Check that response is successful, contains non-zero dest amount, and has a relayer address
     const rfqResponse: PutRFQResponseAPI = await response.json()
-    console.log(
-      `${API_URL}/rfq with request:`,
-      JSON.stringify(rfqRequest, null, 2),
-      '\n',
-      'response: ',
-      JSON.stringify(rfqResponse, null, 2)
-    )
+    console.log(`${API_URL}/rfq`, { rfqRequest, rfqResponse })
     if (!rfqResponse.success) {
-      console.error(
-        'No RFQ quote returned:',
-        rfqResponse.reason ?? 'Unknown reason'
-      )
+      console.error('No RFQ quote returned', {
+        reason: rfqResponse.reason ?? 'Unknown reason',
+      })
       return ZeroQuote
     }
     if (!rfqResponse.dest_amount || !rfqResponse.relayer_address) {
       console.error(
         'Error fetching quote: missing dest_amount or relayer_address in response:',
-        rfqResponse
+        { rfqResponse }
       )
       return ZeroQuote
     }
     const destAmount = BigNumber.from(rfqResponse.dest_amount)
     if (destAmount.lte(0)) {
-      console.error('No RFQ quote returned')
+      console.error('No RFQ quote returned', { rfqResponse })
       return ZeroQuote
     }
     return {
@@ -182,7 +172,7 @@ export const getBestRelayerQuote = async (
       quoteID: rfqResponse.quote_id,
     }
   } catch (error) {
-    console.error('Error fetching quote:', error)
+    console.error('Error fetching quote:', { error })
     return ZeroQuote
   }
 }
