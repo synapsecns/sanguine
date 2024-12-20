@@ -6,6 +6,7 @@ import {
   FastBridgeQuoteAPI,
   unmarshallFastBridgeQuote,
 } from './quote'
+import { logger } from '../utils/logger'
 
 const API_URL = 'https://rfq-api-stage.omnirpc.io'
 const API_TIMEOUT = 2000
@@ -83,24 +84,24 @@ export const getAllQuotes = async (): Promise<FastBridgeQuote[]> => {
   try {
     const response = await fetchWithTimeout(`${API_URL}/quotes`, API_TIMEOUT)
     if (!response.ok) {
-      console.error('Error fetching quotes:', response.statusText)
+      logger.error('Error fetching quotes', { response })
       return []
     }
     // The response is a list of quotes in the FastBridgeQuoteAPI format
     const quotes: FastBridgeQuoteAPI[] = await response.json()
-    console.log(`${API_URL}/quotes`, { quotes })
+    logger.info(`${API_URL}/quotes`, { quotes })
     return quotes
       .map((quote) => {
         try {
           return unmarshallFastBridgeQuote(quote)
         } catch (error) {
-          console.error('Error unmarshalling quote:', error)
+          logger.error('Error unmarshalling quote', { quote, error })
           return null
         }
       })
       .filter((quote): quote is FastBridgeQuote => quote !== null)
   } catch (error) {
-    console.error('Error fetching quotes:', error)
+    logger.error('Error fetching quotes', { error })
     return []
   }
 }
@@ -142,20 +143,20 @@ export const getBestRelayerQuote = async (
       },
     })
     if (!response.ok) {
-      console.error('Error fetching quote', { response })
+      logger.error('Error fetching quote', { response })
       return ZeroQuote
     }
     // Check that response is successful, contains non-zero dest amount, and has a relayer address
     const rfqResponse: PutRFQResponseAPI = await response.json()
-    console.log(`${API_URL}/rfq`, { rfqRequest, rfqResponse })
+    logger.info(`${API_URL}/rfq`, { rfqRequest, rfqResponse })
     if (!rfqResponse.success) {
-      console.error('No RFQ quote returned', {
+      logger.error('No RFQ quote returned', {
         reason: rfqResponse.reason ?? 'Unknown reason',
       })
       return ZeroQuote
     }
     if (!rfqResponse.dest_amount || !rfqResponse.relayer_address) {
-      console.error(
+      logger.error(
         'Error fetching quote: missing dest_amount or relayer_address in response:',
         { rfqResponse }
       )
@@ -163,7 +164,7 @@ export const getBestRelayerQuote = async (
     }
     const destAmount = BigNumber.from(rfqResponse.dest_amount)
     if (destAmount.lte(0)) {
-      console.error('No RFQ quote returned', { rfqResponse })
+      logger.error('No RFQ quote returned', { rfqResponse })
       return ZeroQuote
     }
     return {
@@ -172,7 +173,7 @@ export const getBestRelayerQuote = async (
       quoteID: rfqResponse.quote_id,
     }
   } catch (error) {
-    console.error('Error fetching quote:', { error })
+    logger.error('Error fetching quote', { error })
     return ZeroQuote
   }
 }

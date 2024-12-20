@@ -27,6 +27,7 @@ import { SynapseIntentRouter } from './sir'
 import { ChainProvider } from '../router'
 import { ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
 import { isSameAddress } from '../utils/addressUtils'
+import { logger } from '../utils/logger'
 import { marshallTicker, Ticker } from './ticker'
 import { getAllQuotes, getBestRelayerQuote } from './api'
 import {
@@ -231,8 +232,12 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
   ): { originQuery: Query; destQuery: Query } {
     // We should have saved neccessary params within dstQuery.rawParams
     if (hexDataLength(destQueryPrecise.rawParams) === 0) {
-      console.warn(
-        'No params saved in destQuery.rawParams, slippage is not applied'
+      logger.warn(
+        'No params saved in destQuery.rawParams, slippage is not applied',
+        {
+          originQuery: originQueryPrecise,
+          destQuery: destQueryPrecise,
+        }
       )
       return {
         originQuery: originQueryPrecise,
@@ -247,8 +252,14 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       isSameAddress(paramsV1.destRelayToken, AddressZero) ||
       paramsV1.destRelayAmount.eq(0)
     ) {
-      console.warn(
-        'No destToken or destAmount saved in destQuery.rawParams, slippage is not applied'
+      logger.warn(
+        'No destToken or destAmount saved in destQuery.rawParams, slippage is not applied',
+        {
+          originQuery: originQueryPrecise,
+          destQuery: destQueryPrecise,
+          paramsV1,
+          paramsV2,
+        }
       )
       return {
         originQuery: originQueryPrecise,

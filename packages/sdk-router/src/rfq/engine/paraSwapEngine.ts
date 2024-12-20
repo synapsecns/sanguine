@@ -22,6 +22,7 @@ import { StepParams } from '../steps'
 import { AMOUNT_NOT_PRESENT, encodeZapData } from '../zapData'
 import { ChainProvider } from '../../router'
 import { isNativeToken } from '../../utils/handleNativeToken'
+import { logger } from '../../utils/logger'
 
 const PARASWAP_API_URL = 'https://api.paraswap.io/swap'
 const PARASWAP_API_TIMEOUT = 2000
@@ -148,7 +149,7 @@ export class ParaSwapEngine implements SwapEngine {
       if (request.slippage > MAX_SLIPPAGE) {
         request.slippage = MAX_SLIPPAGE
       }
-      console.log('Fetching ParaSwap response', { request })
+      logger.info('Fetching ParaSwap response', { request })
       // Stringify every value in the request
       const params = new URLSearchParams(
         Object.entries(request).map(([k, v]) => {
@@ -158,14 +159,14 @@ export class ParaSwapEngine implements SwapEngine {
       const url = `${PARASWAP_API_URL}?${params.toString()}`
       const response = await fetchWithTimeout(url, PARASWAP_API_TIMEOUT)
       if (!response.ok) {
-        console.error('Error fetching ParaSwap response', { url, response })
+        logger.error('Error fetching ParaSwap response', { url, response })
         return EmptyParaSwapResponse
       }
       const paraSwapResponse: ParaSwapResponse = await response.json()
-      console.log('Fetched ParaSwap response', { url, paraSwapResponse })
+      logger.info('Fetched ParaSwap response', { url, paraSwapResponse })
       return paraSwapResponse
     } catch (error) {
-      console.error('Error fetching ParaSwap response', { error })
+      logger.error('Error fetching ParaSwap response', { error })
       return EmptyParaSwapResponse
     }
   }
@@ -207,14 +208,14 @@ export class ParaSwapEngine implements SwapEngine {
     }
     const provider = this.providers[chainId]
     if (!provider) {
-      console.error('No provider found for chainId', chainId)
+      logger.error('No provider found', { chainId })
       return 0
     }
     const tokenContract = new Contract(token, erc20ABI, provider) as ERC20
     try {
       return tokenContract.decimals()
     } catch (error) {
-      console.error('Error fetching token decimals:', error)
+      logger.error('Error fetching token decimals', { token, error })
       return 0
     }
   }
