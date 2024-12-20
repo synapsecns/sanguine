@@ -345,8 +345,8 @@ export const BRIDGE_MAP = {
     '0x5A5fFf6F753d7C11A56A52FE47a177a87e431655': {
       decimals: 18,
       symbol: 'SYN',
-      origin: ['SYN', 'Intents'],
-      destination: ['SYN', 'Intents'],
+      origin: ['SYN'],
+      destination: ['SYN'],
       swappable: [],
     },
     '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
@@ -1418,8 +1418,8 @@ export const BRIDGE_MAP = {
     '0x080F6AEd32Fc474DD5717105Dba5ea57268F46eb': {
       decimals: 18,
       symbol: 'SYN',
-      origin: ['SYN', 'Intents'],
-      destination: ['SYN', 'Intents'],
+      origin: ['SYN'],
+      destination: ['SYN'],
       swappable: [],
     },
     '0x0877154a755B24D499B8e2bD7ecD54d3c92BA433': {
