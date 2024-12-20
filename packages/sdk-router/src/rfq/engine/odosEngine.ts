@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers'
-import { Zero } from '@ethersproject/constants'
+import { AddressZero, Zero } from '@ethersproject/constants'
 
 import { fetchWithTimeout } from '../api'
 import {
@@ -18,6 +18,7 @@ import {
 } from './swapEngine'
 import { AddressMap } from '../../constants'
 import { isSameAddress } from '../../utils/addressUtils'
+import { isNativeToken } from '../../utils/handleNativeToken'
 import { logger } from '../../utils/logger'
 
 const ODOS_API_URL = 'https://api.odos.xyz/sor'
@@ -87,13 +88,13 @@ export class OdosEngine implements SwapEngine {
       inputTokens: [
         {
           amount: amountIn.toString(),
-          tokenAddress: tokenIn,
+          tokenAddress: this.handleNativeToken(tokenIn),
         },
       ],
       outputTokens: [
         {
           proportion: 1,
-          tokenAddress: tokenOut,
+          tokenAddress: this.handleNativeToken(tokenOut),
         },
       ],
       userAddr: tokenZap,
@@ -183,5 +184,9 @@ export class OdosEngine implements SwapEngine {
       logger.error({ request, error }, 'Error fetching Odos response')
       return EMPTY_SWAP_API_RESPONSE
     }
+  }
+
+  private handleNativeToken(token: string): string {
+    return isNativeToken(token) ? AddressZero : token
   }
 }
