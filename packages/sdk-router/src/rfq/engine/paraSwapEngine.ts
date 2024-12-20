@@ -149,7 +149,7 @@ export class ParaSwapEngine implements SwapEngine {
       if (request.slippage > MAX_SLIPPAGE) {
         request.slippage = MAX_SLIPPAGE
       }
-      logger.info('Fetching ParaSwap response', { request })
+      logger.info({ request }, 'Fetching ParaSwap response')
       // Stringify every value in the request
       const params = new URLSearchParams(
         Object.entries(request).map(([k, v]) => {
@@ -159,14 +159,20 @@ export class ParaSwapEngine implements SwapEngine {
       const url = `${PARASWAP_API_URL}?${params.toString()}`
       const response = await fetchWithTimeout(url, PARASWAP_API_TIMEOUT)
       if (!response.ok) {
-        logger.error('Error fetching ParaSwap response', { url, response })
+        logger.error(
+          { url, request, response },
+          'Error fetching ParaSwap response'
+        )
         return EmptyParaSwapResponse
       }
       const paraSwapResponse: ParaSwapResponse = await response.json()
-      logger.info('Fetched ParaSwap response', { url, paraSwapResponse })
+      logger.info(
+        { url, request, paraSwapResponse },
+        'Fetched ParaSwap response'
+      )
       return paraSwapResponse
     } catch (error) {
-      logger.error('Error fetching ParaSwap response', { error })
+      logger.error({ request, error }, 'Error fetching ParaSwap response')
       return EmptyParaSwapResponse
     }
   }
@@ -208,14 +214,14 @@ export class ParaSwapEngine implements SwapEngine {
     }
     const provider = this.providers[chainId]
     if (!provider) {
-      logger.error('No provider found', { chainId })
+      logger.error({ chainId }, 'No provider found')
       return 0
     }
     const tokenContract = new Contract(token, erc20ABI, provider) as ERC20
     try {
       return tokenContract.decimals()
     } catch (error) {
-      logger.error('Error fetching token decimals', { token, error })
+      logger.error({ token, error }, 'Error fetching token decimals')
       return 0
     }
   }

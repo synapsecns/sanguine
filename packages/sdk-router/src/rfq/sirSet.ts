@@ -233,11 +233,11 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     // We should have saved neccessary params within dstQuery.rawParams
     if (hexDataLength(destQueryPrecise.rawParams) === 0) {
       logger.warn(
-        'No params saved in destQuery.rawParams, slippage is not applied',
         {
           originQuery: originQueryPrecise,
           destQuery: destQueryPrecise,
-        }
+        },
+        'No params saved in destQuery.rawParams, slippage is not applied'
       )
       return {
         originQuery: originQueryPrecise,
@@ -253,13 +253,13 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       paramsV1.destRelayAmount.eq(0)
     ) {
       logger.warn(
-        'No destToken or destAmount saved in destQuery.rawParams, slippage is not applied',
         {
           originQuery: originQueryPrecise,
           destQuery: destQueryPrecise,
           paramsV1,
           paramsV2,
-        }
+        },
+        'No destToken or destAmount saved in destQuery.rawParams, slippage is not applied'
       )
       return {
         originQuery: originQueryPrecise,
