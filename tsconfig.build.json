@@ -14,7 +14,10 @@
       "experimentalDecorators": true,
       "typeRoots": [
         "node_modules/@types"
-      ]
+      ],
+      "paths": {
+        "@synapsecns/*": ["./packages/*/src"]
+      }
     },
     "exclude": [
       "node_modules",

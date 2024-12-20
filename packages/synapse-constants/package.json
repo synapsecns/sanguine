@@ -26,6 +26,7 @@
     "lint:fix": "npm run lint -- --fix",
     "lint:check": "eslint . --max-warnings=0 --config .eslintrc.cjs",
     "prepare": "rollup -c --bundleConfigAsCjs",
+    "prepack": "yarn build",
     "build": "rollup -c --bundleConfigAsCjs",
     "preinstall": "command -v rollup >/dev/null 2>&1 && rollup -c --buildConfigAsCjs || echo 'rollup not found'",
     "prepublish": "yarn build",
