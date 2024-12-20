@@ -18,6 +18,7 @@ import {
 } from './swapEngine'
 import { AddressMap } from '../../constants'
 import { isSameAddress } from '../../utils/addressUtils'
+import { logger } from '../../utils/logger'
 
 const ODOS_API_URL = 'https://api.odos.xyz/sor'
 const ODOS_API_TIMEOUT = 2000
@@ -111,7 +112,7 @@ export class OdosEngine implements SwapEngine {
         request.inputTokens.length !== 1 ||
         request.outputTokens.length !== 1
       ) {
-        console.error({ request }, 'Multi-token swaps not supported')
+        logger.error({ request }, 'Multi-token swaps not supported')
         return EMPTY_SWAP_API_RESPONSE
       }
       // Get a quote with the pathID first
@@ -127,7 +128,11 @@ export class OdosEngine implements SwapEngine {
         }
       )
       if (!response.ok) {
-        console.error({ request, response }, 'Error fetching Odos response')
+        const responseText = await response.text()
+        logger.error(
+          { request, response, responseText },
+          'Error fetching Odos response'
+        )
         return EMPTY_SWAP_API_RESPONSE
       }
       const odosQuoteResponse: OdosQuoteResponse = await response.json()
@@ -135,14 +140,18 @@ export class OdosEngine implements SwapEngine {
         odosQuoteResponse.outAmounts.length !== 1 ||
         !odosQuoteResponse.pathId
       ) {
-        console.error({ request, response }, 'Invalid Odos response')
+        logger.error({ request, response }, 'Invalid Odos response')
         return EMPTY_SWAP_API_RESPONSE
       }
       const amountOut = odosQuoteResponse.outAmounts[0]
       if (amountOut === '0') {
-        console.info({ request, response }, 'Zero amount out')
+        logger.info({ request, response }, 'Zero amount out')
         return EMPTY_SWAP_API_RESPONSE
       }
+      logger.info(
+        { request, response, amountOut },
+        'Received amount out from Odos'
+      )
       // Once we verified the amount out, we can assemble the transaction
       const assembleRequest: OdosAssembleRequest = {
         userAddr: request.userAddr,
@@ -160,17 +169,18 @@ export class OdosEngine implements SwapEngine {
         }
       )
       if (!assembleResponse.ok) {
-        console.error({ assembleResponse }, 'Error fetching Odos response')
+        logger.error({ assembleResponse }, 'Error fetching Odos response')
         return EMPTY_SWAP_API_RESPONSE
       }
       const odosAssembleResponse: OdosAssembleResponse =
         await assembleResponse.json()
+      logger.info({ odosAssembleResponse }, 'Received transaction from Odos')
       return {
         amountOut,
         transaction: odosAssembleResponse.transaction,
       }
     } catch (error) {
-      console.error({ request, error }, 'Error fetching Odos response')
+      logger.error({ request, error }, 'Error fetching Odos response')
       return EMPTY_SWAP_API_RESPONSE
     }
   }
