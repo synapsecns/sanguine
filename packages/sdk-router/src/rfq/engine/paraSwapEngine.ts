@@ -14,7 +14,7 @@ import {
   EngineID,
   isCorrectSlippage,
   Recipient,
-  Slippage,
+  RouteInput,
   SwapEngine,
   SwapEngineRoute,
 } from './swapEngine'
@@ -24,7 +24,7 @@ import { ChainProvider } from '../../router'
 import { isNativeToken } from '../../utils/handleNativeToken'
 
 const PARASWAP_API_URL = 'https://api.paraswap.io/swap'
-const PARASWAP_API_TIMEOUT = 1000
+const PARASWAP_API_TIMEOUT = 2000
 
 const MAX_SLIPPAGE = 9999
 
@@ -86,14 +86,9 @@ export class ParaSwapEngine implements SwapEngine {
     })
   }
 
-  public async findRoute(
-    chainId: number,
-    tokenIn: string,
-    tokenOut: string,
-    amountIn: BigintIsh,
-    finalRecipient: Recipient,
-    slippage: Slippage
-  ): Promise<SwapEngineRoute> {
+  public async findRoute(input: RouteInput): Promise<SwapEngineRoute> {
+    const { chainId, tokenIn, tokenOut, amountIn, finalRecipient, slippage } =
+      input
     const tokenZap = this.tokenZapAddressMap[chainId]
     if (
       !tokenZap ||
@@ -143,6 +138,8 @@ export class ParaSwapEngine implements SwapEngine {
       ],
     }
   }
+
+  // TODO: findRoutes
 
   public async getResponse(
     request: ParaSwapRequest

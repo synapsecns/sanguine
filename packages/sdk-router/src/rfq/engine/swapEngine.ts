@@ -41,30 +41,34 @@ export type Slippage = {
   denominator: number
 }
 
+// Default slippage used by the swap engines, 10 bips (0.1%)
 export const SlippageDefault: Slippage = {
   numerator: 10,
   denominator: 10000,
 }
 
-export const SlippageFull: Slippage = {
-  numerator: 1,
-  denominator: 1,
+// Max slippage that can be used by the swap engines, 100 bips (1%)
+export const SlippageMax: Slippage = {
+  numerator: 100,
+  denominator: 10000,
 }
 
 export const USER_SIMULATED_ADDRESS =
   '0xFAcefaCEFACefACeFaCefacEFaCeFACEFAceFAcE'
 
+export type RouteInput = {
+  chainId: number
+  tokenIn: string
+  tokenOut: string
+  amountIn: BigintIsh
+  finalRecipient: Recipient
+  slippage: Slippage
+}
+
 export interface SwapEngine {
   readonly id: EngineID
 
-  findRoute(
-    chainId: number,
-    tokenIn: string,
-    tokenOut: string,
-    amountIn: BigintIsh,
-    finalRecipient: Recipient,
-    slippage: Slippage
-  ): Promise<SwapEngineRoute>
+  findRoute(input: RouteInput): Promise<SwapEngineRoute>
 }
 
 export const validateEngineID = (engineID: number): engineID is EngineID => {

@@ -14,7 +14,7 @@ import {
   USER_SIMULATED_ADDRESS,
   Slippage,
   SlippageDefault,
-  SlippageFull,
+  SlippageMax,
 } from './swapEngine'
 import { CCTPRouterQuery } from '../../module'
 import { encodeStepParams } from '../steps'
@@ -55,7 +55,7 @@ export class EngineSet {
     tokenIn: TokenInput,
     tokensOut: string[]
   ): Promise<SwapEngineRoute[]> {
-    const recipient: Recipient = {
+    const finalRecipient: Recipient = {
       entity: RecipientEntity.Self,
       address: this.getTokenZap(chainId),
     }
@@ -65,14 +65,14 @@ export class EngineSet {
       tokensOut.map(async (tokenOut) =>
         Promise.all(
           Object.values(this.engines).map(async (engine) =>
-            engine.findRoute(
+            engine.findRoute({
               chainId,
-              tokenIn.address,
+              tokenIn: tokenIn.address,
               tokenOut,
-              tokenIn.amount,
-              recipient,
-              SlippageFull
-            )
+              amountIn: tokenIn.amount,
+              finalRecipient,
+              slippage: SlippageMax,
+            })
           )
         )
       )
@@ -88,7 +88,7 @@ export class EngineSet {
   ): Promise<SwapEngineRoute[]> {
     // Check that the chain is supported
     this.getTokenZap(chainId)
-    const recipient: Recipient = {
+    const finalRecipient: Recipient = {
       entity: RecipientEntity.UserSimulated,
       address: USER_SIMULATED_ADDRESS,
     }
@@ -100,14 +100,14 @@ export class EngineSet {
       tokensIn.map(async (tokenIn) =>
         Promise.all(
           Object.values(this.engines).map(async (engine) => {
-            const route = await engine.findRoute(
+            const route = await engine.findRoute({
               chainId,
-              tokenIn.address,
+              tokenIn: tokenIn.address,
               tokenOut,
-              tokenIn.amount,
-              recipient,
-              SlippageFull
-            )
+              amountIn: tokenIn.amount,
+              finalRecipient,
+              slippage: SlippageMax,
+            })
             return this.limitSingleZap(route)
           })
         )
@@ -125,14 +125,14 @@ export class EngineSet {
     finalRecipient: Recipient,
     slippage: Slippage = SlippageDefault
   ): Promise<SwapEngineRoute> {
-    return this._getEngine(engineID).findRoute(
+    return this._getEngine(engineID).findRoute({
       chainId,
-      tokenIn.address,
+      tokenIn: tokenIn.address,
       tokenOut,
-      tokenIn.amount,
+      amountIn: tokenIn.amount,
       finalRecipient,
-      slippage
-    )
+      slippage,
+    })
   }
 
   public getOriginQuery(
