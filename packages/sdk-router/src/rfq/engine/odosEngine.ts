@@ -1,8 +1,23 @@
+import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
 
 import { fetchWithTimeout } from '../api'
-import { EMPTY_SWAP_API_RESPONSE, SwapAPIResponse } from './response'
-import { SwapEngine, EngineID, SwapEngineRoute } from './swapEngine'
+import {
+  EMPTY_SWAP_API_RESPONSE,
+  generateAPIRoute,
+  SwapAPIResponse,
+} from './response'
+import {
+  SwapEngine,
+  EngineID,
+  SwapEngineRoute,
+  RouteInput,
+  isCorrectSlippage,
+  EmptyRoute,
+  toPercentFloat,
+} from './swapEngine'
+import { AddressMap } from '../../constants'
+import { isSameAddress } from '../../utils/addressUtils'
 
 const ODOS_API_URL = 'https://api.odos.xyz/sor'
 const ODOS_API_TIMEOUT = 2000
@@ -49,14 +64,43 @@ type OdosAssembleResponse = {
 export class OdosEngine implements SwapEngine {
   readonly id: EngineID = EngineID.Odos
 
-  public async findRoute(): Promise<SwapEngineRoute> {
-    // TODO
-    return {
-      engineID: this.id,
-      expectedAmountOut: Zero,
-      minAmountOut: Zero,
-      steps: [],
+  private readonly tokenZapAddressMap: AddressMap
+
+  constructor(tokenZapAddressMap: AddressMap) {
+    this.tokenZapAddressMap = tokenZapAddressMap
+  }
+
+  public async findRoute(input: RouteInput): Promise<SwapEngineRoute> {
+    const { chainId, tokenIn, tokenOut, amountIn, slippage } = input
+    const tokenZap = this.tokenZapAddressMap[chainId]
+    if (
+      !tokenZap ||
+      isSameAddress(tokenIn, tokenOut) ||
+      BigNumber.from(amountIn).eq(Zero) ||
+      !isCorrectSlippage(slippage)
+    ) {
+      return EmptyRoute
     }
+    const request: OdosQuoteRequest = {
+      chainId,
+      inputTokens: [
+        {
+          amount: amountIn.toString(),
+          tokenAddress: tokenIn,
+        },
+      ],
+      outputTokens: [
+        {
+          proportion: 1,
+          tokenAddress: tokenOut,
+        },
+      ],
+      userAddr: tokenZap,
+      slippageLimitPercent: toPercentFloat(slippage),
+      simple: true,
+    }
+    const response = await this.getResponse(request)
+    return generateAPIRoute(input, this.id, response)
   }
 
   public async getResponse(

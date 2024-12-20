@@ -6,7 +6,7 @@ global.fetch = require('node-fetch')
 
 describe('Integration test: ParaSwapEngine', () => {
   it('Ethereum USDC -> USDT', async () => {
-    const odosEngine = new OdosEngine()
+    const odosEngine = new OdosEngine({})
     const response = await odosEngine.getResponse({
       chainId: 1,
       inputTokens: [{ amount: '1000000000', tokenAddress: ETH_USDC }],

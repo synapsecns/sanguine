@@ -9,7 +9,6 @@ import { AddressMap } from '../../constants'
 import { isSameAddress } from '../../utils/addressUtils'
 import { fetchWithTimeout } from '../api'
 import {
-  applySlippage,
   EmptyRoute,
   EngineID,
   isCorrectSlippage,
@@ -22,7 +21,7 @@ import {
 import {
   SwapAPIResponse,
   EMPTY_SWAP_API_RESPONSE,
-  generateAPIStep,
+  generateAPIRoute,
 } from './response'
 import { ChainProvider } from '../../router'
 import { isNativeToken } from '../../utils/handleNativeToken'
@@ -75,8 +74,7 @@ export class ParaSwapEngine implements SwapEngine {
   }
 
   public async findRoute(input: RouteInput): Promise<SwapEngineRoute> {
-    const { chainId, tokenIn, tokenOut, amountIn, finalRecipient, slippage } =
-      input
+    const { chainId, tokenIn, tokenOut, amountIn, slippage } = input
     const tokenZap = this.tokenZapAddressMap[chainId]
     if (
       !tokenZap ||
@@ -105,26 +103,7 @@ export class ParaSwapEngine implements SwapEngine {
       version: '6.2',
     }
     const response = await this.getResponse(request)
-    const expectedAmountOut = BigNumber.from(response.amountOut)
-    if (expectedAmountOut.eq(Zero)) {
-      return EmptyRoute
-    }
-    const minAmountOut = applySlippage(expectedAmountOut, slippage)
-    return {
-      engineID: this.id,
-      expectedAmountOut,
-      minAmountOut,
-      steps: [
-        generateAPIStep(
-          tokenIn,
-          tokenOut,
-          amountIn,
-          response,
-          finalRecipient,
-          minAmountOut
-        ),
-      ],
-    }
+    return generateAPIRoute(input, this.id, response)
   }
 
   // TODO: findRoutes

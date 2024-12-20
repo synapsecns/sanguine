@@ -77,7 +77,11 @@ export const validateEngineID = (engineID: number): engineID is EngineID => {
 }
 
 export const toBasisPoints = (slippage: Slippage): number => {
-  return (slippage.numerator * 10000) / slippage.denominator
+  return Math.round((slippage.numerator * 10000) / slippage.denominator)
+}
+
+export const toPercentFloat = (slippage: Slippage): number => {
+  return (slippage.numerator * 100) / slippage.denominator
 }
 
 export const toWei = (slippage: Slippage): BigNumber => {

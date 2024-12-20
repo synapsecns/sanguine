@@ -19,6 +19,7 @@ import {
 import { CCTPRouterQuery } from '../../module'
 import { encodeStepParams } from '../steps'
 import { ParaSwapEngine } from './paraSwapEngine'
+import { OdosEngine } from './odosEngine'
 
 export type TokenInput = {
   address: string
@@ -39,6 +40,7 @@ export class EngineSet {
     this._addEngine(new NoOpEngine())
     this._addEngine(new DefaultEngine(chains))
     this._addEngine(new ParaSwapEngine(chains, TOKEN_ZAP_V1_ADDRESS_MAP))
+    this._addEngine(new OdosEngine(TOKEN_ZAP_V1_ADDRESS_MAP))
 
     this.tokenZaps = {}
     chains.forEach(({ chainId }) => {
