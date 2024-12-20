@@ -91,32 +91,43 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		return fmt.Errorf("could not make call: %w", err)
 	}
 
+	dbReq := reldb.QuoteRequest{
+		BlockNumber:   req.Raw.BlockNumber,
+		RawRequest:    req.Request,
+		TransactionID: req.TransactionId,
+		Sender:        req.Sender,
+		Transaction:   bridgeTx,
+		Status:        reldb.Seen,
+		OriginTxHash:  req.Raw.TxHash,
+	}
+
 	// TODO: you can just pull these out of inventory. If they don't exist mark as invalid.
 	originDecimals, destDecimals, err := r.getDecimalsFromBridgeTx(ctx, bridgeTx)
 	// can't use errors.is here
 	if err != nil && strings.Contains(err.Error(), "no contract code at given address") {
-		logger.Warnf("invalid token, skipping")
+		dbReq.Status = reldb.WillNotProcess
+		dbReq.Reason = fmt.Sprintf("invalid token (no contract code at address)")
+		err = r.db.StoreQuoteRequest(ctx, dbReq)
+		if err != nil {
+			return fmt.Errorf("could not store db request: %w", err)
+		}
 		return nil
 	}
-
 	if err != nil || originDecimals == nil || destDecimals == nil {
-		return fmt.Errorf("could not get decimals: %w", err)
+		dbReq.Status = reldb.WillNotProcess
+		dbReq.Reason = fmt.Sprintf("could not get decimals: %w", err)
+		err = r.db.StoreQuoteRequest(ctx, dbReq)
+		if err != nil {
+			return fmt.Errorf("could not store db request: %w", err)
+		}
+		return fmt.Errorf(dbReq.Reason)
 	}
+	dbReq.OriginTokenDecimals = *originDecimals
+	dbReq.DestTokenDecimals = *destDecimals
 
-	dbReq := reldb.QuoteRequest{
-		BlockNumber:         req.Raw.BlockNumber,
-		RawRequest:          req.Request,
-		OriginTokenDecimals: *originDecimals,
-		DestTokenDecimals:   *destDecimals,
-		TransactionID:       req.TransactionId,
-		Sender:              req.Sender,
-		Transaction:         bridgeTx,
-		Status:              reldb.Seen,
-		OriginTxHash:        req.Raw.TxHash,
-	}
 	err = r.db.StoreQuoteRequest(ctx, dbReq)
 	if err != nil {
-		return fmt.Errorf("could not get db: %w", err)
+		return fmt.Errorf("could not store db request: %w", err)
 	}
 
 	// immediately forward the request to handleSeen
