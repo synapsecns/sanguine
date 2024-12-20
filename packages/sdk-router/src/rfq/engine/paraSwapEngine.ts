@@ -1,11 +1,11 @@
 import { BigNumber } from 'ethers'
 import { Provider } from '@ethersproject/abstract-provider'
-import { AddressZero, Zero } from '@ethersproject/constants'
+import { Zero } from '@ethersproject/constants'
 import { Contract } from '@ethersproject/contracts'
 
 import erc20ABI from '../../abi/IERC20Metadata.json'
 import { IERC20Metadata as ERC20 } from '../../typechain/IERC20Metadata'
-import { AddressMap, BigintIsh } from '../../constants'
+import { AddressMap } from '../../constants'
 import { isSameAddress } from '../../utils/addressUtils'
 import { fetchWithTimeout } from '../api'
 import {
@@ -13,15 +13,17 @@ import {
   EmptyRoute,
   EngineID,
   isCorrectSlippage,
-  Recipient,
   RouteInput,
   SlippageMax,
   SwapEngine,
   SwapEngineRoute,
   toBasisPoints,
 } from './swapEngine'
-import { StepParams } from '../steps'
-import { AMOUNT_NOT_PRESENT, encodeZapData } from '../zapData'
+import {
+  SwapAPIResponse,
+  EMPTY_SWAP_API_RESPONSE,
+  generateAPIStep,
+} from './response'
 import { ChainProvider } from '../../router'
 import { isNativeToken } from '../../utils/handleNativeToken'
 
@@ -53,20 +55,6 @@ export type ParaSwapResponse = {
     gasPrice: string
     chainId: number
   }
-}
-
-const EmptyParaSwapResponse: ParaSwapResponse = {
-  priceRoute: {
-    destAmount: '0',
-  },
-  txParams: {
-    from: '',
-    to: '',
-    value: '',
-    data: '',
-    gasPrice: '',
-    chainId: 0,
-  },
 }
 
 export class ParaSwapEngine implements SwapEngine {
@@ -117,7 +105,7 @@ export class ParaSwapEngine implements SwapEngine {
       version: '6.2',
     }
     const response = await this.getResponse(request)
-    const expectedAmountOut = BigNumber.from(response.priceRoute.destAmount)
+    const expectedAmountOut = BigNumber.from(response.amountOut)
     if (expectedAmountOut.eq(Zero)) {
       return EmptyRoute
     }
@@ -127,7 +115,7 @@ export class ParaSwapEngine implements SwapEngine {
       expectedAmountOut,
       minAmountOut,
       steps: [
-        this.generateParaSwapStep(
+        generateAPIStep(
           tokenIn,
           tokenOut,
           amountIn,
@@ -141,9 +129,7 @@ export class ParaSwapEngine implements SwapEngine {
 
   // TODO: findRoutes
 
-  public async getResponse(
-    request: ParaSwapRequest
-  ): Promise<ParaSwapResponse> {
+  public async getResponse(request: ParaSwapRequest): Promise<SwapAPIResponse> {
     try {
       // Stringify every value in the request
       const params = new URLSearchParams(
@@ -155,39 +141,16 @@ export class ParaSwapEngine implements SwapEngine {
       const response = await fetchWithTimeout(url, PARASWAP_API_TIMEOUT)
       if (!response.ok) {
         console.error('Error fetching ParaSwap response:', response)
-        return EmptyParaSwapResponse
+        return EMPTY_SWAP_API_RESPONSE
       }
-      return response.json()
+      const paraswapResponse: ParaSwapResponse = await response.json()
+      return {
+        amountOut: paraswapResponse.priceRoute.destAmount,
+        transaction: paraswapResponse.txParams,
+      }
     } catch (error) {
       console.error('Error fetching ParaSwap response:', error)
-      return EmptyParaSwapResponse
-    }
-  }
-
-  private generateParaSwapStep(
-    tokenIn: string,
-    tokenOut: string,
-    amountIn: BigintIsh,
-    response: ParaSwapResponse,
-    finalRecipient: Recipient,
-    minAmountOut: BigNumber
-  ): StepParams {
-    if (isSameAddress(finalRecipient.address, AddressZero)) {
-      throw new Error('Missing recipient address for ParaSwap')
-    }
-    const zapData = encodeZapData({
-      target: response.txParams.to,
-      payload: response.txParams.data,
-      amountPosition: AMOUNT_NOT_PRESENT,
-      finalToken: tokenOut,
-      forwardTo: finalRecipient.address,
-      minFwdAmount: minAmountOut,
-    })
-    return {
-      token: tokenIn,
-      amount: BigNumber.from(amountIn),
-      msgValue: BigNumber.from(response.txParams.value),
-      zapData,
+      return EMPTY_SWAP_API_RESPONSE
     }
   }
 
