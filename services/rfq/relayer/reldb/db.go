@@ -88,6 +88,7 @@ type QuoteRequest struct {
 	DestTxHash   common.Hash
 	// RelayNonce is the nonce for the relay transaction.
 	RelayNonce uint64
+	Reason     string
 }
 
 // GetOriginIDPair gets the origin chain id and token address pair.

@@ -93,6 +93,8 @@ type RequestForQuote struct {
 	SendChainGas bool
 	// RelayNonce is the nonce for the relay transaction.
 	RelayNonce uint64
+	// Reason is the reason why a transaction may not be processed.
+	Reason string
 }
 
 // Rebalance is the event model for a rebalance action.
@@ -137,6 +139,7 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 		Status:               request.Status,
 		BlockNumber:          request.BlockNumber,
 		RelayNonce:           request.RelayNonce,
+		Reason:               request.Reason,
 	}
 }
 
@@ -225,6 +228,7 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 		OriginTxHash: common.HexToHash(r.OriginTxHash.String),
 		DestTxHash:   common.HexToHash(r.DestTxHash.String),
 		RelayNonce:   r.RelayNonce,
+		Reason:       r.Reason,
 	}, nil
 }
 
