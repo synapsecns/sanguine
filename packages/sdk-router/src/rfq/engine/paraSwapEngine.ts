@@ -24,7 +24,7 @@ import { ChainProvider } from '../../router'
 import { isNativeToken } from '../../utils/handleNativeToken'
 
 const PARASWAP_API_URL = 'https://api.paraswap.io/swap'
-const PARASWAP_API_TIMEOUT = 1000
+const PARASWAP_API_TIMEOUT = 2000
 
 const MAX_SLIPPAGE = 9999
 
