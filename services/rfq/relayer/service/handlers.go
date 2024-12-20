@@ -106,7 +106,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 	// can't use errors.is here
 	if err != nil && strings.Contains(err.Error(), "no contract code at given address") {
 		dbReq.Status = reldb.WillNotProcess
-		dbReq.Reason = fmt.Sprintf("invalid token (no contract code at address)")
+		dbReq.Reason = "invalid token (no contract code at address)"
 		err = r.db.StoreQuoteRequest(ctx, dbReq)
 		if err != nil {
 			return fmt.Errorf("could not store db request: %w", err)
@@ -115,12 +115,12 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 	}
 	if err != nil || originDecimals == nil || destDecimals == nil {
 		dbReq.Status = reldb.WillNotProcess
-		dbReq.Reason = fmt.Sprintf("could not get decimals: %w", err)
+		dbReq.Reason = fmt.Sprintf("could not get decimals: %s", err.Error())
 		err = r.db.StoreQuoteRequest(ctx, dbReq)
 		if err != nil {
 			return fmt.Errorf("could not store db request: %w", err)
 		}
-		return fmt.Errorf(dbReq.Reason)
+		return fmt.Errorf("could not get decimals: %w", err)
 	}
 	dbReq.OriginTokenDecimals = *originDecimals
 	dbReq.DestTokenDecimals = *destDecimals
