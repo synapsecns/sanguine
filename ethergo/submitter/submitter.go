@@ -508,6 +508,23 @@ func (t *txSubmitterImpl) bumpGasFromPrevTx(ctx context.Context, transactor *bin
 		metrics.EndSpan(span)
 	}()
 
+	// first, check if the GasPriceTTL has been reached
+	currentTime := time.Now()
+	if t.config.GetGasPriceTTL(chainID) > 0 && prevTx.Time().Add(t.config.GetGasPriceTTL(chainID)).Before(currentTime) {
+		transactor.GasPrice = nil
+		transactor.GasFeeCap = nil
+		transactor.GasTipCap = nil
+
+		span.SetAttributes(
+			attribute.Bool("ttl_exceeded", true),
+			attribute.String("current_time", currentTime.String()),
+			attribute.String("prev_tx_time", prevTx.Time().String()),
+		)
+		prevTx.SetTime(currentTime)
+		return
+	}
+
+	// set the gas price according to dynamic setting
 	prevDynamic := prevTx.Type() == types.DynamicFeeTxType
 	bumpPct := t.config.GetGasBumpPercentage(chainID)
 	if currentDynamic {

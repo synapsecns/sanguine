@@ -33,6 +33,8 @@ type IConfig interface {
 	// GetDynamicGasEstimate returns whether or not to use dynamic gas estimation
 	// TODO: test this method.
 	GetDynamicGasEstimate(chainID int) bool
+	// GetGasPriceTTL returns the time after which the previous gas price is ignored, and should be fetched from oracle instead.
+	GetGasPriceTTL(chainID int) time.Duration
 	// SupportsEIP1559 returns whether or not this chain supports EIP1559.
 	SupportsEIP1559(chainID int) bool
 	// SetGlobalMaxGasPrice is a helper function that sets the global gas price.

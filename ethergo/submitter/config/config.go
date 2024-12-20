@@ -50,7 +50,7 @@ type ChainConfig struct {
 	// SupportsEIP1559 is whether or not this chain supports EIP1559
 	SupportsEIP1559 bool `yaml:"supports_eip_1559"`
 	// GasPriceTTL is the time after which the previous gas price is ignored, and should be fetched from oracle instead.
-	GasPriceTTL time.Time `yaml:"gas_price_ttl"`
+	GasPriceTTL time.Duration `yaml:"gas_price_ttl"`
 }
 
 const (
@@ -228,8 +228,8 @@ func (c *Config) SupportsEIP1559(chainID int) bool {
 	return c.ChainConfig.SupportsEIP1559
 }
 
-// GasPriceTTL returns the time after which the previous gas price is ignored, and should be fetched from oracle instead.
-func (c *Config) GasPriceTTL(chainID int) time.Time {
+// GetGasPriceTTL returns the time after which the previous gas price is ignored, and should be fetched from oracle instead.
+func (c *Config) GetGasPriceTTL(chainID int) time.Duration {
 	chainConfig, ok := c.Chains[chainID]
 	if ok {
 		return chainConfig.GasPriceTTL
