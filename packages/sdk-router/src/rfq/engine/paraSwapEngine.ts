@@ -166,12 +166,18 @@ export class ParaSwapEngine implements SwapEngine {
         })
       )
       const url = `${PARASWAP_API_URL}?${params.toString()}`
+      console.log(`Fetching ParaSwap response from ${url}`)
       const response = await fetchWithTimeout(url, PARASWAP_API_TIMEOUT)
       if (!response.ok) {
-        console.error('Error fetching ParaSwap response:', response)
+        console.error(`Error fetching ParaSwap response from ${url}:`, response)
         return EmptyParaSwapResponse
       }
-      return response.json()
+      const paraSwapResponse: ParaSwapResponse = await response.json()
+      console.log(
+        `Fetched ParaSwap response from ${url}:`,
+        JSON.stringify(paraSwapResponse, null, 2)
+      )
+      return paraSwapResponse
     } catch (error) {
       console.error('Error fetching ParaSwap response:', error)
       return EmptyParaSwapResponse

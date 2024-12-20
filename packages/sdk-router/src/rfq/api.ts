@@ -87,6 +87,10 @@ export const getAllQuotes = async (): Promise<FastBridgeQuote[]> => {
     }
     // The response is a list of quotes in the FastBridgeQuoteAPI format
     const quotes: FastBridgeQuoteAPI[] = await response.json()
+    console.log(
+      `${API_URL}/quotes with response:`,
+      JSON.stringify(quotes, null, 2)
+    )
     return quotes
       .map((quote) => {
         try {
@@ -145,6 +149,13 @@ export const getBestRelayerQuote = async (
     }
     // Check that response is successful, contains non-zero dest amount, and has a relayer address
     const rfqResponse: PutRFQResponseAPI = await response.json()
+    console.log(
+      `${API_URL}/rfq with request:`,
+      JSON.stringify(rfqRequest, null, 2),
+      '\n',
+      'response: ',
+      JSON.stringify(rfqResponse, null, 2)
+    )
     if (!rfqResponse.success) {
       console.error(
         'No RFQ quote returned:',
