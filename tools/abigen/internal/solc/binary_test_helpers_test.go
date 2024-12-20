@@ -57,12 +57,11 @@ func testBackoffWithJitter(t *testing.T, manager *solc.BinaryManager) {
 	delay := manager.ApplyBackoffWithJitter(attempt)
 
 	// Calculate expected bounds with safe conversion
-	baseMs := uint64(100)
-	shift := uint(attempt)
-	if shift > 63 { // Prevent overflow on large attempts
-		shift = 63
+	const baseMs = 100
+	baseDelay := time.Duration(baseMs) * time.Millisecond
+	if attempt > 0 {
+		baseDelay = baseDelay << uint(attempt)
 	}
-	baseDelay := time.Duration(baseMs*(1<<shift)) * time.Millisecond
 	maxJitter := baseDelay / 2
 
 	if delay < baseDelay || delay > baseDelay+maxJitter {

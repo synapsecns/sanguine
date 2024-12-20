@@ -552,7 +552,11 @@ func TestBackoffWithJitter(t *testing.T) {
 	for i := 0; i < 3; i++ {
 		attempts++
 		delay := manager.ApplyBackoffWithJitter(i)
-		expectedBase := time.Duration(100*(1<<uint(i))) * time.Millisecond
+		// Calculate base delay safely (i is bounded 0-2 by loop)
+		baseMs := uint64(100)
+		// Safe conversion: i is bounded by loop (0-2)
+		shift := time.Duration(i)
+		expectedBase := time.Duration(baseMs) * time.Millisecond << shift
 		if delay < expectedBase || delay > expectedBase*2 {
 			t.Errorf("Attempt %d: delay %v outside expected range [%v, %v]",
 				i, delay, expectedBase, expectedBase*2)

@@ -7,11 +7,11 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/binary"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net"
 	"net/http"
 	"os"
@@ -588,9 +588,24 @@ func (m *BinaryManager) downloadBinary(ctx context.Context, binaryInfo *BinaryIn
 			// Add extra delay to allow other goroutines to succeed using crypto/rand
 			jitterBytes := make([]byte, 8)
 			if _, err := rand.Read(jitterBytes); err == nil {
+				// Use uint64 throughout to avoid conversions
 				jitterInt := binary.BigEndian.Uint64(jitterBytes)
-				extraDelay := time.Duration(jitterInt%(100*uint64(time.Millisecond))) * time.Nanosecond
-				backoff += extraDelay
+				// Convert milliseconds to nanoseconds safely
+				maxDelayNs := uint64(100 * time.Millisecond)
+				// Ensure jitter value is bounded
+				if maxDelayNs > math.MaxInt64 {
+					maxDelayNs = math.MaxInt64
+				}
+				jitterVal := jitterInt % maxDelayNs
+
+				// Safe conversion: ensure both values are within int64 bounds
+				if jitterVal <= uint64(math.MaxInt64) {
+					backoffNs := int64(backoff)
+					jitterNs := int64(jitterVal)
+					if backoffNs >= 0 && backoffNs <= math.MaxInt64-jitterNs {
+						backoff = time.Duration(backoffNs + jitterNs)
+					}
+				}
 			}
 			time.Sleep(backoff)
 			continue
@@ -957,26 +972,15 @@ func (m *BinaryManager) verifyAndInstall(ctx context.Context, tmpFile string, bi
 		return fmt.Errorf("invalid tmp file path: outside cache directory")
 	}
 
-	// Make binary executable with retries
-	var chmodErr error
-	for retries := 0; retries < 3; retries++ {
-		if retries > 0 {
-			time.Sleep(100 * time.Millisecond)
-		}
-		chmodErr = os.Chmod(tmpFile, ExecPerms)
-		if chmodErr == nil {
-			break
-		}
-	}
-	if chmodErr != nil {
-		m.cleanupTempFile(tmpFile)
-		return fmt.Errorf("failed to make binary executable after retries: %w", chmodErr)
-	}
-
-	// Verify checksums
+	// Verify checksums first, before any modifications
 	if verifyErr := m.VerifyChecksums(tmpFile, binaryInfo); verifyErr != nil {
 		m.cleanupTempFile(tmpFile)
 		return fmt.Errorf("checksum verification failed: %w", verifyErr)
+	}
+
+	// Make binary executable
+	if err := m.makeExecutable(tmpFile); err != nil {
+		return fmt.Errorf("failed to make binary executable: %w", err)
 	}
 
 	// Get final binary path
@@ -999,40 +1003,41 @@ func (m *BinaryManager) verifyAndInstall(ctx context.Context, tmpFile string, bi
 // checksums against the expected values from BinaryInfo. It ensures the binary has not
 // been tampered with during download by comparing against official checksums.
 func (m *BinaryManager) VerifyChecksums(tmpFile string, binaryInfo *BinaryInfo) error {
+	// Validate path and ensure it's within allowed directories
 	cleanPath := filepath.Clean(tmpFile)
 	if !strings.HasPrefix(cleanPath, m.cacheDir) && !strings.HasPrefix(cleanPath, os.TempDir()) {
 		return fmt.Errorf("invalid binary path: attempted to access file outside allowed directories")
 	}
 
-	content, err := os.ReadFile(tmpFile)
-	if err != nil {
-		return fmt.Errorf("failed to read binary for verification: %w", err)
+	// Read file with retries
+	var fileContent []byte
+	var readErr error
+	for retries := 0; retries < 3; retries++ {
+		if retries > 0 {
+			time.Sleep(time.Duration(100*(1<<uint(retries))) * time.Millisecond)
+		}
+		fileContent, readErr = os.ReadFile(cleanPath)
+		if readErr == nil {
+			break
+		}
+		if os.IsNotExist(readErr) {
+			return fmt.Errorf("binary file not found: %w", readErr)
+		}
+	}
+	if readErr != nil {
+		return fmt.Errorf("failed to read binary for verification: %w", readErr)
 	}
 
-	// Normalize expected checksums: trim spaces, remove 0x prefix, convert to lowercase
-	expectedSha := strings.TrimSpace(strings.ToLower(strings.TrimPrefix(binaryInfo.Sha256, "0x")))
-	expectedKeccak := strings.TrimSpace(strings.ToLower(strings.TrimPrefix(binaryInfo.Keccak256, "0x")))
-
-	// Calculate SHA256 and normalize
-	sha256Sum := sha256.Sum256(content)
-	calculatedSha256 := strings.TrimSpace(strings.ToLower(hex.EncodeToString(sha256Sum[:])))
-
-	// Compare SHA256 checksums with detailed error message
-	if calculatedSha256 != expectedSha {
-		return fmt.Errorf("sha256 checksum mismatch: got %s, want %s", calculatedSha256, expectedSha)
+	// Verify SHA256
+	sha256Sum := fmt.Sprintf("%x", sha256.Sum256(fileContent))
+	if !strings.EqualFold(sha256Sum, binaryInfo.Sha256) {
+		return fmt.Errorf("sha256 checksum mismatch: got %s, want %s", sha256Sum, binaryInfo.Sha256)
 	}
 
-	// Calculate Keccak256 and normalize
-	keccak256Sum := crypto.Keccak256(content)
-	calculatedKeccak := strings.TrimSpace(strings.ToLower(hex.EncodeToString(keccak256Sum)))
-
-	// Compare Keccak256 checksums with detailed error message
-	if calculatedKeccak != expectedKeccak {
-		// Convert both checksums to byte arrays for detailed comparison
-		calcBytes, _ := hex.DecodeString(calculatedKeccak)
-		expBytes, _ := hex.DecodeString(expectedKeccak)
-		return fmt.Errorf("keccak256 checksum mismatch: got %x, want %x (lengths: calc=%d, exp=%d)",
-			calcBytes, expBytes, len(calculatedKeccak), len(expectedKeccak))
+	// Verify Keccak256
+	keccak256Sum := fmt.Sprintf("%x", crypto.Keccak256(fileContent))
+	if !strings.EqualFold(keccak256Sum, binaryInfo.Keccak256) {
+		return fmt.Errorf("keccak256 checksum mismatch: got %s, want %s", keccak256Sum, binaryInfo.Keccak256)
 	}
 
 	return nil
@@ -1075,41 +1080,53 @@ func (m *BinaryManager) checkFileExistence(path string, initialCheck bool) error
 }
 
 // ApplyBackoffWithJitter calculates and returns an exponential backoff duration with cryptographically
-// secure random jitter. It uses a base delay of 100ms multiplied by 2^attempt, then adds random jitter
-// between 0 and baseDelay/2 to prevent thundering herd problems in concurrent scenarios.
-//
-// Parameters:
-//   - attempt: The current retry attempt number (0-based)
-//
-// Returns:
-//   - time.Duration: The calculated delay duration including jitter. If jitter generation fails,
-//     returns the base backoff duration without jitter.
+// secure random jitter. It uses a base delay of 100ms multiplied by 2^attempt, then adds random jitter.
 func (m *BinaryManager) ApplyBackoffWithJitter(attempt int) time.Duration {
-	// Use uint to prevent negative shifts, and ensure attempt is not negative
+	// Ensure non-negative attempt and limit shift to prevent overflow
 	if attempt < 0 {
 		attempt = 0
 	}
-	// Calculate base backoff with safe conversion
-	baseMs := uint64(100)
-	shift := uint(attempt)
-	if shift > 63 { // Prevent overflow on large attempts
-		shift = 63
+	if attempt > 30 { // Prevent overflow: 100ms * 2^30 is about 107 days
+		attempt = 30
 	}
-	backoff := time.Duration(baseMs*(1<<shift)) * time.Millisecond
 
-	// Generate and apply jitter using crypto/rand for better distribution
+	// Calculate base backoff using uint64 throughout
+	const baseDelayMs uint64 = 100
+	// Convert milliseconds to nanoseconds safely
+	baseDelayNs := baseDelayMs * uint64(time.Millisecond)
+	if attempt > 0 {
+		// Safe: attempt is bounded to 30, baseDelayNs is bounded
+		baseDelayNs <<= uint64(attempt)
+	}
+
+	// Add jitter using crypto/rand
 	jitterBytes := make([]byte, 8)
 	if _, err := rand.Read(jitterBytes); err != nil {
-		return backoff
+		// Safe: baseDelayNs is bounded due to attempt limit
+		return time.Duration(baseDelayNs)
 	}
-	// Use safe conversion for jitter calculation
-	jitterInt := binary.BigEndian.Uint64(jitterBytes)
-	maxJitter := uint64(backoff / 2)
-	if maxJitter > 0 {
-		jitter := time.Duration(jitterInt % maxJitter)
-		return backoff + jitter
+
+	// Calculate jitter (0-50% of base delay)
+	if baseDelayNs > 0 {
+		// Use uint64 throughout to avoid conversions
+		jitterInt := binary.BigEndian.Uint64(jitterBytes)
+		// Safe: baseDelayNs is bounded, so maxJitterNs is too
+		maxJitterNs := baseDelayNs / 2
+		// Safe: result is bounded by maxJitterNs
+		jitterVal := jitterInt % maxJitterNs
+		// Ensure both values are within MaxInt64 and won't overflow when added
+		if baseDelayNs <= uint64(math.MaxInt64) && jitterVal <= uint64(math.MaxInt64) {
+			baseNs := int64(baseDelayNs)
+			jitterNs := int64(jitterVal)
+			if baseNs >= 0 && baseNs <= math.MaxInt64-jitterNs {
+				return time.Duration(baseNs + jitterNs)
+			}
+		}
+		// If values exceed bounds, return max duration
+		return time.Duration(math.MaxInt64)
 	}
-	return backoff
+
+	return time.Duration(baseDelayNs)
 }
 
 func (m *BinaryManager) applyBackoffWithJitter(attempt int) error {
@@ -1155,6 +1172,30 @@ func (m *BinaryManager) verifyFileReadable(path string, attempt, maxRetries int)
 		return fmt.Errorf("temp file is empty (attempt %d/%d)", attempt+1, maxRetries)
 	}
 	return nil
+}
+
+// makeExecutable attempts to make the binary executable with retries.
+// It uses exponential backoff with jitter between attempts.
+func (m *BinaryManager) makeExecutable(tmpFile string) error {
+	var lastChmodErr error
+	for retries := 0; retries < 3; retries++ {
+		if retries > 0 {
+			time.Sleep(m.ApplyBackoffWithJitter(retries))
+		}
+
+		err := os.Chmod(tmpFile, ExecPerms)
+		if err == nil {
+			return nil
+		}
+		if os.IsNotExist(err) {
+			m.cleanupTempFile(tmpFile)
+			return fmt.Errorf("temp file disappeared during chmod: %w", err)
+		}
+		lastChmodErr = err
+	}
+
+	m.cleanupTempFile(tmpFile)
+	return fmt.Errorf("failed to make binary executable after retries: %w", lastChmodErr)
 }
 
 func (m *BinaryManager) verifyFileAttributes(path string, attempt, maxRetries int) error {
