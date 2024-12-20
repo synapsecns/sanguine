@@ -15,8 +15,10 @@ import {
   isCorrectSlippage,
   Recipient,
   RouteInput,
+  SlippageMax,
   SwapEngine,
   SwapEngineRoute,
+  toBasisPoints,
 } from './swapEngine'
 import { StepParams } from '../steps'
 import { AMOUNT_NOT_PRESENT, encodeZapData } from '../zapData'
@@ -25,8 +27,6 @@ import { isNativeToken } from '../../utils/handleNativeToken'
 
 const PARASWAP_API_URL = 'https://api.paraswap.io/swap'
 const PARASWAP_API_TIMEOUT = 2000
-
-const MAX_SLIPPAGE = 9999
 
 export type ParaSwapRequest = {
   srcToken: string
@@ -113,7 +113,7 @@ export class ParaSwapEngine implements SwapEngine {
       userAddress: tokenZap,
       network: chainId.toString(),
       // slippage settings are applied when generating the zap data as minFwdAmount
-      slippage: MAX_SLIPPAGE,
+      slippage: toBasisPoints(SlippageMax),
       version: '6.2',
     }
     const response = await this.getResponse(request)
@@ -145,9 +145,6 @@ export class ParaSwapEngine implements SwapEngine {
     request: ParaSwapRequest
   ): Promise<ParaSwapResponse> {
     try {
-      if (request.slippage > MAX_SLIPPAGE) {
-        request.slippage = MAX_SLIPPAGE
-      }
       // Stringify every value in the request
       const params = new URLSearchParams(
         Object.entries(request).map(([k, v]) => {

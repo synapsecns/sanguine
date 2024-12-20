@@ -24,6 +24,7 @@ import {
   applySlippage,
   isCorrectSlippage,
   RouteInput,
+  SlippageMax,
 } from './swapEngine'
 
 export class DefaultEngine implements SwapEngine {
@@ -86,7 +87,8 @@ export class DefaultEngine implements SwapEngine {
     const { amountOut, steps: stepsOutput } = await previewer.previewIntent(
       swapQuoter,
       forwardTo,
-      toWei(slippage),
+      // slippage settings are applied when generating the zap data as minFwdAmount
+      toWei(SlippageMax),
       tokenIn,
       tokenOut,
       amountIn
