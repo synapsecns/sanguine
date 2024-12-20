@@ -14,7 +14,7 @@ import {
   USER_SIMULATED_ADDRESS,
   Slippage,
   SlippageDefault,
-  SlippageFull,
+  SlippageMax,
 } from './swapEngine'
 import { CCTPRouterQuery } from '../../module'
 import { encodeStepParams } from '../steps'
@@ -71,7 +71,7 @@ export class EngineSet {
               tokenOut,
               tokenIn.amount,
               recipient,
-              SlippageFull
+              SlippageMax
             )
           )
         )
@@ -106,7 +106,7 @@ export class EngineSet {
               tokenOut,
               tokenIn.amount,
               recipient,
-              SlippageFull
+              SlippageMax
             )
             return this.limitSingleZap(route)
           })
