@@ -9,6 +9,7 @@ export enum EngineID {
   NoOp,
   Default,
   ParaSwap,
+  Odos,
 }
 
 export type SwapEngineRoute = {
