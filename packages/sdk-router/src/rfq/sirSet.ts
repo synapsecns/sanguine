@@ -37,6 +37,7 @@ import {
   RecipientEntity,
   validateEngineID,
   Slippage,
+  applySlippage,
 } from './engine'
 import {
   BridgeParamsV2,
@@ -243,8 +244,8 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       destQueryPrecise.rawParams
     )
     if (
-      isSameAddress(paramsV1.destToken, AddressZero) ||
-      paramsV1.destAmount.eq(0)
+      isSameAddress(paramsV1.destRelayToken, AddressZero) ||
+      paramsV1.destRelayAmount.eq(0)
     ) {
       console.warn(
         'No destToken or destAmount saved in destQuery.rawParams, slippage is not applied'
@@ -261,7 +262,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     return {
       originQuery: this.applyOriginSlippage(
         originQueryPrecise,
-        paramsV1.destAmount,
+        paramsV1.destRelayAmount,
         slippage
       ),
       destQuery: this.applyDestinationSlippage(
@@ -314,35 +315,37 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     if (!validateEngineID(paramsV1.destEngineID)) {
       throw new Error(`Invalid engineID: ${paramsV1.destEngineID}`)
     }
-    const destZapData = decodeZapData(hexlify(paramsV2.zapData))
+    const decodedZapData = decodeZapData(hexlify(paramsV2.zapData))
     // Do nothing if there is no Zap on the destination chain.
-    if (!destZapData.target) {
+    if (!decodedZapData.target) {
       return destQueryPrecise
     }
-    const destRoute = this.engineSet.applySlippage(
-      destChainId,
-      {
-        engineID: paramsV1.destEngineID,
-        expectedAmountOut: destQueryPrecise.minAmountOut,
-        minAmountOut: destQueryPrecise.minAmountOut,
-        steps: [
-          {
-            token: paramsV1.destToken,
-            // Use the full balance for the Zap action
-            amount: MaxUint256,
-            msgValue: paramsV2.zapNative,
-            zapData: encodeZapData(destZapData),
-          },
-        ],
-      },
-      slippage
-    )
+    const expectedAmountOut = destQueryPrecise.minAmountOut
+    const minAmountOut = applySlippage(expectedAmountOut, slippage)
+    const zapData = encodeZapData({
+      ...decodedZapData,
+      minFwdAmount: minAmountOut,
+    })
+    const destRoute = {
+      engineID: paramsV1.destEngineID,
+      expectedAmountOut,
+      minAmountOut,
+      steps: [
+        {
+          token: paramsV1.destRelayToken,
+          // Use the full balance for the Zap action
+          amount: MaxUint256,
+          msgValue: paramsV2.zapNative,
+          zapData,
+        },
+      ],
+    }
     return this.getRFQDestinationQuery(
       destChainId,
       {
-        destRelayAmount: paramsV1.destAmount,
-        destRelayRecipient: paramsV1.destRecipient,
-        destRelayToken: paramsV1.destToken,
+        destRelayAmount: paramsV1.destRelayAmount,
+        destRelayRecipient: paramsV1.destRelayRecipient,
+        destRelayToken: paramsV1.destRelayToken,
         destRoute,
       },
       destQueryPrecise.tokenOut,
@@ -533,11 +536,11 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     destQuery.rawParams = encodeSavedBridgeParams(
       {
         originSender: originUserAddress,
-        destRecipient: intent.destRelayRecipient,
         destChainId,
         destEngineID: intent.destRoute.engineID,
-        destToken: intent.destRelayToken,
-        destAmount: intent.destRelayAmount,
+        destRelayRecipient: intent.destRelayRecipient,
+        destRelayToken: intent.destRelayToken,
+        destRelayAmount: intent.destRelayAmount,
       },
       {
         // TODO: exclusivity

@@ -1,4 +1,5 @@
 import { BigNumber } from 'ethers'
+import { WeiPerEther } from '@ethersproject/constants'
 
 import {
   BridgeParamsV2,
@@ -9,22 +10,20 @@ import {
 import { ETH_USDC, ETH_USDT, ARB_USDC, ARB_USDT } from '../constants/testValues'
 
 describe('paramsV2', () => {
-  const ether = BigNumber.from(10).pow(18)
-
   const paramsV1: SavedParamsV1 = {
     originSender: ARB_USDC,
-    destRecipient: ARB_USDT,
     destChainId: 1234,
     destEngineID: 4321,
-    destToken: ETH_USDC,
-    destAmount: ether.mul(2),
+    destRelayRecipient: ARB_USDT,
+    destRelayToken: ETH_USDC,
+    destRelayAmount: WeiPerEther.mul(2),
   }
 
   const paramsV2: BridgeParamsV2 = {
     quoteRelayer: ETH_USDT,
     quoteExclusivitySeconds: BigNumber.from(30),
     quoteId: '0xdead',
-    zapNative: ether,
+    zapNative: WeiPerEther,
     zapData: '0xbeef',
   }
 
@@ -32,7 +31,7 @@ describe('paramsV2', () => {
     quoteRelayer: ETH_USDT,
     quoteExclusivitySeconds: BigNumber.from(30),
     quoteId: '0x',
-    zapNative: ether,
+    zapNative: WeiPerEther,
     zapData: '0xdeadbeef',
   }
 
@@ -40,7 +39,7 @@ describe('paramsV2', () => {
     quoteRelayer: ETH_USDT,
     quoteExclusivitySeconds: BigNumber.from(30),
     quoteId: '0xdeadbeef',
-    zapNative: ether,
+    zapNative: WeiPerEther,
     zapData: '0x',
   }
 
@@ -48,7 +47,7 @@ describe('paramsV2', () => {
     quoteRelayer: ETH_USDT,
     quoteExclusivitySeconds: BigNumber.from(30),
     quoteId: '0x',
-    zapNative: ether,
+    zapNative: WeiPerEther,
     zapData: '0x',
   }
 
@@ -56,7 +55,7 @@ describe('paramsV2', () => {
     quoteRelayer: ETH_USDT,
     quoteExclusivitySeconds: BigNumber.from(-30),
     quoteId: '0xdeadbeef',
-    zapNative: ether,
+    zapNative: WeiPerEther,
     zapData: '0x',
   }
 

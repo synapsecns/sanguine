@@ -9,13 +9,11 @@ import { AddressZero, MaxUint256, Zero } from '@ethersproject/constants'
 import fastBridgeV2Abi from '../abi/FastBridgeV2.json'
 import previewerAbi from '../abi/SynapseIntentPreviewer.json'
 import synapseIntentRouterAbi from '../abi/SynapseIntentRouter.json'
-import tokenZapV1Abi from '../abi/TokenZapV1.json'
 import {
   FastBridgeV2 as FastBridgeV2Contract,
   IFastBridge,
 } from '../typechain/FastBridgeV2'
 import { SynapseIntentRouter as SIRContract } from '../typechain/SynapseIntentRouter'
-import { TokenZapV1 as TokenZapV1Contract } from '../typechain/TokenZapV1'
 import { BigintIsh } from '../constants'
 import { SynapseModule, CCTPRouterQuery } from '../module'
 import { getMatchingTxLog } from '../utils/logs'
@@ -31,7 +29,6 @@ export class SynapseIntentRouter implements SynapseModule {
   static fastBridgeV2Interface = new Interface(fastBridgeV2Abi)
   static previewerInterface = new Interface(previewerAbi)
   static sirInterface = new Interface(synapseIntentRouterAbi)
-  static tokenZapV1Interface = new Interface(tokenZapV1Abi)
 
   public readonly address: string
   public readonly chainId: number
@@ -39,7 +36,7 @@ export class SynapseIntentRouter implements SynapseModule {
 
   private readonly fastBridgeV2Contract: FastBridgeV2Contract
   private readonly sirContract: SIRContract
-  private readonly tokenZapContract: TokenZapV1Contract
+  private readonly tokenZapAddress: string
 
   // All possible events emitted by the FastBridgeV2 contract in the origin transaction (in alphabetical order)
   private readonly originEvents = ['BridgeRequested']
@@ -65,10 +62,10 @@ export class SynapseIntentRouter implements SynapseModule {
     invariant(SynapseIntentRouter.fastBridgeV2Interface, 'INTERFACE_UNDEFINED')
     invariant(SynapseIntentRouter.previewerInterface, 'INTERFACE_UNDEFINED')
     invariant(SynapseIntentRouter.sirInterface, 'INTERFACE_UNDEFINED')
-    invariant(SynapseIntentRouter.tokenZapV1Interface, 'INTERFACE_UNDEFINED')
     this.chainId = chainId
     this.provider = provider
     this.address = contracts.sirAddress
+    this.tokenZapAddress = contracts.tokenZapAddress
 
     this.fastBridgeV2Contract = new Contract(
       contracts.fastBridgeV2Address,
@@ -81,12 +78,6 @@ export class SynapseIntentRouter implements SynapseModule {
       SynapseIntentRouter.sirInterface,
       provider
     ) as SIRContract
-
-    this.tokenZapContract = new Contract(
-      contracts.tokenZapAddress,
-      SynapseIntentRouter.tokenZapV1Interface,
-      provider
-    ) as TokenZapV1Contract
   }
 
   /**
@@ -111,7 +102,7 @@ export class SynapseIntentRouter implements SynapseModule {
     // Get data for the complete intent transaction
     const populatedTransaction =
       await this.sirContract.populateTransaction.completeIntentWithBalanceChecks(
-        this.tokenZapContract.address,
+        this.tokenZapAddress,
         amount,
         originQuery.minAmountOut,
         originQuery.deadline,
@@ -177,12 +168,12 @@ export class SynapseIntentRouter implements SynapseModule {
     if (paramsV1.originSender === AddressZero) {
       throw new Error('Missing sender address for FastBridgeV2')
     }
-    if (paramsV1.destRecipient === AddressZero) {
+    if (paramsV1.destRelayRecipient === AddressZero) {
       throw new Error('Missing recipient address for FastBridgeV2')
     }
     // Override the simulated forward address if it was used.
-    if (isSameAddress(paramsV1.destRecipient, USER_SIMULATED_ADDRESS)) {
-      paramsV1.destRecipient = to
+    if (isSameAddress(paramsV1.destRelayRecipient, USER_SIMULATED_ADDRESS)) {
+      paramsV1.destRelayRecipient = to
     }
     if (isSameAddress(dstZapData.forwardTo, USER_SIMULATED_ADDRESS)) {
       paramsV2.zapData = encodeZapData({
@@ -193,12 +184,12 @@ export class SynapseIntentRouter implements SynapseModule {
     const bridgeParamsV1: IFastBridge.BridgeParamsStruct = {
       dstChainId,
       sender: paramsV1.originSender,
-      to: paramsV1.destRecipient,
+      to: paramsV1.destRelayRecipient,
       originToken,
-      destToken: paramsV1.destToken,
+      destToken: paramsV1.destRelayToken,
       // Will be set in encodeZapData below
       originAmount: 0,
-      destAmount: paramsV1.destAmount,
+      destAmount: paramsV1.destRelayAmount,
       sendChainGas: false,
       deadline: dstQuery.deadline,
     }

@@ -156,18 +156,6 @@ export class EngineSet {
     return route.steps.length > 1 ? EmptyRoute : route
   }
 
-  public applySlippage(
-    chainId: number,
-    route: SwapEngineRoute,
-    slippage: Slippage
-  ): SwapEngineRoute {
-    return this._getEngine(route.engineID).applySlippage(
-      chainId,
-      route,
-      slippage
-    )
-  }
-
   public getTokenZap(chainId: number): string {
     const tokenZap = this.tokenZaps[chainId]
     if (!tokenZap) {

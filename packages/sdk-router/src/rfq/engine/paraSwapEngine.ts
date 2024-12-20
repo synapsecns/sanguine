@@ -12,11 +12,11 @@ import {
   applySlippage,
   EmptyRoute,
   EngineID,
+  isCorrectSlippage,
   Recipient,
   Slippage,
   SwapEngine,
   SwapEngineRoute,
-  toBasisPoints,
 } from './swapEngine'
 import { StepParams } from '../steps'
 import { AMOUNT_NOT_PRESENT, encodeZapData } from '../zapData'
@@ -24,7 +24,7 @@ import { ChainProvider } from '../../router'
 import { isNativeToken } from '../../utils/handleNativeToken'
 
 const PARASWAP_API_URL = 'https://api.paraswap.io/swap'
-const PARASWAP_API_TIMEOUT = 2000
+const PARASWAP_API_TIMEOUT = 1000
 
 const MAX_SLIPPAGE = 9999
 
@@ -94,14 +94,13 @@ export class ParaSwapEngine implements SwapEngine {
     finalRecipient: Recipient,
     slippage: Slippage
   ): Promise<SwapEngineRoute> {
-    if (isSameAddress(tokenIn, tokenOut)) {
-      return EmptyRoute
-    }
-    if (BigNumber.from(amountIn).eq(Zero)) {
-      return EmptyRoute
-    }
     const tokenZap = this.tokenZapAddressMap[chainId]
-    if (!tokenZap) {
+    if (
+      !tokenZap ||
+      isSameAddress(tokenIn, tokenOut) ||
+      BigNumber.from(amountIn).eq(Zero) ||
+      !isCorrectSlippage(slippage)
+    ) {
       return EmptyRoute
     }
     const srcDecimals = await this.getTokenDecimals(chainId, tokenIn)
@@ -118,7 +117,8 @@ export class ParaSwapEngine implements SwapEngine {
       side: 'SELL',
       userAddress: tokenZap,
       network: chainId.toString(),
-      slippage: toBasisPoints(slippage),
+      // slippage settings are applied when generating the zap data as minFwdAmount
+      slippage: MAX_SLIPPAGE,
       version: '6.2',
     }
     const response = await this.getResponse(request)
@@ -126,30 +126,22 @@ export class ParaSwapEngine implements SwapEngine {
     if (expectedAmountOut.eq(Zero)) {
       return EmptyRoute
     }
+    const minAmountOut = applySlippage(expectedAmountOut, slippage)
     return {
       engineID: this.id,
       expectedAmountOut,
-      minAmountOut: applySlippage(expectedAmountOut, slippage),
+      minAmountOut,
       steps: [
         this.generateParaSwapStep(
           tokenIn,
           tokenOut,
           amountIn,
           response,
-          finalRecipient
+          finalRecipient,
+          minAmountOut
         ),
       ],
     }
-  }
-
-  public applySlippage(
-    _chainId: number,
-    route: SwapEngineRoute
-  ): SwapEngineRoute {
-    console.log(
-      'Custom slippage settings are not supported for ParaSwap at the moment, default 0.1% will be used'
-    )
-    return route
   }
 
   public async getResponse(
@@ -189,7 +181,8 @@ export class ParaSwapEngine implements SwapEngine {
     tokenOut: string,
     amountIn: BigintIsh,
     response: ParaSwapResponse,
-    finalRecipient: Recipient
+    finalRecipient: Recipient,
+    minAmountOut: BigNumber
   ): StepParams {
     if (isSameAddress(finalRecipient.address, AddressZero)) {
       throw new Error('Missing recipient address for ParaSwap')
@@ -200,6 +193,7 @@ export class ParaSwapEngine implements SwapEngine {
       amountPosition: AMOUNT_NOT_PRESENT,
       finalToken: tokenOut,
       forwardTo: finalRecipient.address,
+      minFwdAmount: minAmountOut,
     })
     return {
       token: tokenIn,
