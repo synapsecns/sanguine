@@ -56,17 +56,19 @@ export const SlippageMax: Slippage = {
 export const USER_SIMULATED_ADDRESS =
   '0xFAcefaCEFACefACeFaCefacEFaCeFACEFAceFAcE'
 
+export type RouteInput = {
+  chainId: number
+  tokenIn: string
+  tokenOut: string
+  amountIn: BigintIsh
+  finalRecipient: Recipient
+  slippage: Slippage
+}
+
 export interface SwapEngine {
   readonly id: EngineID
 
-  findRoute(
-    chainId: number,
-    tokenIn: string,
-    tokenOut: string,
-    amountIn: BigintIsh,
-    finalRecipient: Recipient,
-    slippage: Slippage
-  ): Promise<SwapEngineRoute>
+  findRoute(input: RouteInput): Promise<SwapEngineRoute>
 }
 
 export const validateEngineID = (engineID: number): engineID is EngineID => {

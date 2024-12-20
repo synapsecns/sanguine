@@ -9,7 +9,6 @@ import {
   SYNAPSE_INTENT_PREVIEWER_ADDRESS_MAP,
   SWAP_QUOTER_V2_ADDRESS_MAP,
 } from '../../constants/addresses'
-import { BigintIsh } from '../../constants'
 import { ChainProvider } from '../../router'
 import { SynapseIntentPreviewer as PreviewerContract } from '../../typechain/SynapseIntentPreviewer'
 import { IDefaultActionsInterface } from '../../typechain/IDefaultActions'
@@ -21,10 +20,10 @@ import {
   Recipient,
   RecipientEntity,
   EngineID,
-  Slippage,
   toWei,
   applySlippage,
   isCorrectSlippage,
+  RouteInput,
 } from './swapEngine'
 
 export class DefaultEngine implements SwapEngine {
@@ -69,14 +68,9 @@ export class DefaultEngine implements SwapEngine {
     })
   }
 
-  public async findRoute(
-    chainId: number,
-    tokenIn: string,
-    tokenOut: string,
-    amountIn: BigintIsh,
-    finalRecipient: Recipient,
-    slippage: Slippage
-  ): Promise<SwapEngineRoute> {
+  public async findRoute(input: RouteInput): Promise<SwapEngineRoute> {
+    const { chainId, tokenIn, tokenOut, amountIn, finalRecipient, slippage } =
+      input
     const { previewer, swapQuoter } = this.contracts[chainId]
     if (
       !previewer ||
@@ -111,6 +105,8 @@ export class DefaultEngine implements SwapEngine {
       })),
     }
   }
+
+  // TODO: findRoutes
 
   private getForwardTo(recipient: Recipient): string {
     return recipient.entity === RecipientEntity.Self
