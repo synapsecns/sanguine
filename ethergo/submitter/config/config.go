@@ -49,6 +49,8 @@ type ChainConfig struct {
 	DynamicGasEstimate bool `yaml:"dynamic_gas_estimate"`
 	// SupportsEIP1559 is whether or not this chain supports EIP1559
 	SupportsEIP1559 bool `yaml:"supports_eip_1559"`
+	// GasPriceTTL is the time after which the previous gas price is ignored, and should be fetched from oracle instead.
+	GasPriceTTL time.Time `yaml:"gas_price_ttl"`
 }
 
 const (
@@ -224,6 +226,15 @@ func (c *Config) SupportsEIP1559(chainID int) bool {
 		return chainConfig.SupportsEIP1559
 	}
 	return c.ChainConfig.SupportsEIP1559
+}
+
+// GasPriceTTL returns the time after which the previous gas price is ignored, and should be fetched from oracle instead.
+func (c *Config) GasPriceTTL(chainID int) time.Time {
+	chainConfig, ok := c.Chains[chainID]
+	if ok {
+		return chainConfig.GasPriceTTL
+	}
+	return c.ChainConfig.GasPriceTTL
 }
 
 // SetGlobalMaxGasPrice is a helper function that sets the global gas price.
