@@ -66,12 +66,18 @@ export const fetchWithTimeout = async (
   timeout: number,
   init?: RequestInit
 ): Promise<Response> => {
+  const start = Date.now()
   const controller = new AbortController()
   const reason = `Timeout of ${timeout}ms exceeded for ${url}`
   const timeoutId = setTimeout(() => (controller.abort as any)(reason), timeout)
-  return fetch(url, { signal: controller.signal, ...init }).finally(() =>
-    clearTimeout(timeoutId)
-  )
+  return fetch(url, { signal: controller.signal, ...init })
+    .then((response) => {
+      const end = Date.now()
+      const timeTaken = end - start
+      logger.info({ url, timeTaken }, 'API request completed')
+      return response
+    })
+    .finally(() => clearTimeout(timeoutId))
 }
 
 /**
