@@ -9,19 +9,21 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[FastBridgeType-1]
-	_ = x[MockERC20Type-2]
-	_ = x[FastBridgeMockType-3]
-	_ = x[RecipientMockType-4]
-	_ = x[BridgeTransactionV2Type-5]
-	_ = x[WETH9Type-6]
-	_ = x[USDTType-7]
-	_ = x[USDCType-8]
-	_ = x[DAIType-9]
+	_ = x[FastBridgeV2Type-2]
+	_ = x[MockERC20Type-3]
+	_ = x[FastBridgeMockType-4]
+	_ = x[RecipientMockType-5]
+	_ = x[BridgeTransactionV2Type-6]
+	_ = x[WETH9Type-7]
+	_ = x[USDTType-8]
+	_ = x[USDCType-9]
+	_ = x[DAIType-10]
 }
 
-const _contractTypeImpl_name = "FastBridgeMockERC20FastBridgeMockRecipientMockBridgeTransactionV2WETH9USDTUSDCDAI"
+const _contractTypeImpl_name = "FastBridgeV1FastBridgeV2MockERC20FastBridgeMockRecipientMockBridgeTransactionV2WETH9USDTUSDCDAI"
 
-var _contractTypeImpl_index = [...]uint8{0, 10, 19, 33, 46, 65, 70, 74, 78, 81}
+var _contractTypeImpl_index = [...]uint8{0, 12, 24, 33, 47, 60, 79, 84, 88, 92, 95}
+
 func (i contractTypeImpl) String() string {
 	i -= 1
 	if i < 0 || i >= contractTypeImpl(len(_contractTypeImpl_index)-1) {

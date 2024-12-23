@@ -15,6 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/sanguine/ethergo/manager"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/bridgetransactionv2"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemockv2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/recipientmock"
@@ -29,7 +30,7 @@ type DeployManager struct {
 func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
-	parentManager := manager.NewDeployerManager(t, NewFastBridgeDeployer, NewMockERC20Deployer, NewMockFastBridgeDeployer, NewRecipientMockDeployer, NewBridgeTransactionV2Deployer, NewWETH9Deployer, NewUSDTDeployer, NewUSDCDeployer, NewDAIDeployer)
+	parentManager := manager.NewDeployerManager(t, NewFastBridgeDeployer, NewFastBridgeV2Deployer, NewMockERC20Deployer, NewMockFastBridgeDeployer, NewRecipientMockDeployer, NewBridgeTransactionV2Deployer, NewWETH9Deployer, NewUSDTDeployer, NewUSDCDeployer, NewDAIDeployer)
 	return &DeployManager{parentManager}
 }
 
