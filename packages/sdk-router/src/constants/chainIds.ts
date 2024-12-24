@@ -34,12 +34,18 @@ const UNSUPPORTED_BRIDGE_CHAIN_IDS: number[] = [
 ]
 
 /**
+ * List of paused chain IDs
+ */
+export const PAUSED_CHAIN_IDS: SupportedChainId[] = [SupportedChainId.BOBA]
+
+/**
  * List of supported chain ids, where SynapseBridge is deployed.
  */
 export const SUPPORTED_CHAIN_IDS: number[] = Object.values(SupportedChainId)
   .map((chainId) => Number(chainId))
   .filter((chainId) => !isNaN(chainId))
   .filter((chainId) => !UNSUPPORTED_BRIDGE_CHAIN_IDS.includes(chainId))
+  .filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
 
 /**
  * List of chain ids where SynapseCCTP is deployed, ordered by CCTP's domain:
@@ -54,7 +60,7 @@ export const CCTP_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.ARBITRUM,
   SupportedChainId.BASE,
   SupportedChainId.POLYGON, // Circle domain 7
-]
+].filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
 
 /**
  * List of chain ids where FastBridge (RFQ) is deployed, ordered by chain id
@@ -70,7 +76,7 @@ export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.LINEA,
   SupportedChainId.BLAST,
   SupportedChainId.SCROLL,
-]
+].filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
 
 /**
  * List of chain ids where hydrating on constructor is supported , ordered by monke

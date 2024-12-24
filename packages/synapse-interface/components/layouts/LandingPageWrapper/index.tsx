@@ -59,10 +59,10 @@ export function LandingPageWrapper({ children }: { children: any }) {
         style={TODO_REMOVE_wrapperStyle}
       >
         <AnnouncementBanner
-          bannerId="2024-10-10-rfq"
-          bannerContent="Synapse now supports World Chain! Bridge to & from in 10 seconds"
-          startDate={new Date('2024-10-09T18:45:09+00:00')}
-          endDate={new Date('2024-11-10T18:45:09+00:00')}
+          bannerId="2024-12-11-hyperliquid"
+          bannerContent="Synapse now supports Hyperliquid. Bridge and deposit to your Hyperliquid account now!"
+          startDate={new Date('2024-12-11T18:45:09+00:00')}
+          endDate={new Date('2025-01-10T18:45:09+00:00')}
         />
         <MaintenanceBanners />
         <LandingNav />

@@ -11,6 +11,7 @@ import dfkImg from '@assets/chains/dfk.svg'
 import dogechainImg from '@assets/chains/dogechain.svg'
 import ethImg from '@assets/chains/ethereum.svg'
 import fantomImg from '@assets/chains/fantom.svg'
+import hyperliquidImg from '@assets/chains/hyperliquid.svg'
 import harmonyImg from '@assets/chains/harmony.svg'
 import klaytnImg from '@assets/chains/klaytn.svg'
 import metisImg from '@assets/chains/metis.svg'
@@ -615,5 +616,31 @@ export const WORLDCHAIN: Chain = {
     icon: ethImg,
   },
   color: 'black',
+}
+
+export const HYPERLIQUID: Chain = {
+  priorityRank: 99,
+  id: 998, // this is Hyperliquid Testnet from their docs
+  chainSymbol: 'HYPERLIQUID',
+  name: 'Hyperliquid',
+  chainImg: hyperliquidImg,
+  layer: 2,
+  blockTime: 300,
+  rpcUrls: {
+    primary:
+      'https://arb-mainnet.g.alchemy.com/v2/7kjdkqKTh1zQ1mRYGi4nJJbxbyJXHkef',
+    fallback: 'https://arb1.arbitrum.io/rpc',
+  },
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+    address: zeroAddress,
+    icon: ethImg,
+  },
+  explorerUrl: 'https://arbiscan.io',
+  explorerName: 'Arbiscan',
+  explorerImg: arbitrumExplorerImg,
+  color: 'gray',
   isNew: true,
 }

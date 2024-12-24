@@ -26,13 +26,17 @@ flags:
     paths:
       - contrib/screener-api/
     carryforward: true
-  opbot:
-    paths:
-      - contrib/opbot/
-    carryforward: true
   git-changes-action:
     paths:
       - contrib/git-changes-action/
+    carryforward: true
+  golang-ci-lint:
+    paths:
+      - contrib/golang-ci-lint/
+    carryforward: true
+  opbot:
+    paths:
+      - contrib/opbot/
     carryforward: true
   core:
     paths:

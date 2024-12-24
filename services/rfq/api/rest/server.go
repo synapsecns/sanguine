@@ -646,7 +646,7 @@ func getQuoteResponse(ctx context.Context, quote *model.QuoteData, quoteType str
 
 	destAmount := big.NewInt(0)
 	if quote != nil && quote.DestAmount != nil {
-		amt, ok := destAmount.SetString(*quote.DestAmount, 10)
+		amt, ok := destAmount.SetString(*quote.DestAmount, base10)
 		if ok {
 			destAmount = amt
 		}
