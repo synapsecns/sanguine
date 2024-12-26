@@ -15,14 +15,12 @@ export enum EngineID {
 export type SwapEngineRoute = {
   engineID: EngineID
   expectedAmountOut: BigNumber
-  minAmountOut: BigNumber
   steps: StepParams[]
 }
 
 export const EmptyRoute: SwapEngineRoute = {
   engineID: EngineID.Null,
   expectedAmountOut: Zero,
-  minAmountOut: Zero,
   steps: [],
 }
 
@@ -42,12 +40,6 @@ export type Slippage = {
   denominator: number
 }
 
-// Default slippage used by the swap engines, 10 bips (0.1%)
-export const SlippageDefault: Slippage = {
-  numerator: 10,
-  denominator: 10000,
-}
-
 // Max slippage that can be used by the swap engines, 100 bips (1%)
 export const SlippageMax: Slippage = {
   numerator: 100,
@@ -63,7 +55,6 @@ export type RouteInput = {
   tokenOut: string
   amountIn: BigintIsh
   finalRecipient: Recipient
-  slippage: Slippage
 }
 
 export interface SwapEngine {
@@ -88,14 +79,6 @@ export const toWei = (slippage: Slippage): BigNumber => {
   return BigNumber.from(slippage.numerator)
     .mul(WeiPerEther)
     .div(slippage.denominator)
-}
-
-export const isCorrectSlippage = (slippage: Slippage): boolean => {
-  return (
-    slippage.numerator >= 0 &&
-    slippage.numerator <= slippage.denominator &&
-    slippage.denominator > 0
-  )
 }
 
 export const applySlippage = (

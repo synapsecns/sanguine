@@ -12,9 +12,9 @@ import {
   EngineID,
   SwapEngineRoute,
   RouteInput,
-  isCorrectSlippage,
   EmptyRoute,
   toPercentFloat,
+  SlippageMax,
 } from './swapEngine'
 import { AddressMap } from '../../constants'
 import { isSameAddress } from '../../utils/addressUtils'
@@ -72,13 +72,12 @@ export class OdosEngine implements SwapEngine {
   }
 
   public async findRoute(input: RouteInput): Promise<SwapEngineRoute> {
-    const { chainId, tokenIn, tokenOut, amountIn, slippage } = input
+    const { chainId, tokenIn, tokenOut, amountIn } = input
     const tokenZap = this.tokenZapAddressMap[chainId]
     if (
       !tokenZap ||
       isSameAddress(tokenIn, tokenOut) ||
-      BigNumber.from(amountIn).eq(Zero) ||
-      !isCorrectSlippage(slippage)
+      BigNumber.from(amountIn).eq(Zero)
     ) {
       return EmptyRoute
     }
@@ -97,7 +96,8 @@ export class OdosEngine implements SwapEngine {
         },
       ],
       userAddr: tokenZap,
-      slippageLimitPercent: toPercentFloat(slippage),
+      // slippage settings are applied when generating the zap data as minFwdAmount
+      slippageLimitPercent: toPercentFloat(SlippageMax),
       simple: true,
     }
     const response = await this.getResponse(request)

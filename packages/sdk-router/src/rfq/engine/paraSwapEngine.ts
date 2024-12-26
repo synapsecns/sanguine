@@ -11,7 +11,6 @@ import { fetchWithTimeout } from '../api'
 import {
   EmptyRoute,
   EngineID,
-  isCorrectSlippage,
   RouteInput,
   SlippageMax,
   SwapEngine,
@@ -74,13 +73,12 @@ export class ParaSwapEngine implements SwapEngine {
   }
 
   public async findRoute(input: RouteInput): Promise<SwapEngineRoute> {
-    const { chainId, tokenIn, tokenOut, amountIn, slippage } = input
+    const { chainId, tokenIn, tokenOut, amountIn } = input
     const tokenZap = this.tokenZapAddressMap[chainId]
     if (
       !tokenZap ||
       isSameAddress(tokenIn, tokenOut) ||
-      BigNumber.from(amountIn).eq(Zero) ||
-      !isCorrectSlippage(slippage)
+      BigNumber.from(amountIn).eq(Zero)
     ) {
       return EmptyRoute
     }

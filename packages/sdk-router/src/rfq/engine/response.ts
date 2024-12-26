@@ -1,13 +1,7 @@
 import { BigNumber } from 'ethers'
 import { AddressZero, Zero } from '@ethersproject/constants'
 
-import {
-  applySlippage,
-  EmptyRoute,
-  EngineID,
-  RouteInput,
-  SwapEngineRoute,
-} from './swapEngine'
+import { EmptyRoute, EngineID, RouteInput, SwapEngineRoute } from './swapEngine'
 import { isSameAddress } from '../../utils/addressUtils'
 import { AMOUNT_NOT_PRESENT, encodeZapData } from '../zapData'
 
@@ -45,20 +39,18 @@ export const generateAPIRoute = (
   if (expectedAmountOut.eq(Zero)) {
     return EmptyRoute
   }
-  const minAmountOut = applySlippage(expectedAmountOut, input.slippage)
   const zapData = encodeZapData({
     target: response.transaction.to,
     payload: response.transaction.data,
     amountPosition: AMOUNT_NOT_PRESENT,
     finalToken: input.tokenOut,
     forwardTo: input.finalRecipient.address,
-    minFwdAmount: minAmountOut,
+    minFwdAmount: expectedAmountOut,
   })
 
   return {
     engineID,
     expectedAmountOut,
-    minAmountOut,
     steps: [
       {
         token: input.tokenIn,

@@ -12,9 +12,6 @@ import {
   RecipientEntity,
   EmptyRoute,
   USER_SIMULATED_ADDRESS,
-  Slippage,
-  SlippageDefault,
-  SlippageMax,
 } from './swapEngine'
 import { CCTPRouterQuery } from '../../module'
 import { encodeStepParams } from '../steps'
@@ -73,7 +70,6 @@ export class EngineSet {
               tokenOut,
               amountIn: tokenIn.amount,
               finalRecipient,
-              slippage: SlippageMax,
             })
           )
         )
@@ -108,7 +104,6 @@ export class EngineSet {
               tokenOut,
               amountIn: tokenIn.amount,
               finalRecipient,
-              slippage: SlippageMax,
             })
             return this.limitSingleZap(route)
           })
@@ -124,8 +119,7 @@ export class EngineSet {
     chainId: number,
     tokenIn: TokenInput,
     tokenOut: string,
-    finalRecipient: Recipient,
-    slippage: Slippage = SlippageDefault
+    finalRecipient: Recipient
   ): Promise<SwapEngineRoute> {
     return this._getEngine(engineID).findRoute({
       chainId,
@@ -133,7 +127,6 @@ export class EngineSet {
       tokenOut,
       amountIn: tokenIn.amount,
       finalRecipient,
-      slippage,
     })
   }
 

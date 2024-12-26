@@ -179,6 +179,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
           destChainId,
           intent,
           tokenOut,
+          intent.destRoute.expectedAmountOut,
           // The default deadline will be overridden later in `finalizeBridgeRoute`
           Zero,
           originUserAddress
@@ -329,7 +330,6 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     const destRoute = {
       engineID: paramsV1.destEngineID,
       expectedAmountOut,
-      minAmountOut,
       steps: [
         {
           token: paramsV1.destRelayToken,
@@ -349,6 +349,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
         destRoute,
       },
       destQueryPrecise.tokenOut,
+      minAmountOut,
       destQueryPrecise.deadline,
       paramsV1.originSender
     )
@@ -521,11 +522,12 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     destChainId: number,
     intent: DestIntent,
     tokenOut: string,
+    minAmountOut: BigNumber,
     deadline: BigNumber,
     originUserAddress?: string
   ): CCTPRouterQuery {
     // Use no-swap query by default.
-    const destQuery = createNoSwapQuery(tokenOut, intent.destRoute.minAmountOut)
+    const destQuery = createNoSwapQuery(tokenOut, minAmountOut)
     destQuery.deadline = deadline
     if (!originUserAddress) {
       return destQuery

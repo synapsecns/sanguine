@@ -21,8 +21,6 @@ import {
   RecipientEntity,
   EngineID,
   toWei,
-  applySlippage,
-  isCorrectSlippage,
   RouteInput,
   SlippageMax,
 } from './swapEngine'
@@ -70,15 +68,13 @@ export class DefaultEngine implements SwapEngine {
   }
 
   public async findRoute(input: RouteInput): Promise<SwapEngineRoute> {
-    const { chainId, tokenIn, tokenOut, amountIn, finalRecipient, slippage } =
-      input
+    const { chainId, tokenIn, tokenOut, amountIn, finalRecipient } = input
     const { previewer, swapQuoter } = this.contracts[chainId]
     if (
       !previewer ||
       !swapQuoter ||
       isSameAddress(tokenIn, tokenOut) ||
-      BigNumber.from(amountIn).eq(Zero) ||
-      !isCorrectSlippage(slippage)
+      BigNumber.from(amountIn).eq(Zero)
     ) {
       return EmptyRoute
     }
@@ -93,12 +89,10 @@ export class DefaultEngine implements SwapEngine {
       tokenOut,
       amountIn
     )
-    const minAmountOut = applySlippage(amountOut, slippage)
     // Remove extra fields before the encoding
     return {
       engineID: this.id,
       expectedAmountOut: amountOut,
-      minAmountOut,
       steps: stepsOutput.map(({ token, amount, msgValue, zapData }) => ({
         token,
         amount,
