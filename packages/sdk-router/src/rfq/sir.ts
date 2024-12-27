@@ -165,6 +165,9 @@ export class SynapseIntentRouter implements SynapseModule {
     }
     const { paramsV1, paramsV2 } = decodeSavedBridgeParams(dstQuery.rawParams)
     const dstZapData = decodeZapData(hexlify(paramsV2.zapData))
+    if (paramsV1.destChainId !== dstChainId) {
+      throw new Error('Wrong destination chain ID for FastBridgeV2')
+    }
     if (paramsV1.originSender === AddressZero) {
       throw new Error('Missing sender address for FastBridgeV2')
     }

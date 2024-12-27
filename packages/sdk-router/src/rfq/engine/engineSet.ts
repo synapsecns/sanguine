@@ -1,16 +1,13 @@
 import { AddressZero, Zero } from '@ethersproject/constants'
 import invariant from 'tiny-invariant'
 
-import { BigintIsh, TOKEN_ZAP_V1_ADDRESS_MAP } from '../../constants'
+import { TOKEN_ZAP_V1_ADDRESS_MAP } from '../../constants'
 import { ChainProvider } from '../../router'
 import { DefaultEngine } from './defaultEngine'
 import { NoOpEngine } from './noOpEngine'
 import {
   SwapEngine,
   SwapEngineRoute,
-  Recipient,
-  RecipientEntity,
-  USER_SIMULATED_ADDRESS,
   RouteInput,
   SwapEngineQuote,
   sanitizeMultiStepQuote,
@@ -18,11 +15,6 @@ import {
 import { CCTPRouterQuery } from '../../module'
 import { encodeStepParams } from '../steps'
 import { OdosEngine } from './odosEngine'
-
-export type TokenInput = {
-  address: string
-  amount: BigintIsh
-}
 
 export class EngineSet {
   private engines: {
@@ -49,27 +41,16 @@ export class EngineSet {
     })
   }
 
-  public async getOriginQuotes(
-    chainId: number,
-    tokenIn: TokenInput,
-    tokensOut: string[]
+  public async getQuotes(
+    inputs: RouteInput[],
+    options: { allowMultiStep: boolean }
   ): Promise<SwapEngineQuote[]> {
-    const finalRecipient: Recipient = {
-      entity: RecipientEntity.Self,
-      address: this.getTokenZap(chainId),
-    }
-    // Find the quote for each token and each engine.
+    // Find the quote for each input and each engine.
     const allQuotes = await Promise.all(
-      tokensOut.map(async (tokenOut) =>
+      inputs.map(async (input) =>
         Promise.all(
           Object.values(this.engines).map(async (engine) =>
-            engine.getQuote({
-              chainId,
-              tokenIn: tokenIn.address,
-              tokenOut,
-              amountIn: tokenIn.amount,
-              finalRecipient,
-            })
+            this._getQuote(engine, input, options)
           )
         )
       )
@@ -78,53 +59,12 @@ export class EngineSet {
     return this._selectBestQuotes(allQuotes)
   }
 
-  public async getDestinationQuotes(
-    chainId: number,
-    tokensIn: TokenInput[],
-    tokenOut: string
-  ): Promise<SwapEngineQuote[]> {
-    // Check that the chain is supported
-    this.getTokenZap(chainId)
-    const finalRecipient: Recipient = {
-      entity: RecipientEntity.UserSimulated,
-      address: USER_SIMULATED_ADDRESS,
-    }
-    // Find the quote for each token and each engine.
-    // Remove the quotes that have more than one Zap step (if populated).
-    const allQuotes = await Promise.all(
-      tokensIn.map(async (tokenIn) =>
-        Promise.all(
-          Object.values(this.engines).map(async (engine) => {
-            const quote = await engine.getQuote({
-              chainId,
-              tokenIn: tokenIn.address,
-              tokenOut,
-              amountIn: tokenIn.amount,
-              finalRecipient,
-            })
-            return sanitizeMultiStepQuote(quote)
-          })
-        )
-      )
-    )
-    // Select the best quote for each tokenIn.
-    return this._selectBestQuotes(allQuotes)
-  }
-
   public async getQuote(
     engineID: number,
-    chainId: number,
-    tokenIn: TokenInput,
-    tokenOut: string,
-    finalRecipient: Recipient
+    input: RouteInput,
+    options: { allowMultiStep: boolean }
   ): Promise<SwapEngineQuote> {
-    return this._getEngine(engineID).getQuote({
-      chainId,
-      tokenIn: tokenIn.address,
-      tokenOut,
-      amountIn: tokenIn.amount,
-      finalRecipient,
-    })
+    return this._getQuote(this._getEngine(engineID), input, options)
   }
 
   public async generateRoute(
@@ -170,6 +110,17 @@ export class EngineSet {
       throw new Error('ENGINE_NOT_FOUND')
     }
     return engine
+  }
+
+  private async _getQuote(
+    engine: SwapEngine,
+    input: RouteInput,
+    options: {
+      allowMultiStep: boolean
+    }
+  ): Promise<SwapEngineQuote> {
+    const quote = await engine.getQuote(input)
+    return options.allowMultiStep ? quote : sanitizeMultiStepQuote(quote)
   }
 
   private _selectBestQuotes(quotes: SwapEngineQuote[][]): SwapEngineQuote[] {
