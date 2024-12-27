@@ -12,17 +12,13 @@ export enum EngineID {
   Odos,
 }
 
-export type SwapEngineRoute = {
+export type SwapEngineQuote = {
   engineID: EngineID
   expectedAmountOut: BigNumber
-  steps: StepParams[]
+  steps?: StepParams[]
 }
 
-export const EmptyRoute: SwapEngineRoute = {
-  engineID: EngineID.Null,
-  expectedAmountOut: Zero,
-  steps: [],
-}
+export type SwapEngineRoute = Required<SwapEngineQuote>
 
 export enum RecipientEntity {
   Self,
@@ -60,7 +56,20 @@ export type RouteInput = {
 export interface SwapEngine {
   readonly id: EngineID
 
-  findRoute(input: RouteInput): Promise<SwapEngineRoute>
+  /**
+   * Gets a swap quote from the engine for the given tokenIn -> tokenOut input.
+   * Some of the engines may not be able to generate the route steps at the same time,
+   * use the `generateRoute` method to generate the steps.
+   */
+  getQuote(input: RouteInput): Promise<SwapEngineQuote>
+
+  /**
+   * Generates the route steps from the quote obtained from the `getQuote` method.
+   */
+  generateRoute(
+    input: RouteInput,
+    quote: SwapEngineQuote
+  ): Promise<SwapEngineRoute>
 }
 
 export const validateEngineID = (engineID: number): engineID is EngineID => {
@@ -86,4 +95,37 @@ export const applySlippage = (
   slippage: Slippage
 ): BigNumber => {
   return amount.sub(amount.mul(slippage.numerator).div(slippage.denominator))
+}
+
+export const getEmptyRoute = (engineID: EngineID): SwapEngineRoute => {
+  return {
+    engineID,
+    expectedAmountOut: Zero,
+    steps: [],
+  }
+}
+
+export const sanitizeMultiStepQuote = (
+  quote: SwapEngineQuote
+): SwapEngineQuote => {
+  if (!quote.steps || quote.steps.length <= 1) {
+    return quote
+  }
+  return {
+    engineID: quote.engineID,
+    expectedAmountOut: Zero,
+  }
+}
+
+export const sanitizeMultiStepRoute = (
+  route: SwapEngineRoute
+): SwapEngineRoute => {
+  if (route.steps.length <= 1) {
+    return route
+  }
+  return {
+    engineID: route.engineID,
+    expectedAmountOut: Zero,
+    steps: [],
+  }
 }

@@ -1,20 +1,17 @@
 import { BigNumber } from 'ethers'
 import { AddressZero, Zero } from '@ethersproject/constants'
 
-import { fetchWithTimeout } from '../api'
-import {
-  EMPTY_SWAP_API_RESPONSE,
-  generateAPIRoute,
-  SwapAPIResponse,
-} from './response'
+import { postWithTimeout } from '../api'
+import { generateAPIRoute } from './response'
 import {
   SwapEngine,
   EngineID,
   SwapEngineRoute,
   RouteInput,
-  EmptyRoute,
+  getEmptyRoute,
   toPercentFloat,
   SlippageMax,
+  SwapEngineQuote,
 } from './swapEngine'
 import { AddressMap } from '../../constants'
 import { isSameAddress } from '../../utils/addressUtils'
@@ -39,7 +36,7 @@ type OdosQuoteRequest = {
   simple?: boolean
 }
 
-type OdosQuoteResponse = {
+export type OdosQuoteResponse = {
   pathId: string
   outAmounts: string[]
 }
@@ -62,6 +59,19 @@ type OdosAssembleResponse = {
   }
 }
 
+type OdosQuote = SwapEngineQuote & {
+  assembleRequest: OdosAssembleRequest
+}
+
+const EmptyOdosQuote: OdosQuote = {
+  engineID: EngineID.Odos,
+  expectedAmountOut: Zero,
+  assembleRequest: {
+    userAddr: AddressZero,
+    pathId: '',
+  },
+}
+
 export class OdosEngine implements SwapEngine {
   readonly id: EngineID = EngineID.Odos
 
@@ -71,7 +81,7 @@ export class OdosEngine implements SwapEngine {
     this.tokenZapAddressMap = tokenZapAddressMap
   }
 
-  public async findRoute(input: RouteInput): Promise<SwapEngineRoute> {
+  public async getQuote(input: RouteInput): Promise<OdosQuote> {
     const { chainId, tokenIn, tokenOut, amountIn } = input
     const tokenZap = this.tokenZapAddressMap[chainId]
     if (
@@ -79,7 +89,7 @@ export class OdosEngine implements SwapEngine {
       isSameAddress(tokenIn, tokenOut) ||
       BigNumber.from(amountIn).eq(Zero)
     ) {
-      return EmptyRoute
+      return EmptyOdosQuote
     }
     const request: OdosQuoteRequest = {
       chainId,
@@ -100,80 +110,80 @@ export class OdosEngine implements SwapEngine {
       slippageLimitPercent: toPercentFloat(SlippageMax),
       simple: true,
     }
-    const response = await this.getResponse(request)
-    return generateAPIRoute(input, this.id, response)
+    const response = await this.getQuoteResponse(request)
+    if (!response) {
+      return EmptyOdosQuote
+    }
+    const odosQuoteResponse: OdosQuoteResponse = await response.json()
+    if (
+      !odosQuoteResponse.outAmounts ||
+      !odosQuoteResponse.pathId ||
+      odosQuoteResponse.outAmounts.length !== 1
+    ) {
+      console.error({ request, response }, 'Odos: invalid quote response')
+      return EmptyOdosQuote
+    }
+    const amountOut = odosQuoteResponse.outAmounts[0]
+    if (amountOut === '0') {
+      console.info({ request, response }, 'Odos: zero amount out')
+      return EmptyOdosQuote
+    }
+    return {
+      engineID: this.id,
+      expectedAmountOut: BigNumber.from(amountOut),
+      assembleRequest: {
+        userAddr: tokenZap,
+        pathId: odosQuoteResponse.pathId,
+      },
+    }
   }
 
-  public async getResponse(
-    request: OdosQuoteRequest
-  ): Promise<SwapAPIResponse> {
-    try {
-      if (
-        request.inputTokens.length !== 1 ||
-        request.outputTokens.length !== 1
-      ) {
-        console.error({ request }, 'Multi-token swaps not supported')
-        return EMPTY_SWAP_API_RESPONSE
-      }
-      // Get a quote with the pathID first
-      const response = await fetchWithTimeout(
-        `${ODOS_API_URL}/quote/v2`,
-        ODOS_API_TIMEOUT,
-        {
-          method: 'POST',
-          body: JSON.stringify(request),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-      if (!response.ok) {
-        console.error({ request, response }, 'Error fetching Odos response')
-        return EMPTY_SWAP_API_RESPONSE
-      }
-      const odosQuoteResponse: OdosQuoteResponse = await response.json()
-      if (
-        odosQuoteResponse.outAmounts.length !== 1 ||
-        !odosQuoteResponse.pathId
-      ) {
-        console.error({ request, response }, 'Invalid Odos response')
-        return EMPTY_SWAP_API_RESPONSE
-      }
-      const amountOut = odosQuoteResponse.outAmounts[0]
-      if (amountOut === '0') {
-        console.info({ request, response }, 'Zero amount out')
-        return EMPTY_SWAP_API_RESPONSE
-      }
-      // Once we verified the amount out, we can assemble the transaction
-      const assembleRequest: OdosAssembleRequest = {
-        userAddr: request.userAddr,
-        pathId: odosQuoteResponse.pathId,
-      }
-      const assembleResponse = await fetchWithTimeout(
-        `${ODOS_API_URL}/assemble`,
-        ODOS_API_TIMEOUT,
-        {
-          method: 'POST',
-          body: JSON.stringify(assembleRequest),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-      if (!assembleResponse.ok) {
-        console.error({ assembleResponse }, 'Error fetching Odos response')
-        return EMPTY_SWAP_API_RESPONSE
-      }
-      const odosAssembleResponse: OdosAssembleResponse =
-        await assembleResponse.json()
-      return {
-        amountOut,
-        transaction: odosAssembleResponse.transaction,
-      }
-    } catch (error) {
-      console.error({ request, error }, 'Error fetching Odos response')
-      return EMPTY_SWAP_API_RESPONSE
+  public async generateRoute(
+    input: RouteInput,
+    quote: OdosQuote
+  ): Promise<SwapEngineRoute> {
+    if (quote.engineID !== this.id || !quote.assembleRequest) {
+      console.error({ quote }, 'Odos: unexpected quote')
+      return getEmptyRoute(this.id)
     }
+    const response = await this.getAssembleResponse(quote.assembleRequest)
+    if (!response) {
+      return getEmptyRoute(this.id)
+    }
+    const odosAssembleResponse: OdosAssembleResponse = await response.json()
+    if (!odosAssembleResponse.transaction) {
+      console.error(
+        { request: quote.assembleRequest, response },
+        'Odos: invalid assemble response'
+      )
+      return getEmptyRoute(this.id)
+    }
+    return generateAPIRoute(input, this.id, {
+      amountOut: quote.expectedAmountOut,
+      transaction: odosAssembleResponse.transaction,
+    })
+  }
+
+  public async getAssembleResponse(
+    params: OdosAssembleRequest
+  ): Promise<Response | null> {
+    return postWithTimeout(
+      'Odos',
+      `${ODOS_API_URL}/assemble`,
+      ODOS_API_TIMEOUT,
+      params
+    )
+  }
+
+  public async getQuoteResponse(
+    params: OdosQuoteRequest
+  ): Promise<Response | null> {
+    return postWithTimeout(
+      'Odos',
+      `${ODOS_API_URL}/quote/v2`,
+      ODOS_API_TIMEOUT,
+      params
+    )
   }
 
   private handleNativeToken(token: string): string {

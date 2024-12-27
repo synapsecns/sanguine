@@ -1,12 +1,17 @@
 import { BigNumber } from 'ethers'
 import { AddressZero, Zero } from '@ethersproject/constants'
 
-import { EmptyRoute, EngineID, RouteInput, SwapEngineRoute } from './swapEngine'
+import {
+  getEmptyRoute,
+  EngineID,
+  RouteInput,
+  SwapEngineRoute,
+} from './swapEngine'
 import { isSameAddress } from '../../utils/addressUtils'
 import { AMOUNT_NOT_PRESENT, encodeZapData } from '../zapData'
 
 export type SwapAPIResponse = {
-  amountOut: string
+  amountOut: BigNumber
   transaction: {
     chainId: number
     from: string
@@ -17,7 +22,7 @@ export type SwapAPIResponse = {
 }
 
 export const EMPTY_SWAP_API_RESPONSE: SwapAPIResponse = {
-  amountOut: '0',
+  amountOut: Zero,
   transaction: {
     chainId: 0,
     from: '',
@@ -35,9 +40,8 @@ export const generateAPIRoute = (
   if (isSameAddress(input.finalRecipient.address, AddressZero)) {
     throw new Error('Missing recipient address')
   }
-  const expectedAmountOut = BigNumber.from(response.amountOut)
-  if (expectedAmountOut.eq(Zero)) {
-    return EmptyRoute
+  if (response.amountOut.eq(Zero)) {
+    return getEmptyRoute(engineID)
   }
   const zapData = encodeZapData({
     target: response.transaction.to,
@@ -45,12 +49,12 @@ export const generateAPIRoute = (
     amountPosition: AMOUNT_NOT_PRESENT,
     finalToken: input.tokenOut,
     forwardTo: input.finalRecipient.address,
-    minFwdAmount: expectedAmountOut,
+    minFwdAmount: response.amountOut,
   })
 
   return {
     engineID,
-    expectedAmountOut,
+    expectedAmountOut: response.amountOut,
     steps: [
       {
         token: input.tokenIn,

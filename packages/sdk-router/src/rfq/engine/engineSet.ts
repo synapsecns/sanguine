@@ -10,12 +10,13 @@ import {
   SwapEngineRoute,
   Recipient,
   RecipientEntity,
-  EmptyRoute,
   USER_SIMULATED_ADDRESS,
+  RouteInput,
+  SwapEngineQuote,
+  sanitizeMultiStepQuote,
 } from './swapEngine'
 import { CCTPRouterQuery } from '../../module'
 import { encodeStepParams } from '../steps'
-import { ParaSwapEngine } from './paraSwapEngine'
 import { OdosEngine } from './odosEngine'
 
 export type TokenInput = {
@@ -36,7 +37,6 @@ export class EngineSet {
     this.engines = {}
     this._addEngine(new NoOpEngine())
     this._addEngine(new DefaultEngine(chains))
-    this._addEngine(new ParaSwapEngine(chains, TOKEN_ZAP_V1_ADDRESS_MAP))
     this._addEngine(new OdosEngine(TOKEN_ZAP_V1_ADDRESS_MAP))
 
     this.tokenZaps = {}
@@ -49,22 +49,21 @@ export class EngineSet {
     })
   }
 
-  public async getOriginRoutes(
+  public async getOriginQuotes(
     chainId: number,
     tokenIn: TokenInput,
     tokensOut: string[]
-  ): Promise<SwapEngineRoute[]> {
+  ): Promise<SwapEngineQuote[]> {
     const finalRecipient: Recipient = {
       entity: RecipientEntity.Self,
       address: this.getTokenZap(chainId),
     }
-    // Find the route for each token and each engine.
-    // Origin slippage is checked after the Zap steps are executed, so we disable it within the steps.
-    const allRoutes = await Promise.all(
+    // Find the quote for each token and each engine.
+    const allQuotes = await Promise.all(
       tokensOut.map(async (tokenOut) =>
         Promise.all(
           Object.values(this.engines).map(async (engine) =>
-            engine.findRoute({
+            engine.getQuote({
               chainId,
               tokenIn: tokenIn.address,
               tokenOut,
@@ -75,59 +74,64 @@ export class EngineSet {
         )
       )
     )
-    // Select the best response for each tokenOut.
-    return this._selectBestRoutes(allRoutes)
+    // Select the best quote for each tokenOut.
+    return this._selectBestQuotes(allQuotes)
   }
 
-  public async getDestinationRoutes(
+  public async getDestinationQuotes(
     chainId: number,
     tokensIn: TokenInput[],
     tokenOut: string
-  ): Promise<SwapEngineRoute[]> {
+  ): Promise<SwapEngineQuote[]> {
     // Check that the chain is supported
     this.getTokenZap(chainId)
     const finalRecipient: Recipient = {
       entity: RecipientEntity.UserSimulated,
       address: USER_SIMULATED_ADDRESS,
     }
-    // Find the route for each token and each engine.
-    // Remove the routes that have more than one Zap step.
-    // Note: for Relayer simulation purposes we disable slippage checks on this step.
-    // This will be set after the Relayer quotes have been obtained.
-    const allRoutes = await Promise.all(
+    // Find the quote for each token and each engine.
+    // Remove the quotes that have more than one Zap step (if populated).
+    const allQuotes = await Promise.all(
       tokensIn.map(async (tokenIn) =>
         Promise.all(
           Object.values(this.engines).map(async (engine) => {
-            const route = await engine.findRoute({
+            const quote = await engine.getQuote({
               chainId,
               tokenIn: tokenIn.address,
               tokenOut,
               amountIn: tokenIn.amount,
               finalRecipient,
             })
-            return this.limitSingleZap(route)
+            return sanitizeMultiStepQuote(quote)
           })
         )
       )
     )
-    // Select the best response for each tokenIn.
-    return this._selectBestRoutes(allRoutes)
+    // Select the best quote for each tokenIn.
+    return this._selectBestQuotes(allQuotes)
   }
 
-  public async findRoute(
+  public async getQuote(
     engineID: number,
     chainId: number,
     tokenIn: TokenInput,
     tokenOut: string,
     finalRecipient: Recipient
-  ): Promise<SwapEngineRoute> {
-    return this._getEngine(engineID).findRoute({
+  ): Promise<SwapEngineQuote> {
+    return this._getEngine(engineID).getQuote({
       chainId,
       tokenIn: tokenIn.address,
       tokenOut,
       amountIn: tokenIn.amount,
       finalRecipient,
     })
+  }
+
+  public async generateRoute(
+    input: RouteInput,
+    quote: SwapEngineQuote
+  ): Promise<SwapEngineRoute> {
+    return this._getEngine(quote.engineID).generateRoute(input, quote)
   }
 
   public getOriginQuery(
@@ -145,10 +149,6 @@ export class EngineSet {
       deadline: Zero,
       rawParams: encodeStepParams(route.steps),
     }
-  }
-
-  public limitSingleZap(route: SwapEngineRoute): SwapEngineRoute {
-    return route.steps.length > 1 ? EmptyRoute : route
   }
 
   public getTokenZap(chainId: number): string {
@@ -172,9 +172,9 @@ export class EngineSet {
     return engine
   }
 
-  private _selectBestRoutes(routes: SwapEngineRoute[][]): SwapEngineRoute[] {
-    return routes.map((route) =>
-      route.reduce((best, current) =>
+  private _selectBestQuotes(quotes: SwapEngineQuote[][]): SwapEngineQuote[] {
+    return quotes.map((quote) =>
+      quote.reduce((best, current) =>
         current.expectedAmountOut.gt(best.expectedAmountOut) ? current : best
       )
     )

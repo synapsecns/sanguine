@@ -73,6 +73,38 @@ export const fetchWithTimeout = async (
   )
 }
 
+export const postWithTimeout = async (
+  name: string,
+  url: string,
+  timeout: number,
+  params: any
+): Promise<Response | null> => {
+  try {
+    const response = await fetchWithTimeout(url, timeout, {
+      method: 'POST',
+      body: JSON.stringify(params),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    if (!response.ok) {
+      const text = await response.text()
+      console.error(
+        { url, timeout, params, response, text },
+        `${name}: error fetching response`
+      )
+      return null
+    }
+    return response
+  } catch (error) {
+    console.error(
+      { url, timeout, params, error },
+      `${name}: Error fetching response`
+    )
+    return null
+  }
+}
+
 /**
  * Hits Quoter API /quotes endpoint to get all quotes.
  *

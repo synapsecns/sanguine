@@ -16,13 +16,13 @@ import { isSameAddress } from '../../utils/addressUtils'
 import {
   SwapEngine,
   SwapEngineRoute,
-  EmptyRoute,
   Recipient,
   RecipientEntity,
   EngineID,
   toWei,
   RouteInput,
   SlippageMax,
+  getEmptyRoute,
 } from './swapEngine'
 
 export class DefaultEngine implements SwapEngine {
@@ -67,7 +67,7 @@ export class DefaultEngine implements SwapEngine {
     })
   }
 
-  public async findRoute(input: RouteInput): Promise<SwapEngineRoute> {
+  public async getQuote(input: RouteInput): Promise<SwapEngineRoute> {
     const { chainId, tokenIn, tokenOut, amountIn, finalRecipient } = input
     const { previewer, swapQuoter } = this.contracts[chainId]
     if (
@@ -76,7 +76,7 @@ export class DefaultEngine implements SwapEngine {
       isSameAddress(tokenIn, tokenOut) ||
       BigNumber.from(amountIn).eq(Zero)
     ) {
-      return EmptyRoute
+      return getEmptyRoute(this.id)
     }
     // Get the quote
     const forwardTo = this.getForwardTo(finalRecipient)
@@ -102,7 +102,18 @@ export class DefaultEngine implements SwapEngine {
     }
   }
 
-  // TODO: findRoutes
+  public async generateRoute(
+    _input: RouteInput,
+    quote: SwapEngineRoute
+  ): Promise<SwapEngineRoute> {
+    if (quote.engineID !== this.id || !quote.steps) {
+      console.error({ quote }, 'DefaultEngine: unexpected quote')
+      return getEmptyRoute(this.id)
+    }
+    return quote
+  }
+
+  // TODO: getQuotes
 
   private getForwardTo(recipient: Recipient): string {
     return recipient.entity === RecipientEntity.Self
