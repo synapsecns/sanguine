@@ -398,9 +398,9 @@ func (c *ServerSuite) TestGetPassiveQuote() {
 	passiveQuotes := []*db.Quote{
 		{
 			RelayerAddr:     "0x1",
-			OriginChainID:   uint64(c.originChainID),
+			OriginChainID:   validateChainID(c.originChainID),
 			OriginTokenAddr: originTokenAddr,
-			DestChainID:     uint64(c.destChainID),
+			DestChainID:     validateChainID(c.destChainID),
 			DestTokenAddr:   destTokenAddr,
 			DestAmount:      decimal.NewFromBigInt(new(big.Int).Sub(userRequestAmount, big.NewInt(104)), 0),
 			MaxOriginAmount: decimal.NewFromBigInt(userRequestAmount, 0),
@@ -409,9 +409,9 @@ func (c *ServerSuite) TestGetPassiveQuote() {
 		},
 		{
 			RelayerAddr:     "0x2",
-			OriginChainID:   uint64(c.originChainID),
+			OriginChainID:   validateChainID(c.originChainID),
 			OriginTokenAddr: originTokenAddr,
-			DestChainID:     uint64(c.destChainID),
+			DestChainID:     validateChainID(c.destChainID),
 			DestTokenAddr:   destTokenAddr,
 			DestAmount:      decimal.NewFromBigInt(new(big.Int).Sub(userRequestAmount, big.NewInt(103)), 0),
 			MaxOriginAmount: decimal.NewFromBigInt(userRequestAmount, 0),
@@ -420,9 +420,9 @@ func (c *ServerSuite) TestGetPassiveQuote() {
 		},
 		{
 			RelayerAddr:     "0x3",
-			OriginChainID:   uint64(c.originChainID),
+			OriginChainID:   validateChainID(c.originChainID),
 			OriginTokenAddr: originTokenAddr,
-			DestChainID:     uint64(c.destChainID),
+			DestChainID:     validateChainID(c.destChainID),
 			DestTokenAddr:   destTokenAddr,
 			DestAmount:      decimal.NewFromBigInt(new(big.Int).Sub(userRequestAmount, big.NewInt(102)), 0),
 			MaxOriginAmount: decimal.NewFromBigInt(userRequestAmount, 0),
@@ -431,9 +431,9 @@ func (c *ServerSuite) TestGetPassiveQuote() {
 		},
 		{
 			RelayerAddr:     "0x4",
-			OriginChainID:   uint64(c.originChainID),
+			OriginChainID:   validateChainID(c.originChainID),
 			OriginTokenAddr: originTokenAddr,
-			DestChainID:     uint64(c.destChainID),
+			DestChainID:     validateChainID(c.destChainID),
 			DestTokenAddr:   destTokenAddr,
 			DestAmount:      decimal.NewFromBigInt(new(big.Int).Sub(userRequestAmount, big.NewInt(101)), 0),
 			MaxOriginAmount: decimal.NewFromBigInt(userRequestAmount, 0),

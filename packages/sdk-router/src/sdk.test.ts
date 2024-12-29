@@ -19,6 +19,7 @@ import {
   AVAX_GOHM,
   AVAX_USDC,
   AVAX_USDC_E,
+  BOBA_USDC,
   BSC_GOHM,
   BSC_USDC,
   ETH_DAI,
@@ -1815,6 +1816,56 @@ describe('SynapseSDK', () => {
           operations.getModuleSet.call(synapse, 'SynapseSynapse')
         ).toThrow('Unknown bridge module')
       })
+    })
+  })
+})
+
+describe('Paused Chain Tests', () => {
+  let synapseSDK: SynapseSDK
+
+  beforeEach(() => {
+    // Setup SDK with test providers
+    const chainIds = [SupportedChainId.ETH, SupportedChainId.BOBA] // Include a paused chain
+    const providers = chainIds.map((chainId) => getTestProvider(chainId))
+    synapseSDK = new SynapseSDK(chainIds, providers)
+  })
+
+  describe('Bridge Quote Generation', () => {
+    it('should not find quotes when origin chain is paused', async () => {
+      // Try to get quote from paused chain (BOBA)
+      await expect(
+        synapseSDK.bridgeQuote(
+          SupportedChainId.BOBA, // Paused chain as origin
+          SupportedChainId.ETH,
+          BOBA_USDC, // Example token addresses
+          ETH_USDC,
+          parseFixed('100', 6)
+        )
+      ).rejects.toThrow('No route found')
+    })
+
+    it('should not find quotes when destination chain is paused', async () => {
+      await expect(
+        synapseSDK.bridgeQuote(
+          SupportedChainId.ETH,
+          SupportedChainId.BOBA, // Paused chain as destination
+          ETH_USDC,
+          BOBA_USDC,
+          parseFixed('100', 6)
+        )
+      ).rejects.toThrow('No route found')
+    })
+
+    it('should not find quotes when allBridgeQuotes is called with paused chains', async () => {
+      const quotes = await synapseSDK.allBridgeQuotes(
+        SupportedChainId.BOBA, // Paused chain
+        SupportedChainId.ETH,
+        BOBA_USDC,
+        ETH_USDC,
+        parseFixed('100', 6)
+      )
+
+      expect(quotes).toHaveLength(0)
     })
   })
 })
