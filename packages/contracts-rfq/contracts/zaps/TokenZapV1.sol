@@ -132,23 +132,13 @@ contract TokenZapV1 is IZapRecipient {
         pure
         returns (bytes memory)
     {
-        if (payload.length > ZapDataV1.AMOUNT_NOT_PRESENT) {
-            revert TokenZapV1__PayloadLengthAboveMax();
-        }
-        // Final token needs to be specified if forwarding is required.
-        if (forwardTo != address(0) && finalToken == address(0)) {
-            revert TokenZapV1__ForwardParamsIncorrect();
-        }
-        if (minFwdAmount != 0 && forwardTo == address(0)) {
-            revert TokenZapV1__ForwardParamsIncorrect();
-        }
         // External integrations do not need to understand the specific `AMOUNT_NOT_PRESENT` semantics.
         // Therefore, they can specify any value greater than or equal to `payload.length` to indicate
         // that the amount is not present in the payload.
         if (amountPosition >= payload.length) {
             amountPosition = ZapDataV1.AMOUNT_NOT_PRESENT;
         }
-        // At this point, we have checked that both `amountPosition` and `payload.length` fit in uint16.
+        // At this point, we have checked that `amountPosition` fits in uint16, so we can safely cast it.
         return ZapDataV1.encodeV1({
             amountPosition_: uint16(amountPosition),
             finalToken_: finalToken,

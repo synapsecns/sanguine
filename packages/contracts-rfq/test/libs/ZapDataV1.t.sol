@@ -45,6 +45,8 @@ contract ZapDataV1Test is Test {
     {
         vm.assume(prefix.length + 32 + postfix.length < type(uint16).max);
         vm.assume(target != address(0));
+        vm.assume(finalToken != address(0) || forwardTo == address(0));
+        vm.assume(forwardTo != address(0) || minFwdAmount == 0);
 
         // We don't know the amount at the time of encoding, so we provide a placeholder.
         uint16 amountPosition = uint16(prefix.length);
@@ -82,6 +84,8 @@ contract ZapDataV1Test is Test {
     {
         vm.assume(payload.length < type(uint16).max);
         vm.assume(target != address(0));
+        vm.assume(finalToken != address(0) || forwardTo == address(0));
+        vm.assume(forwardTo != address(0) || minFwdAmount == 0);
 
         uint16 amountPosition = type(uint16).max;
         bytes memory zapData = harness.encodeV1(amountPosition, finalToken, forwardTo, minFwdAmount, target, payload);
@@ -103,6 +107,21 @@ contract ZapDataV1Test is Test {
     function test_encodeV1_revert_targetZeroAddress() public {
         vm.expectRevert(ZapDataV1.ZapDataV1__TargetZeroAddress.selector);
         harness.encodeV1(type(uint16).max, address(0), address(0), 0, address(0), "");
+    }
+
+    function test_encodeV1_revert_forwardToWithoutFinalToken() public {
+        vm.expectRevert(ZapDataV1.ZapDataV1__ForwardParamsIncorrect.selector);
+        harness.encodeV1(type(uint16).max, address(0), address(1), 0, address(2), "");
+    }
+
+    function test_encodeV1_revert_minFwdAmountWithoutForwardTo() public {
+        vm.expectRevert(ZapDataV1.ZapDataV1__ForwardParamsIncorrect.selector);
+        harness.encodeV1(type(uint16).max, address(1), address(0), 1, address(2), "");
+    }
+
+    function test_encodeV1_revert_payloadLengthAboveMax() public {
+        vm.expectRevert(ZapDataV1.ZapDataV1__PayloadLengthAboveMax.selector);
+        harness.encodeV1(type(uint16).max, address(0), address(0), 0, address(1), new bytes(2 ** 16));
     }
 
     function test_encodeDecodeV1_revert_invalidAmountPosition(

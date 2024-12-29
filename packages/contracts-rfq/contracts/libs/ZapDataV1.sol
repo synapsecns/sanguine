@@ -28,6 +28,8 @@ library ZapDataV1 {
     // forgefmt: disable-end
 
     error ZapDataV1__InvalidEncoding();
+    error ZapDataV1__ForwardParamsIncorrect();
+    error ZapDataV1__PayloadLengthAboveMax();
     error ZapDataV1__TargetZeroAddress();
     error ZapDataV1__UnsupportedVersion(uint16 version);
 
@@ -78,9 +80,19 @@ library ZapDataV1 {
         returns (bytes memory encodedZapData)
     {
         if (target_ == address(0)) revert ZapDataV1__TargetZeroAddress();
+        // We use uint16 to represent the amount position within the payload, so its length must fit in uint16.
+        if (payload_.length > AMOUNT_NOT_PRESENT) revert ZapDataV1__PayloadLengthAboveMax();
         // Amount is encoded in [amountPosition_ .. amountPosition_ + 32), which should be within the payload.
         if (amountPosition_ != AMOUNT_NOT_PRESENT && (uint256(amountPosition_) + 32 > payload_.length)) {
             revert ZapDataV1__InvalidEncoding();
+        }
+        // Final token needs to be specified if forwarding is required.
+        if (forwardTo_ != address(0) && finalToken_ == address(0)) {
+            revert ZapDataV1__ForwardParamsIncorrect();
+        }
+        // Forwarding address needs to be specified if minimum forwarding amount is set.
+        if (minFwdAmount_ != 0 && forwardTo_ == address(0)) {
+            revert ZapDataV1__ForwardParamsIncorrect();
         }
         return abi.encodePacked(VERSION, amountPosition_, finalToken_, forwardTo_, minFwdAmount_, target_, payload_);
     }

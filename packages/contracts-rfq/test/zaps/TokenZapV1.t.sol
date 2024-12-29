@@ -764,7 +764,7 @@ contract TokenZapV1Test is Test {
 
     function test_encodeZapData_revert_payloadLengthAboveMax() public {
         bytes memory tooLongPayload = new bytes(2 ** 16);
-        vm.expectRevert(TokenZapV1.TokenZapV1__PayloadLengthAboveMax.selector);
+        vm.expectRevert(ZapDataV1.ZapDataV1__PayloadLengthAboveMax.selector);
         tokenZap.encodeZapData(address(vault), tooLongPayload, 0, address(0), address(0), 0);
     }
 
@@ -777,13 +777,13 @@ contract TokenZapV1Test is Test {
 
     function test_encodeZapData_revert_finalTokenZeroAddressWithForwardTo() public {
         bytes memory payload = getVaultPayloadNoAmount();
-        vm.expectRevert(TokenZapV1.TokenZapV1__ForwardParamsIncorrect.selector);
+        vm.expectRevert(ZapDataV1.ZapDataV1__ForwardParamsIncorrect.selector);
         tokenZap.encodeZapData(address(vault), payload, payload.length, address(0), user, 0);
     }
 
     function test_encodeZapData_revert_forwardToZeroAddressWithMinFwdAmount() public {
         bytes memory payload = getVaultPayloadNoAmount();
-        vm.expectRevert(TokenZapV1.TokenZapV1__ForwardParamsIncorrect.selector);
+        vm.expectRevert(ZapDataV1.ZapDataV1__ForwardParamsIncorrect.selector);
         tokenZap.encodeZapData(address(vault), payload, payload.length, address(weth), address(0), 1);
     }
 }
