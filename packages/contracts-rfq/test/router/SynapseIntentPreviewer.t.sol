@@ -104,6 +104,10 @@ contract SynapseIntentPreviewerTest is Test {
         });
     }
 
+    function getAdjustedMinFwdAmount(address forwardTo, uint256 minFwdAmount) public pure returns (uint256) {
+        return forwardTo == address(0) ? 0 : minFwdAmount;
+    }
+
     function getSwapQuery(address tokenOut) public view returns (SwapQuery memory) {
         return SwapQuery({
             routerAdapter: routerAdapterMock,
@@ -139,7 +143,7 @@ contract SynapseIntentPreviewerTest is Test {
             target_: defaultPoolMock,
             finalToken_: DefaultPoolMock(defaultPoolMock).getToken(indexOut),
             forwardTo_: forwardTo,
-            minFwdAmount_: minAmountOut,
+            minFwdAmount_: getAdjustedMinFwdAmount(forwardTo, minAmountOut),
             // swap(tokenIndexFrom, tokenIndexTo, dx, minDy, deadline)
             payload_: abi.encodeCall(DefaultPoolMock.swap, (indexIn, indexOut, 0, 0, type(uint256).max)),
             // Amount (dx) is encoded as the third parameter
@@ -155,6 +159,11 @@ contract SynapseIntentPreviewerTest is Test {
                 // swap(tokenIndexFrom, tokenIndexTo, dx, minDy, deadline)
                 assertEq(payload, abi.encodeCall(DefaultPoolMock.swap, (i, j, AMOUNT_IN, 0, type(uint256).max)));
                 assertEq(zapDataLib.forwardTo(zapData), forwardTo);
+                if (forwardTo == address(0)) {
+                    assertEq(zapDataLib.minFwdAmount(zapData), 0);
+                } else {
+                    assertEq(zapDataLib.minFwdAmount(zapData), swapMinAmountOut);
+                }
             }
         }
     }
@@ -203,7 +212,7 @@ contract SynapseIntentPreviewerTest is Test {
             target_: defaultPoolMock,
             finalToken_: lpToken,
             forwardTo_: forwardTo,
-            minFwdAmount_: minAmountOut,
+            minFwdAmount_: getAdjustedMinFwdAmount(forwardTo, minAmountOut),
             // addLiquidity(amounts, minToMint, deadline)
             payload_: abi.encodeCall(IDefaultExtendedPool.addLiquidity, (amounts, 0, type(uint256).max)),
             // Amount is encoded within `amounts` at `TOKEN_IN_INDEX`, `amounts` is encoded after
@@ -221,6 +230,11 @@ contract SynapseIntentPreviewerTest is Test {
             // addLiquidity(amounts, minToMint, deadline)
             assertEq(payload, abi.encodeCall(IDefaultExtendedPool.addLiquidity, (amounts, 0, type(uint256).max)));
             assertEq(zapDataLib.forwardTo(zapData), forwardTo);
+            if (forwardTo == address(0)) {
+                assertEq(zapDataLib.minFwdAmount(zapData), 0);
+            } else {
+                assertEq(zapDataLib.minFwdAmount(zapData), swapMinAmountOut);
+            }
         }
     }
 
@@ -266,7 +280,7 @@ contract SynapseIntentPreviewerTest is Test {
             target_: defaultPoolMock,
             finalToken_: DefaultPoolMock(defaultPoolMock).getToken(indexOut),
             forwardTo_: forwardTo,
-            minFwdAmount_: minAmountOut,
+            minFwdAmount_: getAdjustedMinFwdAmount(forwardTo, minAmountOut),
             // removeLiquidityOneToken(tokenAmount, tokenIndex, minAmount, deadline)
             payload_: abi.encodeCall(IDefaultExtendedPool.removeLiquidityOneToken, (0, indexOut, 0, type(uint256).max)),
             // Amount (tokenAmount) is encoded as the first parameter
@@ -284,6 +298,11 @@ contract SynapseIntentPreviewerTest is Test {
                 abi.encodeCall(IDefaultExtendedPool.removeLiquidityOneToken, (AMOUNT_IN, i, 0, type(uint256).max))
             );
             assertEq(zapDataLib.forwardTo(zapData), forwardTo);
+            if (forwardTo == address(0)) {
+                assertEq(zapDataLib.minFwdAmount(zapData), 0);
+            } else {
+                assertEq(zapDataLib.minFwdAmount(zapData), swapMinAmountOut);
+            }
         }
     }
 
@@ -317,7 +336,7 @@ contract SynapseIntentPreviewerTest is Test {
             target_: weth,
             finalToken_: weth,
             forwardTo_: forwardTo,
-            minFwdAmount_: minAmountOut,
+            minFwdAmount_: getAdjustedMinFwdAmount(forwardTo, minAmountOut),
             // deposit()
             payload_: abi.encodeCall(WETHMock.deposit, ()),
             // Amount is not encoded
@@ -331,6 +350,11 @@ contract SynapseIntentPreviewerTest is Test {
         // deposit()
         assertEq(payload, abi.encodeCall(WETHMock.deposit, ()));
         assertEq(zapDataLib.forwardTo(zapData), forwardTo);
+        if (forwardTo == address(0)) {
+            assertEq(zapDataLib.minFwdAmount(zapData), 0);
+        } else {
+            assertEq(zapDataLib.minFwdAmount(zapData), swapMinAmountOut);
+        }
     }
 
     function test_getWrapETHZapData_noForward() public view {
@@ -363,7 +387,7 @@ contract SynapseIntentPreviewerTest is Test {
             target_: weth,
             finalToken_: NATIVE_GAS_TOKEN,
             forwardTo_: forwardTo,
-            minFwdAmount_: minAmountOut,
+            minFwdAmount_: getAdjustedMinFwdAmount(forwardTo, minAmountOut),
             // withdraw(amount)
             payload_: abi.encodeCall(WETHMock.withdraw, (0)),
             // Amount is encoded as the first parameter
@@ -377,6 +401,11 @@ contract SynapseIntentPreviewerTest is Test {
         // withdraw(amount)
         assertEq(payload, abi.encodeCall(WETHMock.withdraw, (AMOUNT_IN)));
         assertEq(zapDataLib.forwardTo(zapData), forwardTo);
+        if (forwardTo == address(0)) {
+            assertEq(zapDataLib.minFwdAmount(zapData), 0);
+        } else {
+            assertEq(zapDataLib.minFwdAmount(zapData), swapMinAmountOut);
+        }
     }
 
     function test_getUnwrapWETHZapData_noForward() public view {

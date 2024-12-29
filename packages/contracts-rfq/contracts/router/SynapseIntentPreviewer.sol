@@ -60,9 +60,10 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         if (amountOut == 0) {
             return (0, new ISynapseIntentRouter.StepParams[](0));
         }
-        uint256 lastStepMinAmountOut = 0;
-        if (slippageWei < MAX_SLIPPAGE) {
-            lastStepMinAmountOut = amountOut - (amountOut * slippageWei) / MAX_SLIPPAGE;
+        // Specify minimum amount to forward only if forwardTo is specified and slippage is less than 100%.
+        uint256 minForwardAmount = 0;
+        if (forwardTo != address(0) && slippageWei < MAX_SLIPPAGE) {
+            minForwardAmount = amountOut - (amountOut * slippageWei) / MAX_SLIPPAGE;
         }
 
         // At this point we have a quote for a non-trivial action, therefore `query.rawParams` is not empty.
@@ -71,13 +72,13 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
 
         // Create the steps for the intent based on the action type.
         if (params.action == Action.Swap) {
-            steps = _createSwapSteps(tokenIn, tokenOut, amountIn, params, forwardTo, lastStepMinAmountOut);
+            steps = _createSwapSteps(tokenIn, tokenOut, amountIn, params, forwardTo, minForwardAmount);
         } else if (params.action == Action.AddLiquidity) {
-            steps = _createAddLiquiditySteps(tokenIn, tokenOut, params, forwardTo, lastStepMinAmountOut);
+            steps = _createAddLiquiditySteps(tokenIn, tokenOut, params, forwardTo, minForwardAmount);
         } else if (params.action == Action.RemoveLiquidity) {
-            steps = _createRemoveLiquiditySteps(tokenIn, tokenOut, params, forwardTo, lastStepMinAmountOut);
+            steps = _createRemoveLiquiditySteps(tokenIn, tokenOut, params, forwardTo, minForwardAmount);
         } else {
-            steps = _createHandleHativeSteps(tokenIn, tokenOut, amountIn, forwardTo, lastStepMinAmountOut);
+            steps = _createHandleHativeSteps(tokenIn, tokenOut, amountIn, forwardTo, minForwardAmount);
         }
     }
 
@@ -88,7 +89,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         uint256 amountIn,
         DefaultParams memory params,
         address forwardTo,
-        uint256 lastStepMinAmountOut
+        uint256 minForwardAmount
     )
         internal
         view
@@ -116,7 +117,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
                     tokenOut: tokenOut,
                     params: params,
                     forwardTo: forwardTo,
-                    minFwdAmount: lastStepMinAmountOut
+                    minFwdAmount: minForwardAmount
                 })
             );
         }
@@ -140,7 +141,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
                 _createUnwrapNativeStep({
                     wrappedNative: wrappedNative,
                     forwardTo: forwardTo,
-                    minFwdAmount: lastStepMinAmountOut
+                    minFwdAmount: minForwardAmount
                 })
             );
         }
@@ -154,7 +155,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
             tokenOut: tokenOut,
             params: params,
             forwardTo: forwardTo,
-            minFwdAmount: lastStepMinAmountOut
+            minFwdAmount: minForwardAmount
         });
         return _toStepsArray(step);
     }
@@ -165,7 +166,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         address tokenOut,
         DefaultParams memory params,
         address forwardTo,
-        uint256 lastStepMinAmountOut
+        uint256 minForwardAmount
     )
         internal
         view
@@ -198,7 +199,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
                     target_: pool,
                     finalToken_: tokenOut,
                     forwardTo_: forwardTo,
-                    minFwdAmount_: lastStepMinAmountOut,
+                    minFwdAmount_: minForwardAmount,
                     // addLiquidity(amounts, minToMint, deadline)
                     payload_: abi.encodeCall(IDefaultExtendedPool.addLiquidity, (amounts, 0, type(uint256).max)),
                     // amountIn is encoded within `amounts` at `TOKEN_IN_INDEX`, `amounts` is encoded after
@@ -215,7 +216,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         address tokenOut,
         DefaultParams memory params,
         address forwardTo,
-        uint256 lastStepMinAmountOut
+        uint256 minForwardAmount
     )
         internal
         view
@@ -236,7 +237,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
                     target_: pool,
                     finalToken_: tokenOut,
                     forwardTo_: forwardTo,
-                    minFwdAmount_: lastStepMinAmountOut,
+                    minFwdAmount_: minForwardAmount,
                     // removeLiquidityOneToken(tokenAmount, tokenIndex, minAmount, deadline)
                     payload_: abi.encodeCall(
                         IDefaultExtendedPool.removeLiquidityOneToken, (0, params.tokenIndexTo, 0, type(uint256).max)
@@ -259,7 +260,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         address tokenOut,
         uint256 amountIn,
         address forwardTo,
-        uint256 lastStepMinAmountOut
+        uint256 minForwardAmount
     )
         internal
         pure
@@ -272,7 +273,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
                     wrappedNative: tokenOut,
                     msgValue: amountIn,
                     forwardTo: forwardTo,
-                    minFwdAmount: lastStepMinAmountOut
+                    minFwdAmount: minForwardAmount
                 })
             );
         }
@@ -280,7 +281,7 @@ contract SynapseIntentPreviewer is ISynapseIntentPreviewer {
         if (tokenOut != NATIVE_GAS_TOKEN) revert SIP__TokenNotNative();
         // tokenIn is Wrapped Native
         return _toStepsArray(
-            _createUnwrapNativeStep({wrappedNative: tokenIn, forwardTo: forwardTo, minFwdAmount: lastStepMinAmountOut})
+            _createUnwrapNativeStep({wrappedNative: tokenIn, forwardTo: forwardTo, minFwdAmount: minForwardAmount})
         );
     }
 
