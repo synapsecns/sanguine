@@ -6,6 +6,8 @@ import {
   EngineID,
   RouteInput,
   SwapEngineRoute,
+  Recipient,
+  RecipientEntity,
 } from './swapEngine'
 import { isSameAddress } from '../../utils/addressUtils'
 import { AMOUNT_NOT_PRESENT, encodeZapData } from '../zapData'
@@ -48,8 +50,7 @@ export const generateAPIRoute = (
     payload: response.transaction.data,
     amountPosition: AMOUNT_NOT_PRESENT,
     finalToken: input.tokenOut,
-    forwardTo: input.finalRecipient.address,
-    minFwdAmount: response.amountOut,
+    ...getForwardParams(input.finalRecipient, response.amountOut),
   })
 
   return {
@@ -64,4 +65,22 @@ export const generateAPIRoute = (
       },
     ],
   }
+}
+
+const getForwardParams = (
+  finalRecipient: Recipient,
+  amountOut: BigNumber
+): {
+  forwardTo: string
+  minFwdAmount: BigNumber
+} => {
+  return finalRecipient.entity === RecipientEntity.Self
+    ? {
+        forwardTo: AddressZero,
+        minFwdAmount: Zero,
+      }
+    : {
+        forwardTo: finalRecipient.address,
+        minFwdAmount: amountOut,
+      }
 }
