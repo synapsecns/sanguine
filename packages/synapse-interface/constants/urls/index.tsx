@@ -33,6 +33,7 @@ export const PRIVACY_POLICY_PATH =
   'https://explorer.synapseprotocol.com/privacy'
 export const SYNAPSE_PFP_PATH = '/returntomonke'
 export const JOBS_URL = 'https://jobs.ashbyhq.com/Synapse%20Labs'
+export const STAKE_SYN_FOR_CX_URL = 'https://cortexprotocol.com/stake'
 
 /** Synapse Social Links */
 export const DISCORD_URL = 'https://discord.gg/synapseprotocol'
