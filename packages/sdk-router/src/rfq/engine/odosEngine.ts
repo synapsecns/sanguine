@@ -19,7 +19,6 @@ import { logger } from '../../utils/logger'
 import { isNativeToken } from '../../utils/handleNativeToken'
 
 const ODOS_API_URL = 'https://api.odos.xyz/sor'
-const ODOS_API_TIMEOUT = 2000
 
 type OdosQuoteRequest = {
   chainId: number
@@ -82,7 +81,10 @@ export class OdosEngine implements SwapEngine {
     this.tokenZapAddressMap = tokenZapAddressMap
   }
 
-  public async getQuote(input: RouteInput): Promise<OdosQuote> {
+  public async getQuote(
+    input: RouteInput,
+    timeout: number
+  ): Promise<OdosQuote> {
     const { chainId, tokenIn, tokenOut, amountIn } = input
     const tokenZap = this.tokenZapAddressMap[chainId]
     if (
@@ -111,7 +113,7 @@ export class OdosEngine implements SwapEngine {
       slippageLimitPercent: toPercentFloat(SlippageMax),
       simple: true,
     }
-    const response = await this.getQuoteResponse(request)
+    const response = await this.getQuoteResponse(request, timeout)
     if (!response) {
       return EmptyOdosQuote
     }
@@ -144,13 +146,17 @@ export class OdosEngine implements SwapEngine {
 
   public async generateRoute(
     input: RouteInput,
-    quote: OdosQuote
+    quote: OdosQuote,
+    timeout: number
   ): Promise<SwapEngineRoute> {
     if (quote.engineID !== this.id || !quote.assembleRequest) {
       logger.error({ quote }, 'Odos: unexpected quote')
       return getEmptyRoute(this.id)
     }
-    const response = await this.getAssembleResponse(quote.assembleRequest)
+    const response = await this.getAssembleResponse(
+      quote.assembleRequest,
+      timeout
+    )
     if (!response) {
       return getEmptyRoute(this.id)
     }
@@ -169,25 +175,17 @@ export class OdosEngine implements SwapEngine {
   }
 
   public async getAssembleResponse(
-    params: OdosAssembleRequest
+    params: OdosAssembleRequest,
+    timeout: number
   ): Promise<Response | null> {
-    return postWithTimeout(
-      'Odos',
-      `${ODOS_API_URL}/assemble`,
-      ODOS_API_TIMEOUT,
-      params
-    )
+    return postWithTimeout('Odos', `${ODOS_API_URL}/assemble`, timeout, params)
   }
 
   public async getQuoteResponse(
-    params: OdosQuoteRequest
+    params: OdosQuoteRequest,
+    timeout: number
   ): Promise<Response | null> {
-    return postWithTimeout(
-      'Odos',
-      `${ODOS_API_URL}/quote/v2`,
-      ODOS_API_TIMEOUT,
-      params
-    )
+    return postWithTimeout('Odos', `${ODOS_API_URL}/quote/v2`, timeout, params)
   }
 
   private handleNativeToken(token: string): string {

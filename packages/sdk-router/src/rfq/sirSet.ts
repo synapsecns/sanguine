@@ -42,6 +42,7 @@ import {
   SwapEngineQuote,
   getEmptyRoute,
   RouteInput,
+  EngineTimeout,
 } from './engine'
 import {
   BridgeParamsV2,
@@ -470,7 +471,8 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
         amountIn: intent.originAmountOut,
         finalRecipient,
       },
-      intent.destQuote
+      intent.destQuote,
+      { allowMultiStep: false }
     )
     // FastBridge will use TokenZap as the recipient if there are any Zap steps to perform
     const destRelayRecipient =
@@ -492,11 +494,13 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       ...intent.destInput,
       amountIn: relayerQuote.destAmount,
     }
+    // Use longer timeout for finalizing the route.
     const destQuote = await this.engineSet.getQuote(
       intent.destQuote.engineID,
       destInput,
       {
         allowMultiStep: false,
+        timeout: EngineTimeout.Long,
       }
     )
     return {
@@ -521,9 +525,14 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     const [originRoute, destRoute] = await Promise.all([
       this.engineSet.generateRoute(
         fullQuote.originInput,
-        fullQuote.originQuote
+        fullQuote.originQuote,
+        {
+          allowMultiStep: true,
+        }
       ),
-      this.engineSet.generateRoute(fullQuote.destInput, fullQuote.destQuote),
+      this.engineSet.generateRoute(fullQuote.destInput, fullQuote.destQuote, {
+        allowMultiStep: false,
+      }),
     ])
     return {
       originRoute,
