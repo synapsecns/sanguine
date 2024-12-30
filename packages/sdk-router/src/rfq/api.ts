@@ -64,7 +64,7 @@ export const fetchWithTimeout = async (
   name: string,
   url: string,
   timeout: number,
-  params: any,
+  params: any = {},
   init?: RequestInit
 ): Promise<Response | null> => {
   const controller = new AbortController()
@@ -74,15 +74,23 @@ export const fetchWithTimeout = async (
       signal: controller.signal,
       ...init,
     })
-    clearTimeout(timeoutId)
     if (!response.ok) {
       console.info({ name, url, params, response }, `${name}: not OK`)
       return null
     }
     return response
   } catch (error) {
-    console.info({ name, url, timeout, params, error }, `${name}: timed out`)
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.info({ name, url, timeout, params }, `${name}: timed out`)
+    } else {
+      console.error(
+        { name, url, params, error },
+        `${name}: was not able to get a response`
+      )
+    }
     return null
+  } finally {
+    clearTimeout(timeoutId)
   }
 }
 
@@ -92,30 +100,28 @@ export const postWithTimeout = async (
   timeout: number,
   params: any
 ): Promise<Response | null> => {
-  try {
-    const response = await fetchWithTimeout(name, url, timeout, {
-      method: 'POST',
-      body: JSON.stringify(params),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    if (!response.ok) {
-      const text = await response.text()
-      console.info(
-        { url, timeout, params, response, text },
-        `${name}: response was not OK`
-      )
-      return null
-    }
-    return response
-  } catch (error) {
-    console.info(
-      { url, timeout, params, error },
-      `${name}: was not able to get response in time`
-    )
-    return null
-  }
+  return fetchWithTimeout(name, url, timeout, params, {
+    method: 'POST',
+    body: JSON.stringify(params),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+}
+
+export const putWithTimeout = async (
+  name: string,
+  url: string,
+  timeout: number,
+  params: any
+): Promise<Response | null> => {
+  return fetchWithTimeout(name, url, timeout, params, {
+    method: 'PUT',
+    body: JSON.stringify(params),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
 }
 
 /**
@@ -126,13 +132,12 @@ export const postWithTimeout = async (
  */
 export const getAllQuotes = async (): Promise<FastBridgeQuote[]> => {
   try {
-    const response = await fetchWithTimeout(`${API_URL}/quotes`, API_TIMEOUT)
-    if (!response.ok) {
-      const text = await response.text()
-      console.info(
-        { response, text },
-        'Response was not OK for getting all quotes'
-      )
+    const response = await fetchWithTimeout(
+      'RFQ API',
+      `${API_URL}/quotes`,
+      API_TIMEOUT
+    )
+    if (!response) {
       return []
     }
     // The response is a list of quotes in the FastBridgeQuoteAPI format
@@ -148,7 +153,7 @@ export const getAllQuotes = async (): Promise<FastBridgeQuote[]> => {
       })
       .filter((quote): quote is FastBridgeQuote => quote !== null)
   } catch (error) {
-    console.info({ error }, 'Was not able to get all quotes in time')
+    console.error({ error }, 'Failed to fetch all quotes')
     return []
   }
 }
@@ -180,23 +185,13 @@ export const getBestRelayerQuote = async (
     },
   }
   try {
-    const response = await fetchWithTimeout(`${API_URL}/rfq`, API_TIMEOUT, {
-      method: 'PUT',
-      body: JSON.stringify(rfqRequest),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    if (!response.ok) {
-      const text = await response.text()
-      console.info(
-        {
-          rfqRequest,
-          response,
-          text,
-        },
-        'Response was not OK for RFQ quote'
-      )
+    const response = await putWithTimeout(
+      'RFQ API',
+      `${API_URL}/rfq`,
+      API_TIMEOUT,
+      rfqRequest
+    )
+    if (!response) {
       return ZeroQuote
     }
     // Check that response is successful, contains non-zero dest amount, and has a relayer address
@@ -230,7 +225,7 @@ export const getBestRelayerQuote = async (
       quoteID: rfqResponse.quote_id,
     }
   } catch (error) {
-    console.info({ rfqRequest, error }, 'Was not able to get RFQ quote in time')
+    console.error({ rfqRequest, error }, 'Failed to get RFQ quote')
     return ZeroQuote
   }
 }
