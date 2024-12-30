@@ -6,6 +6,7 @@ import {
   FastBridgeQuoteAPI,
   unmarshallFastBridgeQuote,
 } from './quote'
+import { logger } from '../utils/logger'
 
 const API_URL = 'https://rfq-api-stage.omnirpc.io'
 const API_TIMEOUT = 2000
@@ -75,15 +76,15 @@ export const fetchWithTimeout = async (
       ...init,
     })
     if (!response.ok) {
-      console.info({ name, url, params, response }, `${name}: not OK`)
+      logger.info({ name, url, params, response }, `${name}: not OK`)
       return null
     }
     return response
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
-      console.info({ name, url, timeout, params }, `${name}: timed out`)
+      logger.info({ name, url, timeout, params }, `${name}: timed out`)
     } else {
-      console.error(
+      logger.error(
         { name, url, params, error },
         `${name}: was not able to get a response`
       )
@@ -147,13 +148,13 @@ export const getAllQuotes = async (): Promise<FastBridgeQuote[]> => {
         try {
           return unmarshallFastBridgeQuote(quote)
         } catch (error) {
-          console.error({ quote, error }, 'Could not unmarshall quote')
+          logger.error({ quote, error }, 'Could not unmarshall quote')
           return null
         }
       })
       .filter((quote): quote is FastBridgeQuote => quote !== null)
   } catch (error) {
-    console.error({ error }, 'Failed to fetch all quotes')
+    logger.error({ error }, 'Failed to fetch all quotes')
     return []
   }
 }
@@ -197,7 +198,7 @@ export const getBestRelayerQuote = async (
     // Check that response is successful, contains non-zero dest amount, and has a relayer address
     const rfqResponse: PutRFQResponseAPI = await response.json()
     if (!rfqResponse.success) {
-      console.info(
+      logger.info(
         {
           rfqRequest,
           rfqResponse,
@@ -208,7 +209,7 @@ export const getBestRelayerQuote = async (
       return ZeroQuote
     }
     if (!rfqResponse.dest_amount || !rfqResponse.relayer_address) {
-      console.error(
+      logger.error(
         { rfqRequest, rfqResponse },
         'Error getting RFQ quote: missing dest_amount or relayer_address in response'
       )
@@ -216,7 +217,7 @@ export const getBestRelayerQuote = async (
     }
     const destAmount = BigNumber.from(rfqResponse.dest_amount)
     if (destAmount.lte(0)) {
-      console.info({ rfqRequest, rfqResponse }, 'No RFQ quote returned')
+      logger.info({ rfqRequest, rfqResponse }, 'No RFQ quote returned')
       return ZeroQuote
     }
     return {
@@ -225,7 +226,7 @@ export const getBestRelayerQuote = async (
       quoteID: rfqResponse.quote_id,
     }
   } catch (error) {
-    console.error({ rfqRequest, error }, 'Failed to get RFQ quote')
+    logger.error({ rfqRequest, error }, 'Failed to get RFQ quote')
     return ZeroQuote
   }
 }

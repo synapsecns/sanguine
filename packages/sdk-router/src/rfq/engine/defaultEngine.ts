@@ -13,6 +13,7 @@ import { ChainProvider } from '../../router'
 import { SynapseIntentPreviewer as PreviewerContract } from '../../typechain/SynapseIntentPreviewer'
 import { IDefaultActionsInterface } from '../../typechain/IDefaultActions'
 import { isSameAddress } from '../../utils/addressUtils'
+import { logger } from '../../utils/logger'
 import {
   SwapEngine,
   SwapEngineRoute,
@@ -107,7 +108,7 @@ export class DefaultEngine implements SwapEngine {
     quote: SwapEngineRoute
   ): Promise<SwapEngineRoute> {
     if (quote.engineID !== this.id || !quote.steps) {
-      console.error({ quote }, 'DefaultEngine: unexpected quote')
+      logger.error({ quote }, 'DefaultEngine: unexpected quote')
       return getEmptyRoute(this.id)
     }
     return quote
