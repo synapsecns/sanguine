@@ -15,7 +15,8 @@
       "**/@openzeppelin/*",
       "**/@synapsecns/solidity-devops",
       "**/ds-test",
-      "**/forge-std"
+      "**/forge-std",
+      "**/pino"
     ]
   },
   "repository": {
