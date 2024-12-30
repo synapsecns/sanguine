@@ -42,6 +42,16 @@
   { "type": "error", "name": "SIP__PoolZeroAddress", "inputs": [] },
   { "type": "error", "name": "SIP__RawParamsEmpty", "inputs": [] },
   { "type": "error", "name": "SIP__TokenNotNative", "inputs": [] },
+  {
+    "type": "error",
+    "name": "ZapDataV1__ForwardParamsIncorrect",
+    "inputs": []
+  },
   { "type": "error", "name": "ZapDataV1__InvalidEncoding", "inputs": [] },
+  {
+    "type": "error",
+    "name": "ZapDataV1__PayloadLengthAboveMax",
+    "inputs": []
+  },
   { "type": "error", "name": "ZapDataV1__TargetZeroAddress", "inputs": [] }
 ]
