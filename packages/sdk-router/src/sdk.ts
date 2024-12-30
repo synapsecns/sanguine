@@ -32,7 +32,6 @@ class SynapseSDK {
       chainIds.length === providers.length,
       `Amount of chains and providers does not equal`
     )
-    console.log('GM, this is a staging version of the SDK')
     // Zip chainIds and providers into a single object
     const chainProviders: ChainProvider[] = chainIds.map((chainId, index) => ({
       chainId,
