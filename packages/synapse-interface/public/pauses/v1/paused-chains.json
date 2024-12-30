@@ -49,5 +49,12 @@
     "disableBanner": false,
     "disableWarning": true,
     "disableCountdown": false
+  },
+  {
+    "id": "boba-chain-pause",
+    "pausedFromChains": [288],
+    "pausedToChains": [288],
+    "pauseBridge": true,
+    "pauseSwap": false
   }
 ]

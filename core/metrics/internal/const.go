@@ -11,14 +11,4 @@ const (
 	JaegerUIEndpoint = "JAEGER_UI"
 	// PyroscopeJaegerUIEnabled is the environment variable name for enabling Jaeger UI.
 	PyroscopeJaegerUIEnabled = "PYROSCOPE_JAEGER_UI_ENABLED"
-	// RookoutToken is used for https://app.rookout.com/
-	RookoutToken = "ROOKOUT_TOKEN"
-	// RookoutCommit is the environment variable for the git commit in use.
-	RookoutCommit = "ROOKOUT_COMMIT"
-	// RookoutDebug can be used to enable rookout debug.
-	RookoutDebug = "ROOKOUT_DEBUG"
-	// RookoutRemoteOrigin is the environment variable for the git remote origin in use.
-	RookoutRemoteOrigin = "ROOKOUT_REMOTE_ORIGIN"
-	// GitRepo is the environment variable for the git repo in use.
-	GitRepo = "GIT_REPO"
 )
