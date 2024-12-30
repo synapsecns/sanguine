@@ -48,7 +48,7 @@ func NewParser(fastBridgeAddress common.Address) (Parser, error) {
 func (p parserImpl) ParseEvent(log ethTypes.Log) (_ EventType, event interface{}, ok bool) {
 	// return an unknown event to avoid cases where user failed to check the event type
 	// make it high enough to make it obvious (we start iotas at +1, see uber style guide for details)
-	noOpEvent := EventType(len(topicMap()) + 2)
+	noOpEvent := EventType(len(topicMap()) + 2) //nolint:gosec // Acceptable conversion
 
 	if len(log.Topics) == 0 {
 		return noOpEvent, nil, false

@@ -82,7 +82,8 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 			if err != nil {
 				return nil, fmt.Errorf("could not get deploy block: %w", err)
 			}
-			chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(*rfqAddrV1), uint64(startBlock.Int64()), metricHandler, listener.WithName("guard"))
+			chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(*rfqAddrV1), uint64(startBlock.Int64()), //nolint:gosec // Acceptable conversion
+				metricHandler, listener.WithName("guard"))
 			if err != nil {
 				return nil, fmt.Errorf("could not get chain listener: %w", err)
 			}
@@ -107,7 +108,8 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 		if err != nil {
 			return nil, fmt.Errorf("could not get deploy block: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddrV2), uint64(startBlock.Int64()), metricHandler, listener.WithName("guardV2"))
+		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddrV2), uint64(startBlock.Int64()), //nolint:gosec // Acceptable conversion
+			metricHandler, listener.WithName("guardV2"))
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
@@ -257,7 +259,7 @@ func (g Guard) runChainIndexerV1(ctx context.Context, chainID int, chainListener
 			attribute.Int(metrics.Origin, chainID),
 			attribute.String(metrics.Contract, log.Address.String()),
 			attribute.String("block_hash", log.BlockHash.String()),
-			attribute.Int64("block_number", int64(log.BlockNumber)),
+			attribute.Int64("block_number", int64(log.BlockNumber)), //nolint:gosec // Acceptable conversion
 		))
 
 		defer func() {
@@ -335,7 +337,7 @@ func (g Guard) runChainIndexerV2(ctx context.Context, chainID int, chainListener
 			attribute.Int(metrics.Origin, chainID),
 			attribute.String(metrics.Contract, log.Address.String()),
 			attribute.String("block_hash", log.BlockHash.String()),
-			attribute.Int64("block_number", int64(log.BlockNumber)),
+			attribute.Int64("block_number", int64(log.BlockNumber)), //nolint:gosec // Acceptable conversion
 		))
 
 		defer func() {

@@ -269,7 +269,7 @@ func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token 
 	err := i.waitForContractDeployment(i.GetTestContext(), backend, token.Address())
 	i.Require().NoError(err, "Failed to wait for contract deployment")
 
-	erc20, err := ierc20.NewIERC20(token.Address(), backend)
+	erc20, err := ierc20.NewIerc20Ref(common.HexToAddress(token.Address().String()), backend)
 	i.Require().NoError(err, "Failed to get erc20")
 
 	// approve fastbridgev1
@@ -400,9 +400,12 @@ func (i *IntegrationSuite) setupRelayer() {
 				txContextV1 := backend.GetTxContext(i.GetTestContext(), metadataV1.OwnerPtr())
 
 				relayerRole, err := rfqContractV1.RELAYERROLE(&bind.CallOpts{Context: i.GetTestContext()})
+				if err != nil {
+					return fmt.Errorf("failed to get relayer role: %w", err)
+				}
 				proverRole, err := rfqContractV1.RELAYERROLE(&bind.CallOpts{Context: i.GetTestContext()})
 				if err != nil {
-					return fmt.Errorf("could not get prover role: %w", err)
+					return fmt.Errorf("failed to get relayer role: %w", err)
 				}
 				tx, err := rfqContractV1.GrantRole(txContextV1.TransactOpts, relayerRole, i.relayerWallet.Address())
 				if err != nil {
@@ -413,10 +416,6 @@ func (i *IntegrationSuite) setupRelayer() {
 				metadataV2, rfqContractV2 := i.manager.GetFastBridgeV2(i.GetTestContext(), backend)
 				txContextV2 := backend.GetTxContext(i.GetTestContext(), metadataV2.OwnerPtr())
 
-				proverRole, err = rfqContractV2.PROVERROLE(&bind.CallOpts{Context: i.GetTestContext()})
-				if err != nil {
-					return fmt.Errorf("could not get prover role: %w", err)
-				}
 				tx, err = rfqContractV2.GrantRole(txContextV2.TransactOpts, proverRole, i.relayerWallet.Address())
 				if err != nil {
 					return fmt.Errorf("could not grant prover role: %w", err)

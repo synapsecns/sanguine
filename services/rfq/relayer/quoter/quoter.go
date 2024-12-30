@@ -286,6 +286,7 @@ func (m *Manager) getAmountWithOffset(ctx context.Context, chainID uint32, token
 func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "SubmitAllQuotes")
 	defer func() {
+		span.SetAttributes(attribute.Bool("relay_paused", m.relayPaused.Load()))
 		metrics.EndSpanWithErr(span, err)
 	}()
 
@@ -325,7 +326,7 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("context error: %w", ctx.Err())
 		case msg, ok := <-respChan:
 			if !ok {
 				return errors.New("ws channel closed")

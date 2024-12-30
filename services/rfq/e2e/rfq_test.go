@@ -172,7 +172,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	_, originFastBridge := i.manager.GetFastBridgeV2(i.GetTestContext(), i.originBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
 	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridgev2.IFastBridgeBridgeParams{
-		DstChainId:   uint32(i.destBackend.GetChainID()),
+		DstChainId:   uint32(i.destBackend.GetChainID()), //nolint:gosec // Acceptable conversion
 		Sender:       i.userWallet.Address(),
 		To:           i.userWallet.Address(),
 		OriginToken:  originUSDC.Address(),
@@ -327,7 +327,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 	auth.TransactOpts.Value = realWantAmount
 	// we want 499 ETH for 500 requested within a day
 	tx, err := originFastBridge.Bridge(auth.TransactOpts, fastbridgev2.IFastBridgeBridgeParams{
-		DstChainId:   uint32(i.destBackend.GetChainID()),
+		DstChainId:   uint32(i.destBackend.GetChainID()), //nolint:gosec // Acceptable conversion
 		Sender:       i.userWallet.Address(),
 		To:           i.userWallet.Address(),
 		OriginToken:  util.EthAddress,
@@ -468,7 +468,7 @@ func (i *IntegrationSuite) TestZap() {
 	_, destRecipient := i.manager.GetRecipientMock(i.GetTestContext(), i.destBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
 	params := fastbridgev2.IFastBridgeBridgeParams{
-		DstChainId:   uint32(i.destBackend.GetChainID()),
+		DstChainId:   uint32(i.destBackend.GetChainID()), //nolint:gosec // Acceptable conversion
 		Sender:       i.userWallet.Address(),
 		To:           destRecipient.Address(),
 		OriginToken:  originUSDC.Address(),
@@ -558,7 +558,7 @@ func (i *IntegrationSuite) TestDisputeV1() {
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
 	// we want 499 usdc for 500 requested within a day
 	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
-		DstChainId:   uint32(i.destBackend.GetChainID()),
+		DstChainId:   uint32(i.destBackend.GetChainID()), //nolint:gosec // Acceptable conversion
 		Sender:       i.userWallet.Address(),
 		To:           i.userWallet.Address(),
 		OriginToken:  originUSDC.Address(),
@@ -655,7 +655,7 @@ func (i *IntegrationSuite) TestDisputeV2() {
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
 	// we want 499 usdc for 500 requested within a day
 	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridgev2.IFastBridgeBridgeParams{
-		DstChainId:   uint32(i.destBackend.GetChainID()),
+		DstChainId:   uint32(i.destBackend.GetChainID()), //nolint:gosec // Acceptable conversion
 		Sender:       i.userWallet.Address(),
 		To:           i.userWallet.Address(),
 		OriginToken:  originUSDC.Address(),
@@ -785,7 +785,7 @@ func (i *IntegrationSuite) TestConcurrentBridges() {
 		auth.TransactOpts.Nonce = nonce
 		defer txMux.Unlock()
 		tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridgev2.IFastBridgeBridgeParams{
-			DstChainId:   uint32(i.destBackend.GetChainID()),
+			DstChainId:   uint32(i.destBackend.GetChainID()), //nolint:gosec // Acceptable conversion
 			Sender:       i.userWallet.Address(),
 			To:           i.userWallet.Address(),
 			OriginToken:  originUSDC.Address(),
