@@ -9,7 +9,7 @@ import {
 import { logger } from '../utils/logger'
 
 const API_URL = 'https://rfq-api-stage.omnirpc.io'
-const API_TIMEOUT = 2000
+const API_TIMEOUT = 5000
 
 /**
  * The expiration window for active quotes in milliseconds to be used by the RFQ API.
