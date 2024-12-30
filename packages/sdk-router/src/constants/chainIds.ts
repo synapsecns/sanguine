@@ -57,12 +57,19 @@ export const CCTP_SUPPORTED_CHAIN_IDS: number[] = [
 ]
 
 /**
- * List of chain ids where FastBridge V2 (RFQ) is deployed, ordered by chain id
- * TODO: revert to FastBridge V1 when a dedicated Router Set is implemented.
+ * List of chain ids where FastBridge (RFQ) is deployed, ordered by chain id
+ *
  */
 export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
+  SupportedChainId.ETH,
   SupportedChainId.OPTIMISM,
+  SupportedChainId.BSC,
+  SupportedChainId.WORLDCHAIN,
+  SupportedChainId.BASE,
   SupportedChainId.ARBITRUM,
+  SupportedChainId.LINEA,
+  SupportedChainId.BLAST,
+  SupportedChainId.SCROLL,
 ]
 
 /**
