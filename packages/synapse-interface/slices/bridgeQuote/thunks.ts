@@ -68,7 +68,7 @@ export const fetchBridgeQuote = createAsyncThunk(
     }
 
     const rfqQuote = activeQuotes.find(
-      (q) => q.bridgeModuleName === 'SynapseIntents'
+      (q) => q.bridgeModuleName === 'SynapseRFQ'
     )
 
     const nonRfqQuote = activeQuotes.find(
