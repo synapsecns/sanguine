@@ -1,6 +1,7 @@
 import { BigNumber } from 'ethers'
 
 import { isSameAddress } from '../../utils/addressUtils'
+import { logger } from '../../utils/logger'
 import {
   SwapEngine,
   SwapEngineRoute,
@@ -29,7 +30,7 @@ export class NoOpEngine implements SwapEngine {
     quote: SwapEngineRoute
   ): Promise<SwapEngineRoute> {
     if (quote.engineID !== this.id || !quote.steps) {
-      console.error({ quote }, 'NoOpEngine: unexpected quote')
+      logger.error({ quote }, 'NoOpEngine: unexpected quote')
       return getEmptyRoute(this.id)
     }
     return quote

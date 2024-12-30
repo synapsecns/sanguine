@@ -15,6 +15,7 @@ import {
 } from './swapEngine'
 import { AddressMap } from '../../constants'
 import { isSameAddress } from '../../utils/addressUtils'
+import { logger } from '../../utils/logger'
 import { isNativeToken } from '../../utils/handleNativeToken'
 
 const ODOS_API_URL = 'https://api.odos.xyz/sor'
@@ -120,7 +121,7 @@ export class OdosEngine implements SwapEngine {
       !odosQuoteResponse.pathId ||
       odosQuoteResponse.outAmounts.length !== 1
     ) {
-      console.error(
+      logger.error(
         { request, odosQuoteResponse },
         'Odos: invalid quote response'
       )
@@ -128,7 +129,7 @@ export class OdosEngine implements SwapEngine {
     }
     const amountOut = odosQuoteResponse.outAmounts[0]
     if (amountOut === '0') {
-      console.info({ request, odosQuoteResponse }, 'Odos: zero amount out')
+      logger.info({ request, odosQuoteResponse }, 'Odos: zero amount out')
       return EmptyOdosQuote
     }
     return {
@@ -146,7 +147,7 @@ export class OdosEngine implements SwapEngine {
     quote: OdosQuote
   ): Promise<SwapEngineRoute> {
     if (quote.engineID !== this.id || !quote.assembleRequest) {
-      console.error({ quote }, 'Odos: unexpected quote')
+      logger.error({ quote }, 'Odos: unexpected quote')
       return getEmptyRoute(this.id)
     }
     const response = await this.getAssembleResponse(quote.assembleRequest)
@@ -155,7 +156,7 @@ export class OdosEngine implements SwapEngine {
     }
     const odosAssembleResponse: OdosAssembleResponse = await response.json()
     if (!odosAssembleResponse.transaction) {
-      console.error(
+      logger.error(
         { request: quote.assembleRequest, response },
         'Odos: invalid assemble response'
       )
