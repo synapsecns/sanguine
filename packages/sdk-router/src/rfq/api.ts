@@ -61,16 +61,29 @@ const ZeroQuote: RelayerQuote = {
 }
 
 export const fetchWithTimeout = async (
+  name: string,
   url: string,
   timeout: number,
+  params: any,
   init?: RequestInit
-): Promise<Response> => {
+): Promise<Response | null> => {
   const controller = new AbortController()
-  const reason = `Timeout of ${timeout}ms exceeded for ${url}`
-  const timeoutId = setTimeout(() => (controller.abort as any)(reason), timeout)
-  return fetch(url, { signal: controller.signal, ...init }).finally(() =>
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      ...init,
+    })
     clearTimeout(timeoutId)
-  )
+    if (!response.ok) {
+      console.info({ name, url, params, response }, `${name}: not OK`)
+      return null
+    }
+    return response
+  } catch (error) {
+    console.info({ name, url, timeout, params, error }, `${name}: timed out`)
+    return null
+  }
 }
 
 export const postWithTimeout = async (
@@ -80,7 +93,7 @@ export const postWithTimeout = async (
   params: any
 ): Promise<Response | null> => {
   try {
-    const response = await fetchWithTimeout(url, timeout, {
+    const response = await fetchWithTimeout(name, url, timeout, {
       method: 'POST',
       body: JSON.stringify(params),
       headers: {
@@ -89,17 +102,17 @@ export const postWithTimeout = async (
     })
     if (!response.ok) {
       const text = await response.text()
-      console.error(
+      console.info(
         { url, timeout, params, response, text },
-        `${name}: error fetching response`
+        `${name}: response was not OK`
       )
       return null
     }
     return response
   } catch (error) {
-    console.error(
+    console.info(
       { url, timeout, params, error },
-      `${name}: Error fetching response`
+      `${name}: was not able to get response in time`
     )
     return null
   }
@@ -115,7 +128,11 @@ export const getAllQuotes = async (): Promise<FastBridgeQuote[]> => {
   try {
     const response = await fetchWithTimeout(`${API_URL}/quotes`, API_TIMEOUT)
     if (!response.ok) {
-      console.error('Error fetching quotes:', response.statusText)
+      const text = await response.text()
+      console.info(
+        { response, text },
+        'Response was not OK for getting all quotes'
+      )
       return []
     }
     // The response is a list of quotes in the FastBridgeQuoteAPI format
@@ -125,13 +142,13 @@ export const getAllQuotes = async (): Promise<FastBridgeQuote[]> => {
         try {
           return unmarshallFastBridgeQuote(quote)
         } catch (error) {
-          console.error('Error unmarshalling quote:', error)
+          console.error({ quote, error }, 'Could not unmarshall quote')
           return null
         }
       })
       .filter((quote): quote is FastBridgeQuote => quote !== null)
   } catch (error) {
-    console.error('Error fetching quotes:', error)
+    console.info({ error }, 'Was not able to get all quotes in time')
     return []
   }
 }
@@ -147,24 +164,22 @@ export const getBestRelayerQuote = async (
   originAmount: BigNumber,
   options: QuoteRequestOptions = {}
 ): Promise<RelayerQuote> => {
+  const rfqRequest: PutRFQRequestAPI = {
+    quote_types: ['active', 'passive'],
+    data: {
+      origin_chain_id: ticker.originToken.chainId,
+      dest_chain_id: ticker.destToken.chainId,
+      origin_token_addr: ticker.originToken.token,
+      dest_token_addr: ticker.destToken.token,
+      origin_amount_exact: originAmount.toString(),
+      expiration_window: EXPIRATION_WINDOW,
+      origin_sender: options.originSender,
+      dest_recipient: options.destRecipient,
+      zap_data: options.zapData ?? '0x',
+      zap_native: options.zapNative?.toString() ?? '0',
+    },
+  }
   try {
-    const rfqRequest: PutRFQRequestAPI = {
-      // TODO: add active quotes once they are fixed
-      quote_types: ['active', 'passive'],
-      data: {
-        origin_chain_id: ticker.originToken.chainId,
-        dest_chain_id: ticker.destToken.chainId,
-        origin_token_addr: ticker.originToken.token,
-        dest_token_addr: ticker.destToken.token,
-        origin_amount_exact: originAmount.toString(),
-        expiration_window: EXPIRATION_WINDOW,
-        origin_sender: options.originSender,
-        dest_recipient: options.destRecipient,
-        // TODO: cleanup
-        zap_data: options.zapData ?? '0x',
-        zap_native: options.zapNative?.toString() ?? '0',
-      },
-    }
     const response = await fetchWithTimeout(`${API_URL}/rfq`, API_TIMEOUT, {
       method: 'PUT',
       body: JSON.stringify(rfqRequest),
@@ -173,28 +188,40 @@ export const getBestRelayerQuote = async (
       },
     })
     if (!response.ok) {
-      console.error('Error fetching quote:', response.statusText)
+      const text = await response.text()
+      console.info(
+        {
+          rfqRequest,
+          response,
+          text,
+        },
+        'Response was not OK for RFQ quote'
+      )
       return ZeroQuote
     }
     // Check that response is successful, contains non-zero dest amount, and has a relayer address
     const rfqResponse: PutRFQResponseAPI = await response.json()
     if (!rfqResponse.success) {
-      console.error(
-        'No RFQ quote returned:',
-        rfqResponse.reason ?? 'Unknown reason'
+      console.info(
+        {
+          rfqRequest,
+          rfqResponse,
+          reason: rfqResponse.reason ?? 'Unknown reason',
+        },
+        'No RFQ quote returned'
       )
       return ZeroQuote
     }
     if (!rfqResponse.dest_amount || !rfqResponse.relayer_address) {
       console.error(
-        'Error fetching quote: missing dest_amount or relayer_address in response:',
-        rfqResponse
+        { rfqRequest, rfqResponse },
+        'Error getting RFQ quote: missing dest_amount or relayer_address in response'
       )
       return ZeroQuote
     }
     const destAmount = BigNumber.from(rfqResponse.dest_amount)
     if (destAmount.lte(0)) {
-      console.error('No RFQ quote returned')
+      console.info({ rfqRequest, rfqResponse }, 'No RFQ quote returned')
       return ZeroQuote
     }
     return {
@@ -203,7 +230,7 @@ export const getBestRelayerQuote = async (
       quoteID: rfqResponse.quote_id,
     }
   } catch (error) {
-    console.error('Error fetching quote:', error)
+    console.info({ rfqRequest, error }, 'Was not able to get RFQ quote in time')
     return ZeroQuote
   }
 }

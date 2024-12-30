@@ -120,12 +120,15 @@ export class OdosEngine implements SwapEngine {
       !odosQuoteResponse.pathId ||
       odosQuoteResponse.outAmounts.length !== 1
     ) {
-      console.error({ request, response }, 'Odos: invalid quote response')
+      console.error(
+        { request, odosQuoteResponse },
+        'Odos: invalid quote response'
+      )
       return EmptyOdosQuote
     }
     const amountOut = odosQuoteResponse.outAmounts[0]
     if (amountOut === '0') {
-      console.info({ request, response }, 'Odos: zero amount out')
+      console.info({ request, odosQuoteResponse }, 'Odos: zero amount out')
       return EmptyOdosQuote
     }
     return {
