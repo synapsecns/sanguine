@@ -1,5 +1,5 @@
 import { Interface } from '@ethersproject/abi'
-import { AddressZero, Zero } from '@ethersproject/constants'
+import { Zero } from '@ethersproject/constants'
 import { BigNumber, Contract } from 'ethers'
 import invariant from 'tiny-invariant'
 
@@ -17,13 +17,12 @@ import { logger } from '../../utils/logger'
 import {
   SwapEngine,
   SwapEngineRoute,
-  Recipient,
-  RecipientEntity,
   EngineID,
   toWei,
   RouteInput,
   SlippageMax,
   getEmptyRoute,
+  getForwardTo,
 } from './swapEngine'
 
 export class DefaultEngine implements SwapEngine {
@@ -81,11 +80,11 @@ export class DefaultEngine implements SwapEngine {
       return getEmptyRoute(this.id)
     }
     // Get the quote
-    const forwardTo = this.getForwardTo(finalRecipient)
+    const forwardTo = getForwardTo(finalRecipient)
     const { amountOut, steps: stepsOutput } = await previewer.previewIntent(
       swapQuoter,
       forwardTo,
-      // slippage settings are applied when generating the zap data as minFwdAmount
+      // slippage settings are applied when generating the zap data as minFinalAmount
       toWei(SlippageMax),
       tokenIn,
       tokenOut,
@@ -116,10 +115,4 @@ export class DefaultEngine implements SwapEngine {
   }
 
   // TODO: getQuotes
-
-  private getForwardTo(recipient: Recipient): string {
-    return recipient.entity === RecipientEntity.Self
-      ? AddressZero
-      : recipient.address
-  }
 }

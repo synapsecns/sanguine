@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers'
-import { Zero, WeiPerEther } from '@ethersproject/constants'
+import { Zero, WeiPerEther, AddressZero } from '@ethersproject/constants'
 
 import { StepParams } from '../steps'
 import { BigintIsh } from '../../constants'
@@ -129,4 +129,10 @@ export const sanitizeMultiStepRoute = (
     expectedAmountOut: Zero,
     steps: [],
   }
+}
+
+export const getForwardTo = (recipient: Recipient): string => {
+  return recipient.entity === RecipientEntity.Self
+    ? AddressZero
+    : recipient.address
 }
