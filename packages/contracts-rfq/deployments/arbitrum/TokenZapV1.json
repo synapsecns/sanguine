@@ -1,9 +1,9 @@
 {
-  "address": "0x583aC4E52418E58b2887B16300B475dB49AA7960",
+  "address": "0x6C6FA1cE8160bb680f7a1dd2068c7302bA2a9eaB",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0x29f4a5bfb0629bb6183c2ef2b272a35dcd69be27f59548be860a97d572220308",
-    "blockNumber": 291209818
+    "hash": "0x178aaba5be55c43306b9cb470d4fbceba14c588720e8ad73fa8f603cb441da3f",
+    "blockNumber": 291284366
   },
   "abi": [
     {
