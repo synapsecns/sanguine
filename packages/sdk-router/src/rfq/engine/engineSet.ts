@@ -11,10 +11,16 @@ import {
   RouteInput,
   SwapEngineQuote,
   sanitizeMultiStepQuote,
+  sanitizeMultiStepRoute,
 } from './swapEngine'
 import { CCTPRouterQuery } from '../../module'
 import { encodeStepParams } from '../steps'
 import { OdosEngine } from './odosEngine'
+
+export enum EngineTimeout {
+  Short = 1000,
+  Long = 3000,
+}
 
 export class EngineSet {
   private engines: {
@@ -43,7 +49,7 @@ export class EngineSet {
 
   public async getQuotes(
     inputs: RouteInput[],
-    options: { allowMultiStep: boolean }
+    options: { allowMultiStep: boolean; timeout?: number }
   ): Promise<SwapEngineQuote[]> {
     // Find the quote for each input and each engine.
     const allQuotes = await Promise.all(
@@ -62,16 +68,23 @@ export class EngineSet {
   public async getQuote(
     engineID: number,
     input: RouteInput,
-    options: { allowMultiStep: boolean }
+    options: { allowMultiStep: boolean; timeout?: number }
   ): Promise<SwapEngineQuote> {
     return this._getQuote(this._getEngine(engineID), input, options)
   }
 
   public async generateRoute(
     input: RouteInput,
-    quote: SwapEngineQuote
+    quote: SwapEngineQuote,
+    options: { allowMultiStep: boolean; timeout?: number }
   ): Promise<SwapEngineRoute> {
-    return this._getEngine(quote.engineID).generateRoute(input, quote)
+    // Use longer timeout for route generation by default.
+    const route = await this._getEngine(quote.engineID).generateRoute(
+      input,
+      quote,
+      options.timeout ?? EngineTimeout.Long
+    )
+    return options.allowMultiStep ? route : sanitizeMultiStepRoute(route)
   }
 
   public getOriginQuery(
@@ -115,11 +128,13 @@ export class EngineSet {
   private async _getQuote(
     engine: SwapEngine,
     input: RouteInput,
-    options: {
-      allowMultiStep: boolean
-    }
+    options: { allowMultiStep: boolean; timeout?: number }
   ): Promise<SwapEngineQuote> {
-    const quote = await engine.getQuote(input)
+    // Use shorter timeout for quote fetching by default.
+    const quote = await engine.getQuote(
+      input,
+      options.timeout ?? EngineTimeout.Short
+    )
     return options.allowMultiStep ? quote : sanitizeMultiStepQuote(quote)
   }
 

@@ -23,7 +23,7 @@ export type ZapDataV1 = {
   amountPosition: number
   finalToken: string
   forwardTo: string
-  minFwdAmount: BigNumber
+  minFinalAmount: BigNumber
 }
 
 export const encodeZapData = (zapData: Partial<ZapDataV1>): string => {
@@ -36,14 +36,14 @@ export const encodeZapData = (zapData: Partial<ZapDataV1>): string => {
     amountPosition,
     finalToken,
     forwardTo,
-    minFwdAmount,
+    minFinalAmount,
   } = applyDefaultValues(zapData)
   return hexConcat([
     encodeUint16(ZAP_DATA_VERSION),
     encodeUint16(amountPosition),
     finalToken,
     forwardTo,
-    encodeUint256(minFwdAmount),
+    encodeUint256(minFinalAmount),
     target,
     payload,
   ])
@@ -61,7 +61,7 @@ export const decodeZapData = (zapData: string): Partial<ZapDataV1> => {
   // uint16   amountPosition          [002 .. 004)
   // address  finalToken              [004 .. 024)
   // address  forwardTo               [024 .. 044)
-  // uint256  minFwdAmount            [044 .. 076)
+  // uint256  minFinalAmount          [044 .. 076)
   // address  target                  [076 .. 096)
   // bytes    payload                 [096 .. ***)
   const version = parseInt(hexDataSlice(zapData, 0, 2), 16)
@@ -75,12 +75,23 @@ export const decodeZapData = (zapData: string): Partial<ZapDataV1> => {
     ),
     finalToken: hexDataSlice(zapData, OFFSET_FINAL_TOKEN, OFFSET_FORWARD_TO),
     forwardTo: hexDataSlice(zapData, OFFSET_FORWARD_TO, OFFSET_MIN_FWD_AMOUNT),
-    minFwdAmount: BigNumber.from(
+    minFinalAmount: BigNumber.from(
       hexDataSlice(zapData, OFFSET_MIN_FWD_AMOUNT, OFFSET_TARGET)
     ),
     target: hexDataSlice(zapData, OFFSET_TARGET, OFFSET_PAYLOAD),
     payload: hexDataSlice(zapData, OFFSET_PAYLOAD),
   }
+}
+
+export const modifyMinFinalAmount = (
+  zapData: string,
+  newMinFinalAmount: BigNumber
+): string => {
+  const decoded = decodeZapData(zapData)
+  return encodeZapData({
+    ...decoded,
+    minFinalAmount: newMinFinalAmount,
+  })
 }
 
 export const applyDefaultValues = (zapData: Partial<ZapDataV1>): ZapDataV1 => {
@@ -90,7 +101,7 @@ export const applyDefaultValues = (zapData: Partial<ZapDataV1>): ZapDataV1 => {
     amountPosition: zapData.amountPosition || AMOUNT_NOT_PRESENT,
     finalToken: zapData.finalToken || AddressZero,
     forwardTo: zapData.forwardTo || AddressZero,
-    minFwdAmount: zapData.minFwdAmount || Zero,
+    minFinalAmount: zapData.minFinalAmount || Zero,
   }
 }
 

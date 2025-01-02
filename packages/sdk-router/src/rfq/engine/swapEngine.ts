@@ -61,14 +61,15 @@ export interface SwapEngine {
    * Some of the engines may not be able to generate the route steps at the same time,
    * use the `generateRoute` method to generate the steps.
    */
-  getQuote(input: RouteInput): Promise<SwapEngineQuote>
+  getQuote(input: RouteInput, timeout: number): Promise<SwapEngineQuote>
 
   /**
    * Generates the route steps from the quote obtained from the `getQuote` method.
    */
   generateRoute(
     input: RouteInput,
-    quote: SwapEngineQuote
+    quote: SwapEngineQuote,
+    timeout: number
   ): Promise<SwapEngineRoute>
 }
 

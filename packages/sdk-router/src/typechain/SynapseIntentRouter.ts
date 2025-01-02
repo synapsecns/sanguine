@@ -46,8 +46,8 @@ export declare namespace ISynapseIntentRouter {
 export interface SynapseIntentRouterInterface extends utils.Interface {
   functions: {
     'NATIVE_GAS_TOKEN()': FunctionFragment
-    'completeIntent(address,uint256,uint256,uint256,(address,uint256,uint256,bytes)[])': FunctionFragment
-    'completeIntentWithBalanceChecks(address,uint256,uint256,uint256,(address,uint256,uint256,bytes)[])': FunctionFragment
+    'completeIntent(address,uint256,uint256,(address,uint256,uint256,bytes)[])': FunctionFragment
+    'completeIntentWithBalanceChecks(address,uint256,uint256,(address,uint256,uint256,bytes)[])': FunctionFragment
   }
 
   getFunction(
@@ -67,7 +67,6 @@ export interface SynapseIntentRouterInterface extends utils.Interface {
       string,
       BigNumberish,
       BigNumberish,
-      BigNumberish,
       ISynapseIntentRouter.StepParamsStruct[]
     ]
   ): string
@@ -75,7 +74,6 @@ export interface SynapseIntentRouterInterface extends utils.Interface {
     functionFragment: 'completeIntentWithBalanceChecks',
     values: [
       string,
-      BigNumberish,
       BigNumberish,
       BigNumberish,
       ISynapseIntentRouter.StepParamsStruct[]
@@ -130,7 +128,6 @@ export interface SynapseIntentRouter extends BaseContract {
     completeIntent(
       zapRecipient: string,
       amountIn: BigNumberish,
-      minLastStepAmountIn: BigNumberish,
       deadline: BigNumberish,
       steps: ISynapseIntentRouter.StepParamsStruct[],
       overrides?: PayableOverrides & { from?: string }
@@ -139,7 +136,6 @@ export interface SynapseIntentRouter extends BaseContract {
     completeIntentWithBalanceChecks(
       zapRecipient: string,
       amountIn: BigNumberish,
-      minLastStepAmountIn: BigNumberish,
       deadline: BigNumberish,
       steps: ISynapseIntentRouter.StepParamsStruct[],
       overrides?: PayableOverrides & { from?: string }
@@ -151,7 +147,6 @@ export interface SynapseIntentRouter extends BaseContract {
   completeIntent(
     zapRecipient: string,
     amountIn: BigNumberish,
-    minLastStepAmountIn: BigNumberish,
     deadline: BigNumberish,
     steps: ISynapseIntentRouter.StepParamsStruct[],
     overrides?: PayableOverrides & { from?: string }
@@ -160,7 +155,6 @@ export interface SynapseIntentRouter extends BaseContract {
   completeIntentWithBalanceChecks(
     zapRecipient: string,
     amountIn: BigNumberish,
-    minLastStepAmountIn: BigNumberish,
     deadline: BigNumberish,
     steps: ISynapseIntentRouter.StepParamsStruct[],
     overrides?: PayableOverrides & { from?: string }
@@ -172,7 +166,6 @@ export interface SynapseIntentRouter extends BaseContract {
     completeIntent(
       zapRecipient: string,
       amountIn: BigNumberish,
-      minLastStepAmountIn: BigNumberish,
       deadline: BigNumberish,
       steps: ISynapseIntentRouter.StepParamsStruct[],
       overrides?: CallOverrides
@@ -181,7 +174,6 @@ export interface SynapseIntentRouter extends BaseContract {
     completeIntentWithBalanceChecks(
       zapRecipient: string,
       amountIn: BigNumberish,
-      minLastStepAmountIn: BigNumberish,
       deadline: BigNumberish,
       steps: ISynapseIntentRouter.StepParamsStruct[],
       overrides?: CallOverrides
@@ -196,7 +188,6 @@ export interface SynapseIntentRouter extends BaseContract {
     completeIntent(
       zapRecipient: string,
       amountIn: BigNumberish,
-      minLastStepAmountIn: BigNumberish,
       deadline: BigNumberish,
       steps: ISynapseIntentRouter.StepParamsStruct[],
       overrides?: PayableOverrides & { from?: string }
@@ -205,7 +196,6 @@ export interface SynapseIntentRouter extends BaseContract {
     completeIntentWithBalanceChecks(
       zapRecipient: string,
       amountIn: BigNumberish,
-      minLastStepAmountIn: BigNumberish,
       deadline: BigNumberish,
       steps: ISynapseIntentRouter.StepParamsStruct[],
       overrides?: PayableOverrides & { from?: string }
@@ -218,7 +208,6 @@ export interface SynapseIntentRouter extends BaseContract {
     completeIntent(
       zapRecipient: string,
       amountIn: BigNumberish,
-      minLastStepAmountIn: BigNumberish,
       deadline: BigNumberish,
       steps: ISynapseIntentRouter.StepParamsStruct[],
       overrides?: PayableOverrides & { from?: string }
@@ -227,7 +216,6 @@ export interface SynapseIntentRouter extends BaseContract {
     completeIntentWithBalanceChecks(
       zapRecipient: string,
       amountIn: BigNumberish,
-      minLastStepAmountIn: BigNumberish,
       deadline: BigNumberish,
       steps: ISynapseIntentRouter.StepParamsStruct[],
       overrides?: PayableOverrides & { from?: string }
