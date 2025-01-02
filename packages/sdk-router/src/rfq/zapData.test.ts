@@ -4,6 +4,7 @@ import { ETH_USDC, ETH_USDT, ETH_DAI } from '../constants/testValues'
 import {
   encodeZapData,
   decodeZapData,
+  modifyMinFinalAmount,
   ZapDataV1,
   AMOUNT_NOT_PRESENT,
 } from './zapData'
@@ -15,7 +16,16 @@ describe('zapData', () => {
     amountPosition: 1,
     finalToken: ETH_USDT.toLowerCase(),
     forwardTo: ETH_DAI.toLowerCase(),
-    minFwdAmount: BigNumber.from('1234567890123456789012345678901234567890'),
+    minFinalAmount: BigNumber.from('1234567890123456789012345678901234567890'),
+  }
+
+  const zapDataNewFinalAmount: ZapDataV1 = {
+    target: ETH_USDC.toLowerCase(),
+    payload: '0xdeadbeef',
+    amountPosition: 1,
+    finalToken: ETH_USDT.toLowerCase(),
+    forwardTo: ETH_DAI.toLowerCase(),
+    minFinalAmount: BigNumber.from('1234567890'),
   }
 
   const zapDataEmptyPayload: ZapDataV1 = {
@@ -24,7 +34,7 @@ describe('zapData', () => {
     amountPosition: AMOUNT_NOT_PRESENT,
     finalToken: ETH_USDT.toLowerCase(),
     forwardTo: ETH_DAI.toLowerCase(),
-    minFwdAmount: BigNumber.from('1234567890'),
+    minFinalAmount: BigNumber.from('1234567890'),
   }
 
   it('roundtrip encoding', () => {
@@ -37,5 +47,15 @@ describe('zapData', () => {
     const encoded = encodeZapData(zapDataEmptyPayload)
     const decoded = decodeZapData(encoded)
     expect(decoded).toEqual(zapDataEmptyPayload)
+  })
+
+  it('roundtrip encoding with final amount modified', () => {
+    const encoded = encodeZapData(zapData)
+    const encodedModified = modifyMinFinalAmount(
+      encoded,
+      zapDataNewFinalAmount.minFinalAmount
+    )
+    const decoded = decodeZapData(encodedModified)
+    expect(decoded).toEqual(zapDataNewFinalAmount)
   })
 })

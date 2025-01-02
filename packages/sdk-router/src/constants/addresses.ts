@@ -82,7 +82,7 @@ export const FAST_BRIDGE_V2_ADDRESS_MAP: AddressMap = generateAddressMap(
  * TokenZapV1 contract address for all chains except ones from TOKEN_ZAP_V1_EXCEPTION_MAP.
  * TODO: this is a staging TokenZapV1 deployment, update to the production deployment when ready.
  */
-const TOKEN_ZAP_V1_ADDRESS = '0xAFc26Ec01223Bea0665F48b92De3823Ee17E0550'
+const TOKEN_ZAP_V1_ADDRESS = '0x6C6FA1cE8160bb680f7a1dd2068c7302bA2a9eaB'
 const TOKEN_ZAP_V1_EXCEPTION_MAP: AddressMap = {}
 export const TOKEN_ZAP_V1_ADDRESS_MAP: AddressMap = generateAddressMap(
   INTENTS_SUPPORTED_CHAIN_IDS,
@@ -95,7 +95,7 @@ export const TOKEN_ZAP_V1_ADDRESS_MAP: AddressMap = generateAddressMap(
  * TODO: this is a staging SynapseIntentRouter deployment, update to the production deployment when ready.
  */
 const SYNAPSE_INTENT_ROUTER_ADDRESS =
-  '0x57203c65DeA2ded4EE4E303a9494bee04df030BF'
+  '0x018396706193B16F8a1b20B87B2dcC840979D7EA'
 const SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP: AddressMap = {}
 export const SYNAPSE_INTENT_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
   INTENTS_SUPPORTED_CHAIN_IDS,
@@ -108,7 +108,7 @@ export const SYNAPSE_INTENT_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
  * TODO: this is a staging SynapseIntentPreviewer deployment, update to the production deployment when ready.
  */
 const SYNAPSE_INTENT_PREVIEWER_ADDRESS =
-  '0x731EDF984E2A0d7657Fc451C0586F42939DC2010'
+  '0xc542Df6aA3813b49EE8A5A07f82eA0EaAa006bFa'
 const SYNAPSE_INTENT_PREVIEWER_EXCEPTION_MAP: AddressMap = {}
 export const SYNAPSE_INTENT_PREVIEWER_ADDRESS_MAP: AddressMap =
   generateAddressMap(

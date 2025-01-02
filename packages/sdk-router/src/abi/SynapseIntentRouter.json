@@ -16,11 +16,6 @@
         "internalType": "address"
       },
       { "name": "amountIn", "type": "uint256", "internalType": "uint256" },
-      {
-        "name": "minLastStepAmountIn",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
       { "name": "deadline", "type": "uint256", "internalType": "uint256" },
       {
         "name": "steps",
@@ -51,11 +46,6 @@
         "internalType": "address"
       },
       { "name": "amountIn", "type": "uint256", "internalType": "uint256" },
-      {
-        "name": "minLastStepAmountIn",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
       { "name": "deadline", "type": "uint256", "internalType": "uint256" },
       {
         "name": "steps",
@@ -91,7 +81,6 @@
     ]
   },
   { "type": "error", "name": "FailedInnerCall", "inputs": [] },
-  { "type": "error", "name": "SIR__AmountInsufficient", "inputs": [] },
   { "type": "error", "name": "SIR__DeadlineExceeded", "inputs": [] },
   { "type": "error", "name": "SIR__MsgValueIncorrect", "inputs": [] },
   { "type": "error", "name": "SIR__StepsNotProvided", "inputs": [] },

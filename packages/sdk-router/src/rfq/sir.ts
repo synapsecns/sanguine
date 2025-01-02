@@ -93,7 +93,7 @@ export class SynapseIntentRouter implements SynapseModule {
   ): Promise<PopulatedTransaction> {
     // Merge the preparation and final steps
     const steps: StepParams[] = [
-      ...decodeStepParams(originQuery.rawParams),
+      ...this.getPrepSteps(originQuery),
       await this.getFinalStep(to, destChainId, originQuery.tokenOut, destQuery),
     ]
     if (isNativeToken(token)) {
@@ -104,7 +104,6 @@ export class SynapseIntentRouter implements SynapseModule {
       await this.sirContract.populateTransaction.completeIntentWithBalanceChecks(
         this.tokenZapAddress,
         amount,
-        originQuery.minAmountOut,
         originQuery.deadline,
         steps
       )
@@ -152,6 +151,30 @@ export class SynapseIntentRouter implements SynapseModule {
   }
 
   // ═════════════════════════════════════════════════ SIR TOOLS ═════════════════════════════════════════════════════
+
+  private getPrepSteps(originQuery: CCTPRouterQuery): StepParams[] {
+    const prepSteps = decodeStepParams(originQuery.rawParams)
+    // Check that the minAmountOut matches the last step
+    if (prepSteps.length > 0) {
+      const decodedLastStep = decodeZapData(
+        hexlify(prepSteps[prepSteps.length - 1].zapData)
+      )
+      if (
+        !decodedLastStep.minFinalAmount ||
+        !decodedLastStep.minFinalAmount.eq(originQuery.minAmountOut)
+      ) {
+        console.error(
+          {
+            decodedLastStep,
+            originQuery,
+          },
+          'Mismatch in minAmountOut in last step'
+        )
+        throw new Error('Mismatch in minAmountOut in last step')
+      }
+    }
+    return prepSteps
+  }
 
   private async getFinalStep(
     to: string,

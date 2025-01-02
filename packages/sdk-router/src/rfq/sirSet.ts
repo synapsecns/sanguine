@@ -50,8 +50,12 @@ import {
   encodeSavedBridgeParams,
   SavedParamsV1,
 } from './paramsV2'
-import { decodeZapData, encodeZapData } from './zapData'
-import { extractSingleZapData } from './steps'
+import { modifyMinFinalAmount } from './zapData'
+import {
+  decodeStepParams,
+  encodeStepParams,
+  extractSingleZapData,
+} from './steps'
 
 type OriginIntent = {
   ticker: Ticker
@@ -323,6 +327,17 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     if (originQuery.minAmountOut.lt(minAmountFinalAmount)) {
       originQuery.minAmountOut = minAmountFinalAmount
     }
+    // Adjust the slippage in the last origin step.
+    const originSteps = decodeStepParams(originQueryPrecise.rawParams)
+    if (originSteps.length === 0) {
+      console.error({ originQueryPrecise }, 'No steps in originQueryPrecise')
+      return originQuery
+    }
+    originSteps[originSteps.length - 1].zapData = modifyMinFinalAmount(
+      hexlify(originSteps[originSteps.length - 1].zapData),
+      minAmountFinalAmount
+    )
+    originQuery.rawParams = encodeStepParams(originSteps)
     return originQuery
   }
 
@@ -336,17 +351,14 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     if (!validateEngineID(paramsV1.destEngineID)) {
       throw new Error(`Invalid engineID: ${paramsV1.destEngineID}`)
     }
-    const decodedZapData = decodeZapData(hexlify(paramsV2.zapData))
+    const oldZapData = hexlify(paramsV2.zapData)
     // Do nothing if there is no Zap on the destination chain.
-    if (!decodedZapData.target) {
+    if (hexDataLength(oldZapData) === 0) {
       return destQueryPrecise
     }
     // Regenarate ZapData with the new minAmountOut
     const minAmountOut = applySlippage(destQueryPrecise.minAmountOut, slippage)
-    const zapData = encodeZapData({
-      ...decodedZapData,
-      minFwdAmount: minAmountOut,
-    })
+    const zapData = modifyMinFinalAmount(oldZapData, minAmountOut)
     return this.getRFQDestinationQuery({
       tokenOut: destQueryPrecise.tokenOut,
       minAmountOut,
