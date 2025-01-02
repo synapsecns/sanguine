@@ -330,7 +330,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     // Adjust the slippage in the last origin step.
     const originSteps = decodeStepParams(originQueryPrecise.rawParams)
     if (originSteps.length === 0) {
-      console.error({ originQueryPrecise }, 'No steps in originQueryPrecise')
+      logger.error({ originQueryPrecise }, 'No steps in originQueryPrecise')
       return originQuery
     }
     originSteps[originSteps.length - 1].zapData = modifyMinFinalAmount(

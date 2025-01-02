@@ -24,6 +24,7 @@ import { decodeSavedBridgeParams } from './paramsV2'
 import { StepParams, decodeStepParams } from './steps'
 import { decodeZapData, encodeZapData } from './zapData'
 import { isSameAddress } from '../utils/addressUtils'
+import { logger } from '../utils/logger'
 
 export class SynapseIntentRouter implements SynapseModule {
   static fastBridgeV2Interface = new Interface(fastBridgeV2Abi)
@@ -163,7 +164,7 @@ export class SynapseIntentRouter implements SynapseModule {
         !decodedLastStep.minFinalAmount ||
         !decodedLastStep.minFinalAmount.eq(originQuery.minAmountOut)
       ) {
-        console.error(
+        logger.error(
           {
             decodedLastStep,
             originQuery,
