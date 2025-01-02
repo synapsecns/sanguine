@@ -53,6 +53,12 @@ export const bridgeController = async (req, res) => {
           quote.originQuery.tokenOut
         )
 
+        const { originQuery, destQuery } = Synapse.applyBridgeSlippage(
+          quote.bridgeModuleName,
+          quote.originQuery,
+          quote.destQuery
+        )
+
         const callData =
           destAddress && originUserAddress
             ? await Synapse.bridge(
@@ -62,8 +68,8 @@ export const bridgeController = async (req, res) => {
                 Number(toChain),
                 fromToken,
                 amountInWei,
-                quote.originQuery,
-                quote.destQuery
+                originQuery,
+                destQuery
               )
             : null
 
