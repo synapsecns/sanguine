@@ -6,7 +6,7 @@ import {SynapseIntentPreviewerTest} from "./SynapseIntentPreviewer.t.sol";
 contract SynapseIntentPreviewerNoSlippageTest is SynapseIntentPreviewerTest {
     function setUp() public virtual override {
         super.setUp();
-        swapMinAmountOut = SWAP_AMOUNT_OUT;
+        swapMinFinalBalance = SWAP_AMOUNT_OUT;
         slippageWei = 0;
     }
 }

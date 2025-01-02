@@ -7,7 +7,7 @@ contract SynapseIntentPreviewerWithSlippageTest is SynapseIntentPreviewerTest {
     function setUp() public virtual override {
         super.setUp();
         // slippage out of bounds - should be capped at 100%
-        swapMinAmountOut = 0;
+        swapMinFinalBalance = 0;
         slippageWei = 1e20;
     }
 }

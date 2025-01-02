@@ -223,7 +223,7 @@ contract SynapseIntentRouterBalanceChecksTest is SynapseIntentRouterTest {
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps({
             amountSwap: AMOUNT,
             amountUnwrap: amountReduced,
-            minFwdAmount: amountReduced
+            minFinalBalance: amountReduced
         });
         vm.expectRevert(SIR__UnspentFunds.selector);
         completeUserIntent({
