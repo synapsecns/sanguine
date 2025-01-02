@@ -181,7 +181,7 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 // addZapFees incorporates the cost of the call and the call value into the fee.
 // Note that to be conservative, we always use the QuoteFixedFeeMultiplier over the RelayFixedFeeMultiplier.
 //
-//nolint:gosec
+//nolint:cyclop,gosec
 func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomToken string, quoteRequest *reldb.QuoteRequest, fee *big.Int) (*big.Int, error) {
 	span := trace.SpanFromContext(ctx)
 
