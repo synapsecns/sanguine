@@ -1,9 +1,9 @@
 {
-  "address": "0x731EDF984E2A0d7657Fc451C0586F42939DC2010",
+  "address": "0xc542Df6aA3813b49EE8A5A07f82eA0EaAa006bFa",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0x8386633feb1b484e68adff7737c11448d7bbaa4d395c737a9bb8e4dbe1fa1b29",
-    "blockNumber": 289919226
+    "hash": "0xf6e0444e5ab48e349ed3e706413005700782bf05841a0952bed94146027ef042",
+    "blockNumber": 291209812
   },
   "abi": [
     {
@@ -117,7 +117,7 @@
     },
     {
       "type": "error",
-      "name": "ZapDataV1__ForwardParamsIncorrect",
+      "name": "ZapDataV1__FinalTokenNotSpecified",
       "inputs": []
     },
     {

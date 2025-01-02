@@ -1,9 +1,9 @@
 {
-  "address": "0x57203c65DeA2ded4EE4E303a9494bee04df030BF",
+  "address": "0x018396706193B16F8a1b20B87B2dcC840979D7EA",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0x5a6c34cc550a0b73a48f412018f04e97a868d60ee411364fa1a67427a0d2708b",
-    "blockNumber": 281258022
+    "hash": "0x2b3c9a9d0df5615daed20fff1912916547fb8988357c03d01f73d45c62020d95",
+    "blockNumber": 291209807
   },
   "abi": [
     {
@@ -30,11 +30,6 @@
         },
         {
           "name": "amountIn",
-          "type": "uint256",
-          "internalType": "uint256"
-        },
-        {
-          "name": "minLastStepAmountIn",
           "type": "uint256",
           "internalType": "uint256"
         },
@@ -85,11 +80,6 @@
         },
         {
           "name": "amountIn",
-          "type": "uint256",
-          "internalType": "uint256"
-        },
-        {
-          "name": "minLastStepAmountIn",
           "type": "uint256",
           "internalType": "uint256"
         },
@@ -154,11 +144,6 @@
     {
       "type": "error",
       "name": "FailedInnerCall",
-      "inputs": []
-    },
-    {
-      "type": "error",
-      "name": "SIR__AmountInsufficient",
       "inputs": []
     },
     {
