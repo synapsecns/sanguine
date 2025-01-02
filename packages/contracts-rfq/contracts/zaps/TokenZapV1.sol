@@ -176,9 +176,11 @@ contract TokenZapV1 is IZapRecipient {
         }
         // Check the token address and its balance to be safely forwarded.
         if (token == address(0)) revert TokenZapV1__FinalTokenNotSpecified();
+        // Perform the balance check before forwarding.
         uint256 amount = token == NATIVE_GAS_TOKEN ? address(this).balance : IERC20(token).balanceOf(address(this));
         if (amount == 0 || amount < minFinalBalance) revert TokenZapV1__FinalBalanceBelowMin();
-        // Forward the full balance of the final token to the specified recipient.
+        // Forward the full balance of the final token to the specified recipient, if required.
+        if (forwardTo == address(0)) return;
         if (token == NATIVE_GAS_TOKEN) {
             Address.sendValue({recipient: payable(forwardTo), amount: amount});
         } else {

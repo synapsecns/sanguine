@@ -367,6 +367,24 @@ contract TokenZapV1Test is Test {
         assertEq(payableMock.balance, 2 * AMOUNT);
     }
 
+    function test_zap_unwrap_zeroForwardTo_withMinFinalBalance() public {
+        bytes memory zapData = getZapDataUnwrapAndForward(0, nativeGasToken, address(0), AMOUNT);
+        weth.transfer(address(tokenZap), AMOUNT);
+        bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapData);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the unwrapped tokens remain in the TokenZap
+        assertEq(address(tokenZap).balance, AMOUNT);
+    }
+
+    function test_zap_unwrap_zeroForwardTo_zeroMinFinalBalance() public {
+        bytes memory zapData = getZapDataUnwrapAndForward(0, nativeGasToken, address(0), 0);
+        weth.transfer(address(tokenZap), AMOUNT);
+        bytes4 returnValue = tokenZap.zap(address(weth), AMOUNT, zapData);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the unwrapped tokens remain in the TokenZap
+        assertEq(address(tokenZap).balance, AMOUNT);
+    }
+
     function test_zap_wrap_depositWETH_placeholderZero() public {
         bytes memory zapDataWrap = getZapDataWrap();
         bytes memory zapDataDeposit = getZapDataDeposit(getVaultPayload(address(weth), 0));
@@ -427,6 +445,22 @@ contract TokenZapV1Test is Test {
         // Check that the user received WETH with extra funds
         assertEq(address(tokenZap).balance, AMOUNT);
         assertEq(weth.balanceOf(user), 2 * AMOUNT);
+    }
+
+    function test_zap_wrap_zeroForwardTo_withMinFinalBalance() public {
+        bytes memory zapData = getZapDataWrapAndForward(address(weth), address(0), AMOUNT);
+        bytes4 returnValue = tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapData);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the wrapped tokens remain in the TokenZap
+        assertEq(weth.balanceOf(address(tokenZap)), AMOUNT);
+    }
+
+    function test_zap_wrap_zeroForwardTo_zeroMinFinalBalance() public {
+        bytes memory zapData = getZapDataWrapAndForward(address(weth), address(0), 0);
+        bytes4 returnValue = tokenZap.zap{value: AMOUNT}(nativeGasToken, AMOUNT, zapData);
+        assertEq(returnValue, tokenZap.zap.selector);
+        // Check that the wrapped tokens remain in the TokenZap
+        assertEq(weth.balanceOf(address(tokenZap)), AMOUNT);
     }
 
     function getZapDataTransferNative(address target) public view returns (bytes memory) {
