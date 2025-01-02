@@ -335,7 +335,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     }
     originSteps[originSteps.length - 1].zapData = modifyMinFinalAmount(
       hexlify(originSteps[originSteps.length - 1].zapData),
-      minAmountFinalAmount
+      originQuery.minAmountOut
     )
     originQuery.rawParams = encodeStepParams(originSteps)
     return originQuery
