@@ -21,6 +21,7 @@ import {
   LANDING_PATH,
   TELEGRAM_URL,
   TWITTER_URL,
+  STAKE_SYN_FOR_CX_URL,
 } from '@/constants/urls'
 import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
@@ -51,6 +52,22 @@ const TODO_REMOVE_wrapperStyle = {
   backgroundRepeat: 'no-repeat',
 }
 
+const StakingBannerContent = () => {
+  return (
+    <div>
+      Stake your SYN to receieve CX (Cortex Protocol) tokens{' '}
+      <a
+        href={STAKE_SYN_FOR_CX_URL}
+        target="blank"
+        className="underline hover:cursor hover:text-white/65"
+      >
+        here
+      </a>
+      !
+    </div>
+  )
+}
+
 export function LandingPageWrapper({ children }: { children: any }) {
   return (
     <div className="dark">
@@ -60,9 +77,10 @@ export function LandingPageWrapper({ children }: { children: any }) {
       >
         <AnnouncementBanner
           bannerId="2024-12-18-cortex-staking"
-          bannerContent="Stake your SYN to receive CX (Cortex Protocol) tokens!"
+          bannerContent={<StakingBannerContent />}
+          // bannerContent="Stake your SYN to receive CX (Cortex Protocol) tokens!"
           startDate={new Date('2024-12-17T18:45:09+00:00')}
-          endDate={new Date('2025-01-25T18:45:09+00:00')}
+          endDate={new Date('2025-02-25T18:45:09+00:00')}
         />
         <MaintenanceBanners />
         <LandingNav />
