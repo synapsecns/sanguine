@@ -55,7 +55,7 @@ const TODO_REMOVE_wrapperStyle = {
 const StakingBannerContent = () => {
   return (
     <div>
-      Stake your SYN to receieve CX (Cortex Protocol) tokens{' '}
+      Stake your SYN to receive CX (Cortex Protocol) tokens{' '}
       <a
         href={STAKE_SYN_FOR_CX_URL}
         target="blank"
