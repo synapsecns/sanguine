@@ -1,251 +1,104 @@
-import { createConfig } from '@ponder/core'
+import { createConfig, loadBalance, rateLimit } from '@ponder/core'
 import { http } from 'viem'
+import dotenv from 'dotenv';
 
-import { FastBridgeV2Abi } from '@/abis/FastBridgeV2'
-import { AddressConfig } from '@/indexer/src/types'
+import { ABI_FastBridgeV1 } from '@/abis/FastBridgeV1'
+import { ABI_FastBridgeV2 } from '@/abis/FastBridgeV2';
+import { privateEncrypt } from 'crypto';
 
-// Mainnets
-const ethereumChainId = 1
-const optimismChainId = 10
-const arbitrumChainId = 42161
-const baseChainId = 8453
-const blastChainId = 81457
-const scrollChainId = 534352
-const lineaChainId = 59144
-const bnbChainId = 56
-const worldchainChainId = 480
 
-const configByChainId = {
-  [1]: {
-    transport: http(process.env.ETH_MAINNET_RPC),
-    chainName: 'ethereum',
-    FastBridgeV2Address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',
-    //   FastBridgeV2StartBlock: 19420718, first block
-    FastBridgeV2StartBlock: 20426589, // new block
-  },
-  [10]: {
-    transport: http(process.env.OPTIMISM_MAINNET_RPC),
-    chainName: 'optimism',
-    FastBridgeV2Address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',
-    //   FastBridgeV2StartBlock: 117334308, first block
-    FastBridgeV2StartBlock: 123416470, // new block
-  },
-  [42161]: {
-    transport: http(process.env.ARBITRUM_MAINNET_RPC),
-    chainName: 'arbitrum',
-    FastBridgeV2Address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',
-    //   FastBridgeV2StartBlock: 189700328, first block
-    FastBridgeV2StartBlock: 237979967, // new block
-  },
-  [8453]: {
-    transport: http(process.env.BASE_MAINNET_RPC),
-    chainName: 'base',
-    FastBridgeV2Address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',
-    //   FastBridgeV2StartBlock: 12478374, first block
-    FastBridgeV2StartBlock: 17821292, // new block
-  },
-  [81457]: {
-    transport: http(process.env.BLAST_MAINNET_RPC),
-    chainName: 'blast',
-    FastBridgeV2Address: '0x34F52752975222d5994C206cE08C1d5B329f24dD',
-    //   FastBridgeV2StartBlock: 6378234, first block
-    FastBridgeV2StartBlock: 6811045, // new block
-  },
-  [534352]: {
-    transport: http(process.env.SCROLL_MAINNET_RPC),
-    chainName: 'scroll',
-    FastBridgeV2Address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',
-    //   FastBridgeV2StartBlock: 5357000, first block
-    FastBridgeV2StartBlock: 7941653, // new block
-  },
-  [59144]: {
-    transport: http(process.env.LINEA_MAINNET_RPC),
-    chainName: 'linea',
-    FastBridgeV2Address: '0x34F52752975222d5994C206cE08C1d5B329f24dD',
-    FastBridgeV2StartBlock: 7124666, // first block and new block
-  },
-  [56]: {
-    transport: http(process.env.BNB_MAINNET_RPC),
-    chainName: 'bnb',
-    FastBridgeV2Address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',
-    FastBridgeV2StartBlock: 40497843, // first block and new block
-  },
-  [480]: {
-    transport: http(process.env.WORLDCHAIN_MAINNET_RPC),
-    chainName: 'worldchain',
-    FastBridgeV2Address: '0x05C62156C7C47E76223A560210EA648De5e6B53B',
-    FastBridgeV2StartBlock: 4598830, // first block and new block
-  },
-  disableCache: true,
-}
+dotenv.config();
 
-export const networkDetails = {
-  [ethereumChainId]: {
-    name: configByChainId[ethereumChainId].chainName,
-    FastBridgeV2: {
-      address: configByChainId[ethereumChainId].FastBridgeV2Address,
-      abi: FastBridgeV2Abi,
-      startBlock: configByChainId[ethereumChainId].FastBridgeV2StartBlock,
-    },
-  },
-  [optimismChainId]: {
-    name: configByChainId[optimismChainId].chainName,
-    FastBridgeV2: {
-      address: configByChainId[optimismChainId].FastBridgeV2Address,
-      abi: FastBridgeV2Abi,
-      startBlock: configByChainId[optimismChainId].FastBridgeV2StartBlock,
-    },
-  },
-  [arbitrumChainId]: {
-    name: configByChainId[arbitrumChainId].chainName,
-    FastBridgeV2: {
-      address: configByChainId[arbitrumChainId].FastBridgeV2Address,
-      abi: FastBridgeV2Abi,
-      startBlock: configByChainId[arbitrumChainId].FastBridgeV2StartBlock,
-    },
-  },
-  [baseChainId]: {
-    name: configByChainId[baseChainId].chainName,
-    FastBridgeV2: {
-      address: configByChainId[baseChainId].FastBridgeV2Address,
-      abi: FastBridgeV2Abi,
-      startBlock: configByChainId[baseChainId].FastBridgeV2StartBlock,
-    },
-  },
-  [blastChainId]: {
-    name: configByChainId[blastChainId].chainName,
-    FastBridgeV2: {
-      address: configByChainId[blastChainId].FastBridgeV2Address,
-      abi: FastBridgeV2Abi,
-      startBlock: configByChainId[blastChainId].FastBridgeV2StartBlock,
-    },
-  },
-  [scrollChainId]: {
-    name: configByChainId[scrollChainId].chainName,
-    FastBridgeV2: {
-      address: configByChainId[scrollChainId].FastBridgeV2Address,
-      abi: FastBridgeV2Abi,
-      startBlock: configByChainId[scrollChainId].FastBridgeV2StartBlock,
-    },
-  },
-  [lineaChainId]: {
-    name: configByChainId[lineaChainId].chainName,
-    FastBridgeV2: {
-      address: configByChainId[lineaChainId].FastBridgeV2Address,
-      abi: FastBridgeV2Abi,
-      startBlock: configByChainId[lineaChainId].FastBridgeV2StartBlock,
-    },
-  },
-  [bnbChainId]: {
-    name: configByChainId[bnbChainId].chainName,
-    FastBridgeV2: {
-      address: configByChainId[bnbChainId].FastBridgeV2Address,
-      abi: FastBridgeV2Abi,
-      startBlock: configByChainId[bnbChainId].FastBridgeV2StartBlock,
-    },
-  },
-  [worldchainChainId]: {
-    name: configByChainId[worldchainChainId].chainName,
-    FastBridgeV2: {
-      address: configByChainId[worldchainChainId].FastBridgeV2Address,
-      abi: FastBridgeV2Abi,
-      startBlock: configByChainId[worldchainChainId].FastBridgeV2StartBlock,
-    },
-  },
-} as Record<number, AddressConfig>
+const getContractNetwork = (chainId: number, contractLabel: string) => {
+  contractLabel=contractLabel.toUpperCase()
+  const startBlockEnvVar = `CONTRACT_${contractLabel}_STARTBLOCK_${chainId}`;
+  const addressEnvVar = `CONTRACT_${contractLabel}_ADDRESS_${chainId}`;
 
-const config = createConfig({
-  networks: {
-    [configByChainId[ethereumChainId].chainName]: {
-      chainId: ethereumChainId,
-      transport: configByChainId[ethereumChainId].transport,
-      //   disableCache: configByChainId.disableCache,
-    },
-    [configByChainId[optimismChainId].chainName]: {
-      chainId: optimismChainId,
-      transport: configByChainId[optimismChainId].transport,
-      //   disableCache: configByChainId.disableCache,
-    },
-    [configByChainId[arbitrumChainId].chainName]: {
-      chainId: arbitrumChainId,
-      transport: configByChainId[arbitrumChainId].transport,
-      //   disableCache: configByChainId.disableCache,
-    },
-    [configByChainId[baseChainId].chainName]: {
-      chainId: baseChainId,
-      transport: configByChainId[baseChainId].transport,
-      //   disableCache: configByChainId.disableCache,
-    },
-    [configByChainId[blastChainId].chainName]: {
-      chainId: blastChainId,
-      transport: configByChainId[blastChainId].transport,
-      //   disableCache: configByChainId.disableCache,
-    },
-    [configByChainId[scrollChainId].chainName]: {
-      chainId: scrollChainId,
-      transport: configByChainId[scrollChainId].transport,
-      //   disableCache: configByChainId.disableCache,
-    },
-    [configByChainId[lineaChainId].chainName]: {
-      chainId: lineaChainId,
-      transport: configByChainId[lineaChainId].transport,
-      //   disableCache: configByChainId.disableCache,
-    },
-    [configByChainId[bnbChainId].chainName]: {
-      chainId: bnbChainId,
-      transport: configByChainId[bnbChainId].transport,
-      //   disableCache: configByChainId.disableCache,
-    },
-    [configByChainId[worldchainChainId].chainName]: {
-      chainId: worldchainChainId,
-      transport: configByChainId[worldchainChainId].transport,
-      //   disableCache: configByChainId.disableCache,
-    },
-  },
+  const startBlock = process.env[startBlockEnvVar];
+  const contractAddr = process.env[addressEnvVar];
+
+  // if no env vars found, assume this chain+contract is legitimately not applicable & return nothing
+  if (!startBlock && !contractAddr) {
+    return {};
+  }
+
+  if (!startBlock) {
+    throw new Error(`Environment variable ${startBlockEnvVar} must be defined`);
+  }
+
+  if (!contractAddr) {
+    throw new Error(`Environment variable ${addressEnvVar} must be defined`);
+  }
+
+  console.log(`Including ${contractLabel} ${chainId.toString().padStart(10)}:${contractAddr.slice(0,6)} blocks ${startBlock.toString().padStart(10)} - <CURRENT>`);
+
+  return {
+    [chainId]: {
+      contractAddr,
+      startBlock: parseInt(startBlock, 10),
+    }
+  };
+};
+
+const getConfigNetwork = (chainId: number) => {
+  const transportEnvVarName = `RPC_URL_${chainId}`;
+  const url = process.env[transportEnvVarName];
+
+  if (!url) {
+    throw new Error(`RPC_URL_${chainId} must be defined`);
+  }
+
+  if (!url.startsWith('http')) {
+    throw new Error(`RPC_URL_${chainId} must be an HTTP/S URL`);
+  }
+
+  const requestsPerSecond = process.env[`RPC_LIMIT_RPS_${chainId}`] ? parseInt(process.env[`RPC_LIMIT_RPS_${chainId}`]!, 10) : 9999;
+  const transport = rateLimit(http(url), { requestsPerSecond });
+
+  return {
+    chainId,
+    transport,
+  };
+};
+
+
+
+// infer chain ID list from RPC_URL_ env vars that are configured
+const chainIds = Object.keys(process.env)
+  .filter(key => key.startsWith('RPC_URL_'))
+  .map(key => parseInt(key.replace('RPC_URL_', ''), 10));
+
+// generate contract network records
+const contractNetworks_FastBridgeV1 = chainIds.reduce((acc, chainId) => {
+  return { ...acc, ...getContractNetwork(chainId, "FASTBRIDGEV1") };
+}, {});
+
+const contractNetworks_FastBridgeV2 = chainIds.reduce((acc, chainId) => {
+  return { ...acc, ...getContractNetwork(chainId, "FASTBRIDGEV2") };
+}, {});
+
+
+console.log(contractNetworks_FastBridgeV2)
+
+const configNetworks = chainIds.reduce((acc, chainId) => {
+  return { 
+    ...acc, 
+    [chainId]: getConfigNetwork(chainId) 
+  };
+}, {});
+
+export default createConfig({
+  networks: configNetworks,
   contracts: {
-    FastBridgeV2: {
-      network: {
-        [configByChainId[ethereumChainId].chainName]: {
-          address: networkDetails[ethereumChainId]?.FastBridgeV2.address,
-          startBlock: networkDetails[ethereumChainId]?.FastBridgeV2.startBlock,
-        },
-        [configByChainId[optimismChainId].chainName]: {
-          address: networkDetails[optimismChainId]?.FastBridgeV2.address,
-          startBlock: networkDetails[optimismChainId]?.FastBridgeV2.startBlock,
-        },
-        [configByChainId[arbitrumChainId].chainName]: {
-          address: networkDetails[arbitrumChainId]?.FastBridgeV2.address,
-          startBlock: networkDetails[arbitrumChainId]?.FastBridgeV2.startBlock,
-        },
-        [configByChainId[baseChainId].chainName]: {
-          address: networkDetails[baseChainId]?.FastBridgeV2.address,
-          startBlock: networkDetails[baseChainId]?.FastBridgeV2.startBlock,
-        },
-        [configByChainId[blastChainId].chainName]: {
-          address: networkDetails[blastChainId]?.FastBridgeV2.address,
-          startBlock: networkDetails[blastChainId]?.FastBridgeV2.startBlock,
-        },
-        [configByChainId[scrollChainId].chainName]: {
-          address: networkDetails[scrollChainId]?.FastBridgeV2.address,
-          startBlock: networkDetails[scrollChainId]?.FastBridgeV2.startBlock,
-        },
-        [configByChainId[lineaChainId].chainName]: {
-          address: networkDetails[lineaChainId]?.FastBridgeV2.address,
-          startBlock: networkDetails[lineaChainId]?.FastBridgeV2.startBlock,
-        },
-        [configByChainId[bnbChainId].chainName]: {
-          address: networkDetails[bnbChainId]?.FastBridgeV2.address,
-          startBlock: networkDetails[bnbChainId]?.FastBridgeV2.startBlock,
-        },
-        [configByChainId[worldchainChainId].chainName]: {
-          address: networkDetails[worldchainChainId]?.FastBridgeV2.address,
-          startBlock:
-            networkDetails[worldchainChainId]?.FastBridgeV2.startBlock,
-        },
-      },
-      abi: FastBridgeV2Abi,
+    v2: {
+      abi: ABI_FastBridgeV2,
+      network: contractNetworks_FastBridgeV2,
+    },
+    v1: {
+      abi: ABI_FastBridgeV1,
+      network: contractNetworks_FastBridgeV1,
     },
   },
-})
+});
 
-export default config
+

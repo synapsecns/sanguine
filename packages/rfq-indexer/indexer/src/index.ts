@@ -4,9 +4,14 @@ import { ponder } from '@/generated'
 import { formatAmount } from './utils/formatAmount'
 import { getChainName } from './utils/chains'
 
+
+//* ############ FastBridgeV2 ########### *//
+
 /* ORIGIN CHAIN EVENTS */
 
-ponder.on('FastBridgeV2:BridgeRequested', async ({ event, context }) => {
+ponder.on('v2:BridgeRequested', async ({ event, context }) => {
+
+
   const {
     db: { BridgeRequestEvents },
     network: { chainId },
@@ -53,7 +58,60 @@ ponder.on('FastBridgeV2:BridgeRequested', async ({ event, context }) => {
   })
 })
 
-ponder.on('FastBridgeV2:BridgeDepositRefunded', async ({ event, context }) => {
+
+
+//* ############ FastBridgeV1 ########### *//
+
+/* ORIGIN CHAIN EVENTS */
+
+ponder.on('v1:BridgeRequested', async ({ event, context }) => {
+  const {
+    db: { BridgeRequestEvents },
+    network: { chainId },
+  } = context
+
+  const {
+    args: {
+      transactionId,
+      sender,
+      request,
+      destChainId,
+      originToken,
+      destToken,
+      originAmount,
+      destAmount,
+      sendChainGas,
+    },
+    block: { timestamp },
+    transaction: { hash },
+    log: { blockNumber },
+  } = event
+
+  await BridgeRequestEvents.create({
+    id: transactionId,
+    data: {
+      transactionId,
+      sender: trim(sender),
+      request,
+      originChainId: Number(chainId),
+      originChain: getChainName(Number(chainId)),
+      destChainId: Number(destChainId),
+      destChain: getChainName(Number(destChainId)),
+      originToken: trim(originToken),
+      destToken: trim(destToken),
+      originAmount,
+      originAmountFormatted: formatAmount(originAmount, originToken),
+      destAmount,
+      destAmountFormatted: formatAmount(destAmount, destToken),
+      sendChainGas,
+      blockNumber: BigInt(blockNumber),
+      blockTimestamp: Number(timestamp),
+      transactionHash: hash,
+    },
+  })
+})
+
+ponder.on('v1:BridgeDepositRefunded', async ({ event, context }) => {
   const {
     args: { transactionId, to, token, amount },
     block: { timestamp },
@@ -83,7 +141,7 @@ ponder.on('FastBridgeV2:BridgeDepositRefunded', async ({ event, context }) => {
   })
 })
 
-ponder.on('FastBridgeV2:BridgeProofProvided', async ({ event, context }) => {
+ponder.on('v1:BridgeProofProvided', async ({ event, context }) => {
   const {
     args: { transactionId, relayer },
     block: { timestamp },
@@ -118,7 +176,7 @@ ponder.on('FastBridgeV2:BridgeProofProvided', async ({ event, context }) => {
   })
 })
 
-ponder.on('FastBridgeV2:BridgeDepositClaimed', async ({ event, context }) => {
+ponder.on('v1:BridgeDepositClaimed', async ({ event, context }) => {
   const {
     args: { transactionId, relayer, to, token, amount },
     block: { timestamp },
@@ -149,7 +207,7 @@ ponder.on('FastBridgeV2:BridgeDepositClaimed', async ({ event, context }) => {
   })
 })
 
-ponder.on('FastBridgeV2:BridgeProofDisputed', async ({ event, context }) => {
+ponder.on('v1:BridgeProofDisputed', async ({ event, context }) => {
   const {
     args: { transactionId, relayer },
     block: { timestamp },
@@ -184,7 +242,7 @@ ponder.on('FastBridgeV2:BridgeProofDisputed', async ({ event, context }) => {
 
 /* DESTINATION CHAIN EVENTS */
 
-ponder.on('FastBridgeV2:BridgeRelayed', async ({ event, context }) => {
+ponder.on('v1:BridgeRelayed', async ({ event, context }) => {
   const {
     args: {
       transactionId,
