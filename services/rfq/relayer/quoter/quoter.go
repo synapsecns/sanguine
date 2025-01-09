@@ -772,7 +772,17 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 	// First, check if we have enough gas to complete the a bridge for this route
 	// If not, set the quote amount to zero to make sure a stale quote won't be used
 	// TODO: handle in-flight gas; for now we can set a high min_gas_token
-	sufficentGasOrigin, err := m.inventoryManager.HasSufficientGas(ctx, input.OriginChainID, nil)
+
+	// if the origin token is native gas, require less minimum gas on the origin chain.
+	// as origin gas gets critically low, this will discourage the relayer from quoting most routes *except* those that will replenish the deficit gas.
+	var sufficentGasOrigin bool
+	if input.OriginTokenAddr.Hex() == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" {
+		multiplier := 0.65
+		sufficentGasOrigin, err = m.inventoryManager.HasSufficientGasWithMult(ctx, input.OriginChainID, nil, &multiplier)
+	} else {
+		sufficentGasOrigin, err = m.inventoryManager.HasSufficientGas(ctx, input.OriginChainID, nil)
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("error checking sufficient gas: %w", err)
 	}

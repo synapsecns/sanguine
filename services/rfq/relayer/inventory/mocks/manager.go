@@ -136,6 +136,28 @@ func (_m *Manager) HasSufficientGas(ctx context.Context, chainID int, gasValue *
 	return r0, r1
 }
 
+
+// HasSufficientGasWithMult provides a mock function with given fields: ctx, chainID, gasValue, thresholdMultiplier
+func (_m *Manager) HasSufficientGasWithMult(ctx context.Context, chainID int, gasValue *big.Int, thresholdMultiplier *float64) (bool, error) {
+	ret := _m.Called(ctx, chainID, gasValue, thresholdMultiplier)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(context.Context, int, *big.Int, *float64) bool); ok {
+		r0 = rf(ctx, chainID, gasValue, thresholdMultiplier)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int, *big.Int, *float64) error); ok {
+		r1 = rf(ctx, chainID, gasValue, thresholdMultiplier)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Rebalance provides a mock function with given fields: ctx
 func (_m *Manager) Rebalance(ctx context.Context) error {
 	ret := _m.Called(ctx)
