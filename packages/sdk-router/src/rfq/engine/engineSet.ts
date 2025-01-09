@@ -1,3 +1,4 @@
+import { hexlify } from '@ethersproject/bytes'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import invariant from 'tiny-invariant'
 
@@ -16,6 +17,7 @@ import {
 import { CCTPRouterQuery } from '../../module'
 import { encodeStepParams } from '../steps'
 import { OdosEngine } from './odosEngine'
+import { decodeZapData, encodeZapData } from '../zapData'
 
 export enum EngineTimeout {
   Short = 1000,
@@ -76,15 +78,30 @@ export class EngineSet {
   public async generateRoute(
     input: RouteInput,
     quote: SwapEngineQuote,
-    options: { allowMultiStep: boolean; timeout?: number }
+    options: {
+      allowMultiStep: boolean
+      useZeroSlippage: boolean
+      timeout?: number
+    }
   ): Promise<SwapEngineRoute> {
     // Use longer timeout for route generation by default.
-    const route = await this._getEngine(quote.engineID).generateRoute(
+    let route = await this._getEngine(quote.engineID).generateRoute(
       input,
       quote,
       options.timeout ?? EngineTimeout.Long
     )
-    return options.allowMultiStep ? route : sanitizeMultiStepRoute(route)
+    route = options.allowMultiStep ? route : sanitizeMultiStepRoute(route)
+    if (options.useZeroSlippage && route.steps.length > 0) {
+      const lastStepIndex = route.steps.length - 1
+      const lastStepZapData = decodeZapData(
+        hexlify(route.steps[lastStepIndex].zapData)
+      )
+      route.steps[lastStepIndex].zapData = encodeZapData({
+        ...lastStepZapData,
+        minFinalAmount: route.expectedAmountOut,
+      })
+    }
+    return route
   }
 
   public getOriginQuery(

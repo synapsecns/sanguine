@@ -7,6 +7,8 @@ import {
   RouteInput,
   SwapEngineRoute,
   getForwardTo,
+  Slippage,
+  applySlippage,
 } from './swapEngine'
 import { isSameAddress } from '../../utils/addressUtils'
 import { AMOUNT_NOT_PRESENT, encodeZapData } from '../zapData'
@@ -36,6 +38,7 @@ export const EMPTY_SWAP_API_RESPONSE: SwapAPIResponse = {
 export const generateAPIRoute = (
   input: RouteInput,
   engineID: EngineID,
+  slippage: Slippage,
   response: SwapAPIResponse
 ): SwapEngineRoute => {
   if (isSameAddress(input.finalRecipient.address, AddressZero)) {
@@ -50,7 +53,7 @@ export const generateAPIRoute = (
     amountPosition: AMOUNT_NOT_PRESENT,
     finalToken: input.tokenOut,
     forwardTo: getForwardTo(input.finalRecipient),
-    minFinalAmount: response.amountOut,
+    minFinalAmount: applySlippage(response.amountOut, slippage),
   })
 
   return {

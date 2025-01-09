@@ -168,7 +168,7 @@ export class OdosEngine implements SwapEngine {
       )
       return getEmptyRoute(this.id)
     }
-    return generateAPIRoute(input, this.id, {
+    return generateAPIRoute(input, this.id, SlippageMax, {
       amountOut: quote.expectedAmountOut,
       transaction: odosAssembleResponse.transaction,
     })
