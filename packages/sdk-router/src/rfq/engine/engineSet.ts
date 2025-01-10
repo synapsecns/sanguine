@@ -16,6 +16,7 @@ import {
 } from './swapEngine'
 import { CCTPRouterQuery } from '../../module'
 import { encodeStepParams } from '../steps'
+import { KyberSwapEngine } from './kyberSwapEngine'
 import { OdosEngine } from './odosEngine'
 import { decodeZapData, encodeZapData } from '../zapData'
 
@@ -38,6 +39,7 @@ export class EngineSet {
     this._addEngine(new NoOpEngine())
     this._addEngine(new DefaultEngine(chains))
     this._addEngine(new OdosEngine(TOKEN_ZAP_V1_ADDRESS_MAP))
+    this._addEngine(new KyberSwapEngine(TOKEN_ZAP_V1_ADDRESS_MAP))
 
     this.tokenZaps = {}
     chains.forEach(({ chainId }) => {
