@@ -8,8 +8,8 @@ export enum EngineID {
   Null,
   NoOp,
   Default,
-  ParaSwap,
   Odos,
+  KyberSwap,
 }
 
 export type SwapEngineQuote = {
