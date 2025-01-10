@@ -1,6 +1,7 @@
+import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
 
-import { SupportedChainId } from '../../constants'
+import { AddressMap, SupportedChainId } from '../../constants'
 import { getWithTimeout, postWithTimeout } from '../api'
 import {
   SwapEngine,
@@ -8,8 +9,15 @@ import {
   SwapEngineRoute,
   getEmptyRoute,
   SwapEngineQuote,
+  RouteInput,
+  toBasisPoints,
+  SlippageMax,
 } from './swapEngine'
+import { isSameAddress } from '../../utils/addressUtils'
+import { ONE_WEEK } from '../../utils/deadlines'
 import { logger } from '../../utils/logger'
+import { generateAPIRoute } from './response'
+import { isNativeToken } from '../../utils/handleNativeToken'
 
 const KYBER_SWAP_API_URL = 'https://aggregator-api.kyberswap.com'
 
@@ -51,11 +59,16 @@ export type KyberSwapBuildResponse = {
   }
 }
 
-type KyberSwapQuote = SwapEngineQuote
+type KyberSwapQuote = SwapEngineQuote & {
+  routeSummary: KyberSwapRouteSummary
+}
 
 const EmptyKyberSwapQuote: KyberSwapQuote = {
   engineID: EngineID.KyberSwap,
   expectedAmountOut: Zero,
+  routeSummary: {
+    amountOut: '0',
+  },
 }
 
 const KyberSwapChainMap: Record<number, string> = {
@@ -75,14 +88,99 @@ const KyberSwapChainMap: Record<number, string> = {
 export class KyberSwapEngine implements SwapEngine {
   readonly id: EngineID = EngineID.KyberSwap
 
-  public async getQuote(): Promise<KyberSwapQuote> {
-    // TODO: implement
-    return EmptyKyberSwapQuote
+  private readonly tokenZapAddressMap: AddressMap
+
+  constructor(tokenZapAddressMap: AddressMap) {
+    this.tokenZapAddressMap = tokenZapAddressMap
   }
 
-  public async generateRoute(): Promise<SwapEngineRoute> {
-    // TODO: implement
-    return getEmptyRoute(this.id)
+  public async getQuote(
+    input: RouteInput,
+    timeout: number
+  ): Promise<KyberSwapQuote> {
+    const { chainId, tokenIn, tokenOut, amountIn } = input
+    const tokenZap = this.tokenZapAddressMap[chainId]
+    if (
+      !tokenZap ||
+      isSameAddress(tokenIn, tokenOut) ||
+      BigNumber.from(amountIn).eq(Zero)
+    ) {
+      return EmptyKyberSwapQuote
+    }
+    const request: KyberSwapQuoteRequest = {
+      tokenIn,
+      tokenOut,
+      amountIn: amountIn.toString(),
+      gasInclude: false,
+    }
+    const response = await this.getQuoteResponse(
+      input.chainId,
+      request,
+      timeout
+    )
+    if (!response) {
+      return EmptyKyberSwapQuote
+    }
+    const kyberSwapQuoteResponse: KyberSwapQuoteResponse = await response.json()
+    if (
+      kyberSwapQuoteResponse.code !== 0 ||
+      !kyberSwapQuoteResponse.data?.routeSummary
+    ) {
+      return EmptyKyberSwapQuote
+    }
+    const expectedAmountOut = BigNumber.from(
+      kyberSwapQuoteResponse.data.routeSummary.amountOut ?? '0'
+    )
+    if (expectedAmountOut.eq(Zero)) {
+      return EmptyKyberSwapQuote
+    }
+    return {
+      engineID: this.id,
+      expectedAmountOut,
+      routeSummary: kyberSwapQuoteResponse.data.routeSummary,
+    }
+  }
+
+  public async generateRoute(
+    input: RouteInput,
+    quote: KyberSwapQuote,
+    timeout: number
+  ): Promise<SwapEngineRoute> {
+    const chainId = input.chainId
+    const tokenZap = this.tokenZapAddressMap[chainId]
+    if (quote.engineID !== this.id || !quote.routeSummary || !tokenZap) {
+      logger.error({ quote }, 'KyberSwap: unexpected quote')
+      return getEmptyRoute(this.id)
+    }
+    const response = await this.getBuildResponse(
+      chainId,
+      {
+        routeSummary: quote.routeSummary,
+        sender: tokenZap,
+        recipient: tokenZap,
+        deadline: Math.floor(Date.now() / 1000) + ONE_WEEK,
+        slippageTolerance: toBasisPoints(SlippageMax),
+        enableGasEstimation: false,
+      },
+      timeout
+    )
+    if (!response) {
+      return getEmptyRoute(this.id)
+    }
+    const kyberSwapBuildResponse: KyberSwapBuildResponse = await response.json()
+    if (kyberSwapBuildResponse.code !== 0) {
+      return getEmptyRoute(this.id)
+    }
+    return generateAPIRoute(input, this.id, SlippageMax, {
+      amountOut: quote.expectedAmountOut,
+      transaction: {
+        chainId,
+        from: tokenZap,
+        to: kyberSwapBuildResponse.data.routerAddress,
+        value: isNativeToken(input.tokenIn) ? input.amountIn.toString() : '0',
+        data: kyberSwapBuildResponse.data.data,
+      },
+    })
   }
 
   public async getQuoteResponse(

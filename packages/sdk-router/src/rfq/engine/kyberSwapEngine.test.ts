@@ -11,7 +11,7 @@ global.fetch = require('node-fetch')
 
 describe('Integration test: KyberSwapEngine', () => {
   it('Ethereum USDC -> USDT', async () => {
-    const kyberSwapEngine = new KyberSwapEngine()
+    const kyberSwapEngine = new KyberSwapEngine({})
     let response = await kyberSwapEngine.getQuoteResponse(
       SupportedChainId.ETH,
       {
