@@ -76,7 +76,11 @@ export const fetchWithTimeout = async (
       ...init,
     })
     if (!response.ok) {
-      logger.info({ name, url, params, response }, `${name}: not OK`)
+      const text = await response.text()
+      logger.info(
+        { name, url, params, response, text },
+        `${name}: response not OK`
+      )
       return null
     }
     return response
@@ -95,16 +99,34 @@ export const fetchWithTimeout = async (
   }
 }
 
+export const getWithTimeout = async (
+  name: string,
+  url: string,
+  timeout: number,
+  params: any,
+  headers: any = {}
+): Promise<Response | null> => {
+  const urlWithParams = Object.keys(params).length
+    ? `${url}?${new URLSearchParams(params)}`
+    : url
+  return fetchWithTimeout(name, urlWithParams, timeout, params, {
+    method: 'GET',
+    headers,
+  })
+}
+
 export const postWithTimeout = async (
   name: string,
   url: string,
   timeout: number,
-  params: any
+  params: any,
+  headers: any = {}
 ): Promise<Response | null> => {
   return fetchWithTimeout(name, url, timeout, params, {
     method: 'POST',
     body: JSON.stringify(params),
     headers: {
+      ...headers,
       'Content-Type': 'application/json',
     },
   })
@@ -114,12 +136,14 @@ export const putWithTimeout = async (
   name: string,
   url: string,
   timeout: number,
-  params: any
+  params: any,
+  headers: any = {}
 ): Promise<Response | null> => {
   return fetchWithTimeout(name, url, timeout, params, {
     method: 'PUT',
     body: JSON.stringify(params),
     headers: {
+      ...headers,
       'Content-Type': 'application/json',
     },
   })

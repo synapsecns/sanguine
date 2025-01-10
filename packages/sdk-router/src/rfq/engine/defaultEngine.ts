@@ -13,7 +13,7 @@ import { ChainProvider } from '../../router'
 import { SynapseIntentPreviewer as PreviewerContract } from '../../typechain/SynapseIntentPreviewer'
 import { IDefaultActionsInterface } from '../../typechain/IDefaultActions'
 import { isSameAddress } from '../../utils/addressUtils'
-import { logger } from '../../utils/logger'
+import { logger, logExecutionTime } from '../../utils/logger'
 import {
   SwapEngine,
   SwapEngineRoute,
@@ -67,6 +67,7 @@ export class DefaultEngine implements SwapEngine {
     })
   }
 
+  @logExecutionTime()
   public async getQuote(input: RouteInput): Promise<SwapEngineRoute> {
     // TODO: timeout
     const { chainId, tokenIn, tokenOut, amountIn, finalRecipient } = input
@@ -103,6 +104,7 @@ export class DefaultEngine implements SwapEngine {
     }
   }
 
+  @logExecutionTime()
   public async generateRoute(
     _input: RouteInput,
     quote: SwapEngineRoute
