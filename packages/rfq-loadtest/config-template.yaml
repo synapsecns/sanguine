@@ -20,7 +20,6 @@ PRIVATE_KEY_5: "0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456ab
 # Optional - only required if you are performing Relayer tests
 RELAYER_PRIVATE_KEY: "0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd"
 
-
 ###### TEST BEHAVIOR
 ############################################################################################################
 
@@ -97,7 +96,7 @@ CHAINS:
   10:
     label: OPT
     FastRouterAddr: '0x5849dC2fe58EcCB9EA76aA8D77dc127d89dE9b4d'
-    SinRouterAddr: '0x57203c65DeA2ded4EE4E303a9494bee04df030BF'
+    SinRouterAddr: '0x018396706193B16F8a1b20B87B2dcC840979D7EA'
     # urls used for Reading / Tx Simulation / Tx Submit -- respectively. Change to others as needed.
     rpcUrl_Read: 'https://mainnet.optimism.io'
     rpcUrl_Sim: 'https://mainnet.optimism.io'
@@ -105,7 +104,7 @@ CHAINS:
   42161:
     label: ARB
     FastRouterAddr: '0x5849dC2fe58EcCB9EA76aA8D77dc127d89dE9b4d'
-    SinRouterAddr: '0x57203c65DeA2ded4EE4E303a9494bee04df030BF'
+    SinRouterAddr: '0x018396706193B16F8a1b20B87B2dcC840979D7EA'
     # urls used for Reading / Tx Simulation / Tx Submit -- respectively. Change to others as needed.
     rpcUrl_Read: 'https://arbitrum.llamarpc.com'
     rpcUrl_Sim: 'https://arbitrum.llamarpc.com'

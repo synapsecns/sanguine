@@ -7,6 +7,7 @@ import {
   ContractFunctionExecutionError,
   createPublicClient,
   createWalletClient,
+  decodeErrorResult,
   decodeFunctionData,
   formatUnits,
   http,
@@ -401,12 +402,10 @@ async function loopBridges() {
       sendCounter++
       await delay(50)
 
-      // if we're running a relayer test, wait for bridge to land, submit relayer test txn, and exit test
+      // if we're running a relayer test, wait for bridge to land and submit relayer test txn
       if(config.RELAYER_TEST)
       {
-        if(config.RELAYER_TEST.toLowerCase() == 'falseProve') falseProve(printLabel, txHash_bridge, testRoute.fromChain)
-
-        return
+        if(config.RELAYER_TEST.toLowerCase() == 'falseprove') await falseProve(printLabel, txHash_bridge, testRoute.fromChain)
       }
     }
 
@@ -426,8 +425,7 @@ async function getRequestParams(
     `&fromToken=${route.fromAsset.TOKEN_ADDRESS}&toToken=${route.toAsset.TOKEN_ADDRESS}` +
     `&amount=${sendAmountUnits}` +
     `&originUserAddress=${account_bridger.address}` +
-    `&destAddress=${account_bridger.address}` +
-    `&expirationWindow=250`
+    `&destAddress=${account_bridger.address}`
 
   let responseRFQ: any
   let response: any
@@ -456,7 +454,7 @@ async function getRequestParams(
       responseRFQ = null;
     }
     if (!responseRFQ) {
-      throw new Error(`No response returned from API that matches BRIDGE_MODULES`)
+      throw new Error(`No usable BridgeModule found on API response.`)
     }
   } catch (error: any) {
     throw new Error(
@@ -502,7 +500,19 @@ async function sendBridge(
     if (estGasUnits <= 50000n) throw new Error(`Gas units too low ${estGasUnits}. Sim failure?`)
 
   } catch (error: any) {
-    print (`${printLabel} Bridge Sim error: ${error.cause.details ?? error.details ?? error.message}`)
+
+    var errMsg = error.cause.cause.cause.cause.cause.data ?? error.cause.details ?? error.details ?? error.message
+
+    if(errMsg.slice(0,2)=='0x') 
+      {
+        try {
+          errMsg = decodeErrorResult({abi: ABI.fastRouterV2, data: errMsg});
+        } catch (decodeError) {
+          errMsg = `${errMsg} (could not decode)`;
+        }
+      }
+
+    print (`${printLabel} Bridge Sim error: ${errMsg}`)
     return
   }
 
