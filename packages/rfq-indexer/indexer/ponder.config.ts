@@ -52,8 +52,11 @@ const getConfigNetwork = (chainId: number) => {
     throw new Error(`RPC_URL_${chainId} must be an HTTP/S URL`);
   }
 
-  const requestsPerSecond = process.env[`RPC_LIMIT_RPS_${chainId}`] ? parseInt(process.env[`RPC_LIMIT_RPS_${chainId}`]!, 10) : 9999;
-  const transport = rateLimit(http(url), { requestsPerSecond });
+  // conditionally apply rate limits to RPCs
+  // const requestsPerSecond = process.env[`RPC_LIMIT_RPS_${chainId}`] ? parseInt(process.env[`RPC_LIMIT_RPS_${chainId}`]!, 10) : 9999;
+  // const transport = rateLimit(http(url), { requestsPerSecond });
+
+  const transport = http(url);
 
   return {
     chainId,
@@ -62,23 +65,19 @@ const getConfigNetwork = (chainId: number) => {
 };
 
 
-
 // infer chain ID list from RPC_URL_ env vars that are configured
 const chainIds = Object.keys(process.env)
   .filter(key => key.startsWith('RPC_URL_'))
   .map(key => parseInt(key.replace('RPC_URL_', ''), 10));
 
 // generate contract network records
-const contractNetworks_FastBridgeV1 = chainIds.reduce((acc, chainId) => {
+export const contractNetworks_FastBridgeV1 = chainIds.reduce((acc, chainId) => {
   return { ...acc, ...getContractNetwork(chainId, "FASTBRIDGEV1") };
 }, {});
 
-const contractNetworks_FastBridgeV2 = chainIds.reduce((acc, chainId) => {
+export const contractNetworks_FastBridgeV2 = chainIds.reduce((acc, chainId) => {
   return { ...acc, ...getContractNetwork(chainId, "FASTBRIDGEV2") };
 }, {});
-
-
-console.log(contractNetworks_FastBridgeV2)
 
 const configNetworks = chainIds.reduce((acc, chainId) => {
   return { 
@@ -86,6 +85,9 @@ const configNetworks = chainIds.reduce((acc, chainId) => {
     [chainId]: getConfigNetwork(chainId) 
   };
 }, {});
+
+
+console.log(contractNetworks_FastBridgeV2)
 
 export default createConfig({
   networks: configNetworks,
