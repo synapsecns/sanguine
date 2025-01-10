@@ -15,7 +15,7 @@ import {
 } from './swapEngine'
 import { isSameAddress } from '../../utils/addressUtils'
 import { ONE_WEEK } from '../../utils/deadlines'
-import { logger } from '../../utils/logger'
+import { logger, logExecutionTime } from '../../utils/logger'
 import { generateAPIRoute } from './response'
 import { isNativeToken } from '../../utils/handleNativeToken'
 
@@ -183,40 +183,36 @@ export class KyberSwapEngine implements SwapEngine {
     })
   }
 
+  @logExecutionTime()
   public async getQuoteResponse(
     chainId: number,
     params: KyberSwapQuoteRequest,
     timeout: number
   ): Promise<Response | null> {
-    const startTime = Date.now()
     const chain = KyberSwapChainMap[chainId]
     if (!chain) {
       return null
     }
     const url = `${this.buildBaseURL(chain)}/routes`
-    const response = await getWithTimeout('KyberSwap', url, timeout, params, {
+    return getWithTimeout('KyberSwap', url, timeout, params, {
       'x-client-id': 'SynapseIntentNetwork',
     })
-    logger.info(`KyberSwap quote response time: ${Date.now() - startTime}ms`)
-    return response
   }
 
+  @logExecutionTime()
   public async getBuildResponse(
     chainId: number,
     params: KyberSwapBuildRequest,
     timeout: number
   ): Promise<Response | null> {
-    const startTime = Date.now()
     const chain = KyberSwapChainMap[chainId]
     if (!chain) {
       return null
     }
     const url = `${this.buildBaseURL(chain)}/route/build`
-    const response = await postWithTimeout('KyberSwap', url, timeout, params, {
+    return postWithTimeout('KyberSwap', url, timeout, params, {
       'x-client-id': 'SynapseIntentNetwork',
     })
-    logger.info(`KyberSwap build response time: ${Date.now() - startTime}ms`)
-    return response
   }
 
   private buildBaseURL(chain: string): string {

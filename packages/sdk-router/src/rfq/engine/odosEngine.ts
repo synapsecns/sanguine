@@ -15,7 +15,7 @@ import {
 } from './swapEngine'
 import { AddressMap } from '../../constants'
 import { isSameAddress } from '../../utils/addressUtils'
-import { logger } from '../../utils/logger'
+import { logger, logExecutionTime } from '../../utils/logger'
 import { isNativeToken } from '../../utils/handleNativeToken'
 
 const ODOS_API_URL = 'https://api.odos.xyz/sor'
@@ -174,6 +174,7 @@ export class OdosEngine implements SwapEngine {
     })
   }
 
+  @logExecutionTime()
   public async getAssembleResponse(
     params: OdosAssembleRequest,
     timeout: number
@@ -181,6 +182,7 @@ export class OdosEngine implements SwapEngine {
     return postWithTimeout('Odos', `${ODOS_API_URL}/assemble`, timeout, params)
   }
 
+  @logExecutionTime()
   public async getQuoteResponse(
     params: OdosQuoteRequest,
     timeout: number
