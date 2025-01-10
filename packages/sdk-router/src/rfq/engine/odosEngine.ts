@@ -174,7 +174,7 @@ export class OdosEngine implements SwapEngine {
     })
   }
 
-  @logExecutionTime()
+  @logExecutionTime('OdosEngine.getAssembleResponse')
   public async getAssembleResponse(
     params: OdosAssembleRequest,
     timeout: number
@@ -182,7 +182,7 @@ export class OdosEngine implements SwapEngine {
     return postWithTimeout('Odos', `${ODOS_API_URL}/assemble`, timeout, params)
   }
 
-  @logExecutionTime()
+  @logExecutionTime('OdosEngine.getQuoteResponse')
   public async getQuoteResponse(
     params: OdosQuoteRequest,
     timeout: number

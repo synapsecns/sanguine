@@ -67,7 +67,7 @@ export class DefaultEngine implements SwapEngine {
     })
   }
 
-  @logExecutionTime()
+  @logExecutionTime('DefaultEngine.getQuote')
   public async getQuote(input: RouteInput): Promise<SwapEngineRoute> {
     // TODO: timeout
     const { chainId, tokenIn, tokenOut, amountIn, finalRecipient } = input
@@ -104,7 +104,7 @@ export class DefaultEngine implements SwapEngine {
     }
   }
 
-  @logExecutionTime()
+  @logExecutionTime('DefaultEngine.generateRoute')
   public async generateRoute(
     _input: RouteInput,
     quote: SwapEngineRoute

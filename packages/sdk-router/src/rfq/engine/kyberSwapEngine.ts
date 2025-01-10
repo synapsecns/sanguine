@@ -183,7 +183,7 @@ export class KyberSwapEngine implements SwapEngine {
     })
   }
 
-  @logExecutionTime()
+  @logExecutionTime('KyberSwapEngine.getQuoteResponse')
   public async getQuoteResponse(
     chainId: number,
     params: KyberSwapQuoteRequest,
@@ -199,7 +199,7 @@ export class KyberSwapEngine implements SwapEngine {
     })
   }
 
-  @logExecutionTime()
+  @logExecutionTime('KyberSwapEngine.getBuildResponse')
   public async getBuildResponse(
     chainId: number,
     params: KyberSwapBuildRequest,
