@@ -336,7 +336,9 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 			}
 			resp, err := m.generateActiveRFQ(ctx, msg)
 			if err != nil {
-				return fmt.Errorf("error generating active RFQ message: %w", err)
+				// log error and continue; no need to shut down relayer
+				logger.Errorw("error generating active RFQ message", "err", err)
+				continue
 			}
 			reqChan <- resp
 		}
