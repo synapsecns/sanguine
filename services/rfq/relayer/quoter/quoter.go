@@ -690,11 +690,18 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 		logger.Error("Error getting total fee", "error", err)
 		return nil, fmt.Errorf("error getting total fee: %w", err)
 	}
+
+	// tmpdebug
+	fmt.Printf("Debug Total Fee Amt: %s\n", fee.String())
+
 	originRFQAddr, err := m.config.GetRFQAddress(input.OriginChainID)
 	if err != nil {
 		logger.Error("Error getting RFQ address", "error", err)
 		return nil, fmt.Errorf("error getting RFQ address: %w", err)
 	}
+
+	// tmpdebug
+	fmt.Printf("Debug originRFQAddr: %s\n", originRFQAddr.String())
 
 	// Build the quote
 	destAmount, err := m.getDestAmount(ctx, originAmount, destToken, input)
@@ -702,6 +709,10 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 		logger.Error("Error getting dest amount", "error", err)
 		return nil, fmt.Errorf("error getting dest amount: %w", err)
 	}
+
+	// tmpdebug
+	fmt.Printf("Debug destAmount: %s\n", destAmount.String())
+
 	quote = &model.PutRelayerQuoteRequest{
 		OriginChainID:           input.OriginChainID,
 		OriginTokenAddr:         input.OriginTokenAddr.Hex(),

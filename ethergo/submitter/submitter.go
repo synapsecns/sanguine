@@ -696,10 +696,16 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 	if err != nil {
 		return 0, fmt.Errorf("could not convert tx to call: %w", err)
 	}
+	// tmpdebug
+	fmt.Printf("Debug Calling EstimateGas")
 
 	gasEstimate, err = chainClient.EstimateGas(ctx, *call)
 	if err != nil {
 		span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
+
+		// tmpdebug
+		fmt.Printf("Debug Default Gas Estimate: %d\n", t.config.GetGasEstimate(chainID))
+
 		// fallback to default
 		return t.config.GetGasEstimate(chainID), nil
 	}
