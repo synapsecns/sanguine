@@ -80,6 +80,8 @@ type FullIntent = OriginIntent & DestIntent
 type FullQuote = FullIntent & {
   destRelayRecipient: string
   relayerQuote: RelayerQuote
+  originRoute?: SwapEngineRoute
+  destRoute?: SwapEngineRoute
 }
 
 type DestQueryData = {
@@ -177,17 +179,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     // Get routes for swaps on the destination chain from the "RFQ-supported token" into tokenOut
     const destIntents = await this.getDestinationQuotes(originIntents, tokenOut)
     // Apply the quotes from the RFQ API
-    const intents = await Promise.all(
-      destIntents.map(async (intent) => {
-        const fullQuote = await this.getFullQuote(intent, originUserAddress)
-        const { originRoute, destRoute } = await this.generateRoutes(fullQuote)
-        return {
-          ...fullQuote,
-          originRoute,
-          destRoute,
-        }
-      })
-    )
+    const intents = await this.getFullQuotes(destIntents, originUserAddress)
     return intents
       .filter(({ destRoute }) => destRoute.expectedAmountOut.gt(Zero))
       .map((intent) => ({
@@ -468,6 +460,23 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
         destQuote: allQuotes[index],
       }))
       .filter(({ destQuote }) => destQuote.expectedAmountOut.gt(Zero))
+  }
+
+  private async getFullQuotes(
+    intents: FullIntent[],
+    originUserAddress?: string
+  ): Promise<Required<FullQuote>[]> {
+    return Promise.all(
+      intents.map(async (intent) => {
+        const fullQuote = await this.getFullQuote(intent, originUserAddress)
+        const { originRoute, destRoute } = await this.generateRoutes(fullQuote)
+        return {
+          ...fullQuote,
+          originRoute,
+          destRoute,
+        }
+      })
+    )
   }
 
   private async getFullQuote(
