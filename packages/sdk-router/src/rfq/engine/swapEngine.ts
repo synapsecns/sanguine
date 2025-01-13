@@ -45,12 +45,23 @@ export const SlippageMax: Slippage = {
 export const USER_SIMULATED_ADDRESS =
   '0xFAcefaCEFACefACeFaCefacEFaCeFACEFAceFAcE'
 
+/**
+ * Input parameters for generating a swap route.
+ *
+ * @property {number} chainId - The chain ID of the route.
+ * @property {string} tokenIn - The input token address.
+ * @property {string} tokenOut - The output token address.
+ * @property {BigintIsh} amountIn - The amount of input token to swap.
+ * @property {Recipient} finalRecipient - The recipient of the output token.
+ * @property {boolean} restrictComplexity - Whether to restrict the complexity of the route (no splitting, less steps).
+ */
 export type RouteInput = {
   chainId: number
   tokenIn: string
   tokenOut: string
   amountIn: BigintIsh
   finalRecipient: Recipient
+  restrictComplexity: boolean
 }
 
 export interface SwapEngine {

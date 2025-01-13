@@ -408,12 +408,14 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       entity: RecipientEntity.Self,
       address: this.engineSet.getTokenZap(originChainId),
     }
+    // Swap complexity is not restricted on the origin chain, where execution is done by the user at the time of bridging.
     const inputs: RouteInput[] = tickers.map(({ originToken }) => ({
       chainId: originToken.chainId,
       tokenIn,
       tokenOut: originToken.token,
       amountIn,
       finalRecipient,
+      restrictComplexity: false,
     }))
     const allQuotes = await this.engineSet.getQuotes(inputs, {
       allowMultiStep: true,
@@ -443,6 +445,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       entity: RecipientEntity.UserSimulated,
       address: USER_SIMULATED_ADDRESS,
     }
+    // Swap complexity is restricted on the destination chain, where execution is done by the Relayers with a delay.
     const inputs: RouteInput[] = originIntents.map(
       ({ ticker, originAmountOut }) => ({
         chainId: ticker.destToken.chainId,
@@ -450,6 +453,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
         tokenOut,
         amountIn: originAmountOut,
         finalRecipient,
+        restrictComplexity: true,
       })
     )
     const allQuotes = await this.engineSet.getQuotes(inputs, {
