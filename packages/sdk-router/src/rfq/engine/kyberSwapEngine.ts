@@ -26,6 +26,7 @@ type KyberSwapQuoteRequest = {
   tokenOut: string
   amountIn: string
   gasInclude: boolean
+  onlySinglePath?: boolean
 }
 
 type KyberSwapRouteSummary = {
@@ -112,6 +113,7 @@ export class KyberSwapEngine implements SwapEngine {
       tokenOut,
       amountIn: amountIn.toString(),
       gasInclude: false,
+      onlySinglePath: input.restrictComplexity,
     }
     const response = await this.getQuoteResponse(
       input.chainId,

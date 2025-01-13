@@ -4,8 +4,9 @@ import { Zero } from '@ethersproject/constants'
 
 import { BridgeTokenType, SynapseRouter } from './synapseRouter'
 import { ChainProvider, RouterSet } from './routerSet'
-import { MEDIAN_TIME_BRIDGE, ROUTER_ADDRESS_MAP } from '../constants'
+import { BigintIsh, MEDIAN_TIME_BRIDGE, ROUTER_ADDRESS_MAP } from '../constants'
 import { BridgeRoute } from '../module'
+import { logExecutionTime } from '../utils/logger'
 
 /**
  * Wrapper class for interacting with a SynapseRouter contracts deployed on multiple chains.
@@ -27,6 +28,23 @@ export class SynapseRouterSet extends RouterSet {
 
   constructor(chains: ChainProvider[]) {
     super(chains, ROUTER_ADDRESS_MAP, SynapseRouter)
+  }
+
+  @logExecutionTime('SynapseBridge.getBridgeRoutes')
+  public async getBridgeRoutes(
+    originChainId: number,
+    destChainId: number,
+    tokenIn: string,
+    tokenOut: string,
+    amountIn: BigintIsh
+  ): Promise<BridgeRoute[]> {
+    return super.getBridgeRoutes(
+      originChainId,
+      destChainId,
+      tokenIn,
+      tokenOut,
+      amountIn
+    )
   }
 
   /**

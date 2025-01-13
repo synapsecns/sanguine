@@ -82,6 +82,7 @@ export class DefaultEngine implements SwapEngine {
     }
     // Get the quote
     const forwardTo = getForwardTo(finalRecipient)
+    // Note: restrictComplexity is not supported by the on-chain previewer
     const { amountOut, steps: stepsOutput } = await previewer.previewIntent(
       swapQuoter,
       forwardTo,
