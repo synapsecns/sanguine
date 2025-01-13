@@ -154,6 +154,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
   /**
    * @inheritdoc SynapseModuleSet.getBridgeRoutes
    */
+  @logExecutionTime('SynapseIntents.getBridgeRoutes')
   public async getBridgeRoutes(
     originChainId: number,
     destChainId: number,
@@ -387,6 +388,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     return amount.sub(protocolFee)
   }
 
+  @logExecutionTime('SynapseIntents.getOriginQuotes')
   private async getOriginQuotes(
     originChainId: number,
     tickers: Ticker[],
@@ -427,6 +429,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       .filter(({ originQuote }) => originQuote.expectedAmountOut.gt(Zero))
   }
 
+  @logExecutionTime('SynapseIntents.getDestinationQuotes')
   private async getDestinationQuotes(
     originIntents: OriginIntent[],
     tokenOut: string
@@ -462,6 +465,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       .filter(({ destQuote }) => destQuote.expectedAmountOut.gt(Zero))
   }
 
+  @logExecutionTime('SynapseIntents.getFullQuotes')
   private async getFullQuotes(
     intents: FullIntent[],
     originUserAddress?: string
