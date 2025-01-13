@@ -267,7 +267,7 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 		if err != nil {
 			logger.Warnf("error closing websocket connection: %v", err)
 		}
-		panic("processWebsocket exited")
+		logger.Warnf("processWebsocket exited")
 	}()
 
 	readChan := make(chan []byte, chanBuffer)
