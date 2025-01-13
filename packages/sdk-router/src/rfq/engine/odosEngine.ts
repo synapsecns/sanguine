@@ -111,7 +111,7 @@ export class OdosEngine implements SwapEngine {
       userAddr: tokenZap,
       // slippage settings are applied when generating the zap data as minFinalAmount
       slippageLimitPercent: toPercentFloat(SlippageMax),
-      simple: true,
+      simple: input.restrictComplexity,
     }
     const response = await this.getQuoteResponse(request, timeout)
     if (!response) {
