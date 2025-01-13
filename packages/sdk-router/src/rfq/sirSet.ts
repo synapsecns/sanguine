@@ -26,10 +26,15 @@ import {
 import { SynapseIntentRouter } from './sir'
 import { ChainProvider } from '../router'
 import { ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
-import { logger } from '../utils/logger'
+import { logExecutionTime, logger } from '../utils/logger'
 import { isSameAddress } from '../utils/addressUtils'
 import { marshallTicker, Ticker } from './ticker'
-import { getAllQuotes, getBestRelayerQuote, RelayerQuote } from './api'
+import {
+  getAllQuotes,
+  getBestRelayerQuote,
+  QuoteRequestOptions,
+  RelayerQuote,
+} from './api'
 import {
   EngineSet,
   SwapEngineRoute,
@@ -56,6 +61,7 @@ import {
   encodeStepParams,
   extractSingleZapData,
 } from './steps'
+import { FastBridgeQuote } from './quote'
 
 type OriginIntent = {
   ticker: Ticker
@@ -494,7 +500,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
         ? USER_SIMULATED_ADDRESS
         : this.engineSet.getTokenZap(intent.ticker.destToken.chainId)
     const encodedZapDataSimulation = extractSingleZapData(destRoute.steps)
-    const relayerQuote = await getBestRelayerQuote(
+    const relayerQuote = await this.apiGetBestRelayerQuote(
       intent.ticker,
       intent.originAmountOut,
       {
@@ -571,7 +577,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     originChainId: number,
     destChainId: number
   ): Promise<Ticker[]> {
-    const allQuotes = await getAllQuotes()
+    const allQuotes = await this.apiGetAllQuotes()
     const originFB = FAST_BRIDGE_V2_ADDRESS_MAP[originChainId]
     const destFB = FAST_BRIDGE_V2_ADDRESS_MAP[destChainId]
     // First, we filter out quotes for other chainIDs and bridge addresses.
@@ -598,6 +604,20 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
             isSameAddress(t.originToken.token, ticker.originToken.token)
           )
       )
+  }
+
+  @logExecutionTime('API/quotes')
+  private async apiGetAllQuotes(): Promise<FastBridgeQuote[]> {
+    return getAllQuotes()
+  }
+
+  @logExecutionTime('API/rfq')
+  private async apiGetBestRelayerQuote(
+    ticker: Ticker,
+    originAmount: BigNumber,
+    options: QuoteRequestOptions = {}
+  ): Promise<RelayerQuote> {
+    return getBestRelayerQuote(ticker, originAmount, options)
   }
 
   private getSavedParamsV1(
