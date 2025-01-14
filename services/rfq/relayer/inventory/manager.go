@@ -48,6 +48,8 @@ type Manager interface {
 	ApproveAllTokens(ctx context.Context) error
 	// HasSufficientGas checks if there is sufficient gas for a given route.
 	HasSufficientGas(ctx context.Context, chainID int, gasValue *big.Int) (bool, error)
+	// HasSufficientGasWithMult checks if there is sufficient gas for a given route with an optional threshold multiplier applied.
+	HasSufficientGasWithMult(ctx context.Context, chainID int, gasValue *big.Int, thresholdMultiplier *float64) (bool, error)
 	// Rebalance attempts any rebalances that could be executed across all supported tokens and chains.
 	Rebalance(ctx context.Context) error
 	// GetTokenMetadata gets the metadata for a token.
@@ -438,6 +440,11 @@ func (i *inventoryManagerImpl) approve(parentCtx context.Context, tokenAddr, con
 
 // HasSufficientGas checks if there is sufficient gas for a given route.
 func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chainID int, gasValue *big.Int) (sufficient bool, err error) {
+	return i.HasSufficientGasWithMult(parentCtx, chainID, gasValue, nil)
+}
+
+// HasSufficientGasWithMult checks if there is sufficient gas for a given route with an optional threshold multiplier applied.
+func (i *inventoryManagerImpl) HasSufficientGasWithMult(parentCtx context.Context, chainID int, gasValue *big.Int, thresholdMultiplier *float64) (sufficient bool, err error) {
 	ctx, span := i.handler.Tracer().Start(parentCtx, "HasSufficientGas", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, chainID),
 	))
@@ -447,7 +454,7 @@ func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chain
 
 	gasThreshRaw, err := i.cfg.GetMinGasToken(chainID)
 	if err != nil {
-		return false, fmt.Errorf("error getting min gas token on origin: %w", err)
+		return false, fmt.Errorf("error getting min gas token: %w", err)
 	}
 	gasThresh := core.CopyBigInt(gasThreshRaw)
 	if gasValue != nil {
@@ -455,9 +462,19 @@ func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chain
 		span.SetAttributes(attribute.String("gas_value", gasValue.String()))
 	}
 
+	// If param supplied, apply threshold multiplier before comparing
+	if thresholdMultiplier != nil {
+		if *thresholdMultiplier < 0 || *thresholdMultiplier > 2 {
+			return false, fmt.Errorf("thresholdMultiplier out of range: %f", *thresholdMultiplier)
+		}
+		gasThreshFloat := new(big.Float).SetInt(gasThresh)
+		gasThreshFloat.Mul(gasThreshFloat, big.NewFloat(*thresholdMultiplier))
+		gasThresh, _ = gasThreshFloat.Int(nil)
+	}
+
 	gasBalance, err := i.GetCommittableBalance(ctx, chainID, util.EthAddress, SkipDBCache())
 	if err != nil {
-		return false, fmt.Errorf("error getting committable gas on origin: %w", err)
+		return false, fmt.Errorf("error getting committable gas: %w", err)
 	}
 
 	sufficient = gasBalance.Cmp(gasThresh) >= 0
