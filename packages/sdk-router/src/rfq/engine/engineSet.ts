@@ -49,22 +49,20 @@ export class EngineSet {
     })
   }
 
-  public async getQuotes(
-    inputs: RouteInput[],
+  public async getBestQuote(
+    input: RouteInput,
     options: { allowMultiStep: boolean; timeout?: number }
-  ): Promise<SwapEngineQuote[]> {
-    // Find the quote for each input and each engine.
+  ): Promise<SwapEngineQuote> {
+    // Find the quote for each engine.
     const allQuotes = await Promise.all(
-      inputs.map(async (input) =>
-        Promise.all(
-          Object.values(this.engines).map(async (engine) =>
-            this._getQuote(engine, input, options)
-          )
-        )
+      Object.values(this.engines).map(async (engine) =>
+        this._getQuote(engine, input, options)
       )
     )
-    // Select the best quote for each tokenOut.
-    return this._selectBestQuotes(allQuotes)
+    // Select the best quote.
+    return allQuotes.reduce((best, current) =>
+      current.expectedAmountOut.gt(best.expectedAmountOut) ? current : best
+    )
   }
 
   public async getQuote(
@@ -153,13 +151,5 @@ export class EngineSet {
       options.timeout ?? EngineTimeout.Short
     )
     return options.allowMultiStep ? quote : sanitizeMultiStepQuote(quote)
-  }
-
-  private _selectBestQuotes(quotes: SwapEngineQuote[][]): SwapEngineQuote[] {
-    return quotes.map((quote) =>
-      quote.reduce((best, current) =>
-        current.expectedAmountOut.gt(best.expectedAmountOut) ? current : best
-      )
-    )
   }
 }

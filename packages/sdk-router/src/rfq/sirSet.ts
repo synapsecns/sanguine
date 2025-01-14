@@ -436,12 +436,9 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       finalRecipient,
       restrictComplexity: false,
     }
-    // TODO: cleanup array usage
-    const quote = (
-      await this.engineSet.getQuotes([input], {
-        allowMultiStep: true,
-      })
-    )[0]
+    const quote = await this.engineSet.getBestQuote(input, {
+      allowMultiStep: true,
+    })
     return {
       ticker,
       originInput: input,
@@ -471,11 +468,9 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       finalRecipient,
       restrictComplexity: true,
     }
-    const quote = (
-      await this.engineSet.getQuotes([input], {
-        allowMultiStep: false,
-      })
-    )[0]
+    const quote = await this.engineSet.getBestQuote(input, {
+      allowMultiStep: false,
+    })
     return {
       ...originIntent,
       destInput: input,
