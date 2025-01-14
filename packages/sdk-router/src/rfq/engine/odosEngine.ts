@@ -65,6 +65,7 @@ type OdosQuote = SwapEngineQuote & {
 
 const EmptyOdosQuote: OdosQuote = {
   engineID: EngineID.Odos,
+  chainId: 0,
   expectedAmountOut: Zero,
   assembleRequest: {
     userAddr: AddressZero,
@@ -136,6 +137,7 @@ export class OdosEngine implements SwapEngine {
     }
     return {
       engineID: this.id,
+      chainId,
       expectedAmountOut: BigNumber.from(amountOut),
       assembleRequest: {
         userAddr: tokenZap,

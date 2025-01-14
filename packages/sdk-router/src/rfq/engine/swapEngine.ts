@@ -14,6 +14,7 @@ export enum EngineID {
 
 export type SwapEngineQuote = {
   engineID: EngineID
+  chainId: number
   expectedAmountOut: BigNumber
   steps?: StepParams[]
 }
@@ -109,9 +110,18 @@ export const applySlippage = (
   return amount.sub(amount.mul(slippage.numerator).div(slippage.denominator))
 }
 
+export const getEmptyQuote = (engineID: EngineID): SwapEngineQuote => {
+  return {
+    engineID,
+    chainId: 0,
+    expectedAmountOut: Zero,
+  }
+}
+
 export const getEmptyRoute = (engineID: EngineID): SwapEngineRoute => {
   return {
     engineID,
+    chainId: 0,
     expectedAmountOut: Zero,
     steps: [],
   }
@@ -123,10 +133,7 @@ export const sanitizeMultiStepQuote = (
   if (!quote.steps || quote.steps.length <= 1) {
     return quote
   }
-  return {
-    engineID: quote.engineID,
-    expectedAmountOut: Zero,
-  }
+  return getEmptyQuote(quote.engineID)
 }
 
 export const sanitizeMultiStepRoute = (
@@ -135,11 +142,7 @@ export const sanitizeMultiStepRoute = (
   if (route.steps.length <= 1) {
     return route
   }
-  return {
-    engineID: route.engineID,
-    expectedAmountOut: Zero,
-    steps: [],
-  }
+  return getEmptyRoute(route.engineID)
 }
 
 export const getForwardTo = (recipient: Recipient): string => {
