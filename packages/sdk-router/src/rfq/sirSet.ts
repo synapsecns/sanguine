@@ -169,19 +169,22 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     }
     // Get all tickers that can be used between the two chains
     const tickers = await this.getAllTickers(originChainId, destChainId)
-    // Get routes for swaps on the origin chain from tokenIn into the "RFQ-supported token", and apply the protocol fees
-    const originIntents = await this.getOriginQuotes(
-      originChainId,
-      tickers,
-      tokenIn,
-      amountIn
+    const protocolFeeRate = await this.getSynapseIntentRouter(
+      originChainId
+    ).getProtocolFeeRate()
+    const quotes: Required<FullQuote>[] = await Promise.all(
+      tickers.map(async (ticker) =>
+        this.getTickerQuote(
+          ticker,
+          tokenIn,
+          tokenOut,
+          amountIn,
+          protocolFeeRate,
+          originUserAddress
+        )
+      )
     )
-
-    // Get routes for swaps on the destination chain from the "RFQ-supported token" into tokenOut
-    const destIntents = await this.getDestinationQuotes(originIntents, tokenOut)
-    // Apply the quotes from the RFQ API
-    const intents = await this.getFullQuotes(destIntents, originUserAddress)
-    return intents
+    return quotes
       .filter(({ destRoute }) => destRoute.expectedAmountOut.gt(Zero))
       .map((intent) => ({
         bridgeModuleName: this.bridgeModuleName,
@@ -388,101 +391,99 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     return amount.sub(protocolFee)
   }
 
-  @logExecutionTime('SynapseIntents.getOriginQuotes')
-  private async getOriginQuotes(
-    originChainId: number,
-    tickers: Ticker[],
+  @logExecutionTime('SynapseIntents.getTickerQuote')
+  private async getTickerQuote(
+    ticker: Ticker,
     tokenIn: string,
-    amountIn: BigintIsh
-  ): Promise<OriginIntent[]> {
-    const protocolFeeRate = await this.getSynapseIntentRouter(
-      originChainId
-    ).getProtocolFeeRate()
+    tokenOut: string,
+    amountIn: BigintIsh,
+    protocolFeeRate: BigNumber,
+    originUserAddress?: string
+  ): Promise<Required<FullQuote>> {
+    const originIntent = await this.getOriginQuote(
+      ticker,
+      tokenIn,
+      amountIn,
+      protocolFeeRate
+    )
+    const destIntent = await this.getDestinationQuote(originIntent, tokenOut)
+    const fullQuote = await this.getFullQuote(destIntent, originUserAddress)
+    const { originRoute, destRoute } = await this.generateRoutes(fullQuote)
+    return {
+      ...fullQuote,
+      originRoute,
+      destRoute,
+    }
+  }
+
+  @logExecutionTime('SynapseIntents.getOriginQuote')
+  private async getOriginQuote(
+    ticker: Ticker,
+    tokenIn: string,
+    amountIn: BigintIsh,
+    protocolFeeRate: BigNumber
+  ): Promise<OriginIntent> {
     const finalRecipient: Recipient = {
       entity: RecipientEntity.Self,
-      address: this.engineSet.getTokenZap(originChainId),
+      address: this.engineSet.getTokenZap(ticker.originToken.chainId),
     }
     // Swap complexity is not restricted on the origin chain, where execution is done by the user at the time of bridging.
-    const inputs: RouteInput[] = tickers.map(({ originToken }) => ({
-      chainId: originToken.chainId,
+    const input: RouteInput = {
+      chainId: ticker.originToken.chainId,
       tokenIn,
-      tokenOut: originToken.token,
+      tokenOut: ticker.originToken.token,
       amountIn,
       finalRecipient,
       restrictComplexity: false,
-    }))
-    const allQuotes = await this.engineSet.getQuotes(inputs, {
-      allowMultiStep: true,
-    })
-    // Note: tickers.length === allQuotes.length
-    // Zip the tickers and routes together, apply the protocol fee, and filter out "no amount out" routes
-    return tickers
-      .map((ticker, index) => ({
-        ticker,
-        originInput: inputs[index],
-        originQuote: allQuotes[index],
-        originAmountOut: this.applyProtocolFeeRate(
-          allQuotes[index].expectedAmountOut,
-          protocolFeeRate
-        ),
-      }))
-      .filter(({ originQuote }) => originQuote.expectedAmountOut.gt(Zero))
+    }
+    // TODO: cleanup array usage
+    const quote = (
+      await this.engineSet.getQuotes([input], {
+        allowMultiStep: true,
+      })
+    )[0]
+    return {
+      ticker,
+      originInput: input,
+      originQuote: quote,
+      originAmountOut: this.applyProtocolFeeRate(
+        quote.expectedAmountOut,
+        protocolFeeRate
+      ),
+    }
   }
 
-  @logExecutionTime('SynapseIntents.getDestinationQuotes')
-  private async getDestinationQuotes(
-    originIntents: OriginIntent[],
+  @logExecutionTime('SynapseIntents.getDestinationQuote')
+  private async getDestinationQuote(
+    originIntent: OriginIntent,
     tokenOut: string
-  ): Promise<FullIntent[]> {
-    // Note: zap data will still be using `USER_SIMULATED_ADDRESS` address - this will be overwritten
-    // when the bridge calldata is generated (until then we don't know the final recipient).
+  ): Promise<FullIntent> {
     const finalRecipient: Recipient = {
       entity: RecipientEntity.UserSimulated,
       address: USER_SIMULATED_ADDRESS,
     }
     // Swap complexity is restricted on the destination chain, where execution is done by the Relayers with a delay.
-    const inputs: RouteInput[] = originIntents.map(
-      ({ ticker, originAmountOut }) => ({
-        chainId: ticker.destToken.chainId,
-        tokenIn: ticker.destToken.token,
-        tokenOut,
-        amountIn: originAmountOut,
-        finalRecipient,
-        restrictComplexity: true,
+    const input: RouteInput = {
+      chainId: originIntent.ticker.destToken.chainId,
+      tokenIn: originIntent.ticker.destToken.token,
+      tokenOut,
+      amountIn: originIntent.originAmountOut,
+      finalRecipient,
+      restrictComplexity: true,
+    }
+    const quote = (
+      await this.engineSet.getQuotes([input], {
+        allowMultiStep: false,
       })
-    )
-    const allQuotes = await this.engineSet.getQuotes(inputs, {
-      allowMultiStep: false,
-    })
-    // Note: originIntents.length === allQuotes.length
-    // Zip the intents and quotes together, filter out "no amount out" quotes
-    return originIntents
-      .map((intent, index) => ({
-        ...intent,
-        destInput: inputs[index],
-        destQuote: allQuotes[index],
-      }))
-      .filter(({ destQuote }) => destQuote.expectedAmountOut.gt(Zero))
+    )[0]
+    return {
+      ...originIntent,
+      destInput: input,
+      destQuote: quote,
+    }
   }
 
-  @logExecutionTime('SynapseIntents.getFullQuotes')
-  private async getFullQuotes(
-    intents: FullIntent[],
-    originUserAddress?: string
-  ): Promise<Required<FullQuote>[]> {
-    return Promise.all(
-      intents.map(async (intent) => {
-        const fullQuote = await this.getFullQuote(intent, originUserAddress)
-        const { originRoute, destRoute } = await this.generateRoutes(fullQuote)
-        return {
-          ...fullQuote,
-          originRoute,
-          destRoute,
-        }
-      })
-    )
-  }
-
+  @logExecutionTime('SynapseIntents.getFullQuote')
   private async getFullQuote(
     intent: FullIntent,
     originUserAddress?: string
@@ -534,6 +535,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     }
   }
 
+  @logExecutionTime('SynapseIntents.generateRoutes')
   private async generateRoutes(
     fullQuote: FullQuote
   ): Promise<{ originRoute: SwapEngineRoute; destRoute: SwapEngineRoute }> {
