@@ -61,7 +61,7 @@ export class EngineSet {
   public async getBestQuote(
     input: RouteInput,
     options: QuoteOptions
-  ): Promise<SwapEngineQuote> {
+  ): Promise<SwapEngineQuote | undefined> {
     // Find the quote for each engine.
     const allQuotes = await Promise.all(
       Object.values(this.engines).map(async (engine) =>
@@ -69,24 +69,30 @@ export class EngineSet {
       )
     )
     // Select the best quote.
-    return allQuotes.reduce((best, current) =>
+    const quote = allQuotes.reduce((best, current) =>
       current.expectedAmountOut.gt(best.expectedAmountOut) ? current : best
     )
+    return quote.expectedAmountOut.gt(Zero) ? quote : undefined
   }
 
   public async getQuote(
     engineID: number,
     input: RouteInput,
     options: QuoteOptions
-  ): Promise<SwapEngineQuote> {
-    return this._getQuote(this._getEngine(engineID), input, options)
+  ): Promise<SwapEngineQuote | undefined> {
+    const quote = await this._getQuote(
+      this._getEngine(engineID),
+      input,
+      options
+    )
+    return quote.expectedAmountOut.gt(Zero) ? quote : undefined
   }
 
   public async generateRoute(
     input: RouteInput,
     quote: SwapEngineQuote,
     options: RouteOptions
-  ): Promise<SwapEngineRoute> {
+  ): Promise<SwapEngineRoute | undefined> {
     // Use longer timeout for route generation by default.
     let route = await this._getEngine(quote.engineID).generateRoute(
       input,
@@ -104,7 +110,7 @@ export class EngineSet {
         minFinalAmount: route.expectedAmountOut,
       })
     }
-    return route
+    return route.expectedAmountOut.gt(Zero) ? route : undefined
   }
 
   public getOriginQuery(

@@ -46,7 +46,6 @@ import {
   Slippage,
   applySlippage,
   SwapEngineQuote,
-  getEmptyRoute,
   RouteInput,
   EngineTimeout,
 } from './engine'
@@ -172,7 +171,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     const protocolFeeRate = await this.getSynapseIntentRouter(
       originChainId
     ).getProtocolFeeRate()
-    const quotes: Required<FullQuote>[] = await Promise.all(
+    const quotes = await Promise.all(
       tickers.map(async (ticker) =>
         this.getTickerQuote(
           ticker,
@@ -185,6 +184,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       )
     )
     return quotes
+      .filter((quote): quote is Required<FullQuote> => !!quote)
       .filter(({ destRoute }) => destRoute.expectedAmountOut.gt(Zero))
       .map((intent) => ({
         bridgeModuleName: this.bridgeModuleName,
@@ -399,16 +399,28 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     amountIn: BigintIsh,
     protocolFeeRate: BigNumber,
     originUserAddress?: string
-  ): Promise<Required<FullQuote>> {
+  ): Promise<Required<FullQuote> | undefined> {
     const originIntent = await this.getOriginQuote(
       ticker,
       tokenIn,
       amountIn,
       protocolFeeRate
     )
+    if (!originIntent) {
+      return
+    }
     const destIntent = await this.getDestinationQuote(originIntent, tokenOut)
+    if (!destIntent) {
+      return
+    }
     const fullQuote = await this.getFullQuote(destIntent, originUserAddress)
+    if (!fullQuote) {
+      return
+    }
     const { originRoute, destRoute } = await this.generateRoutes(fullQuote)
+    if (!originRoute || !destRoute) {
+      return
+    }
     return {
       ...fullQuote,
       originRoute,
@@ -422,7 +434,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     tokenIn: string,
     amountIn: BigintIsh,
     protocolFeeRate: BigNumber
-  ): Promise<OriginIntent> {
+  ): Promise<OriginIntent | undefined> {
     const finalRecipient: Recipient = {
       entity: RecipientEntity.Self,
       address: this.engineSet.getTokenZap(ticker.originToken.chainId),
@@ -439,6 +451,9 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     const quote = await this.engineSet.getBestQuote(input, {
       allowMultiStep: true,
     })
+    if (!quote) {
+      return
+    }
     return {
       ticker,
       originInput: input,
@@ -454,7 +469,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
   private async getDestinationQuote(
     originIntent: OriginIntent,
     tokenOut: string
-  ): Promise<FullIntent> {
+  ): Promise<FullIntent | undefined> {
     const finalRecipient: Recipient = {
       entity: RecipientEntity.UserSimulated,
       address: USER_SIMULATED_ADDRESS,
@@ -471,6 +486,9 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     const quote = await this.engineSet.getBestQuote(input, {
       allowMultiStep: false,
     })
+    if (!quote) {
+      return
+    }
     return {
       ...originIntent,
       destInput: input,
@@ -482,7 +500,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
   private async getFullQuote(
     intent: FullIntent,
     originUserAddress?: string
-  ): Promise<FullQuote> {
+  ): Promise<FullQuote | undefined> {
     // Note: we leave the default max slippage from `generateRoute` here to ensure that the Relayer simulation
     // suceeds even in the even that on-chain price moves. We will overwrite this later in `generateRoutes`.
     const destRoute = await this.engineSet.generateRoute(
@@ -490,6 +508,9 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       intent.destQuote,
       { allowMultiStep: false, useZeroSlippage: false }
     )
+    if (!destRoute) {
+      return
+    }
     // FastBridge will use TokenZap as the recipient if there are any Zap steps to perform
     const destRelayRecipient =
       destRoute.steps.length === 0
@@ -507,6 +528,9 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
         zapData: encodedZapDataSimulation,
       }
     )
+    if (!relayerQuote) {
+      return
+    }
     // Update `destInput` and `destQuote` with the actual values
     const destInput = {
       ...intent.destInput,
@@ -521,6 +545,9 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
         timeout: EngineTimeout.Long,
       }
     )
+    if (!destQuote) {
+      return
+    }
     return {
       ...intent,
       destInput,
@@ -533,13 +560,10 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
   @logExecutionTime('SynapseIntents.generateRoutes')
   private async generateRoutes(
     fullQuote: FullQuote
-  ): Promise<{ originRoute: SwapEngineRoute; destRoute: SwapEngineRoute }> {
+  ): Promise<{ originRoute?: SwapEngineRoute; destRoute?: SwapEngineRoute }> {
     // Do nothing if the final amount is 0
     if (fullQuote.destQuote.expectedAmountOut.eq(Zero)) {
-      return {
-        originRoute: getEmptyRoute(fullQuote.originQuote.engineID),
-        destRoute: getEmptyRoute(fullQuote.destQuote.engineID),
-      }
+      return {}
     }
     // Final rotures will be returned with a zero slippage by default, and could be then modified
     // by the SDK consumer.
@@ -618,8 +642,9 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     ticker: Ticker,
     originAmount: BigNumber,
     options: QuoteRequestOptions = {}
-  ): Promise<RelayerQuote> {
-    return getBestRelayerQuote(ticker, originAmount, options)
+  ): Promise<RelayerQuote | undefined> {
+    const quote = await getBestRelayerQuote(ticker, originAmount, options)
+    return quote.destAmount.gt(Zero) ? quote : undefined
   }
 
   private getSavedParamsV1(
