@@ -3,6 +3,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import invariant from 'tiny-invariant'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { hexDataLength, hexlify } from '@ethersproject/bytes'
+import NodeCache from 'node-cache'
 
 import {
   BigintIsh,
@@ -93,8 +94,6 @@ type DestQueryData = {
 }
 
 export class SynapseIntentRouterSet extends SynapseModuleSet {
-  static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
-
   public readonly bridgeModuleName = 'SynapseIntents'
   public readonly allEvents = ['BridgeRequestedEvent', 'BridgeRelayedEvent']
 
@@ -106,6 +105,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
   }
 
   private engineSet: EngineSet
+  private cache = new NodeCache()
 
   constructor(chains: ChainProvider[]) {
     super()
@@ -583,21 +583,15 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     const originFB = FAST_BRIDGE_V2_ADDRESS_MAP[originChainId]
     const destFB = FAST_BRIDGE_V2_ADDRESS_MAP[destChainId]
     // First, we filter out quotes for other chainIDs and bridge addresses.
-    // Then, we filter out quotes that are too old.
     // Finally, we remove the duplicates of the origin token.
     return allQuotes
-      .filter((quote) => {
-        const areSameChainsAndToken =
+      .filter(
+        (quote) =>
           quote.ticker.originToken.chainId === originChainId &&
           quote.ticker.destToken.chainId === destChainId &&
           isSameAddress(quote.originFastBridge, originFB) &&
           isSameAddress(quote.destFastBridge, destFB)
-        // TODO: don't filter by age here
-        const age = Date.now() - quote.updatedAt
-        const isValidAge =
-          0 <= age && age < SynapseIntentRouterSet.MAX_QUOTE_AGE_MILLISECONDS
-        return areSameChainsAndToken && isValidAge
-      })
+      )
       .map((quote) => quote.ticker)
       .filter(
         (ticker, index, self) =>
@@ -610,7 +604,16 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
 
   @logExecutionTime('API/quotes')
   private async apiGetAllQuotes(): Promise<FastBridgeQuote[]> {
-    return getAllQuotes()
+    // Try getting cached quotes first.
+    const cacheKey = 'getAllQuotes'
+    const cachedQuotes = this.cache.get<FastBridgeQuote[]>(cacheKey)
+    if (cachedQuotes) {
+      return cachedQuotes
+    }
+    // If not cached, fetch new quotes and cache them.
+    const data = await getAllQuotes()
+    this.cache.set(cacheKey, data, ONE_HOUR)
+    return data
   }
 
   @logExecutionTime('API/rfq')
