@@ -531,27 +531,8 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     if (!relayerQuote) {
       return
     }
-    // Update `destInput` and `destQuote` with the actual values
-    const destInput = {
-      ...intent.destInput,
-      amountIn: relayerQuote.destAmount,
-    }
-    // Use longer timeout for finalizing the route.
-    const destQuote = await this.engineSet.getQuote(
-      intent.destQuote.engineID,
-      destInput,
-      {
-        allowMultiStep: false,
-        timeout: EngineTimeout.Long,
-      }
-    )
-    if (!destQuote) {
-      return
-    }
     return {
       ...intent,
-      destInput,
-      destQuote,
       destRelayRecipient,
       relayerQuote,
     }
@@ -561,8 +542,21 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
   private async generateRoutes(
     fullQuote: FullQuote
   ): Promise<{ originRoute?: SwapEngineRoute; destRoute?: SwapEngineRoute }> {
-    // Do nothing if the final amount is 0
-    if (fullQuote.destQuote.expectedAmountOut.eq(Zero)) {
+    // Update `destInput` and `destQuote` with the actual values.
+    const destInput = {
+      ...fullQuote.destInput,
+      amountIn: fullQuote.relayerQuote.destAmount,
+    }
+    // Use longer timeout for finalizing the route.
+    const destQuote = await this.engineSet.getQuote(
+      fullQuote.destQuote.engineID,
+      destInput,
+      {
+        allowMultiStep: false,
+        timeout: EngineTimeout.Long,
+      }
+    )
+    if (!destQuote) {
       return {}
     }
     // Final rotures will be returned with a zero slippage by default, and could be then modified
@@ -576,7 +570,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
           useZeroSlippage: true,
         }
       ),
-      this.engineSet.generateRoute(fullQuote.destInput, fullQuote.destQuote, {
+      this.engineSet.generateRoute(destInput, destQuote, {
         allowMultiStep: false,
         useZeroSlippage: true,
       }),
