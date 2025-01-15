@@ -14,12 +14,13 @@ export class NoOpEngine implements SwapEngine {
   public readonly id: EngineID = EngineID.NoOp
 
   public async getQuote(input: RouteInput): Promise<SwapEngineRoute> {
-    const { tokenIn, tokenOut, amountIn } = input
+    const { chainId, tokenIn, tokenOut, amountIn } = input
     if (!isSameAddress(tokenIn, tokenOut)) {
       return getEmptyRoute(this.id)
     }
     return {
       engineID: this.id,
+      chainId,
       expectedAmountOut: BigNumber.from(amountIn),
       steps: [],
     }

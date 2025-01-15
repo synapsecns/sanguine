@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.16](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.15...@synapsecns/rest-api@1.8.16) (2025-01-14)
+
+
+### Bug Fixes
+
+* **rest-api:** apply default slippage ([#3489](https://github.com/synapsecns/sanguine/issues/3489)) ([f647a1c](https://github.com/synapsecns/sanguine/commit/f647a1cf8b3603ce96e5309af869a50457a6c187))
+
+
+
+
+
 ## [1.8.15](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.14...@synapsecns/rest-api@1.8.15) (2024-12-18)
 
 **Note:** Version bump only for package @synapsecns/rest-api

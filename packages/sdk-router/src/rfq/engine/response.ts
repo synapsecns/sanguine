@@ -58,6 +58,7 @@ export const generateAPIRoute = (
 
   return {
     engineID,
+    chainId: input.chainId,
     expectedAmountOut: response.amountOut,
     steps: [
       {

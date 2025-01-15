@@ -3,6 +3,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import invariant from 'tiny-invariant'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { hexDataLength, hexlify } from '@ethersproject/bytes'
+import NodeCache from 'node-cache'
 
 import {
   BigintIsh,
@@ -45,7 +46,6 @@ import {
   Slippage,
   applySlippage,
   SwapEngineQuote,
-  getEmptyRoute,
   RouteInput,
   EngineTimeout,
 } from './engine'
@@ -63,25 +63,19 @@ import {
 } from './steps'
 import { FastBridgeQuote } from './quote'
 
-type OriginIntent = {
+type IntentFragment = {
+  input: RouteInput
+  quote: SwapEngineQuote
+  finalAmount: BigNumber
+}
+
+type Intent = {
   ticker: Ticker
-  originInput: RouteInput
-  originQuote: SwapEngineQuote
-  originAmountOut: BigNumber
-}
-
-type DestIntent = {
-  destInput: RouteInput
-  destQuote: SwapEngineQuote
-}
-
-type FullIntent = OriginIntent & DestIntent
-
-type FullQuote = FullIntent & {
-  destRelayRecipient: string
+  originFragment: IntentFragment
+  destFragment: IntentFragment
   relayerQuote: RelayerQuote
-  originRoute?: SwapEngineRoute
-  destRoute?: SwapEngineRoute
+  originRoute: SwapEngineRoute
+  destRoute: SwapEngineRoute
 }
 
 type DestQueryData = {
@@ -93,8 +87,6 @@ type DestQueryData = {
 }
 
 export class SynapseIntentRouterSet extends SynapseModuleSet {
-  static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
-
   public readonly bridgeModuleName = 'SynapseIntents'
   public readonly allEvents = ['BridgeRequestedEvent', 'BridgeRelayedEvent']
 
@@ -106,6 +98,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
   }
 
   private engineSet: EngineSet
+  private cache = new NodeCache()
 
   constructor(chains: ChainProvider[]) {
     super()
@@ -169,44 +162,48 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     }
     // Get all tickers that can be used between the two chains
     const tickers = await this.getAllTickers(originChainId, destChainId)
-    // Get routes for swaps on the origin chain from tokenIn into the "RFQ-supported token", and apply the protocol fees
-    const originIntents = await this.getOriginQuotes(
-      originChainId,
-      tickers,
-      tokenIn,
-      amountIn
+    const protocolFeeRate = await this.getSynapseIntentRouter(
+      originChainId
+    ).getProtocolFeeRate()
+    const quotes = await Promise.all(
+      tickers.map(async (ticker) =>
+        this.getTickerQuote(
+          ticker,
+          tokenIn,
+          tokenOut,
+          amountIn,
+          protocolFeeRate,
+          originUserAddress
+        )
+      )
     )
-
-    // Get routes for swaps on the destination chain from the "RFQ-supported token" into tokenOut
-    const destIntents = await this.getDestinationQuotes(originIntents, tokenOut)
-    // Apply the quotes from the RFQ API
-    const intents = await this.getFullQuotes(destIntents, originUserAddress)
-    return intents
+    return quotes
+      .filter((quote): quote is Intent => !!quote)
       .filter(({ destRoute }) => destRoute.expectedAmountOut.gt(Zero))
-      .map((intent) => ({
+      .map((quote) => ({
         bridgeModuleName: this.bridgeModuleName,
         originChainId,
         destChainId,
         bridgeToken: {
-          symbol: marshallTicker(intent.ticker),
-          token: intent.ticker.destToken.token,
+          symbol: marshallTicker(quote.ticker),
+          token: quote.ticker.destToken.token,
         },
         originQuery: this.engineSet.getOriginQuery(
           originChainId,
-          intent.originRoute,
-          intent.ticker.originToken.token
+          quote.originRoute,
+          quote.ticker.originToken.token
         ),
-        originAmountOut: intent.originAmountOut,
+        originAmountOut: quote.originFragment.finalAmount,
         destQuery: this.getRFQDestinationQuery({
           tokenOut,
-          minAmountOut: intent.destRoute.expectedAmountOut,
+          minAmountOut: quote.destRoute.expectedAmountOut,
           // The default deadline will be overridden later in `finalizeBridgeRoute`
           deadline: Zero,
-          paramsV1: this.getSavedParamsV1(intent, originUserAddress),
-          paramsV2: this.getBridgeParamsV2(intent.destRoute),
+          paramsV1: this.getSavedParamsV1(quote, originUserAddress),
+          paramsV2: this.getBridgeParamsV2(quote.destRoute),
         }),
-        destAmountIn: intent.relayerQuote.destAmount,
-        destAmountOut: intent.destRoute.expectedAmountOut,
+        destAmountIn: quote.relayerQuote.destAmount,
+        destAmountOut: quote.destRoute.expectedAmountOut,
       }))
   }
 
@@ -388,179 +385,199 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     return amount.sub(protocolFee)
   }
 
-  @logExecutionTime('SynapseIntents.getOriginQuotes')
-  private async getOriginQuotes(
-    originChainId: number,
-    tickers: Ticker[],
+  @logExecutionTime('SynapseIntents.getTickerQuote')
+  private async getTickerQuote(
+    ticker: Ticker,
     tokenIn: string,
-    amountIn: BigintIsh
-  ): Promise<OriginIntent[]> {
-    const protocolFeeRate = await this.getSynapseIntentRouter(
-      originChainId
-    ).getProtocolFeeRate()
+    tokenOut: string,
+    amountIn: BigintIsh,
+    protocolFeeRate: BigNumber,
+    originUserAddress?: string
+  ): Promise<Intent | undefined> {
+    const originFragment = await this.getOriginQuote(
+      ticker,
+      tokenIn,
+      amountIn,
+      protocolFeeRate
+    )
+    if (!originFragment) {
+      return
+    }
+    const destFragmentSimulated = await this.getDestinationQuote(
+      ticker,
+      originFragment,
+      tokenOut
+    )
+    if (!destFragmentSimulated) {
+      return
+    }
+    const relayerQuote = await this.getRelayerQuote(
+      ticker,
+      originFragment,
+      destFragmentSimulated,
+      originUserAddress
+    )
+    if (!relayerQuote) {
+      return
+    }
+    const { destFragment, originRoute, destRoute } = await this.generateRoutes(
+      originFragment,
+      destFragmentSimulated,
+      relayerQuote
+    )
+    if (!destFragment || !originRoute || !destRoute) {
+      return
+    }
+    return {
+      ticker,
+      originFragment,
+      destFragment,
+      relayerQuote,
+      originRoute,
+      destRoute,
+    }
+  }
+
+  @logExecutionTime('SynapseIntents.getOriginQuote')
+  private async getOriginQuote(
+    ticker: Ticker,
+    tokenIn: string,
+    amountIn: BigintIsh,
+    protocolFeeRate: BigNumber
+  ): Promise<IntentFragment | undefined> {
     const finalRecipient: Recipient = {
       entity: RecipientEntity.Self,
-      address: this.engineSet.getTokenZap(originChainId),
+      address: this.engineSet.getTokenZap(ticker.originToken.chainId),
     }
     // Swap complexity is not restricted on the origin chain, where execution is done by the user at the time of bridging.
-    const inputs: RouteInput[] = tickers.map(({ originToken }) => ({
-      chainId: originToken.chainId,
+    const input: RouteInput = {
+      chainId: ticker.originToken.chainId,
       tokenIn,
-      tokenOut: originToken.token,
+      tokenOut: ticker.originToken.token,
       amountIn,
       finalRecipient,
       restrictComplexity: false,
-    }))
-    const allQuotes = await this.engineSet.getQuotes(inputs, {
+    }
+    const quote = await this.engineSet.getBestQuote(input, {
       allowMultiStep: true,
     })
-    // Note: tickers.length === allQuotes.length
-    // Zip the tickers and routes together, apply the protocol fee, and filter out "no amount out" routes
-    return tickers
-      .map((ticker, index) => ({
-        ticker,
-        originInput: inputs[index],
-        originQuote: allQuotes[index],
-        originAmountOut: this.applyProtocolFeeRate(
-          allQuotes[index].expectedAmountOut,
-          protocolFeeRate
-        ),
-      }))
-      .filter(({ originQuote }) => originQuote.expectedAmountOut.gt(Zero))
+    if (!quote) {
+      return
+    }
+    return {
+      input,
+      quote,
+      finalAmount: this.applyProtocolFeeRate(
+        quote.expectedAmountOut,
+        protocolFeeRate
+      ),
+    }
   }
 
-  @logExecutionTime('SynapseIntents.getDestinationQuotes')
-  private async getDestinationQuotes(
-    originIntents: OriginIntent[],
+  @logExecutionTime('SynapseIntents.getDestinationQuote')
+  private async getDestinationQuote(
+    ticker: Ticker,
+    originFragment: IntentFragment,
     tokenOut: string
-  ): Promise<FullIntent[]> {
-    // Note: zap data will still be using `USER_SIMULATED_ADDRESS` address - this will be overwritten
-    // when the bridge calldata is generated (until then we don't know the final recipient).
+  ): Promise<IntentFragment | undefined> {
     const finalRecipient: Recipient = {
       entity: RecipientEntity.UserSimulated,
       address: USER_SIMULATED_ADDRESS,
     }
     // Swap complexity is restricted on the destination chain, where execution is done by the Relayers with a delay.
-    const inputs: RouteInput[] = originIntents.map(
-      ({ ticker, originAmountOut }) => ({
-        chainId: ticker.destToken.chainId,
-        tokenIn: ticker.destToken.token,
-        tokenOut,
-        amountIn: originAmountOut,
-        finalRecipient,
-        restrictComplexity: true,
-      })
-    )
-    const allQuotes = await this.engineSet.getQuotes(inputs, {
+    const input: RouteInput = {
+      chainId: ticker.destToken.chainId,
+      tokenIn: ticker.destToken.token,
+      tokenOut,
+      amountIn: originFragment.finalAmount,
+      finalRecipient,
+      restrictComplexity: true,
+    }
+    const quote = await this.engineSet.getBestQuote(input, {
       allowMultiStep: false,
     })
-    // Note: originIntents.length === allQuotes.length
-    // Zip the intents and quotes together, filter out "no amount out" quotes
-    return originIntents
-      .map((intent, index) => ({
-        ...intent,
-        destInput: inputs[index],
-        destQuote: allQuotes[index],
-      }))
-      .filter(({ destQuote }) => destQuote.expectedAmountOut.gt(Zero))
+    if (!quote) {
+      return
+    }
+    return {
+      input,
+      quote,
+      finalAmount: quote.expectedAmountOut,
+    }
   }
 
-  @logExecutionTime('SynapseIntents.getFullQuotes')
-  private async getFullQuotes(
-    intents: FullIntent[],
+  @logExecutionTime('SynapseIntents.getRelayerQuote')
+  private async getRelayerQuote(
+    ticker: Ticker,
+    originFragment: IntentFragment,
+    destFragment: IntentFragment,
     originUserAddress?: string
-  ): Promise<Required<FullQuote>[]> {
-    return Promise.all(
-      intents.map(async (intent) => {
-        const fullQuote = await this.getFullQuote(intent, originUserAddress)
-        const { originRoute, destRoute } = await this.generateRoutes(fullQuote)
-        return {
-          ...fullQuote,
-          originRoute,
-          destRoute,
-        }
-      })
-    )
-  }
-
-  private async getFullQuote(
-    intent: FullIntent,
-    originUserAddress?: string
-  ): Promise<FullQuote> {
+  ): Promise<RelayerQuote | undefined> {
     // Note: we leave the default max slippage from `generateRoute` here to ensure that the Relayer simulation
-    // suceeds even in the even that on-chain price moves. We will overwrite this later in `generateRoutes`.
+    // succeeds even in the even that on-chain price moves. We will overwrite this later in `generateRoutes`.
     const destRoute = await this.engineSet.generateRoute(
-      intent.destInput,
-      intent.destQuote,
+      destFragment.input,
+      destFragment.quote,
       { allowMultiStep: false, useZeroSlippage: false }
     )
-    // FastBridge will use TokenZap as the recipient if there are any Zap steps to perform
-    const destRelayRecipient =
-      destRoute.steps.length === 0
-        ? USER_SIMULATED_ADDRESS
-        : this.engineSet.getTokenZap(intent.ticker.destToken.chainId)
-    const encodedZapDataSimulation = extractSingleZapData(destRoute.steps)
+    if (!destRoute) {
+      return
+    }
     // intent.destQuote is generated by using `originAmountOut` as the input amount on the destination chain.
     // The Relayers will also use `originAmountOut` as the input amount for simulatiion purposes as per RFQ API spec.
-    const relayerQuote = await this.apiGetBestRelayerQuote(
-      intent.ticker,
-      intent.originAmountOut,
-      {
-        originSender: originUserAddress,
-        destRecipient: destRelayRecipient,
-        zapData: encodedZapDataSimulation,
-      }
-    )
-    // Update `destInput` and `destQuote` with the actual values
+    return this.apiGetBestRelayerQuote(ticker, originFragment.finalAmount, {
+      originSender: originUserAddress,
+      destRecipient: this.getRelayRecipient(destRoute),
+      zapData: extractSingleZapData(destRoute.steps),
+    })
+  }
+
+  @logExecutionTime('SynapseIntents.generateRoutes')
+  private async generateRoutes(
+    originFragment: IntentFragment,
+    destFragmentSimulated: IntentFragment,
+    relayerQuote: RelayerQuote
+  ): Promise<{
+    destFragment?: IntentFragment
+    originRoute?: SwapEngineRoute
+    destRoute?: SwapEngineRoute
+  }> {
+    // Update `destInput` and `destQuote` with the actual values.
     const destInput = {
-      ...intent.destInput,
+      ...destFragmentSimulated.input,
       amountIn: relayerQuote.destAmount,
     }
     // Use longer timeout for finalizing the route.
     const destQuote = await this.engineSet.getQuote(
-      intent.destQuote.engineID,
+      destFragmentSimulated.quote.engineID,
       destInput,
       {
         allowMultiStep: false,
         timeout: EngineTimeout.Long,
       }
     )
-    return {
-      ...intent,
-      destInput,
-      destQuote,
-      destRelayRecipient,
-      relayerQuote,
+    if (!destQuote) {
+      return {}
     }
-  }
-
-  private async generateRoutes(
-    fullQuote: FullQuote
-  ): Promise<{ originRoute: SwapEngineRoute; destRoute: SwapEngineRoute }> {
-    // Do nothing if the final amount is 0
-    if (fullQuote.destQuote.expectedAmountOut.eq(Zero)) {
-      return {
-        originRoute: getEmptyRoute(fullQuote.originQuote.engineID),
-        destRoute: getEmptyRoute(fullQuote.destQuote.engineID),
-      }
+    const destFragment = {
+      input: destInput,
+      quote: destQuote,
+      finalAmount: destQuote.expectedAmountOut,
     }
     // Final rotures will be returned with a zero slippage by default, and could be then modified
     // by the SDK consumer.
     const [originRoute, destRoute] = await Promise.all([
-      this.engineSet.generateRoute(
-        fullQuote.originInput,
-        fullQuote.originQuote,
-        {
-          allowMultiStep: true,
-          useZeroSlippage: true,
-        }
-      ),
-      this.engineSet.generateRoute(fullQuote.destInput, fullQuote.destQuote, {
+      this.engineSet.generateRoute(originFragment.input, originFragment.quote, {
+        allowMultiStep: true,
+        useZeroSlippage: true,
+      }),
+      this.engineSet.generateRoute(destInput, destQuote, {
         allowMultiStep: false,
         useZeroSlippage: true,
       }),
     ])
     return {
+      destFragment,
       originRoute,
       destRoute,
     }
@@ -583,21 +600,15 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     const originFB = FAST_BRIDGE_V2_ADDRESS_MAP[originChainId]
     const destFB = FAST_BRIDGE_V2_ADDRESS_MAP[destChainId]
     // First, we filter out quotes for other chainIDs and bridge addresses.
-    // Then, we filter out quotes that are too old.
     // Finally, we remove the duplicates of the origin token.
     return allQuotes
-      .filter((quote) => {
-        const areSameChainsAndToken =
+      .filter(
+        (quote) =>
           quote.ticker.originToken.chainId === originChainId &&
           quote.ticker.destToken.chainId === destChainId &&
           isSameAddress(quote.originFastBridge, originFB) &&
           isSameAddress(quote.destFastBridge, destFB)
-        // TODO: don't filter by age here
-        const age = Date.now() - quote.updatedAt
-        const isValidAge =
-          0 <= age && age < SynapseIntentRouterSet.MAX_QUOTE_AGE_MILLISECONDS
-        return areSameChainsAndToken && isValidAge
-      })
+      )
       .map((quote) => quote.ticker)
       .filter(
         (ticker, index, self) =>
@@ -608,34 +619,45 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       )
   }
 
-  @logExecutionTime('API/quotes')
+  @logExecutionTime('SynapseIntents.API /quotes')
   private async apiGetAllQuotes(): Promise<FastBridgeQuote[]> {
-    return getAllQuotes()
+    // Try getting cached quotes first.
+    const cacheKey = 'getAllQuotes'
+    const cachedQuotes = this.cache.get<FastBridgeQuote[]>(cacheKey)
+    if (cachedQuotes) {
+      return cachedQuotes
+    }
+    // If not cached, fetch new quotes and cache them.
+    const data = await getAllQuotes()
+    this.cache.set(cacheKey, data, ONE_HOUR)
+    return data
   }
 
-  @logExecutionTime('API/rfq')
+  @logExecutionTime('SynapseIntents.API /rfq')
   private async apiGetBestRelayerQuote(
     ticker: Ticker,
     originAmount: BigNumber,
     options: QuoteRequestOptions = {}
-  ): Promise<RelayerQuote> {
-    return getBestRelayerQuote(ticker, originAmount, options)
+  ): Promise<RelayerQuote | undefined> {
+    const quote = await getBestRelayerQuote(ticker, originAmount, options)
+    return quote.destAmount.gt(Zero) ? quote : undefined
   }
 
   private getSavedParamsV1(
-    intent: FullQuote,
+    quote: Intent,
     originUserAddress?: string
   ): SavedParamsV1 | undefined {
-    return originUserAddress
-      ? {
-          originSender: originUserAddress,
-          destChainId: intent.ticker.destToken.chainId,
-          destEngineID: intent.destQuote.engineID,
-          destRelayRecipient: intent.destRelayRecipient,
-          destRelayToken: intent.ticker.destToken.token,
-          destRelayAmount: intent.relayerQuote.destAmount,
-        }
-      : undefined
+    if (!originUserAddress) {
+      return
+    }
+    return {
+      originSender: originUserAddress,
+      destChainId: quote.ticker.destToken.chainId,
+      destEngineID: quote.destFragment.quote.engineID,
+      destRelayRecipient: this.getRelayRecipient(quote.destRoute),
+      destRelayToken: quote.ticker.destToken.token,
+      destRelayAmount: quote.relayerQuote.destAmount,
+    }
   }
 
   private getBridgeParamsV2(destRoute: SwapEngineRoute): BridgeParamsV2 {
@@ -648,6 +670,13 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       zapNative: Zero,
       zapData: extractSingleZapData(destRoute.steps),
     }
+  }
+
+  private getRelayRecipient(destRoute: SwapEngineRoute): string {
+    // FastBridge will use TokenZap as the recipient if there are any Zap steps to perform
+    return destRoute.steps.length === 0
+      ? USER_SIMULATED_ADDRESS
+      : this.engineSet.getTokenZap(destRoute.chainId)
   }
 
   private getRFQDestinationQuery(data: DestQueryData): CCTPRouterQuery {

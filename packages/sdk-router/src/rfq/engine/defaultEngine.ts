@@ -95,6 +95,7 @@ export class DefaultEngine implements SwapEngine {
     // Remove extra fields before the encoding
     return {
       engineID: this.id,
+      chainId,
       expectedAmountOut: amountOut,
       steps: stepsOutput.map(({ token, amount, msgValue, zapData }) => ({
         token,

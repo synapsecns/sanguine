@@ -24,6 +24,15 @@ export enum EngineTimeout {
   Long = 3000,
 }
 
+type QuoteOptions = {
+  allowMultiStep: boolean
+  timeout?: number
+}
+
+type RouteOptions = QuoteOptions & {
+  useZeroSlippage: boolean
+}
+
 export class EngineSet {
   private engines: {
     [engineID: number]: SwapEngine
@@ -49,41 +58,41 @@ export class EngineSet {
     })
   }
 
-  public async getQuotes(
-    inputs: RouteInput[],
-    options: { allowMultiStep: boolean; timeout?: number }
-  ): Promise<SwapEngineQuote[]> {
-    // Find the quote for each input and each engine.
+  public async getBestQuote(
+    input: RouteInput,
+    options: QuoteOptions
+  ): Promise<SwapEngineQuote | undefined> {
+    // Find the quote for each engine.
     const allQuotes = await Promise.all(
-      inputs.map(async (input) =>
-        Promise.all(
-          Object.values(this.engines).map(async (engine) =>
-            this._getQuote(engine, input, options)
-          )
-        )
+      Object.values(this.engines).map(async (engine) =>
+        this._getQuote(engine, input, options)
       )
     )
-    // Select the best quote for each tokenOut.
-    return this._selectBestQuotes(allQuotes)
+    // Select the best quote.
+    const quote = allQuotes.reduce((best, current) =>
+      current.expectedAmountOut.gt(best.expectedAmountOut) ? current : best
+    )
+    return quote.expectedAmountOut.gt(Zero) ? quote : undefined
   }
 
   public async getQuote(
     engineID: number,
     input: RouteInput,
-    options: { allowMultiStep: boolean; timeout?: number }
-  ): Promise<SwapEngineQuote> {
-    return this._getQuote(this._getEngine(engineID), input, options)
+    options: QuoteOptions
+  ): Promise<SwapEngineQuote | undefined> {
+    const quote = await this._getQuote(
+      this._getEngine(engineID),
+      input,
+      options
+    )
+    return quote.expectedAmountOut.gt(Zero) ? quote : undefined
   }
 
   public async generateRoute(
     input: RouteInput,
     quote: SwapEngineQuote,
-    options: {
-      allowMultiStep: boolean
-      useZeroSlippage: boolean
-      timeout?: number
-    }
-  ): Promise<SwapEngineRoute> {
+    options: RouteOptions
+  ): Promise<SwapEngineRoute | undefined> {
     // Use longer timeout for route generation by default.
     let route = await this._getEngine(quote.engineID).generateRoute(
       input,
@@ -101,7 +110,7 @@ export class EngineSet {
         minFinalAmount: route.expectedAmountOut,
       })
     }
-    return route
+    return route.expectedAmountOut.gt(Zero) ? route : undefined
   }
 
   public getOriginQuery(
@@ -145,7 +154,7 @@ export class EngineSet {
   private async _getQuote(
     engine: SwapEngine,
     input: RouteInput,
-    options: { allowMultiStep: boolean; timeout?: number }
+    options: QuoteOptions
   ): Promise<SwapEngineQuote> {
     // Use shorter timeout for quote fetching by default.
     const quote = await engine.getQuote(
@@ -153,13 +162,5 @@ export class EngineSet {
       options.timeout ?? EngineTimeout.Short
     )
     return options.allowMultiStep ? quote : sanitizeMultiStepQuote(quote)
-  }
-
-  private _selectBestQuotes(quotes: SwapEngineQuote[][]): SwapEngineQuote[] {
-    return quotes.map((quote) =>
-      quote.reduce((best, current) =>
-        current.expectedAmountOut.gt(best.expectedAmountOut) ? current : best
-      )
-    )
   }
 }
