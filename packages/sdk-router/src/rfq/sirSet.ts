@@ -619,7 +619,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       )
   }
 
-  @logExecutionTime('API/quotes')
+  @logExecutionTime('SynapseIntents.API /quotes')
   private async apiGetAllQuotes(): Promise<FastBridgeQuote[]> {
     // Try getting cached quotes first.
     const cacheKey = 'getAllQuotes'
@@ -633,7 +633,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     return data
   }
 
-  @logExecutionTime('API/rfq')
+  @logExecutionTime('SynapseIntents.API /rfq')
   private async apiGetBestRelayerQuote(
     ticker: Ticker,
     originAmount: BigNumber,
