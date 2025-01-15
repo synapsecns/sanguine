@@ -19,6 +19,7 @@ Liquidity for the [$SYN](https://coinmarketcap.com/currencies/synapse-2/) token 
 | HTX                  | `https://www.htx.com/price/syn/` [↗](https://www.htx.com/price/syn/)                                                                                                       |
 | Kraken               | `https://www.kraken.com/prices/synapse` [↗](https://www.kraken.com/prices/synapse)                                                                                         |
 | KuCoin               | `https://www.kucoin.com/price/SYN` [↗](https://www.kucoin.com/price/SYN)                                                                                                   |
+| Velodrome           | `https://velodrome.finance/deposit?token0=0x4200000000000000000000000000000000000006&token1=0x5A5fFf6F753d7C11A56A52FE47a177a87e431655&type=-1&factory=0xF1046053aa5682b4F9a81b5481394DA16BE5FF5a&chain=10` [↗](https://velodrome.finance/deposit?token0=0x4200000000000000000000000000000000000006&token1=0x5A5fFf6F753d7C11A56A52FE47a177a87e431655&type=-1&factory=0xF1046053aa5682b4F9a81b5481394DA16BE5FF5a&chain=10) |
 <br />
 
 All $SYN token addresses can be found [here](/docs/Contracts/SYN).
