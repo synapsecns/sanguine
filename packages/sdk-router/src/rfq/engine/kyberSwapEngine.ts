@@ -113,7 +113,7 @@ export class KyberSwapEngine implements SwapEngine {
       tokenIn,
       tokenOut,
       amountIn: amountIn.toString(),
-      gasInclude: false,
+      gasInclude: true,
       onlySinglePath: input.restrictComplexity,
     }
     const response = await this.getQuoteResponse(
