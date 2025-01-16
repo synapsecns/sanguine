@@ -72,7 +72,6 @@ export const BridgeTransactionButton = ({
     hasSufficientBalance,
     doesBridgeStateMatchQuote,
     isBridgeFeeGreaterThanInput,
-    isBridgeQuoteAmountGreaterThanInputForRfq,
     onSelectedChain,
   } = useBridgeValidations()
 
@@ -83,7 +82,6 @@ export const BridgeTransactionButton = ({
     isWalletPending ||
     !hasValidInput ||
     !doesBridgeStateMatchQuote ||
-    isBridgeQuoteAmountGreaterThanInputForRfq ||
     (isConnected && !hasValidQuote) ||
     (isConnected && !hasSufficientBalance) ||
     (isConnected && isQuoteStale) ||
@@ -175,15 +173,6 @@ export const BridgeTransactionButton = ({
       destinationTokenAddressForState: toToken.addresses[toChainId],
       bridgeQuote,
     })
-  } else if (
-    !isLoading &&
-    isBridgeQuoteAmountGreaterThanInputForRfq &&
-    hasValidInput
-  ) {
-    buttonProperties = {
-      label: t('Invalid bridge quote'),
-      onClick: null,
-    }
   } else if (destinationAddress && !isAddress(destinationAddress)) {
     buttonProperties = {
       label: t('Invalid Destination address'),
