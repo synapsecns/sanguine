@@ -76,17 +76,6 @@ export const useBridgeValidations = () => {
     return stringifiedBridgeQuote === stringifiedBridgeState
   }, [stringifiedBridgeQuote, stringifiedBridgeState])
 
-  const isBridgeQuoteAmountGreaterThanInputForRfq = useMemo(() => {
-    return (
-      bridgeQuote.bridgeModuleName === 'SynapseRFQ' &&
-      bridgeQuote.outputAmount > debouncedFromValueBigInt
-    )
-  }, [
-    bridgeQuote.outputAmount,
-    bridgeQuote.bridgeModuleName,
-    debouncedFromValueBigInt,
-  ])
-
   const isBridgeFeeGreaterThanInput = useMemo(() => {
     return (
       bridgeQuote.bridgeModuleName !== null &&
@@ -107,7 +96,6 @@ export const useBridgeValidations = () => {
     hasSufficientBalance,
     doesBridgeStateMatchQuote,
     isBridgeFeeGreaterThanInput,
-    isBridgeQuoteAmountGreaterThanInputForRfq,
     onSelectedChain,
   }
 }
