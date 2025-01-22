@@ -5,7 +5,6 @@ describe('EngineID', () => {
     expect(validateEngineID(EngineID.Null)).toBe(true)
     expect(validateEngineID(EngineID.NoOp)).toBe(true)
     expect(validateEngineID(EngineID.Default)).toBe(true)
-    expect(validateEngineID(EngineID.Odos)).toBe(true)
     expect(validateEngineID(EngineID.KyberSwap)).toBe(true)
     expect(validateEngineID(EngineID.ParaSwap)).toBe(true)
   })

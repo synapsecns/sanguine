@@ -14,7 +14,6 @@ const ENGINE_PRIORITY: Record<EngineID, Priority> = {
   [EngineID.Null]: { value: PRIORITY_NULL, overrides: {} },
   [EngineID.NoOp]: { value: PRIORITY_NORMAL, overrides: {} },
   [EngineID.Default]: { value: PRIORITY_NORMAL, overrides: {} },
-  [EngineID.Odos]: { value: PRIORITY_NORMAL, overrides: {} },
   [EngineID.KyberSwap]: {
     value: PRIORITY_NORMAL,
     overrides: {

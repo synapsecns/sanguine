@@ -8,7 +8,6 @@ export enum EngineID {
   Null,
   NoOp,
   Default,
-  Odos,
   KyberSwap,
   ParaSwap,
 }
