@@ -1,5 +1,10 @@
+import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
+import { Provider } from '@ethersproject/abstract-provider'
+import { Contract } from '@ethersproject/contracts'
 
+import erc20ABI from '../../abi/IERC20Metadata.json'
+import { IERC20Metadata as ERC20 } from '../../typechain/IERC20Metadata'
 import { getWithTimeout, postWithTimeout } from '../api'
 import {
   SwapEngine,
@@ -7,8 +12,17 @@ import {
   SwapEngineRoute,
   getEmptyRoute,
   SwapEngineQuote,
+  RouteInput,
+  toBasisPoints,
+  SlippageMax,
 } from './swapEngine'
-import { logExecutionTime } from '../../utils/logger'
+import { logExecutionTime, logger } from '../../utils/logger'
+import { AddressMap } from '../../constants'
+import { generateAPIRoute } from './response'
+import { isSameAddress } from '../../utils/addressUtils'
+import { ChainProvider } from '../../router'
+import { isNativeToken } from '../../utils/handleNativeToken'
+import { marshallChainToken } from '../ticker'
 
 const PARASWAP_API_URL = 'https://api.paraswap.io'
 
@@ -27,6 +41,8 @@ export type ParaSwapPricesRequest = {
 }
 
 export type ParaSwapPriceRoute = {
+  srcDecimals: number
+  destDecimals: number
   destAmount: string
 }
 
@@ -63,6 +79,8 @@ const EmptyParaSwapQuote: ParaSwapQuote = {
   chainId: 0,
   expectedAmountOut: Zero,
   priceRoute: {
+    srcDecimals: 0,
+    destDecimals: 0,
     destAmount: '0',
   },
 }
@@ -70,12 +88,99 @@ const EmptyParaSwapQuote: ParaSwapQuote = {
 export class ParaSwapEngine implements SwapEngine {
   readonly id: EngineID = EngineID.ParaSwap
 
-  public async getQuote(): Promise<ParaSwapQuote> {
-    return EmptyParaSwapQuote
+  private readonly tokenZapAddressMap: AddressMap
+  private providers: {
+    [chainId: number]: Provider
+  }
+  private decimalsCache: {
+    [tokenId: string]: number
   }
 
-  public async generateRoute(): Promise<SwapEngineRoute> {
-    return getEmptyRoute(this.id)
+  constructor(chains: ChainProvider[], tokenZapAddressMap: AddressMap) {
+    this.providers = {}
+    this.tokenZapAddressMap = tokenZapAddressMap
+    this.decimalsCache = {}
+    chains.forEach(({ chainId, provider }) => {
+      this.providers[chainId] = provider
+    })
+  }
+
+  public async getQuote(
+    input: RouteInput,
+    timeout: number
+  ): Promise<ParaSwapQuote> {
+    const { chainId, tokenIn, tokenOut, amountIn } = input
+    const tokenZap = this.tokenZapAddressMap[chainId]
+    if (
+      !tokenZap ||
+      isSameAddress(tokenIn, tokenOut) ||
+      BigNumber.from(amountIn).eq(Zero)
+    ) {
+      return EmptyParaSwapQuote
+    }
+    const response = await this.getPricesResponse(
+      {
+        srcToken: tokenIn,
+        srcDecimals: await this.getTokenDecimals(chainId, tokenIn),
+        destToken: tokenOut,
+        destDecimals: await this.getTokenDecimals(chainId, tokenOut),
+        amount: amountIn.toString(),
+        side: 'SELL',
+        network: chainId,
+        excludeRFQ: true,
+        userAddress: tokenZap,
+        version: '6.2',
+      },
+      timeout
+    )
+    if (!response) {
+      return EmptyParaSwapQuote
+    }
+    const paraSwapResponse: ParaSwapPricesResponse = await response.json()
+    if (!paraSwapResponse.priceRoute?.destAmount) {
+      return EmptyParaSwapQuote
+    }
+    return {
+      engineID: this.id,
+      chainId,
+      expectedAmountOut: BigNumber.from(paraSwapResponse.priceRoute.destAmount),
+      priceRoute: paraSwapResponse.priceRoute,
+    }
+  }
+
+  public async generateRoute(
+    input: RouteInput,
+    quote: ParaSwapQuote,
+    timeout: number
+  ): Promise<SwapEngineRoute> {
+    const chainId = input.chainId
+    const tokenZap = this.tokenZapAddressMap[chainId]
+    if (quote.engineID !== this.id || !quote.priceRoute || !tokenZap) {
+      logger.error({ quote }, 'ParaSwap: unexpected quote')
+      return getEmptyRoute(this.id)
+    }
+    const response = await this.getTransactionsResponse(
+      chainId,
+      {
+        srcToken: input.tokenIn,
+        srcDecimals: quote.priceRoute.srcDecimals,
+        destToken: input.tokenOut,
+        destDecimals: quote.priceRoute.destDecimals,
+        srcAmount: input.amountIn.toString(),
+        priceRoute: quote.priceRoute,
+        slippage: toBasisPoints(SlippageMax),
+        userAddress: tokenZap,
+      },
+      timeout
+    )
+    if (!response) {
+      return getEmptyRoute(this.id)
+    }
+    const paraSwapResponse: ParaSwapTransactionsResponse = await response.json()
+    return generateAPIRoute(input, this.id, SlippageMax, {
+      amountOut: BigNumber.from(quote.priceRoute.destAmount),
+      transaction: paraSwapResponse,
+    })
   }
 
   @logExecutionTime('ParaSwapEngine.getPricesResponse')
@@ -103,5 +208,33 @@ export class ParaSwapEngine implements SwapEngine {
       timeout,
       params
     )
+  }
+
+  private async getTokenDecimals(
+    chainId: number,
+    token: string
+  ): Promise<number> {
+    // TODO: move to utils
+    if (isNativeToken(token)) {
+      return 18
+    }
+    const tokenId = marshallChainToken({ chainId, token })
+    if (this.decimalsCache[tokenId]) {
+      return this.decimalsCache[tokenId]
+    }
+    const provider = this.providers[chainId]
+    if (!provider) {
+      logger.error(`No provider found for chainId: ${chainId}`)
+      return 0
+    }
+    const tokenContract = new Contract(token, erc20ABI, provider) as ERC20
+    try {
+      const decimals = await tokenContract.decimals()
+      this.decimalsCache[tokenId] = decimals
+      return decimals
+    } catch (error) {
+      logger.error({ error, chainId, token }, 'Error fetching token decimals')
+      return 0
+    }
   }
 }

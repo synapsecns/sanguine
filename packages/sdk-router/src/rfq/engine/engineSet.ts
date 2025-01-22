@@ -18,6 +18,7 @@ import { compareQuotesWithPriority } from './priority'
 import { CCTPRouterQuery } from '../../module'
 import { encodeStepParams } from '../steps'
 import { KyberSwapEngine } from './kyberSwapEngine'
+import { ParaSwapEngine } from './paraSwapEngine'
 import { decodeZapData, encodeZapData } from '../zapData'
 
 export enum EngineTimeout {
@@ -48,6 +49,7 @@ export class EngineSet {
     this._addEngine(new NoOpEngine())
     this._addEngine(new DefaultEngine(chains))
     this._addEngine(new KyberSwapEngine(TOKEN_ZAP_V1_ADDRESS_MAP))
+    this._addEngine(new ParaSwapEngine(chains, TOKEN_ZAP_V1_ADDRESS_MAP))
 
     this.tokenZaps = {}
     chains.forEach(({ chainId }) => {
