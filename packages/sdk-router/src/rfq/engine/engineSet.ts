@@ -14,6 +14,7 @@ import {
   sanitizeMultiStepQuote,
   sanitizeMultiStepRoute,
 } from './swapEngine'
+import { compareQuotesWithPriority } from './priority'
 import { CCTPRouterQuery } from '../../module'
 import { encodeStepParams } from '../steps'
 import { KyberSwapEngine } from './kyberSwapEngine'
@@ -69,9 +70,7 @@ export class EngineSet {
       )
     )
     // Select the best quote.
-    const quote = allQuotes.reduce((best, current) =>
-      current.expectedAmountOut.gt(best.expectedAmountOut) ? current : best
-    )
+    const quote = allQuotes.reduce(compareQuotesWithPriority)
     return quote.expectedAmountOut.gt(Zero) ? quote : undefined
   }
 
