@@ -22,6 +22,7 @@ const ENGINE_PRIORITY: Record<EngineID, Priority> = {
       [SupportedChainId.OPTIMISM]: PRIORITY_INEFFICIENT_QUOTES,
     },
   },
+  [EngineID.ParaSwap]: { value: PRIORITY_NORMAL, overrides: {} },
 }
 
 const getEnginePriority = (

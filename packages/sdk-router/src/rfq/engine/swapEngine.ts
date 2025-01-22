@@ -10,6 +10,7 @@ export enum EngineID {
   Default,
   Odos,
   KyberSwap,
+  ParaSwap,
 }
 
 export type SwapEngineQuote = {
