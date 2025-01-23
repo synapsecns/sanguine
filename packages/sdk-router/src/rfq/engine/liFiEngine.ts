@@ -44,6 +44,7 @@ type LiFiQuote = SwapEngineQuote & {
 
 const EmptyLiFiQuote: LiFiQuote = {
   engineID: EngineID.LiFi,
+  engineName: EngineID[EngineID.LiFi],
   chainId: 0,
   expectedAmountOut: Zero,
 }
@@ -84,6 +85,7 @@ export class LiFiEngine implements SwapEngine {
     }
     return {
       engineID: this.id,
+      engineName: EngineID[this.id],
       chainId,
       expectedAmountOut: BigNumber.from(liFiResponse.estimate.toAmount),
       tx: liFiResponse.transactionRequest,

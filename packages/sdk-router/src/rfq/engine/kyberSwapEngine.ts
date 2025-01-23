@@ -66,6 +66,7 @@ type KyberSwapQuote = SwapEngineQuote & {
 
 const EmptyKyberSwapQuote: KyberSwapQuote = {
   engineID: EngineID.KyberSwap,
+  engineName: EngineID[EngineID.KyberSwap],
   chainId: 0,
   expectedAmountOut: Zero,
   routeSummary: {
@@ -129,6 +130,7 @@ export class KyberSwapEngine implements SwapEngine {
     }
     return {
       engineID: this.id,
+      engineName: EngineID[this.id],
       chainId,
       expectedAmountOut,
       routeSummary: kyberSwapQuoteResponse.data.routeSummary,

@@ -10,6 +10,7 @@ import {
   Query,
   applyDeadlineToQuery,
 } from '../module'
+import { logger } from '../utils/logger'
 
 /**
  * Creates a populated bridge transaction ready for signing and submission to the origin chain.
@@ -168,6 +169,10 @@ export async function allBridgeQuotes(
         tokenOut,
         amountIn,
         options.originUserAddress
+      )
+      logger.info(
+        { routes },
+        `Found ${routes.length} routes for ${moduleSet.bridgeModuleName}`
       )
       // Filter out routes with zero minAmountOut and finalize the rest
       return Promise.all(

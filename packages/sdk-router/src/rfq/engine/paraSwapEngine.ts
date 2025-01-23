@@ -68,6 +68,7 @@ type ParaSwapQuote = SwapEngineQuote & {
 
 const EmptyParaSwapQuote: ParaSwapQuote = {
   engineID: EngineID.ParaSwap,
+  engineName: EngineID[EngineID.ParaSwap],
   chainId: 0,
   expectedAmountOut: Zero,
   priceRoute: {
@@ -127,6 +128,7 @@ export class ParaSwapEngine implements SwapEngine {
     }
     return {
       engineID: this.id,
+      engineName: EngineID[this.id],
       chainId,
       expectedAmountOut: BigNumber.from(paraSwapResponse.priceRoute.destAmount),
       priceRoute: paraSwapResponse.priceRoute,

@@ -15,6 +15,7 @@ export enum EngineID {
 
 export type SwapEngineQuote = {
   engineID: EngineID
+  engineName: string
   chainId: number
   expectedAmountOut: BigNumber
   steps?: StepParams[]
@@ -120,6 +121,7 @@ export const applySlippage = (
 export const getEmptyQuote = (engineID: EngineID): SwapEngineQuote => {
   return {
     engineID,
+    engineName: EngineID[engineID],
     chainId: 0,
     expectedAmountOut: Zero,
   }
@@ -128,6 +130,7 @@ export const getEmptyQuote = (engineID: EngineID): SwapEngineQuote => {
 export const getEmptyRoute = (engineID: EngineID): SwapEngineRoute => {
   return {
     engineID,
+    engineName: EngineID[engineID],
     chainId: 0,
     expectedAmountOut: Zero,
     steps: [],
