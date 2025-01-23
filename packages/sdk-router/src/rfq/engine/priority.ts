@@ -1,3 +1,5 @@
+import { Zero } from '@ethersproject/constants'
+
 import { SupportedChainId } from '../../constants'
 import { EngineID, SwapEngineQuote } from './swapEngine'
 
@@ -41,10 +43,16 @@ export const compareQuotesWithPriority = (
 ): SwapEngineQuote => {
   const priorityA = getEnginePriority(quoteA.engineID, quoteA.chainId)
   const priorityB = getEnginePriority(quoteB.engineID, quoteB.chainId)
-  if (priorityA === priorityB) {
-    return quoteA.expectedAmountOut.gt(quoteB.expectedAmountOut)
-      ? quoteA
-      : quoteB
+  // Compare priorities only if both quotes have a non-zero amountOut.
+  if (
+    quoteA.expectedAmountOut.gt(Zero) &&
+    quoteB.expectedAmountOut.gt(Zero) &&
+    priorityA !== priorityB
+  ) {
+    return priorityA > priorityB ? quoteA : quoteB
   }
-  return priorityA > priorityB ? quoteA : quoteB
+  // Otherwise (same priority or at least one zero quote), compare amountOut.
+  return quoteA.expectedAmountOut.gte(quoteB.expectedAmountOut)
+    ? quoteA
+    : quoteB
 }
