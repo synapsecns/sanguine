@@ -392,9 +392,10 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	if err != nil {
 		span.AddEvent("could not set gas price", trace.WithAttributes(attribute.String("error", err.Error())))
 	}
-	if !t.config.GetDynamicGasEstimate(int(chainID.Uint64())) {
-		transactor.GasLimit = t.config.GetGasEstimate(int(chainID.Uint64()))
-	}
+
+	gasEstimate, err := t.getGasEstimate(ctx, chainClient, int(chainID.Uint64()), nil)
+
+	transactor.GasLimit = gasEstimate
 
 	transactor.Signer = func(address common.Address, transaction *types.Transaction) (_ *types.Transaction, err error) {
 		locker = t.nonceMux.Lock(chainID)
@@ -677,13 +678,18 @@ func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EV
 // getGasEstimate gets the gas estimate for the given transaction.
 // TODO: handle l2s w/ custom gas pricing through contracts.
 func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client.EVM, chainID int, tx *types.Transaction) (gasEstimate uint64, err error) {
+
+	// if dynamic gas estimation is not enabled, use cfg var gas_estimate as a default
 	if !t.config.GetDynamicGasEstimate(chainID) {
 		return t.config.GetGasEstimate(chainID), nil
 	}
 
+	gasUnitAddPercentage := t.config.GetDynamicGasUnitAddPercentage(chainID)
+
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.getGasEstimate", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, chainID),
 		attribute.String(metrics.TxHash, tx.Hash().String()),
+		attribute.Int("gasUnitAddPercentage", gasUnitAddPercentage),
 	))
 
 	defer func() {
@@ -709,6 +715,9 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 		// fallback to default
 		return t.config.GetGasEstimate(chainID), nil
 	}
+
+	// Modify the gasEstimate by the configured percentage
+	gasEstimate = gasEstimate + (gasEstimate * uint64(gasUnitAddPercentage) / 100)
 
 	return gasEstimate, nil
 }
