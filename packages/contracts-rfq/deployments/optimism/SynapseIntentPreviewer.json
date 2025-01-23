@@ -1,9 +1,9 @@
 {
-  "address": "0x9519E8D136d0a89d7e10D1a66C97249E0135544B",
+  "address": "0xc542Df6aA3813b49EE8A5A07f82eA0EaAa006bFa",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0x928a7db8741fb992934302f73e076f7630075151384529b538cb133e797c4bac",
-    "blockNumber": 129029951
+    "hash": "0x2786210c9044688bca4109491172b66a73ded9719becc96791fead1a076c483b",
+    "blockNumber": 130111310
   },
   "abi": [
     {
@@ -32,6 +32,11 @@
           "name": "forwardTo",
           "type": "address",
           "internalType": "address"
+        },
+        {
+          "name": "slippageWei",
+          "type": "uint256",
+          "internalType": "uint256"
         },
         {
           "name": "tokenIn",
@@ -112,7 +117,17 @@
     },
     {
       "type": "error",
+      "name": "ZapDataV1__FinalTokenNotSpecified",
+      "inputs": []
+    },
+    {
+      "type": "error",
       "name": "ZapDataV1__InvalidEncoding",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ZapDataV1__PayloadLengthAboveMax",
       "inputs": []
     },
     {

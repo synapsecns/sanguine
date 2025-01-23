@@ -89,7 +89,8 @@ abstract contract TokenZapV1IntegrationTest is Test {
             payload: getDepositPayload(address(dstToken)),
             amountPosition: 4 + 32 * 2,
             finalToken: address(0),
-            forwardTo: address(0)
+            forwardTo: address(0),
+            minFinalBalance: 0
         });
         depositTokenParams.zapData = zapData;
         depositTokenWithZapNativeParams.zapData = zapData;
@@ -100,7 +101,8 @@ abstract contract TokenZapV1IntegrationTest is Test {
             payload: getDepositPayload(NATIVE_GAS_TOKEN),
             amountPosition: 4 + 32 * 2,
             finalToken: address(0),
-            forwardTo: address(0)
+            forwardTo: address(0),
+            minFinalBalance: 0
         });
         // Deposit no amount
         depositNativeNoAmountParams.zapData = dstZap.encodeZapData({
@@ -108,7 +110,8 @@ abstract contract TokenZapV1IntegrationTest is Test {
             payload: getDepositNoAmountPayload(),
             amountPosition: ZapDataV1.AMOUNT_NOT_PRESENT,
             finalToken: address(0),
-            forwardTo: address(0)
+            forwardTo: address(0),
+            minFinalBalance: 0
         });
         // Deposit revert
         depositTokenRevertParams.zapData = dstZap.encodeZapData({
@@ -116,14 +119,16 @@ abstract contract TokenZapV1IntegrationTest is Test {
             payload: getDepositRevertPayload(),
             amountPosition: ZapDataV1.AMOUNT_NOT_PRESENT,
             finalToken: address(0),
-            forwardTo: address(0)
+            forwardTo: address(0),
+            minFinalBalance: 0
         });
         depositNativeRevertParams.zapData = dstZap.encodeZapData({
             target: address(dstVault),
             payload: getDepositRevertPayload(),
             amountPosition: ZapDataV1.AMOUNT_NOT_PRESENT,
             finalToken: address(0),
-            forwardTo: address(0)
+            forwardTo: address(0),
+            minFinalBalance: 0
         });
     }
 

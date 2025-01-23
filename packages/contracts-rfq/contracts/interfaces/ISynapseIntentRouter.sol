@@ -23,25 +23,24 @@ interface ISynapseIntentRouter {
     /// - The user is responsible for selecting the correct ZapRecipient for their intent: ZapRecipient must be
     ///   able to modify the Zap Data to adjust to possible changes in the passed amount value.
     /// - SIR checks that the ZapRecipient balance for every token in `steps` has not increased after the last step.
+    /// - SIR does not perform any slippage checks. If required, the slippage settings must be embedded in any of
+    ///   the Zap steps to be used by ZapRecipient.
     /// @dev Typical workflow involves a series of preparation steps followed by the last step representing the user
     /// intent such as bridging, depositing, or a simple transfer to the final recipient. The ZapRecipient must be
     /// the funds recipient for the preparation steps, while the final recipient must be used for the last step.
     /// @dev This function will revert in any of the following cases:
     /// - The deadline has passed.
     /// - The array of StepParams is empty.
-    /// - The amount of tokens to use for the last step is below the specified minimum.
     /// - Any step fails.
     /// - `msg.value` does not match `sum(steps[i].msgValue)`.
     /// @param zapRecipient         Address of the IZapRecipient contract to use for the Zap steps
     /// @param amountIn             Initial amount of tokens (steps[0].token) to transfer into ZapRecipient
-    /// @param minLastStepAmountIn  Minimum amount of tokens (steps[N-1].token) to use for the last step
     /// @param deadline             Deadline for the intent to be completed
     /// @param steps                Parameters for each step. Use amount = type(uint256).max for steps that
     ///                             should use the full ZapRecipient balance.
     function completeIntentWithBalanceChecks(
         address zapRecipient,
         uint256 amountIn,
-        uint256 minLastStepAmountIn,
         uint256 deadline,
         StepParams[] memory steps
     )
@@ -57,7 +56,6 @@ interface ISynapseIntentRouter {
     function completeIntent(
         address zapRecipient,
         uint256 amountIn,
-        uint256 minLastStepAmountIn,
         uint256 deadline,
         StepParams[] memory steps
     )
