@@ -10,6 +10,7 @@ export enum EngineID {
   Default,
   KyberSwap,
   ParaSwap,
+  LiFi,
 }
 
 export type SwapEngineQuote = {
@@ -95,6 +96,10 @@ export const toBasisPoints = (slippage: Slippage): number => {
 
 export const toPercentFloat = (slippage: Slippage): number => {
   return (slippage.numerator * 100) / slippage.denominator
+}
+
+export const toFloat = (slippage: Slippage): number => {
+  return slippage.numerator / slippage.denominator
 }
 
 export const toWei = (slippage: Slippage): BigNumber => {

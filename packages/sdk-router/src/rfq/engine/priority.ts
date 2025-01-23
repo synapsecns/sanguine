@@ -22,6 +22,7 @@ const ENGINE_PRIORITY: Record<EngineID, Priority> = {
     },
   },
   [EngineID.ParaSwap]: { value: PRIORITY_NORMAL, overrides: {} },
+  [EngineID.LiFi]: { value: PRIORITY_NORMAL, overrides: {} },
 }
 
 const getEnginePriority = (

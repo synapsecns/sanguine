@@ -20,6 +20,7 @@ import { encodeStepParams } from '../steps'
 import { KyberSwapEngine } from './kyberSwapEngine'
 import { ParaSwapEngine } from './paraSwapEngine'
 import { decodeZapData, encodeZapData } from '../zapData'
+import { LiFiEngine } from './liFiEngine'
 
 export enum EngineTimeout {
   Short = 1000,
@@ -50,6 +51,7 @@ export class EngineSet {
     this._addEngine(new DefaultEngine(chains))
     this._addEngine(new KyberSwapEngine(TOKEN_ZAP_V1_ADDRESS_MAP))
     this._addEngine(new ParaSwapEngine(chains, TOKEN_ZAP_V1_ADDRESS_MAP))
+    this._addEngine(new LiFiEngine(TOKEN_ZAP_V1_ADDRESS_MAP))
 
     this.tokenZaps = {}
     chains.forEach(({ chainId }) => {

@@ -18,7 +18,7 @@ import {
 } from './swapEngine'
 import { logExecutionTime, logger } from '../../utils/logger'
 import { AddressMap } from '../../constants'
-import { generateAPIRoute } from './response'
+import { generateAPIRoute, TransactionData } from './response'
 import { isSameAddress } from '../../utils/addressUtils'
 import { ChainProvider } from '../../router'
 import { isNativeToken } from '../../utils/handleNativeToken'
@@ -61,14 +61,7 @@ export type ParaSwapTransactionsRequest = {
   userAddress: string
 }
 
-export type ParaSwapTransactionsResponse = {
-  from: string
-  to: string
-  value: string
-  data: string
-  gasPrice: string
-  chainId: number
-}
+export type ParaSwapTransactionsResponse = TransactionData
 
 type ParaSwapQuote = SwapEngineQuote & {
   priceRoute: ParaSwapPriceRoute

@@ -13,15 +13,17 @@ import {
 import { isSameAddress } from '../../utils/addressUtils'
 import { AMOUNT_NOT_PRESENT, encodeZapData } from '../zapData'
 
+export type TransactionData = {
+  chainId: number
+  from: string
+  to: string
+  value: string
+  data: string
+}
+
 export type SwapAPIResponse = {
   amountOut: BigNumber
-  transaction: {
-    chainId: number
-    from: string
-    to: string
-    value: string
-    data: string
-  }
+  transaction: TransactionData
 }
 
 export const EMPTY_SWAP_API_RESPONSE: SwapAPIResponse = {
