@@ -17,7 +17,6 @@ import {
   SlippageMax,
 } from './swapEngine'
 import { logExecutionTime, logger } from '../../utils/logger'
-import { AddressMap } from '../../constants'
 import { generateAPIRoute, TransactionData } from './response'
 import { isSameAddress } from '../../utils/addressUtils'
 import { ChainProvider } from '../../router'
@@ -81,7 +80,6 @@ const EmptyParaSwapQuote: ParaSwapQuote = {
 export class ParaSwapEngine implements SwapEngine {
   readonly id: EngineID = EngineID.ParaSwap
 
-  private readonly tokenZapAddressMap: AddressMap
   private providers: {
     [chainId: number]: Provider
   }
@@ -89,9 +87,8 @@ export class ParaSwapEngine implements SwapEngine {
     [tokenId: string]: number
   }
 
-  constructor(chains: ChainProvider[], tokenZapAddressMap: AddressMap) {
+  constructor(chains: ChainProvider[]) {
     this.providers = {}
-    this.tokenZapAddressMap = tokenZapAddressMap
     this.decimalsCache = {}
     chains.forEach(({ chainId, provider }) => {
       this.providers[chainId] = provider
@@ -102,13 +99,8 @@ export class ParaSwapEngine implements SwapEngine {
     input: RouteInput,
     timeout: number
   ): Promise<ParaSwapQuote> {
-    const { chainId, tokenIn, tokenOut, amountIn } = input
-    const tokenZap = this.tokenZapAddressMap[chainId]
-    if (
-      !tokenZap ||
-      isSameAddress(tokenIn, tokenOut) ||
-      BigNumber.from(amountIn).eq(Zero)
-    ) {
+    const { chainId, tokenIn, tokenOut, msgSender, amountIn } = input
+    if (isSameAddress(tokenIn, tokenOut) || BigNumber.from(amountIn).eq(Zero)) {
       return EmptyParaSwapQuote
     }
     const response = await this.getPricesResponse(
@@ -121,7 +113,7 @@ export class ParaSwapEngine implements SwapEngine {
         side: 'SELL',
         network: chainId,
         excludeRFQ: true,
-        userAddress: tokenZap,
+        userAddress: msgSender,
         version: '6.2',
       },
       timeout
@@ -146,9 +138,8 @@ export class ParaSwapEngine implements SwapEngine {
     quote: ParaSwapQuote,
     timeout: number
   ): Promise<SwapEngineRoute> {
-    const chainId = input.chainId
-    const tokenZap = this.tokenZapAddressMap[chainId]
-    if (quote.engineID !== this.id || !quote.priceRoute || !tokenZap) {
+    const { chainId, msgSender } = input
+    if (quote.engineID !== this.id || !quote.priceRoute) {
       logger.error({ quote }, 'ParaSwap: unexpected quote')
       return getEmptyRoute(this.id)
     }
@@ -162,7 +153,7 @@ export class ParaSwapEngine implements SwapEngine {
         srcAmount: input.amountIn.toString(),
         priceRoute: quote.priceRoute,
         slippage: toBasisPoints(SlippageMax),
-        userAddress: tokenZap,
+        userAddress: msgSender,
       },
       timeout
     )

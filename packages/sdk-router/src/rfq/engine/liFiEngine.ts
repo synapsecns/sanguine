@@ -15,7 +15,6 @@ import {
 import { logExecutionTime, logger } from '../../utils/logger'
 import { generateAPIRoute, TransactionData } from './response'
 import { isSameAddress } from '../../utils/addressUtils'
-import { AddressMap } from '../../constants'
 
 const LIFI_API_URL = 'https://li.quest/v1'
 
@@ -52,23 +51,12 @@ const EmptyLiFiQuote: LiFiQuote = {
 export class LiFiEngine implements SwapEngine {
   readonly id: EngineID = EngineID.LiFi
 
-  private readonly tokenZapAddressMap: AddressMap
-
-  constructor(tokenZapAddressMap: AddressMap) {
-    this.tokenZapAddressMap = tokenZapAddressMap
-  }
-
   public async getQuote(
     input: RouteInput,
     timeout: number
   ): Promise<LiFiQuote> {
-    const { chainId, tokenIn, tokenOut, amountIn } = input
-    const tokenZap = this.tokenZapAddressMap[chainId]
-    if (
-      !tokenZap ||
-      isSameAddress(tokenIn, tokenOut) ||
-      BigNumber.from(amountIn).eq(Zero)
-    ) {
+    const { chainId, tokenIn, tokenOut, msgSender, amountIn } = input
+    if (isSameAddress(tokenIn, tokenOut) || BigNumber.from(amountIn).eq(Zero)) {
       return EmptyLiFiQuote
     }
     const response = await this.getQuoteResponse(
@@ -77,7 +65,7 @@ export class LiFiEngine implements SwapEngine {
         toChain: chainId,
         fromToken: tokenIn,
         toToken: tokenOut,
-        fromAddress: tokenZap,
+        fromAddress: msgSender,
         fromAmount: amountIn.toString(),
         slippage: toFloat(SlippageMax),
         skipSimulation: true,

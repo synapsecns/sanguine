@@ -54,6 +54,7 @@ export const USER_SIMULATED_ADDRESS =
  * @property {string} tokenIn - The input token address.
  * @property {string} tokenOut - The output token address.
  * @property {BigintIsh} amountIn - The amount of input token to swap.
+ * @property {string} msgSender - The address that will invoke the swap.
  * @property {Recipient} finalRecipient - The recipient of the output token.
  * @property {boolean} restrictComplexity - Whether to restrict the complexity of the route (no splitting, less steps).
  */
@@ -62,6 +63,7 @@ export type RouteInput = {
   tokenIn: string
   tokenOut: string
   amountIn: BigintIsh
+  msgSender: string
   finalRecipient: Recipient
   restrictComplexity: boolean
 }

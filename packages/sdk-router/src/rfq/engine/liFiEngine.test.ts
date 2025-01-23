@@ -7,7 +7,7 @@ global.fetch = require('node-fetch')
 
 describe('Integration test: LiFiEngine', () => {
   it('Arbitrum USDC -> USDT /quote', async () => {
-    const liFiEngine = new LiFiEngine({})
+    const liFiEngine = new LiFiEngine()
     const response = await liFiEngine.getQuoteResponse(
       {
         fromChain: SupportedChainId.ARBITRUM,

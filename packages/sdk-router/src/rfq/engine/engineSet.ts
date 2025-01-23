@@ -49,9 +49,9 @@ export class EngineSet {
     this.engines = {}
     this._addEngine(new NoOpEngine())
     this._addEngine(new DefaultEngine(chains))
-    this._addEngine(new KyberSwapEngine(TOKEN_ZAP_V1_ADDRESS_MAP))
-    this._addEngine(new ParaSwapEngine(chains, TOKEN_ZAP_V1_ADDRESS_MAP))
-    this._addEngine(new LiFiEngine(TOKEN_ZAP_V1_ADDRESS_MAP))
+    this._addEngine(new KyberSwapEngine())
+    this._addEngine(new ParaSwapEngine(chains))
+    this._addEngine(new LiFiEngine())
 
     this.tokenZaps = {}
     chains.forEach(({ chainId }) => {

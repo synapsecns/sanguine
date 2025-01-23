@@ -445,9 +445,10 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
     amountIn: BigintIsh,
     protocolFeeRate: BigNumber
   ): Promise<IntentFragment | undefined> {
+    const tokenZap = this.engineSet.getTokenZap(ticker.originToken.chainId)
     const finalRecipient: Recipient = {
       entity: RecipientEntity.Self,
-      address: this.engineSet.getTokenZap(ticker.originToken.chainId),
+      address: tokenZap,
     }
     // Swap complexity is not restricted on the origin chain, where execution is done by the user at the time of bridging.
     const input: RouteInput = {
@@ -455,6 +456,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       tokenIn,
       tokenOut: ticker.originToken.token,
       amountIn,
+      msgSender: tokenZap,
       finalRecipient,
       restrictComplexity: false,
     }
@@ -490,6 +492,7 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
       tokenIn: ticker.destToken.token,
       tokenOut,
       amountIn: originFragment.finalAmount,
+      msgSender: this.engineSet.getTokenZap(ticker.destToken.chainId),
       finalRecipient,
       restrictComplexity: true,
     }
