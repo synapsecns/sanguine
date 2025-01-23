@@ -1,7 +1,7 @@
 import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
 
-import { AddressMap, SupportedChainId } from '../../constants'
+import { SupportedChainId } from '../../constants'
 import { getWithTimeout, postWithTimeout } from '../api'
 import {
   SwapEngine,
@@ -66,6 +66,7 @@ type KyberSwapQuote = SwapEngineQuote & {
 
 const EmptyKyberSwapQuote: KyberSwapQuote = {
   engineID: EngineID.KyberSwap,
+  engineName: EngineID[EngineID.KyberSwap],
   chainId: 0,
   expectedAmountOut: Zero,
   routeSummary: {
@@ -90,23 +91,13 @@ const KyberSwapChainMap: Record<number, string> = {
 export class KyberSwapEngine implements SwapEngine {
   readonly id: EngineID = EngineID.KyberSwap
 
-  private readonly tokenZapAddressMap: AddressMap
-
-  constructor(tokenZapAddressMap: AddressMap) {
-    this.tokenZapAddressMap = tokenZapAddressMap
-  }
-
   public async getQuote(
     input: RouteInput,
     timeout: number
   ): Promise<KyberSwapQuote> {
     const { chainId, tokenIn, tokenOut, amountIn } = input
-    const tokenZap = this.tokenZapAddressMap[chainId]
-    if (
-      !tokenZap ||
-      isSameAddress(tokenIn, tokenOut) ||
-      BigNumber.from(amountIn).eq(Zero)
-    ) {
+
+    if (isSameAddress(tokenIn, tokenOut) || BigNumber.from(amountIn).eq(Zero)) {
       return EmptyKyberSwapQuote
     }
     const request: KyberSwapQuoteRequest = {
@@ -139,6 +130,7 @@ export class KyberSwapEngine implements SwapEngine {
     }
     return {
       engineID: this.id,
+      engineName: EngineID[this.id],
       chainId,
       expectedAmountOut,
       routeSummary: kyberSwapQuoteResponse.data.routeSummary,
@@ -150,9 +142,8 @@ export class KyberSwapEngine implements SwapEngine {
     quote: KyberSwapQuote,
     timeout: number
   ): Promise<SwapEngineRoute> {
-    const chainId = input.chainId
-    const tokenZap = this.tokenZapAddressMap[chainId]
-    if (quote.engineID !== this.id || !quote.routeSummary || !tokenZap) {
+    const { chainId, msgSender } = input
+    if (quote.engineID !== this.id || !quote.routeSummary) {
       logger.error({ quote }, 'KyberSwap: unexpected quote')
       return getEmptyRoute(this.id)
     }
@@ -160,8 +151,8 @@ export class KyberSwapEngine implements SwapEngine {
       chainId,
       {
         routeSummary: quote.routeSummary,
-        sender: tokenZap,
-        recipient: tokenZap,
+        sender: msgSender,
+        recipient: msgSender,
         deadline: Math.floor(Date.now() / 1000) + ONE_WEEK,
         slippageTolerance: toBasisPoints(SlippageMax),
         enableGasEstimation: false,
@@ -179,7 +170,7 @@ export class KyberSwapEngine implements SwapEngine {
       amountOut: quote.expectedAmountOut,
       transaction: {
         chainId,
-        from: tokenZap,
+        from: msgSender,
         to: kyberSwapBuildResponse.data.routerAddress,
         value: isNativeToken(input.tokenIn) ? input.amountIn.toString() : '0',
         data: kyberSwapBuildResponse.data.data,

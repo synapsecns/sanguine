@@ -244,6 +244,7 @@ export const getBestRelayerQuote = async (
       logger.info({ rfqRequest, rfqResponse }, 'No RFQ quote returned')
       return ZeroQuote
     }
+    logger.info({ rfqRequest, rfqResponse }, 'Received RFQ quote')
     return {
       destAmount,
       relayerAddress: rfqResponse.relayer_address,

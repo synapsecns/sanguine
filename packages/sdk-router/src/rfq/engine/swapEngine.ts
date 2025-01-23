@@ -8,12 +8,14 @@ export enum EngineID {
   Null,
   NoOp,
   Default,
-  Odos,
   KyberSwap,
+  ParaSwap,
+  LiFi,
 }
 
 export type SwapEngineQuote = {
   engineID: EngineID
+  engineName: string
   chainId: number
   expectedAmountOut: BigNumber
   steps?: StepParams[]
@@ -53,6 +55,7 @@ export const USER_SIMULATED_ADDRESS =
  * @property {string} tokenIn - The input token address.
  * @property {string} tokenOut - The output token address.
  * @property {BigintIsh} amountIn - The amount of input token to swap.
+ * @property {string} msgSender - The address that will invoke the swap.
  * @property {Recipient} finalRecipient - The recipient of the output token.
  * @property {boolean} restrictComplexity - Whether to restrict the complexity of the route (no splitting, less steps).
  */
@@ -61,6 +64,7 @@ export type RouteInput = {
   tokenIn: string
   tokenOut: string
   amountIn: BigintIsh
+  msgSender: string
   finalRecipient: Recipient
   restrictComplexity: boolean
 }
@@ -97,6 +101,10 @@ export const toPercentFloat = (slippage: Slippage): number => {
   return (slippage.numerator * 100) / slippage.denominator
 }
 
+export const toFloat = (slippage: Slippage): number => {
+  return slippage.numerator / slippage.denominator
+}
+
 export const toWei = (slippage: Slippage): BigNumber => {
   return BigNumber.from(slippage.numerator)
     .mul(WeiPerEther)
@@ -113,6 +121,7 @@ export const applySlippage = (
 export const getEmptyQuote = (engineID: EngineID): SwapEngineQuote => {
   return {
     engineID,
+    engineName: EngineID[engineID],
     chainId: 0,
     expectedAmountOut: Zero,
   }
@@ -121,6 +130,7 @@ export const getEmptyQuote = (engineID: EngineID): SwapEngineQuote => {
 export const getEmptyRoute = (engineID: EngineID): SwapEngineRoute => {
   return {
     engineID,
+    engineName: EngineID[engineID],
     chainId: 0,
     expectedAmountOut: Zero,
     steps: [],

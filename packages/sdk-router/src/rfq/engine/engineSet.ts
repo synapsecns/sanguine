@@ -14,10 +14,13 @@ import {
   sanitizeMultiStepQuote,
   sanitizeMultiStepRoute,
 } from './swapEngine'
+import { compareQuotesWithPriority } from './priority'
 import { CCTPRouterQuery } from '../../module'
 import { encodeStepParams } from '../steps'
 import { KyberSwapEngine } from './kyberSwapEngine'
+import { ParaSwapEngine } from './paraSwapEngine'
 import { decodeZapData, encodeZapData } from '../zapData'
+import { LiFiEngine } from './liFiEngine'
 
 export enum EngineTimeout {
   Short = 1000,
@@ -46,7 +49,9 @@ export class EngineSet {
     this.engines = {}
     this._addEngine(new NoOpEngine())
     this._addEngine(new DefaultEngine(chains))
-    this._addEngine(new KyberSwapEngine(TOKEN_ZAP_V1_ADDRESS_MAP))
+    this._addEngine(new KyberSwapEngine())
+    this._addEngine(new ParaSwapEngine(chains))
+    this._addEngine(new LiFiEngine())
 
     this.tokenZaps = {}
     chains.forEach(({ chainId }) => {
@@ -69,9 +74,7 @@ export class EngineSet {
       )
     )
     // Select the best quote.
-    const quote = allQuotes.reduce((best, current) =>
-      current.expectedAmountOut.gt(best.expectedAmountOut) ? current : best
-    )
+    const quote = allQuotes.reduce(compareQuotesWithPriority)
     return quote.expectedAmountOut.gt(Zero) ? quote : undefined
   }
 
