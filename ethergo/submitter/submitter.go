@@ -393,10 +393,6 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		span.AddEvent("could not set gas price", trace.WithAttributes(attribute.String("error", err.Error())))
 	}
 
-	gasEstimate, err := t.getGasEstimate(ctx, chainClient, int(chainID.Uint64()), nil)
-
-	transactor.GasLimit = gasEstimate
-
 	transactor.Signer = func(address common.Address, transaction *types.Transaction) (_ *types.Transaction, err error) {
 		locker = t.nonceMux.Lock(chainID)
 		// it's important that we unlock the nonce if we fail to sign the transaction.
@@ -422,7 +418,22 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		//nolint: wrapcheck
 		return parentTransactor.Signer(address, transaction)
 	}
+
+	transactor.NoSend = true
+
+	tx_forEstimate, err := call(transactor)
+
+	gasEstimate, err := t.getGasEstimate(ctx, chainClient, int(chainID.Uint64()), tx_forEstimate)
+	if err != nil {
+		return 0, fmt.Errorf("err getGasEstimate: %w", err)
+	}
+
+	transactor.GasLimit = gasEstimate
+
+	transactor.NoSend = false
+
 	tx, err := call(transactor)
+
 	if err != nil {
 		return 0, fmt.Errorf("could not call contract: %w", err)
 	}
