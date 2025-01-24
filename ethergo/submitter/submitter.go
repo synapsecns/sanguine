@@ -699,7 +699,14 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.getGasEstimate", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, chainID),
-		attribute.String(metrics.TxHash, tx.Hash().String()),
+
+		// note: tx hash can be null legitimately if we are pre-estimating gas rather than bumping it from a prior failure
+		attribute.String(metrics.TxHash, func() string {
+			if tx.Hash() == (common.Hash{}) {
+				return "not_known_yet"
+			}
+			return tx.Hash().String()
+		}()),
 		attribute.Int("gasUnitAddPercentage", gasUnitAddPercentage),
 	))
 
