@@ -189,7 +189,6 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         _validateBridgeParams(params, paramsV2, exclusivityEndTime);
 
         // Track the amount of origin token owed to protocol.
-        address originToken = params.originToken;
         uint256 originAmount = params.originAmount;
         uint256 protocolFeeAmount = 0;
         if (protocolFeeRate > 0) {
@@ -206,7 +205,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
                 destChainId: params.dstChainId,
                 originSender: params.sender,
                 destRecipient: params.to,
-                originToken: originToken,
+                originToken: params.originToken,
                 destToken: params.destToken,
                 originAmount: originAmount,
                 destAmount: params.destAmount,
@@ -241,6 +240,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         emit BridgeQuoteDetails(transactionId, paramsV2.quoteId);
 
         // Transfer the tokens from the user as the last transaction action.
+        address originToken = params.originToken;
         if (originToken != NATIVE_GAS_TOKEN) {
             // We need to take the full origin amount from the provided params (that includes `protocolFeeAmount`).
             uint256 amountToTake = params.originAmount;
