@@ -422,6 +422,9 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	transactor.NoSend = true
 
 	tx_forEstimate, err := call(transactor)
+	if err != nil {
+		return 0, fmt.Errorf("err contract call sim: %w", err)
+	}
 
 	gasEstimate, err := t.getGasEstimate(ctx, chainClient, int(chainID.Uint64()), tx_forEstimate)
 	if err != nil {
@@ -435,7 +438,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	tx, err := call(transactor)
 
 	if err != nil {
-		return 0, fmt.Errorf("could not call contract: %w", err)
+		return 0, fmt.Errorf("err contract call exec: %w", err)
 	}
 	defer locker.Unlock()
 
@@ -700,13 +703,8 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.getGasEstimate", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, chainID),
 
-		// note: tx hash can be null legitimately if we are pre-estimating gas rather than bumping it from a prior failure
-		attribute.String(metrics.TxHash, func() string {
-			if tx == nil || tx.Hash() == (common.Hash{}) {
-				return "not_known_yet"
-			}
-			return tx.Hash().String()
-		}()),
+		attribute.String(metrics.TxHash, tx.Hash().String()),
+
 		attribute.Int("gasUnitAddPercentage", gasUnitAddPercentage),
 	))
 
