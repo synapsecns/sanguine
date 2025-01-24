@@ -29,6 +29,7 @@ export type LiFiQuoteRequest = {
   skipSimulation: boolean
   swapStepTimingStrategies?: string
   routeStepTimingStrategies?: string
+  name?: string
 }
 
 export type LiFiQuoteResponse = {
@@ -73,6 +74,7 @@ export class LiFiEngine implements SwapEngine {
         // TODO: figure out optimal values
         swapStepTimingStrategies: 'minWaitTime-0-5-100',
         routeStepTimingStrategies: 'minWaitTime-0-5-100',
+        name: 'cortex_protocol',
       },
       timeout
     )

@@ -20,6 +20,7 @@ describe('Integration test: LiFiEngine', () => {
         skipSimulation: true,
         // swapStepTimingStrategies: 'minWaitTime-300-1-100',
         // routeStepTimingStrategies: 'minWaitTime-100-0-0',
+        name: 'cortex_protocol',
       },
       2000
     )

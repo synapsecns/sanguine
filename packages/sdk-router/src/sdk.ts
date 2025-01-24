@@ -1,5 +1,8 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import invariant from 'tiny-invariant'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 import { FastBridgeRouterSet, SynapseIntentRouterSet } from './rfq'
 import {
