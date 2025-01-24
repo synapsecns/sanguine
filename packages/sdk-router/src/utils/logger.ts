@@ -1,4 +1,6 @@
-export const logger = console
+import pino from 'pino'
+
+export const logger = pino()
 
 // Decorator to log the execution time of a function
 export const logExecutionTime =
