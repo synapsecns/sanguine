@@ -702,7 +702,7 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 
 		// note: tx hash can be null legitimately if we are pre-estimating gas rather than bumping it from a prior failure
 		attribute.String(metrics.TxHash, func() string {
-			if tx.Hash() == (common.Hash{}) {
+			if tx == nil || tx.Hash() == (common.Hash{}) {
 				return "not_known_yet"
 			}
 			return tx.Hash().String()
@@ -720,15 +720,10 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 	if err != nil {
 		return 0, fmt.Errorf("could not convert tx to call: %w", err)
 	}
-	// tmpdebug
-	fmt.Printf("Debug Calling EstimateGas")
 
 	gasEstimate, err = chainClient.EstimateGas(ctx, *call)
 	if err != nil {
 		span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
-
-		// tmpdebug
-		fmt.Printf("Debug Default Gas Estimate: %d\n", t.config.GetGasEstimate(chainID))
 
 		// fallback to default
 		return t.config.GetGasEstimate(chainID), nil
