@@ -437,17 +437,9 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     /// via the cancel function if no relay is completed.
     function _takeBridgedUserAsset(address token, uint256 amount) internal returns (uint256 amountTaken) {
         if (token == NATIVE_GAS_TOKEN) {
-            // For the native gas token, we just need to check that the supplied msg.value is correct.
             // Supplied `msg.value` is already in FastBridgeV2 custody.
-            if (amount != msg.value) revert MsgValueIncorrect();
             amountTaken = msg.value;
         } else {
-            // For ERC20s, token is explicitly transferred from the user to FastBridgeV2.
-            // We don't allow non-zero `msg.value` to avoid extra funds from being stuck in FastBridgeV2.
-            if (msg.value != 0) revert MsgValueIncorrect();
-            // Throw an explicit error if the provided token address is not a contract.
-            if (token.code.length == 0) revert TokenNotContract();
-
             // Use the balance difference as the amount taken in case of fee on transfer tokens.
             amountTaken = IERC20(token).balanceOf(address(this));
             IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
@@ -500,11 +492,13 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         internal
         view
     {
+        address originToken = params.originToken;
+        uint256 originAmount = params.originAmount;
         // Check V1 (legacy) params.
         if (params.dstChainId == block.chainid) revert ChainIncorrect();
-        if (params.originAmount == 0 || params.destAmount == 0) revert AmountIncorrect();
+        if (originAmount == 0 || params.destAmount == 0) revert AmountIncorrect();
         if (params.sender == address(0) || params.to == address(0)) revert ZeroAddress();
-        if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
+        if (originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
         if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
 
         // Check V2 params.
@@ -516,6 +510,17 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         // exclusivityEndTime must be in range [0 .. params.deadline].
         if (exclusivityEndTime < 0 || exclusivityEndTime > int256(params.deadline)) {
             revert ExclusivityParamsIncorrect();
+        }
+
+        // Check supplied msg.value.
+        if (originToken == NATIVE_GAS_TOKEN) {
+            // For the native gas token, we just need to check that the supplied msg.value is correct.
+            if (msg.value != originAmount) revert MsgValueIncorrect();
+        } else {
+            // We don't allow non-zero `msg.value` to avoid extra funds from being stuck in FastBridgeV2.
+            if (msg.value != 0) revert MsgValueIncorrect();
+            // Throw an explicit error if the provided token address is not a contract.
+            if (originToken.code.length == 0) revert TokenNotContract();
         }
     }
 
