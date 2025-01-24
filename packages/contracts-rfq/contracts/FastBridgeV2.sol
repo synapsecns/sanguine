@@ -191,12 +191,12 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         // Track the amount of origin token owed to protocol.
         address originToken = params.originToken;
         uint256 originAmount = params.originAmount;
-        uint256 originFeeAmount = 0;
+        uint256 protocolFeeAmount = 0;
         if (protocolFeeRate > 0) {
-            originFeeAmount = (originAmount * protocolFeeRate) / FEE_BPS;
+            protocolFeeAmount = (originAmount * protocolFeeRate) / FEE_BPS;
             // The Relayer filling this request will be paid the originAmount after fees.
             // Note: the protocol fees will be accumulated only when the Relayer claims the origin collateral.
-            originAmount -= originFeeAmount;
+            originAmount -= protocolFeeAmount;
         }
 
         // Hash the bridge request and set the initial status to REQUESTED.
@@ -210,7 +210,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
                 destToken: params.destToken,
                 originAmount: originAmount,
                 destAmount: params.destAmount,
-                originFeeAmount: originFeeAmount,
+                originFeeAmount: protocolFeeAmount,
                 deadline: params.deadline,
                 // Increment the sender's nonce on every bridge.
                 nonce: senderNonces[params.sender]++,
@@ -242,7 +242,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
 
         // Transfer the tokens from the user as the last transaction action.
         if (originToken != NATIVE_GAS_TOKEN) {
-            // We need to take the full origin amount from the provided params (that includes `originFeeAmount`).
+            // We need to take the full origin amount from the provided params (that includes `protocolFeeAmount`).
             uint256 amountToTake = params.originAmount;
             uint256 balanceBefore = IERC20(originToken).balanceOf(address(this));
             IERC20(originToken).safeTransferFrom(msg.sender, address(this), amountToTake);
@@ -407,8 +407,8 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         // Accumulate protocol fees if origin fee amount exists.
         address token = request.originToken();
         uint256 amount = request.originAmount();
-        uint256 originFeeAmount = request.originFeeAmount();
-        if (originFeeAmount > 0) protocolFees[token] += originFeeAmount;
+        uint256 protocolFeeAmount = request.originFeeAmount();
+        if (protocolFeeAmount > 0) protocolFees[token] += protocolFeeAmount;
 
         // Emit the event before any external calls.
         emit BridgeDepositClaimed(transactionId, proofRelayer, to, token, amount);
