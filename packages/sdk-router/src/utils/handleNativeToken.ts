@@ -2,6 +2,8 @@ import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
 import { PopulatedTransaction } from '@ethersproject/contracts'
 
+import { isSameAddress } from './addressUtils'
+
 export const ETH_NATIVE_TOKEN_ADDRESS =
   '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 
@@ -12,7 +14,7 @@ export const handleNativeToken = (tokenAddr: string) => {
 }
 
 export const isNativeToken = (tokenAddr: string): boolean => {
-  return tokenAddr.toLowerCase() === ETH_NATIVE_TOKEN_ADDRESS.toLowerCase()
+  return isSameAddress(tokenAddr, ETH_NATIVE_TOKEN_ADDRESS)
 }
 
 /**

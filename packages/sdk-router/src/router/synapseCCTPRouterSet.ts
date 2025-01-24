@@ -3,8 +3,13 @@ import { BigNumber } from '@ethersproject/bignumber'
 
 import { SynapseCCTPRouter } from './synapseCCTPRouter'
 import { ChainProvider, RouterSet } from './routerSet'
-import { CCTP_ROUTER_ADDRESS_MAP, MEDIAN_TIME_CCTP } from '../constants'
+import {
+  BigintIsh,
+  CCTP_ROUTER_ADDRESS_MAP,
+  MEDIAN_TIME_CCTP,
+} from '../constants'
 import { BridgeRoute } from '../module'
+import { logExecutionTime } from '../utils/logger'
 
 /**
  * Wrapper class for interacting with a SynapseCCTPRouter contracts deployed on multiple chains.
@@ -18,6 +23,23 @@ export class SynapseCCTPRouterSet extends RouterSet {
 
   constructor(chains: ChainProvider[]) {
     super(chains, CCTP_ROUTER_ADDRESS_MAP, SynapseCCTPRouter)
+  }
+
+  @logExecutionTime('SynapseCCTP.getBridgeRoutes')
+  public async getBridgeRoutes(
+    originChainId: number,
+    destChainId: number,
+    tokenIn: string,
+    tokenOut: string,
+    amountIn: BigintIsh
+  ): Promise<BridgeRoute[]> {
+    return super.getBridgeRoutes(
+      originChainId,
+      destChainId,
+      tokenIn,
+      tokenOut,
+      amountIn
+    )
   }
 
   /**

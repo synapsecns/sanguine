@@ -2,6 +2,8 @@
 /* @ts-ignore */
 import NodeCache from 'node-cache'
 
+import { logger } from './logger'
+
 // export const CACHE_HYDRATION_DELAY = {
 //   RFQ: 0,
 //   CCTP: 0,
@@ -56,10 +58,18 @@ export const RouterCache = (maxAge: number) => {
             cache.set(key, res)
             return res
           })
-          .catch((e) => {
-            console.error(
-              `[SynapseSDK: RouterCache] Error on ChainID ${this.chainId}: `,
-              e
+          .catch((error) => {
+            logger.error(
+              {
+                target,
+                args,
+                propertyKey,
+                name: target.constructor.name,
+                address: this.address,
+                chainId: this.chainId,
+                error,
+              },
+              '[SynapseSDK: RouterCache] Error'
             )
           })
         return result
