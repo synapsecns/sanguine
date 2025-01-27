@@ -104,7 +104,7 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 		}
 
 		//tmpdebug
-		fmt.Println("RelayV2 hash: ", tx.Hash())
+		fmt.Printf("RelayV2 transaction: %+v\n", tx)
 
 		return tx, nil
 	})
