@@ -421,24 +421,41 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		//nolint: wrapcheck
 		return parentTransactor.Signer(address, transaction)
 	}
+	// if dynamic gas estimation is not enabled, use cfg var gas_estimate as a gas limit default and do not run a pre-flight simulation
+	// since we do not need it to determine proper gas units
+	if !t.config.GetDynamicGasEstimate(int(chainID.Uint64())) {
 
-	//tmpdebug
-	fmt.Printf("SubmitTransaction>call")
+		//tmpdebug
+		fmt.Printf("Using Default")
 
-	tx, err := call(transactor)
+		transactor.GasLimit = t.config.GetGasEstimate(int(chainID.Uint64()))
+	} else {
 
-	gasEstimate, err := t.getGasEstimate(ctx, chainClient, int(chainID.Uint64()), tx)
-	if err != nil {
-		return 0, fmt.Errorf("err getGasEstimate: %w", err)
+		//tmpdebug
+		fmt.Printf("SubmitTransaction>forGasEst call")
+
+		tx_forGasEstimate, err := call(transactor)
+
+		if err != nil {
+			return 0, fmt.Errorf("err contract call for gas est: %w", err)
+		}
+
+		gasEstimate, err := t.getGasEstimate(ctx, chainClient, int(chainID.Uint64()), tx_forGasEstimate)
+		if err != nil {
+			return 0, fmt.Errorf("err getGasEstimate: %w", err)
+		}
+
+		transactor.GasLimit = gasEstimate
+
 	}
 
 	//tmpdebug
-	fmt.Printf("Gas estimate: %d\n", gasEstimate)
+	fmt.Printf("transactor.GasLimit: %d\n", transactor.GasLimit)
 
-	transactor.GasLimit = gasEstimate
+	tx, err := call(transactor)
 
 	if err != nil {
-		return 0, fmt.Errorf("err contract call exec: %w", err)
+		return 0, fmt.Errorf("err contract call for tx: %w", err)
 	}
 	defer locker.Unlock()
 
