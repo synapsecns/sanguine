@@ -426,16 +426,15 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	if !t.config.GetDynamicGasEstimate(int(chainID.Uint64())) {
 
 		//tmpdebug
-		fmt.Printf("Using Default")
+		fmt.Printf("Using Default ")
 
 		transactor.GasLimit = t.config.GetGasEstimate(int(chainID.Uint64()))
 	} else {
 
 		//tmpdebug
-		fmt.Printf("SubmitTransaction>forGasEst call")
+		fmt.Printf("SubmitTransaction>forGasEst call ")
 
-		transactor_forGasEstimate := new(bind.TransactOpts)
-		*transactor_forGasEstimate = *transactor
+		transactor_forGasEstimate := copyTransactOpts(transactor)
 
 		tx_forGasEstimate, err := call(transactor_forGasEstimate)
 
