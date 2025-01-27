@@ -434,7 +434,10 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		//tmpdebug
 		fmt.Printf("SubmitTransaction>forGasEst call")
 
-		tx_forGasEstimate, err := call(transactor)
+		transactor_forGasEstimate := new(bind.TransactOpts)
+		*transactor_forGasEstimate = *transactor
+
+		tx_forGasEstimate, err := call(transactor_forGasEstimate)
 
 		if err != nil {
 			return 0, fmt.Errorf("err contract call for gas est: %w", err)
