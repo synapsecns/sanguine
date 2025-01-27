@@ -389,7 +389,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	transactor.Nonce = new(big.Int).Add(new(big.Int).SetUint64(math.MaxUint64), big.NewInt(1))
 
 	//tmpdebug
-	fmt.Printf("SubmitTransaction>setGasPrice")
+	fmt.Printf("SubmitTransaction>setGasPrice\n")
 
 	err = t.setGasPrice(ctx, chainClient, transactor, chainID, nil)
 	if err != nil {
@@ -421,33 +421,39 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		//nolint: wrapcheck
 		return parentTransactor.Signer(address, transaction)
 	}
+
+	//tmpdebug
+	fmt.Printf("test ver 1\n")
+
 	// if dynamic gas estimation is not enabled, use cfg var gas_estimate as a gas limit default and do not run a pre-flight simulation
 	// since we do not need it to determine proper gas units
 	if !t.config.GetDynamicGasEstimate(int(chainID.Uint64())) {
 
 		//tmpdebug
-		fmt.Printf("Using Default ")
+		fmt.Printf("Using Default \n")
 
 		transactor.GasLimit = t.config.GetGasEstimate(int(chainID.Uint64()))
 	} else {
 
 		//tmpdebug
-		fmt.Printf("SubmitTransaction>forGasEst call ")
+		fmt.Printf("SubmitTransaction>forGasEst call \n")
 
 		transactor_forGasEstimate := copyTransactOpts(transactor)
 
 		tx_forGasEstimate, err := call(transactor_forGasEstimate)
 
+		fmt.Printf("tx_forGasEstimate: %v\n", tx_forGasEstimate)
+
 		if err != nil {
 			return 0, fmt.Errorf("err contract call for gas est: %w", err)
 		}
 
-		gasEstimate, err := t.getGasEstimate(ctx, chainClient, int(chainID.Uint64()), tx_forGasEstimate)
-		if err != nil {
-			return 0, fmt.Errorf("err getGasEstimate: %w", err)
-		}
+		// gasEstimate, err := t.getGasEstimate(ctx, chainClient, int(chainID.Uint64()), tx_forGasEstimate)
+		// if err != nil {
+		// 	return 0, fmt.Errorf("err getGasEstimate: %w", err)
+		// }
 
-		transactor.GasLimit = gasEstimate
+		transactor.GasLimit = 1405050
 
 	}
 
@@ -462,7 +468,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	defer locker.Unlock()
 
 	//tmpdebug
-	fmt.Printf("SubmitTransaction>storeTX")
+	fmt.Printf("SubmitTransaction>storeTX\n")
 
 	// now that we've stored the tx
 	err = t.storeTX(ctx, tx, db.Stored, uuid.New().String())
