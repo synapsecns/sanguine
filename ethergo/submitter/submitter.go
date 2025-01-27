@@ -388,6 +388,9 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	// this also prevents a bug in the caller from breaking our lock
 	transactor.Nonce = new(big.Int).Add(new(big.Int).SetUint64(math.MaxUint64), big.NewInt(1))
 
+	//tmpdebug
+	fmt.Printf("SubmitTransaction>setGasPrice")
+
 	err = t.setGasPrice(ctx, chainClient, transactor, chainID, nil)
 	if err != nil {
 		span.AddEvent("could not set gas price", trace.WithAttributes(attribute.String("error", err.Error())))
@@ -419,28 +422,28 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		return parentTransactor.Signer(address, transaction)
 	}
 
-	transactor.NoSend = true
+	//tmpdebug
+	fmt.Printf("SubmitTransaction>call")
 
-	tx_forEstimate, err := call(transactor)
-	if err != nil {
-		return 0, fmt.Errorf("err contract call sim: %w", err)
-	}
+	tx, err := call(transactor)
 
-	gasEstimate, err := t.getGasEstimate(ctx, chainClient, int(chainID.Uint64()), tx_forEstimate)
+	gasEstimate, err := t.getGasEstimate(ctx, chainClient, int(chainID.Uint64()), tx)
 	if err != nil {
 		return 0, fmt.Errorf("err getGasEstimate: %w", err)
 	}
 
+	//tmpdebug
+	fmt.Printf("Gas estimate: %d\n", gasEstimate)
+
 	transactor.GasLimit = gasEstimate
-
-	transactor.NoSend = false
-
-	tx, err := call(transactor)
 
 	if err != nil {
 		return 0, fmt.Errorf("err contract call exec: %w", err)
 	}
 	defer locker.Unlock()
+
+	//tmpdebug
+	fmt.Printf("SubmitTransaction>storeTX")
 
 	// now that we've stored the tx
 	err = t.storeTX(ctx, tx, db.Stored, uuid.New().String())
@@ -450,6 +453,9 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 
 	span.AddEvent("trigger reprocess")
 	t.triggerProcessQueue(ctx)
+
+	//tmpdebug
+	fmt.Printf("SubmitTransaction>tx.Nonce: %d\n", tx.Nonce())
 
 	return tx.Nonce(), nil
 }
