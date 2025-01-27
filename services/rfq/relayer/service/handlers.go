@@ -378,7 +378,7 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
 
 	//tmpdebug
-	fmt.Println("handleCommitConfirmed>SubmitRelay: ", request.TransactionID)
+	fmt.Println("handleCommitConfirmed>SubmitRelay: ", request.OriginTxHash)
 
 	// TODO: store the dest txhash connected to the nonce
 	nonce, _, err := q.Dest.SubmitRelay(ctx, request)
@@ -389,14 +389,14 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span tr
 	span.SetAttributes(attribute.Int("relay_nonce", int(nonce)))
 
 	//tmpdebug
-	fmt.Println("handleCommitConfirmed>UpdateQuoteRequestStatus: ", request.TransactionID)
+	fmt.Println("handleCommitConfirmed>UpdateQuoteRequestStatus: ", request.OriginTxHash)
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted, &request.Status)
 	if err != nil {
 		return fmt.Errorf("could not update quote request status: %w", err)
 	}
 
 	//tmpdebug
-	fmt.Println("handleCommitConfirmed>UpdateRelayNonce: ", request.TransactionID)
+	fmt.Println("handleCommitConfirmed>UpdateRelayNonce: ", request.OriginTxHash)
 	err = q.db.UpdateRelayNonce(ctx, request.TransactionID, nonce)
 	if err != nil {
 		return fmt.Errorf("could not update relay nonce: %w", err)
