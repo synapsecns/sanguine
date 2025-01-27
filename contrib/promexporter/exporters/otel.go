@@ -51,12 +51,12 @@ type otelRecorder struct {
 	stuckHeroesGauge metric.Int64ObservableGauge
 
 	// submitter stats
-	submitters   *hashmap.Map[int, []submitterMetadata]
+	submitters   *hashmap.Map[int, submitterMetadata]
 	balanceGauge metric.Float64ObservableGauge
 	nonceGauge   metric.Int64ObservableGauge
 
 	// relayer stats
-	relayerBalance          *hashmap.Map[int, []relayerMetadata]
+	relayerBalance          *hashmap.Map[int, relayerMetadata]
 	relayerBalanceGauge     metric.Float64ObservableGauge
 	relayerUSDCBalanceGuage metric.Float64ObservableGauge
 }
@@ -71,8 +71,8 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		vPrice:         hashmap.New[int, float64](),
 		gasBalance:     hashmap.New[int, float64](),
 		td:             hashmap.New[int, []tokenData](),
-		submitters:     hashmap.New[int, []submitterMetadata](),
-		relayerBalance: hashmap.New[int, []relayerMetadata](),
+		submitters:     hashmap.New[int, submitterMetadata](),
+		relayerBalance: hashmap.New[int, relayerMetadata](),
 	}
 
 	var err error
@@ -299,7 +299,6 @@ func (o *otelRecorder) recordStuckHeroCount(
 // Submitter stats.
 func (o *otelRecorder) RecordSubmitterStats(chainid int, metadata submitterMetadata) {
 	submitters, _ := o.submitters.Get(chainid)
-	submitters = append(submitters, metadata)
 	o.submitters.Set(chainid, submitters)
 }
 
@@ -311,27 +310,25 @@ func (o *otelRecorder) recordSubmitterStats(
 		return nil
 	}
 
-	o.submitters.Range(func(chainID int, submitters []submitterMetadata) bool {
-		for _, submitter := range submitters {
-			observer.ObserveInt64(
-				o.nonceGauge,
-				submitter.nonce,
-				metric.WithAttributes(attribute.Int(metrics.ChainID, chainID),
-					attribute.String(metrics.EOAAddress, submitter.address.String()),
-					attribute.String("name", submitter.name),
-				),
-			)
+	o.submitters.Range(func(chainID int, submitter submitterMetadata) bool {
+		observer.ObserveInt64(
+			o.nonceGauge,
+			submitter.nonce,
+			metric.WithAttributes(attribute.Int(metrics.ChainID, chainID),
+				attribute.String(metrics.EOAAddress, submitter.address.String()),
+				attribute.String("name", submitter.name),
+			),
+		)
 
-			observer.ObserveFloat64(
-				o.balanceGauge,
-				submitter.balance,
-				metric.WithAttributes(
-					attribute.Int(metrics.ChainID, chainID),
-					attribute.String(metrics.EOAAddress, submitter.address.String()),
-					attribute.String("name", submitter.name),
-				),
-			)
-		}
+		observer.ObserveFloat64(
+			o.balanceGauge,
+			submitter.balance,
+			metric.WithAttributes(
+				attribute.Int(metrics.ChainID, chainID),
+				attribute.String(metrics.EOAAddress, submitter.address.String()),
+				attribute.String("name", submitter.name),
+			),
+		)
 		return true
 	})
 	return nil
@@ -340,7 +337,6 @@ func (o *otelRecorder) recordSubmitterStats(
 // RELAYER CODE.
 func (o *otelRecorder) RecordRelayerBalance(chainID int, relayer relayerMetadata) {
 	relayerBalances, _ := o.relayerBalance.Get(chainID)
-	relayerBalances = append(relayerBalances, relayer)
 	o.relayerBalance.Set(chainID, relayerBalances)
 }
 
@@ -352,25 +348,23 @@ func (o *otelRecorder) recordRelayerBalance(
 		return nil
 	}
 
-	o.relayerBalance.Range(func(chainID int, relayerBalances []relayerMetadata) bool {
-		for _, relayer := range relayerBalances {
-			observer.ObserveFloat64(
-				o.relayerBalanceGauge,
-				relayer.balance,
-				metric.WithAttributes(
-					attribute.Int(metrics.ChainID, chainID),
-					attribute.String("relayer_address", relayer.address.String()),
-				),
-			)
-			observer.ObserveFloat64(
-				o.relayerUSDCBalanceGuage,
-				relayer.usdcBalance,
-				metric.WithAttributes(
-					attribute.Int(metrics.ChainID, chainID),
-					attribute.String("relayer_address", relayer.address.String()),
-				),
-			)
-		}
+	o.relayerBalance.Range(func(chainID int, relayerBalance relayerMetadata) bool {
+		observer.ObserveFloat64(
+			o.relayerBalanceGauge,
+			relayerBalance.balance,
+			metric.WithAttributes(
+				attribute.Int(metrics.ChainID, chainID),
+				attribute.String("relayer_address", relayerBalance.address.String()),
+			),
+		)
+		observer.ObserveFloat64(
+			o.relayerUSDCBalanceGuage,
+			relayerBalance.usdcBalance,
+			metric.WithAttributes(
+				attribute.Int(metrics.ChainID, chainID),
+				attribute.String("relayer_address", relayerBalance.address.String()),
+			),
+		)
 
 		return true
 	})
