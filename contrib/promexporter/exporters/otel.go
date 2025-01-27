@@ -37,7 +37,7 @@ type otelRecorder struct {
 
 	// BRIDGE
 	// chainID -> []tokenData
-	td *hashmap.Map[int, []tokenData]
+	td *hashmap.Map[int, tokenData]
 	// How much gas is left on the bridge.
 	gasBalance *hashmap.Map[int, float64]
 	// tokenData field gauges
@@ -70,7 +70,7 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		stuckHeroes:    hashmap.New[string, int64](),
 		vPrice:         hashmap.New[int, float64](),
 		gasBalance:     hashmap.New[int, float64](),
-		td:             hashmap.New[int, []tokenData](),
+		td:             hashmap.New[int, tokenData](),
 		submitters:     hashmap.New[int, submitterMetadata](),
 		relayerBalance: hashmap.New[int, relayerMetadata](),
 	}
@@ -215,10 +215,7 @@ func (o *otelRecorder) RecordTokenBalance(
 	chainID int,
 	tokenData tokenData,
 ) {
-	td, _ := o.td.Get(chainID)
-	td = append(td, tokenData)
-
-	o.td.Set(chainID, td)
+	o.td.Set(chainID, tokenData)
 }
 
 func (o *otelRecorder) recordTokenBalance(
@@ -229,37 +226,35 @@ func (o *otelRecorder) recordTokenBalance(
 		return nil
 	}
 
-	o.td.Range(func(_ int, td []tokenData) bool {
-		for _, token := range td {
-			tokenAttributes := attribute.NewSet(
-				attribute.String("tokenID", token.metadata.TokenID),
-				attribute.Int(metrics.ChainID, token.metadata.ChainID),
-			)
+	o.td.Range(func(_ int, token tokenData) bool {
+		tokenAttributes := attribute.NewSet(
+			attribute.String("tokenID", token.metadata.TokenID),
+			attribute.Int(metrics.ChainID, token.metadata.ChainID),
+		)
 
-			bridgeBalance := core.BigToDecimals(token.contractBalance, token.metadata.TokenDecimals)
+		bridgeBalance := core.BigToDecimals(token.contractBalance, token.metadata.TokenDecimals)
 
-			observer.ObserveFloat64(
-				o.bridgeBalanceGauge,
-				bridgeBalance,
-				metric.WithAttributeSet(tokenAttributes),
-			)
+		observer.ObserveFloat64(
+			o.bridgeBalanceGauge,
+			bridgeBalance,
+			metric.WithAttributeSet(tokenAttributes),
+		)
 
-			feeBalance := core.BigToDecimals(token.feeBalance, token.metadata.TokenDecimals)
+		feeBalance := core.BigToDecimals(token.feeBalance, token.metadata.TokenDecimals)
 
-			observer.ObserveFloat64(
-				o.feeBalanceGauge,
-				feeBalance,
-				metric.WithAttributeSet(tokenAttributes),
-			)
+		observer.ObserveFloat64(
+			o.feeBalanceGauge,
+			feeBalance,
+			metric.WithAttributeSet(tokenAttributes),
+		)
 
-			totalSupply := core.BigToDecimals(token.totalSuppply, token.metadata.TokenDecimals)
+		totalSupply := core.BigToDecimals(token.totalSuppply, token.metadata.TokenDecimals)
 
-			observer.ObserveFloat64(
-				o.totalSupplyGauge,
-				totalSupply,
-				metric.WithAttributeSet(tokenAttributes),
-			)
-		}
+		observer.ObserveFloat64(
+			o.totalSupplyGauge,
+			totalSupply,
+			metric.WithAttributeSet(tokenAttributes),
+		)
 
 		return true
 	})
@@ -298,8 +293,7 @@ func (o *otelRecorder) recordStuckHeroCount(
 
 // Submitter stats.
 func (o *otelRecorder) RecordSubmitterStats(chainid int, metadata submitterMetadata) {
-	submitters, _ := o.submitters.Get(chainid)
-	o.submitters.Set(chainid, submitters)
+	o.submitters.Set(chainid, metadata)
 }
 
 func (o *otelRecorder) recordSubmitterStats(
@@ -336,8 +330,7 @@ func (o *otelRecorder) recordSubmitterStats(
 
 // RELAYER CODE.
 func (o *otelRecorder) RecordRelayerBalance(chainID int, relayer relayerMetadata) {
-	relayerBalances, _ := o.relayerBalance.Get(chainID)
-	o.relayerBalance.Set(chainID, relayerBalances)
+	o.relayerBalance.Set(chainID, relayer)
 }
 
 func (o *otelRecorder) recordRelayerBalance(
