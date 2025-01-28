@@ -423,7 +423,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	}
 
 	//tmpdebug
-	fmt.Printf("test ver 5\n")
+	fmt.Printf("test ver 6\n")
 
 	// if dynamic gas estimation is not enabled, use cfg var gas_estimate as a gas limit default and do not run a pre-flight simulation
 	// since we do not need it to determine proper gas units
@@ -435,27 +435,29 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		transactor.GasLimit = t.config.GetGasEstimate(int(chainID.Uint64()))
 	} else {
 
-		//tmpdebug
-		fmt.Printf("SubmitTransaction>forGasEst call \n")
+		// //tmpdebug
+		// fmt.Printf("SubmitTransaction>forGasEst call \n")
 
-		transactor_forGasEstimate := copyTransactOpts(transactor)
+		// transactor_forGasEstimate := copyTransactOpts(transactor)
 
-		transactor_forGasEstimate.Nonce.Sub(transactor_forGasEstimate.Nonce, big.NewInt(1))
+		// transactor_forGasEstimate.Nonce.Add(transactor_forGasEstimate.Nonce, big.NewInt(1))
 
-		tx_forGasEstimate, err := call(transactor_forGasEstimate)
+		// tx_forGasEstimate, err := call(transactor_forGasEstimate)
 
-		fmt.Printf("tx_forGasEstimate: %v\n", tx_forGasEstimate.Gas())
+		// fmt.Printf("tx_forGasEstimate: %v\n", tx_forGasEstimate.Gas())
 
-		if err != nil {
-			return 0, fmt.Errorf("err contract call for gas est: %w", err)
-		}
-
-		// gasEstimate, err := t.getGasEstimate(ctx, chainClient, int(chainID.Uint64()), tx_forGasEstimate)
 		// if err != nil {
-		// 	return 0, fmt.Errorf("err getGasEstimate: %w", err)
+		// 	return 0, fmt.Errorf("err contract call for gas est: %w", err)
 		// }
 
-		transactor.GasLimit = tx_forGasEstimate.Gas() + 555
+		// // gasEstimate, err := t.getGasEstimate(ctx, chainClient, int(chainID.Uint64()), tx_forGasEstimate)
+		// // if err != nil {
+		// // 	return 0, fmt.Errorf("err getGasEstimate: %w", err)
+		// // }
+
+		// transactor.GasLimit = tx_forGasEstimate.Gas() + 555
+
+		transactor.GasLimit = 21555 // intentionally set too low
 
 	}
 
