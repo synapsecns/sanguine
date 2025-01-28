@@ -480,11 +480,14 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span tra
 
 	// relay has been finalized, it's time to go back to the origin chain and try to prove
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+
+		fmt.Println("SubmitTransaction>Prove ", request.OriginTxHash)
 		tx, err = q.Origin.Bridge.Prove(transactor, request.RawRequest, request.DestTxHash)
 		if err != nil {
-			return nil, fmt.Errorf("could not relay: %w", err)
+			return nil, fmt.Errorf("could not prove: %w", err)
 		}
 
+		fmt.Println("SubmitTransaction>Prove return tx.gas ", tx.Gas())
 		return tx, nil
 	})
 	if err != nil {
