@@ -9,6 +9,7 @@ const router: express.Router = express.Router()
 router.get('/:chainId/:address.svg', async (req, res) => {
   const chainId = parseInt(req.params.chainId, 10)
   const address = req.params.address.toLowerCase()
+  const addHeaders = req.query.headers === 'true'
 
   // Find the token with matching address on the specified chain
   const token = Object.values(BRIDGABLE_TOKENS[chainId] || []).find(
@@ -39,11 +40,10 @@ router.get('/:chainId/:address.svg', async (req, res) => {
     const buffer = await response.arrayBuffer()
     const contentType = response.headers.get('content-type') || 'image/svg+xml'
 
-    // Only process SVG files
-    const processedBuffer =
-      contentType === 'image/svg+xml'
-        ? addSvgHeaderIfMissing(buffer)
-        : Buffer.from(buffer)
+    // Only process SVG files if headers are requested
+    const processedBuffer = contentType === 'image/svg+xml' && addHeaders
+      ? addSvgHeaderIfMissing(buffer)
+      : Buffer.from(buffer)
 
     // Set cache headers (cache for 1 week)
     res.set({
