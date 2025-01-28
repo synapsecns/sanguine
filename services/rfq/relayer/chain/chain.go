@@ -111,8 +111,7 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 		}
 
 		//tmpdebug
-		fmt.Println(callType, "RelayV2 OriginTxHash:", request.OriginTxHash)
-		fmt.Printf(callType+" RelayV2 transaction: %+v\n", tx)
+		fmt.Println(callType, "RelayV2 Return tx hash:", request.OriginTxHash, tx.Hash())
 
 		return tx, nil
 	})
