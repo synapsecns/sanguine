@@ -435,22 +435,28 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		transactor.GasLimit = t.config.GetGasEstimate(int(chainID.Uint64()))
 	} else {
 
-		//tmpdebug
-		fmt.Printf("SubmitTransaction>forGasEst call \n")
+		// //tmpdebug
+		// fmt.Printf("SubmitTransaction>forGasEst call \n")
 
-		transactor_forGasEstimate := copyTransactOpts(transactor)
+		// transactor_forGasEstimate := copyTransactOpts(transactor)
 
-		transactor_forGasEstimate.Nonce.Add(transactor_forGasEstimate.Nonce, big.NewInt(1))
+		// transactor_forGasEstimate.Nonce.Add(transactor_forGasEstimate.Nonce, big.NewInt(1))
 
-		tx_forGasEstimate, err := call(transactor_forGasEstimate)
-		if err != nil {
-			return 0, fmt.Errorf("err contract call for gas est: %w", err)
+		// tx_forGasEstimate, err := call(transactor_forGasEstimate)
+		// if err != nil {
+		// 	return 0, fmt.Errorf("err contract call for gas est: %w", err)
+		// }
+
+		// fmt.Printf("tx_forGasEstimate: %v\n", tx_forGasEstimate.Gas())
+
+		//transactor.GasLimit = tx_forGasEstimate.Gas() + 555
+
+		// spoof some low gas units to induce bump tests
+		if chainID.Uint64() == 10 {
+			transactor.GasLimit = 25000
+		} else if chainID.Uint64() == 42161 {
+			transactor.GasLimit = 150000
 		}
-
-		fmt.Printf("tx_forGasEstimate: %v\n", tx_forGasEstimate.Gas())
-
-		transactor.GasLimit = tx_forGasEstimate.Gas() + 555
-
 	}
 
 	//tmpdebug
@@ -721,7 +727,7 @@ func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EV
 
 // getGasEstimate gets the gas estimate for the given transaction.
 // TODO: handle l2s w/ custom gas pricing through contracts.
-func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client.EVM, chainID int, tx *types.Transaction) (gasEstimate uint64, err error) {
+func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client.EVM, chainID int, tx *types.Transaction) (gasLimit_new uint64, err error) {
 
 	// if dynamic gas estimation is not enabled, use cfg var gas_estimate as a default
 	if !t.config.GetDynamicGasEstimate(chainID) {
@@ -745,7 +751,7 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 	))
 
 	defer func() {
-		span.AddEvent("estimated_gas", trace.WithAttributes(attribute.Int64("gas", int64(gasEstimate))))
+		span.AddEvent("estimated_gas", trace.WithAttributes(attribute.Int64("gas", int64(gasLimit_new))))
 		metrics.EndSpanWithErr(span, err)
 	}()
 
@@ -755,7 +761,11 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 		return 0, fmt.Errorf("could not convert tx to call: %w", err)
 	}
 
-	gasEstimate, err = chainClient.EstimateGas(ctx, *call)
+	// bump gas limit from prior by X%
+	gasLimit_fromPrior := tx.Gas()
+
+	gasLimit_fromEstimate, err := chainClient.EstimateGas(ctx, *call)
+
 	if err != nil {
 
 		//tmpdebug
@@ -763,19 +773,22 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 
 		span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
 
-		return t.config.GetGasEstimate(chainID), nil
+		// if we failed to est gas for any reason, use *at least* the default flat gas on the next bump
+		gasLimit_fromEstimate = max(t.config.GetGasEstimate(chainID), gasLimit_fromEstimate)
 	}
 
-	//tmpdebug
-	fmt.Println("getGasEstimate>gasEstimate pre", gasEstimate)
+	// use whichever is higher, gas from the prior attempt, or gas from our latest simulation estimate
+	gasLimit_new = max(gasLimit_fromPrior, gasLimit_fromEstimate)
 
-	// Modify the gasEstimate by the configured percentage
-	gasEstimate = gasEstimate + (gasEstimate * uint64(gasUnitAddPercentage) / 100)
+	// whichever source is used as the base, multiply it by the configured gas unit add percentage
+	gasLimit_new = gasLimit_new + (gasLimit_new * uint64(gasUnitAddPercentage) / 100)
+	span.AddEvent("new gas limit", trace.WithAttributes(
+		attribute.Int64("gas_limit", int64(gasLimit_new)),
+		attribute.Int64("gas_limit_from_prior", int64(gasLimit_fromPrior)),
+		attribute.Int64("gas_limit_from_estimate", int64(gasLimit_fromEstimate)),
+	))
 
-	//tmpdebug
-	fmt.Println("getGasEstimate>gasEstimate post", gasEstimate)
-
-	return gasEstimate, nil
+	return gasLimit_new, nil
 }
 
 func (t *txSubmitterImpl) Address() common.Address {
