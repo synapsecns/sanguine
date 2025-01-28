@@ -423,7 +423,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	}
 
 	//tmpdebug
-	fmt.Printf("test ver 1\n")
+	fmt.Printf("test ver 2\n")
 
 	// if dynamic gas estimation is not enabled, use cfg var gas_estimate as a gas limit default and do not run a pre-flight simulation
 	// since we do not need it to determine proper gas units
@@ -435,25 +435,25 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		transactor.GasLimit = t.config.GetGasEstimate(int(chainID.Uint64()))
 	} else {
 
-		//tmpdebug
-		fmt.Printf("SubmitTransaction>forGasEst call \n")
+		// // //tmpdebug
+		// // fmt.Printf("SubmitTransaction>forGasEst call \n")
 
-		transactor_forGasEstimate := copyTransactOpts(transactor)
+		// // transactor_forGasEstimate := copyTransactOpts(transactor)
 
-		tx_forGasEstimate, err := call(transactor_forGasEstimate)
+		// // tx_forGasEstimate, err := call(transactor_forGasEstimate)
 
-		fmt.Printf("tx_forGasEstimate: %v\n", tx_forGasEstimate)
+		// // fmt.Printf("tx_forGasEstimate: %v\n", tx_forGasEstimate)
 
-		if err != nil {
-			return 0, fmt.Errorf("err contract call for gas est: %w", err)
-		}
+		// // if err != nil {
+		// // 	return 0, fmt.Errorf("err contract call for gas est: %w", err)
+		// // }
 
 		// gasEstimate, err := t.getGasEstimate(ctx, chainClient, int(chainID.Uint64()), tx_forGasEstimate)
 		// if err != nil {
 		// 	return 0, fmt.Errorf("err getGasEstimate: %w", err)
 		// }
 
-		transactor.GasLimit = 1405050
+		transactor.GasLimit = 0
 
 	}
 
@@ -461,6 +461,9 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	fmt.Printf("transactor.GasLimit: %d\n", transactor.GasLimit)
 
 	tx, err := call(transactor)
+
+	//tmpdebug
+	fmt.Printf("tx.Gas: %d\n", tx.Gas())
 
 	if err != nil {
 		return 0, fmt.Errorf("err contract call for tx: %w", err)
@@ -728,6 +731,9 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 	if !t.config.GetDynamicGasEstimate(chainID) {
 		return t.config.GetGasEstimate(chainID), nil
 	}
+
+	//tmpdebug
+	fmt.Println("getGasEstimate>start")
 
 	gasUnitAddPercentage := t.config.GetDynamicGasUnitAddPercentage(chainID)
 
