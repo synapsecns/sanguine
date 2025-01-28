@@ -2,11 +2,14 @@ import express from 'express'
 import { BRIDGABLE_TOKENS, Token } from '@synapsecns/synapse-constants'
 import fetch from 'cross-fetch'
 
+import { addSvgHeaderIfMissing } from '../utils/svgUtils'
+
 const router: express.Router = express.Router()
 
 router.get('/:chainId/:address.svg', async (req, res) => {
   const chainId = parseInt(req.params.chainId, 10)
   const address = req.params.address.toLowerCase()
+  const addHeaders = req.query.headers === 'true'
 
   // Find the token with matching address on the specified chain
   const token = Object.values(BRIDGABLE_TOKENS[chainId] || []).find(
@@ -35,14 +38,20 @@ router.get('/:chainId/:address.svg', async (req, res) => {
     }
 
     const buffer = await response.arrayBuffer()
+    const contentType = response.headers.get('content-type') || 'image/svg+xml'
+
+    // Only process SVG files if headers are requested
+    const processedBuffer = contentType === 'image/svg+xml' && addHeaders
+      ? addSvgHeaderIfMissing(buffer)
+      : Buffer.from(buffer)
 
     // Set cache headers (cache for 1 week)
     res.set({
       'Cache-Control': 'public, max-age=604800',
-      'Content-Type': response.headers.get('content-type') || 'image/svg+xml',
+      'Content-Type': contentType,
     })
 
-    res.send(Buffer.from(buffer))
+    res.send(processedBuffer)
   } catch (error) {
     console.error('Error fetching token icon:', error)
     res.status(500).json({ error: 'Failed to fetch token icon' })
