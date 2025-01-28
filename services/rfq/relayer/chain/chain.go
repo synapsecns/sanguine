@@ -95,10 +95,12 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 	nonce, err := c.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		transactor.Value = core.CopyBigInt(gasAmount)
 
+		//tmpdebug
 		callType := "exec"
 		if transactor.GasLimit == 0 {
 			callType = "sim"
 		}
+
 		//tmpdebug
 		fmt.Println(callType, "SubmitTransaction>RelayV2: ", request.OriginTxHash)
 
