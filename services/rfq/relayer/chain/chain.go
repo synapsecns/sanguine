@@ -95,17 +95,22 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 	nonce, err := c.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		transactor.Value = core.CopyBigInt(gasAmount)
 
+		callType := "exec"
+		if transactor.GasLimit == 0 {
+			callType = "sim"
+		}
 		//tmpdebug
-		fmt.Println("SubmitTransaction>RelayV2: ", request.OriginTxHash)
+		fmt.Println(callType, "SubmitTransaction>RelayV2: ", request.OriginTxHash)
 
 		tx, err = c.Bridge.RelayV2(transactor, request.RawRequest, c.submitter.Address())
+
 		if err != nil {
 			return nil, fmt.Errorf("could not relay: %w", err)
 		}
 
 		//tmpdebug
-		fmt.Println("RelayV2 OriginTxHash:", request.OriginTxHash)
-		fmt.Printf("RelayV2 transaction: %+v\n", tx)
+		fmt.Println(callType, "RelayV2 OriginTxHash:", request.OriginTxHash)
+		fmt.Printf(callType+" RelayV2 transaction: %+v\n", tx)
 
 		return tx, nil
 	})

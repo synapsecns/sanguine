@@ -423,7 +423,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	}
 
 	//tmpdebug
-	fmt.Printf("test ver 2\n")
+	fmt.Printf("test ver 3\n")
 
 	// if dynamic gas estimation is not enabled, use cfg var gas_estimate as a gas limit default and do not run a pre-flight simulation
 	// since we do not need it to determine proper gas units
@@ -461,6 +461,17 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	fmt.Printf("transactor.GasLimit: %d\n", transactor.GasLimit)
 
 	tx, err := call(transactor)
+
+	if t.config.GetDynamicGasEstimate(int(chainID.Uint64())) {
+
+		transactor.GasLimit = 1450000
+
+		//tmpdebug
+		fmt.Printf("transactor.GasLimit2: %d\n", transactor.GasLimit)
+
+		tx, err = call(transactor)
+
+	}
 
 	//tmpdebug
 	fmt.Printf("tx.Gas: %d\n", tx.Gas())
