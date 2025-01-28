@@ -759,6 +759,9 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 
 	gasUnitAddPercentage := t.config.GetDynamicGasUnitAddPercentage(chainID)
 
+	//tmpdebug
+	fmt.Println("getGasEstimate>gasUnitAddPercentage", gasUnitAddPercentage)
+
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.getGasEstimate", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, chainID),
 
@@ -780,14 +783,24 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 
 	gasEstimate, err = chainClient.EstimateGas(ctx, *call)
 	if err != nil {
+
+		//tmpdebug
+		fmt.Printf("getGasEstimate> Error estimating gas: %v\n", err)
+
 		span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
 
 		// fallback to default
 		return t.config.GetGasEstimate(chainID), nil
 	}
 
+	//tmpdebug
+	fmt.Println("getGasEstimate>gasEstimate pre", gasEstimate)
+
 	// Modify the gasEstimate by the configured percentage
 	gasEstimate = gasEstimate + (gasEstimate * uint64(gasUnitAddPercentage) / 100)
+
+	//tmpdebug
+	fmt.Println("getGasEstimate>gasEstimate post", gasEstimate)
 
 	return gasEstimate, nil
 }
