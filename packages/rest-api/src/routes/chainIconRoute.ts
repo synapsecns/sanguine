@@ -32,9 +32,10 @@ router.get('/:chainId.svg', async (req, res) => {
     const contentType = response.headers.get('content-type') || 'image/svg+xml'
 
     // Only process SVG files if headers are requested
-    const processedBuffer = contentType === 'image/svg+xml' && addHeaders
-      ? addSvgHeaderIfMissing(buffer)
-      : Buffer.from(buffer)
+    const processedBuffer =
+      contentType === 'image/svg+xml' && addHeaders
+        ? addSvgHeaderIfMissing(buffer)
+        : Buffer.from(buffer)
 
     // Set cache headers (cache for 1 week)
     res.set({
