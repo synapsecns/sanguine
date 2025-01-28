@@ -440,9 +440,11 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 
 		transactor_forGasEstimate := copyTransactOpts(transactor)
 
+		transactor_forGasEstimate.Nonce.Sub(transactor_forGasEstimate.Nonce, big.NewInt(1))
+
 		tx_forGasEstimate, err := call(transactor_forGasEstimate)
 
-		fmt.Printf("tx_forGasEstimate: %v\n", tx_forGasEstimate)
+		fmt.Printf("tx_forGasEstimate: %v\n", tx_forGasEstimate.Gas())
 
 		if err != nil {
 			return 0, fmt.Errorf("err contract call for gas est: %w", err)
@@ -453,7 +455,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		// 	return 0, fmt.Errorf("err getGasEstimate: %w", err)
 		// }
 
-		transactor.GasLimit = tx_forGasEstimate.Gas()
+		transactor.GasLimit = tx_forGasEstimate.Gas() + 555
 
 	}
 
