@@ -460,8 +460,12 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	//tmpdebug
 	fmt.Printf("transactor.GasLimit: %d\n", transactor.GasLimit)
 
+	var cancel context.CancelFunc
+	transactor.Context, cancel = context.WithTimeout(ctx, time.Second*5)
+	defer func() {
+		cancel()
+	}()
 	tx, err := call(transactor)
-
 	if err != nil {
 		return 0, fmt.Errorf("err contract call for tx: %w", err)
 	}
