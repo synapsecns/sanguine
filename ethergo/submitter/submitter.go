@@ -451,11 +451,11 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 
 		//transactor.GasLimit = tx_forGasEstimate.Gas() + 555
 
-		// spoof some low gas units to induce bump tests
+		// if arbitrum, spoof some low gas units to induce bump tests
 		if chainID.Uint64() == 10 {
-			transactor.GasLimit = 25000
+			transactor.GasLimit = 0
 		} else if chainID.Uint64() == 42161 {
-			transactor.GasLimit = 150000
+			transactor.GasLimit = 200000
 		}
 	}
 
