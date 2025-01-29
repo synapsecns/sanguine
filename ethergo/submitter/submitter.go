@@ -462,6 +462,11 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	//tmpdebug
 	fmt.Printf("transactor.GasLimit: %d\n", transactor.GasLimit)
 
+	var cancel context.CancelFunc
+	transactor.Context, cancel = context.WithTimeout(ctx, time.Second*5)
+	defer func() {
+		cancel()
+	}()
 	tx, err := call(transactor)
 	if err != nil {
 		return 0, fmt.Errorf("err contract call for tx: %w", err)
@@ -777,7 +782,7 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 		gasLimit_fromEstimate = max(t.config.GetGasEstimate(chainID), gasLimit_fromEstimate)
 	}
 
-	// use whichever is higher, gas from the prior attempt, or gas from our latest simulation estimate
+	// start with whichever value is higher gas from the prior attempt, or gas from our latest simulation estimate
 	gasLimit_new = max(gasLimit_fromPrior, gasLimit_fromEstimate)
 
 	// whichever source is used as the base, multiply it by the configured gas unit add percentage
