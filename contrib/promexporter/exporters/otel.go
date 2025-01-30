@@ -56,7 +56,7 @@ type otelRecorder struct {
 	nonceGauge   metric.Int64ObservableGauge
 
 	// relayer stats
-	relayerBalance          *hashmap.Map[int, relayerMetadata]
+	relayerBalance          *hashmap.Map[int, *hashmap.Map[string, relayerMetadata]]
 	relayerBalanceGauge     metric.Float64ObservableGauge
 	relayerUSDCBalanceGuage metric.Float64ObservableGauge
 }
@@ -72,7 +72,7 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		gasBalance:     hashmap.New[int, float64](),
 		td:             hashmap.New[int, *hashmap.Map[string, tokenData]](),
 		submitters:     hashmap.New[int, submitterMetadata](),
-		relayerBalance: hashmap.New[int, relayerMetadata](),
+		relayerBalance: hashmap.New[int, *hashmap.Map[string, relayerMetadata]](),
 	}
 
 	var err error
@@ -335,7 +335,9 @@ func (o *otelRecorder) recordSubmitterStats(
 
 // RELAYER CODE.
 func (o *otelRecorder) RecordRelayerBalance(chainID int, relayer relayerMetadata) {
-	o.relayerBalance.Set(chainID, relayer)
+	chainMap := hashmap.New[string, relayerMetadata]()
+	relayerBalances, _ := o.relayerBalance.GetOrInsert(chainID, chainMap) // Get or create
+	relayerBalances.Set(relayer.address.String(), relayer)
 }
 
 func (o *otelRecorder) recordRelayerBalance(
@@ -346,24 +348,26 @@ func (o *otelRecorder) recordRelayerBalance(
 		return nil
 	}
 
-	o.relayerBalance.Range(func(chainID int, relayerBalance relayerMetadata) bool {
-		observer.ObserveFloat64(
-			o.relayerBalanceGauge,
-			relayerBalance.balance,
-			metric.WithAttributes(
-				attribute.Int(metrics.ChainID, chainID),
-				attribute.String("relayer_address", relayerBalance.address.String()),
-			),
-		)
-		observer.ObserveFloat64(
-			o.relayerUSDCBalanceGuage,
-			relayerBalance.usdcBalance,
-			metric.WithAttributes(
-				attribute.Int(metrics.ChainID, chainID),
-				attribute.String("relayer_address", relayerBalance.address.String()),
-			),
-		)
-
+	o.relayerBalance.Range(func(chainID int, chainMap *hashmap.Map[string, relayerMetadata]) bool {
+		chainMap.Range(func(key string, relayerBalance relayerMetadata) bool {
+			observer.ObserveFloat64(
+				o.relayerBalanceGauge,
+				relayerBalance.balance,
+				metric.WithAttributes(
+					attribute.Int(metrics.ChainID, chainID),
+					attribute.String("relayer_address", relayerBalance.address.String()),
+				),
+			)
+			observer.ObserveFloat64(
+				o.relayerUSDCBalanceGuage,
+				relayerBalance.usdcBalance,
+				metric.WithAttributes(
+					attribute.Int(metrics.ChainID, chainID),
+					attribute.String("relayer_address", relayerBalance.address.String()),
+				),
+			)
+			return true
+		})
 		return true
 	})
 
