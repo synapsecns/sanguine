@@ -93,7 +93,6 @@ func (e *exporter) fetchRelayerBalances(ctx context.Context, url string) error {
 				balance:     balanceFloat / params.Ether,
 				usdcBalance: usdcBalanceFloat / 1e6,
 			}
-			fmt.Println("relayer metadata: ", relayerMetadata)
 			e.otelRecorder.RecordRelayerBalance(chainID, relayerMetadata)
 		}
 	}
