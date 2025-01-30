@@ -215,13 +215,8 @@ func (o *otelRecorder) RecordTokenBalance(
 	chainID int,
 	tData tokenData,
 ) {
-	td, ok := o.td.Get(chainID)
-	if !ok {
-		chainMap := hashmap.New[string, tokenData]()
-		o.td.Set(chainID, chainMap)
-		td = chainMap
-	}
-
+	chainMap := hashmap.New[string, tokenData]()
+	td, _ := o.td.GetOrInsert(chainID, chainMap) // Get or create
 	td.Set(tData.metadata.TokenID, tData)
 }
 
