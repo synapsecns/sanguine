@@ -393,15 +393,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		span.AddEvent("could not set gas price", trace.WithAttributes(attribute.String("error", err.Error())))
 	}
 
-	transactor.Signer = func(address common.Address, transaction *types.Transaction) (_ *types.Transaction, err error) {
-		locker = t.nonceMux.Lock(chainID)
-		// it's important that we unlock the nonce if we fail to sign the transaction.
-		// this is why we use a defer here. The second defer should only be called if the first defer is not called.
-		defer func() {
-			if err != nil {
-				locker.Unlock()
-			}
-		}()
+	performSignature := func(address common.Address, transaction *types.Transaction) (_ *types.Transaction, err error) {
 
 		newNonce, err := t.getNonce(ctx, chainID, address)
 		if err != nil {
@@ -419,6 +411,19 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		return parentTransactor.Signer(address, transaction)
 	}
 
+	transactor.Signer = func(address common.Address, transaction *types.Transaction) (_ *types.Transaction, err error) {
+		locker = t.nonceMux.Lock(chainID)
+		// it's important that we unlock the nonce if we fail to sign the transaction.
+		// this is why we use a defer here. The second defer should only be called if the first defer is not called.
+		defer func() {
+			if err != nil {
+				locker.Unlock()
+			}
+		}()
+
+		return performSignature(address, transaction)
+	}
+
 	// if dynamic gas estimation is not enabled, use cfg var gas_estimate as a gas limit default and do not run a pre-flight simulation
 	// since we do not need it to determine proper gas units
 	if !t.config.GetDynamicGasEstimate(int(chainID.Uint64())) {
@@ -431,21 +436,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		// override the signer func for our simulation/estimation with a version that does not lock the nonce,
 		// which would othewrise cause a deadlock with the following *actual* transactor
 		transactorForGasEstimate.Signer = func(address common.Address, transaction *types.Transaction) (_ *types.Transaction, err error) {
-
-			newNonce, err := t.getNonce(ctx, chainID, address)
-			if err != nil {
-				return nil, fmt.Errorf("could not sign tx: %w", err)
-			}
-
-			txType := t.txTypeForChain(chainID)
-
-			transaction, err = util.CopyTX(transaction, util.WithNonce(newNonce), util.WithTxType(txType))
-			if err != nil {
-				return nil, fmt.Errorf("could not copy tx: %w", err)
-			}
-
-			//nolint: wrapcheck
-			return parentTransactor.Signer(address, transaction)
+			return performSignature(address, transaction)
 		}
 
 		txForGasEstimate, err := call(transactorForGasEstimate)
