@@ -198,21 +198,6 @@ func (s *SubmitterSuite) TestGroupTxesByNonce() {
 	}
 }
 
-func (s *SubmitterSuite) TestOpStackGas() {
-
-	mockTx := mocks.GetMockTxes(s.GetTestContext(), s.T(), 1, types.LegacyTxType)[0]
-
-	fmt.Printf("Original Transaction Gas Limit: %d\n", mockTx.Gas())
-
-}
-
-func TestBox(t *testing.T) {
-	const testTxCount = 10
-	mockTx := mocks.GetMockTxes(context.Background(), t, testTxCount, 0)
-
-	fmt.Printf("Original Transaction Gas Limit: %d\n", mockTx[0].Gas())
-}
-
 // Test for the outersection function.
 func TestOutersection(t *testing.T) {
 	set := []*big.Int{
