@@ -754,12 +754,12 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 		span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
 
 		// if we failed to est gas for any reason, use the default flat gas from config
-		gasLimit = t.config.GetGasEstimate(chainID)
-	} else {
-		// multiply the freshly simulated gasLimit by the configured gas unit add percentage
-		gasLimit_fromEstimate += (gasLimit_fromEstimate * uint64(gasUnitAddPercentage) / 100)
-		gasLimit = gasLimit_fromEstimate
+		return t.config.GetGasEstimate(chainID), nil
 	}
+
+	// multiply the freshly simulated gasLimit by the configured gas unit add percentage
+	gasLimit_fromEstimate += (gasLimit_fromEstimate * uint64(gasUnitAddPercentage) / 100)
+	gasLimit = gasLimit_fromEstimate
 
 	return gasLimit, nil
 }
