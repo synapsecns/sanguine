@@ -8,7 +8,6 @@ import (
 	"math/big"
 	"reflect"
 	"runtime"
-	"strings"
 	"sync"
 	"time"
 
@@ -427,11 +426,11 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	} else {
 
 		// deepcopy the real transactor so we can use it for simulation
-		transactor_forGasEstimate := copyTransactOpts(transactor)
+		transactorForGasEstimate := copyTransactOpts(transactor)
 
 		// override the signer func for our simulation/estimation with a version that does not lock the nonce,
 		// which would othewrise cause a deadlock with the following *actual* transactor
-		transactor_forGasEstimate.Signer = func(address common.Address, transaction *types.Transaction) (_ *types.Transaction, err error) {
+		transactorForGasEstimate.Signer = func(address common.Address, transaction *types.Transaction) (_ *types.Transaction, err error) {
 
 			newNonce, err := t.getNonce(ctx, chainID, address)
 			if err != nil {
@@ -449,13 +448,9 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 			return parentTransactor.Signer(address, transaction)
 		}
 
-		tx_forGasEstimate, err := call(transactor_forGasEstimate)
+		txForGasEstimate, err := call(transactorForGasEstimate)
 		if err != nil {
-			// at the moment, omniRPC gives a massive HTML doc w/ many sim errors.. reduce the noise.
-			errMsg := err.Error()
-			if strings.Contains(errMsg, "<!DOCTYPE html>") {
-				errMsg = strings.Split(errMsg, "<!DOCTYPE html>")[0] + "<html portion of error removed>"
-			}
+			errMsg := util.FormatError(err)
 
 			return 0, fmt.Errorf("err contract call for gas est: %s", errMsg)
 		}
@@ -463,7 +458,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		// with our gas limit now obtained from the simulation, apply this limit (plus any configured % modifier) to the
 		// gas limit of the actual transactor that is about to prepare the real transaction
 		gasLimitAddPercentage := t.config.GetDynamicGasUnitAddPercentage(int(chainID.Uint64()))
-		transactor.GasLimit = tx_forGasEstimate.Gas() + (tx_forGasEstimate.Gas() * uint64(gasLimitAddPercentage) / 100)
+		transactor.GasLimit = txForGasEstimate.Gas() + (txForGasEstimate.Gas() * uint64(gasLimitAddPercentage) / 100)
 	}
 
 	tx, err := call(transactor)
@@ -748,7 +743,7 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 		return 0, fmt.Errorf("could not convert tx to call: %w", err)
 	}
 
-	gasLimit_fromEstimate, err := chainClient.EstimateGas(ctx, *call)
+	gasLimitFromEstimate, err := chainClient.EstimateGas(ctx, *call)
 
 	if err != nil {
 		span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
@@ -758,8 +753,8 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 	}
 
 	// multiply the freshly simulated gasLimit by the configured gas unit add percentage
-	gasLimit_fromEstimate += (gasLimit_fromEstimate * uint64(gasUnitAddPercentage) / 100)
-	gasLimit = gasLimit_fromEstimate
+	gasLimitFromEstimate += (gasLimitFromEstimate * uint64(gasUnitAddPercentage) / 100)
+	gasLimit = gasLimitFromEstimate
 
 	return gasLimit, nil
 }

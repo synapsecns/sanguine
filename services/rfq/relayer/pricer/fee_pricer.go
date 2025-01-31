@@ -14,11 +14,12 @@ import (
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
+	ethergoUtil "github.com/synapsecns/sanguine/ethergo/util"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
-	"github.com/synapsecns/sanguine/services/rfq/util"
+	rfqUtil "github.com/synapsecns/sanguine/services/rfq/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -255,7 +256,7 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 		Data: encodedData,
 	}
 	// Tx.value needs to match `DestAmount` for native gas token, or `ZapNative` for ERC20s.
-	if util.IsGasToken(quoteRequest.Transaction.DestToken) {
+	if rfqUtil.IsGasToken(quoteRequest.Transaction.DestToken) {
 		callMsg.Value = quoteRequest.Transaction.DestAmount
 	} else {
 		callMsg.Value = quoteRequest.Transaction.ZapNative
@@ -265,11 +266,7 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 	gasEstimate, err = client.EstimateGas(ctx, callMsg)
 	if err != nil {
 
-		// at the moment, omniRPC gives a massive HTML doc w/ many sim errors.. reduce the noise.
-		errMsg := err.Error()
-		if strings.Contains(errMsg, "<!DOCTYPE html>") {
-			errMsg = strings.Split(errMsg, "<!DOCTYPE html>")[0] + "<html portion of error removed>"
-		}
+		errMsg := ethergoUtil.FormatError(err)
 
 		return 0, fmt.Errorf("could not estimate gas: %s", errMsg)
 	}
