@@ -13,11 +13,12 @@ func _() {
 	_ = x[BridgeProofProvidedEvent-3]
 	_ = x[BridgeDepositClaimedEvent-4]
 	_ = x[BridgeDisputeEvent-5]
+	_ = x[BridgeQuoteDetailsEvent-6]
 }
 
-const _EventType_name = "BridgeRequestedEventBridgeRelayedEventBridgeProofProvidedEventBridgeDepositClaimedEventBridgeDisputeEvent"
+const _EventType_name = "BridgeRequestedEventBridgeRelayedEventBridgeProofProvidedEventBridgeDepositClaimedEventBridgeDisputeEventBridgeQuoteDetailsEvent"
 
-var _EventType_index = [...]uint8{0, 20, 38, 62, 87, 105}
+var _EventType_index = [...]uint8{0, 20, 38, 62, 87, 105, 127}
 
 func (i EventType) String() string {
 	i -= 1

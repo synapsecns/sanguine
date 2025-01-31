@@ -59,6 +59,9 @@ submitter_config:
       dynamic_gas_estimate: true
       # SupportsEIP1559 is whether or not this chain supports EIP1559.
       supports_eip_1559: true
+      # DynamicGasUnitAddPercentage - increase gas unit limit (ie: "gas" field on a typical tx) by X% from what dynamic gas estimate returns
+      # Has no effect if dynamic gas estimation is not also enabled.
+      dynamic_gas_unit_add_percentage: 5
     43114:
       max_gas_price: 100000000000 # 100 Gwei
     10:

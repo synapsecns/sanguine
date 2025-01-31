@@ -376,6 +376,7 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 // This is the fourth step in the bridge process. Here we submit the relay transaction to the destination chain.
 // TODO: just to be safe, we should probably check if another relayer has already relayed this.
 func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
+
 	// TODO: store the dest txhash connected to the nonce
 	nonce, _, err := q.Dest.SubmitRelay(ctx, request)
 	if err != nil {
@@ -412,7 +413,7 @@ func (r *Relayer) handleRelayLog(parentCtx context.Context, req *fastbridgev2.Fa
 
 	reqID, err := r.db.GetQuoteRequestByID(ctx, req.TransactionId)
 	if err != nil {
-		return fmt.Errorf("could not get quote request: %w", err)
+		return fmt.Errorf("could not get quote request for tx ID %s: %w", hexutil.Encode(req.TransactionId[:]), err)
 	}
 	// we might've accidentally gotten this later, if so we'll just ignore it
 	// note that in the edge case where we pessimistically marked as DeadlineExceeded
@@ -470,11 +471,19 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span tra
 		return nil
 	}
 
+	fmt.Printf(
+		"TxID 0x%x %7d.%s > %7d.%s : Submitting \033[33mProof\033[0m\n",
+		request.TransactionID,
+		request.Transaction.OriginChainId,
+		request.Transaction.OriginToken.Hex()[:6],
+		request.Transaction.DestChainId,
+		request.Transaction.DestToken.Hex()[:6])
+
 	// relay has been finalized, it's time to go back to the origin chain and try to prove
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		tx, err = q.Origin.Bridge.Prove(transactor, request.RawRequest, request.DestTxHash)
 		if err != nil {
-			return nil, fmt.Errorf("could not relay: %w", err)
+			return nil, fmt.Errorf("could not prove: %w", err)
 		}
 
 		return tx, nil
@@ -616,7 +625,17 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, span trace.
 	if !canClaim {
 		return nil
 	}
+
+	fmt.Printf(
+		"TxID 0x%x %7d.%s > %7d.%s : Submitting \033[35mClaim\033[0m\n",
+		request.TransactionID,
+		request.Transaction.OriginChainId,
+		request.Transaction.OriginToken.Hex()[:6],
+		request.Transaction.DestChainId,
+		request.Transaction.DestToken.Hex()[:6])
+
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+
 		tx, err = q.Origin.Bridge.Claim(transactor, request.RawRequest, transactor.From)
 		if err != nil {
 			return nil, fmt.Errorf("could not relay: %w", err)

@@ -41,4 +41,6 @@ type IConfig interface {
 	SetMinGasPrice(basePrice *big.Int)
 	// SetGlobalEIP1559Support is a helper function that sets the global EIP1559 support.
 	SetGlobalEIP1559Support(supportsEIP1559 bool)
+	// GetDynamicGasUnitAddPercentage returns the percentage to modify the gas unit limit by
+	GetDynamicGasUnitAddPercentage(chainID int) (dynamicGasUnitAddPercentage int)
 }

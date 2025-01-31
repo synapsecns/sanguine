@@ -23,6 +23,8 @@ const (
 	BridgeDepositClaimedEvent
 	// BridgeDisputeEvent is the event type for the BridgeDispute event.
 	BridgeDisputeEvent
+	// BridgeQuoteDetailsEvent is emitted along w/ BridgeRequestedEvent as supplemental data
+	BridgeQuoteDetailsEvent
 )
 
 // Parser parses events from the fastbridge contracat.
@@ -91,6 +93,12 @@ func (p parserImpl) ParseEvent(log ethTypes.Log) (_ EventType, event interface{}
 			return noOpEvent, nil, false
 		}
 		return eventType, disputed, true
+	case BridgeQuoteDetailsEvent:
+		quoteDetails, err := p.filterer.ParseBridgeQuoteDetails(log)
+		if err != nil {
+			return noOpEvent, nil, false
+		}
+		return eventType, quoteDetails, true
 	}
 
 	return eventType, nil, true
