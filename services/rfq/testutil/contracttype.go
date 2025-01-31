@@ -4,10 +4,13 @@ import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/bridgetransactionv2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/dai"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemockv2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/recipientmock"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/usdc"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/weth9"
 )
@@ -49,12 +52,18 @@ type contractTypeImpl int
 
 const (
 	// FastBridgeType is the type of the fast bridge contract.
-	FastBridgeType contractTypeImpl = iota + 1 // FastBridge
+	FastBridgeType contractTypeImpl = iota + 1 // FastBridgeV1
+	// FastBridgeV2Type is the type of the fast bridge contract.
+	FastBridgeV2Type // FastBridgeV2
 	// MockERC20Type is a mock erc20 contract.
 	MockERC20Type // MockERC20
-	// FastBridgeMockType is a mock contract for testing fast bridge interactions
-	// TODO: rename  contract to MockFastBridge.
+	// FastBridgeMockType is a mock contract for testing fast bridge interactions.
+	// TODO: rename contract to MockFastBridge.
 	FastBridgeMockType // FastBridgeMock
+	// RecipientMockType is a mock contract for testing fast bridge interactions.
+	RecipientMockType // RecipientMock
+	// BridgeTransactionV2Type is a bridge transaction contract for testing fast bridge interactions.
+	BridgeTransactionV2Type // BridgeTransactionV2
 	// WETH9Type  is the weth 9 contract.
 	WETH9Type // WETH9
 	// USDTType is the tether type.
@@ -91,10 +100,16 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
 	case FastBridgeType:
 		return fastbridge.Contracts["solidity/FastBridge.sol:FastBridge"]
+	case FastBridgeV2Type:
+		return fastbridgev2.Contracts["solidity/FastBridgeV2.sol:FastBridgeV2"]
 	case MockERC20Type:
 		return mockerc20.Contracts["solidity/MockERC20.sol:MockERC20"]
 	case FastBridgeMockType:
-		return fastbridgemock.Contracts["solidity/FastBridgeMock.sol:FastBridgeMock"]
+		return fastbridgemockv2.Contracts["solidity/FastBridgeMock.sol:FastBridgeMock"]
+	case RecipientMockType:
+		return recipientmock.Contracts["solidity/RecipientMock.sol:RecipientMock"]
+	case BridgeTransactionV2Type:
+		return bridgetransactionv2.Contracts["solidity/BridgeTransactionV2Harness.sol:BridgeTransactionV2Harness"]
 	case WETH9Type:
 		return weth9.Contracts["/solidity/WETH9.sol:WETH9"]
 	case USDTType:

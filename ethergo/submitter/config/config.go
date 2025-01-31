@@ -49,6 +49,9 @@ type ChainConfig struct {
 	DynamicGasEstimate bool `yaml:"dynamic_gas_estimate"`
 	// SupportsEIP1559 is whether or not this chain supports EIP1559
 	SupportsEIP1559 bool `yaml:"supports_eip_1559"`
+	// DynamicGasUnitAddPercentage - increase gas unit limit (ie: "gas" field on a typical tx) by X% from what dynamic gas estimate returns
+	// Has no effect if dynamic gas estimation is not also enabled.
+	DynamicGasUnitAddPercentage int `yaml:"dynamic_gas_unit_add_percentage"`
 }
 
 const (
@@ -64,6 +67,9 @@ const (
 
 	// DefaultGasEstimate is the default gas estimate to use for transactions.
 	DefaultGasEstimate = uint64(1200000)
+
+	// DefaultDynamicGasUnitAddPercentage is the default percentage to bump the gas limit by.
+	DefaultDynamicGasUnitAddPercentage = 5
 )
 
 // DefaultMaxPrice is the default max price of a tx.
@@ -188,6 +194,24 @@ func (c *Config) GetGasBumpPercentage(chainID int) (gasBumpPercentage int) {
 	return gasBumpPercentage
 }
 
+// GetDynamicGasUnitAddPercentage returns the percentage to bump the gas limit by
+func (c *Config) GetDynamicGasUnitAddPercentage(chainID int) (dynamicGasUnitAddPercentage int) {
+	chainConfig, ok := c.Chains[chainID]
+	if ok {
+		dynamicGasUnitAddPercentage = chainConfig.DynamicGasUnitAddPercentage
+	}
+	// if dynamicGasUnitAddPercentage is not set for the chain, use the global config
+	if dynamicGasUnitAddPercentage == 0 {
+		dynamicGasUnitAddPercentage = c.DynamicGasUnitAddPercentage
+	}
+
+	// if the dynamicGasUnitAddPercentage isn't set at all, use the default
+	if dynamicGasUnitAddPercentage == 0 {
+		dynamicGasUnitAddPercentage = DefaultDynamicGasUnitAddPercentage
+	}
+	return dynamicGasUnitAddPercentage
+}
+
 // GetGasEstimate returns the gas estimate to use for transactions
 // TODO: test this method.
 func (c *Config) GetGasEstimate(chainID int) (gasEstimate uint64) {
@@ -195,12 +219,12 @@ func (c *Config) GetGasEstimate(chainID int) (gasEstimate uint64) {
 	if ok {
 		gasEstimate = chainConfig.GasEstimate
 	}
-	// if gasBumpPercentage is not set for the chain, use the global config
+	// if gasEstimate is not set for the chain, use the global config
 	if gasEstimate == 0 {
 		gasEstimate = c.GasEstimate
 	}
 
-	// if the gasBumpPercentage isn't set at all, use the default
+	// if the gasEstimate isn't set at all, use the default
 	if gasEstimate == 0 {
 		gasEstimate = DefaultGasEstimate
 	}

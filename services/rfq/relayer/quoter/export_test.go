@@ -22,6 +22,10 @@ func (m *Manager) GetDestAmount(ctx context.Context, quoteAmount *big.Int, token
 	return m.getDestAmount(ctx, quoteAmount, tokenName, input)
 }
 
+func (m *Manager) GenerateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMessage) (resp *model.ActiveRFQMessage, err error) {
+	return m.generateActiveRFQ(ctx, msg)
+}
+
 func (m *Manager) SetConfig(cfg relconfig.Config) {
 	m.config = cfg
 }

@@ -21,14 +21,19 @@ import (
 	cctpTest "github.com/synapsecns/sanguine/services/cctp-relayer/testutil"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/bridgetransactionv2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb"
 	guardService "github.com/synapsecns/sanguine/services/rfq/guard/service"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 	"github.com/synapsecns/sanguine/services/rfq/util"
 	"golang.org/x/sync/errgroup"
+
+	"github.com/brianvoe/gofakeit/v6"
 )
 
 type IntegrationSuite struct {
@@ -164,13 +169,14 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	})
 
 	// now we can send the money
-	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
+	_, originFastBridge := i.manager.GetFastBridgeV2(i.GetTestContext(), i.originBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
-	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
-		DstChainId:   uint32(i.destBackend.GetChainID()),
+	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridgev2.IFastBridgeBridgeParams{
+		DstChainId:   uint32(i.destBackend.GetChainID()), //nolint:gosec // Acceptable conversion
+		Sender:       i.userWallet.Address(),
 		To:           i.userWallet.Address(),
 		OriginToken:  originUSDC.Address(),
-		SendChainGas: true,
+		SendChainGas: false,
 		DestToken:    destUSDC.Address(),
 		OriginAmount: realRFQAmount,
 		DestAmount:   new(big.Int).Sub(realRFQAmount, big.NewInt(10_000_000)),
@@ -316,12 +322,13 @@ func (i *IntegrationSuite) TestETHtoETH() {
 	})
 
 	// now we can send the money
-	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
+	_, originFastBridge := i.manager.GetFastBridgeV2(i.GetTestContext(), i.originBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
 	auth.TransactOpts.Value = realWantAmount
 	// we want 499 ETH for 500 requested within a day
-	tx, err := originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
-		DstChainId:   uint32(i.destBackend.GetChainID()),
+	tx, err := originFastBridge.Bridge(auth.TransactOpts, fastbridgev2.IFastBridgeBridgeParams{
+		DstChainId:   uint32(i.destBackend.GetChainID()), //nolint:gosec // Acceptable conversion
+		Sender:       i.userWallet.Address(),
 		To:           i.userWallet.Address(),
 		OriginToken:  util.EthAddress,
 		SendChainGas: true,
@@ -390,7 +397,127 @@ func (i *IntegrationSuite) TestETHtoETH() {
 	})
 }
 
-func (i *IntegrationSuite) TestDispute() {
+//nolint:gosec
+func (i *IntegrationSuite) TestZap() {
+	// start the relayer and guard
+	go func() {
+		_ = i.relayer.Start(i.GetTestContext())
+	}()
+	go func() {
+		_ = i.guard.Start(i.GetTestContext())
+	}()
+
+	fmt.Printf("omnirpc url: %s\n", i.destBackend.RPCAddress())
+
+	// load token contracts
+	const startAmount = 1000
+	const rfqAmount = 900
+	opts := i.destBackend.GetTxContext(i.GetTestContext(), nil)
+	destUSDC, destUSDCHandle := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.destBackend)
+	realStartAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(startAmount), destUSDC.ContractHandle())
+	i.NoError(err)
+	realRFQAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(rfqAmount), destUSDC.ContractHandle())
+	i.NoError(err)
+
+	// add initial usdc to relayer on destination
+	tx, err := destUSDCHandle.MintPublic(opts.TransactOpts, i.relayerWallet.Address(), realStartAmount)
+	i.Nil(err)
+	i.destBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	i.Approve(i.destBackend, destUSDC, i.relayerWallet)
+
+	// add initial USDC to relayer on origin
+	optsOrigin := i.originBackend.GetTxContext(i.GetTestContext(), nil)
+	originUSDC, originUSDCHandle := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.originBackend)
+	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.relayerWallet.Address(), realStartAmount)
+	i.Nil(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	i.Approve(i.originBackend, originUSDC, i.relayerWallet)
+
+	// add initial USDC to user on origin
+	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.userWallet.Address(), realRFQAmount)
+	i.Nil(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	i.Approve(i.originBackend, originUSDC, i.userWallet)
+
+	// non decimal adjusted user want amount
+	// now our friendly user is going to check the quote and send us some USDC on the origin chain.
+	i.Eventually(func() bool {
+		// first he's gonna check the quotes.
+		userAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.userWallet.PrivateKey()))
+		i.NoError(err)
+
+		allQuotes, err := userAPIClient.GetAllQuotes(i.GetTestContext())
+		i.NoError(err)
+
+		// let's figure out the amount of usdc we need
+		for _, quote := range allQuotes {
+			if common.HexToAddress(quote.DestTokenAddr) == destUSDC.Address() {
+				destAmountBigInt, _ := new(big.Int).SetString(quote.DestAmount, 10)
+				if destAmountBigInt.Cmp(realRFQAmount) > 0 {
+					// we found our quote!
+					// now we can move on
+					return true
+				}
+			}
+		}
+		return false
+	})
+
+	// now we can send the money
+	_, originFastBridge := i.manager.GetFastBridgeV2(i.GetTestContext(), i.originBackend)
+	_, destRecipient := i.manager.GetRecipientMock(i.GetTestContext(), i.destBackend)
+	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
+	params := fastbridgev2.IFastBridgeBridgeParams{
+		DstChainId:   uint32(i.destBackend.GetChainID()), //nolint:gosec // Acceptable conversion
+		Sender:       i.userWallet.Address(),
+		To:           destRecipient.Address(),
+		OriginToken:  originUSDC.Address(),
+		SendChainGas: true,
+		DestToken:    destUSDC.Address(),
+		OriginAmount: realRFQAmount,
+		DestAmount:   new(big.Int).Sub(realRFQAmount, big.NewInt(10_000_000)),
+		Deadline:     new(big.Int).SetInt64(time.Now().Add(time.Hour * 24).Unix()),
+	}
+	paramsV2 := fastbridgev2.IFastBridgeV2BridgeParamsV2{
+		QuoteRelayer:            i.relayerWallet.Address(),
+		QuoteExclusivitySeconds: new(big.Int).SetInt64(30),
+		ZapData:                 []byte("Hello, world!"),
+		ZapNative:               big.NewInt(1_337_420),
+	}
+	tx, err = originFastBridge.BridgeV2(auth.TransactOpts, params, paramsV2)
+	i.NoError(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	// TODO: this, but cleaner
+	anvilClient, err := anvil.Dial(i.GetTestContext(), i.originBackend.RPCAddress())
+	i.NoError(err)
+
+	go func() {
+		for {
+			select {
+			case <-i.GetTestContext().Done():
+				return
+			case <-time.After(time.Second * 4):
+				// increase time by 30 mintutes every second, should be enough to get us a fastish e2e test
+				// we don't need to worry about deadline since we're only doing this on origin
+				err = anvilClient.IncreaseTime(i.GetTestContext(), 60*30)
+				i.NoError(err)
+
+				// because can claim works on last block timestamp, we need to do something
+				err = anvilClient.Mine(i.GetTestContext(), 1)
+				i.NoError(err)
+			}
+		}
+	}()
+
+	i.Eventually(func() bool {
+		destUSDCBalance, err := destUSDCHandle.BalanceOf(&bind.CallOpts{Context: i.GetTestContext()}, destRecipient.Address())
+		i.NoError(err)
+		return destUSDCBalance.Cmp(big.NewInt(0)) > 0
+	})
+}
+
+func (i *IntegrationSuite) TestDisputeV1() {
 	// start the guard
 	go func() {
 		_ = i.guard.Start(i.GetTestContext())
@@ -431,7 +558,8 @@ func (i *IntegrationSuite) TestDispute() {
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
 	// we want 499 usdc for 500 requested within a day
 	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
-		DstChainId:   uint32(i.destBackend.GetChainID()),
+		DstChainId:   uint32(i.destBackend.GetChainID()), //nolint:gosec // Acceptable conversion
+		Sender:       i.userWallet.Address(),
 		To:           i.userWallet.Address(),
 		OriginToken:  originUSDC.Address(),
 		SendChainGas: true,
@@ -458,8 +586,8 @@ func (i *IntegrationSuite) TestDispute() {
 			}
 			event, ok := parsedEvent.(*fastbridge.FastBridgeBridgeRequested)
 			if ok {
-				rawRequest = event.Request
 				txID = event.TransactionId
+				rawRequest = event.Request
 				return true
 			}
 		}
@@ -470,6 +598,101 @@ func (i *IntegrationSuite) TestDispute() {
 	relayerAuth := i.originBackend.GetTxContext(i.GetTestContext(), i.relayerWallet.AddressPtr())
 	fakeHash := common.HexToHash("0xdeadbeef")
 	tx, err = originFastBridge.Prove(relayerAuth.TransactOpts, rawRequest, fakeHash)
+	i.NoError(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	// verify that the guard calls Dispute()
+	i.Eventually(func() bool {
+		results, err := i.guardStore.GetPendingProvensByStatus(i.GetTestContext(), guarddb.Disputed)
+		i.NoError(err)
+		if len(results) != 1 {
+			return false
+		}
+		result, err := i.guardStore.GetPendingProvenByID(i.GetTestContext(), txID)
+		i.NoError(err)
+		return result.TxHash == fakeHash && result.Status == guarddb.Disputed && result.TransactionID == txID
+	})
+}
+
+func (i *IntegrationSuite) TestDisputeV2() {
+	// start the guard
+	go func() {
+		_ = i.guard.Start(i.GetTestContext())
+	}()
+
+	// load token contracts
+	const startAmount = 1000
+	const rfqAmount = 900
+	opts := i.destBackend.GetTxContext(i.GetTestContext(), nil)
+	destUSDC, destUSDCHandle := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.destBackend)
+	realStartAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(startAmount), destUSDC.ContractHandle())
+	i.NoError(err)
+	realRFQAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(rfqAmount), destUSDC.ContractHandle())
+	i.NoError(err)
+
+	// add initial usdc to relayer on destination
+	tx, err := destUSDCHandle.MintPublic(opts.TransactOpts, i.relayerWallet.Address(), realStartAmount)
+	i.Nil(err)
+	i.destBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	i.Approve(i.destBackend, destUSDC, i.relayerWallet)
+
+	// add initial USDC to relayer on origin
+	optsOrigin := i.originBackend.GetTxContext(i.GetTestContext(), nil)
+	originUSDC, originUSDCHandle := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.originBackend)
+	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.relayerWallet.Address(), realStartAmount)
+	i.Nil(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	i.Approve(i.originBackend, originUSDC, i.relayerWallet)
+
+	// add initial USDC to user on origin
+	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.userWallet.Address(), realRFQAmount)
+	i.Nil(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	i.Approve(i.originBackend, originUSDC, i.userWallet)
+
+	// now we can send the money
+	_, originFastBridge := i.manager.GetFastBridgeV2(i.GetTestContext(), i.originBackend)
+	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
+	// we want 499 usdc for 500 requested within a day
+	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridgev2.IFastBridgeBridgeParams{
+		DstChainId:   uint32(i.destBackend.GetChainID()), //nolint:gosec // Acceptable conversion
+		Sender:       i.userWallet.Address(),
+		To:           i.userWallet.Address(),
+		OriginToken:  originUSDC.Address(),
+		SendChainGas: true,
+		DestToken:    destUSDC.Address(),
+		OriginAmount: realRFQAmount,
+		DestAmount:   new(big.Int).Sub(realRFQAmount, big.NewInt(10_000_000)),
+		Deadline:     new(big.Int).SetInt64(time.Now().Add(time.Hour * 24).Unix()),
+	})
+	i.NoError(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	// fetch the txid and raw request
+	var txID [32]byte
+	parser, err := fastbridge.NewParser(originFastBridge.Address())
+	i.NoError(err)
+	i.Eventually(func() bool {
+		receipt, err := i.originBackend.TransactionReceipt(i.GetTestContext(), tx.Hash())
+		i.NoError(err)
+		for _, log := range receipt.Logs {
+			_, parsedEvent, ok := parser.ParseEvent(*log)
+			if !ok {
+				continue
+			}
+			event, ok := parsedEvent.(*fastbridge.FastBridgeBridgeRequested)
+			if ok {
+				txID = event.TransactionId
+				return true
+			}
+		}
+		return false
+	})
+
+	// call prove() from the relayer wallet before relay actually occurred on dest
+	relayerAuth := i.originBackend.GetTxContext(i.GetTestContext(), i.relayerWallet.AddressPtr())
+	fakeHash := common.HexToHash("0xdeadbeef")
+	tx, err = originFastBridge.ProveV2(relayerAuth.TransactOpts, txID, fakeHash, relayerAuth.From)
 	i.NoError(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
@@ -550,7 +773,7 @@ func (i *IntegrationSuite) TestConcurrentBridges() {
 		return false
 	})
 
-	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
+	_, originFastBridge := i.manager.GetFastBridgeV2(i.GetTestContext(), i.originBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
 	parser, err := fastbridge.NewParser(originFastBridge.Address())
 	i.NoError(err)
@@ -561,8 +784,9 @@ func (i *IntegrationSuite) TestConcurrentBridges() {
 		txMux.Lock()
 		auth.TransactOpts.Nonce = nonce
 		defer txMux.Unlock()
-		tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
-			DstChainId:   uint32(i.destBackend.GetChainID()),
+		tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridgev2.IFastBridgeBridgeParams{
+			DstChainId:   uint32(i.destBackend.GetChainID()), //nolint:gosec // Acceptable conversion
+			Sender:       i.userWallet.Address(),
 			To:           i.userWallet.Address(),
 			OriginToken:  originUSDC.Address(),
 			SendChainGas: true,
@@ -649,4 +873,108 @@ func (i *IntegrationSuite) TestConcurrentBridges() {
 		}
 		return true
 	})
+}
+
+//nolint:gosec
+func (i *IntegrationSuite) TestEncodeBridgeTransactionParity() {
+	_, handle := i.manager.GetBridgeTransactionV2(i.GetTestContext(), i.originBackend)
+
+	mockAddress := func() common.Address {
+		// Generate 20 random bytes for the address
+		b := make([]byte, 20)
+		for i := range b {
+			b[i] = byte(gofakeit.Number(0, 255))
+		}
+		return common.BytesToAddress(b)
+	}
+
+	// Generate random values that will be used for both transactions
+	originChainId := uint32(gofakeit.Number(1, 1000000))
+	destChainId := uint32(gofakeit.Number(1, 1000000))
+	originSender := mockAddress()
+	destRecipient := mockAddress()
+	originToken := mockAddress()
+	destToken := mockAddress()
+	originAmount := new(big.Int).SetUint64(gofakeit.Uint64())
+	destAmount := new(big.Int).SetUint64(gofakeit.Uint64())
+	originFeeAmount := new(big.Int).SetUint64(gofakeit.Uint64())
+	deadline := new(big.Int).SetUint64(gofakeit.Uint64())
+	nonce := new(big.Int).SetUint64(gofakeit.Uint64())
+	exclusivityRelayer := mockAddress()
+	exclusivityEndTime := new(big.Int).SetUint64(gofakeit.Uint64())
+	zapNative := new(big.Int).SetUint64(gofakeit.Uint64())
+
+	// Random size and values for zapData
+	zapDataSize := gofakeit.Number(0, 1000)
+	zapData := make([]byte, zapDataSize)
+	for i := range zapDataSize {
+		zapData[i] = gofakeit.Uint8()
+	}
+
+	// Create first transaction
+	bridgeTx := bridgetransactionv2.IFastBridgeV2BridgeTransactionV2{
+		OriginChainId:      originChainId,
+		DestChainId:        destChainId,
+		OriginSender:       originSender,
+		DestRecipient:      destRecipient,
+		OriginToken:        originToken,
+		DestToken:          destToken,
+		OriginAmount:       originAmount,
+		DestAmount:         destAmount,
+		OriginFeeAmount:    originFeeAmount,
+		Deadline:           deadline,
+		Nonce:              nonce,
+		ExclusivityRelayer: exclusivityRelayer,
+		ExclusivityEndTime: exclusivityEndTime,
+		ZapNative:          zapNative,
+		ZapData:            zapData,
+	}
+
+	// Create second transaction with same values
+	tx := fastbridgev2.IFastBridgeV2BridgeTransactionV2{
+		OriginChainId:      originChainId,
+		DestChainId:        destChainId,
+		OriginSender:       originSender,
+		DestRecipient:      destRecipient,
+		OriginToken:        originToken,
+		DestToken:          destToken,
+		OriginAmount:       originAmount,
+		DestAmount:         destAmount,
+		OriginFeeAmount:    originFeeAmount,
+		Deadline:           deadline,
+		Nonce:              nonce,
+		ExclusivityRelayer: exclusivityRelayer,
+		ExclusivityEndTime: exclusivityEndTime,
+		ZapNative:          zapNative,
+		ZapData:            zapData,
+	}
+
+	expectedEncoded, err := handle.EncodeV2(&bind.CallOpts{Context: i.GetTestContext()}, bridgeTx)
+	i.NoError(err)
+
+	encoded, err := chain.EncodeBridgeTx(tx)
+	i.NoError(err)
+
+	i.Equal(expectedEncoded, encoded)
+
+	// Test decoding
+	decodedTx, err := chain.DecodeBridgeTx(encoded)
+	i.NoError(err)
+
+	// Verify all fields match the original transaction
+	i.Equal(tx.OriginChainId, decodedTx.OriginChainId)
+	i.Equal(tx.DestChainId, decodedTx.DestChainId)
+	i.Equal(tx.OriginSender, decodedTx.OriginSender)
+	i.Equal(tx.DestRecipient, decodedTx.DestRecipient)
+	i.Equal(tx.OriginToken, decodedTx.OriginToken)
+	i.Equal(tx.DestToken, decodedTx.DestToken)
+	i.Equal(tx.OriginAmount.String(), decodedTx.OriginAmount.String())
+	i.Equal(tx.DestAmount.String(), decodedTx.DestAmount.String())
+	i.Equal(tx.OriginFeeAmount.String(), decodedTx.OriginFeeAmount.String())
+	i.Equal(tx.Deadline.String(), decodedTx.Deadline.String())
+	i.Equal(tx.Nonce.String(), decodedTx.Nonce.String())
+	i.Equal(tx.ExclusivityRelayer, decodedTx.ExclusivityRelayer)
+	i.Equal(tx.ExclusivityEndTime.String(), decodedTx.ExclusivityEndTime.String())
+	i.Equal(tx.ZapNative.String(), decodedTx.ZapNative.String())
+	i.Equal(tx.ZapData, decodedTx.ZapData)
 }

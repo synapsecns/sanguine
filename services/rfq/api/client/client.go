@@ -29,7 +29,10 @@ import (
 
 var logger = log.Logger("rfq-client")
 
-const pingPeriod = 20 * time.Second
+const (
+	pingPeriod = 20 * time.Second
+	chanBuffer = 1000
+)
 
 // AuthenticatedClient is an interface for the RFQ API.
 // It provides methods for creating, retrieving and updating quotes.
@@ -208,7 +211,7 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 		return nil, fmt.Errorf("subscription failed")
 	}
 
-	respChan = make(chan *model.ActiveRFQMessage)
+	respChan = make(chan *model.ActiveRFQMessage, chanBuffer)
 	go func() {
 		wsErr := c.processWebsocket(ctx, conn, reqChan, respChan)
 		if wsErr != nil {
@@ -264,16 +267,17 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 		if err != nil {
 			logger.Warnf("error closing websocket connection: %v", err)
 		}
+		logger.Warnf("processWebsocket exited")
 	}()
 
-	readChan := make(chan []byte)
+	readChan := make(chan []byte, chanBuffer)
 	go c.listenWsMessages(ctx, conn, readChan)
 	go c.sendPings(ctx, reqChan)
 
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return ctx.Err()
 		case msg, ok := <-reqChan:
 			if !ok {
 				return fmt.Errorf("error reading from reqChan: %w", ctx.Err())

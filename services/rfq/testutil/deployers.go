@@ -14,8 +14,11 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/sanguine/ethergo/manager"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/bridgetransactionv2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemockv2"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/recipientmock"
 )
 
 // DeployManager wraps DeployManager and allows typed contract handles to be returned.
@@ -27,7 +30,7 @@ type DeployManager struct {
 func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
-	parentManager := manager.NewDeployerManager(t, NewFastBridgeDeployer, NewMockERC20Deployer, NewMockFastBridgeDeployer, NewWETH9Deployer, NewUSDTDeployer, NewUSDCDeployer, NewDAIDeployer)
+	parentManager := manager.NewDeployerManager(t, NewFastBridgeDeployer, NewFastBridgeV2Deployer, NewMockERC20Deployer, NewMockFastBridgeDeployer, NewRecipientMockDeployer, NewBridgeTransactionV2Deployer, NewWETH9Deployer, NewUSDTDeployer, NewUSDCDeployer, NewDAIDeployer)
 	return &DeployManager{parentManager}
 }
 
@@ -119,6 +122,27 @@ func (f FastBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContr
 	})
 }
 
+// FastBridgeV2Deployer deplyos a fast bridge contract for testing.
+type FastBridgeV2Deployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewFastBridgeV2Deployer deploys a fast bridge contract.
+func NewFastBridgeV2Deployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return FastBridgeV2Deployer{
+		deployer.NewSimpleDeployer(registry, backend, FastBridgeV2Type),
+	}
+}
+
+// Deploy deploys the fast bridge contract.
+func (f FastBridgeV2Deployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return f.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return fastbridgev2.DeployFastBridgeV2(transactOps, backend, transactOps.From)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return fastbridgev2.NewFastBridgeV2Ref(address, backend)
+	})
+}
+
 // MockFastBridgeDeployer deploys a mock fast bridge contract for testing.
 type MockFastBridgeDeployer struct {
 	*deployer.BaseDeployer
@@ -134,8 +158,50 @@ func NewMockFastBridgeDeployer(registry deployer.GetOnlyContractRegistry, backen
 // Deploy deploys the mock fast bridge contract.
 func (m MockFastBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return m.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return fastbridgemock.DeployFastBridgeMock(transactOps, backend, transactOps.From)
+		return fastbridgemockv2.DeployFastBridgeMock(transactOps, backend, transactOps.From)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return fastbridgemock.NewFastBridgeMockRef(address, backend)
+		return fastbridgemockv2.NewFastBridgeMockRef(address, backend)
+	})
+}
+
+// RecipientMockDeployer deploys a mock recipient contract for testing.
+type RecipientMockDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewRecipientMockDeployer deploys a mock recipient contract.
+func NewRecipientMockDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return RecipientMockDeployer{
+		deployer.NewSimpleDeployer(registry, backend, RecipientMockType),
+	}
+}
+
+// Deploy deploys the recipient mock contract.
+func (m RecipientMockDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return m.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return recipientmock.DeployRecipientMock(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return recipientmock.NewRecipientMockRef(address, backend)
+	})
+}
+
+// BridgeTransactionV2Deployer deploys a bridge transaction contract for testing.
+type BridgeTransactionV2Deployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewBridgeTransactionV2Deployer deploys a mock recipient contract.
+func NewBridgeTransactionV2Deployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return BridgeTransactionV2Deployer{
+		deployer.NewSimpleDeployer(registry, backend, BridgeTransactionV2Type),
+	}
+}
+
+// Deploy deploys the bridge transaction contract.
+func (m BridgeTransactionV2Deployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return m.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return bridgetransactionv2.DeployBridgeTransactionV2Harness(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return bridgetransactionv2.NewBridgeTransactionV2Ref(address, backend)
 	})
 }

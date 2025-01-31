@@ -25,6 +25,8 @@ func (b BridgeStatus) Int() uint8 {
 }
 
 // set all contact types.
+//
+//nolint:gosec,intrange
 func init() {
 	for i := 0; i < len(_BridgeStatus_index)-1; i++ {
 		contractType := BridgeStatus(i)

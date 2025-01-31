@@ -30,6 +30,7 @@ import (
 	"github.com/synapsecns/sanguine/core/dockerutil"
 	"github.com/synapsecns/sanguine/core/mapmutex"
 	"github.com/synapsecns/sanguine/core/processlog"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
 	"github.com/synapsecns/sanguine/ethergo/chain"
@@ -386,9 +387,15 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	var acct *keystore.Key
 	// TODO handle storing accounts to conform to get tx context
 	if address != nil {
-		acct = f.GetAccount(*address)
-		if acct == nil {
-			f.T().Errorf("could not get account %s", address.String())
+		err := retry.WithBackoff(ctx, func(_ context.Context) error {
+			acct = f.GetAccount(*address)
+			if acct == nil {
+				return fmt.Errorf("could not get account %s", address.String())
+			}
+			return nil
+		}, retry.WithMaxTotalTime(10*time.Second))
+		if err != nil {
+			f.T().Errorf("could not get account %s: %v", address.String(), err)
 			return res
 		}
 	} else {

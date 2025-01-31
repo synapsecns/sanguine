@@ -9,7 +9,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/base"
 )
@@ -23,17 +23,21 @@ func TestRoundtripBetweenFromQuoteRequestAndToQuoteRequest(t *testing.T) {
 		TransactionID:       [32]byte{},
 		RawRequest:          []byte(gofakeit.Paragraph(1, 2, 3, " ")),
 		Sender:              common.Address{},
-		Transaction: fastbridge.IFastBridgeBridgeTransaction{
-			OriginChainId: 1,
-			DestChainId:   2,
-			OriginSender:  common.Address{},
-			DestRecipient: common.Address{},
-			OriginToken:   common.Address{},
-			DestToken:     common.Address{},
-			OriginAmount:  big.NewInt(1000),
-			DestAmount:    big.NewInt(2000),
-			Deadline:      big.NewInt(time.Now().Unix()),
-			Nonce:         big.NewInt(1),
+		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
+			OriginChainId:      1,
+			DestChainId:        2,
+			OriginSender:       common.Address{},
+			DestRecipient:      common.Address{},
+			OriginToken:        common.Address{},
+			DestToken:          common.Address{},
+			OriginAmount:       big.NewInt(1000),
+			DestAmount:         big.NewInt(2000),
+			Deadline:           big.NewInt(time.Now().Unix()),
+			Nonce:              big.NewInt(1),
+			ExclusivityEndTime: big.NewInt(0),
+			OriginFeeAmount:    big.NewInt(0),
+			ZapNative:          big.NewInt(0),
+			ZapData:            []byte{},
 		},
 		Status: reldb.QuoteRequestStatus(1),
 	}
