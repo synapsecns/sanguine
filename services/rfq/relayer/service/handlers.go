@@ -471,10 +471,16 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span tra
 		return nil
 	}
 
+	fmt.Printf(
+		"TxID 0x%x %7d.%s > %7d.%s : Submitting \033[33mProof\033[0m\n",
+		request.TransactionID,
+		request.Transaction.OriginChainId,
+		request.Transaction.OriginToken.Hex()[:6],
+		request.Transaction.DestChainId,
+		request.Transaction.DestToken.Hex()[:6])
+
 	// relay has been finalized, it's time to go back to the origin chain and try to prove
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-
-		fmt.Printf("RFQ: %s - Submitting Proof\n", request.TransactionID)
 		tx, err = q.Origin.Bridge.Prove(transactor, request.RawRequest, request.DestTxHash)
 		if err != nil {
 			return nil, fmt.Errorf("could not prove: %w", err)
@@ -619,8 +625,17 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, span trace.
 	if !canClaim {
 		return nil
 	}
+
+	fmt.Printf(
+		"TxID 0x%x %7d.%s > %7d.%s : Submitting \033[35mClaim\033[0m\n",
+		request.TransactionID,
+		request.Transaction.OriginChainId,
+		request.Transaction.OriginToken.Hex()[:6],
+		request.Transaction.DestChainId,
+		request.Transaction.DestToken.Hex()[:6])
+
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		fmt.Printf("RFQ: %s - Submitting Claim\n", request.TransactionID)
+
 		tx, err = q.Origin.Bridge.Claim(transactor, request.RawRequest, transactor.From)
 		if err != nil {
 			return nil, fmt.Errorf("could not relay: %w", err)

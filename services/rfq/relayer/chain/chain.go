@@ -86,10 +86,17 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 		}
 	}
 
+	fmt.Printf(
+		"TxID 0x%x %7d.%s > %7d.%s : Submitting \033[32mRelay\033[0m\n",
+		request.TransactionID,
+		request.Transaction.OriginChainId,
+		request.Transaction.OriginToken.Hex()[:6],
+		request.Transaction.DestChainId,
+		request.Transaction.DestToken.Hex()[:6])
+
 	nonce, err := c.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		transactor.Value = core.CopyBigInt(gasAmount)
 
-		fmt.Printf("RFQ: %s - Submitting Relay\n", request.TransactionID)
 		tx, err = c.Bridge.RelayV2(transactor, request.RawRequest, c.submitter.Address())
 
 		if err != nil {
