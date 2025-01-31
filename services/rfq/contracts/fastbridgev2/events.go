@@ -38,6 +38,7 @@ func init() {
 	BridgeProofProvidedTopic = parsedABI.Events["BridgeProofProvided"].ID
 	BridgeDepositClaimedTopic = parsedABI.Events["BridgeDepositClaimed"].ID
 	BridgeProofDisputedTopic = parsedABI.Events["BridgeProofDisputed"].ID
+	BridgeQuoteDetailsTopic = parsedABI.Events["BridgeQuoteDetails"].ID
 
 	_, err = parsedABI.EventByID(BridgeRequestedTopic)
 	if err != nil {
@@ -55,6 +56,16 @@ func init() {
 	}
 
 	_, err = parsedABI.EventByID(BridgeProofDisputedTopic)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = parsedABI.EventByID(BridgeDepositClaimedTopic)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = parsedABI.EventByID(BridgeQuoteDetailsTopic)
 	if err != nil {
 		panic(err)
 	}

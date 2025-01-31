@@ -474,6 +474,7 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span tra
 	// relay has been finalized, it's time to go back to the origin chain and try to prove
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 
+		fmt.Printf("RFQ: %s - Submitting Proof\n", request.TransactionID)
 		tx, err = q.Origin.Bridge.Prove(transactor, request.RawRequest, request.DestTxHash)
 		if err != nil {
 			return nil, fmt.Errorf("could not prove: %w", err)
@@ -619,6 +620,7 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, span trace.
 		return nil
 	}
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		fmt.Printf("RFQ: %s - Submitting Claim\n", request.TransactionID)
 		tx, err = q.Origin.Bridge.Claim(transactor, request.RawRequest, transactor.From)
 		if err != nil {
 			return nil, fmt.Errorf("could not relay: %w", err)
