@@ -135,4 +135,8 @@ main
 contrib/golang-ci-lint/golang-ci-lint
 
 *signer*.txt
-config-stage.yaml
+
+# ignore any rfq config files that are not the template
+services/rfq/**/config*.yaml
+services/rfq/**/config*.yml
+!services/rfq/**/config.yml
