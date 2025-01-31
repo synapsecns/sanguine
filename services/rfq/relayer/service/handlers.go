@@ -377,9 +377,6 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 // TODO: just to be safe, we should probably check if another relayer has already relayed this.
 func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
 
-	//tmpdebug
-	fmt.Println("handleCommitConfirmed>SubmitRelay: ", request.OriginTxHash)
-
 	// TODO: store the dest txhash connected to the nonce
 	nonce, _, err := q.Dest.SubmitRelay(ctx, request)
 	if err != nil {
@@ -388,15 +385,11 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span tr
 	span.AddEvent("relay successfully submitted")
 	span.SetAttributes(attribute.Int("relay_nonce", int(nonce)))
 
-	//tmpdebug
-	fmt.Println("handleCommitConfirmed>UpdateQuoteRequestStatus: ", request.OriginTxHash)
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted, &request.Status)
 	if err != nil {
 		return fmt.Errorf("could not update quote request status: %w", err)
 	}
 
-	//tmpdebug
-	fmt.Println("handleCommitConfirmed>UpdateRelayNonce: ", request.OriginTxHash)
 	err = q.db.UpdateRelayNonce(ctx, request.TransactionID, nonce)
 	if err != nil {
 		return fmt.Errorf("could not update relay nonce: %w", err)
@@ -420,7 +413,7 @@ func (r *Relayer) handleRelayLog(parentCtx context.Context, req *fastbridgev2.Fa
 
 	reqID, err := r.db.GetQuoteRequestByID(ctx, req.TransactionId)
 	if err != nil {
-		return fmt.Errorf("could not get quote request: %w", err)
+		return fmt.Errorf("could not get quote request for tx ID %s: %w", hexutil.Encode(req.TransactionId[:]), err)
 	}
 	// we might've accidentally gotten this later, if so we'll just ignore it
 	// note that in the edge case where we pessimistically marked as DeadlineExceeded
@@ -481,13 +474,11 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span tra
 	// relay has been finalized, it's time to go back to the origin chain and try to prove
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 
-		fmt.Println("SubmitTransaction>Prove ", request.OriginTxHash, "Nonce:", transactor.Nonce)
 		tx, err = q.Origin.Bridge.Prove(transactor, request.RawRequest, request.DestTxHash)
 		if err != nil {
 			return nil, fmt.Errorf("could not prove: %w", err)
 		}
 
-		fmt.Println("SubmitTransaction>Prove return tx.gas ", tx.Gas())
 		return tx, nil
 	})
 	if err != nil {

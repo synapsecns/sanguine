@@ -20,6 +20,8 @@ var (
 	BridgeDepositClaimedTopic common.Hash
 	// BridgeProofDisputedTopic is the topic emitted by a bridge dispute.
 	BridgeProofDisputedTopic common.Hash
+	// BridgeProofDisputedTopic is a secondary topic emitted by a bridge request.
+	BridgeQuoteDetailsTopic common.Hash
 )
 
 // static checks to make sure topics actually exist.
@@ -67,6 +69,7 @@ func topicMap() map[EventType]common.Hash {
 		BridgeProofProvidedEvent:  BridgeProofProvidedTopic,
 		BridgeDepositClaimedEvent: BridgeDepositClaimedTopic,
 		BridgeDisputeEvent:        BridgeProofDisputedTopic,
+		BridgeQuoteDetailsEvent:   BridgeQuoteDetailsTopic,
 	}
 }
 

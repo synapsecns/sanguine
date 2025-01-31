@@ -74,9 +74,6 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 	gasAmount := big.NewInt(0)
 	var err error
 
-	//tmpdebug
-	fmt.Println("SubmitRelay>start: ", request.OriginTxHash)
-
 	// Check to see if ETH should be sent to destination
 	if util.IsGasToken(request.Transaction.DestToken) {
 		gasAmount = request.Transaction.DestAmount
@@ -89,20 +86,8 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 		}
 	}
 
-	//tmpdebug
-	fmt.Println("SubmitRelay>SubmitTransaction: ", request.OriginTxHash)
-
 	nonce, err := c.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		transactor.Value = core.CopyBigInt(gasAmount)
-
-		//tmpdebug
-		callType := "exec"
-		if transactor.GasLimit == 0 {
-			callType = "sim"
-		}
-
-		//tmpdebug
-		fmt.Println(callType, "SubmitTransaction>RelayV2: ", request.OriginTxHash)
 
 		tx, err = c.Bridge.RelayV2(transactor, request.RawRequest, c.submitter.Address())
 
@@ -110,16 +95,11 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 			return nil, fmt.Errorf("could not relay: %w", err)
 		}
 
-		//tmpdebug
-		fmt.Println(callType, "RelayV2 Return tx hash:", request.OriginTxHash, tx.Hash())
-
 		return tx, nil
 	})
 	if err != nil {
 		return 0, nil, fmt.Errorf("could not submit transaction: %w", err)
 	}
-	//tmpdebug
-	fmt.Println("SubmitRelay nonce:", nonce, "gas amount:", gasAmount)
 
 	return nonce, gasAmount, nil
 }

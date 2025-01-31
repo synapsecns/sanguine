@@ -261,9 +261,17 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 		callMsg.Value = quoteRequest.Transaction.ZapNative
 	}
 
+	// note: this gas amount is intentionally not modified
 	gasEstimate, err = client.EstimateGas(ctx, callMsg)
 	if err != nil {
-		return 0, fmt.Errorf("could not estimate gas: %w", err)
+
+		// at the moment, omniRPC gives a massive HTML doc w/ many sim errors.. reduce the noise.
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "<!DOCTYPE html>") {
+			errMsg = strings.Split(errMsg, "<!DOCTYPE html>")[0] + "<html portion of error removed>"
+		}
+
+		return 0, fmt.Errorf("could not estimate gas: %s", errMsg)
 	}
 
 	return gasEstimate, nil

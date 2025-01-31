@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"reflect"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -388,9 +389,6 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	// this also prevents a bug in the caller from breaking our lock
 	transactor.Nonce = new(big.Int).Add(new(big.Int).SetUint64(math.MaxUint64), big.NewInt(1))
 
-	//tmpdebug
-	fmt.Printf("SubmitTransaction>setGasPrice\n")
-
 	err = t.setGasPrice(ctx, chainClient, transactor, chainID, nil)
 	if err != nil {
 		span.AddEvent("could not set gas price", trace.WithAttributes(attribute.String("error", err.Error())))
@@ -422,63 +420,58 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 		return parentTransactor.Signer(address, transaction)
 	}
 
-	//tmpdebug
-	fmt.Printf("test ver 7\n")
-
 	// if dynamic gas estimation is not enabled, use cfg var gas_estimate as a gas limit default and do not run a pre-flight simulation
 	// since we do not need it to determine proper gas units
 	if !t.config.GetDynamicGasEstimate(int(chainID.Uint64())) {
-
-		//tmpdebug
-		fmt.Printf("Using Default \n")
-
 		transactor.GasLimit = t.config.GetGasEstimate(int(chainID.Uint64()))
 	} else {
 
-		// //tmpdebug
-		// fmt.Printf("SubmitTransaction>forGasEst call \n")
+		// deepcopy the real transactor so we can use it for simulation
+		transactor_forGasEstimate := copyTransactOpts(transactor)
 
-		// transactor_forGasEstimate := copyTransactOpts(transactor)
+		// override the signer func for our simulation/estimation with a version that does not lock the nonce,
+		// which would othewrise cause a deadlock with the following *actual* transactor
+		transactor_forGasEstimate.Signer = func(address common.Address, transaction *types.Transaction) (_ *types.Transaction, err error) {
 
-		// transactor_forGasEstimate.Nonce.Add(transactor_forGasEstimate.Nonce, big.NewInt(1))
+			newNonce, err := t.getNonce(ctx, chainID, address)
+			if err != nil {
+				return nil, fmt.Errorf("could not sign tx: %w", err)
+			}
 
-		// tx_forGasEstimate, err := call(transactor_forGasEstimate)
-		// if err != nil {
-		// 	return 0, fmt.Errorf("err contract call for gas est: %w", err)
-		// }
+			txType := t.txTypeForChain(chainID)
 
-		// fmt.Printf("tx_forGasEstimate: %v\n", tx_forGasEstimate.Gas())
+			transaction, err = util.CopyTX(transaction, util.WithNonce(newNonce), util.WithTxType(txType))
+			if err != nil {
+				return nil, fmt.Errorf("could not copy tx: %w", err)
+			}
 
-		//transactor.GasLimit = tx_forGasEstimate.Gas() + 555
-
-		// if arbitrum, spoof some low gas units to induce bump tests
-		if chainID.Uint64() == 10 {
-			transactor.GasLimit = 0
-		} else if chainID.Uint64() == 42161 {
-			transactor.GasLimit = 200000
+			//nolint: wrapcheck
+			return parentTransactor.Signer(address, transaction)
 		}
+
+		tx_forGasEstimate, err := call(transactor_forGasEstimate)
+		if err != nil {
+			// at the moment, omniRPC gives a massive HTML doc w/ many sim errors.. reduce the noise.
+			errMsg := err.Error()
+			if strings.Contains(errMsg, "<!DOCTYPE html>") {
+				errMsg = strings.Split(errMsg, "<!DOCTYPE html>")[0] + "<html portion of error removed>"
+			}
+
+			return 0, fmt.Errorf("err contract call for gas est: %s", errMsg)
+		}
+
+		// with our gas limit now obtained from the simulation, apply this limit (plus any configured % modifier) to the
+		// gas limit of the actual transactor that is about to prepare the real transaction
+		gasLimitAddPercentage := t.config.GetDynamicGasUnitAddPercentage(int(chainID.Uint64()))
+		transactor.GasLimit = tx_forGasEstimate.Gas() + (tx_forGasEstimate.Gas() * uint64(gasLimitAddPercentage) / 100)
 	}
 
-	//tmpdebug
-	fmt.Printf("transactor.GasLimit: %d\n", transactor.GasLimit)
-
-	var cancel context.CancelFunc
-	transactor.Context, cancel = context.WithTimeout(ctx, time.Second*5)
-	defer func() {
-		cancel()
-	}()
 	tx, err := call(transactor)
 	if err != nil {
 		return 0, fmt.Errorf("err contract call for tx: %w", err)
 	}
 
-	//tmpdebug
-	fmt.Printf("tx.Gas: %d\n", tx.Gas())
-
 	defer locker.Unlock()
-
-	//tmpdebug
-	fmt.Printf("SubmitTransaction>storeTX\n")
 
 	// now that we've stored the tx
 	err = t.storeTX(ctx, tx, db.Stored, uuid.New().String())
@@ -488,9 +481,6 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 
 	span.AddEvent("trigger reprocess")
 	t.triggerProcessQueue(ctx)
-
-	//tmpdebug
-	fmt.Printf("SubmitTransaction>tx.Nonce: %d\n", tx.Nonce())
 
 	return tx.Nonce(), nil
 }
@@ -732,31 +722,23 @@ func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EV
 
 // getGasEstimate gets the gas estimate for the given transaction.
 // TODO: handle l2s w/ custom gas pricing through contracts.
-func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client.EVM, chainID int, tx *types.Transaction) (gasLimit_new uint64, err error) {
+func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client.EVM, chainID int, tx *types.Transaction) (gasLimit uint64, err error) {
 
 	// if dynamic gas estimation is not enabled, use cfg var gas_estimate as a default
 	if !t.config.GetDynamicGasEstimate(chainID) {
 		return t.config.GetGasEstimate(chainID), nil
 	}
 
-	//tmpdebug
-	fmt.Println("getGasEstimate>start")
-
 	gasUnitAddPercentage := t.config.GetDynamicGasUnitAddPercentage(chainID)
-
-	//tmpdebug
-	fmt.Println("getGasEstimate>gasUnitAddPercentage", gasUnitAddPercentage)
 
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.getGasEstimate", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, chainID),
-
 		attribute.String(metrics.TxHash, tx.Hash().String()),
-
 		attribute.Int("gasUnitAddPercentage", gasUnitAddPercentage),
 	))
 
 	defer func() {
-		span.AddEvent("estimated_gas", trace.WithAttributes(attribute.Int64("gas", int64(gasLimit_new))))
+		span.AddEvent("estimated_gas", trace.WithAttributes(attribute.Int64("gas", int64(gasLimit))))
 		metrics.EndSpanWithErr(span, err)
 	}()
 
@@ -766,34 +748,20 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 		return 0, fmt.Errorf("could not convert tx to call: %w", err)
 	}
 
-	// bump gas limit from prior by X%
-	gasLimit_fromPrior := tx.Gas()
-
 	gasLimit_fromEstimate, err := chainClient.EstimateGas(ctx, *call)
 
 	if err != nil {
-
-		//tmpdebug
-		fmt.Printf("getGasEstimate> Error estimating gas: %v\n", err)
-
 		span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
 
-		// if we failed to est gas for any reason, use *at least* the default flat gas on the next bump
-		gasLimit_fromEstimate = max(t.config.GetGasEstimate(chainID), gasLimit_fromEstimate)
+		// if we failed to est gas for any reason, use the default flat gas from config
+		gasLimit = t.config.GetGasEstimate(chainID)
+	} else {
+		// multiply the freshly simulated gasLimit by the configured gas unit add percentage
+		gasLimit_fromEstimate += (gasLimit_fromEstimate * uint64(gasUnitAddPercentage) / 100)
+		gasLimit = gasLimit_fromEstimate
 	}
 
-	// start with whichever value is higher gas from the prior attempt, or gas from our latest simulation estimate
-	gasLimit_new = max(gasLimit_fromPrior, gasLimit_fromEstimate)
-
-	// whichever source is used as the base, multiply it by the configured gas unit add percentage
-	gasLimit_new = gasLimit_new + (gasLimit_new * uint64(gasUnitAddPercentage) / 100)
-	span.AddEvent("new gas limit", trace.WithAttributes(
-		attribute.Int64("gas_limit", int64(gasLimit_new)),
-		attribute.Int64("gas_limit_from_prior", int64(gasLimit_fromPrior)),
-		attribute.Int64("gas_limit_from_estimate", int64(gasLimit_fromEstimate)),
-	))
-
-	return gasLimit_new, nil
+	return gasLimit, nil
 }
 
 func (t *txSubmitterImpl) Address() common.Address {
