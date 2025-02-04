@@ -2,61 +2,43 @@ package exporters
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"math/big"
-	"net/http"
-	"slices"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/lmittmann/w3/module/eth"
 	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/contrib/promexporter/internal/decoders"
-	rfqAPIModel "github.com/synapsecns/sanguine/services/rfq/api/model"
 )
 
-// TODO: This is ugly. We can probably get this from the config.
+var relayerAddresses = []string{
+	"0xDc927Bd56CF9DfC2e3779C7E3D6d28dA1C219969",
+	"0xDD50676F81f607fD8bA7Ed3187DdF172DB174CD3",
+	"0xbe75079fd259a82054cAAB2CE007cd0c20b177a8",
+	"0x2156BfA195C033CA2DF4Ff14e6Da0c617B8cb4F7",
+}
 var usdcAddresses = map[int]string{
-	1:      "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-	10:     "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
-	42161:  "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-	8453:   "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-	534352: "0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4",
-	59144:  "0x176211869cA2b568f2A7D4EE941E073a821EE1ff",
+	1:      "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", // mainnet
+	10:     "0x0b2c639c533813f4aa9d7837caf62653d097ff85", // optimism
+	42161:  "0xaf88d065e77c8cC2239327C5EDb3A432268e5831", // arbitrum
+	8453:   "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", // base
+	534352: "0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4", // scroll
+	59144:  "0x176211869cA2b568f2A7D4EE941E073a821EE1ff", // linea
+	480:    "0x79A02482A880bCE3F13e09Da970dC34db4CD24d1", // world
 }
 
 // TODO: this function does too many things.
 //
 //nolint:cyclop
-func (e *exporter) fetchRelayerBalances(ctx context.Context, url string) error {
-	// Fetch relayer addresses
-	quotes, err := e.fetchAllQuotes(ctx, url)
-	if err != nil {
-		return fmt.Errorf("could not fetch relayer addresses: %w", err)
-	}
-
-	// chainIDs is a map of chain ID to relayer addresses
+func (e *exporter) fetchRelayerBalances(ctx context.Context, _ string) error {
 	chainIDToRelayers := make(map[int][]string)
-
-	// Get all chain IDs
-	for _, quote := range quotes {
-		if !slices.Contains(chainIDToRelayers[quote.OriginChainID], quote.RelayerAddr) {
-			chainIDToRelayers[quote.OriginChainID] = append(chainIDToRelayers[quote.OriginChainID], quote.RelayerAddr)
-		}
-
-		if !slices.Contains(chainIDToRelayers[quote.DestChainID], quote.RelayerAddr) {
-			chainIDToRelayers[quote.DestChainID] = append(chainIDToRelayers[quote.DestChainID], quote.RelayerAddr)
-		}
-	}
-
-	for chainID := range chainIDToRelayers {
-		chainIDToRelayers[chainID] = append(chainIDToRelayers[chainID], "0x2156BfA195C033CA2DF4Ff14e6Da0c617B8cb4F7")
+	for chainid := range usdcAddresses {
+		chainIDToRelayers[chainid] = relayerAddresses
 	}
 
 	for chainID, relayers := range chainIDToRelayers {
-		client, err := e.omnirpcClient.GetConfirmationsClient(ctx, chainID, 1)
+		client, err := e.omnirpcClient.GetChainClient(ctx, chainID)
 		if err != nil {
 			return fmt.Errorf("could not get confirmations client: %w", err)
 		}
@@ -93,37 +75,11 @@ func (e *exporter) fetchRelayerBalances(ctx context.Context, url string) error {
 				balance:     balanceFloat / params.Ether,
 				usdcBalance: usdcBalanceFloat / 1e6,
 			}
+			// fmt.Printf("chainid=%d, address=%s, balance=%f, usdcBalance=%f\n", chainID, relayers[i], balanceFloat/params.Ether, usdcBalanceFloat/1e6)
 			e.otelRecorder.RecordRelayerBalance(chainID, relayerMetadata)
 		}
+		// fmt.Println("-----------------------")
 	}
 
 	return nil
-}
-
-func (e *exporter) fetchAllQuotes(ctx context.Context, url string) ([]rfqAPIModel.GetQuoteResponse, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("could not get quotes: %w", err)
-	}
-
-	res, err := e.client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("could not get quotes: %w", err)
-	}
-	defer func() {
-		_ = res.Body.Close()
-	}()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, fmt.Errorf("could not read body: %w", err)
-	}
-
-	var quotes []rfqAPIModel.GetQuoteResponse
-	err = json.Unmarshal(body, &quotes)
-	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal quotes: %w", err)
-	}
-
-	return quotes, nil
 }
