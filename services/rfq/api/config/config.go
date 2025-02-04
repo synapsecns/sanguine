@@ -19,13 +19,13 @@ type DatabaseConfig struct {
 
 // Config is the configuration for the RFQ Quoter.
 type Config struct {
-	Database   DatabaseConfig `yaml:"database"`
-	OmniRPCURL string         `yaml:"omnirpc_url"`
-	// bridges is a map of chainid->address
-	Bridges         map[uint32]string `yaml:"bridges"`
-	Port            string            `yaml:"port"`
-	RelayAckTimeout time.Duration     `yaml:"relay_ack_timeout"`
-	MaxQuoteAge     time.Duration     `yaml:"max_quote_age"`
+	Database              DatabaseConfig    `yaml:"database"`
+	OmniRPCURL            string            `yaml:"omnirpc_url"`
+	FastBridgeContractsV1 map[uint32]string `yaml:"fast_bridge_contracts_v1"`
+	FastBridgeContractsV2 map[uint32]string `yaml:"fast_bridge_contracts_v2"`
+	Port                  string            `yaml:"port"`
+	RelayAckTimeout       time.Duration     `yaml:"relay_ack_timeout"`
+	MaxQuoteAge           time.Duration     `yaml:"max_quote_age"`
 }
 
 const defaultRelayAckTimeout = 30 * time.Second

@@ -316,6 +316,9 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	c.Assert().Equal("998000", userQuoteResp.DestAmount) // destAmount is quote destAmount minus fixed fee
 	c.Assert().Equal(c.relayerWallets[0].Address().Hex(), userQuoteResp.RelayerAddress)
 
+	// Submit a user quote request with zap data
+	userQuoteReq.Data.ZapData = "abc"
+	userQuoteReq.Data.ZapNative = "100"
 	// Submit the user quote request with a large origin amount, expect no quotes will be found
 	userQuoteReq.Data.OriginAmountExact = big.NewInt(1e18).String()
 	userQuoteResp, err = userClient.PutRFQRequest(c.GetTestContext(), userQuoteReq)

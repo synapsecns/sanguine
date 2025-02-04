@@ -12,7 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/listener"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/util"
@@ -23,7 +23,7 @@ import (
 // the plan is to move this out of relayer which is when this distinction will matter.
 type Chain struct {
 	ChainID       uint32
-	Bridge        *fastbridge.FastBridgeRef
+	Bridge        *fastbridgev2.FastBridgeV2Ref
 	Client        client.EVM
 	Confirmations uint64
 	listener      listener.ContractListener
@@ -40,7 +40,7 @@ func NewChain(ctx context.Context, cfg relconfig.Config, chainClient client.EVM,
 	if err != nil {
 		return nil, fmt.Errorf("could not get rfq address: %w", err)
 	}
-	bridge, err := fastbridge.NewFastBridgeRef(addr, chainClient)
+	bridge, err := fastbridgev2.NewFastBridgeV2Ref(addr, chainClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not create bridge contract: %w", err)
 	}
@@ -77,17 +77,28 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 	// Check to see if ETH should be sent to destination
 	if util.IsGasToken(request.Transaction.DestToken) {
 		gasAmount = request.Transaction.DestAmount
-	} else if request.Transaction.SendChainGas {
+	} else if request.Transaction.ZapNative != nil {
+		gasAmount = request.Transaction.ZapNative
+	} else if request.TransactionV1.SendChainGas {
 		gasAmount, err = c.Bridge.ChainGasAmount(&bind.CallOpts{Context: ctx})
 		if err != nil {
 			return 0, nil, fmt.Errorf("could not get chain gas amount: %w", err)
 		}
 	}
 
+	fmt.Printf(
+		"TxID 0x%x %7d.%s > %7d.%s : Submitting \033[32mRelay\033[0m\n",
+		request.TransactionID,
+		request.Transaction.OriginChainId,
+		request.Transaction.OriginToken.Hex()[:6],
+		request.Transaction.DestChainId,
+		request.Transaction.DestToken.Hex()[:6])
+
 	nonce, err := c.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		transactor.Value = core.CopyBigInt(gasAmount)
 
-		tx, err = c.Bridge.Relay(transactor, request.RawRequest)
+		tx, err = c.Bridge.RelayV2(transactor, request.RawRequest, c.submitter.Address())
+
 		if err != nil {
 			return nil, fmt.Errorf("could not relay: %w", err)
 		}

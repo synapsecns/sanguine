@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb"
 )
 
@@ -36,6 +36,8 @@ type PendingProvenModel struct {
 	Origin uint32
 	// RelayerAddress is the address of the relayer that called prove()
 	RelayerAddress string
+	// FastBridgeAddress is the address of the fast bridge contract
+	FastBridgeAddress string
 	// TransactionID is the transaction id of the event
 	TransactionID string `gorm:"column:transaction_id;primaryKey"`
 	// TxHash is the hash of the relay transaction on destination
@@ -49,12 +51,13 @@ type PendingProvenModel struct {
 // FromPendingProven converts a quote request to an object that can be stored in the db.
 func FromPendingProven(proven guarddb.PendingProven) PendingProvenModel {
 	return PendingProvenModel{
-		Origin:         proven.Origin,
-		RelayerAddress: proven.RelayerAddress.Hex(),
-		TransactionID:  hexutil.Encode(proven.TransactionID[:]),
-		TxHash:         proven.TxHash.Hex(),
-		Status:         proven.Status,
-		BlockNumber:    proven.BlockNumber,
+		Origin:            proven.Origin,
+		RelayerAddress:    proven.RelayerAddress.Hex(),
+		FastBridgeAddress: proven.FastBridgeAddress.Hex(),
+		TransactionID:     hexutil.Encode(proven.TransactionID[:]),
+		TxHash:            proven.TxHash.Hex(),
+		Status:            proven.Status,
+		BlockNumber:       proven.BlockNumber,
 	}
 }
 
@@ -71,12 +74,13 @@ func (p PendingProvenModel) ToPendingProven() (*guarddb.PendingProven, error) {
 	}
 
 	return &guarddb.PendingProven{
-		Origin:         p.Origin,
-		RelayerAddress: common.HexToAddress(p.RelayerAddress),
-		TransactionID:  transactionID,
-		TxHash:         common.HexToHash(p.TxHash),
-		Status:         p.Status,
-		BlockNumber:    p.BlockNumber,
+		Origin:            p.Origin,
+		RelayerAddress:    common.HexToAddress(p.RelayerAddress),
+		FastBridgeAddress: common.HexToAddress(p.FastBridgeAddress),
+		TransactionID:     transactionID,
+		TxHash:            common.HexToHash(p.TxHash),
+		Status:            p.Status,
+		BlockNumber:       p.BlockNumber,
 	}, nil
 }
 
@@ -164,7 +168,7 @@ func (b BridgeRequestModel) ToBridgeRequest() (*guarddb.BridgeRequest, error) {
 	return &guarddb.BridgeRequest{
 		TransactionID: transactionID,
 		RawRequest:    req,
-		Transaction: fastbridge.IFastBridgeBridgeTransaction{
+		Transaction: fastbridgev2.IFastBridgeBridgeTransaction{
 			OriginChainId: b.OriginChainID,
 			DestChainId:   b.DestChainID,
 			OriginSender:  common.HexToAddress(b.OriginSender),

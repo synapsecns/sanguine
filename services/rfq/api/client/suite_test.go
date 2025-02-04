@@ -85,7 +85,11 @@ func (c *ClientSuite) SetupTest() {
 			DSN:  filet.TmpFile(c.T(), "", "").Name(),
 		},
 		OmniRPCURL: testOmnirpc,
-		Bridges: map[uint32]string{
+		FastBridgeContractsV1: map[uint32]string{
+			1:     ethFastBridgeAddress.Hex(),
+			42161: arbFastBridgeAddress.Hex(),
+		},
+		FastBridgeContractsV2: map[uint32]string{
 			1:     ethFastBridgeAddress.Hex(),
 			42161: arbFastBridgeAddress.Hex(),
 		},

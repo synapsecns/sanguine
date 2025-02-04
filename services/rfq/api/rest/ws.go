@@ -34,13 +34,15 @@ type wsClient struct {
 	lastPing      time.Time
 }
 
+const chanBuffer = 1000
+
 func newWsClient(relayerAddr string, conn *websocket.Conn, pubsub PubSubManager, handler metrics.Handler) *wsClient {
 	return &wsClient{
 		handler:       handler,
 		relayerAddr:   relayerAddr,
 		conn:          conn,
 		pubsub:        pubsub,
-		requestChan:   make(chan *model.WsRFQRequest),
+		requestChan:   make(chan *model.WsRFQRequest, chanBuffer),
 		responseChans: xsync.NewMapOf[chan *model.WsRFQResponse](),
 		doneChan:      make(chan struct{}),
 		pingTicker:    time.NewTicker(pingPeriod),
@@ -51,7 +53,7 @@ func (c *wsClient) SendQuoteRequest(ctx context.Context, quoteRequest *model.WsR
 	select {
 	case c.requestChan <- quoteRequest:
 		// successfully sent, register a response channel
-		c.responseChans.Store(quoteRequest.RequestID, make(chan *model.WsRFQResponse))
+		c.responseChans.Store(quoteRequest.RequestID, make(chan *model.WsRFQResponse, chanBuffer))
 	case <-c.doneChan:
 		return fmt.Errorf("websocket client is closed")
 	case <-ctx.Done():
@@ -99,7 +101,7 @@ const (
 
 // Run runs the WebSocket client.
 func (c *wsClient) Run(ctx context.Context) (err error) {
-	messageChan := make(chan []byte)
+	messageChan := make(chan []byte, chanBuffer)
 
 	g, gctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
@@ -198,6 +200,8 @@ func (c *wsClient) sendRelayerRequest(ctx context.Context, req *model.WsRFQReque
 
 // handleRelayerMessage handles messages from the relayer.
 // An error returned will result in the websocket connection being closed.
+//
+//nolint:cyclop
 func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err error) {
 	_, span := c.handler.Tracer().Start(ctx, "handleRelayerMessage", trace.WithAttributes(
 		attribute.String("relayer_address", c.relayerAddr),
@@ -235,7 +239,9 @@ func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err er
 		}
 	case SendQuoteOp:
 		err = c.handleSendQuote(ctx, rfqMsg.Content)
-		logger.Errorf("error handling send quote: %v", err)
+		if err != nil {
+			logger.Errorf("error handling send quote: %v", err)
+		}
 	default:
 		logger.Errorf("received unexpected operation from relayer: %s", rfqMsg.Op)
 		return nil

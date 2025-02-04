@@ -133,7 +133,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 	// wait for all responses to be received, or expiration
 	select {
 	case <-expireCtx.Done():
-		// request expired before all responses were received
+		span.AddEvent("request expired")
 	case <-func() chan struct{} {
 		ch := make(chan struct{})
 		go func() {
@@ -142,7 +142,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 		}()
 		return ch
 	}():
-		// all responses received
+		span.AddEvent("all responses received")
 	}
 
 	return responses
