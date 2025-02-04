@@ -175,8 +175,8 @@ export abstract class SynapseModuleSet {
   abstract applySlippage(
     originQueryPrecise: Query,
     destQueryPrecise: Query,
-    slipNumerator: number,
-    slipDenominator: number
+    slipNumerator?: number,
+    slipDenominator?: number
   ): { originQuery: Query; destQuery: Query }
 
   /**
