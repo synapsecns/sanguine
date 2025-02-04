@@ -197,8 +197,8 @@ export abstract class RouterSet extends SynapseModuleSet {
   public applySlippage(
     originQueryPrecise: Query,
     destQueryPrecise: Query,
-    slipNumerator: number,
-    slipDenominator: number
+    slipNumerator: number = 10,
+    slipDenominator: number = 10000
   ): { originQuery: Query; destQuery: Query } {
     return {
       originQuery: applySlippageToQuery(

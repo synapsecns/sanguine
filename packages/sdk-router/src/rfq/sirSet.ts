@@ -44,6 +44,7 @@ import {
   RecipientEntity,
   validateEngineID,
   Slippage,
+  SlippageMax,
   applySlippage,
   SwapEngineQuote,
   RouteInput,
@@ -245,8 +246,8 @@ export class SynapseIntentRouterSet extends SynapseModuleSet {
   public applySlippage(
     originQueryPrecise: Query,
     destQueryPrecise: Query,
-    slipNumerator: number,
-    slipDenominator: number
+    slipNumerator: number = SlippageMax.numerator,
+    slipDenominator: number = SlippageMax.denominator
   ): { originQuery: Query; destQuery: Query } {
     // We should have saved neccessary params within dstQuery.rawParams
     if (hexDataLength(destQueryPrecise.rawParams) === 0) {

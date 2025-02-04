@@ -40,6 +40,7 @@ export type Slippage = {
 }
 
 // Max slippage that can be used by the swap engines, 100 bips (1%)
+// TODO: consider lowering this value
 export const SlippageMax: Slippage = {
   numerator: 100,
   denominator: 10000,
