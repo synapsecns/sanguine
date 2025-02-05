@@ -11,9 +11,9 @@ import {
   ledgerWallet,
   frameWallet,
   safeWallet,
-  binanceWallet,
 } from '@rainbow-me/rainbowkit/wallets'
 import { connectorsForWallets } from '@rainbow-me/rainbowkit'
+import binanceWallet from '@binance/w3w-rainbow-connector-v2'
 
 import { createTransports } from '@/utils/createTransports'
 import { supportedChains } from '@/constants/chains/supportedChains'
