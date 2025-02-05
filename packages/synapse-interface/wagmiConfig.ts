@@ -11,6 +11,7 @@ import {
   ledgerWallet,
   frameWallet,
   safeWallet,
+  binanceWallet,
 } from '@rainbow-me/rainbowkit/wallets'
 import { connectorsForWallets } from '@rainbow-me/rainbowkit'
 
@@ -34,6 +35,7 @@ const connectors = connectorsForWallets(
         ledgerWallet,
         frameWallet,
         safeWallet,
+        binanceWallet,
       ],
     },
   ],

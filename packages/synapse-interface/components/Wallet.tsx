@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 import { MetamaskIcon } from '@icons/WalletIcons/Metamask'
 import { CoinbaseWalletIcon } from '@icons/WalletIcons/CoinbaseWalletIcon'
 import { WalletConnectIcon } from '@icons/WalletIcons/WalletConnectIcon'
+import { BinanceWalletIcon } from '@icons/WalletIcons/BinanceWalletIcon'
 import { IconProps, WalletId } from '@utils/types'
 import Spinner from './icons/Spinner'
 
@@ -21,6 +22,10 @@ const WALLETS = [
   {
     id: WalletId.CoinbaseWallet,
     icon: CoinbaseWalletIcon,
+  },
+  {
+    id: WalletId.BinanceWallet,
+    icon: BinanceWalletIcon,
   },
 ]
 
