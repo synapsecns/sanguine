@@ -17,10 +17,10 @@ make/ @trajan0x
 packages/contracts-core/ @ChiTimesChi @trajan0x
 packages/contracts-rfq @ChiTimesChi
 packages/sdk-router/ @aureliusbtc @ChiTimesChi @trajan0x
-packages/explorer-ui/ @trajan0x  @bigboydiamonds @abtestingalpha
+packages/explorer-ui/ @trajan0x @abtestingalpha
 packages/rest-api/ @trajan0x @Defi-Moses
-packages/synapse-interface/ @bigboydiamonds @abtestingalpha  @aureliusbtc
-yarn.lock @bigboydiamonds @abtestingalpha
+packages/synapse-interface/  @abtestingalpha  @aureliusbtc
+yarn.lock @abtestingalpha
 contrib/ @trajan0x
 
 services/explorer @trajan0x
