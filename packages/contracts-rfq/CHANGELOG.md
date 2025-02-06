@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.16.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.15.1...@synapsecns/contracts-rfq@0.16.0) (2025-01-23)
+
+
+### Features
+
+* **contracts-rfq:** optional strict slippage for `SynapseIntentPreviewer` ([#3467](https://github.com/synapsecns/sanguine/issues/3467)) ([2847b63](https://github.com/synapsecns/sanguine/commit/2847b6306ce9182ba51069a5694aad9b7e9516ef))
+
+
+
+
+
 ## [0.15.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.15.0...@synapsecns/contracts-rfq@0.15.1) (2024-12-11)
 
 

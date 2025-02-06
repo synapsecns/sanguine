@@ -2,10 +2,13 @@ import express from 'express'
 import { CHAINS, Chain } from '@synapsecns/synapse-constants'
 import fetch from 'cross-fetch'
 
+import { addSvgHeaderIfMissing } from '../utils/svgUtils'
+
 const router: express.Router = express.Router()
 
 router.get('/:chainId.svg', async (req, res) => {
   const chainId = parseInt(req.params.chainId, 10)
+  const addHeaders = req.query.headers === 'true'
 
   // Find the chain with matching ID
   const chain = Object.values(CHAINS).find(
@@ -26,14 +29,21 @@ router.get('/:chainId.svg', async (req, res) => {
     }
 
     const buffer = await response.arrayBuffer()
+    const contentType = response.headers.get('content-type') || 'image/svg+xml'
+
+    // Only process SVG files if headers are requested
+    const processedBuffer =
+      contentType === 'image/svg+xml' && addHeaders
+        ? addSvgHeaderIfMissing(buffer)
+        : Buffer.from(buffer)
 
     // Set cache headers (cache for 1 week)
     res.set({
       'Cache-Control': 'public, max-age=604800',
-      'Content-Type': response.headers.get('content-type') || 'image/svg+xml',
+      'Content-Type': contentType,
     })
 
-    res.send(Buffer.from(buffer))
+    res.send(processedBuffer)
   } catch (error) {
     console.error('Error fetching chain icon:', error)
     res.status(500).json({ error: 'Failed to fetch chain icon' })

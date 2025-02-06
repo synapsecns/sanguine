@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.41.4",
+  "version": "0.41.7",
   "private": true,
   "engines": {
     "node": ">=18.18.0"
@@ -27,6 +27,7 @@
     "test": "echo 'No jest tests defined.'"
   },
   "dependencies": {
+    "@binance/w3w-rainbow-connector-v2": "^1.0.2",
     "@cloudflare/next-on-pages": "^1.11.0",
     "@codecov/webpack-plugin": "^0.0.1-beta.10",
     "@ethersproject/bignumber": "5.7.0",
