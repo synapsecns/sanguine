@@ -142,13 +142,22 @@ export const applySlippageToQuery = (
     slipNumerator <= slipDenominator,
     'Slippage cannot be greater than 1'
   )
-  const slippageAmount = query.minAmountOut
-    .mul(slipNumerator)
-    .div(slipDenominator)
   return {
     ...query,
-    minAmountOut: query.minAmountOut.sub(slippageAmount),
+    minAmountOut: applySlippage(
+      query.minAmountOut,
+      slipNumerator,
+      slipDenominator
+    ),
   }
+}
+
+export const applySlippage = (
+  amount: BigNumber,
+  slipNumerator: number,
+  slipDenominator: number
+): BigNumber => {
+  return amount.sub(amount.mul(slipNumerator).div(slipDenominator))
 }
 
 /**
@@ -158,7 +167,10 @@ export const applySlippageToQuery = (
  * @param amount - The amount of token to bridge.
  * @returns The Query object for a no-swap bridge action.
  */
-export const createNoSwapQuery = (token: string, amount: BigNumber): Query => {
+export const createNoSwapQuery = (
+  token: string,
+  amount: BigNumber
+): CCTPRouterQuery => {
   return {
     routerAdapter: AddressZero,
     tokenOut: token,

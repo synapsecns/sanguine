@@ -2,6 +2,8 @@ import { Log, Provider } from '@ethersproject/abstract-provider'
 import { Contract } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
 
+import { isSameAddress } from './addressUtils'
+
 /**
  * Extracts the first log from a transaction receipt that matches
  * the provided contract and any of the provided event names.
@@ -26,7 +28,10 @@ export const getMatchingTxLog = async (
   const topics = getEventTopics(contract.interface, eventNames)
   // Find the log with the correct contract address and topic matching any of the provided topics
   const matchingLog = txReceipt.logs.find((log) => {
-    return log.address === contract.address && topics.includes(log.topics[0])
+    return (
+      isSameAddress(log.address, contract.address) &&
+      topics.includes(log.topics[0])
+    )
   })
   if (!matchingLog) {
     // Throw an error and include the event names in the message

@@ -10,6 +10,7 @@ import {
   Query,
   applyDeadlineToQuery,
 } from '../module'
+import { logger } from '../utils/logger'
 
 /**
  * Creates a populated bridge transaction ready for signing and submission to the origin chain.
@@ -169,6 +170,10 @@ export async function allBridgeQuotes(
         amountIn,
         options.originUserAddress
       )
+      logger.info(
+        { routes },
+        `Found ${routes.length} routes for ${moduleSet.bridgeModuleName}`
+      )
       // Filter out routes with zero minAmountOut and finalize the rest
       return Promise.all(
         routes
@@ -214,7 +219,7 @@ export function applyBridgeDeadline(
 
 /**
  * Applies slippage to the given bridge queries, according to bridge module's slippage tolerance.
- * Note: default slippage is 10 bips (0.1%).
+ * Note: default slippage is 100 bips (1%) for SynapseIntents and 10 bips (0.1%) for all other modules.
  *
  * @param bridgeModuleName - The name of the bridge module.
  * @param originQueryInitial - The query for the origin chain, coming from `allBridgeQuotes()`.
@@ -228,8 +233,8 @@ export function applyBridgeSlippage(
   bridgeModuleName: string,
   originQueryInitial: Query,
   destQueryInitial: Query,
-  slipNumerator: number = 10,
-  slipDenominator: number = 10000
+  slipNumerator?: number,
+  slipDenominator?: number
 ): { originQuery: Query; destQuery: Query } {
   const moduleSet = getModuleSet.call(this, bridgeModuleName)
   return moduleSet.applySlippage(
