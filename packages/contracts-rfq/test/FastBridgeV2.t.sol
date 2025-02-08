@@ -13,6 +13,7 @@ import {IAdminV2Errors} from "../contracts/interfaces/IAdminV2Errors.sol";
 import {IFastBridgeV2Errors} from "../contracts/interfaces/IFastBridgeV2Errors.sol";
 
 import {MockERC20} from "./mocks/MockERC20.sol";
+import {WeirdERC20Mock} from "./mocks/WeirdERC20Mock.sol";
 
 import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
 import {Test} from "forge-std/Test.sol";
@@ -30,6 +31,7 @@ abstract contract FastBridgeV2Test is Test, IAdminV2Errors, IFastBridgeV2Errors 
     FastBridgeV2 public fastBridge;
     MockERC20 public srcToken;
     MockERC20 public dstToken;
+    WeirdERC20Mock public weirdToken;
 
     address public relayerA = makeAddr("Relayer A");
     address public relayerB = makeAddr("Relayer B");
@@ -76,6 +78,7 @@ abstract contract FastBridgeV2Test is Test, IAdminV2Errors, IFastBridgeV2Errors 
     function setUp() public virtual {
         srcToken = new MockERC20("SrcToken", 6);
         dstToken = new MockERC20("DstToken", 6);
+        weirdToken = new WeirdERC20Mock("WeirdToken", 6);
         createFixtures();
         mockRequestV1 = abi.encode(extractV1(tokenTx));
         // Invalid V2 request is formed before `createFixturesV2` to ensure it's not using zapData
@@ -84,6 +87,7 @@ abstract contract FastBridgeV2Test is Test, IAdminV2Errors, IFastBridgeV2Errors 
         // Mock V3 request is formed after `createFixturesV2` to ensure it's using zapData if needed
         mockRequestV3 = createMockRequestV3(BridgeTransactionV2Lib.encodeV2(ethTx));
         fastBridge = deployFastBridge();
+        weirdToken.setFastBridge(address(fastBridge));
         configureFastBridge();
         mintTokens();
     }
