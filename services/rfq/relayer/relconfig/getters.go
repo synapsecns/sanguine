@@ -26,6 +26,7 @@ var DefaultChainConfig = ChainConfig{
 	QuotePct:                NewFloatPtr(100),
 	QuoteFixedFeeMultiplier: NewFloatPtr(1),
 	RelayFixedFeeMultiplier: NewFloatPtr(1),
+	ChainStack:              "evm_standard",
 }
 
 // NewFloatPtr returns a pointer to a float64.
@@ -242,6 +243,20 @@ func (c Config) GetNativeToken(chainID int) (value string, err error) {
 	value, ok := rawValue.(string)
 	if !ok {
 		return value, fmt.Errorf("failed to cast NativeToken to string")
+	}
+	return value, nil
+}
+
+// GetChainStack returns the type of architecture used by this chain.
+func (c Config) GetChainStack(chainID int) (value string, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "ChainStack")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(string)
+	if !ok {
+		return value, fmt.Errorf("failed to cast ChainStack to string")
 	}
 	return value, nil
 }

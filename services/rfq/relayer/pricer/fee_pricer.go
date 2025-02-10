@@ -11,6 +11,9 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
@@ -109,7 +112,7 @@ func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination 
 	if err != nil {
 		return nil, fmt.Errorf("could not get origin gas estimate: %w", err)
 	}
-	fee, err := f.getFee(ctx, origin, destination, gasEstimate, denomToken, isQuote)
+	fee, err := f.getFee(ctx, origin, destination, gasEstimate, denomToken, isQuote, nil, true)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +120,7 @@ func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination 
 	// If specified, calculate and add the L1 fee
 	l1ChainID, l1GasEstimate, useL1Fee := f.config.GetL1FeeParams(origin, true)
 	if useL1Fee {
-		l1Fee, err := f.getFee(ctx, l1ChainID, destination, l1GasEstimate, denomToken, isQuote)
+		l1Fee, err := f.getFee(ctx, l1ChainID, destination, l1GasEstimate, denomToken, isQuote, nil, true)
 		if err != nil {
 			return nil, err
 		}
@@ -130,6 +133,7 @@ func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination 
 
 //nolint:gosec
 func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination uint32, denomToken string, isQuote bool, quoteRequest *reldb.QuoteRequest) (*big.Int, error) {
+
 	var err error
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getDestinationFee", trace.WithAttributes(
 		attribute.Int(metrics.Destination, int(destination)),
@@ -149,7 +153,7 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 		if err != nil {
 			return nil, fmt.Errorf("could not get dest gas estimate: %w", err)
 		}
-		fee, err = f.getFee(ctx, destination, destination, gasEstimate, denomToken, isQuote)
+		fee, err = f.getFee(ctx, destination, destination, gasEstimate, denomToken, isQuote, nil, true)
 		if err != nil {
 			return nil, err
 		}
@@ -164,15 +168,48 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 		}
 	}
 
-	// If specified, calculate and add the L1 fee
-	l1ChainID, l1GasEstimate, useL1Fee := f.config.GetL1FeeParams(destination, false)
-	if useL1Fee {
-		l1Fee, err := f.getFee(ctx, l1ChainID, destination, l1GasEstimate, denomToken, isQuote)
+	chainStack, err := f.config.GetChainStack(int(destination))
+	if err != nil {
+		return nil, fmt.Errorf("could not get chain stack: %w", err)
+	}
+
+	// if op stack, then we must call the OP GasOracle contract to obtain the L1 gas fee.
+	// otherwise, apply static L1 fee config values if they are set.
+	var gasEstimateL1Wei *big.Int
+	if chainStack == "evm_op_stack" && quoteRequest != nil {
+
+		var err error
+		gasEstimateL1Wei, err = f.getOpStackL1GasWeiEst(ctx, destination, quoteRequest)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not get OpStack L1 wei: %w", err)
 		}
-		fee = new(big.Int).Add(fee, l1Fee)
-		span.SetAttributes(attribute.String("l1_fee", l1Fee.String()))
+
+		// even though we recieve wei from oracle, we need to normalize this into the denomToken via getFee -- without a multiplier
+		gasEstimateL1Denom, err := f.getFee(ctx, destination, destination, 0, denomToken, isQuote, gasEstimateL1Wei, false)
+		if err != nil {
+			return nil, fmt.Errorf("could not normalize gasEstimateL1Wei: %w", err)
+		}
+
+		// Debug Zap Fee Summary
+		// l2Fee := fee
+		// fee = new(big.Int).Add(fee, gasEstimateL1Denom)
+		// if len(quoteRequest.Transaction.ZapData) > 0 {
+		// 	fmt.Printf("L2: %s %s + L1: (%s WEI, %s %s) = Total Fee: %s %s\n", l2Fee, denomToken, gasEstimateL1Wei, gasEstimateL1Denom, denomToken, fee, denomToken)
+		// }
+
+		span.SetAttributes(attribute.String("gasEstimateL1Wei", gasEstimateL1Wei.String()))
+		span.SetAttributes(attribute.String("gasEstimateL1Denom", gasEstimateL1Denom.String()))
+	} else {
+		// If specified, calculate and add the L1 fee
+		l1ChainID, l1GasEstimate, useL1Fee := f.config.GetL1FeeParams(destination, false)
+		if useL1Fee {
+			l1Fee, err := f.getFee(ctx, l1ChainID, destination, l1GasEstimate, denomToken, isQuote, nil, true)
+			if err != nil {
+				return nil, err
+			}
+			fee = new(big.Int).Add(fee, l1Fee)
+			span.SetAttributes(attribute.String("l1_fee", l1Fee.String()))
+		}
 	}
 
 	span.SetAttributes(attribute.String("destination_fee", fee.String()))
@@ -191,7 +228,8 @@ func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomTok
 		if err != nil {
 			return nil, err
 		}
-		callFee, err := f.getFee(ctx, destination, destination, int(gasEstimate), denomToken, true)
+
+		callFee, err := f.getFee(ctx, destination, destination, int(gasEstimate), denomToken, true, nil, false)
 		if err != nil {
 			return nil, err
 		}
@@ -205,12 +243,10 @@ func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomTok
 		if err != nil {
 			return nil, err
 		}
-		valueScaled, err := f.getFeeWithMultiplier(ctx, destination, true, valueDenom)
-		if err != nil {
-			return nil, err
-		}
-		fee = new(big.Int).Add(fee, valueScaled)
-		span.SetAttributes(attribute.String("value_scaled", valueScaled.String()))
+		// note: amount is intentionally not scaled with any multipliers
+		valueDenomInt, _ := valueDenom.Int(nil)
+		fee = new(big.Int).Add(fee, valueDenomInt)
+		span.SetAttributes(attribute.String("value_denom", valueDenom.String()))
 	}
 
 	return fee, nil
@@ -222,6 +258,25 @@ var fastBridgeV2ABI *abi.ABI
 const methodName = "relayV2"
 
 func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, quoteRequest *reldb.QuoteRequest) (gasEstimate uint64, err error) {
+
+	span := trace.SpanFromContext(ctx)
+	span.AddEvent("getZapGasEstimate", trace.WithAttributes(
+		attribute.String("transaction_id", hexutil.Encode(quoteRequest.TransactionID[:])),
+		attribute.Int("destination", int(destination)),
+	))
+
+	defer func() {
+		if err != nil {
+			span.AddEvent("Error in getZapGasEstimate", trace.WithAttributes(
+				attribute.String("error", err.Error()),
+			))
+		} else {
+			span.AddEvent("Completed getZapGasEstimate", trace.WithAttributes(
+				attribute.String("gasEstimateUnits", fmt.Sprint(gasEstimate)),
+			))
+		}
+	}()
+
 	client, err := f.clientFetcher.GetClient(ctx, big.NewInt(int64(destination)))
 	if err != nil {
 		return 0, fmt.Errorf("could not get client: %w", err)
@@ -262,16 +317,138 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, q
 		callMsg.Value = quoteRequest.Transaction.ZapNative
 	}
 
-	// note: this gas amount is intentionally not modified
+	// note: this gas limit is intentionally not modified/boosted beyond the estimate, since this is for anticipated pricing
 	gasEstimate, err = client.EstimateGas(ctx, callMsg)
 	if err != nil {
-
 		errMsg := ethergoUtil.FormatError(err)
-
+		span.RecordError(err)
 		return 0, fmt.Errorf("could not estimate gas: %s", errMsg)
 	}
 
 	return gasEstimate, nil
+}
+
+// This bespoke OP-Stack functionality is necessary to estimate total gas fees with any accuracy on relevant chains.
+// A typical eth_estimateGas call (performed above) will obtain the "L2" or "Execution" component of the gas fee
+// whereas *this* step will obtain the "L1" or "Storage" component of the gas fee by sending the RLP encoded tx to their Gas oracle & calling getL1Fee
+// https://docs.optimism.io/stack/smart-contracts#gaspriceoracle
+// Note that the L2 fee is denominated in gas units and must be calculated into native gas WEI via the gas price
+// but the L1 fee output from getOpStackL1GasWeiEst is already calculated in this way & denominated in native gas WEI.
+func (f *feePricer) getOpStackL1GasWeiEst(ctx context.Context, destination uint32, quoteRequest *reldb.QuoteRequest) (l1GasWei *big.Int, err error) {
+
+	if quoteRequest == nil {
+		return big.NewInt(0), nil
+	}
+
+	transactionIDStr := hexutil.Encode(quoteRequest.TransactionID[:])
+	span := trace.SpanFromContext(ctx)
+	span.AddEvent("getOpStackL1GasWeiEst", trace.WithAttributes(
+		attribute.String("transaction_id", transactionIDStr),
+		attribute.Int("destination", int(destination)),
+	))
+
+	defer func() {
+		if err != nil {
+			span.AddEvent("Error in getOpStackL1GasWeiEst", trace.WithAttributes(
+				attribute.String("error", err.Error()),
+			))
+		} else {
+			span.AddEvent("Completed getOpStackL1GasWeiEst", trace.WithAttributes(
+				attribute.String("l1GasWei", l1GasWei.String()),
+			))
+		}
+	}()
+
+	client, err := f.clientFetcher.GetClient(ctx, big.NewInt(int64(destination)))
+	if err != nil {
+		return big.NewInt(0), fmt.Errorf("could not get client: %w", err)
+	}
+
+	if fastBridgeV2ABI == nil {
+		parsedABI, err := abi.JSON(strings.NewReader(fastbridgev2.IFastBridgeV2MetaData.ABI))
+		if err != nil {
+			return big.NewInt(0), fmt.Errorf("could not parse ABI: %w", err)
+		}
+		fastBridgeV2ABI = &parsedABI
+	}
+
+	rawRequest, err := chain.EncodeBridgeTx(quoteRequest.Transaction)
+	if err != nil {
+		return big.NewInt(0), fmt.Errorf("could not encode quote data: %w", err)
+	}
+
+	encodedData, err := fastBridgeV2ABI.Pack(methodName, rawRequest, f.relayerAddress)
+	if err != nil {
+		return big.NewInt(0), fmt.Errorf("could not encode function call: %w", err)
+	}
+
+	rfqAddr, err := f.config.GetRFQAddress(int(destination))
+	if err != nil {
+		return big.NewInt(0), fmt.Errorf("could not get RFQ address: %w", err)
+	}
+
+	// value needs to match `DestAmount` for native gas token, or `ZapNative` for ERC20s.
+	var txValue *big.Int
+	if rfqUtil.IsGasToken(quoteRequest.Transaction.DestToken) {
+		txValue = quoteRequest.Transaction.DestAmount
+	} else {
+		txValue = quoteRequest.Transaction.ZapNative
+	}
+
+	// construct txn to encode
+	tx := types.NewTx(&types.DynamicFeeTx{
+		ChainID: big.NewInt(int64(destination)),
+		Nonce:   0,
+		To:      &rfqAddr,
+		Value:   txValue,
+		// gas value here is arbitrary -- for enhanced accuracy, could supply the actual expected L2/Execution gas units,
+		// but it is unlikely to alter the estimated L1 gas cost significantly
+		Gas:       300000,
+		GasFeeCap: big.NewInt(0),
+		GasTipCap: big.NewInt(0),
+		Data:      encodedData,
+	})
+
+	// RLP encode the transaction
+	var rlpEncodedTx []byte
+	rlpEncodedTx, err = rlp.EncodeToBytes(tx)
+	if err != nil {
+		return big.NewInt(0), fmt.Errorf("could not RLP encode tx: %w", err)
+	}
+
+	// fmt.Println("encodedData: ", hexutil.Encode(encodedData))
+	// fmt.Println("rlpEncodedTx: ", hexutil.Encode(rlpEncodedTx))
+
+	// getl1Fee function of Optimism Gas Oracle
+	// ex: https://optimistic.etherscan.io/address/0x420000000000000000000000000000000000000F
+	// ( identical address etc on all OP stack chains )
+	var gasOracleABIString = `[{"inputs":[{"internalType":"bytes","name":"transaction","type":"bytes"}],"name":"getL1Fee","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]`
+
+	gasOracleABI, err := abi.JSON(strings.NewReader(gasOracleABIString))
+	if err != nil {
+		return big.NewInt(0), fmt.Errorf("could not parse gasOracle ABI: %w", err)
+	}
+
+	getL1FeeCall, err := gasOracleABI.Pack("getL1Fee", rlpEncodedTx)
+	if err != nil {
+		return big.NewInt(0), fmt.Errorf("could not pack method call: %w", err)
+	}
+
+	oracleAddress := common.HexToAddress("0x420000000000000000000000000000000000000F")
+
+	oracleCallMsg := ethereum.CallMsg{
+		To:   &oracleAddress,
+		Data: getL1FeeCall,
+	}
+
+	result, err := client.CallContract(ctx, oracleCallMsg, nil)
+	if err != nil {
+		return big.NewInt(0), fmt.Errorf("could call OP stack gas oracle: %w", err)
+	}
+
+	l1Gas := new(big.Int).SetBytes(result)
+
+	return l1Gas, nil
 }
 
 func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string, isQuote bool, quoteRequest *reldb.QuoteRequest) (_ *big.Int, err error) {
@@ -309,11 +486,17 @@ func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination u
 	return totalFee, nil
 }
 
-func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint32, gasEstimate int, denomToken string, isQuote bool) (_ *big.Int, err error) {
+func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint32, gasEstimateUnits int, denomToken string, isQuote bool, gasEstimateWei *big.Int, applyFixedFeeMult bool) (_ *big.Int, err error) {
+
+	if gasEstimateWei == nil {
+		gasEstimateWei = big.NewInt(0)
+	}
+
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getFee", trace.WithAttributes(
 		attribute.Int("gas_chain", int(gasChain)),
 		attribute.Int("denom_chain", int(denomChain)),
-		attribute.Int("gas_estimate", gasEstimate),
+		attribute.Int("gasEstimateUnits", gasEstimateUnits),
+		attribute.Int("gasEstimateWei", gasEstimateUnits),
 		attribute.String("denom_token", denomToken),
 	))
 
@@ -325,16 +508,29 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 	if err != nil {
 		return nil, err
 	}
-	feeWei := new(big.Float).Mul(new(big.Float).SetInt(gasPrice), new(big.Float).SetFloat64(float64(gasEstimate)))
+	feeWei := new(big.Float).Mul(new(big.Float).SetInt(gasPrice), new(big.Float).SetFloat64(float64(gasEstimateUnits)))
+
+	// if gasEstimateWei was provided, these are "pre-calculated" from gas units & do not require price multiplier.
+	// add them onto any wei from gasUnits that were calculated above.
+	// note: This was built for gas est functions whose output is already in Wei - rather than units - such as OP Stack gas oracle
+	feeWei = new(big.Float).Add(feeWei, new(big.Float).SetInt(gasEstimateWei))
 
 	feeDenom, err := f.getDenomFee(ctx, gasChain, denomChain, denomToken, feeWei)
 	if err != nil {
 		return nil, err
 	}
 
-	feeScaled, err := f.getFeeWithMultiplier(ctx, gasChain, isQuote, feeDenom)
-	if err != nil {
-		return nil, err
+	// conditionally apply Fixed-Fee multiplier.
+	// Non-Fixed fees (eg: sims / oracle calls) are typically accurate as-is, will not benefit from multiplier, & thus dont apply it.
+	feeScaled := new(big.Int)
+	if applyFixedFeeMult {
+		var err error
+		feeScaled, err = f.getFeeWithMultiplier(ctx, gasChain, isQuote, feeDenom)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		feeScaled, _ = feeDenom.Int(nil)
 	}
 
 	span.SetAttributes(

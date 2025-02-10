@@ -20,6 +20,7 @@ func TestChainGetters(t *testing.T) {
 	cfgWithBase := relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
+				ChainStack:              "evm_standard",
 				RFQAddress:              "0x123",
 				Confirmations:           1,
 				NativeToken:             "MATIC",
@@ -48,6 +49,7 @@ func TestChainGetters(t *testing.T) {
 			},
 		},
 		BaseChainConfig: relconfig.ChainConfig{
+			ChainStack:              "evm_standard",
 			RFQAddress:              "0x1234",
 			Confirmations:           2,
 			NativeToken:             "ARB",
@@ -78,6 +80,7 @@ func TestChainGetters(t *testing.T) {
 	cfg := relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
+				ChainStack:              "evm_standard",
 				RFQAddress:              "0x123",
 				Confirmations:           1,
 				NativeToken:             "MATIC",
@@ -154,6 +157,20 @@ func TestChainGetters(t *testing.T) {
 		chainVal, err := cfgWithBase.GetDeadlineBuffer(chainID)
 		assert.NoError(t, err)
 		assert.Equal(t, chainVal, time.Duration(cfgWithBase.Chains[chainID].DeadlineBufferSeconds)*time.Second)
+	})
+
+	t.Run("GetChainStack", func(t *testing.T) {
+		defaultVal, err := cfg.GetChainStack(badChainID)
+		assert.NoError(t, err)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.ChainStack)
+
+		baseVal, err := cfgWithBase.GetChainStack(badChainID)
+		assert.NoError(t, err)
+		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.ChainStack)
+
+		chainVal, err := cfgWithBase.GetChainStack(chainID)
+		assert.NoError(t, err)
+		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].ChainStack)
 	})
 
 	t.Run("GetOriginGasEstimate", func(t *testing.T) {
