@@ -111,6 +111,9 @@ type ChainConfig struct {
 	RebalanceConfigs RebalanceConfigs `yaml:"rebalance_configs"`
 	// LimitConfirmations is the number of confirmations to wait for before processing a quote.
 	LimitConfirmations uint64 `yaml:"limit_confirmations"`
+	// ChainStack is the type of architecture used by this chain. Special behaviors can be applied using this flag.
+	// EG: "evm_standard" (default), "evm_op_stack", "evm_orbit"
+	ChainStack string `yaml:"chain_stack"`
 }
 
 // TokenConfig represents the configuration for a token.
