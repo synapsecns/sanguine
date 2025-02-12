@@ -90,3 +90,59 @@ export const worldchain = {
     },
   },
 }
+
+
+export const unichain = {
+  id: 130,
+  name: 'Unichain',
+  network: 'unichain',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    default: { http: ['https://mainnet.unichain.org'] },
+    public: { http: ['https://mainnet.unichain.org'] },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Uniscan',
+      url: 'https://uniscan.xyz',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 1,
+    },
+  },
+}
+
+
+export const berachain = {
+  id: 80094,
+  name: 'Berachain',
+  network: 'berachain',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Bera',
+    symbol: 'BERA',
+  },
+  rpcUrls: {
+    default: { http: ['https://rpc.berachain.com'] },
+    public: { http: ['https://rpc.berachain.com'] },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Berascan',
+      url: 'https://berascan.com',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 1,
+    },
+  },
+}
