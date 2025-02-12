@@ -31,7 +31,8 @@ func NewCoingeckoPriceFetcher(timeout time.Duration) *CoingeckoPriceFetcherImpl 
 }
 
 var coingeckoIDLookup = map[string]string{
-	"ETH": "ethereum",
+	"ETH":  "ethereum",
+	"BERA": "berachain-bera",
 }
 
 // GetPrice fetches the price of a token from coingecko.
