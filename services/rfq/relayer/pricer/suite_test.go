@@ -73,6 +73,11 @@ func (c *PricerSuite) SetupTest() {
 						PriceUSD: 1,
 						Decimals: 6,
 					},
+					"MATIC": {
+						Address:  "",
+						PriceUSD: 0.5,
+						Decimals: 18,
+					},
 					"ETH": {
 						Address:  "",
 						PriceUSD: 2000,
