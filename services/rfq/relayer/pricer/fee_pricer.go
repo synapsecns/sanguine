@@ -297,15 +297,29 @@ func (f *feePricer) GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, 
 
 // getTokenPrice returns the price of a token in USD.
 func (f *feePricer) GetTokenPrice(ctx context.Context, token string) (price float64, err error) {
+	ctx, span := f.handler.Tracer().Start(ctx, "GetTokenPrice", trace.WithAttributes(
+		attribute.String("token", token),
+	))
+
+	defer func() {
+		span.SetAttributes(attribute.Float64("price", price))
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	// Attempt to fetch gas price from cache.
 	tokenPriceItem := f.tokenPriceCache.Get(token)
 	//nolint:nestif
 	if tokenPriceItem == nil {
 		// Try to get price from coingecko.
 		price, err = f.priceFetcher.GetPrice(ctx, token)
+
 		if err == nil {
 			f.tokenPriceCache.Set(token, price, 0)
+			span.SetAttributes(attribute.Float64("cg_price", price))
 		} else {
+			span.SetAttributes(
+				attribute.String("cg_error", err.Error()),
+			)
 			// Fallback to configured token price.
 			price, err = f.getTokenPriceFromConfig(token)
 			if err != nil {
@@ -314,6 +328,7 @@ func (f *feePricer) GetTokenPrice(ctx context.Context, token string) (price floa
 		}
 	} else {
 		price = tokenPriceItem.Value()
+		span.SetAttributes(attribute.Float64("cache_price", price))
 	}
 	return price, nil
 }

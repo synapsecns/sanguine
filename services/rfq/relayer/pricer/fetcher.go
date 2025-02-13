@@ -7,6 +7,11 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/instrumentation/httpcapture"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // CoingeckoPriceFetcher is an interface for fetching prices from coingecko.
@@ -18,15 +23,21 @@ type CoingeckoPriceFetcher interface {
 
 // CoingeckoPriceFetcherImpl is an implementation of CoingeckoPriceFetcher.
 type CoingeckoPriceFetcherImpl struct {
-	client *http.Client
+	handler metrics.Handler
+	client  *http.Client
 }
 
 // NewCoingeckoPriceFetcher creates a new instance of CoingeckoPriceFetcherImpl.
-func NewCoingeckoPriceFetcher(timeout time.Duration) *CoingeckoPriceFetcherImpl {
+func NewCoingeckoPriceFetcher(handler metrics.Handler, timeout time.Duration) *CoingeckoPriceFetcherImpl {
+	client := &http.Client{
+		Timeout: timeout,
+	}
+	handler.ConfigureHTTPClient(client)
+	client.Transport = httpcapture.NewCaptureTransport(client.Transport, handler)
+
 	return &CoingeckoPriceFetcherImpl{
-		client: &http.Client{
-			Timeout: timeout,
-		},
+		handler: handler,
+		client:  client,
 	}
 }
 
@@ -37,6 +48,15 @@ var coingeckoIDLookup = map[string]string{
 
 // GetPrice fetches the price of a token from coingecko.
 func (c *CoingeckoPriceFetcherImpl) GetPrice(ctx context.Context, token string) (price float64, err error) {
+	ctx, span := c.handler.Tracer().Start(ctx, "GetPrice", trace.WithAttributes(
+		attribute.String("token", token),
+	))
+
+	defer func() {
+		span.SetAttributes(attribute.Float64("price", price))
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	coingeckoID, ok := coingeckoIDLookup[token]
 	if !ok {
 		return price, fmt.Errorf("could not get coingecko id for token: %s", token)
