@@ -131,6 +131,8 @@ type GetDailyStatisticsByChain struct {
 		Scroll     *float64 "json:\"scroll\" graphql:\"scroll\""
 		Linea      *float64 "json:\"linea\" graphql:\"linea\""
 		Worldchain *float64 "json:\"worldchain\" graphql:\"worldchain\""
+		Unichain   *float64 "json:\"unichain\" graphql:\"unichain\""
+		Berachain  *float64 "json:\"berachain\" graphql:\"berachain\""
 		Total      *float64 "json:\"total\" graphql:\"total\""
 	} "json:\"response\" graphql:\"response\""
 }
@@ -508,6 +510,8 @@ const GetDailyStatisticsByChainDocument = `query GetDailyStatisticsByChain ($cha
 		scroll
 		linea
 		worldchain
+		unichain
+		berachain
 		total
 	}
 }
