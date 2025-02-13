@@ -14,7 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 )
 
-var defaultPrices = map[string]float64{"ETH": 2000., "USDC": 1., "MATIC": 0.5}
+var defaultPrices = map[string]float64{"ETH": 2000., "USDC": 1., "MATIC": 0.5, "BNB": 600, "BTC": 95000}
 
 func getPriceFetcher(prices map[string]float64) *priceMocks.CoingeckoPriceFetcher {
 	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
@@ -147,6 +147,131 @@ func (s *PricerSuite) TestGetDestinationFee() {
 	// Ensure that the fee has been cached.
 	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(nil, fmt.Errorf("could not fetch header"))
 	fee, err = feePricer.GetDestinationFee(s.GetTestContext(), s.origin, s.destination, "USDC", true)
+	s.NoError(err)
+	s.Equal(expectedFee, fee)
+}
+
+func (s *PricerSuite) TestGetDestinationFeeUSDC() {
+	// Build a new FeePricer with a mocked client for fetching gas price.
+	clientFetcher := new(fetcherMocks.ClientFetcher)
+	client := new(clientMocks.EVM)
+	currentHeader := big.NewInt(500_000_000_000) // 500 gwei produces a ~25 cent destination fee on our spoofed dest chain of Polygon
+	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(currentHeader, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
+	priceFetcher := getPriceFetcher(nil)
+	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler())
+	go func() { feePricer.Start(s.GetTestContext()) }()
+
+	// Calculate the destination fee.
+	fee, err := feePricer.GetDestinationFee(s.GetTestContext(), s.origin, s.destination, "USDC", true)
+	s.NoError(err)
+
+	expectedFee := big.NewInt(0.25 * 1e6) // USDC price = $1.00   .. expected cost = 0.25 USDC units =  0.25 usd
+	s.Equal(expectedFee, fee)
+
+	// Ensure that the fee has been cached.
+	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(nil, fmt.Errorf("could not fetch header"))
+	fee, err = feePricer.GetDestinationFee(s.GetTestContext(), s.origin, s.destination, "USDC", true)
+	s.NoError(err)
+	s.Equal(expectedFee, fee)
+}
+
+func (s *PricerSuite) TestGetDestinationFeeMATIC() {
+	// Build a new FeePricer with a mocked client for fetching gas price.
+	clientFetcher := new(fetcherMocks.ClientFetcher)
+	client := new(clientMocks.EVM)
+	currentHeader := big.NewInt(500_000_000_000) // 500 gwei produces a ~25 cent destination fee on our spoofed dest chain of Polygon
+	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(currentHeader, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
+	priceFetcher := getPriceFetcher(nil)
+	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler())
+	go func() { feePricer.Start(s.GetTestContext()) }()
+
+	// Calculate the destination fee.
+	fee, err := feePricer.GetDestinationFee(s.GetTestContext(), s.origin, s.destination, "MATIC", true)
+	s.NoError(err)
+
+	expectedFee := big.NewInt(0.5 * 1e18) // spoofed MATIC price = $0.5   .. expected cost = 0.5 MATIC units =  0.25 usd
+	s.Equal(expectedFee, fee)
+
+	// Ensure that the fee has been cached.
+	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(nil, fmt.Errorf("could not fetch header"))
+	fee, err = feePricer.GetDestinationFee(s.GetTestContext(), s.origin, s.destination, "MATIC", true)
+	s.NoError(err)
+	s.Equal(expectedFee, fee)
+}
+
+func (s *PricerSuite) TestGetDestinationFeeETH() {
+	// Build a new FeePricer with a mocked client for fetching gas price.
+	clientFetcher := new(fetcherMocks.ClientFetcher)
+	client := new(clientMocks.EVM)
+	currentHeader := big.NewInt(500_000_000_000) // 500 gwei produces a ~25 cent destination fee on our spoofed dest chain of Polygon
+	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(currentHeader, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
+	priceFetcher := getPriceFetcher(nil)
+	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler())
+	go func() { feePricer.Start(s.GetTestContext()) }()
+
+	// Calculate the destination fee.
+	fee, err := feePricer.GetDestinationFee(s.GetTestContext(), s.origin, s.destination, "ETH", true)
+	s.NoError(err)
+
+	expectedFee := big.NewInt(124999999999999) // spoofed ETH price = $2000   .. expected cost = 0.0001249~~ ETH units =  0.25 usd
+	s.Equal(expectedFee, fee)
+
+	// Ensure that the fee has been cached.
+	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(nil, fmt.Errorf("could not fetch header"))
+	fee, err = feePricer.GetDestinationFee(s.GetTestContext(), s.origin, s.destination, "ETH", true)
+	s.NoError(err)
+	s.Equal(expectedFee, fee)
+}
+
+func (s *PricerSuite) TestGetDestinationFeeBNB() {
+	// Build a new FeePricer with a mocked client for fetching gas price.
+	clientFetcher := new(fetcherMocks.ClientFetcher)
+	client := new(clientMocks.EVM)
+	currentHeader := big.NewInt(500_000_000_000) // 500 gwei produces a ~25 cent destination fee on our spoofed dest chain of Polygon
+	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(currentHeader, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
+	priceFetcher := getPriceFetcher(nil)
+	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler())
+	go func() { feePricer.Start(s.GetTestContext()) }()
+
+	// Calculate the destination fee.
+	fee, err := feePricer.GetDestinationFee(s.GetTestContext(), s.origin, s.destination, "BNB", true)
+	s.NoError(err)
+
+	expectedFee := big.NewInt(416666666666666) // spoofed BNB price = $600   .. expected cost = 0.00041666~~ BNB units =  0.25 usd
+	s.Equal(expectedFee, fee)
+
+	// Ensure that the fee has been cached.
+	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(nil, fmt.Errorf("could not fetch header"))
+	fee, err = feePricer.GetDestinationFee(s.GetTestContext(), s.origin, s.destination, "BNB", true)
+	s.NoError(err)
+	s.Equal(expectedFee, fee)
+}
+
+func (s *PricerSuite) TestGetDestinationFeeBTC() {
+	// Build a new FeePricer with a mocked client for fetching gas price.
+	clientFetcher := new(fetcherMocks.ClientFetcher)
+	client := new(clientMocks.EVM)
+	currentHeader := big.NewInt(500_000_000_000) // 500 gwei produces a ~25 cent destination fee on our spoofed dest chain of Polygon
+	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(currentHeader, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
+	priceFetcher := getPriceFetcher(nil)
+	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler())
+	go func() { feePricer.Start(s.GetTestContext()) }()
+
+	// Calculate the destination fee.
+	fee, err := feePricer.GetDestinationFee(s.GetTestContext(), s.origin, s.destination, "BTC", true)
+	s.NoError(err)
+
+	expectedFee := big.NewInt(263) // spoofed BTC price = $95,000   .. expected cost = 0.00000263 BTC units =  0.25 usd
+	s.Equal(expectedFee, fee)
+
+	// Ensure that the fee has been cached.
+	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(nil, fmt.Errorf("could not fetch header"))
+	fee, err = feePricer.GetDestinationFee(s.GetTestContext(), s.origin, s.destination, "BTC", true)
 	s.NoError(err)
 	s.Equal(expectedFee, fee)
 }
