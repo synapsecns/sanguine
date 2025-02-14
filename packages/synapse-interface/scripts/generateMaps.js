@@ -43,7 +43,7 @@ const allowedChainIdsForSynapseCCTPRouter = [1, 10, 137, 8453, 42161, 43114]
 
 // Chain IDs where RFQ is allowed
 const allowedChainIdsForRfq = [
-  1, 10, 56, 480, 8453, 42161, 59144, 81457, 534352,
+  1, 10, 56, 130, 480, 8453, 42161, 59144, 80094, 81457, 534352,
 ]
 
 // Get SynapseRouter contract instances for each chain
