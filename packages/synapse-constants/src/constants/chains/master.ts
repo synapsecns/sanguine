@@ -541,8 +541,7 @@ export const BERACHAIN: Chain = {
     'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/berachain.549943e0.svg',
   layer: 1,
   rpcUrls: {
-    primary:
-      'https://berachain-mainnet.g.alchemy.com/v2/HZ0zXJXi91qTagNP24CLIHgo6VkZ7L7n',
+    primary: 'https://berachain.blockpi.network/v1/rpc/public',
     fallback: 'https://rpc.berachain.com',
   },
   explorerUrl: 'https://berascan.com',
@@ -551,6 +550,7 @@ export const BERACHAIN: Chain = {
     'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/berachain.549943e0.svg',
   blockTime: 3000,
   nativeCurrency: { name: 'Berachain', symbol: 'BERA', decimals: 18 },
+  color: 'brown',
 }
 
 export const UNICHAIN: Chain = {
@@ -563,8 +563,7 @@ export const UNICHAIN: Chain = {
     'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/unichain.549943e0.svg',
   layer: 2,
   rpcUrls: {
-    primary:
-      'https://unichain-mainnet.g.alchemy.com/v2/XxF21ZshhEst0phSQwyiRozKTYSxG9J7',
+    primary: 'https://unichain-rpc.publicnode.com',
     fallback: 'https://rpc.unichain.io',
   },
   explorerUrl: 'https://uniscan.xyz',
@@ -573,4 +572,5 @@ export const UNICHAIN: Chain = {
     'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/unichain.549943e0.svg',
   blockTime: 3000,
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
+  color: 'pink',
 }

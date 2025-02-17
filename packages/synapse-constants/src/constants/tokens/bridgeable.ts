@@ -390,6 +390,7 @@ export const USDC = new Token({
     [CHAINS.POLYGON.id]: 6,
     [CHAINS.SCROLL.id]: 6,
     [CHAINS.LINEA.id]: 6,
+    [CHAINS.UNICHAIN.id]: 6,
   },
   swapExceptions: {
     [CHAINS.KLAYTN.id]: [CHAINS.ETH.id, CHAINS.DOGE.id],
