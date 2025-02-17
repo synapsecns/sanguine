@@ -91,7 +91,6 @@ export const worldchain = {
   },
 }
 
-
 export const unichain = {
   id: 130,
   name: 'Unichain',
@@ -118,7 +117,6 @@ export const unichain = {
     },
   },
 }
-
 
 export const berachain = {
   id: 80094,
