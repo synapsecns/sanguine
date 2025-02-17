@@ -469,6 +469,8 @@ const getTokenDecimals = async (chainId, token) => {
 const getRFQSymbol = (symbol) => {
   if (symbol === 'USDC.e') {
     return 'RFQ.USDC'
+  } else if (symbol === 'WETH') {
+    return 'RFQ.ETH'
   } else {
     return `RFQ.${symbol}`
   }

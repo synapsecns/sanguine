@@ -1908,8 +1908,8 @@ export const BRIDGE_MAP = {
     '0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590': {
       decimals: 18,
       symbol: 'WETH',
-      origin: ['RFQ.WETH'],
-      destination: ['RFQ.WETH'],
+      origin: ['RFQ.ETH'],
+      destination: ['RFQ.ETH'],
       swappable: [],
     },
     '0x549943e04f40284185054145c6E4e9568C1D3241': {
