@@ -34,7 +34,7 @@ const UNSUPPORTED_BRIDGE_CHAIN_IDS: number[] = [
   SupportedChainId.SCROLL,
   SupportedChainId.WORLDCHAIN,
   SupportedChainId.UNICHAIN,
-  SupportedChainId.BERACHAIN
+  SupportedChainId.BERACHAIN,
 ]
 
 /**
@@ -81,7 +81,7 @@ export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.BLAST,
   SupportedChainId.SCROLL,
   SupportedChainId.UNICHAIN,
-  SupportedChainId.BERACHAIN
+  SupportedChainId.BERACHAIN,
 ].filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
 
 /**
