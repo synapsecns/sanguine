@@ -171,6 +171,7 @@ export const networkDetails = {
     FastBridgeV2: {
       address: configByChainId[unichainChainId].FastBridgeV2Address,
       abi: FastBridgeV2Abi,
+      startBlock: configByChainId[unichainChainId].FastBridgeV2StartBlock,
     },
   },
   [berachainChainId]: {
@@ -178,6 +179,7 @@ export const networkDetails = {
     FastBridgeV2: {
       address: configByChainId[berachainChainId].FastBridgeV2Address,
       abi: FastBridgeV2Abi,
+      startBlock: configByChainId[berachainChainId].FastBridgeV2StartBlock,
     },
   },
 } as Record<number, AddressConfig>
