@@ -1557,7 +1557,7 @@ export const BRIDGE_MAP = {
     },
     '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9': {
       decimals: 6,
-      symbol: 'USD₮0',
+      symbol: 'USDT',
       origin: ['CCTP.USDC', 'RFQ.USDC', 'nUSD'],
       destination: ['CCTP.USDC', 'nUSD'],
       swappable: [

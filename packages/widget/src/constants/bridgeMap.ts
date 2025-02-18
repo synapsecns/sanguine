@@ -555,13 +555,6 @@ export const BRIDGE_MAP = {
         '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',
       ],
     },
-    '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
-      decimals: 18,
-      symbol: 'BNB',
-      origin: ['RFQ.BNB'],
-      destination: [],
-      swappable: [],
-    },
     '0xa4080f1778e69467E905B8d6F72f6e441f9e9484': {
       decimals: 18,
       symbol: 'SYN',
@@ -576,13 +569,6 @@ export const BRIDGE_MAP = {
       destination: ['DOG'],
       swappable: [],
     },
-    '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c': {
-      decimals: 18,
-      symbol: 'WBNB',
-      origin: ['RFQ.BNB'],
-      destination: [],
-      swappable: [],
-    },
     '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56': {
       decimals: 18,
       symbol: 'BUSD',
@@ -593,6 +579,29 @@ export const BRIDGE_MAP = {
         '0x55d398326f99059fF775485246999027B3197955',
         '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
       ],
+    },
+  },
+  '130': {
+    '0x078D782b760474a361dDA0AF3839290b0EF57AD6': {
+      decimals: 6,
+      symbol: 'USDC',
+      origin: ['RFQ.USDC'],
+      destination: ['RFQ.USDC'],
+      swappable: [],
+    },
+    '0x4200000000000000000000000000000000000006': {
+      decimals: 18,
+      symbol: 'WETH',
+      origin: ['RFQ.ETH'],
+      destination: [],
+      swappable: [],
+    },
+    '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
+      decimals: 18,
+      symbol: 'ETH',
+      origin: ['RFQ.ETH'],
+      destination: ['RFQ.ETH'],
+      swappable: [],
     },
   },
   '137': {
@@ -887,25 +896,11 @@ export const BRIDGE_MAP = {
     },
   },
   '480': {
-    '0x4200000000000000000000000000000000000006': {
-      decimals: 18,
-      symbol: 'WETH',
-      origin: ['RFQ.ETH'],
-      destination: [],
-      swappable: [],
-    },
     '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1': {
       decimals: 6,
       symbol: 'USDC.e',
       origin: ['RFQ.USDC'],
       destination: ['RFQ.USDC'],
-      swappable: [],
-    },
-    '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
-      decimals: 18,
-      symbol: 'ETH',
-      origin: ['RFQ.ETH'],
-      destination: [],
       swappable: [],
     },
   },
@@ -1885,6 +1880,22 @@ export const BRIDGE_MAP = {
       symbol: 'WETH',
       origin: ['RFQ.ETH'],
       destination: [],
+      swappable: [],
+    },
+  },
+  '80094': {
+    '0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590': {
+      decimals: 18,
+      symbol: 'WETH',
+      origin: ['RFQ.ETH'],
+      destination: ['RFQ.ETH'],
+      swappable: [],
+    },
+    '0x549943e04f40284185054145c6E4e9568C1D3241': {
+      decimals: 6,
+      symbol: 'USDC.e',
+      origin: ['RFQ.USDC'],
+      destination: ['RFQ.USDC'],
       swappable: [],
     },
   },
