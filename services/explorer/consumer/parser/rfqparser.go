@@ -135,6 +135,11 @@ func (p *RFQParser) MatureLogs(ctx context.Context, rfqEvent *model.RFQEvent, iF
 		rfqEvent.TokenDecimal = new(uint8)
 		*rfqEvent.TokenDecimal = 18
 		curCoinGeckoID = "worldcoin-wld"
+	case strings.EqualFold(tokenAddressStr, "0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590"):
+		rfqEvent.TokenSymbol = "WETH"
+		rfqEvent.TokenDecimal = new(uint8)
+		*rfqEvent.TokenDecimal = 18
+		curCoinGeckoID = "weth"
 	default:
 		rfqEvent.TokenSymbol = "USDC"
 		rfqEvent.TokenDecimal = new(uint8)
