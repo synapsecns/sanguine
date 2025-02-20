@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger'
 import {
   FastBridgeQuote,
   FastBridgeQuoteAPI,
@@ -28,7 +29,7 @@ export const getAllQuotes = async (): Promise<FastBridgeQuote[]> => {
   try {
     const response = await fetchWithTimeout(`${API_URL}/quotes`, API_TIMEOUT)
     if (!response.ok) {
-      console.error('Error fetching quotes:', response.statusText)
+      logger.error('Error fetching quotes:', response.statusText)
       return []
     }
     // The response is a list of quotes in the FastBridgeQuoteAPI format
@@ -38,13 +39,13 @@ export const getAllQuotes = async (): Promise<FastBridgeQuote[]> => {
         try {
           return unmarshallFastBridgeQuote(quote)
         } catch (error) {
-          console.error('Error unmarshalling quote:', error)
+          logger.error({ quote, error }, 'Could not unmarshall quote')
           return null
         }
       })
       .filter((quote): quote is FastBridgeQuote => quote !== null)
   } catch (error) {
-    console.error('Error fetching quotes:', error)
+    logger.error({ error }, 'Failed to fetch all quotes')
     return []
   }
 }
