@@ -1,5 +1,6 @@
 import {
   CCTP_SUPPORTED_CHAIN_IDS,
+  INTENTS_SUPPORTED_CHAIN_IDS,
   RFQ_SUPPORTED_CHAIN_IDS,
   SUPPORTED_CHAIN_IDS,
   SupportedChainId,
@@ -63,4 +64,46 @@ export const FAST_BRIDGE_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
   RFQ_SUPPORTED_CHAIN_IDS,
   FAST_BRIDGE_ROUTER_ADDRESS,
   FAST_BRIDGE_ROUTER_EXCEPTION_MAP
+)
+
+/**
+ * SynapseIntentRouter contract address for all chains except ones from SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP.
+ * TODO: this is a staging SynapseIntentRouter deployment, update to the production deployment when ready.
+ */
+const SYNAPSE_INTENT_ROUTER_ADDRESS =
+  '0x018396706193B16F8a1b20B87B2dcC840979D7EA'
+const SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP: AddressMap = {}
+export const SYNAPSE_INTENT_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
+  INTENTS_SUPPORTED_CHAIN_IDS,
+  SYNAPSE_INTENT_ROUTER_ADDRESS,
+  SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP
+)
+
+/**
+ * SynapseIntentPreviewer contract address for all chains except ones from SYNAPSE_INTENT_PREVIEWER_EXCEPTION_MAP.
+ * TODO: this is a staging SynapseIntentPreviewer deployment, update to the production deployment when ready.
+ */
+const SYNAPSE_INTENT_PREVIEWER_ADDRESS =
+  '0xc542Df6aA3813b49EE8A5A07f82eA0EaAa006bFa'
+const SYNAPSE_INTENT_PREVIEWER_EXCEPTION_MAP: AddressMap = {}
+export const SYNAPSE_INTENT_PREVIEWER_ADDRESS_MAP: AddressMap =
+  generateAddressMap(
+    INTENTS_SUPPORTED_CHAIN_IDS,
+    SYNAPSE_INTENT_PREVIEWER_ADDRESS,
+    SYNAPSE_INTENT_PREVIEWER_EXCEPTION_MAP
+  )
+
+/**
+ * SwapQuoterV2 contract address on Ethereum. Addresses for other chains are defined in the
+ * SWAP_QUOTER_V2_EXCEPTION_MAP.
+ */
+const SWAP_QUOTER_V2_ADDRESS = '0x5682dC851C33adb48F6958a963A5d3Aa31F6f184'
+const SWAP_QUOTER_V2_EXCEPTION_MAP: AddressMap = {
+  [SupportedChainId.ARBITRUM]: '0xE402cC7826dD835FCe5E3cFb61D56703fEbc2642',
+  [SupportedChainId.OPTIMISM]: '0xd6Bdb96b356F4F51bf491297DF03F25DCd0cBf6D',
+}
+export const SWAP_QUOTER_V2_ADDRESS_MAP: AddressMap = generateAddressMap(
+  INTENTS_SUPPORTED_CHAIN_IDS,
+  SWAP_QUOTER_V2_ADDRESS,
+  SWAP_QUOTER_V2_EXCEPTION_MAP
 )

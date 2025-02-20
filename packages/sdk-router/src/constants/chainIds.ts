@@ -92,6 +92,15 @@ export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
 ].filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
 
 /**
+ * List of chain ids where SynapseIntentRouter is deployed, ordered by chain id.
+ * Note: this is currently serving as an entry point for FastBridgeV2, but will support other modules in the future.
+ */
+export const INTENTS_SUPPORTED_CHAIN_IDS: number[] = [
+  SupportedChainId.OPTIMISM,
+  SupportedChainId.ARBITRUM,
+].filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
+
+/**
  * List of chain ids where hydrating on constructor is supported , ordered by monke
  *
  * Note: This is a subset of SUPPORTED_CHAIN_IDS.
