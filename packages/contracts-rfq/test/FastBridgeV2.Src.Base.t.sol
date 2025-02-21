@@ -53,6 +53,10 @@ abstract contract FastBridgeV2SrcBaseTest is FastBridgeV2Test {
         srcToken.approve(address(fastBridge), type(uint256).max);
         vm.prank(userB);
         srcToken.approve(address(fastBridge), type(uint256).max);
+        // Weird token
+        weirdToken.mint(address(userA), LEFTOVER_BALANCE + tokenParams.originAmount);
+        vm.prank(userA);
+        weirdToken.approve(address(fastBridge), type(uint256).max);
     }
 
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════

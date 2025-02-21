@@ -157,6 +157,8 @@ query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $durat
     scroll
     linea
     worldchain
+    unichain
+    berachain
     total
   }
 }

@@ -9,6 +9,8 @@ import {
   bsc,
   blast,
   worldchain,
+  unichain,
+  berachain,
 } from 'viem/chains'
 
 import { FastBridgeV2Abi } from './abis/FastBridgeV2'
@@ -123,6 +125,28 @@ export const networkConfig: NetworkConfig = {
     },
     client: createPublicClient({
       chain: worldchain,
+      transport: http(),
+    }),
+  },
+  130: {
+    name: 'Unichain',
+    FastBridgeV2: {
+      address: '0x63c3211257CcE0c12c7c7A6DBb75960fEaBF45Be',
+      abi: FastBridgeV2Abi,
+    },
+    client: createPublicClient({
+      chain: unichain,
+      transport: http(),
+    }),
+  },
+  80094: {
+    name: 'Berachain',
+    FastBridgeV2: {
+      address: '0x63c3211257CcE0c12c7c7A6DBb75960fEaBF45Be',
+      abi: FastBridgeV2Abi,
+    },
+    client: createPublicClient({
+      chain: berachain,
       transport: http(),
     }),
   },

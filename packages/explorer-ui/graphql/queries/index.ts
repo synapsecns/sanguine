@@ -212,6 +212,8 @@ export const DAILY_STATISTICS_BY_CHAIN = gql`
       scroll
       linea
       worldchain
+      unichain
+      berachain
       total
     }
   }

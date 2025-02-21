@@ -106,6 +106,7 @@ type ComplexityRoot struct {
 		Aurora     func(childComplexity int) int
 		Avalanche  func(childComplexity int) int
 		Base       func(childComplexity int) int
+		Berachain  func(childComplexity int) int
 		Blast      func(childComplexity int) int
 		Boba       func(childComplexity int) int
 		Bsc        func(childComplexity int) int
@@ -126,6 +127,7 @@ type ComplexityRoot struct {
 		Polygon    func(childComplexity int) int
 		Scroll     func(childComplexity int) int
 		Total      func(childComplexity int) int
+		Unichain   func(childComplexity int) int
 		Worldchain func(childComplexity int) int
 	}
 
@@ -537,6 +539,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.DateResultByChain.Base(childComplexity), true
 
+	case "DateResultByChain.berachain":
+		if e.complexity.DateResultByChain.Berachain == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Berachain(childComplexity), true
+
 	case "DateResultByChain.blast":
 		if e.complexity.DateResultByChain.Blast == nil {
 			break
@@ -676,6 +685,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DateResultByChain.Total(childComplexity), true
+
+	case "DateResultByChain.unichain":
+		if e.complexity.DateResultByChain.Unichain == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Unichain(childComplexity), true
 
 	case "DateResultByChain.worldchain":
 		if e.complexity.DateResultByChain.Worldchain == nil {
@@ -1691,6 +1707,8 @@ type DateResultByChain {
   scroll: Float
   linea: Float
   worldchain: Float
+  unichain: Float
+  berachain: Float
   total:  Float
 }
 
@@ -4982,6 +5000,88 @@ func (ec *executionContext) fieldContext_DateResultByChain_worldchain(ctx contex
 	return fc, nil
 }
 
+func (ec *executionContext) _DateResultByChain_unichain(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_unichain(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Unichain, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_unichain(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateResultByChain_berachain(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_berachain(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Berachain, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_berachain(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _DateResultByChain_total(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_DateResultByChain_total(ctx, field)
 	if err != nil {
@@ -7344,6 +7444,10 @@ func (ec *executionContext) fieldContext_Query_dailyStatisticsByChain(ctx contex
 				return ec.fieldContext_DateResultByChain_linea(ctx, field)
 			case "worldchain":
 				return ec.fieldContext_DateResultByChain_worldchain(ctx, field)
+			case "unichain":
+				return ec.fieldContext_DateResultByChain_unichain(ctx, field)
+			case "berachain":
+				return ec.fieldContext_DateResultByChain_berachain(ctx, field)
 			case "total":
 				return ec.fieldContext_DateResultByChain_total(ctx, field)
 			}
@@ -10598,6 +10702,10 @@ func (ec *executionContext) _DateResultByChain(ctx context.Context, sel ast.Sele
 			out.Values[i] = ec._DateResultByChain_linea(ctx, field, obj)
 		case "worldchain":
 			out.Values[i] = ec._DateResultByChain_worldchain(ctx, field, obj)
+		case "unichain":
+			out.Values[i] = ec._DateResultByChain_unichain(ctx, field, obj)
+		case "berachain":
+			out.Values[i] = ec._DateResultByChain_berachain(ctx, field, obj)
 		case "total":
 			out.Values[i] = ec._DateResultByChain_total(ctx, field, obj)
 		default:

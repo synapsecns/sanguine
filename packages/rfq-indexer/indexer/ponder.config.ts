@@ -14,6 +14,8 @@ const scrollChainId = 534352
 const lineaChainId = 59144
 const bnbChainId = 56
 const worldchainChainId = 480
+const unichainChainId = 130
+const berachainChainId = 80094
 
 const configByChainId = {
   [1]: {
@@ -75,6 +77,18 @@ const configByChainId = {
     chainName: 'worldchain',
     FastBridgeV2Address: '0x05C62156C7C47E76223A560210EA648De5e6B53B',
     FastBridgeV2StartBlock: 4598830, // first block and new block
+  },
+  [130]: {
+    transport: http(process.env.UNICHAIN_MAINNET_RPC),
+    chainName: 'unichain',
+    FastBridgeV2Address: '0x63c3211257CcE0c12c7c7A6DBb75960fEaBF45Be',
+    FastBridgeV2StartBlock: 8435535, // first block and new block
+  },
+  [80094]: {
+    transport: http(process.env.BERACHAIN_MAINNET_RPC),
+    chainName: 'berachain',
+    FastBridgeV2Address: '0x63c3211257CcE0c12c7c7A6DBb75960fEaBF45Be',
+    FastBridgeV2StartBlock: 953594, // first block and new block
   },
   disableCache: true,
 }
@@ -152,6 +166,22 @@ export const networkDetails = {
       startBlock: configByChainId[worldchainChainId].FastBridgeV2StartBlock,
     },
   },
+  [unichainChainId]: {
+    name: configByChainId[unichainChainId].chainName,
+    FastBridgeV2: {
+      address: configByChainId[unichainChainId].FastBridgeV2Address,
+      abi: FastBridgeV2Abi,
+      startBlock: configByChainId[unichainChainId].FastBridgeV2StartBlock,
+    },
+  },
+  [berachainChainId]: {
+    name: configByChainId[berachainChainId].chainName,
+    FastBridgeV2: {
+      address: configByChainId[berachainChainId].FastBridgeV2Address,
+      abi: FastBridgeV2Abi,
+      startBlock: configByChainId[berachainChainId].FastBridgeV2StartBlock,
+    },
+  },
 } as Record<number, AddressConfig>
 
 const config = createConfig({
@@ -201,6 +231,16 @@ const config = createConfig({
       transport: configByChainId[worldchainChainId].transport,
       //   disableCache: configByChainId.disableCache,
     },
+    [configByChainId[unichainChainId].chainName]: {
+      chainId: unichainChainId,
+      transport: configByChainId[unichainChainId].transport,
+      //   disableCache: configByChainId.disableCache,
+    },
+    [configByChainId[berachainChainId].chainName]: {
+      chainId: berachainChainId,
+      transport: configByChainId[berachainChainId].transport,
+      //   disableCache: configByChainId.disableCache,
+    },
   },
   contracts: {
     FastBridgeV2: {
@@ -241,6 +281,14 @@ const config = createConfig({
           address: networkDetails[worldchainChainId]?.FastBridgeV2.address,
           startBlock:
             networkDetails[worldchainChainId]?.FastBridgeV2.startBlock,
+        },
+        [configByChainId[unichainChainId].chainName]: {
+          address: networkDetails[unichainChainId]?.FastBridgeV2.address,
+          startBlock: networkDetails[unichainChainId]?.FastBridgeV2.startBlock,
+        },
+        [configByChainId[berachainChainId].chainName]: {
+          address: networkDetails[berachainChainId]?.FastBridgeV2.address,
+          startBlock: networkDetails[berachainChainId]?.FastBridgeV2.startBlock,
         },
       },
       abi: FastBridgeV2Abi,
