@@ -9,8 +9,9 @@ import {
   SynapseModule,
   SynapseModuleSet,
 } from '../module'
-import { GasZipModule } from './gasZipModule'
 import { ChainProvider } from '../router'
+import { getChainIds } from './api'
+import { GasZipModule } from './gasZipModule'
 
 // TODO: figure out if accurate
 const MEDIAN_TIME_GAS_ZIP = 30
@@ -26,12 +27,14 @@ export class GasZipModuleSet extends SynapseModuleSet {
     [chainId: number]: Provider
   }
 
+  private cachedChainIds: number[]
+
   constructor(chains: ChainProvider[]) {
     super()
     this.modules = {}
     this.providers = {}
+    this.cachedChainIds = []
     chains.forEach(({ chainId, provider }) => {
-      // TODO: check if Gas.Zip supports this chain
       this.modules[chainId] = new GasZipModule(chainId, provider)
       this.providers[chainId] = provider
     })
@@ -69,6 +72,14 @@ export class GasZipModuleSet extends SynapseModuleSet {
     amountIn: BigintIsh,
     originUserAddress?: string
   ): Promise<BridgeRoute[]> {
+    // Check that both chains are supported by gas.zip
+    const supportedChainIds = await this.getChainIds()
+    if (
+      !supportedChainIds.includes(originChainId) ||
+      !supportedChainIds.includes(destChainId)
+    ) {
+      return []
+    }
     // TODO: implement
   }
 
@@ -118,5 +129,12 @@ export class GasZipModuleSet extends SynapseModuleSet {
       originQuery: originQueryPrecise,
       destQuery: destQueryPrecise,
     }
+  }
+
+  private async getChainIds(): Promise<number[]> {
+    if (this.cachedChainIds.length === 0) {
+      this.cachedChainIds = await getChainIds()
+    }
+    return this.cachedChainIds
   }
 }
