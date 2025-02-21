@@ -20,7 +20,7 @@ import { BigintIsh } from '../constants'
 const MEDIAN_TIME_GAS_ZIP = 30
 
 export class GasZipModuleSet extends SynapseModuleSet {
-  public readonly bridgeModuleName = 'GasZip'
+  public readonly bridgeModuleName = 'Gas.zip'
   public readonly allEvents = []
 
   public modules: {
