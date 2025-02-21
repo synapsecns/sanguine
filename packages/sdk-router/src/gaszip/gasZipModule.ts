@@ -1,8 +1,11 @@
 import { Provider } from '@ethersproject/abstract-provider'
+import { BigNumber, PopulatedTransaction } from 'ethers'
 import invariant from 'tiny-invariant'
 
-import { SynapseModule } from '../module'
+import { Query, SynapseModule } from '../module'
 import { BigintIsh } from '../constants'
+import { isNativeToken } from '../utils/handleNativeToken'
+import { getGasZipTxStatus } from './api'
 
 export class GasZipModule implements SynapseModule {
   readonly address = '0x391E7C679d29bD940d63be94AD22A25d25b5A604'
@@ -28,7 +31,15 @@ export class GasZipModule implements SynapseModule {
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {
-    // TODO: implement
+    if (!isNativeToken(token)) {
+      throw new Error('Non-native token not supported by gas.zip')
+    }
+    // TODO: check if `to` matches the origin address
+    return {
+      to: this.address,
+      value: BigNumber.from(amount),
+      data: destQuery.rawParams,
+    }
   }
 
   /**
@@ -42,6 +53,6 @@ export class GasZipModule implements SynapseModule {
    * @inheritdoc SynapseModule.getBridgeTxStatus
    */
   public async getBridgeTxStatus(synapseTxId: string): Promise<boolean> {
-    // TODO: implement
+    return getGasZipTxStatus(synapseTxId)
   }
 }
