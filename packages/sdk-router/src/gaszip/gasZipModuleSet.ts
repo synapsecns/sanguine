@@ -1,17 +1,20 @@
 import { BigNumber } from 'ethers'
 import { Provider } from '@ethersproject/abstract-provider'
-import { Zero } from '@ethersproject/constants'
+import { AddressZero, Zero } from '@ethersproject/constants'
 
 import {
   BridgeRoute,
+  createNoSwapQuery,
   FeeConfig,
   Query,
   SynapseModule,
   SynapseModuleSet,
 } from '../module'
 import { ChainProvider } from '../router'
-import { getChainIds } from './api'
+import { getChainIds, getGasZipQuote } from './api'
 import { GasZipModule } from './gasZipModule'
+import { isNativeToken } from '../utils/handleNativeToken'
+import { BigintIsh } from '../constants'
 
 // TODO: figure out if accurate
 const MEDIAN_TIME_GAS_ZIP = 30
@@ -80,7 +83,40 @@ export class GasZipModuleSet extends SynapseModuleSet {
     ) {
       return []
     }
-    // TODO: implement
+    // Check that both tokens are native assets
+    if (!isNativeToken(tokenIn) || !isNativeToken(tokenOut)) {
+      return []
+    }
+    const user = originUserAddress ?? AddressZero
+    const quote = await getGasZipQuote(
+      originChainId,
+      destChainId,
+      amountIn,
+      user,
+      user
+    )
+    // Check that non-zero amount is returned
+    const amountOut = BigNumber.from(quote.amountOut)
+    if (amountOut.eq(Zero)) {
+      return []
+    }
+    // Save user address in the origin query raw params
+    const originQuery = createNoSwapQuery(tokenIn, BigNumber.from(amountIn))
+    originQuery.rawParams = quote.calldata
+    const destQuery = createNoSwapQuery(tokenOut, amountOut)
+    destQuery.rawParams = user
+    const route: BridgeRoute = {
+      originChainId,
+      destChainId,
+      originQuery,
+      destQuery,
+      bridgeToken: {
+        symbol: 'NATIVE',
+        token: tokenIn,
+      },
+      bridgeModuleName: this.bridgeModuleName,
+    }
+    return [route]
   }
 
   /**

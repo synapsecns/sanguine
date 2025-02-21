@@ -5,7 +5,8 @@ import invariant from 'tiny-invariant'
 import { Query, SynapseModule } from '../module'
 import { BigintIsh } from '../constants'
 import { isNativeToken } from '../utils/handleNativeToken'
-import { getGasZipTxStatus } from './api'
+import { getGasZipQuote, getGasZipTxStatus } from './api'
+import { isSameAddress } from '../utils/addressUtils'
 
 export class GasZipModule implements SynapseModule {
   readonly address = '0x391E7C679d29bD940d63be94AD22A25d25b5A604'
@@ -34,11 +35,22 @@ export class GasZipModule implements SynapseModule {
     if (!isNativeToken(token)) {
       throw new Error('Non-native token not supported by gas.zip')
     }
-    // TODO: check if `to` matches the origin address
+    if (isSameAddress(to, destQuery.rawParams)) {
+      return {
+        to: this.address,
+        value: BigNumber.from(amount),
+        data: originQuery.rawParams,
+      }
+    }
+    const quote = await getGasZipQuote(this.chainId, destChainId, amount, to)
+    const amountOut = BigNumber.from(quote.amountOut)
+    if (amountOut.lt(destQuery.minAmountOut)) {
+      throw new Error('Insufficient amount out')
+    }
     return {
       to: this.address,
-      value: BigNumber.from(amount),
-      data: destQuery.rawParams,
+      value: amountOut,
+      data: quote.calldata,
     }
   }
 

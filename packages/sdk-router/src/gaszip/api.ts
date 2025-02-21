@@ -1,3 +1,4 @@
+import { BigintIsh } from '../constants'
 import { getWithTimeout } from '../utils/api'
 
 const GAS_ZIP_API_URL = 'https://backend.gas.zip/v2'
@@ -27,6 +28,27 @@ interface Chains {
   ]
 }
 
+interface CalldataQuoteResponse {
+  calldata: string
+  quotes: {
+    chain: number
+    expected: string
+    gas: string
+    speed: number
+    usd: number
+  }[]
+}
+
+export type GasZipQuote = {
+  amountOut: string
+  calldata: string
+}
+
+const EMPTY_GAS_ZIP_QUOTE: GasZipQuote = {
+  amountOut: '0',
+  calldata: '0x',
+}
+
 export const getGasZipTxStatus = async (txHash: string): Promise<boolean> => {
   const response = await getWithTimeout(
     'Gas.Zip API',
@@ -51,4 +73,30 @@ export const getChainIds = async (): Promise<number[]> => {
   }
   const data: Chains = await response.json()
   return data.chains.map((chain) => chain.chain)
+}
+
+export const getGasZipQuote = async (
+  originChainId: number,
+  destChainId: number,
+  amount: BigintIsh,
+  to: string,
+  from?: string
+): Promise<GasZipQuote> => {
+  const response = await getWithTimeout(
+    'Gas.Zip API',
+    `${GAS_ZIP_API_URL}/quotes/${originChainId}/${amount}/${destChainId}`,
+    GAS_ZIP_API_TIMEOUT,
+    {
+      from,
+      to,
+    }
+  )
+  if (!response) {
+    return EMPTY_GAS_ZIP_QUOTE
+  }
+  const data: CalldataQuoteResponse = await response.json()
+  return {
+    amountOut: data.quotes[0].expected,
+    calldata: data.calldata,
+  }
 }
