@@ -96,14 +96,13 @@ export class GasZipModuleSet extends SynapseModuleSet {
       user
     )
     // Check that non-zero amount is returned
-    const amountOut = BigNumber.from(quote.amountOut)
-    if (amountOut.eq(Zero)) {
+    if (quote.amountOut.eq(Zero)) {
       return []
     }
     // Save user address in the origin query raw params
     const originQuery = createNoSwapQuery(tokenIn, BigNumber.from(amountIn))
     originQuery.rawParams = quote.calldata
-    const destQuery = createNoSwapQuery(tokenOut, amountOut)
+    const destQuery = createNoSwapQuery(tokenOut, quote.amountOut)
     destQuery.rawParams = user
     const route: BridgeRoute = {
       originChainId,

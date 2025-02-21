@@ -43,13 +43,12 @@ export class GasZipModule implements SynapseModule {
       }
     }
     const quote = await getGasZipQuote(this.chainId, destChainId, amount, to)
-    const amountOut = BigNumber.from(quote.amountOut)
-    if (amountOut.lt(destQuery.minAmountOut)) {
+    if (quote.amountOut.lt(destQuery.minAmountOut)) {
       throw new Error('Insufficient amount out')
     }
     return {
       to: this.address,
-      value: amountOut,
+      value: BigNumber.from(amount),
       data: quote.calldata,
     }
   }

@@ -1,3 +1,6 @@
+import { BigNumber } from 'ethers'
+import { Zero } from '@ethersproject/constants'
+
 import { BigintIsh } from '../constants'
 import { getWithTimeout } from '../utils/api'
 
@@ -40,12 +43,12 @@ interface CalldataQuoteResponse {
 }
 
 export type GasZipQuote = {
-  amountOut: string
+  amountOut: BigNumber
   calldata: string
 }
 
 const EMPTY_GAS_ZIP_QUOTE: GasZipQuote = {
-  amountOut: '0',
+  amountOut: Zero,
   calldata: '0x',
 }
 
@@ -95,8 +98,11 @@ export const getGasZipQuote = async (
     return EMPTY_GAS_ZIP_QUOTE
   }
   const data: CalldataQuoteResponse = await response.json()
+  if (data.quotes.length === 0 || !data.quotes[0].expected) {
+    return EMPTY_GAS_ZIP_QUOTE
+  }
   return {
-    amountOut: data.quotes[0].expected,
+    amountOut: BigNumber.from(data.quotes[0].expected.toString()),
     calldata: data.calldata,
   }
 }
