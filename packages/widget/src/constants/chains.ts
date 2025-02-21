@@ -485,7 +485,6 @@ export const WORLDCHAIN: Chain = {
   },
 }
 
-
 export const BERACHAIN: Chain = {
   id: 80094,
   name: 'Berachain',
@@ -553,7 +552,7 @@ export const CHAINS = {
   LINEA,
   WORLDCHAIN,
   BERACHAIN,
-  UNICHAIN
+  UNICHAIN,
 }
 
 export const CHAINS_ARRAY = Object.values(CHAINS)
