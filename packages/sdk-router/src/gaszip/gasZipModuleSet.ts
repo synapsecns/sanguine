@@ -156,11 +156,9 @@ export class GasZipModuleSet extends SynapseModuleSet {
    */
   public applySlippage(
     originQueryPrecise: Query,
-    destQueryPrecise: Query,
-    slipNumerator: number,
-    slipDenominator: number
+    destQueryPrecise: Query
   ): { originQuery: Query; destQuery: Query } {
-    // TODO: implement
+    // Slippage settings are not supported by gas.zip
     return {
       originQuery: originQueryPrecise,
       destQuery: destQueryPrecise,
