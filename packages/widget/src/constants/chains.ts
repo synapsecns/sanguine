@@ -485,6 +485,48 @@ export const WORLDCHAIN: Chain = {
   },
 }
 
+export const BERACHAIN: Chain = {
+  id: 80094,
+  name: 'Berachain',
+  rpcUrls: {
+    primary: 'https://rpc.berachain.com',
+    fallback: 'https://berachain-rpc.publicnode.com',
+  },
+  explorerUrl: 'https://berascan.com',
+  explorerName: 'BeraScan',
+  blockTime: 2000,
+  imgUrl:
+    'https://ft-uniberainterfaces.sanguine-fe.pages.dev/_next/static/media/berachain.57304c86.svg',
+  networkName: 'Berachain',
+  networkUrl: 'https://rpc.berachain.com',
+  nativeCurrency: {
+    name: 'Bera',
+    symbol: 'BERA',
+    decimals: 18,
+  },
+}
+
+export const UNICHAIN: Chain = {
+  id: 130,
+  name: 'Unichain',
+  rpcUrls: {
+    primary: 'https://mainnet.unichain.org',
+    fallback: 'https://unichain-rpc.publicnode.com',
+  },
+  explorerUrl: 'https://uniscan.xyz',
+  explorerName: 'UniScan',
+  imgUrl:
+    'https://ft-uniberainterfaces.sanguine-fe.pages.dev/_next/static/media/unichain.02b81e3e.svg',
+  blockTime: 1000,
+  networkName: 'Unichain',
+  networkUrl: 'https://mainnet.unichain.org',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+}
+
 export const CHAINS = {
   ETHEREUM,
   ARBITRUM,
@@ -509,6 +551,8 @@ export const CHAINS = {
   SCROLL,
   LINEA,
   WORLDCHAIN,
+  BERACHAIN,
+  UNICHAIN,
 }
 
 export const CHAINS_ARRAY = Object.values(CHAINS)

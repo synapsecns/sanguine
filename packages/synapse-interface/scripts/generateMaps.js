@@ -1,9 +1,9 @@
+require('dotenv').config()
+
 const { ethers } = require('ethers')
 
 const { prettyPrintTS } = require('./utils/prettyPrintTs')
 const { fetchRfqData } = require('./utils/fetchRfqData')
-// Provider URLs
-const providers = require('./data/providers.json')
 // List of ignored bridge symbols
 const ignoredBridgeSymbols = require('./data/ignoredBridgeSymbols.json')
 // Symbol overrides (for tokens with incorrect on-chain symbols)
@@ -19,12 +19,6 @@ const DefaultPoolABI = require('./abi/IDefaultPool.json')
 // const rfqResponse = require('./data/rfqResponse.json')
 // ETH address
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-
-// Format is { chainId: providerUrl }
-// Replace providerUrl with new ethers.providers.JsonRpcProvider(providerUrl)
-Object.keys(providers).forEach((chainId) => {
-  providers[chainId] = new ethers.providers.JsonRpcProvider(providers[chainId])
-})
 
 // Contract addresses
 const SynapseRouterAddress = '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a'
@@ -43,8 +37,26 @@ const allowedChainIdsForSynapseCCTPRouter = [1, 10, 137, 8453, 42161, 43114]
 
 // Chain IDs where RFQ is allowed
 const allowedChainIdsForRfq = [
-  1, 10, 56, 480, 8453, 42161, 59144, 81457, 534352,
+  1, 10, 56, 130, 480, 8453, 42161, 59144, 80094, 81457, 534352,
 ]
+
+const allChainIds = Array.from(
+  new Set([
+    ...allowedChainIdsForSynapseBridge,
+    ...allowedChainIdsForSynapseCCTPRouter,
+    ...allowedChainIdsForRfq,
+  ])
+)
+if (!process.env.RPC_URL) {
+  throw new Error('RPC_URL is not defined in the environment variables')
+}
+// Format is { chainId: provider }
+const providers = allChainIds.reduce((acc, chainId) => {
+  acc[chainId] = new ethers.providers.JsonRpcProvider(
+    `${process.env.RPC_URL}/${chainId}`
+  )
+  return acc
+}, {})
 
 // Get SynapseRouter contract instances for each chain
 const SynapseRouters = {}
@@ -469,6 +481,8 @@ const getTokenDecimals = async (chainId, token) => {
 const getRFQSymbol = (symbol) => {
   if (symbol === 'USDC.e') {
     return 'RFQ.USDC'
+  } else if (symbol === 'WETH') {
+    return 'RFQ.ETH'
   } else {
     return `RFQ.${symbol}`
   }

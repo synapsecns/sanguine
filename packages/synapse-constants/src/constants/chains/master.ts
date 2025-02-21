@@ -530,3 +530,47 @@ export const WORLDCHAIN: Chain = {
   },
   color: 'black',
 }
+
+export const BERACHAIN: Chain = {
+  priorityRank: 99,
+  id: 80094,
+  chainSymbol: 'BERACHAIN',
+  name: 'Berachain',
+  codeName: 'berachain',
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/berachain.549943e0.svg',
+  layer: 1,
+  rpcUrls: {
+    primary: 'https://berachain.blockpi.network/v1/rpc/public',
+    fallback: 'https://rpc.berachain.com',
+  },
+  explorerUrl: 'https://berascan.com',
+  explorerName: 'Berascan',
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/berachain.549943e0.svg',
+  blockTime: 3000,
+  nativeCurrency: { name: 'Berachain', symbol: 'BERA', decimals: 18 },
+  color: 'brown',
+}
+
+export const UNICHAIN: Chain = {
+  priorityRank: 99,
+  id: 130,
+  chainSymbol: 'UNICHAIN',
+  name: 'Unichain',
+  codeName: 'unichain',
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/unichain.549943e0.svg',
+  layer: 2,
+  rpcUrls: {
+    primary: 'https://unichain-rpc.publicnode.com',
+    fallback: 'https://rpc.unichain.io',
+  },
+  explorerUrl: 'https://uniscan.xyz',
+  explorerName: 'Uniscan',
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/unichain.549943e0.svg',
+  blockTime: 3000,
+  nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
+  color: 'pink',
+}
