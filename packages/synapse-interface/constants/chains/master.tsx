@@ -646,7 +646,6 @@ export const HYPERLIQUID: Chain = {
   color: 'gray',
 }
 
-
 export const UNICHAIN: Chain = {
   priorityRank: 99,
   id: 130,
@@ -656,7 +655,7 @@ export const UNICHAIN: Chain = {
   layer: 2,
   rpcUrls: {
     primary:
-      'https://unichain-mainnet.g.alchemy.com/v2/XxF21ZshhEst0phSQwyiRozKTYSxG9J7',
+      'https://mainnet.unichain.org',
     fallback: 'https://mainnet.unichain.org',
   },
   explorerUrl: 'https://uniscan.xyz',
@@ -683,7 +682,7 @@ export const BERACHAIN: Chain = {
   layer: 2,
   rpcUrls: {
     primary:
-      'https://berachain-mainnet.g.alchemy.com/v2/HZ0zXJXi91qTagNP24CLIHgo6VkZ7L7n',
+      'https://rpc.berachain.com',
     fallback: 'https://rpc.berachain.com',
   },
   explorerUrl: 'https://berascan.com',
