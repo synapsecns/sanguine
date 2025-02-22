@@ -1,9 +1,9 @@
 {
-  "address": "0x6327797F149a75D506aFda46D5fCE6E74fC409D5",
+  "address": "0x6C6FA1cE8160bb680f7a1dd2068c7302bA2a9eaB",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0xc306e272b5daa98006c1d9009246fac697c258ed8fb6012ab19f5ef5376899b9",
-    "blockNumber": 129029951
+    "hash": "0xf37c62c14d3c01cd525262253e2f124aedf8b1dfcd7f2dbc30fd4921975bd478",
+    "blockNumber": 130120643
   },
   "abi": [
     {
@@ -80,6 +80,11 @@
           "name": "forwardTo",
           "type": "address",
           "internalType": "address"
+        },
+        {
+          "name": "minFinalBalance",
+          "type": "uint256",
+          "internalType": "uint256"
         }
       ],
       "outputs": [
@@ -160,7 +165,12 @@
     },
     {
       "type": "error",
-      "name": "TokenZapV1__FinalTokenBalanceZero",
+      "name": "TokenZapV1__FinalBalanceBelowMin",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "TokenZapV1__FinalTokenNotSpecified",
       "inputs": []
     },
     {
@@ -180,7 +190,17 @@
     },
     {
       "type": "error",
+      "name": "ZapDataV1__FinalTokenNotSpecified",
+      "inputs": []
+    },
+    {
+      "type": "error",
       "name": "ZapDataV1__InvalidEncoding",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ZapDataV1__PayloadLengthAboveMax",
       "inputs": []
     },
     {

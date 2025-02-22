@@ -188,16 +188,14 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         }
         _validateBridgeParams(params, paramsV2, exclusivityEndTime);
 
-        // Transfer tokens to bridge contract. We use the actual transferred amount in case of transfer fees.
-        uint256 originAmount = _takeBridgedUserAsset(params.originToken, params.originAmount);
-
         // Track the amount of origin token owed to protocol.
-        uint256 originFeeAmount = 0;
+        uint256 originAmount = params.originAmount;
+        uint256 protocolFeeAmount = 0;
         if (protocolFeeRate > 0) {
-            originFeeAmount = (originAmount * protocolFeeRate) / FEE_BPS;
+            protocolFeeAmount = (originAmount * protocolFeeRate) / FEE_BPS;
             // The Relayer filling this request will be paid the originAmount after fees.
             // Note: the protocol fees will be accumulated only when the Relayer claims the origin collateral.
-            originAmount -= originFeeAmount;
+            originAmount -= protocolFeeAmount;
         }
 
         // Hash the bridge request and set the initial status to REQUESTED.
@@ -211,7 +209,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
                 destToken: params.destToken,
                 originAmount: originAmount,
                 destAmount: params.destAmount,
-                originFeeAmount: originFeeAmount,
+                originFeeAmount: protocolFeeAmount,
                 deadline: params.deadline,
                 // Increment the sender's nonce on every bridge.
                 nonce: senderNonces[params.sender]++,
@@ -227,6 +225,7 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         bridgeTxDetails[transactionId].status = BridgeStatus.REQUESTED;
         bridgeTxDetails[transactionId].destChainId = params.dstChainId;
 
+        // Emit the events before any external calls.
         emit BridgeRequested({
             transactionId: transactionId,
             sender: params.sender,
@@ -239,6 +238,18 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
             sendChainGas: paramsV2.zapNative != 0
         });
         emit BridgeQuoteDetails(transactionId, paramsV2.quoteId);
+
+        // Transfer the tokens from the user as the last transaction action.
+        address originToken = params.originToken;
+        if (originToken != NATIVE_GAS_TOKEN) {
+            // We need to take the full origin amount from the provided params (that includes `protocolFeeAmount`).
+            uint256 amountToTake = params.originAmount;
+            uint256 balanceBefore = IERC20(originToken).balanceOf(address(this));
+            IERC20(originToken).safeTransferFrom(msg.sender, address(this), amountToTake);
+            uint256 balanceAfter = IERC20(originToken).balanceOf(address(this));
+            // Tokens with fees on transfer (or transferring more than requested) are not supported.
+            if (balanceAfter != balanceBefore + amountToTake) revert AmountIncorrect();
+        }
     }
 
     /// @inheritdoc IFastBridgeV2
@@ -396,8 +407,8 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         // Accumulate protocol fees if origin fee amount exists.
         address token = request.originToken();
         uint256 amount = request.originAmount();
-        uint256 originFeeAmount = request.originFeeAmount();
-        if (originFeeAmount > 0) protocolFees[token] += originFeeAmount;
+        uint256 protocolFeeAmount = request.originFeeAmount();
+        if (protocolFeeAmount > 0) protocolFees[token] += protocolFeeAmount;
 
         // Emit the event before any external calls.
         emit BridgeDepositClaimed(transactionId, proofRelayer, to, token, amount);
@@ -431,29 +442,6 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
     }
 
     // ═════════════════════════════════════════════ INTERNAL METHODS ══════════════════════════════════════════════════
-
-    /// @notice Takes the bridged asset from the user into FastBridgeV2 custody. The asset will later be
-    /// claimed by the relayer who completed the relay on the destination chain, or returned to the user
-    /// via the cancel function if no relay is completed.
-    function _takeBridgedUserAsset(address token, uint256 amount) internal returns (uint256 amountTaken) {
-        if (token == NATIVE_GAS_TOKEN) {
-            // For the native gas token, we just need to check that the supplied msg.value is correct.
-            // Supplied `msg.value` is already in FastBridgeV2 custody.
-            if (amount != msg.value) revert MsgValueIncorrect();
-            amountTaken = msg.value;
-        } else {
-            // For ERC20s, token is explicitly transferred from the user to FastBridgeV2.
-            // We don't allow non-zero `msg.value` to avoid extra funds from being stuck in FastBridgeV2.
-            if (msg.value != 0) revert MsgValueIncorrect();
-            // Throw an explicit error if the provided token address is not a contract.
-            if (token.code.length == 0) revert TokenNotContract();
-
-            // Use the balance difference as the amount taken in case of fee on transfer tokens.
-            amountTaken = IERC20(token).balanceOf(address(this));
-            IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
-            amountTaken = IERC20(token).balanceOf(address(this)) - amountTaken;
-        }
-    }
 
     /// @notice Calls the recipient's hook function with the specified zapData and validates
     /// the returned value.
@@ -500,11 +488,13 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         internal
         view
     {
+        address originToken = params.originToken;
+        uint256 originAmount = params.originAmount;
         // Check V1 (legacy) params.
         if (params.dstChainId == block.chainid) revert ChainIncorrect();
-        if (params.originAmount == 0 || params.destAmount == 0) revert AmountIncorrect();
+        if (originAmount == 0 || params.destAmount == 0) revert AmountIncorrect();
         if (params.sender == address(0) || params.to == address(0)) revert ZeroAddress();
-        if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
+        if (originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
         if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
 
         // Check V2 params.
@@ -516,6 +506,17 @@ contract FastBridgeV2 is AdminV2, MulticallTarget, IFastBridgeV2, IFastBridgeV2E
         // exclusivityEndTime must be in range [0 .. params.deadline].
         if (exclusivityEndTime < 0 || exclusivityEndTime > int256(params.deadline)) {
             revert ExclusivityParamsIncorrect();
+        }
+
+        // Check supplied msg.value.
+        if (originToken == NATIVE_GAS_TOKEN) {
+            // For the native gas token, we just need to check that the supplied msg.value is correct.
+            if (msg.value != originAmount) revert MsgValueIncorrect();
+        } else {
+            // We don't allow non-zero `msg.value` to avoid extra funds from being stuck in FastBridgeV2.
+            if (msg.value != 0) revert MsgValueIncorrect();
+            // Throw an explicit error if the provided token address is not a contract.
+            if (originToken.code.length == 0) revert TokenNotContract();
         }
     }
 

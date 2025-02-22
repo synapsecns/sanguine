@@ -25,7 +25,6 @@ contract SynapseIntentRouter is ISynapseIntentRouter, ISynapseIntentRouterErrors
     function completeIntentWithBalanceChecks(
         address zapRecipient,
         uint256 amountIn,
-        uint256 minLastStepAmountIn,
         uint256 deadline,
         StepParams[] calldata steps
     )
@@ -42,7 +41,7 @@ contract SynapseIntentRouter is ISynapseIntentRouter, ISynapseIntentRouterErrors
         }
 
         // Complete the intent as usual.
-        completeIntent(zapRecipient, amountIn, minLastStepAmountIn, deadline, steps);
+        completeIntent(zapRecipient, amountIn, deadline, steps);
 
         // Verify that the ZapRecipient balance for each token has not increased.
         for (uint256 i = 0; i < length; i++) {
@@ -57,7 +56,6 @@ contract SynapseIntentRouter is ISynapseIntentRouter, ISynapseIntentRouterErrors
     function completeIntent(
         address zapRecipient,
         uint256 amountIn,
-        uint256 minLastStepAmountIn,
         uint256 deadline,
         StepParams[] calldata steps
     )
@@ -100,7 +98,6 @@ contract SynapseIntentRouter is ISynapseIntentRouter, ISynapseIntentRouterErrors
         }
 
         // Verify amountIn used for the last step, and that we fully spent `msg.value`.
-        if (amountIn < minLastStepAmountIn) revert SIR__AmountInsufficient();
         if (totalUsedMsgValue < msg.value) revert SIR__MsgValueIncorrect();
     }
 

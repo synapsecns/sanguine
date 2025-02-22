@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.6.3...@synapsecns/bridge-docs@0.6.4) (2025-02-21)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
+## [0.6.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.6.2...@synapsecns/bridge-docs@0.6.3) (2025-01-13)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
 ## [0.6.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.6.1...@synapsecns/bridge-docs@0.6.2) (2024-12-16)
 
 **Note:** Version bump only for package @synapsecns/bridge-docs

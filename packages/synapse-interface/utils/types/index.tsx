@@ -104,6 +104,7 @@ export enum WalletId {
   MetaMask = 'metaMask',
   WalletConnect = 'walletConnect',
   CoinbaseWallet = 'coinbaseWallet',
+  BinanceWallet = 'binanceWallet',
 }
 export interface IconProps {
   walletId?: string

@@ -19,6 +19,9 @@ contract FastBridgeV2SrcFBRouterV2Test is FastBridgeV2SrcTest {
         srcToken.approve(router, type(uint256).max);
         vm.prank(userB);
         srcToken.approve(router, type(uint256).max);
+        vm.prank(userA);
+        weirdToken.approve(router, type(uint256).max);
+        weirdToken.mint(router, 1);
     }
 
     /// @notice Override bridge function to leverage the old FastBridgeRouterV2 contract

@@ -59,6 +59,8 @@ func TestHandleJSONDailyStat(t *testing.T) {
 			Scroll     *float64 "json:\"scroll\" graphql:\"scroll\""
 			Linea      *float64 "json:\"linea\" graphql:\"linea\""
 			Worldchain *float64 "json:\"worldchain\" graphql:\"worldchain\""
+			Unichain   *float64 "json:\"unichain\" graphql:\"unichain\""
+			Berachain  *float64 "json:\"berachain\" graphql:\"berachain\""
 			Total      *float64 "json:\"total\" graphql:\"total\""
 		}{
 			{

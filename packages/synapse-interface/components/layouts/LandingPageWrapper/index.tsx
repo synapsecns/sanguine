@@ -55,7 +55,7 @@ const TODO_REMOVE_wrapperStyle = {
 const StakingBannerContent = () => {
   return (
     <div>
-      Stake your SYN to receive CX (Cortex Protocol) tokens{' '}
+      Convert your SYN to receive CX (Cortex Protocol) tokens{' '}
       <a
         href={STAKE_SYN_FOR_CX_URL}
         target="blank"
@@ -78,9 +78,8 @@ export function LandingPageWrapper({ children }: { children: any }) {
         <AnnouncementBanner
           bannerId="2024-12-18-cortex-staking"
           bannerContent={<StakingBannerContent />}
-          // bannerContent="Stake your SYN to receive CX (Cortex Protocol) tokens!"
           startDate={new Date('2024-12-17T18:45:09+00:00')}
-          endDate={new Date('2025-02-25T18:45:09+00:00')}
+          endDate={new Date('2025-08-25T18:45:09+00:00')}
         />
         <MaintenanceBanners />
         <LandingNav />

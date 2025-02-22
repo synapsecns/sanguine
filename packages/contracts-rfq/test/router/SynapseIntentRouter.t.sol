@@ -78,22 +78,33 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
             // Amount is not encoded
             amountPosition: type(uint256).max,
             finalToken: address(weth),
-            forwardTo: address(0)
+            forwardTo: address(0),
+            minFinalBalance: 0
         });
     }
 
-    function getUnwrapZapData(address forwardTo) public view returns (bytes memory) {
+    function getUnwrapZapData(address forwardTo, uint256 minFinalBalance) public view returns (bytes memory) {
         return tokenZap.encodeZapData({
             target: address(weth),
-            payload: abi.encodeCall(weth.withdraw, (AMOUNT)),
+            // Use placeholder zero amount
+            payload: abi.encodeCall(weth.withdraw, (0)),
             // Amount is encoded as the first parameter
             amountPosition: 4,
             finalToken: NATIVE_GAS_TOKEN,
-            forwardTo: forwardTo
+            forwardTo: forwardTo,
+            minFinalBalance: minFinalBalance
         });
     }
 
-    function getSwapZapData(address token, address forwardTo) public view returns (bytes memory) {
+    function getSwapZapData(
+        address token,
+        address forwardTo,
+        uint256 minFinalBalance
+    )
+        public
+        view
+        returns (bytes memory)
+    {
         address otherToken = token == address(weth) ? address(erc20) : address(weth);
         return tokenZap.encodeZapData({
             target: address(pool),
@@ -102,7 +113,8 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
             // Amount is encoded as the first parameter
             amountPosition: 4,
             finalToken: otherToken,
-            forwardTo: forwardTo
+            forwardTo: forwardTo,
+            minFinalBalance: minFinalBalance
         });
     }
 
@@ -114,14 +126,14 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
             // Amount is encoded as the second parameter
             amountPosition: 4 + 32,
             finalToken: address(0),
-            forwardTo: address(0)
+            forwardTo: address(0),
+            minFinalBalance: 0
         });
     }
 
     function completeUserIntent(
         uint256 msgValue,
         uint256 amountIn,
-        uint256 minLastStepAmountIn,
         uint256 deadline,
         ISynapseIntentRouter.StepParams[] memory steps
     )
@@ -132,112 +144,47 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
         router.completeIntent{value: msgValue}({
             zapRecipient: address(tokenZap),
             amountIn: amountIn,
-            minLastStepAmountIn: minLastStepAmountIn,
             deadline: deadline,
             steps: steps
         });
     }
 
-    function checkRevertMsgValueAboveExpectedWithERC20(
-        ISynapseIntentRouter.StepParams[] memory steps,
-        uint256 lastStepAmountIn
-    )
-        public
-    {
+    function checkRevertMsgValueAboveExpectedWithERC20(ISynapseIntentRouter.StepParams[] memory steps) public {
         vm.expectRevert(SIR__MsgValueIncorrect.selector);
-        completeUserIntent({
-            msgValue: 1,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: lastStepAmountIn,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 1, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
     }
 
-    function checkRevertsMsgValueAboveExpectedWithNative(
-        ISynapseIntentRouter.StepParams[] memory steps,
-        uint256 lastStepAmountIn
-    )
-        public
-    {
+    function checkRevertsMsgValueAboveExpectedWithNative(ISynapseIntentRouter.StepParams[] memory steps) public {
         // Just msg.value is too high
         vm.expectRevert(SIR__MsgValueIncorrect.selector);
-        completeUserIntent({
-            msgValue: AMOUNT + 1,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: lastStepAmountIn,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: AMOUNT + 1, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Both msg.value and amountIn are too high
         vm.expectRevert(SIR__MsgValueIncorrect.selector);
-        completeUserIntent({
-            msgValue: AMOUNT + 1,
-            amountIn: AMOUNT + 1,
-            minLastStepAmountIn: lastStepAmountIn,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: AMOUNT + 1, amountIn: AMOUNT + 1, deadline: block.timestamp, steps: steps});
     }
 
-    function checkRevertsMsgValueBelowExpectedWithNative(
-        ISynapseIntentRouter.StepParams[] memory steps,
-        uint256 lastStepAmountIn
-    )
-        public
-    {
+    function checkRevertsMsgValueBelowExpectedWithNative(ISynapseIntentRouter.StepParams[] memory steps) public {
         // Just msg.value is too low
         vm.expectRevert(SIR__MsgValueIncorrect.selector);
-        completeUserIntent({
-            msgValue: AMOUNT - 1,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: lastStepAmountIn,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: AMOUNT - 1, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Both msg.value and amountIn are too low
         vm.expectRevert(abi.encodeWithSelector(Address.AddressInsufficientBalance.selector, router));
-        completeUserIntent({
-            msgValue: AMOUNT - 1,
-            amountIn: AMOUNT - 1,
-            minLastStepAmountIn: lastStepAmountIn,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: AMOUNT - 1, amountIn: AMOUNT - 1, deadline: block.timestamp, steps: steps});
     }
 
-    function checkRevertDeadlineExceeded(
-        uint256 msgValue,
-        uint256 lastStepAmountIn,
-        ISynapseIntentRouter.StepParams[] memory steps
-    )
-        public
-    {
+    function checkRevertDeadlineExceeded(uint256 msgValue, ISynapseIntentRouter.StepParams[] memory steps) public {
         vm.expectRevert(SIR__DeadlineExceeded.selector);
-        completeUserIntent({
-            msgValue: msgValue,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: lastStepAmountIn,
-            deadline: block.timestamp - 1,
-            steps: steps
-        });
+        completeUserIntent({msgValue: msgValue, amountIn: AMOUNT, deadline: block.timestamp - 1, steps: steps});
     }
 
-    function checkRevertAmountInsufficient(
+    function checkRevertFinalBalanceInsufficient(
         uint256 msgValue,
-        uint256 lastStepAmountIn,
         ISynapseIntentRouter.StepParams[] memory steps
     )
         public
     {
-        vm.expectRevert(SIR__AmountInsufficient.selector);
-        completeUserIntent({
-            msgValue: msgValue,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: lastStepAmountIn + 1,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        vm.expectRevert(TokenZapV1.TokenZapV1__FinalBalanceBelowMin.selector);
+        completeUserIntent({msgValue: msgValue, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
     }
 
     // ═══════════════════════════════════════════════ DEPOSIT ERC20 ═══════════════════════════════════════════════════
@@ -255,13 +202,7 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
 
     function test_depositERC20_exactAmount() public {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositERC20Steps(AMOUNT);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, address(erc20)), AMOUNT);
     }
@@ -273,28 +214,17 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
 
     function test_depositERC20_exactAmount_revert_deadlineExceeded() public {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositERC20Steps(AMOUNT);
-        checkRevertDeadlineExceeded({msgValue: 0, lastStepAmountIn: AMOUNT, steps: steps});
-    }
-
-    function test_depositERC20_exactAmount_revert_lastStepAmountInsufficient() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getDepositERC20Steps(AMOUNT);
-        checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: AMOUNT + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: 0, steps: steps});
     }
 
     function test_depositERC20_exactAmount_revert_msgValueAboveExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositERC20Steps(AMOUNT);
-        checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: AMOUNT});
+        checkRevertMsgValueAboveExpectedWithERC20({steps: steps});
     }
 
     function test_depositERC20_fullBalance() public {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositERC20Steps(FULL_BALANCE);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, address(erc20)), AMOUNT);
     }
@@ -302,30 +232,19 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     /// @notice Extra funds should be used with "full balance" instructions.
     function test_depositERC20_fullBalance_extraFunds() public withExtraFunds {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositERC20Steps(FULL_BALANCE);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit with the extra funds
         assertEq(vault.balanceOf(user, address(erc20)), AMOUNT + EXTRA_FUNDS);
     }
 
     function test_depositERC20_fullBalance_revert_deadlineExceeded() public {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositERC20Steps(FULL_BALANCE);
-        checkRevertDeadlineExceeded({msgValue: 0, lastStepAmountIn: AMOUNT, steps: steps});
-    }
-
-    function test_depositERC20_fullBalance_revert_lastStepAmountInsufficient() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getDepositERC20Steps(FULL_BALANCE);
-        checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: AMOUNT + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: 0, steps: steps});
     }
 
     function test_depositERC20_fullBalance_revert_msgValueAboveExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositERC20Steps(FULL_BALANCE);
-        checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: AMOUNT});
+        checkRevertMsgValueAboveExpectedWithERC20({steps: steps});
     }
 
     // ══════════════════════════════════════════════ DEPOSIT NATIVE ═══════════════════════════════════════════════════
@@ -343,13 +262,7 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
 
     function test_depositNative_exactAmount() public {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositNativeSteps(AMOUNT);
-        completeUserIntent({
-            msgValue: AMOUNT,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: AMOUNT, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT);
     }
@@ -361,33 +274,22 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
 
     function test_depositNative_exactAmount_revert_deadlineExceeded() public {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositNativeSteps(AMOUNT);
-        checkRevertDeadlineExceeded({msgValue: AMOUNT, lastStepAmountIn: AMOUNT, steps: steps});
-    }
-
-    function test_depositNative_exactAmount_revert_lastStepAmountInsufficient() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getDepositNativeSteps(AMOUNT);
-        checkRevertAmountInsufficient({msgValue: AMOUNT, lastStepAmountIn: AMOUNT + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: AMOUNT, steps: steps});
     }
 
     function test_depositNative_exactAmount_revert_msgValueAboveExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositNativeSteps(AMOUNT);
-        checkRevertsMsgValueAboveExpectedWithNative({steps: steps, lastStepAmountIn: AMOUNT});
+        checkRevertsMsgValueAboveExpectedWithNative({steps: steps});
     }
 
     function test_depositNative_exactAmount_revert_msgValueBelowExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositNativeSteps(AMOUNT);
-        checkRevertsMsgValueBelowExpectedWithNative({steps: steps, lastStepAmountIn: AMOUNT - 1});
+        checkRevertsMsgValueBelowExpectedWithNative({steps: steps});
     }
 
     function test_depositNative_fullBalance() public {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositNativeSteps(FULL_BALANCE);
-        completeUserIntent({
-            msgValue: AMOUNT,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: AMOUNT, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT);
     }
@@ -395,40 +297,32 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     /// @notice Extra funds should be used with "full balance" instructions.
     function test_depositNative_fullBalance_extraFunds() public withExtraFunds {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositNativeSteps(FULL_BALANCE);
-        completeUserIntent({
-            msgValue: AMOUNT,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: AMOUNT, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit with the extra funds
         assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT + EXTRA_FUNDS);
     }
 
     function test_depositNative_fullBalance_revert_deadlineExceeded() public {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositNativeSteps(FULL_BALANCE);
-        checkRevertDeadlineExceeded({msgValue: AMOUNT, lastStepAmountIn: AMOUNT, steps: steps});
-    }
-
-    function test_depositNative_fullBalance_revert_lastStepAmountInsufficient() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getDepositNativeSteps(FULL_BALANCE);
-        checkRevertAmountInsufficient({msgValue: AMOUNT, lastStepAmountIn: AMOUNT + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: AMOUNT, steps: steps});
     }
 
     function test_depositNative_fullBalance_revert_msgValueAboveExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositNativeSteps(FULL_BALANCE);
-        checkRevertsMsgValueAboveExpectedWithNative({steps: steps, lastStepAmountIn: AMOUNT});
+        checkRevertsMsgValueAboveExpectedWithNative({steps: steps});
     }
 
     function test_depositNative_fullBalance_revert_msgValueBelowExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getDepositNativeSteps(FULL_BALANCE);
-        checkRevertsMsgValueBelowExpectedWithNative({steps: steps, lastStepAmountIn: AMOUNT - 1});
+        checkRevertsMsgValueBelowExpectedWithNative({steps: steps});
     }
 
     // ═══════════════════════════════════════════ SWAP & FORWARD ERC20 ════════════════════════════════════════════════
 
-    function getSwapForwardERC20Steps(uint256 amountSwap)
+    function getSwapForwardERC20Steps(
+        uint256 amountSwap,
+        uint256 minFinalBalance
+    )
         public
         view
         returns (ISynapseIntentRouter.StepParams[] memory)
@@ -439,21 +333,15 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
                 token: address(weth),
                 amount: amountSwap,
                 msgValue: 0,
-                zapData: getSwapZapData(address(weth), user)
+                zapData: getSwapZapData(address(weth), user, minFinalBalance)
             })
         );
     }
 
     function test_swapForwardERC20_exactAmount() public {
         uint256 initialBalance = erc20.balanceOf(user);
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT, AMOUNT * TOKEN_PRICE);
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check the user erc20 balance
         assertEq(erc20.balanceOf(user), initialBalance + AMOUNT * TOKEN_PRICE);
     }
@@ -461,43 +349,31 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     /// @notice Extra funds should be used with "forward" instructions.
     function test_swapForwardERC20_exactAmount_extraFunds() public withExtraFunds {
         uint256 initialBalance = erc20.balanceOf(user);
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT, AMOUNT * TOKEN_PRICE);
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check the user erc20 balance
         assertEq(erc20.balanceOf(user), initialBalance + AMOUNT * TOKEN_PRICE + EXTRA_FUNDS);
     }
 
     function test_swapForwardERC20_exactAmount_revert_deadlineExceeded() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT);
-        checkRevertDeadlineExceeded({msgValue: 0, lastStepAmountIn: AMOUNT, steps: steps});
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT, AMOUNT * TOKEN_PRICE);
+        checkRevertDeadlineExceeded({msgValue: 0, steps: steps});
     }
 
-    function test_swapForwardERC20_exactAmount_revert_lastStepAmountInsufficient() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT);
-        checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: AMOUNT + 1, steps: steps});
+    function test_swapForwardERC20_exactAmount_revert_finalBalanceInsufficient() public {
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT, AMOUNT * TOKEN_PRICE + 1);
+        checkRevertFinalBalanceInsufficient({msgValue: 0, steps: steps});
     }
 
     function test_swapForwardERC20_exactAmount_revert_msgValueAboveExpected() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT);
-        checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: AMOUNT});
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(AMOUNT, AMOUNT * TOKEN_PRICE);
+        checkRevertMsgValueAboveExpectedWithERC20({steps: steps});
     }
 
     function test_swapForwardERC20_fullBalance() public {
         uint256 initialBalance = erc20.balanceOf(user);
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE, AMOUNT * TOKEN_PRICE);
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check the user erc20 balance
         assertEq(erc20.balanceOf(user), initialBalance + AMOUNT * TOKEN_PRICE);
     }
@@ -505,31 +381,26 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     /// @notice Extra funds should be used with "full balance" instructions.
     function test_swapForwardERC20_fullBalance_extraFunds() public withExtraFunds {
         uint256 initialBalance = erc20.balanceOf(user);
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE, AMOUNT * TOKEN_PRICE);
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check the user erc20 balance with the extra funds
         assertEq(erc20.balanceOf(user), initialBalance + (AMOUNT + EXTRA_FUNDS) * TOKEN_PRICE + EXTRA_FUNDS);
     }
 
     function test_swapForwardERC20_fullBalance_revert_deadlineExceeded() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE);
-        checkRevertDeadlineExceeded({msgValue: 0, lastStepAmountIn: AMOUNT, steps: steps});
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE, AMOUNT * TOKEN_PRICE);
+        checkRevertDeadlineExceeded({msgValue: 0, steps: steps});
     }
 
-    function test_swapForwardERC20_fullBalance_revert_lastStepAmountInsufficient() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE);
-        checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: AMOUNT + 1, steps: steps});
+    function test_swapForwardERC20_fullBalance_revert_finalBalanceInsufficient() public {
+        ISynapseIntentRouter.StepParams[] memory steps =
+            getSwapForwardERC20Steps(FULL_BALANCE, AMOUNT * TOKEN_PRICE + 1);
+        checkRevertFinalBalanceInsufficient({msgValue: 0, steps: steps});
     }
 
     function test_swapForwardERC20_fullBalance_revert_msgValueAboveExpected() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE);
-        checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: AMOUNT});
+        ISynapseIntentRouter.StepParams[] memory steps = getSwapForwardERC20Steps(FULL_BALANCE, AMOUNT * TOKEN_PRICE);
+        checkRevertMsgValueAboveExpectedWithERC20({steps: steps});
     }
 
     // ══════════════════════════════════════ SWAP & UNWRAP & FORWARD NATIVE ═══════════════════════════════════════════
@@ -542,20 +413,32 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
         view
         returns (ISynapseIntentRouter.StepParams[] memory)
     {
+        return getSwapUnwrapForwardNativeSteps(amountSwap, amountUnwrap, AMOUNT / TOKEN_PRICE);
+    }
+
+    function getSwapUnwrapForwardNativeSteps(
+        uint256 amountSwap,
+        uint256 amountUnwrap,
+        uint256 minFinalBalance
+    )
+        public
+        view
+        returns (ISynapseIntentRouter.StepParams[] memory)
+    {
         return toArray(
             // ERC20 -> WETH
             ISynapseIntentRouter.StepParams({
                 token: address(erc20),
                 amount: amountSwap,
                 msgValue: 0,
-                zapData: getSwapZapData(address(erc20), address(0))
+                zapData: getSwapZapData(address(erc20), address(0), 0)
             }),
             // WETH -> ETH
             ISynapseIntentRouter.StepParams({
                 token: address(weth),
                 amount: amountUnwrap,
                 msgValue: 0,
-                zapData: getUnwrapZapData(user)
+                zapData: getUnwrapZapData(user, minFinalBalance)
             })
         );
     }
@@ -564,13 +447,7 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
         uint256 initialBalance = user.balance;
         uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(AMOUNT, amountSwap);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountSwap,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check the user native balance
         assertEq(user.balance, initialBalance + amountSwap);
     }
@@ -580,13 +457,7 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
         uint256 initialBalance = user.balance;
         uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(AMOUNT, amountSwap);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountSwap,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check the user native balance
         assertEq(user.balance, initialBalance + amountSwap + EXTRA_FUNDS);
     }
@@ -594,32 +465,20 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     function test_swapUnwrapForwardNative_exactAmounts_revert_deadlineExceeded() public {
         uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(AMOUNT, amountSwap);
-        checkRevertDeadlineExceeded({msgValue: 0, lastStepAmountIn: amountSwap, steps: steps});
-    }
-
-    function test_swapUnwrapForwardNative_exactAmounts_revert_lastStepAmountInsufficient() public {
-        uint256 amountSwap = AMOUNT / TOKEN_PRICE;
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(AMOUNT, amountSwap);
-        checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: amountSwap + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: 0, steps: steps});
     }
 
     function test_swapUnwrapForwardNative_exactAmounts_revert_msgValueAboveExpected() public {
         uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(AMOUNT, amountSwap);
-        checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: amountSwap});
+        checkRevertMsgValueAboveExpectedWithERC20({steps: steps});
     }
 
     function test_swapUnwrapForwardNative_exactAmount0() public {
         uint256 initialBalance = user.balance;
         uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(AMOUNT, FULL_BALANCE);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountSwap,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check the user native balance
         assertEq(user.balance, initialBalance + amountSwap);
     }
@@ -629,46 +488,33 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
         uint256 initialBalance = user.balance;
         uint256 amountSwapExtra = AMOUNT / TOKEN_PRICE + EXTRA_FUNDS;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(AMOUNT, FULL_BALANCE);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountSwapExtra,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check the user native balance with the extra funds
         assertEq(user.balance, initialBalance + amountSwapExtra + EXTRA_FUNDS);
     }
 
     function test_swapUnwrapForwardNative_exactAmount0_revert_deadlineExceeded() public {
-        uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(AMOUNT, FULL_BALANCE);
-        checkRevertDeadlineExceeded({msgValue: 0, lastStepAmountIn: amountSwap, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: 0, steps: steps});
     }
 
-    function test_swapUnwrapForwardNative_exactAmount0_revert_lastStepAmountInsufficient() public {
+    function test_swapUnwrapForwardNative_exactAmount0_revert_finalBalanceInsufficient() public {
         uint256 amountSwap = AMOUNT / TOKEN_PRICE;
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(AMOUNT, FULL_BALANCE);
-        checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: amountSwap + 1, steps: steps});
+        ISynapseIntentRouter.StepParams[] memory steps =
+            getSwapUnwrapForwardNativeSteps(AMOUNT, FULL_BALANCE, amountSwap + 1);
+        checkRevertFinalBalanceInsufficient({msgValue: 0, steps: steps});
     }
 
     function test_swapUnwrapForwardNative_exactAmount0_revert_msgValueAboveExpected() public {
-        uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(AMOUNT, FULL_BALANCE);
-        checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: amountSwap});
+        checkRevertMsgValueAboveExpectedWithERC20({steps: steps});
     }
 
     function test_swapUnwrapForwardNative_exactAmount1() public {
         uint256 initialBalance = user.balance;
         uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(FULL_BALANCE, amountSwap);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountSwap,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check the user native balance
         assertEq(user.balance, initialBalance + amountSwap);
     }
@@ -683,13 +529,7 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
         uint256 initialBalance = user.balance;
         uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(FULL_BALANCE, amountSwap);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountSwap,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check the user native balance
         assertEq(user.balance, initialBalance + amountSwap + EXTRA_FUNDS);
     }
@@ -697,32 +537,27 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     function test_swapUnwrapForwardNative_exactAmount1_revert_deadlineExceeded() public {
         uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(FULL_BALANCE, amountSwap);
-        checkRevertDeadlineExceeded({msgValue: 0, lastStepAmountIn: amountSwap, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: 0, steps: steps});
     }
 
-    function test_swapUnwrapForwardNative_exactAmount1_revert_lastStepAmountInsufficient() public {
+    function test_swapUnwrapForwardNative_exactAmount1_revert_finalBalanceInsufficient() public {
         uint256 amountSwap = AMOUNT / TOKEN_PRICE;
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(FULL_BALANCE, amountSwap);
-        checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: amountSwap + 1, steps: steps});
+        ISynapseIntentRouter.StepParams[] memory steps =
+            getSwapUnwrapForwardNativeSteps(FULL_BALANCE, amountSwap, amountSwap + 1);
+        checkRevertFinalBalanceInsufficient({msgValue: 0, steps: steps});
     }
 
     function test_swapUnwrapForwardNative_exactAmount1_revert_msgValueAboveExpected() public {
         uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(FULL_BALANCE, amountSwap);
-        checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: amountSwap});
+        checkRevertMsgValueAboveExpectedWithERC20({steps: steps});
     }
 
     function test_swapUnwrapForwardNative_fullBalances() public {
         uint256 initialBalance = user.balance;
         uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(FULL_BALANCE, FULL_BALANCE);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountSwap,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check the user native balance
         assertEq(user.balance, initialBalance + amountSwap);
     }
@@ -732,33 +567,26 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
         uint256 initialBalance = user.balance;
         uint256 amountSwapExtra = (AMOUNT + EXTRA_FUNDS) / TOKEN_PRICE + EXTRA_FUNDS;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(FULL_BALANCE, FULL_BALANCE);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountSwapExtra,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check the user native balance with the extra funds
         assertEq(user.balance, initialBalance + amountSwapExtra + EXTRA_FUNDS);
     }
 
     function test_swapUnwrapForwardNative_fullBalances_revert_deadlineExceeded() public {
-        uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(FULL_BALANCE, FULL_BALANCE);
-        checkRevertDeadlineExceeded({msgValue: 0, lastStepAmountIn: amountSwap, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: 0, steps: steps});
     }
 
-    function test_swapUnwrapForwardNative_fullBalances_revert_lastStepAmountInsufficient() public {
+    function test_swapUnwrapForwardNative_fullBalances_revert_finalBalanceInsufficient() public {
         uint256 amountSwap = AMOUNT / TOKEN_PRICE;
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(FULL_BALANCE, FULL_BALANCE);
-        checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: amountSwap + 1, steps: steps});
+        ISynapseIntentRouter.StepParams[] memory steps =
+            getSwapUnwrapForwardNativeSteps(FULL_BALANCE, FULL_BALANCE, amountSwap + 1);
+        checkRevertFinalBalanceInsufficient({msgValue: 0, steps: steps});
     }
 
     function test_swapUnwrapForwardNative_fullBalances_revert_msgValueAboveExpected() public {
-        uint256 amountSwap = AMOUNT / TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapUnwrapForwardNativeSteps(FULL_BALANCE, FULL_BALANCE);
-        checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: amountSwap});
+        checkRevertMsgValueAboveExpectedWithERC20({steps: steps});
     }
 
     // ═══════════════════════════════════════════ SWAP & DEPOSIT ERC20 ════════════════════════════════════════════════
@@ -777,7 +605,7 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
                 token: address(weth),
                 amount: amountSwap,
                 msgValue: 0,
-                zapData: getSwapZapData(address(weth), address(0))
+                zapData: getSwapZapData(address(weth), address(0), 0)
             }),
             // deposit ERC20
             ISynapseIntentRouter.StepParams({
@@ -792,13 +620,7 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     function test_swapDepositERC20_exactAmounts() public {
         uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(AMOUNT, amountDeposit);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountDeposit,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, address(erc20)), amountDeposit);
     }
@@ -811,31 +633,19 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     function test_swapDepositERC20_exactAmounts_revert_deadlineExceeded() public {
         uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(AMOUNT, amountDeposit);
-        checkRevertDeadlineExceeded({msgValue: 0, lastStepAmountIn: amountDeposit, steps: steps});
-    }
-
-    function test_swapDepositERC20_exactAmounts_revert_lastStepAmountInsufficient() public {
-        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(AMOUNT, amountDeposit);
-        checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: amountDeposit + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: 0, steps: steps});
     }
 
     function test_swapDepositERC20_exactAmounts_revert_msgValueAboveExpected() public {
         uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(AMOUNT, amountDeposit);
-        checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: amountDeposit});
+        checkRevertMsgValueAboveExpectedWithERC20({steps: steps});
     }
 
     function test_swapDepositERC20_exactAmount0() public {
         uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(AMOUNT, FULL_BALANCE);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountDeposit,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, address(erc20)), amountDeposit);
     }
@@ -844,45 +654,25 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     function test_swapDepositERC20_exactAmount0_extraFunds() public withExtraFunds {
         uint256 amountDeposit = AMOUNT * TOKEN_PRICE + EXTRA_FUNDS;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(AMOUNT, FULL_BALANCE);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountDeposit,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit with the extra funds
         assertEq(vault.balanceOf(user, address(erc20)), amountDeposit);
     }
 
     function test_swapDepositERC20_exactAmount0_revert_deadlineExceeded() public {
-        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(AMOUNT, FULL_BALANCE);
-        checkRevertDeadlineExceeded({msgValue: 0, lastStepAmountIn: amountDeposit, steps: steps});
-    }
-
-    function test_swapDepositERC20_exactAmount0_revert_lastStepAmountInsufficient() public {
-        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(AMOUNT, FULL_BALANCE);
-        checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: amountDeposit + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: 0, steps: steps});
     }
 
     function test_swapDepositERC20_exactAmount0_revert_msgValueAboveExpected() public {
-        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(AMOUNT, FULL_BALANCE);
-        checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: amountDeposit});
+        checkRevertMsgValueAboveExpectedWithERC20({steps: steps});
     }
 
     function test_swapDepositERC20_exactAmount1() public {
         uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(FULL_BALANCE, amountDeposit);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountDeposit,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, address(erc20)), amountDeposit);
     }
@@ -896,31 +686,19 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     function test_swapDepositERC20_exactAmount1_revert_deadlineExceeded() public {
         uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(FULL_BALANCE, amountDeposit);
-        checkRevertDeadlineExceeded({msgValue: 0, lastStepAmountIn: amountDeposit, steps: steps});
-    }
-
-    function test_swapDepositERC20_exactAmount1_revert_lastStepAmountInsufficient() public {
-        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(FULL_BALANCE, amountDeposit);
-        checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: amountDeposit + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: 0, steps: steps});
     }
 
     function test_swapDepositERC20_exactAmount1_revert_msgValueAboveExpected() public {
         uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(FULL_BALANCE, amountDeposit);
-        checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: amountDeposit});
+        checkRevertMsgValueAboveExpectedWithERC20({steps: steps});
     }
 
     function test_swapDepositERC20_fullBalances() public {
         uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(FULL_BALANCE, FULL_BALANCE);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountDeposit,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, address(erc20)), amountDeposit);
     }
@@ -929,33 +707,19 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     function test_swapDepositERC20_fullBalances_extraFunds() public withExtraFunds {
         uint256 amountDeposit = (AMOUNT + EXTRA_FUNDS) * TOKEN_PRICE + EXTRA_FUNDS;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(FULL_BALANCE, FULL_BALANCE);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountDeposit,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit with the extra funds
         assertEq(vault.balanceOf(user, address(erc20)), amountDeposit);
     }
 
     function test_swapDepositERC20_fullBalances_revert_deadlineExceeded() public {
-        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(FULL_BALANCE, FULL_BALANCE);
-        checkRevertDeadlineExceeded({msgValue: 0, lastStepAmountIn: amountDeposit, steps: steps});
-    }
-
-    function test_swapDepositERC20_fullBalances_revert_lastStepAmountInsufficient() public {
-        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
-        ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(FULL_BALANCE, FULL_BALANCE);
-        checkRevertAmountInsufficient({msgValue: 0, lastStepAmountIn: amountDeposit + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: 0, steps: steps});
     }
 
     function test_swapDepositERC20_fullBalances_revert_msgValueAboveExpected() public {
-        uint256 amountDeposit = AMOUNT * TOKEN_PRICE;
         ISynapseIntentRouter.StepParams[] memory steps = getSwapDepositERC20Steps(FULL_BALANCE, FULL_BALANCE);
-        checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: amountDeposit});
+        checkRevertMsgValueAboveExpectedWithERC20({steps: steps});
     }
 
     // ════════════════════════════════════════════ WRAP & DEPOSIT WETH ════════════════════════════════════════════════
@@ -988,13 +752,7 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
 
     function test_wrapDepositWETH_exactAmounts() public {
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(AMOUNT, AMOUNT);
-        completeUserIntent({
-            msgValue: AMOUNT,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: AMOUNT, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, address(weth)), AMOUNT);
     }
@@ -1006,28 +764,17 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
 
     function test_wrapDepositWETH_exactAmounts_revert_deadlineExceeded() public {
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(AMOUNT, AMOUNT);
-        checkRevertDeadlineExceeded({msgValue: AMOUNT, lastStepAmountIn: AMOUNT, steps: steps});
-    }
-
-    function test_wrapDepositWETH_exactAmounts_revert_lastStepAmountInsufficient() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(AMOUNT, AMOUNT);
-        checkRevertAmountInsufficient({msgValue: AMOUNT, lastStepAmountIn: AMOUNT + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: AMOUNT, steps: steps});
     }
 
     function test_wrapDepositWETH_exactAmounts_revert_msgValueAboveExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(AMOUNT, AMOUNT);
-        checkRevertsMsgValueAboveExpectedWithNative({steps: steps, lastStepAmountIn: AMOUNT});
+        checkRevertsMsgValueAboveExpectedWithNative({steps: steps});
     }
 
     function test_wrapDepositWETH_exactAmount0() public {
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(AMOUNT, FULL_BALANCE);
-        completeUserIntent({
-            msgValue: AMOUNT,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: AMOUNT, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, address(weth)), AMOUNT);
     }
@@ -1036,46 +783,29 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     function test_wrapDepositWETH_exactAmount0_extraFunds() public withExtraFunds {
         uint256 amountDeposit = AMOUNT + EXTRA_FUNDS;
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(AMOUNT, FULL_BALANCE);
-        completeUserIntent({
-            msgValue: AMOUNT,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountDeposit,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: AMOUNT, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit with the extra funds
         assertEq(vault.balanceOf(user, address(weth)), amountDeposit);
     }
 
     function test_wrapDepositWETH_exactAmount0_revert_deadlineExceeded() public {
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(AMOUNT, FULL_BALANCE);
-        checkRevertDeadlineExceeded({msgValue: AMOUNT, lastStepAmountIn: AMOUNT, steps: steps});
-    }
-
-    function test_wrapDepositWETH_exactAmount0_revert_lastStepAmountInsufficient() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(AMOUNT, FULL_BALANCE);
-        checkRevertAmountInsufficient({msgValue: AMOUNT, lastStepAmountIn: AMOUNT + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: AMOUNT, steps: steps});
     }
 
     function test_wrapDepositWETH_exactAmount0_revert_msgValueAboveExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(AMOUNT, FULL_BALANCE);
-        checkRevertsMsgValueAboveExpectedWithNative({steps: steps, lastStepAmountIn: AMOUNT});
+        checkRevertsMsgValueAboveExpectedWithNative({steps: steps});
     }
 
     function test_wrapDepositWETH_exactAmount0_revert_msgValueBelowExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(AMOUNT, FULL_BALANCE);
-        checkRevertsMsgValueBelowExpectedWithNative({steps: steps, lastStepAmountIn: AMOUNT - 1});
+        checkRevertsMsgValueBelowExpectedWithNative({steps: steps});
     }
 
     function test_wrapDepositWETH_exactAmount1() public {
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(FULL_BALANCE, AMOUNT);
-        completeUserIntent({
-            msgValue: AMOUNT,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: AMOUNT, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, address(weth)), AMOUNT);
     }
@@ -1088,33 +818,22 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
 
     function test_wrapDepositWETH_exactAmount1_revert_deadlineExceeded() public {
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(FULL_BALANCE, AMOUNT);
-        checkRevertDeadlineExceeded({msgValue: AMOUNT, lastStepAmountIn: AMOUNT, steps: steps});
-    }
-
-    function test_wrapDepositWETH_exactAmount1_revert_lastStepAmountInsufficient() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(FULL_BALANCE, AMOUNT);
-        checkRevertAmountInsufficient({msgValue: AMOUNT, lastStepAmountIn: AMOUNT + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: AMOUNT, steps: steps});
     }
 
     function test_wrapDepositWETH_exactAmount1_revert_msgValueAboveExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(FULL_BALANCE, AMOUNT);
-        checkRevertsMsgValueAboveExpectedWithNative({steps: steps, lastStepAmountIn: AMOUNT});
+        checkRevertsMsgValueAboveExpectedWithNative({steps: steps});
     }
 
     function test_wrapDepositWETH_exactAmount1_revert_msgValueBelowExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(FULL_BALANCE, AMOUNT);
-        checkRevertsMsgValueBelowExpectedWithNative({steps: steps, lastStepAmountIn: AMOUNT - 1});
+        checkRevertsMsgValueBelowExpectedWithNative({steps: steps});
     }
 
     function test_wrapDepositWETH_fullBalances() public {
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(FULL_BALANCE, FULL_BALANCE);
-        completeUserIntent({
-            msgValue: AMOUNT,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: AMOUNT, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, address(weth)), AMOUNT);
     }
@@ -1123,35 +842,24 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     function test_wrapDepositWETH_fullBalances_extraFunds() public withExtraFunds {
         uint256 amountDeposit = AMOUNT + 2 * EXTRA_FUNDS;
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(FULL_BALANCE, FULL_BALANCE);
-        completeUserIntent({
-            msgValue: AMOUNT,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountDeposit,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: AMOUNT, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit with the extra funds
         assertEq(vault.balanceOf(user, address(weth)), amountDeposit);
     }
 
     function test_wrapDepositWETH_fullBalances_revert_deadlineExceeded() public {
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(FULL_BALANCE, FULL_BALANCE);
-        checkRevertDeadlineExceeded({msgValue: AMOUNT, lastStepAmountIn: AMOUNT, steps: steps});
-    }
-
-    function test_wrapDepositWETH_fullBalances_revert_lastStepAmountInsufficient() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(FULL_BALANCE, FULL_BALANCE);
-        checkRevertAmountInsufficient({msgValue: AMOUNT, lastStepAmountIn: AMOUNT + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: AMOUNT, steps: steps});
     }
 
     function test_wrapDepositWETH_fullBalances_revert_msgValueAboveExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(FULL_BALANCE, FULL_BALANCE);
-        checkRevertsMsgValueAboveExpectedWithNative({steps: steps, lastStepAmountIn: AMOUNT});
+        checkRevertsMsgValueAboveExpectedWithNative({steps: steps});
     }
 
     function test_wrapDepositWETH_fullBalances_revert_msgValueBelowExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getWrapDepositWETHSteps(FULL_BALANCE, FULL_BALANCE);
-        checkRevertsMsgValueBelowExpectedWithNative({steps: steps, lastStepAmountIn: AMOUNT - 1});
+        checkRevertsMsgValueBelowExpectedWithNative({steps: steps});
     }
 
     // ══════════════════════════════════════════ UNWRAP & DEPOSIT NATIVE ══════════════════════════════════════════════
@@ -1170,7 +878,7 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
                 token: address(weth),
                 amount: amountUnwrap,
                 msgValue: 0,
-                zapData: getUnwrapZapData(address(0))
+                zapData: getUnwrapZapData(address(0), 0)
             }),
             // Deposit ETH
             ISynapseIntentRouter.StepParams({
@@ -1184,13 +892,7 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
 
     function test_unwrapDepositNative_exactAmounts() public {
         ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(AMOUNT, AMOUNT);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT);
     }
@@ -1202,28 +904,17 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
 
     function test_unwrapDepositNative_exactAmounts_revert_deadlineExceeded() public {
         ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(AMOUNT, AMOUNT);
-        checkRevertDeadlineExceeded({msgValue: AMOUNT, lastStepAmountIn: AMOUNT, steps: steps});
-    }
-
-    function test_unwrapDepositNative_exactAmounts_revert_lastStepAmountInsufficient() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(AMOUNT, AMOUNT);
-        checkRevertAmountInsufficient({msgValue: AMOUNT, lastStepAmountIn: AMOUNT + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: AMOUNT, steps: steps});
     }
 
     function test_unwrapDepositNative_exactAmounts_revert_msgValueAboveExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(AMOUNT, AMOUNT);
-        checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: AMOUNT});
+        checkRevertMsgValueAboveExpectedWithERC20({steps: steps});
     }
 
     function test_unwrapDepositNative_exactAmount0() public {
         ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(AMOUNT, FULL_BALANCE);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT);
     }
@@ -1232,41 +923,24 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     function test_unwrapDepositNative_exactAmount0_extraFunds() public withExtraFunds {
         uint256 amountDeposit = AMOUNT + EXTRA_FUNDS;
         ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(AMOUNT, FULL_BALANCE);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountDeposit,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit with the extra funds
         assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), amountDeposit);
     }
 
     function test_unwrapDepositNative_exactAmount0_revert_deadlineExceeded() public {
         ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(AMOUNT, FULL_BALANCE);
-        checkRevertDeadlineExceeded({msgValue: AMOUNT, lastStepAmountIn: AMOUNT, steps: steps});
-    }
-
-    function test_unwrapDepositNative_exactAmount0_revert_lastStepAmountInsufficient() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(AMOUNT, FULL_BALANCE);
-        checkRevertAmountInsufficient({msgValue: AMOUNT, lastStepAmountIn: AMOUNT + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: AMOUNT, steps: steps});
     }
 
     function test_unwrapDepositNative_exactAmount0_revert_msgValueAboveExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(AMOUNT, FULL_BALANCE);
-        checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: AMOUNT});
+        checkRevertMsgValueAboveExpectedWithERC20({steps: steps});
     }
 
     function test_unwrapDepositNative_exactAmount1() public {
         ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(FULL_BALANCE, AMOUNT);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT);
     }
@@ -1279,28 +953,17 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
 
     function test_unwrapDepositNative_exactAmount1_revert_deadlineExceeded() public {
         ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(FULL_BALANCE, AMOUNT);
-        checkRevertDeadlineExceeded({msgValue: AMOUNT, lastStepAmountIn: AMOUNT, steps: steps});
-    }
-
-    function test_unwrapDepositNative_exactAmount1_revert_lastStepAmountInsufficient() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(FULL_BALANCE, AMOUNT);
-        checkRevertAmountInsufficient({msgValue: AMOUNT, lastStepAmountIn: AMOUNT + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: AMOUNT, steps: steps});
     }
 
     function test_unwrapDepositNative_exactAmount1_revert_msgValueAboveExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(FULL_BALANCE, AMOUNT);
-        checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: AMOUNT});
+        checkRevertMsgValueAboveExpectedWithERC20({steps: steps});
     }
 
     function test_unwrapDepositNative_fullBalances() public {
         ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(FULL_BALANCE, FULL_BALANCE);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: AMOUNT,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit
         assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), AMOUNT);
     }
@@ -1309,30 +972,19 @@ contract SynapseIntentRouterTest is Test, ISynapseIntentRouterErrors {
     function test_unwrapDepositNative_fullBalances_extraFunds() public withExtraFunds {
         uint256 amountDeposit = AMOUNT + 2 * EXTRA_FUNDS;
         ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(FULL_BALANCE, FULL_BALANCE);
-        completeUserIntent({
-            msgValue: 0,
-            amountIn: AMOUNT,
-            minLastStepAmountIn: amountDeposit,
-            deadline: block.timestamp,
-            steps: steps
-        });
+        completeUserIntent({msgValue: 0, amountIn: AMOUNT, deadline: block.timestamp, steps: steps});
         // Check that the vault registered the deposit with the extra funds
         assertEq(vault.balanceOf(user, NATIVE_GAS_TOKEN), amountDeposit);
     }
 
     function test_unwrapDepositNative_fullBalances_revert_deadlineExceeded() public {
         ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(FULL_BALANCE, FULL_BALANCE);
-        checkRevertDeadlineExceeded({msgValue: AMOUNT, lastStepAmountIn: AMOUNT, steps: steps});
-    }
-
-    function test_unwrapDepositNative_fullBalances_revert_lastStepAmountInsufficient() public {
-        ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(FULL_BALANCE, FULL_BALANCE);
-        checkRevertAmountInsufficient({msgValue: AMOUNT, lastStepAmountIn: AMOUNT + 1, steps: steps});
+        checkRevertDeadlineExceeded({msgValue: AMOUNT, steps: steps});
     }
 
     function test_unwrapDepositNative_fullBalances_revert_msgValueAboveExpected() public {
         ISynapseIntentRouter.StepParams[] memory steps = getUnwrapDepositNativeSteps(FULL_BALANCE, FULL_BALANCE);
-        checkRevertMsgValueAboveExpectedWithERC20({steps: steps, lastStepAmountIn: AMOUNT});
+        checkRevertMsgValueAboveExpectedWithERC20({steps: steps});
     }
 
     // ═══════════════════════════════════════════════════ UTILS ═══════════════════════════════════════════════════════

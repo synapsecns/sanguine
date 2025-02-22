@@ -26,7 +26,8 @@ contract TokenZapV1 is IZapRecipient {
 
     address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    error TokenZapV1__FinalTokenBalanceZero();
+    error TokenZapV1__FinalBalanceBelowMin();
+    error TokenZapV1__FinalTokenNotSpecified();
     error TokenZapV1__PayloadLengthAboveMax();
     error TokenZapV1__TargetZeroAddress();
     error TokenZapV1__TokenZeroAddress();
@@ -85,10 +86,11 @@ contract TokenZapV1 is IZapRecipient {
             Address.functionCallWithValue({target: target, data: payload, value: msgValue});
         }
         // Forward the final token to the specified recipient, if required.
-        address forwardTo = zapData.forwardTo();
-        if (forwardTo != address(0)) {
-            _forwardToken(zapData.finalToken(), forwardTo);
-        }
+        _checkBalanceAndForward({
+            token: zapData.finalToken(),
+            forwardTo: zapData.forwardTo(),
+            minFinalBalance: zapData.minFinalBalance()
+        });
         // Return function selector to indicate successful execution
         return this.zap.selector;
     }
@@ -116,35 +118,34 @@ contract TokenZapV1 is IZapRecipient {
     /// @param forwardTo        The address to which `finalToken` should be forwarded. This parameter is required only
     ///                         if the Zap action does not automatically transfer the token to the intended recipient.
     ///                         Otherwise, it must be set to address(0).
+    /// @param minFinalBalance  The minimum balance of `finalToken` to have after performing the Zap action.
+    ///                         This parameter could be used to implement slippage protection for a Zap action that does
+    ///                         not automatically transfer the token to the intended recipient. Otherwise, it must be
+    ///                         set to 0.
     function encodeZapData(
         address target,
         bytes memory payload,
         uint256 amountPosition,
         address finalToken,
-        address forwardTo
+        address forwardTo,
+        uint256 minFinalBalance
     )
         external
         pure
         returns (bytes memory)
     {
-        if (payload.length > ZapDataV1.AMOUNT_NOT_PRESENT) {
-            revert TokenZapV1__PayloadLengthAboveMax();
-        }
-        // Final token needs to be specified if forwarding is required.
-        if (forwardTo != address(0) && finalToken == address(0)) {
-            revert TokenZapV1__TokenZeroAddress();
-        }
         // External integrations do not need to understand the specific `AMOUNT_NOT_PRESENT` semantics.
         // Therefore, they can specify any value greater than or equal to `payload.length` to indicate
         // that the amount is not present in the payload.
         if (amountPosition >= payload.length) {
             amountPosition = ZapDataV1.AMOUNT_NOT_PRESENT;
         }
-        // At this point, we have checked that both `amountPosition` and `payload.length` fit in uint16.
+        // At this point, we have checked that `amountPosition` fits in uint16, so we can safely cast it.
         return ZapDataV1.encodeV1({
             amountPosition_: uint16(amountPosition),
             finalToken_: finalToken,
             forwardTo_: forwardTo,
+            minFinalBalance_: minFinalBalance,
             target_: target,
             payload_: payload
         });
@@ -168,12 +169,18 @@ contract TokenZapV1 is IZapRecipient {
     }
 
     /// @notice Forwards the proceeds of the Zap action to the specified non-zero recipient.
-    function _forwardToken(address token, address forwardTo) internal {
+    function _checkBalanceAndForward(address token, address forwardTo, uint256 minFinalBalance) internal {
+        // Do nothing if both forwarding and minimum balance checks are not required.
+        if (forwardTo == address(0) && minFinalBalance == 0) {
+            return;
+        }
         // Check the token address and its balance to be safely forwarded.
-        if (token == address(0)) revert TokenZapV1__TokenZeroAddress();
+        if (token == address(0)) revert TokenZapV1__FinalTokenNotSpecified();
+        // Perform the balance check before forwarding.
         uint256 amount = token == NATIVE_GAS_TOKEN ? address(this).balance : IERC20(token).balanceOf(address(this));
-        if (amount == 0) revert TokenZapV1__FinalTokenBalanceZero();
-        // Forward the full balance of the final token to the specified recipient.
+        if (amount == 0 || amount < minFinalBalance) revert TokenZapV1__FinalBalanceBelowMin();
+        // Forward the full balance of the final token to the specified recipient, if required.
+        if (forwardTo == address(0)) return;
         if (token == NATIVE_GAS_TOKEN) {
             Address.sendValue({recipient: payable(forwardTo), amount: amount});
         } else {
