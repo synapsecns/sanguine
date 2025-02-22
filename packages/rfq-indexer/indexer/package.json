@@ -12,7 +12,7 @@
     "start": "ponder start",
     "codegen": "ponder codegen",
     "lint": "eslint .",
-    "ci:lint": "eslint .",
+    "ci:lint": "eslint . --ignore-path .eslintignore",
     "typecheck": "tsc",
     "test:coverage": "echo 'No tests defined.'",
     "build:go": " ",
@@ -23,7 +23,8 @@
   "license": "ISC",
   "dependencies": {
     "@ponder/core": "^0.4.41",
-    "viem": "^1.19.3"
+    "viem": "^1.19.3",
+    "dotenv": "^16.0.3"
   },
   "engines": {
     "node": ">=18.17.0"

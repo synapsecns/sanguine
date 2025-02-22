@@ -1,29 +1,37 @@
 import { trim } from 'viem'
+
 import { ponder } from '@/generated'
 import { formatAmount } from './utils/formatAmount'
 import { getChainName } from './utils/chains'
-import { contractNetworks_FastBridgeV1, contractNetworks_FastBridgeV2 } from '@/ponder.config'
+import {
+  contractNetworks_FastBridgeV1,
+  contractNetworks_FastBridgeV2,
+} from '@/ponder.config'
 
-
-  // ponder doesnt seem to handle a situation where two contracts on the same chain share the same topic.
-  // it seems instead to process the topic under *both* contracts, so this extra step is necessary to ensure
-  // it only performs indexing functions on the handler respective to the contract. duplicate errors will occur otherwise
-  const validContractAddresses = {
-    FastBridgeV1: Object.values(contractNetworks_FastBridgeV1).map((network: any) => network.contractAddr),
-    FastBridgeV2: Object.values(contractNetworks_FastBridgeV2).map((network: any) => network.contractAddr),
-  };
-
+// ponder doesnt seem to handle a situation where two contracts on the same chain share the same topic.
+// it seems instead to process the topic under *both* contracts, so this extra step is necessary to ensure
+// it only performs indexing functions on the handler respective to the contract. duplicate errors will occur otherwise
+const validContractAddresses = {
+  FastBridgeV1: Object.values(contractNetworks_FastBridgeV1).map(
+    (network: any) => network.contractAddr
+  ),
+  FastBridgeV2: Object.values(contractNetworks_FastBridgeV2).map(
+    (network: any) => network.contractAddr
+  ),
+}
 
 //* ############ FastBridgeV2 ########### *//
 
 /* ORIGIN CHAIN EVENTS */
 
 ponder.on('v2:BridgeQuoteDetails', async ({ event, context }) => {
-  
-  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) return;
+  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) {
+    return
+  }
 
-  
-  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) return;
+  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) {
+    return
+  }
 
   const {
     db: { BridgeQuoteDetails },
@@ -31,10 +39,7 @@ ponder.on('v2:BridgeQuoteDetails', async ({ event, context }) => {
   } = context
 
   const {
-    args: {
-      transactionId,
-      quoteId
-    },
+    args: { transactionId, quoteId },
     block: { timestamp },
     transaction: { hash },
     log: { blockNumber },
@@ -44,19 +49,18 @@ ponder.on('v2:BridgeQuoteDetails', async ({ event, context }) => {
     id: transactionId,
     data: {
       transactionId,
-      quoteId: quoteId,
+      quoteId,
       blockNumber: BigInt(blockNumber),
       blockTimestamp: Number(timestamp),
-      transactionHash: hash
+      transactionHash: hash,
     },
   })
-  
 })
 
-
 ponder.on('v2:BridgeRequested', async ({ event, context }) => {
-
-  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) return;
+  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) {
+    return
+  }
 
   const {
     db: { BridgeRequestEvents },
@@ -104,10 +108,10 @@ ponder.on('v2:BridgeRequested', async ({ event, context }) => {
   })
 })
 
-
 ponder.on('v2:BridgeDepositRefunded', async ({ event, context }) => {
-
-  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) return;
+  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) {
+    return
+  }
 
   const {
     args: { transactionId, to, token, amount },
@@ -139,10 +143,10 @@ ponder.on('v2:BridgeDepositRefunded', async ({ event, context }) => {
 })
 
 ponder.on('v2:BridgeProofProvided', async ({ event, context }) => {
-  
-  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) return;
+  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) {
+    return
+  }
 
-  
   const {
     args: { transactionId, relayer },
     block: { timestamp },
@@ -178,10 +182,10 @@ ponder.on('v2:BridgeProofProvided', async ({ event, context }) => {
 })
 
 ponder.on('v2:BridgeDepositClaimed', async ({ event, context }) => {
-  
-  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) return;
+  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) {
+    return
+  }
 
-  
   const {
     args: { transactionId, relayer, to, token, amount },
     block: { timestamp },
@@ -213,10 +217,10 @@ ponder.on('v2:BridgeDepositClaimed', async ({ event, context }) => {
 })
 
 ponder.on('v2:BridgeProofDisputed', async ({ event, context }) => {
-  
-  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) return;
+  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) {
+    return
+  }
 
-  
   const {
     args: { transactionId, relayer },
     block: { timestamp },
@@ -252,10 +256,10 @@ ponder.on('v2:BridgeProofDisputed', async ({ event, context }) => {
 /* DESTINATION CHAIN EVENTS */
 
 ponder.on('v2:BridgeRelayed', async ({ event, context }) => {
-  
-  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) return;
+  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) {
+    return
+  }
 
-  
   const {
     args: {
       transactionId,
@@ -300,15 +304,14 @@ ponder.on('v2:BridgeRelayed', async ({ event, context }) => {
   })
 })
 
-
-
 //* ############ FastBridgeV1 ########### *//
 
 /* ORIGIN CHAIN EVENTS */
 
 ponder.on('v1:BridgeRequested', async ({ event, context }) => {
-  
-  if (!validContractAddresses.FastBridgeV1.includes(event.log.address)) return;
+  if (!validContractAddresses.FastBridgeV1.includes(event.log.address)) {
+    return
+  }
 
   const {
     db: { BridgeRequestEvents },
@@ -357,10 +360,10 @@ ponder.on('v1:BridgeRequested', async ({ event, context }) => {
 })
 
 ponder.on('v1:BridgeDepositRefunded', async ({ event, context }) => {
-  
-  if (!validContractAddresses.FastBridgeV1.includes(event.log.address)) return;
+  if (!validContractAddresses.FastBridgeV1.includes(event.log.address)) {
+    return
+  }
 
-  
   const {
     args: { transactionId, to, token, amount },
     block: { timestamp },
@@ -391,10 +394,10 @@ ponder.on('v1:BridgeDepositRefunded', async ({ event, context }) => {
 })
 
 ponder.on('v1:BridgeProofProvided', async ({ event, context }) => {
-  
-  if (!validContractAddresses.FastBridgeV1.includes(event.log.address)) return;
+  if (!validContractAddresses.FastBridgeV1.includes(event.log.address)) {
+    return
+  }
 
-  
   const {
     args: { transactionId, relayer },
     block: { timestamp },
@@ -430,10 +433,10 @@ ponder.on('v1:BridgeProofProvided', async ({ event, context }) => {
 })
 
 ponder.on('v1:BridgeDepositClaimed', async ({ event, context }) => {
-  
-  if (!validContractAddresses.FastBridgeV1.includes(event.log.address)) return;
+  if (!validContractAddresses.FastBridgeV1.includes(event.log.address)) {
+    return
+  }
 
-  
   const {
     args: { transactionId, relayer, to, token, amount },
     block: { timestamp },
@@ -465,10 +468,10 @@ ponder.on('v1:BridgeDepositClaimed', async ({ event, context }) => {
 })
 
 ponder.on('v1:BridgeProofDisputed', async ({ event, context }) => {
-  
-  if (!validContractAddresses.FastBridgeV1.includes(event.log.address)) return;
+  if (!validContractAddresses.FastBridgeV1.includes(event.log.address)) {
+    return
+  }
 
-  
   const {
     args: { transactionId, relayer },
     block: { timestamp },
@@ -504,10 +507,10 @@ ponder.on('v1:BridgeProofDisputed', async ({ event, context }) => {
 /* DESTINATION CHAIN EVENTS */
 
 ponder.on('v1:BridgeRelayed', async ({ event, context }) => {
-  
-  if (!validContractAddresses.FastBridgeV1.includes(event.log.address)) return;
+  if (!validContractAddresses.FastBridgeV1.includes(event.log.address)) {
+    return
+  }
 
-  
   const {
     args: {
       transactionId,
