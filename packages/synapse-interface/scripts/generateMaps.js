@@ -3,6 +3,7 @@ require('dotenv').config()
 const { ethers } = require('ethers')
 
 const { prettyPrintTS } = require('./utils/prettyPrintTs')
+const { fetchGasZipData } = require('./utils/fetchGasZipData')
 const { fetchRfqData } = require('./utils/fetchRfqData')
 // List of ignored bridge symbols
 const ignoredBridgeSymbols = require('./data/ignoredBridgeSymbols.json')
@@ -262,6 +263,15 @@ const getFastBridgeOriginMap = async (chainId, rfqResponse) => {
   return tokensToSymbols
 }
 
+const getGasZipOriginMap = async (chainId, gasZipChains) => {
+  if (!gasZipChains.includes(Number(chainId))) {
+    return {}
+  }
+  const tokensToSymbols = {}
+  tokensToSymbols[ETH] = new Set(['Gas.zip'])
+  return tokensToSymbols
+}
+
 // Function to get a list of bridge token symbols that could be swapped
 // into a token on a destination chain.
 const getDestinationBridgeSymbols = async (chainId, token) => {
@@ -371,6 +381,7 @@ const printMaps = async () => {
   console.log('Starting on chains: ', Object.keys(providers))
 
   const rfqResponse = await fetchRfqData()
+  const gasZipChains = await fetchGasZipData()
   await Promise.all(
     Object.keys(providers).map(async (chainId) => {
       // Get map from token to set of bridge token symbols
@@ -384,6 +395,11 @@ const printMaps = async () => {
       const rfqOriginMap = await getFastBridgeOriginMap(chainId, rfqResponse)
       Object.keys(rfqOriginMap).forEach((token) => {
         addSetToMap(originMap, token, rfqOriginMap[token])
+      })
+      // Add tokens from Gas.zip originMap to global originMap
+      const gasZipOriginMap = await getGasZipOriginMap(chainId, gasZipChains)
+      Object.keys(gasZipOriginMap).forEach((token) => {
+        addSetToMap(originMap, token, gasZipOriginMap[token])
       })
       const tokens = {}
       await Promise.all(
@@ -413,6 +429,11 @@ const printMaps = async () => {
           ) {
             tokens[token].destination.push(getRFQSymbol(tokens[token].symbol))
           }
+          // Check if token is a native asset on a GasZip supported chain
+          if (token === ETH && gasZipChains.includes(Number(chainId))) {
+            tokens[token].destination.push('Gas.zip')
+          }
+          tokens[token].destination = tokens[token].destination.sort()
         })
       )
       bridgeMap[chainId] = sortMapByKeys(tokens)
