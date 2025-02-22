@@ -53,6 +53,15 @@ export default createSchema((p) => ({
     transactionHash: p.string(),
   }),
 
+  BridgeQuoteDetails: p.createTable({
+    id: p.string(),
+    transactionId: p.string(),
+    quoteId: p.string(),
+    blockNumber: p.bigint(),
+    blockTimestamp: p.int(),
+    transactionHash: p.string(),
+  }),
+
   BridgeDepositRefundedEvents: p.createTable({
     id: p.string(),
     transactionId: p.string(),

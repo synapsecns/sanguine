@@ -18,6 +18,42 @@ import { contractNetworks_FastBridgeV1, contractNetworks_FastBridgeV2 } from '@/
 
 /* ORIGIN CHAIN EVENTS */
 
+ponder.on('v2:BridgeQuoteDetails', async ({ event, context }) => {
+  
+  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) return;
+
+  
+  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) return;
+
+  const {
+    db: { BridgeQuoteDetails },
+    network: { chainId },
+  } = context
+
+  const {
+    args: {
+      transactionId,
+      quoteId
+    },
+    block: { timestamp },
+    transaction: { hash },
+    log: { blockNumber },
+  } = event
+
+  await BridgeQuoteDetails.create({
+    id: transactionId,
+    data: {
+      transactionId,
+      quoteId: quoteId,
+      blockNumber: BigInt(blockNumber),
+      blockTimestamp: Number(timestamp),
+      transactionHash: hash
+    },
+  })
+  
+})
+
+
 ponder.on('v2:BridgeRequested', async ({ event, context }) => {
 
   if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) return;
