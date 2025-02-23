@@ -48,6 +48,7 @@ import beraLogo from '@assets/chains/berachain.svg'
 import cantoLogo from '@assets/chains/canto.svg'
 import croLogo from '@assets/chains/cronos.svg'
 import glmrLogo from '@assets/chains/moonbeam.svg'
+import hypeLogo from '@assets/chains/hyperliquid.svg'
 
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
@@ -1340,4 +1341,20 @@ export const GLMR = new Token({
   visibilityRank: 90,
   priorityRank: 300,
   routeSymbol: 'GLMR',
+})
+
+export const HYPE = new Token({
+  addresses: {
+    [CHAINS.HYPEREVM.id]: zeroAddress,
+  },
+  decimals: 18,
+  symbol: 'HYPE',
+  name: 'HyperEVM',
+  logo: hypeLogo,
+  isNative: true,
+  swapableType: 'HYPE',
+  color: 'green',
+  visibilityRank: 90,
+  priorityRank: 300,
+  routeSymbol: 'HYPE',
 })

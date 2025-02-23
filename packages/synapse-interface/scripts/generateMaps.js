@@ -9,6 +9,7 @@ const { fetchRfqData } = require('./utils/fetchRfqData')
 const ignoredBridgeSymbols = require('./data/ignoredBridgeSymbols.json')
 // Symbol overrides (for tokens with incorrect on-chain symbols)
 const symbolOverrides = require('./data/symbolOverrides.json')
+const providerOverrides = require('./data/providerOverrides.json')
 // Contract ABIs
 const SynapseRouterABI = require('./abi/SynapseRouter.json')
 const SynapseCCTPABI = require('./abi/SynapseCCTP.json')
@@ -54,7 +55,7 @@ if (!process.env.RPC_URL) {
 // Format is { chainId: provider }
 const providers = allChainIds.reduce((acc, chainId) => {
   acc[chainId] = new ethers.providers.JsonRpcProvider(
-    `${process.env.RPC_URL}/${chainId}`
+    providerOverrides[chainId] || `${process.env.RPC_URL}/${chainId}`
   )
   return acc
 }, {})
