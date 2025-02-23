@@ -9,6 +9,47 @@ import {
 } from '@/ponder.config'
 import { decodeAbiParameters } from 'viem/utils'
 
+
+// v2 uses packed data for request bytes & so cannot be decoded via same viem func
+// that can be used for v1... This func is somewhat dynamic but still has some assumptions
+// & generally will only work with a v2 request bytes payload. future changes to fastbridge
+// payloads will probably not work w/ this function as-is & would require tweaks
+function decodePackedV2BridgeTx(types: Array<{type: string, name: string}>, data: string) {
+  let offset = 0;
+  const results:any = {};
+
+  if (data.startsWith('0x')) {
+    data = data.slice(2);
+  }
+
+  types.forEach(({ type, name }) => {
+    if (type.startsWith('uint')) {
+      const bits = parseInt(type.slice(4)) || 256; // Default to 256 bits if unspecified
+      const length = bits / 8 * 2; 
+      const value = '0x' + data.substring(offset, offset + length);
+      results[name] = BigInt(value);
+      offset += length;
+    } else if (type.startsWith('bytes')) {
+      const value = '0x' + data.substring(offset); // assume rest of the string must be part of the bytes data
+      results[name] = value;
+      offset = data.length; 
+    } else if (type === 'address') {
+      const length = 40; 
+      const value = '0x' + data.substring(offset, offset + length);
+      results[name] = value;
+      offset += length;
+    } else if (type === 'bool') {
+      const value = data.substring(offset, offset + 2); 
+      results[name] = value === '01';
+      offset += 2;
+    } else {
+      throw new Error(`Unsupported type ${type}`);
+    }
+  });
+
+  return results;
+}
+
 // ponder doesnt seem to handle a situation where two contracts on the same chain share the same topic.
 // it seems instead to process the topic under *both* contracts, so this extra step is necessary to ensure
 // it only performs indexing functions on the handler respective to the contract. duplicate errors will occur otherwise
@@ -85,7 +126,7 @@ ponder.on('v2:BridgeRequested', async ({ event, context }) => {
     log: { blockNumber },
   } = event
 
-  const decodedRequestArray = decodeAbiParameters(
+  const decodedRequest = decodePackedV2BridgeTx(
     [
       { type: 'uint32', name: 'originChainId' },
       { type: 'uint32', name: 'destChainId' },
@@ -106,24 +147,6 @@ ponder.on('v2:BridgeRequested', async ({ event, context }) => {
     request
   );
 
-  const decodedRequest = {
-    originChainId: decodedRequestArray[0],
-    destChainId: decodedRequestArray[1],
-    originSender: decodedRequestArray[2],
-    destRecipient: decodedRequestArray[3],
-    originToken: decodedRequestArray[4],
-    destToken: decodedRequestArray[5],
-    originAmount: decodedRequestArray[6],
-    destAmount: decodedRequestArray[7],
-    originFeeAmount: decodedRequestArray[8],
-    deadline: decodedRequestArray[9],
-    nonce: decodedRequestArray[10],
-    exclusivityRelayer: decodedRequestArray[11],
-    exclusivityEndTime: decodedRequestArray[12],
-    zapNative: decodedRequestArray[13],
-    zapData: decodedRequestArray[14]
-  };
-
   await BridgeRequestEvents.create({
     id: transactionId,
     data: {
@@ -141,7 +164,7 @@ ponder.on('v2:BridgeRequested', async ({ event, context }) => {
       destAmount,
       destAmountFormatted: formatAmount(destAmount, destToken),
       sendChainGas,
-      exclusivityRelayer: trim(decodedRequest.exclusivityRelayer),
+      exclusivityRelayer: decodedRequest.exclusivityRelayer,
       exclusivityEndTime: decodedRequest.exclusivityEndTime,
       zapNative: decodedRequest.zapNative,
       zapData: decodedRequest.zapData,
