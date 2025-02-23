@@ -1,8 +1,14 @@
-import { Request, Response } from 'express'
+import { Request, response, Response } from 'express'
+
+import { jsonToHtmlTable } from '../utils/json_formatter'
 
 import { db } from '../db'
 import { qDeposits, qRelays, qProofs, qClaims, qRefunds } from '../queries'
 import { nest_results } from '../utils/nestResults'
+
+import axios from 'axios'
+
+
 
 const sevenDaysAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60
 
@@ -10,6 +16,8 @@ export const pendingTransactionsMissingClaimController = async (
   req: Request,
   res: Response
 ) => {
+  const flags = req.query.flags as string | undefined;
+  const format = req.query.format as string | undefined;
   try {
     const query = db
       .with('deposits', () => qDeposits())
@@ -35,7 +43,11 @@ export const pendingTransactionsMissingClaimController = async (
     const nestedResults = nest_results(results)
 
     if (nestedResults && nestedResults.length > 0) {
-      res.json(nestedResults)
+      if (format === 'html') {
+        res.send(jsonToHtmlTable(nestedResults));
+      } else {
+        res.json(nestedResults);
+      }
     } else {
       res
         .status(200)
@@ -51,6 +63,8 @@ export const pendingTransactionsMissingProofController = async (
   req: Request,
   res: Response
 ) => {
+  const flags = req.query.flags as string | undefined;
+  const format = req.query.format as string | undefined;
   try {
     const query = db
       .with('deposits', () => qDeposits())
@@ -73,7 +87,11 @@ export const pendingTransactionsMissingProofController = async (
     const nestedResults = nest_results(results)
 
     if (nestedResults && nestedResults.length > 0) {
-      res.json(nestedResults)
+      if (format === 'html') {
+        res.send(jsonToHtmlTable(nestedResults));
+      } else {
+        res.json(nestedResults);
+      }
     } else {
       res
         .status(200)
@@ -89,6 +107,8 @@ export const pendingTransactionsMissingRelayController = async (
   req: Request,
   res: Response
 ) => {
+  const flags = req.query.flags as string | undefined;
+  const format = req.query.format as string | undefined;
   try {
     const query = db
       .with('deposits', () => qDeposits())
@@ -114,11 +134,34 @@ export const pendingTransactionsMissingRelayController = async (
       .orderBy('blockTimestamp_deposit', 'desc')
       .where('blockTimestamp_deposit', '>', sevenDaysAgo)
 
-    const results = await query.execute()
+      const results = await query.execute()
+
+    if (flags?.includes("synapse")) {
+      const axiosRequests = results.map((result: any) => {
+        return axios.get(`https://screener.omnirpc.io/fe/address/${result.sender}`, { timeout: 2500 })
+          .then(response => {
+            const { risk } = response.data;
+            if (typeof risk !== 'undefined') {
+              result.senderStatus = risk ? 'SCREENED' : 'OK';
+            }
+          })
+          .catch(error => {
+            result.senderStatus = 'LOOKUP_FAILED';
+            console.log('Error calling screener:', error.message);
+          });
+      });
+
+      await Promise.all(axiosRequests);
+    }
+
     const nestedResults = nest_results(results)
 
     if (nestedResults && nestedResults.length > 0) {
-      res.json(nestedResults)
+      if (format === 'html') {
+        res.send(jsonToHtmlTable(nestedResults));
+      } else {
+        res.json(nestedResults);
+      }
     } else {
       res
         .status(200)
@@ -134,6 +177,8 @@ export const pendingTransactionsMissingRelayExceedDeadlineController = async (
   req: Request,
   res: Response
 ) => {
+  const flags = req.query.flags as string | undefined;
+  const format = req.query.format as string | undefined;
   try {
     const query = db
       .with('deposits', () => qDeposits())
@@ -163,7 +208,11 @@ export const pendingTransactionsMissingRelayExceedDeadlineController = async (
     const nestedResults = nest_results(results)
 
     if (nestedResults && nestedResults.length > 0) {
-      res.json(nestedResults)
+      if (format === 'html') {
+        res.send(jsonToHtmlTable(nestedResults));
+      } else {
+        res.json(nestedResults);
+      }
     } else {
       res
         .status(200)

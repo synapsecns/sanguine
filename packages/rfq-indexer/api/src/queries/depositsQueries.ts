@@ -1,6 +1,7 @@
 import { db } from '../db'
 
 export const qDeposits = () => {
+
   return db
     .selectFrom('BridgeRequestEvents')
     .select([

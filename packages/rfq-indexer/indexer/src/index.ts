@@ -7,6 +7,7 @@ import {
   contractNetworks_FastBridgeV1,
   contractNetworks_FastBridgeV2,
 } from '@/ponder.config'
+import { decodeAbiParameters } from 'viem/utils'
 
 // ponder doesnt seem to handle a situation where two contracts on the same chain share the same topic.
 // it seems instead to process the topic under *both* contracts, so this extra step is necessary to ensure
@@ -28,11 +29,7 @@ ponder.on('v2:BridgeQuoteDetails', async ({ event, context }) => {
   if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) {
     return
   }
-
-  if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) {
-    return
-  }
-
+  
   const {
     db: { BridgeQuoteDetails },
     network: { chainId },
@@ -57,11 +54,14 @@ ponder.on('v2:BridgeQuoteDetails', async ({ event, context }) => {
   })
 })
 
+
+
 ponder.on('v2:BridgeRequested', async ({ event, context }) => {
   if (!validContractAddresses.FastBridgeV2.includes(event.log.address)) {
     return
   }
 
+  
   const {
     db: { BridgeRequestEvents },
     network: { chainId },
@@ -78,11 +78,51 @@ ponder.on('v2:BridgeRequested', async ({ event, context }) => {
       originAmount,
       destAmount,
       sendChainGas,
+      
     },
     block: { timestamp },
     transaction: { hash },
     log: { blockNumber },
   } = event
+
+  const decodedRequestArray = decodeAbiParameters(
+    [
+      { type: 'uint32', name: 'originChainId' },
+      { type: 'uint32', name: 'destChainId' },
+      { type: 'address', name: 'originSender' },
+      { type: 'address', name: 'destRecipient' },
+      { type: 'address', name: 'originToken' },
+      { type: 'address', name: 'destToken' },
+      { type: 'uint256', name: 'originAmount' },
+      { type: 'uint256', name: 'destAmount' },
+      { type: 'uint256', name: 'originFeeAmount' },
+      { type: 'uint256', name: 'deadline' },
+      { type: 'uint256', name: 'nonce' },
+      { type: 'address', name: 'exclusivityRelayer' },
+      { type: 'uint256', name: 'exclusivityEndTime' },
+      { type: 'uint256', name: 'zapNative' },
+      { type: 'bytes', name: 'zapData' }
+    ],
+    request
+  );
+
+  const decodedRequest = {
+    originChainId: decodedRequestArray[0],
+    destChainId: decodedRequestArray[1],
+    originSender: decodedRequestArray[2],
+    destRecipient: decodedRequestArray[3],
+    originToken: decodedRequestArray[4],
+    destToken: decodedRequestArray[5],
+    originAmount: decodedRequestArray[6],
+    destAmount: decodedRequestArray[7],
+    originFeeAmount: decodedRequestArray[8],
+    deadline: decodedRequestArray[9],
+    nonce: decodedRequestArray[10],
+    exclusivityRelayer: decodedRequestArray[11],
+    exclusivityEndTime: decodedRequestArray[12],
+    zapNative: decodedRequestArray[13],
+    zapData: decodedRequestArray[14]
+  };
 
   await BridgeRequestEvents.create({
     id: transactionId,
@@ -101,6 +141,13 @@ ponder.on('v2:BridgeRequested', async ({ event, context }) => {
       destAmount,
       destAmountFormatted: formatAmount(destAmount, destToken),
       sendChainGas,
+      exclusivityRelayer: trim(decodedRequest.exclusivityRelayer),
+      exclusivityEndTime: decodedRequest.exclusivityEndTime,
+      zapNative: decodedRequest.zapNative,
+      zapData: decodedRequest.zapData,
+      originFeeAmount: decodedRequest.originFeeAmount,
+      deadline: decodedRequest.deadline,
+      nonce: decodedRequest.nonce,
       blockNumber: BigInt(blockNumber),
       blockTimestamp: Number(timestamp),
       transactionHash: hash,
@@ -335,6 +382,40 @@ ponder.on('v1:BridgeRequested', async ({ event, context }) => {
     log: { blockNumber },
   } = event
 
+
+  const decodedRequestArray = decodeAbiParameters(
+    [
+      { type: 'uint32', name: 'originChainId' },
+      { type: 'uint32', name: 'destChainId' },
+      { type: 'address', name: 'originSender' },
+      { type: 'address', name: 'destRecipient' },
+      { type: 'address', name: 'originToken' },
+      { type: 'address', name: 'destToken' },
+      { type: 'uint256', name: 'originAmount' },
+      { type: 'uint256', name: 'destAmount' },
+      { type: 'uint256', name: 'originFeeAmount' },
+      { type: 'bool', name: 'sendChainGas' },
+      { type: 'uint256', name: 'deadline' },
+      { type: 'uint256', name: 'nonce' }
+    ],
+    request
+  );
+
+  const decodedRequest = {
+    originChainId: decodedRequestArray[0],
+    destChainId: decodedRequestArray[1],
+    originSender: decodedRequestArray[2],
+    destRecipient: decodedRequestArray[3],
+    originToken: decodedRequestArray[4],
+    destToken: decodedRequestArray[5],
+    originAmount: decodedRequestArray[6],
+    destAmount: decodedRequestArray[7],
+    originFeeAmount: decodedRequestArray[8],
+    sendChainGas: decodedRequestArray[9],
+    deadline: decodedRequestArray[10],
+    nonce: decodedRequestArray[11]
+  };
+
   await BridgeRequestEvents.create({
     id: transactionId,
     data: {
@@ -352,6 +433,13 @@ ponder.on('v1:BridgeRequested', async ({ event, context }) => {
       destAmount,
       destAmountFormatted: formatAmount(destAmount, destToken),
       sendChainGas,
+      originFeeAmount: decodedRequest.originFeeAmount,
+      deadline: decodedRequest.deadline,
+      nonce: decodedRequest.nonce,
+      exclusivityRelayer: undefined,
+      exclusivityEndTime: undefined,
+      zapNative: undefined,
+      zapData: undefined,
       blockNumber: BigInt(blockNumber),
       blockTimestamp: Number(timestamp),
       transactionHash: hash,

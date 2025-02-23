@@ -3,11 +3,14 @@ import { Request, Response } from 'express'
 import { db } from '../db'
 import { qDeposits, qRelays, qRefunds } from '../queries'
 import { nest_results } from '../utils/nestResults'
+import { jsonToHtmlTable } from '../utils/json_formatter'
 
 export const refundedAndRelayedTransactionsController = async (
   req: Request,
   res: Response
 ) => {
+  const flags = req.query.flags as string | undefined;
+  const format = req.query.format as string | undefined;
   try {
     const query = db
       .with('deposits', () => qDeposits())
@@ -30,7 +33,11 @@ export const refundedAndRelayedTransactionsController = async (
     const nestedResults = nest_results(results)
 
     if (nestedResults && nestedResults.length > 0) {
-      res.json(nestedResults)
+      if (format === 'html') {
+        res.send(jsonToHtmlTable(nestedResults));
+      } else {
+        res.json(nestedResults);
+      }
     } else {
       res
         .status(200)

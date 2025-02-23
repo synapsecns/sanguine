@@ -1,10 +1,13 @@
 import { Request, Response } from 'express'
+import { jsonToHtmlTable } from '../utils/json_formatter'
 
 import { db } from '../db'
 import { qDisputes } from '../queries'
 import { nest_results } from '../utils/nestResults'
 
 export const disputesController = async (req: Request, res: Response) => {
+  const flags = req.query.flags as string | undefined;
+  const format = req.query.format as string | undefined;
   try {
     const query = db
       .with('disputes', () => qDisputes({ activeOnly: true }))
@@ -16,7 +19,11 @@ export const disputesController = async (req: Request, res: Response) => {
     const disputes = nest_results(results)
 
     if (disputes && disputes.length > 0) {
-      res.json(disputes)
+      if (format === 'html') {
+        res.send(jsonToHtmlTable(disputes));
+      } else {
+        res.json(disputes);
+      }
     } else {
       res.status(200).json({ message: 'No active disputes found' })
     }

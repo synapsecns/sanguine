@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { sql } from 'kysely'
 
+import { jsonToHtmlTable } from '../utils/json_formatter'
 import { db } from '../db'
 import { qDeposits, qRelays, qProofs } from '../queries'
 import { nest_results } from '../utils/nestResults'
@@ -9,6 +10,8 @@ export const conflictingProofsController = async (
   req: Request,
   res: Response
 ) => {
+  const flags = req.query.flags as string | undefined;
+  const format = req.query.format as string | undefined;
   try {
     const query = db
       .with('deposits', () => qDeposits())
@@ -39,7 +42,11 @@ export const conflictingProofsController = async (
     const conflictingProofs = nest_results(results)
 
     if (conflictingProofs && conflictingProofs.length > 0) {
-      res.json(conflictingProofs)
+      if (format === 'html') {
+        res.send(jsonToHtmlTable(conflictingProofs));
+      } else {
+        res.json(conflictingProofs);
+      }
     } else {
       res.status(200).json({ message: 'No active conflicting proofs found' })
     }

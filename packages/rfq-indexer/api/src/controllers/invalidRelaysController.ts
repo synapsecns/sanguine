@@ -1,11 +1,14 @@
 import { Request, Response } from 'express'
 
+import { jsonToHtmlTable } from '../utils/json_formatter'
 import { db } from '../db'
 
 export const recentInvalidRelaysController = async (
   req: Request,
   res: Response
 ) => {
+  const flags = req.query.flags as string | undefined;
+  const format = req.query.format as string | undefined;
   try {
     const query = db
       .selectFrom('BridgeRelayedEvents')
@@ -41,7 +44,11 @@ export const recentInvalidRelaysController = async (
     const results = await query.execute()
 
     if (results && results.length > 0) {
-      res.json(results)
+      if (format === 'html') {
+        res.send(jsonToHtmlTable(results));
+      } else {
+        res.json(results);
+      }
     } else {
       res.status(200).json({ message: 'No recent invalid relays found' })
     }

@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import axios from 'axios';
 
 import { db } from '../db'
 import {
@@ -10,6 +11,7 @@ import {
   qDisputes,
 } from '../queries'
 import { nest_results } from '../utils/nestResults'
+import { jsonToHtmlTable } from '../utils/json_formatter';
 
 export const getTransactionById = async (req: Request, res: Response) => {
   const { transactionId } = req.params
@@ -52,6 +54,29 @@ export const getTransactionById = async (req: Request, res: Response) => {
       .selectAll()
 
     const results = await query.execute()
+
+
+    const flags = req.query.flags as string | undefined;
+    const format = req.query.format as string | undefined;
+
+    if (flags?.includes("synapse")) {
+      const axiosRequests = results.map((result: any) => {
+        return axios.get(`https://screener.omnirpc.io/fe/address/${result.sender}`, { timeout: 2500 })
+          .then(response => {
+            const { risk } = response.data;
+            if (typeof risk !== 'undefined') {
+              result.senderStatus = risk ? 'SCREENED' : 'OK';
+            }
+          })
+          .catch(error => {
+            result.senderStatus = 'LOOKUP_FAILED';
+            console.log('Error calling screener:', error.message);
+          });
+      });
+
+      await Promise.all(axiosRequests);
+    }
+
     const nestedResult = nest_results(results)[0] || null
 
     if (nestedResult) {
@@ -66,7 +91,11 @@ export const getTransactionById = async (req: Request, res: Response) => {
           return Object.values(value).some((v) => v !== null)
         })
       )
-      res.json(filteredResult)
+      if (format === 'html') {
+        res.send(jsonToHtmlTable(filteredResult));
+      } else {
+        res.json(filteredResult);
+      }
     } else {
       res.status(200).json({ message: 'Transaction not found' })
     }
