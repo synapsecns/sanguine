@@ -46,6 +46,7 @@ export const PAUSED_CHAIN_IDS: SupportedChainId[] = [
   SupportedChainId.MOONBEAM,
   SupportedChainId.MOONRIVER,
   SupportedChainId.AURORA,
+  SupportedChainId.CRONOS,
 ]
 
 /**
