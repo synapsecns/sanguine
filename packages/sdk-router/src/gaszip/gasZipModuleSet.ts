@@ -16,7 +16,6 @@ import { GasZipModule } from './gasZipModule'
 import { isNativeToken } from '../utils/handleNativeToken'
 import { BigintIsh } from '../constants'
 
-// TODO: figure out if accurate
 const MEDIAN_TIME_GAS_ZIP = 30
 
 export class GasZipModuleSet extends SynapseModuleSet {
@@ -125,7 +124,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
     feeAmount: BigNumber
     feeConfig: FeeConfig
   }> {
-    // TODO: implement
+    // There's no good way to determine the fee for gas.zip
     return {
       feeAmount: Zero,
       feeConfig: {
@@ -143,7 +142,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
     originPeriod: number
     destPeriod: number
   } {
-    // TODO: implement
+    // Deadline settings are not supported by gas.zip
     return {
       originPeriod: 0,
       destPeriod: 0,

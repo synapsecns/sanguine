@@ -1272,7 +1272,6 @@ export const BERA = new Token({
   logo: beraLogo,
   isNative: true,
   swapableType: 'BERA',
-  // TODO: correct color for BERA token
   color: 'gray',
   visibilityRank: 90,
   priorityRank: 300,
