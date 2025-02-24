@@ -51,10 +51,12 @@
     "disableCountdown": false
   },
   {
-    "id": "boba-chain-pause",
-    "pausedFromChains": [288],
-    "pausedToChains": [288],
+    "id": "all-chain-pause",
+    "pausedFromChains": [288, 1285, 1284, 1313161554, 1666600000, 25, 8217],
+    "pausedToChains": [288, 1285, 1284, 1313161554, 1666600000, 25, 8217],
     "pauseBridge": true,
-    "pauseSwap": false
+    "pauseSwap": false,
+    "startTimePauseChain": "2024-03-19T00:00:00Z",
+    "endTimePauseChain": null
   }
 ]

@@ -61,7 +61,7 @@ const EXPECTED_GAS_DROP: { [chainId: number]: BigNumber } = {
   [SupportedChainId.ETH]: BigNumber.from(0),
   // TODO: reenable once both ARB airdrops are adjusted
   // [SupportedChainId.ARBITRUM]: parseFixed('0.0003', 18),
-  [SupportedChainId.BSC]: parseFixed('0.002', 18),
+  [SupportedChainId.BSC]: parseFixed('0.0004', 18),
   [SupportedChainId.AVALANCHE]: parseFixed('0.025', 18),
 }
 
@@ -174,17 +174,10 @@ describe('SynapseSDK', () => {
 
   const bscProvider: Provider = getTestProvider(SupportedChainId.BSC)
 
-  // Chain where CCTP is unlikely to be deployed
-  const moonbeamProvider: Provider = getTestProvider(SupportedChainId.MOONBEAM)
-
   describe('#constructor', () => {
     const synapse = new SynapseSDK(
-      [
-        SupportedChainId.ETH,
-        SupportedChainId.ARBITRUM,
-        SupportedChainId.MOONBEAM,
-      ],
-      [ethProvider, arbProvider, moonbeamProvider]
+      [SupportedChainId.ETH, SupportedChainId.ARBITRUM, SupportedChainId.BSC],
+      [ethProvider, arbProvider, bscProvider]
     )
 
     it('fails with unequal amount of chains to providers', () => {
@@ -204,7 +197,7 @@ describe('SynapseSDK', () => {
         synapse.synapseRouterSet.routers[SupportedChainId.ARBITRUM]
       ).toBeDefined()
       expect(
-        synapse.synapseRouterSet.routers[SupportedChainId.MOONBEAM]
+        synapse.synapseRouterSet.routers[SupportedChainId.BSC]
       ).toBeDefined()
     })
 
@@ -226,7 +219,7 @@ describe('SynapseSDK', () => {
 
     it('Does not instantiate SynapseCCTPRouters for chains without CCTP', () => {
       expect(
-        synapse.synapseCCTPRouterSet.routers[SupportedChainId.MOONBEAM]
+        synapse.synapseCCTPRouterSet.routers[SupportedChainId.BSC]
       ).toBeUndefined()
     })
 
@@ -239,9 +232,7 @@ describe('SynapseSDK', () => {
     it('Saves providers', () => {
       expect(synapse.providers[SupportedChainId.ETH]).toBe(ethProvider)
       expect(synapse.providers[SupportedChainId.ARBITRUM]).toBe(arbProvider)
-      expect(synapse.providers[SupportedChainId.MOONBEAM]).toBe(
-        moonbeamProvider
-      )
+      expect(synapse.providers[SupportedChainId.BSC]).toBe(bscProvider)
     })
   })
 
@@ -752,9 +743,9 @@ describe('SynapseSDK', () => {
       [
         SupportedChainId.ARBITRUM,
         SupportedChainId.AVALANCHE,
-        SupportedChainId.MOONBEAM,
+        SupportedChainId.BSC,
       ],
-      [arbProvider, avaxProvider, moonbeamProvider]
+      [arbProvider, avaxProvider, bscProvider]
     )
 
     describe('GMX', () => {
@@ -1515,8 +1506,8 @@ describe('SynapseSDK', () => {
 
   describe('getEstimatedTime', () => {
     const synapse = new SynapseSDK(
-      [SupportedChainId.ETH, SupportedChainId.MOONBEAM],
-      [ethProvider, moonbeamProvider]
+      [SupportedChainId.ETH, SupportedChainId.BSC],
+      [ethProvider, bscProvider]
     )
 
     describe('Chain with a provider', () => {
@@ -1526,8 +1517,8 @@ describe('SynapseSDK', () => {
         ).toEqual(MEDIAN_TIME_BRIDGE[SupportedChainId.ETH])
 
         expect(
-          synapse.getEstimatedTime(SupportedChainId.MOONBEAM, 'SynapseBridge')
-        ).toEqual(MEDIAN_TIME_BRIDGE[SupportedChainId.MOONBEAM])
+          synapse.getEstimatedTime(SupportedChainId.BSC, 'SynapseBridge')
+        ).toEqual(MEDIAN_TIME_BRIDGE[SupportedChainId.BSC])
       })
 
       it('Returns estimated time for SynapseCCTP', () => {
@@ -1538,8 +1529,8 @@ describe('SynapseSDK', () => {
 
       it('Throws when bridge module does not exist on a chain', () => {
         expect(() =>
-          synapse.getEstimatedTime(SupportedChainId.MOONBEAM, 'SynapseCCTP')
-        ).toThrow('No estimated time for chain 1284')
+          synapse.getEstimatedTime(SupportedChainId.BSC, 'SynapseCCTP')
+        ).toThrow('No estimated time for chain 56')
       })
 
       it('Throws when bridge module name is invalid', () => {

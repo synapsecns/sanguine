@@ -40,7 +40,13 @@ const UNSUPPORTED_BRIDGE_CHAIN_IDS: number[] = [
 /**
  * List of paused chain IDs
  */
-export const PAUSED_CHAIN_IDS: SupportedChainId[] = [SupportedChainId.BOBA]
+export const PAUSED_CHAIN_IDS: SupportedChainId[] = [
+  SupportedChainId.BOBA,
+  SupportedChainId.HARMONY,
+  SupportedChainId.MOONBEAM,
+  SupportedChainId.MOONRIVER,
+  SupportedChainId.AURORA,
+]
 
 /**
  * List of supported chain ids, where SynapseBridge is deployed.
