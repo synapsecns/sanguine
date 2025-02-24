@@ -9,6 +9,7 @@ import {
   ChainProvider,
   PoolToken,
 } from './router'
+import { SwapEngineSet } from './swap/swapEngineSet'
 import * as operations from './operations'
 import { ETH_NATIVE_TOKEN_ADDRESS } from './utils/handleNativeToken'
 import { SynapseModuleSet, Query } from './module'
@@ -19,6 +20,8 @@ class SynapseSDK {
   public synapseCCTPRouterSet: SynapseCCTPRouterSet
   public fastBridgeRouterSet: FastBridgeRouterSet
   public gasZipModuleSet: GasZipModuleSet
+
+  public swapEngineSet: SwapEngineSet
   public providers: { [chainId: number]: Provider }
 
   /**
@@ -54,6 +57,7 @@ class SynapseSDK {
       this.fastBridgeRouterSet,
       this.gasZipModuleSet,
     ]
+    this.swapEngineSet = new SwapEngineSet(chainProviders)
   }
 
   // Define Bridge operations
