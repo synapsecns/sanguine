@@ -161,7 +161,7 @@ export const hyperEVM = {
   blockExplorers: {
     default: {
       name: 'Purrsec',
-      url: 'https://purrsec.com/',
+      url: 'https://purrsec.com',
     },
   },
   contracts: {

@@ -710,7 +710,7 @@ export const HYPEREVM: Chain = {
     primary: 'https://rpc.hyperliquid.xyz/evm',
     fallback: 'https://rpc.hyperliquid.xyz/evm',
   },
-  explorerUrl: 'https://purrsec.com/',
+  explorerUrl: 'https://purrsec.com',
   explorerName: 'Purrsec',
   explorerImg: hyperliquidImg,
   blockTime: 2000,
