@@ -85,5 +85,7 @@ export const applyQuote = (
   if (destAmount.lt(quote.fixedFee)) {
     return Zero
   }
-  return destAmount.sub(quote.fixedFee)
+  const result = destAmount.sub(quote.fixedFee)
+  console.log({ quote, originAmount, result }, 'Applied quote')
+  return result
 }
