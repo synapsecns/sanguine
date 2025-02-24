@@ -143,6 +143,11 @@ func (c *clientImpl) PutQuote(ctx context.Context, q *model.PutRelayerQuoteReque
 	// TODO: Figure out if there's anything to do with the response, right now it's result: Status Code 200 OK
 	_ = res
 
+	// this will panic. typically indicates no authorization to quote
+	if res.RawResponse.StatusCode == 400 {
+		return fmt.Errorf("PutQuote Status code: %d", res.RawResponse.StatusCode)
+	}
+
 	return err
 }
 
@@ -155,6 +160,11 @@ func (c *clientImpl) PutBulkQuotes(ctx context.Context, q *model.PutBulkQuotesRe
 
 	// TODO: Figure out if there's anything to do with the response, right now it's result: Status Code 200 OK
 	_ = res
+
+	// this will panic. typically indicates no authorization to quote
+	if res.RawResponse.StatusCode == 400 {
+		return fmt.Errorf("PutBulkQuotes Status code: %d", res.RawResponse.StatusCode)
+	}
 
 	return err
 }

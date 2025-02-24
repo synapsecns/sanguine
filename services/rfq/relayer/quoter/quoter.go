@@ -269,12 +269,12 @@ func (m *Manager) IsProfitable(parentCtx context.Context, quote reldb.QuoteReque
 func (m *Manager) getAmountWithOffset(ctx context.Context, chainID uint32, tokenAddr common.Address, amount *big.Int) (*big.Int, error) {
 	tokenName, err := m.config.GetTokenName(chainID, tokenAddr.Hex())
 	if err != nil {
-		return nil, fmt.Errorf("error getting token name: %w", err)
+		return nil, fmt.Errorf("err GetTokenName: %w", err)
 	}
 	// apply offset directly to amount without considering origin/dest
 	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(int(chainID), tokenName, true)
 	if err != nil {
-		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
+		return nil, fmt.Errorf("err GetQuoteOffsetBps: %w", err)
 	}
 	amountAdj := m.applyOffset(ctx, quoteOffsetBps, amount)
 
@@ -593,11 +593,12 @@ type QuoteInput struct {
 
 func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *model.PutRelayerQuoteRequest, err error) {
 	// Calculate the quote amount for this route
-	originAmount, err := m.getOriginAmount(ctx, input)
+	maxQuoteAmountOrigin, err := m.getOriginAmount(ctx, input)
 	// don't quote if gas exceeds quote
 	if errors.Is(err, errMinGasExceedsQuoteAmount) {
-		originAmount = big.NewInt(0)
+		maxQuoteAmountOrigin = big.NewInt(0)
 	} else if err != nil {
+
 		logger.Error("Error getting quote amount", "error", err)
 		return nil, err
 	}
@@ -610,28 +611,72 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 	}
 	fee, err := m.feePricer.GetTotalFee(ctx, uint32(input.OriginChainID), uint32(input.DestChainID), destToken, true)
 	if err != nil {
-		logger.Error("Error getting total fee", "error", err)
-		return nil, fmt.Errorf("error getting total fee: %w", err)
+		logger.Error("err GetTotalFee: ", err)
+		return nil, fmt.Errorf("err GetTotalFee: %w", err)
 	}
 	originRFQAddr, err := m.config.GetRFQAddress(input.OriginChainID)
 	if err != nil {
-		logger.Error("Error getting RFQ address", "error", err)
-		return nil, fmt.Errorf("error getting RFQ address: %w", err)
+		logger.Error("err GetRfqAddress: ", "error", err)
+		return nil, fmt.Errorf("err GetRfqAddress: %w", err)
 	}
 
-	// Build the quote
-	destAmount, err := m.getDestAmount(ctx, originAmount, destToken, input)
+	// we have obtained our final max origin quote amount and all modifiers.
+	// now re-price it back into destination denom
+	maxQuoteOriginDest, err := m.feePricer.PricePair(ctx, uint32(input.OriginChainID), uint32(input.DestChainID), input.OriginTokenAddr.String(), input.DestTokenAddr.String(), *maxQuoteAmountOrigin)
+
 	if err != nil {
-		logger.Error("Error getting dest amount", "error", err)
-		return nil, fmt.Errorf("error getting dest amount: %w", err)
+		logger.Error("err maxQuoteOriginDest PricePair: ", "error", err)
+		return nil, fmt.Errorf("err maxQuoteOriginDest PricePair: %w", err)
 	}
+
+	destAmount, err := m.getDestAmount(ctx, maxQuoteOriginDest, destToken, input)
+	if err != nil {
+		logger.Error("err getDestAmount: ", "error", err)
+		return nil, fmt.Errorf("err getDestAmount: %w", err)
+	}
+	maxQuoteAmountOriginUsdInt, err := m.feePricer.PricePair(ctx, uint32(input.OriginChainID), 0, input.OriginTokenAddr.String(), "USD", *maxQuoteAmountOrigin)
+	if err != nil {
+		return nil, fmt.Errorf("error pricing origin amount in USD: %w", err)
+	}
+	maxQuoteAmountOriginUsd := new(big.Float).Quo(new(big.Float).SetInt(maxQuoteAmountOriginUsdInt), big.NewFloat(100000))
+
+	destAmountUsdInt, err := m.feePricer.PricePair(ctx, uint32(input.DestChainID), 0, input.DestTokenAddr.String(), "USD", *destAmount)
+	if err != nil {
+		return nil, fmt.Errorf("error pricing destination amount in USD: %w", err)
+	}
+	destAmountUsd := new(big.Float).Quo(new(big.Float).SetInt(destAmountUsdInt), big.NewFloat(100000))
+	if maxQuoteAmountOriginUsd != nil && destAmountUsd != nil {
+		absDifference := new(big.Float).Abs(new(big.Float).Sub(maxQuoteAmountOriginUsd, destAmountUsd))
+		percentageDifference := new(big.Float).Quo(absDifference, maxQuoteAmountOriginUsd)
+
+		dollarTolerance := big.NewFloat(1.0)
+		percentageTolerance := big.NewFloat(0.5)
+
+		// useful for immediate in-line dev/debug
+		debugOutput := false
+
+		if debugOutput {
+			fmt.Printf("Orig: %s ($%s), Dest: %s ($%s), $ Diff: $%s, $ Pct: %s\n",
+				maxQuoteAmountOrigin.String(),
+				maxQuoteAmountOriginUsd.Text('f', 2),
+				destAmount.String(),
+				destAmountUsd.Text('f', 2),
+				absDifference.Text('f', 2),
+				percentageDifference.Text('f', 2))
+		}
+
+		if absDifference.Cmp(dollarTolerance) > 0 && percentageDifference.Cmp(percentageTolerance) > 0 {
+			return nil, fmt.Errorf("safety check. USD Gap between quote amounts is too large: origin USD %s, dest USD %s", maxQuoteAmountOriginUsd.Text('f', 2), destAmountUsd.Text('f', 2))
+		}
+	}
+
 	quote = &model.PutRelayerQuoteRequest{
 		OriginChainID:           input.OriginChainID,
 		OriginTokenAddr:         input.OriginTokenAddr.Hex(),
 		DestChainID:             input.DestChainID,
 		DestTokenAddr:           input.DestTokenAddr.Hex(),
 		DestAmount:              destAmount.String(),
-		MaxOriginAmount:         originAmount.String(),
+		MaxOriginAmount:         maxQuoteAmountOrigin.String(),
 		FixedFee:                fee.String(),
 		OriginFastBridgeAddress: originRFQAddr.Hex(),
 		DestFastBridgeAddress:   input.DestRFQAddr,
@@ -677,7 +722,7 @@ func (m *Manager) recordQuoteAmounts(_ context.Context, observer metric.Observer
 // getOriginAmount calculates the origin quote amount for a given route.
 //
 //nolint:cyclop
-func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (quoteAmount *big.Int, err error) {
+func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (quoteAmountOrigin *big.Int, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "getOriginAmount", trace.WithAttributes(
 		attribute.Int(metrics.Origin, input.OriginChainID),
 		attribute.Int(metrics.Destination, input.DestChainID),
@@ -688,7 +733,7 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 	))
 
 	defer func() {
-		span.SetAttributes(attribute.String("quote_amount", quoteAmount.String()))
+		span.SetAttributes(attribute.String("quote_amount_origin", quoteAmountOrigin.String()))
 		metrics.EndSpanWithErr(span, err)
 	}()
 
@@ -716,19 +761,28 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote pct: %w", err)
 	}
-	balanceFlt := new(big.Float).SetInt(input.DestBalance)
-	quoteAmount, _ = new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(quotePct/100)).Int(nil)
+
+	// Calculate quoteAmountDestFull as the full destination balance
+	quoteAmountDestFull := new(big.Float).SetInt(input.DestBalance)
+
+	// Calculate quoteAmountDest based on reduced quotePct
+	quoteAmountDest, _ := new(big.Float).Mul(quoteAmountDestFull, new(big.Float).SetFloat64(quotePct/100)).Int(nil)
+
+	quoteAmountOrigin, err = m.feePricer.PricePair(ctx, uint32(input.DestChainID), uint32(input.OriginChainID), input.DestTokenAddr.String(), input.OriginTokenAddr.String(), *quoteAmountDest)
+	if err != nil {
+		return nil, fmt.Errorf("err quoteAmountOrigin PricePair: %w", err)
+	}
 
 	// minQuoteAmount is more like a minimum quote *ceiling*
 	// If the quoteAmount is less than the minQuoteAmount, override it & set to the minQuoteAmount.
 	// IE: If set, we will offer quotes *at least* up-to-and-including this amount for the given DestChain+Token combo.
 	minQuoteAmount := m.config.GetMinQuoteAmount(input.DestChainID, input.DestTokenAddr)
-	if quoteAmount.Cmp(minQuoteAmount) < 0 {
+	if quoteAmountOrigin.Cmp(minQuoteAmount) < 0 {
 		span.AddEvent("quote amount less than min quote amount", trace.WithAttributes(
-			attribute.String("quote_amount", quoteAmount.String()),
+			attribute.String("quote_amount_origin", quoteAmountOrigin.String()),
 			attribute.String("min_quote_amount", minQuoteAmount.String()),
 		))
-		quoteAmount = minQuoteAmount
+		quoteAmountOrigin = minQuoteAmount
 	}
 
 	// At this point, quoteAmount will be the *higher* of the output values from these modifiers:  quotePct vs minQuoteAmount
@@ -744,65 +798,83 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 				attribute.String("max_balance", maxBalance.String()),
 				attribute.String("origin_balance", input.OriginBalance.String()),
 			))
-			quoteAmount = big.NewInt(0)
-		} else if quoteAmount.Cmp(quotableBalance) > 0 {
+			quoteAmountOrigin = big.NewInt(0)
+		} else if quoteAmountOrigin.Cmp(quotableBalance) > 0 {
 			span.AddEvent("quote amount greater than quotable balance", trace.WithAttributes(
-				attribute.String("quote_amount", quoteAmount.String()),
+				attribute.String("quote_amount_origin", quoteAmountOrigin.String()),
 				attribute.String("quotable_balance", quotableBalance.String()),
 				attribute.String("max_balance", maxBalance.String()),
 				attribute.String("origin_balance", input.OriginBalance.String()),
 			))
-			quoteAmount = quotableBalance
+			quoteAmountOrigin = quotableBalance
 		}
 	}
 
+	// at this point we have a number of adjustments to make to the quote amount that are based on destination denomations.
+	// so in order to do this we need to take our quoteAmountOrigin (which has been potentially modified since it was first calculated abobve)
+	// and reprice it back into destination denomination
+	quoteAmountDest, err = m.feePricer.PricePair(ctx, uint32(input.OriginChainID), uint32(input.DestChainID), input.OriginTokenAddr.String(), input.DestTokenAddr.String(), *quoteAmountOrigin)
+
 	// Clip the quoteAmount by the dest balance
 	// IE: if the calculated ceiling at this point exceeds the actual balance on the account, set ceiling to the actual balance.
-	if quoteAmount.Cmp(input.DestBalance) > 0 {
-		span.AddEvent("quote amount greater than destination balance", trace.WithAttributes(
-			attribute.String("quote_amount", quoteAmount.String()),
-			attribute.String("balance", input.DestBalance.String()),
-		))
-		quoteAmount = input.DestBalance
+	if err != nil {
+		return nil, fmt.Errorf("err quoteAmountDest PricePair: %w", err)
 	}
 
-	// Clip the quoteAmount by the maxQuoteAmount
-	// IE: If the calculated ceiling at this point exceeds the arbitrary maximum ceiling, set to the maxQuoteAmount setting
-	maxQuoteAmount := m.config.GetMaxRelayAmount(input.DestChainID, input.DestTokenAddr)
-	if maxQuoteAmount != nil && quoteAmount.Cmp(maxQuoteAmount) > 0 {
-		span.AddEvent("quote amount greater than max quote amount", trace.WithAttributes(
-			attribute.String("quote_amount", quoteAmount.String()),
-			attribute.String("max_quote_amount", maxQuoteAmount.String()),
+	if quoteAmountDest.Cmp(input.DestBalance) > 0 {
+		span.AddEvent("quote amount greater than destination balance", trace.WithAttributes(
+			attribute.String("quote_amount_dest", quoteAmountDest.String()),
+			attribute.String("balance", input.DestBalance.String()),
 		))
-		quoteAmount = maxQuoteAmount
+
+		quoteAmountDest = input.DestBalance
+	}
+
+	// Clip the quoteAmount by the maxRelayAmountDest (maxQuoteAmount)
+	// IE: If the calculated ceiling at this point exceeds the arbitrary maximum ceiling, set to the maxQuoteAmount setting
+	maxRelayAmountDest := m.config.GetMaxRelayAmount(input.DestChainID, input.DestTokenAddr)
+	if maxRelayAmountDest != nil && quoteAmountOrigin.Cmp(maxRelayAmountDest) > 0 {
+		span.AddEvent("quote amount greater than max quote amount", trace.WithAttributes(
+			attribute.String("quote_amount_dest", quoteAmountDest.String()),
+			attribute.String("max_relay_amount", maxRelayAmountDest.String()),
+		))
+		quoteAmountDest = maxRelayAmountDest
 	}
 
 	// Deduct gas cost from the quote amount, if necessary
 	// IE: Regardless of all prior ceiling considerations, we will still reserve enough for gas when appropriate.
-	quoteAmount, err = m.deductGasCost(ctx, quoteAmount, input.DestTokenAddr, input.DestChainID)
+	quoteAmountDest, err = m.deductGasCost(ctx, quoteAmountDest, input.DestTokenAddr, input.DestChainID)
 	if err != nil {
 		return nil, fmt.Errorf("error deducting gas cost: %w", err)
+	}
+
+	// now we have finished all of our destination-denominated modifications.
+	// re-price again *back* into origin denomination for final adjustments & return
+	quoteAmountOrigin, err = m.feePricer.PricePair(ctx, uint32(input.DestChainID), uint32(input.OriginChainID), input.DestTokenAddr.String(), input.OriginTokenAddr.String(), *quoteAmountDest)
+	if err != nil {
+		return nil, fmt.Errorf("err quoteAmountOrigin rePrice: %w", err)
 	}
 
 	// If input included a OriginAmountExact, and our calculated ceiling at this point is sufficient to cover it,
 	// then clip to the OriginAmountExact to indicate ability to cover that exact amount, as requested.
 	// Otherwise return 0 to indicate inability to cover the requested amount.
 	if input.OriginAmountExact != nil {
-		if quoteAmount.Cmp(input.OriginAmountExact) >= 0 {
-			quoteAmount = input.OriginAmountExact
+		if quoteAmountOrigin.Cmp(input.OriginAmountExact) >= 0 {
+			quoteAmountOrigin = input.OriginAmountExact
 		} else {
 			span.AddEvent("quote amount insufficient to cover deposit amount", trace.WithAttributes(
-				attribute.String("quote_amount", quoteAmount.String()),
+				attribute.String("quote_amount_origin", quoteAmountOrigin.String()),
 				attribute.String("origin_amount_exact", input.OriginAmountExact.String()),
 			))
-			quoteAmount = big.NewInt(0)
+			quoteAmountOrigin = big.NewInt(0)
 		}
 	}
 
-	return quoteAmount, nil
+	return quoteAmountOrigin, nil
 }
 
 // deductGasCost deducts the gas cost from the quote amount, if necessary.
+// this is so that we can reserve a set amount of native gas for operations.
 func (m *Manager) deductGasCost(parentCtx context.Context, quoteAmount *big.Int, address common.Address, dest int) (quoteAmountAdj *big.Int, err error) {
 	if !util.IsGasToken(address) {
 		return quoteAmount, nil
@@ -836,9 +908,9 @@ func (m *Manager) deductGasCost(parentCtx context.Context, quoteAmount *big.Int,
 
 var errMinGasExceedsQuoteAmount = errors.New("min gas token exceeds quote amount")
 
-func (m *Manager) getDestAmount(parentCtx context.Context, originAmount *big.Int, tokenName string, input QuoteInput) (*big.Int, error) {
+func (m *Manager) getDestAmount(parentCtx context.Context, quoteAmountDest *big.Int, tokenName string, input QuoteInput) (*big.Int, error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "getDestAmount", trace.WithAttributes(
-		attribute.String("quote_amount", originAmount.String()),
+		attribute.String("quote_amount_dest", quoteAmountDest.String()),
 	))
 	defer func() {
 		metrics.EndSpan(span)
@@ -858,7 +930,7 @@ func (m *Manager) getDestAmount(parentCtx context.Context, originAmount *big.Int
 		return nil, fmt.Errorf("error getting quote width bps: %w", err)
 	}
 	totalOffsetBps := originOffsetBps + destOffsetBps + quoteWidthBps
-	destAmount := m.applyOffset(ctx, totalOffsetBps, originAmount)
+	destAmount := m.applyOffset(ctx, totalOffsetBps, quoteAmountDest)
 
 	span.SetAttributes(
 		attribute.Float64("origin_offset_bps", originOffsetBps),
