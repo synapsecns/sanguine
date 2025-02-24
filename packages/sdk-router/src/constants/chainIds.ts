@@ -8,6 +8,7 @@ export enum SupportedChainId {
   FANTOM = 250,
   BOBA = 288,
   WORLDCHAIN = 480,
+  HYPEREVM = 999,
   METIS = 1088,
   MOONBEAM = 1284,
   MOONRIVER = 1285,
@@ -35,6 +36,7 @@ const UNSUPPORTED_BRIDGE_CHAIN_IDS: number[] = [
   SupportedChainId.WORLDCHAIN,
   SupportedChainId.UNICHAIN,
   SupportedChainId.BERACHAIN,
+  SupportedChainId.HYPEREVM,
 ]
 
 /**
@@ -82,6 +84,7 @@ export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.SCROLL,
   SupportedChainId.UNICHAIN,
   SupportedChainId.BERACHAIN,
+  SupportedChainId.HYPEREVM,
 ].filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
 
 /**
