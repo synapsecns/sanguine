@@ -80,6 +80,18 @@ export const SYNAPSE_INTENT_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
 )
 
 /**
+ * TokenZapV1 contract address for all chains except ones from TOKEN_ZAP_V1_EXCEPTION_MAP.
+ * TODO: this is a staging TokenZapV1 deployment, update to the production deployment when ready.
+ */
+const TOKEN_ZAP_V1_ADDRESS = '0x6C6FA1cE8160bb680f7a1dd2068c7302bA2a9eaB'
+const TOKEN_ZAP_V1_EXCEPTION_MAP: AddressMap = {}
+export const TOKEN_ZAP_V1_ADDRESS_MAP: AddressMap = generateAddressMap(
+  INTENTS_SUPPORTED_CHAIN_IDS,
+  TOKEN_ZAP_V1_ADDRESS,
+  TOKEN_ZAP_V1_EXCEPTION_MAP
+)
+
+/**
  * SynapseIntentPreviewer contract address for all chains except ones from SYNAPSE_INTENT_PREVIEWER_EXCEPTION_MAP.
  * TODO: this is a staging SynapseIntentPreviewer deployment, update to the production deployment when ready.
  */
