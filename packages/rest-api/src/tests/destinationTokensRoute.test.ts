@@ -52,7 +52,7 @@ describe('destinatonTokens Route', () => {
   })
 
   it('should return precisely the number of destination tokens', async () => {
-    // 'USDC-534352': [ 'USDC-1', 'USDC-10', 'USDC-8453', 'USDC-42161', 'USDC-59144' ]
+    // 'USDC-534352': [ 'USDC-1', 'USDC-10', 'USDC-130', 'USDC-480', 'USDC-8453', 'USDC-42161', 'USDC-59144', 'USDC-80094' ]
 
     const response = await request(app).get('/destinationTokens').query({
       fromChain: '534352',
@@ -61,7 +61,7 @@ describe('destinatonTokens Route', () => {
 
     expect(response.status).toBe(200)
     expect(Array.isArray(response.body)).toBe(true)
-    expect(response.body.length).toBe(6)
+    expect(response.body.length).toBe(8)
     expect(response.body[0]).toHaveProperty('symbol')
     expect(response.body[0]).toHaveProperty('address')
     expect(response.body[0]).toHaveProperty('chainId')
