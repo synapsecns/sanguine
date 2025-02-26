@@ -21,6 +21,7 @@ enum GasZipStatus {
   CONFIRMED = 'CONFIRMED', // user received funds on dst chain
   CANCELLED = 'CANCELLED', // tx will not be processed, user hasn't received their origin funds back yet
   REFUNDED = 'REFUNDED', // user received funds back on origin chain after tx was cancelled
+  OTHER = 'OTHER', // other status
 }
 
 const GAS_ZIP_API_URL = 'https://backend.gas.zip/v2/deposit'
@@ -129,16 +130,20 @@ const checkGasZipTxStatus = async (
     if (!data.txs || !data.txs.length) {
       return undefined
     }
-    switch (data.txs[0].status) {
-      case GasZipStatus.CONFIRMED:
-        return GasZipStatus.CONFIRMED
-      case GasZipStatus.CANCELLED: {
-        // Check if there is a CONFIRMED tx in the list - this would be the refund tx
-        return data.txs.find((tx) => tx.status === GasZipStatus.CONFIRMED)
-          ? GasZipStatus.REFUNDED
-          : GasZipStatus.CANCELLED
-      }
+    console.log({ txId, data })
+    if (data.txs[0].status === GasZipStatus.CONFIRMED) {
+      return GasZipStatus.CONFIRMED
     }
+    if (
+      data.txs[0].status === GasZipStatus.CANCELLED ||
+      data.txs[0].cancelled
+    ) {
+      // Check if there is a refun tx in the list
+      return data.txs.find((tx) => tx.refund)
+        ? GasZipStatus.REFUNDED
+        : GasZipStatus.CANCELLED
+    }
+    return GasZipStatus.OTHER
   } catch (error) {
     throw new Error(error)
   }
