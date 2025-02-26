@@ -67,10 +67,12 @@ export const fetchBridgeQuote = createAsyncThunk(
       return rejectWithValue(msg)
     }
 
-    const rfqQuote = activeQuotes.find((q) => q.bridgeModuleName === 'Gas.zip')
+    const rfqQuote = activeQuotes.find(
+      (q) => q.bridgeModuleName === 'SynapseRFQ'
+    )
 
     const nonRfqQuote = activeQuotes.find(
-      (quote) => quote.bridgeModuleName !== 'Gas.zip'
+      (quote) => quote.bridgeModuleName !== 'SynapseRFQ'
     )
 
     let quote
