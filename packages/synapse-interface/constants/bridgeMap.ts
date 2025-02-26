@@ -873,8 +873,8 @@ export const BRIDGE_MAP = {
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
       decimals: 18,
       symbol: 'ETH',
-      origin: ['Gas.zip', 'nETH'],
-      destination: ['Gas.zip', 'nETH'],
+      origin: ['nETH'],
+      destination: ['nETH'],
       swappable: [
         '0x96419929d7949D6A801A6909c145C8EEf6A40431',
         '0xd203De32170130082896b4111eDF825a4774c18E',
@@ -1070,13 +1070,6 @@ export const BRIDGE_MAP = {
       destination: ['synFRAX'],
       swappable: [],
     },
-    '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
-      decimals: 18,
-      symbol: 'GLMR',
-      origin: ['Gas.zip'],
-      destination: ['Gas.zip'],
-      swappable: [],
-    },
     '0xF44938b0125A6662f9536281aD2CD6c499F22004': {
       decimals: 18,
       symbol: 'SYN',
@@ -1124,8 +1117,8 @@ export const BRIDGE_MAP = {
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
       decimals: 18,
       symbol: 'MOVR',
-      origin: ['Gas.zip', 'MOVR'],
-      destination: ['Gas.zip', 'MOVR'],
+      origin: ['MOVR'],
+      destination: ['MOVR'],
       swappable: [],
     },
     '0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445': {
@@ -1200,13 +1193,6 @@ export const BRIDGE_MAP = {
       destination: ['SYN'],
       swappable: [],
     },
-    '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
-      decimals: 18,
-      symbol: 'WDOGE',
-      origin: ['Gas.zip'],
-      destination: ['Gas.zip'],
-      swappable: [],
-    },
   },
   '7700': {
     '0x09fEC30669d63A13c666d2129230dD5588E2e240': {
@@ -1255,13 +1241,6 @@ export const BRIDGE_MAP = {
         '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd',
         '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75',
       ],
-    },
-    '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
-      decimals: 18,
-      symbol: 'CANTO',
-      origin: ['Gas.zip'],
-      destination: ['Gas.zip'],
-      swappable: [],
     },
     '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
       decimals: 6,
@@ -1335,8 +1314,8 @@ export const BRIDGE_MAP = {
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
       decimals: 18,
       symbol: 'KLAY',
-      origin: ['Gas.zip', 'KLAY'],
-      destination: ['Gas.zip', 'KLAY'],
+      origin: ['KLAY'],
+      destination: ['KLAY'],
       swappable: [],
     },
     '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3': {
@@ -1906,8 +1885,8 @@ export const BRIDGE_MAP = {
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
       decimals: 18,
       symbol: 'JEWEL',
-      origin: ['Gas.zip', 'JEWEL'],
-      destination: ['Gas.zip', 'JEWEL'],
+      origin: ['JEWEL'],
+      destination: ['JEWEL'],
       swappable: [],
     },
     '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852': {
@@ -2085,13 +2064,6 @@ export const BRIDGE_MAP = {
         '0x4988a896b1227218e4A686fdE5EabdcAbd91571f',
       ],
     },
-    '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
-      decimals: 18,
-      symbol: 'ETH',
-      origin: ['Gas.zip'],
-      destination: ['Gas.zip'],
-      swappable: [],
-    },
     '0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445': {
       decimals: 18,
       symbol: 'SYN',
@@ -2169,13 +2141,6 @@ export const BRIDGE_MAP = {
       symbol: 'nUSD',
       origin: ['nUSD'],
       destination: ['nUSD'],
-      swappable: [],
-    },
-    '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
-      decimals: 18,
-      symbol: 'ONE',
-      origin: ['Gas.zip'],
-      destination: ['Gas.zip'],
       swappable: [],
     },
     '0xb12c13e66AdE1F72f71834f2FC5082Db8C091358': {
