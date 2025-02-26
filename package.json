@@ -18,6 +18,9 @@
       "**/forge-std"
     ]
   },
+  "resolutions": {
+    "graphql-ws": "5.16.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/synapsecns/sanguine.git"
