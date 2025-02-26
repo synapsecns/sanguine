@@ -109,7 +109,7 @@ export const _Transaction = ({
     originChain,
     isCheckTxForRefund &&
       status === 'pending' &&
-      bridgeModuleName === 'SynapseRFQ'
+      ['SynapseRFQ', 'Gas.zip'].includes(bridgeModuleName)
   )
 
   useBridgeTxUpdater(
