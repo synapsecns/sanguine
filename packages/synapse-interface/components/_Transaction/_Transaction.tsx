@@ -76,8 +76,8 @@ export const _Transaction = ({
     destinationChain?.id,
     destinationAddress ?? connectedAddress
   )
-
-  const {
+  // TODO: this could be cleaned up
+  let {
     remainingTime,
     delayedTime,
     delayedTimeInMin,
@@ -86,6 +86,9 @@ export const _Transaction = ({
     isCheckTxForRevert,
     isCheckTxForRefund,
   } = calculateEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
+  if (bridgeModuleName === 'Gas.zip') {
+    isCheckTxForRefund = isEstimatedTimeReached
+  }
 
   const [isTxCompleted, _kappa] = useBridgeTxStatus({
     originChainId: originChain?.id,
@@ -109,7 +112,7 @@ export const _Transaction = ({
     originChain,
     isCheckTxForRefund &&
       status === 'pending' &&
-      bridgeModuleName === 'SynapseRFQ'
+      ['SynapseRFQ', 'Gas.zip'].includes(bridgeModuleName)
   )
 
   useBridgeTxUpdater(

@@ -17,6 +17,16 @@ enum BridgeStatus {
   REFUNDED,
 }
 
+enum GasZipStatus {
+  CONFIRMED = 'CONFIRMED', // user received funds on dst chain
+  CANCELLED = 'CANCELLED', // tx will not be processed, user hasn't received their origin funds back yet
+  REFUNDED = 'REFUNDED', // user received funds back on origin chain after tx was cancelled
+  OTHER = 'OTHER', // other status
+}
+
+const GAS_ZIP_API_URL = 'https://backend.gas.zip/v2/deposit'
+const GAS_ZIP_DEPOSIT_ADDRESS = '0x391E7C679d29bD940d63be94AD22A25d25b5A604'
+
 export const useTxRefundStatus = (
   txId: string | undefined,
   routerAddress: Address,
@@ -28,6 +38,15 @@ export const useTxRefundStatus = (
 
   const getTxRefundStatus = async () => {
     try {
+      if (
+        routerAddress.toLowerCase() === GAS_ZIP_DEPOSIT_ADDRESS.toLowerCase()
+      ) {
+        const status = await checkGasZipTxStatus(txId)
+        if (status === GasZipStatus.REFUNDED) {
+          setIsRefunded(true)
+        }
+        return
+      }
       const bridgeContract = await getRFQBridgeContract(
         routerAddress,
         chain?.id
@@ -55,7 +74,7 @@ export const useTxRefundStatus = (
 
   return isRefunded
 }
-
+// TODO: this logic could live in the sdk-router
 const getRFQBridgeContract = async (
   routerAddress: Address,
   chainId: number
@@ -97,6 +116,34 @@ const checkRFQTxBridgeStatus = async (
     }
 
     return status
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const checkGasZipTxStatus = async (
+  txId: string
+): Promise<GasZipStatus | undefined> => {
+  try {
+    const res = await fetch(`${GAS_ZIP_API_URL}/${txId}`, { method: 'GET' })
+    const data = await res.json()
+    if (!data.txs || !data.txs.length) {
+      return undefined
+    }
+    console.log({ txId, data })
+    if (data.txs[0].status === GasZipStatus.CONFIRMED) {
+      return GasZipStatus.CONFIRMED
+    }
+    if (
+      data.txs[0].status === GasZipStatus.CANCELLED ||
+      data.txs[0].cancelled
+    ) {
+      // Check if there is a refun tx in the list
+      return data.txs.find((tx) => tx.refund)
+        ? GasZipStatus.REFUNDED
+        : GasZipStatus.CANCELLED
+    }
+    return GasZipStatus.OTHER
   } catch (error) {
     throw new Error(error)
   }

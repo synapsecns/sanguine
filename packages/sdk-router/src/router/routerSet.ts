@@ -17,6 +17,7 @@ import {
   hasComplexBridgeAction,
 } from '../module/query'
 import { ONE_WEEK, TEN_MINUTES } from '../utils/deadlines'
+import { logger } from '../utils/logger'
 
 export type ChainProvider = {
   chainId: number
@@ -140,9 +141,17 @@ export abstract class RouterSet extends SynapseModuleSet {
         bridgeRoute.destQuery.minAmountOut.gt(0)
       )
     } catch (error) {
-      console.error(
-        `[SynapseSDK: RouterSet] Error when trying to calculate the best quote with bridge tokens: ${bridgeTokens} `,
-        error
+      logger.error(
+        {
+          originChainId,
+          destChainId,
+          tokenIn,
+          tokenOut,
+          amountIn,
+          bridgeTokens,
+          error,
+        },
+        '[SynapseSDK: RouterSet] Error when trying to calculate the best quote'
       )
       return []
     }

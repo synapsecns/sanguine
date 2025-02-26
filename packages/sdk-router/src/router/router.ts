@@ -8,6 +8,7 @@ import { BigintIsh } from '../constants'
 import { Query } from '../module/query'
 import { DestRequest } from './types'
 import { BridgeToken, FeeConfig, SynapseModule } from '../module'
+import { logger } from '../utils/logger'
 
 /**
  * Abstract class for a router contract deployed on a chain.
@@ -117,9 +118,9 @@ export abstract class Router implements SynapseModule {
       // Don't filter anything, as the amount of returned queries should match the amount of symbols
       return this.getOriginAmountOut(tokenIn, tokenSymbols, amountIn)
     } catch (error) {
-      console.error(
-        '[SynapseSDK: Router] Failed to fetch origin queries',
-        error
+      logger.error(
+        { tokenIn, tokenSymbols, amountIn, error },
+        '[SynapseSDK: Router] Failed to fetch origin queries'
       )
       throw error
     }
@@ -141,9 +142,9 @@ export abstract class Router implements SynapseModule {
       // Don't filter anything, as the amount of returned queries should match the amount of requests
       return this.getDestinationAmountOut(requests, tokenOut)
     } catch (error) {
-      console.error(
-        '[SynapseSDK: Router] Failed to fetch destination queries',
-        error
+      logger.error(
+        { requests, tokenOut, error },
+        '[SynapseSDK: Router] Failed to fetch destination queries'
       )
       throw error
     }

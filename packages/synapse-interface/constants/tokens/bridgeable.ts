@@ -2,6 +2,7 @@ import { zeroAddress } from 'viem'
 import ageurLogo from '@assets/icons/ageur.svg'
 import avaxLogo from '@assets/icons/avax.svg'
 import btcLogo from '@assets/icons/btc.svg'
+import bnbLogo from '@assets/icons/bnb.svg'
 import busdLogo from '@assets/icons/busd.svg'
 import crvusdLogo from '@assets/icons/crvusd.svg'
 import linkLogo from '@assets/icons/link.svg'
@@ -42,6 +43,10 @@ import usdtLogo from '@assets/icons/usdt.svg'
 import vstaLogo from '@assets/icons/vsta.svg'
 import wbtcLogo from '@assets/icons/wbtc.svg'
 import wethLogo from '@assets/icons/weth.svg'
+// TODO: correct logo for these native tokens
+import beraLogo from '@assets/chains/berachain.svg'
+import croLogo from '@assets/chains/cronos.svg'
+import hypeLogo from '@assets/chains/hyperliquid.svg'
 
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
@@ -1253,4 +1258,68 @@ export const METIS = new Token({
   logo: metisLogo,
   color: 'blue',
   routeSymbol: 'Metis',
+})
+
+export const BERA = new Token({
+  addresses: {
+    [CHAINS.BERACHAIN.id]: zeroAddress,
+  },
+  decimals: 18,
+  symbol: 'BERA',
+  name: 'Bera',
+  logo: beraLogo,
+  isNative: true,
+  swapableType: 'BERA',
+  color: 'gray',
+  visibilityRank: 90,
+  priorityRank: 300,
+  routeSymbol: 'BERA',
+})
+
+export const BNB = new Token({
+  addresses: {
+    [CHAINS.BNB.id]: zeroAddress,
+  },
+  decimals: 18,
+  symbol: 'BNB',
+  name: 'BNB',
+  logo: bnbLogo,
+  isNative: true,
+  swapableType: 'BNB',
+  color: 'yellow',
+  visibilityRank: 90,
+  priorityRank: 300,
+  routeSymbol: 'BNB',
+})
+
+export const CRO = new Token({
+  addresses: {
+    [CHAINS.CRONOS.id]: zeroAddress,
+  },
+  decimals: 18,
+  symbol: 'CRO',
+  name: 'Cronos',
+  logo: croLogo,
+  isNative: true,
+  swapableType: 'CRO',
+  color: 'blue',
+  visibilityRank: 90,
+  priorityRank: 300,
+  routeSymbol: 'CRO',
+})
+
+export const HYPE = new Token({
+  addresses: {
+    [CHAINS.HYPEREVM.id]: zeroAddress,
+  },
+  decimals: 18,
+  symbol: 'HYPE',
+  name: 'HyperEVM',
+  logo: hypeLogo,
+  isNative: true,
+  swapableType: 'HYPE',
+  color: 'green',
+  visibilityRank: 90,
+  priorityRank: 300,
+  routeSymbol: 'HYPE',
 })

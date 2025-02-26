@@ -44,6 +44,7 @@ export const ChainId = {
   FANTOM: 250,
   BOBA: 288,
   WORLDCHAIN: 480,
+  HYPEREVM: 999,
   METIS: 1088,
   MOONBEAM: 1284,
   MOONRIVER: 1285,

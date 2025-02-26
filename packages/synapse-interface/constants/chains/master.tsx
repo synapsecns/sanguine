@@ -654,8 +654,7 @@ export const UNICHAIN: Chain = {
   chainImg: unichainImg,
   layer: 2,
   rpcUrls: {
-    primary:
-      'https://mainnet.unichain.org',
+    primary: 'https://mainnet.unichain.org',
     fallback: 'https://mainnet.unichain.org',
   },
   explorerUrl: 'https://uniscan.xyz',
@@ -681,8 +680,7 @@ export const BERACHAIN: Chain = {
   chainImg: berachainImg,
   layer: 2,
   rpcUrls: {
-    primary:
-      'https://rpc.berachain.com',
+    primary: 'https://rpc.berachain.com',
     fallback: 'https://rpc.berachain.com',
   },
   explorerUrl: 'https://berascan.com',
@@ -697,5 +695,32 @@ export const BERACHAIN: Chain = {
     icon: berachainImg,
   },
   color: 'brown',
+  isNew: true,
+}
+
+export const HYPEREVM: Chain = {
+  priorityRank: 99,
+  id: 999,
+  chainSymbol: 'HYPEREVM',
+  name: 'HyperEVM',
+  // TODO: different icon?
+  chainImg: hyperliquidImg,
+  layer: 2,
+  rpcUrls: {
+    primary: 'https://rpc.hyperliquid.xyz/evm',
+    fallback: 'https://rpc.hyperliquid.xyz/evm',
+  },
+  explorerUrl: 'https://purrsec.com',
+  explorerName: 'Purrsec',
+  explorerImg: hyperliquidImg,
+  blockTime: 2000,
+  nativeCurrency: {
+    name: 'HYPE',
+    symbol: 'HYPE',
+    decimals: 18,
+    address: zeroAddress,
+    icon: hyperliquidImg,
+  },
+  color: 'green',
   isNew: true,
 }

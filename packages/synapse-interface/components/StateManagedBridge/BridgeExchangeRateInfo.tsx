@@ -63,9 +63,9 @@ const DestinationAddress = () => {
 const Slippage = () => {
   const { debouncedFromValue } = useBridgeState()
   const t = useTranslations('Bridge')
-
+  // TODO: handle slippage between different types of assets
   const {
-    bridgeQuote: { exchangeRate },
+    bridgeQuote: { exchangeRate, bridgeModuleName },
   } = useBridgeQuoteState()
 
   const { formattedPercentSlippage, safeFromAmount, underFee, textColor } =
@@ -73,7 +73,7 @@ const Slippage = () => {
   return (
     <div className="flex justify-between">
       <span className="text-zinc-500 dark:text-zinc-400">{t('Slippage')}</span>
-      {safeFromAmount !== '0' && !underFee ? (
+      {safeFromAmount !== '0' && !underFee && bridgeModuleName !== 'Gas.zip' ? (
         <span className={textColor}>{formattedPercentSlippage}</span>
       ) : (
         <span className="">−</span>
