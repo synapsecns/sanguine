@@ -396,7 +396,8 @@ func (c Config) GetQuoteOffsetBps(chainID int, tokenName string, isOrigin bool) 
 
 	tokenCfg, ok := chainCfg.Tokens[tokenName]
 	if !ok {
-		return 0, fmt.Errorf("no token config for chain %d and token %s", chainID, tokenName)
+		// This is not necessarily a problem if an asset legitimately does not exist on a chain but can be swapped into.
+		return 0.0, nil //fmt.Errorf("no token config for chain %d and token %s", chainID, tokenName)
 	}
 
 	offset := tokenCfg.QuoteOffsetBps

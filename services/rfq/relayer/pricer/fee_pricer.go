@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
@@ -29,6 +30,8 @@ type FeePricer interface {
 	GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, error)
 	// GetTokenPrice returns the price of a token in USD.
 	GetTokenPrice(ctx context.Context, token string) (float64, error)
+	// PricePair calculates the price of a token pair from one chain to another.
+	PricePair(parentCtx context.Context, chainFrom uint32, chainTo uint32, tokenFrom string, tokenTo string, valueFromWei big.Int) (_ *big.Int, err error)
 }
 
 type feePricer struct {
@@ -99,7 +102,7 @@ func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination 
 	}
 	fee, err := f.getFee(ctx, origin, destination, gasEstimate, denomToken, isQuote)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("err getFee: %w", err)
 	}
 
 	// If specified, calculate and add the L1 fee
@@ -184,6 +187,109 @@ func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination u
 		attribute.String("total_fee", totalFee.String()),
 	)
 	return totalFee, nil
+}
+
+func (f *feePricer) PricePair(parentCtx context.Context, chainFrom uint32, chainTo uint32, tokenFrom string, tokenTo string, valueFromWei big.Int) (_ *big.Int, err error) {
+	ctx, span := f.handler.Tracer().Start(parentCtx, "PricePair", trace.WithAttributes())
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	var (
+		tokenFromPriceUsd, tokenToPriceUsd             float64
+		tokenFromDecimals, tokenToDecimals             uint8
+		tokenFromDecimalsFactor, tokenToDecimalsFactor *big.Int
+	)
+
+	if tokenFrom == "USD" {
+		tokenFromPriceUsd = 1
+		tokenFromDecimals = 5
+		tokenFromDecimalsFactor = big.NewInt(100000)
+	} else {
+		if common.IsHexAddress(tokenFrom) {
+			tokenFrom, err = f.config.GetTokenName(chainFrom, tokenFrom)
+			if err != nil {
+				return nil, err
+			}
+		}
+		tokenFromPriceUsd, err = f.GetTokenPrice(ctx, tokenFrom)
+		if err != nil {
+			return nil, err
+		}
+		tokenFromDecimals, err = f.config.GetTokenDecimals(chainFrom, tokenFrom)
+		if err != nil {
+			return nil, err
+		}
+		tokenFromDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenFromDecimals)), nil)
+	}
+
+	if tokenTo == "USD" {
+		tokenToPriceUsd = 1
+		tokenToDecimals = 5
+		tokenToDecimalsFactor = big.NewInt(100000)
+	} else {
+		if common.IsHexAddress(tokenTo) {
+			tokenTo, err = f.config.GetTokenName(chainTo, tokenTo)
+			if err != nil {
+				return nil, err
+			}
+		}
+		tokenToPriceUsd, err = f.GetTokenPrice(ctx, tokenTo)
+		if err != nil {
+			return nil, err
+		}
+		tokenToDecimals, err = f.config.GetTokenDecimals(chainTo, tokenTo)
+		if err != nil {
+			return nil, err
+		}
+		tokenToDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenToDecimals)), nil)
+	}
+
+	// This will be the final wei output
+	var valueToWei big.Int
+
+	if tokenFrom == tokenTo && tokenFromDecimals == tokenToDecimals {
+		// Tokens are the same & identical units? No need for any pricing or conversion logic.
+		valueToWei = valueFromWei
+	} else {
+
+		// The steps below convert a raw/wei value of our tokenFrom (valueFromWei) into an equivalently priced raw/wei value of tokenTo (valueToWei)
+
+		// useful for immediate pricing log output when dev/debugging
+		debugOutput := false
+
+		valueFromUnits := new(big.Float).Quo(new(big.Float).SetInt(&valueFromWei), new(big.Float).SetInt(tokenFromDecimalsFactor))
+		if debugOutput {
+			fmt.Println("value_from_units:", valueFromUnits.Text('f', -1))
+		}
+
+		valueFromUsd := new(big.Float).Mul(valueFromUnits, new(big.Float).SetFloat64(tokenFromPriceUsd))
+		if debugOutput {
+			fmt.Println("value_from_usd:", valueFromUsd.Text('f', -1))
+		}
+
+		tokenToUnits := new(big.Float).Quo(valueFromUsd, new(big.Float).SetFloat64(tokenToPriceUsd))
+		if debugOutput {
+			fmt.Println("token_to_units:", tokenToUnits.Text('f', -1))
+		}
+
+		valueToWeiFloat := new(big.Float).Mul(tokenToUnits, new(big.Float).SetInt(tokenToDecimalsFactor))
+		valueToWeiInt, _ := valueToWeiFloat.Int(nil)
+		valueToWei.Set(valueToWeiInt)
+		if debugOutput {
+			fmt.Println("value_to_wei:", valueToWei.String())
+		}
+
+		span.SetAttributes(
+			attribute.String("value_from_wei", valueFromWei.String()),
+			attribute.String("value_from_units", valueFromUnits.Text('f', -1)),
+			attribute.String("value_from_usd", valueFromUsd.Text('f', -1)),
+			attribute.String("value_to_wei", valueToWei.String()),
+		)
+	}
+
+	return &valueToWei, nil
 }
 
 func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint32, gasEstimate int, denomToken string, isQuote bool) (_ *big.Int, err error) {
@@ -274,6 +380,11 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 		attribute.String("fee_denom", feeDenom.Text('f', -1)),
 		attribute.String("fee_usdc_decimals_scaled", feeUSDCDecimalsScaled.String()),
 	)
+
+	if feeUSDCDecimalsScaled == nil {
+		return nil, fmt.Errorf("err getFee: nil fee return")
+	}
+
 	return feeUSDCDecimalsScaled, nil
 }
 
@@ -327,11 +438,9 @@ func (f *feePricer) GetTokenPrice(ctx context.Context, token string) (price floa
 			span.SetAttributes(
 				attribute.String("cg_error", err.Error()),
 			)
-			// Fallback to configured token price.
-			price, err = f.getTokenPriceFromConfig(token)
-			if err != nil {
-				return 0, err
-			}
+			// intentionally no longer allow fallback to flat hard-configured token price
+			return 0, fmt.Errorf("err price lookup %s: %v", token, err)
+
 		}
 	} else {
 		price = tokenPriceItem.Value()
@@ -342,10 +451,8 @@ func (f *feePricer) GetTokenPrice(ctx context.Context, token string) (price floa
 
 func (f *feePricer) getTokenPriceFromConfig(token string) (float64, error) {
 	for _, chainConfig := range f.config.GetChains() {
-		for tokenName, tokenConfig := range chainConfig.Tokens {
-			if token == tokenName {
-				return tokenConfig.PriceUSD, nil
-			}
+		if tokenConfig, exists := chainConfig.Tokens[token]; exists {
+			return tokenConfig.PriceUSD, nil
 		}
 	}
 	return 0, fmt.Errorf("could not get price for token: %s", token)
