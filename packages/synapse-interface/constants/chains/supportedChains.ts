@@ -27,6 +27,7 @@ import {
   worldchain,
   unichain,
   berachain,
+  hyperEVM,
 } from '@/constants/chains/extraWagmiChains'
 import { CHAINS_BY_ID } from '@/constants/chains'
 
@@ -56,6 +57,7 @@ export const supportedChains = [
   dogechain,
   boba,
   harmonyOne,
+  hyperEVM,
 ].map((chain) => {
   return {
     ...chain,
