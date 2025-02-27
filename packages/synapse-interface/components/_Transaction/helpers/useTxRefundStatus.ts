@@ -17,6 +17,41 @@ enum BridgeStatus {
   REFUNDED,
 }
 
+type Status = 'SEEN' | 'PENDING' | 'CONFIRMED' | 'PRIORITY' | 'CANCELLED'
+
+interface TransactionStatusData {
+  deposit: Deposit
+  txs: Transaction[]
+}
+
+interface Deposit {
+  block: number
+  chain: number
+  hash: string
+  log: number
+  sender: string
+  shorts: number[]
+  status: Status
+  time: number
+  to: string
+  usd: number
+  value: string
+}
+
+interface Transaction {
+  chain: number
+  hash: string
+  nonce: number
+  refund: boolean
+  cancelled: boolean
+  signer: string
+  status: Status
+  time: number
+  to: string
+  usd: number
+  value: number
+}
+
 enum GasZipStatus {
   CONFIRMED = 'CONFIRMED', // user received funds on dst chain
   CANCELLED = 'CANCELLED', // tx will not be processed, user hasn't received their origin funds back yet
@@ -28,7 +63,7 @@ const GAS_ZIP_API_URL = 'https://backend.gas.zip/v2/deposit'
 const GAS_ZIP_DEPOSIT_ADDRESS = '0x391E7C679d29bD940d63be94AD22A25d25b5A604'
 
 export const useTxRefundStatus = (
-  txId: string | undefined,
+  txId: string,
   routerAddress: Address,
   chain: Chain,
   checkForRefund: boolean
@@ -121,27 +156,24 @@ const checkRFQTxBridgeStatus = async (
   }
 }
 
-const checkGasZipTxStatus = async (
-  txId: string
-): Promise<GasZipStatus | undefined> => {
+const checkGasZipTxStatus = async (txId: string): Promise<GasZipStatus> => {
   try {
     const res = await fetch(`${GAS_ZIP_API_URL}/${txId}`, { method: 'GET' })
-    const data = await res.json()
+    const data = (await res.json()) as TransactionStatusData
     if (!data.txs || !data.txs.length) {
-      return undefined
-    }
-    console.log({ txId, data })
-    if (data.txs[0].status === GasZipStatus.CONFIRMED) {
-      return GasZipStatus.CONFIRMED
+      return GasZipStatus.OTHER
     }
     if (
       data.txs[0].status === GasZipStatus.CANCELLED ||
       data.txs[0].cancelled
     ) {
-      // Check if there is a refun tx in the list
+      // Check if there is a refund tx in the list
       return data.txs.find((tx) => tx.refund)
         ? GasZipStatus.REFUNDED
         : GasZipStatus.CANCELLED
+    }
+    if (data.txs[0].status === GasZipStatus.CONFIRMED) {
+      return GasZipStatus.CONFIRMED
     }
     return GasZipStatus.OTHER
   } catch (error) {
