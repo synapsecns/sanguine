@@ -10,9 +10,9 @@ This package contains the Synapse Protocol Cross-Chain Swap and Bridging SDK
 
 The SDK Router supports the following environment variables:
 
-| Variable | Description | Default Value |
-|----------|-------------|---------------|
-| RFQ_API_URL | URL for the RFQ API | https://rfq-api-stage.omnirpc.io |
+| Variable    | Description         | Default Value              |
+| ----------- | ------------------- | -------------------------- |
+| RFQ_API_URL | URL for the RFQ API | https://rfq-api.omnirpc.io |
 
 # Synapse SDK
 
