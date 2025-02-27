@@ -75,6 +75,12 @@ func (c *CoingeckoPriceFetcherImpl) GetPrice(ctx context.Context, token string) 
 		metrics.EndSpanWithErr(span, err)
 	}()
 
+	// "DirectUSD" is a special identifier we can use to price assets directly to USD while also following roughly the same logic as any other asset.
+	if token == "DirectUSD" {
+		price = 1.0
+		return price, nil
+	}
+
 	// Check global cache first before calling api
 	cacheMu.Lock()
 	cached, found := globalCache[token]

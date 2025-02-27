@@ -683,6 +683,13 @@ func (c Config) GetQuotableTokens(token string) ([]string, error) {
 
 // GetTokenDecimals returns the token decimals for the given chain and token.
 func (c Config) GetTokenDecimals(chainID uint32, token string) (uint8, error) {
+
+	// "DirectUSD" is a special identifier we can use to price assets directly to USD while also following roughly the same logic as any other asset.
+	// Set to a flat 5 decimal denomination
+	if token == "DirectUSD" {
+		return 5, nil
+	}
+
 	chainConfig, ok := c.Chains[int(chainID)]
 	if !ok {
 		return 0, fmt.Errorf("could not get chain config for chainID: %d", chainID)
