@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.42.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.41.9...@synapsecns/synapse-interface@0.42.0) (2025-02-27)
+
+
+### Features
+
+* **sdk-router:** Gas.zip module [SYN-37] ([#3528](https://github.com/synapsecns/sanguine/issues/3528)) ([34db356](https://github.com/synapsecns/sanguine/commit/34db35698e6a8c4b2693a3b23de31e46d3b37116))
+
+
+
+
+
+## [0.41.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.41.8...@synapsecns/synapse-interface@0.41.9) (2025-02-25)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.41.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.41.7...@synapsecns/synapse-interface@0.41.8) (2025-02-21)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
