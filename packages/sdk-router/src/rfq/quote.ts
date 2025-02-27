@@ -74,16 +74,16 @@ export const applyQuote = (
   quote: FastBridgeQuote,
   originAmount: BigNumber
 ): BigNumber => {
-  // Check that the origin amount covers the fixed fee
-  if (originAmount.lte(quote.fixedFee)) {
+  if (originAmount.eq(Zero) || originAmount.gt(quote.maxOriginAmount)) {
     return Zero
   }
-  // Check that the Relayer is able to process the origin amount (post fixed fee)
-  const amountAfterFee = originAmount.sub(quote.fixedFee)
-  if (amountAfterFee.gt(quote.maxOriginAmount)) {
+  // After these checks: 0 < originAmount <= quote.maxOriginAmount
+  const destAmount = originAmount
+    .mul(quote.destAmount)
+    .div(quote.maxOriginAmount)
+  // Check that the destination amount is greater than the fixed fee
+  if (destAmount.lt(quote.fixedFee)) {
     return Zero
   }
-  // After these checks: 0 < amountAfterFee <= quote.maxOriginAmount
-  // Solve (amountAfterFee -> ?) using (maxOriginAmount -> destAmount) pricing ratio
-  return amountAfterFee.mul(quote.destAmount).div(quote.maxOriginAmount)
+  return destAmount.sub(quote.fixedFee)
 }

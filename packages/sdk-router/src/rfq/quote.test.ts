@@ -1,4 +1,5 @@
 import { BigNumber, parseFixed } from '@ethersproject/bignumber'
+import { Zero } from '@ethersproject/constants'
 
 import {
   FastBridgeQuote,
@@ -8,43 +9,36 @@ import {
   applyQuote,
 } from './quote'
 
+const expectEqualBigNumbers = (a: BigNumber, b: BigNumber) => {
+  expect(a.toString()).toEqual(b.toString())
+}
+
+const expectNotEqualBigNumbers = (a: BigNumber, b: BigNumber) => {
+  expect(a.toString()).not.toEqual(b.toString())
+}
+
 const createZeroAmountTests = (quote: FastBridgeQuote) => {
   describe('Returns zero', () => {
     it('If origin amount is zero', () => {
-      expect(applyQuote(quote, BigNumber.from(0))).toEqual(BigNumber.from(0))
+      expectEqualBigNumbers(applyQuote(quote, Zero), Zero)
     })
 
-    it('If origin amount is lower than fixed fee', () => {
-      expect(applyQuote(quote, quote.fixedFee.sub(1))).toEqual(
-        BigNumber.from(0)
-      )
-    })
-
-    it('If origin amount is equal to fixed fee', () => {
-      expect(applyQuote(quote, quote.fixedFee)).toEqual(BigNumber.from(0))
-    })
-
-    it('If origin amount is greater than max origin amount + fixed fee', () => {
+    it('If origin amount is greater than max origin amount', () => {
       const amount = quote.maxOriginAmount.add(quote.fixedFee).add(1)
-      expect(applyQuote(quote, amount)).toEqual(BigNumber.from(0))
+      expectEqualBigNumbers(applyQuote(quote, amount), Zero)
+    })
+
+    it('If dest amount is lower than fixed fee', () => {
+      const amount = quote.fixedFee
+        .mul(quote.maxOriginAmount)
+        .div(quote.destAmount)
+      expectEqualBigNumbers(applyQuote(quote, amount), Zero)
     })
   })
 
   describe('Returns non-zero', () => {
     it('If origin amount is equal to max origin amount', () => {
-      expect(applyQuote(quote, quote.maxOriginAmount)).not.toEqual(
-        BigNumber.from(0)
-      )
-    })
-
-    it('If origin amount is 1 wei greater than max origin amount', () => {
-      const amount = quote.maxOriginAmount.add(1)
-      expect(applyQuote(quote, amount)).not.toEqual(BigNumber.from(0))
-    })
-
-    it('If origin amount is max origin amount + fixed fee', () => {
-      const amount = quote.maxOriginAmount.add(quote.fixedFee)
-      expect(applyQuote(quote, amount)).not.toEqual(BigNumber.from(0))
+      expectNotEqualBigNumbers(applyQuote(quote, quote.maxOriginAmount), Zero)
     })
   })
 }
@@ -55,7 +49,7 @@ const createCorrectAmountTest = (
   expected: BigNumber
 ) => {
   it(`${amount.toString()} -> ${expected.toString()}`, () => {
-    expect(applyQuote(quote, amount)).toEqual(expected)
+    expectEqualBigNumbers(applyQuote(quote, amount), expected)
   })
 }
 
@@ -70,7 +64,7 @@ const createQuoteTests = (
         ...quoteTemplate,
         maxOriginAmount: parseFixed('100000', originDecimals),
         destAmount: parseFixed('100000', destDecimals),
-        fixedFee: parseFixed('1', originDecimals),
+        fixedFee: parseFixed('1', destDecimals),
       }
 
       // 10 origin -> 9 dest
@@ -87,14 +81,14 @@ const createQuoteTests = (
         ...quoteTemplate,
         maxOriginAmount: parseFixed('100000', originDecimals),
         destAmount: parseFixed('100010', destDecimals),
-        fixedFee: parseFixed('1', originDecimals),
+        fixedFee: parseFixed('1', destDecimals),
       }
 
-      // 10 origin -> 9.0009 dest
+      // 10 origin -> 10.0010 dest -> 9.0010 dest after fee
       createCorrectAmountTest(
         quote,
         parseFixed('10', originDecimals),
-        parseFixed('9.0009', destDecimals)
+        parseFixed('9.0010', destDecimals)
       )
       createZeroAmountTests(quote)
     })
@@ -104,14 +98,14 @@ const createQuoteTests = (
         ...quoteTemplate,
         maxOriginAmount: parseFixed('100000', originDecimals),
         destAmount: parseFixed('99990', destDecimals),
-        fixedFee: parseFixed('1', originDecimals),
+        fixedFee: parseFixed('1', destDecimals),
       }
 
-      // 10 origin -> 8.9991 dest
+      // 10 origin -> 9.9990 dest -> 8.9990 dest after fee
       createCorrectAmountTest(
         quote,
         parseFixed('10', originDecimals),
-        parseFixed('8.9991', destDecimals)
+        parseFixed('8.9990', destDecimals)
       )
       createZeroAmountTests(quote)
     })
@@ -190,8 +184,8 @@ describe('quote', () => {
       parseFixed('2345', 18),
       parseFixed('1', 18),
       parseFixed('2', 18),
-      // (2 - 1) * 2345 / 1234 = 1.900324149108589951
-      BigNumber.from('1900324149108589951')
+      // 2 * 2345 / 1234 - 1 = 2.800648298217179902
+      BigNumber.from('2800648298217179902')
     )
 
     // // Bigger decimals
@@ -200,10 +194,10 @@ describe('quote', () => {
       quote,
       parseFixed('1234', 6),
       parseFixed('2345', 18),
-      parseFixed('1', 6),
+      parseFixed('1', 18),
       parseFixed('2', 6),
-      // (2 - 1) * 2345 / 1234 = 1.900324149108589951
-      BigNumber.from('1900324149108589951')
+      // 2 * 2345 / 1234 - 1 = 2.800648298217179902
+      BigNumber.from('2800648298217179902')
     )
 
     // Smaller decimals
@@ -212,38 +206,38 @@ describe('quote', () => {
       quote,
       parseFixed('1234', 18),
       parseFixed('2345', 6),
-      parseFixed('1', 18),
+      parseFixed('1', 6),
       parseFixed('2', 18),
-      // (2 - 1) * 2345 / 1234 = 1.900324149108589951
-      BigNumber.from('1900324')
+      // 2 * 2345 / 1234 - 1 = 2.800648298217179902
+      BigNumber.from('2800648')
     )
 
     it('Returns zero when max origin amount is zero', () => {
       const zeroQuote: FastBridgeQuote = {
         ...quote,
-        maxOriginAmount: BigNumber.from(0),
+        maxOriginAmount: Zero,
       }
       const amount = zeroQuote.fixedFee.mul(2)
-      expect(applyQuote(zeroQuote, amount)).toEqual(BigNumber.from(0))
+      expectEqualBigNumbers(applyQuote(zeroQuote, amount), Zero)
     })
 
     it('Returns zero when dest amount is zero', () => {
       const zeroQuote: FastBridgeQuote = {
         ...quote,
-        destAmount: BigNumber.from(0),
+        destAmount: Zero,
       }
       const amount = zeroQuote.fixedFee.mul(2)
-      expect(applyQuote(zeroQuote, amount)).toEqual(BigNumber.from(0))
+      expectEqualBigNumbers(applyQuote(zeroQuote, amount), Zero)
     })
 
     it('Returns zero when max origin amount and dest amount are zero', () => {
       const zeroQuote: FastBridgeQuote = {
         ...quote,
-        maxOriginAmount: BigNumber.from(0),
-        destAmount: BigNumber.from(0),
+        maxOriginAmount: Zero,
+        destAmount: Zero,
       }
       const amount = zeroQuote.fixedFee.mul(2)
-      expect(applyQuote(zeroQuote, amount)).toEqual(BigNumber.from(0))
+      expectEqualBigNumbers(applyQuote(zeroQuote, amount), Zero)
     })
   })
 })
