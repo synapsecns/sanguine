@@ -31,7 +31,7 @@
     "@cloudflare/next-on-pages": "^1.11.0",
     "@codecov/webpack-plugin": "^0.0.1-beta.10",
     "@ethersproject/bignumber": "5.7.0",
-    "@ethersproject/providers": "5.7.2",
+    "@ethersproject/providers": "5.8.0",
     "@ethersproject/units": "5.7.0",
     "@headlessui/react": "^1.7.15",
     "@heroicons/react": "1.0.6",
