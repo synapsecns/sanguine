@@ -2,8 +2,11 @@ package exporters
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/big"
+	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
@@ -26,10 +29,11 @@ var usdcAddresses = map[int]string{
 	534352: "0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4", // scroll
 	59144:  "0x176211869cA2b568f2A7D4EE941E073a821EE1ff", // linea
 	480:    "0x79A02482A880bCE3F13e09Da970dC34db4CD24d1", // world
+	80094:  "0x549943e04f40284185054145c6e4e9568c1d3241", // bera
+	130:    "0x078d782b760474a361dda0af3839290b0ef57ad6", // unichain
+
 }
 
-// TODO: this function does too many things.
-//
 //nolint:cyclop
 func (e *exporter) fetchRelayerBalances(ctx context.Context, _ string) error {
 	chainIDToRelayers := make(map[int][]string)
@@ -82,4 +86,40 @@ func (e *exporter) fetchRelayerBalances(ctx context.Context, _ string) error {
 	}
 
 	return nil
+}
+
+func chainIDsToRelayers() map[int][]string {
+	quotesMap := make(map[int][]string)
+
+	resp, err := http.Get("https://rfq-api.omnirpc.io/quotes")
+	if err != nil {
+		fmt.Printf("Error fetching quotes: %v\n", err)
+		return nil
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("Error reading response body: %v\n", err)
+		return nil
+	}
+
+	var quotes []struct {
+		OriginChainID int    `json:"origin_chain_id"`
+		RelayerAddr   string `json:"relayer_addr"`
+		DestChainID   int    `json:"dest_chain_id"`
+	}
+
+	if err := json.Unmarshal(body, &quotes); err != nil {
+		fmt.Printf("Error unmarshalling quotes: %v\n", err)
+		return nil
+	}
+
+	for _, quote := range quotes {
+		quotesMap[quote.OriginChainID] = append(quotesMap[quote.OriginChainID], quote.RelayerAddr)
+		quotesMap[quote.DestChainID] = append(quotesMap[quote.DestChainID], quote.RelayerAddr)
+	}
+
+	return quotesMap
+
 }

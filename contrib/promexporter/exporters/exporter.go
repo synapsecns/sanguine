@@ -34,9 +34,7 @@ const meterName = "github.com/synapsecns/sanguine/contrib/promexporter/exporters
 func makeHTTPClient(handler metrics.Handler) *http.Client {
 	httpClient := new(http.Client)
 	handler.ConfigureHTTPClient(httpClient)
-
 	httpClient.Transport = httpcapture.NewCaptureTransport(httpClient.Transport, handler)
-
 	return httpClient
 }
 
@@ -106,11 +104,14 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 const defaultMetricsInterval = 10
 
 func (e *exporter) recordMetrics(ctx context.Context) (err error) {
+	ticker := time.NewTicker(defaultMetricsInterval * time.Second)
+	defer ticker.Stop()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("could not record metrics: %w", ctx.Err())
-		case <-time.After(defaultMetricsInterval * time.Second):
+		case <-ticker.C:
 			err = e.collectMetrics(ctx)
 			if err != nil {
 				logger.Errorf("could not collect metrics: %v", err)
