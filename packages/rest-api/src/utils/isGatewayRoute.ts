@@ -1,5 +1,10 @@
 import { createProxyMiddleware } from 'http-proxy-middleware'
 
+// Environment variables for RFQ API and Indexer URLs
+const RFQ_API_URL = process.env.RFQ_API_URL || 'https://rfq-api.omnirpc.io'
+const RFQ_INDEXER_URL =
+  process.env.RFQ_INDEXER_URL || 'https://rfq-indexer.synapseprotocol.com/api'
+
 export const isRFQIndexerRequest = (route: string): boolean => {
   return (
     route.includes('/conflicting-proofs') ||
@@ -24,11 +29,11 @@ export const isRFQAPIRequest = (route: string): boolean => {
 }
 
 export const rfqApiProxy = createProxyMiddleware({
-  target: 'https://rfq-api.omnirpc.io',
+  target: RFQ_API_URL,
   changeOrigin: true,
 })
 
 export const rfqIndexerProxy = createProxyMiddleware({
-  target: 'https://rfq-indexer.synapseprotocol.com/api',
+  target: RFQ_INDEXER_URL,
   changeOrigin: true,
 })
