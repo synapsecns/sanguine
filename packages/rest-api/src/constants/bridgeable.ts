@@ -1420,3 +1420,20 @@ export const SPECTRAL: BridgeableToken = {
   imgUrl:
     'https://105bc697.sanguine-fe.pages.dev/_next/static/media/spectral.6d51750c.svg',
 }
+
+export const HYPE: BridgeableToken = {
+  addresses: {
+    [CHAINS.HYPEREVM.id]: NativeTokenAddress,
+  },
+  decimals: {
+    [CHAINS.HYPEREVM.id]: 18,
+  },
+  symbol: 'HYPE',
+  name: 'HYPE',
+  swapableType: 'HYPE',
+  color: 'green',
+  priorityRank: 300,
+  routeSymbol: 'HYPE',
+  imgUrl:
+    'https://45b41e43.sanguine-fe.pages.dev/_next/static/media/hyperliquid.3dafe2fd.svg',
+}

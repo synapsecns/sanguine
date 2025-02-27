@@ -529,6 +529,27 @@ export const UNICHAIN: Chain = {
   },
 }
 
+export const HYPEREVM: Chain = {
+  id: 999,
+  name: 'HyperEVM',
+  rpcUrls: {
+    primary: 'https://rpc.hyperliquid.xyz/evm',
+    fallback: 'https://rpc.hypurrscan.io',
+  },
+  explorerUrl: 'https://purrsec.com',
+  explorerName: 'PurrSec',
+  imgUrl:
+    'https://45b41e43.sanguine-fe.pages.dev/_next/static/media/hyperliquid.3dafe2fd.svg',
+  blockTime: 2000,
+  networkName: 'HyperEVM',
+  networkUrl: 'https://rpc.hyperliquid.xyz/evm',
+  nativeCurrency: {
+    name: 'HYPE',
+    symbol: 'HYPE',
+    decimals: 18,
+  },
+}
+
 export const CHAINS = {
   ETHEREUM,
   ARBITRUM,
@@ -555,6 +576,7 @@ export const CHAINS = {
   WORLDCHAIN,
   BERACHAIN,
   UNICHAIN,
+  HYPEREVM,
 }
 
 export const CHAINS_ARRAY = Object.values(CHAINS)
