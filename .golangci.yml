@@ -16,9 +16,6 @@ run:
 linters-settings:
   gofmt:
     simplify: true
-  govet:
-    # Don't report about shadowed variables
-    check-shadowing: false
   misspell:
     locale: US
   gocritic:
@@ -150,4 +147,4 @@ issues:
         - staticcheck
         - wrapcheck
   exclude-use-default: false
-  new-from-rev: 9fe0f033b73acf6b8240f0a832c4b4d21e68181b
+  new-from-rev: 531916ba79df25bf4d2d0bb654124f8693a74f85
