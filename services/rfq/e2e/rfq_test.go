@@ -2,7 +2,9 @@ package e2e_test
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"math/big"
+	"net/http/httptest"
 	"sync"
 	"testing"
 	"time"
@@ -49,6 +51,8 @@ type IntegrationSuite struct {
 	relayerWallet wallet.Wallet
 	guardWallet   wallet.Wallet
 	userWallet    wallet.Wallet
+	// Mock CoinGecko server for testing
+	mockCoinGeckoServer *httptest.Server
 }
 
 func NewIntegrationSuite(tb testing.TB) *IntegrationSuite {
@@ -75,11 +79,21 @@ const (
 // 3. Create the omnirpc server: this is used by both the api and the relayer.
 func (i *IntegrationSuite) SetupTest() {
 	i.TestSuite.SetupTest()
+	pricer.UnsafeUpdateCoingeckoMap(map[string]string{
+		"MockMintBurnToken": "usdt",
+		"WETH9":             "ethereum",
+		"USDT":              "usdt",
+		"DAI":               "dai",
+	})
 
 	i.manager = testutil.NewDeployManager(i.T())
 	i.cctpDeployManager = cctpTest.NewDeployManager(i.T())
 	// TODO: consider jaeger
 	i.metrics = metrics.NewNullHandler()
+
+	// Setup mock CoinGecko server before backends so the relayer will use it
+	i.setupMockCoinGeckoServer()
+
 	// setup backends for ethereum & omnirpc
 	i.setupBackends()
 
@@ -87,6 +101,17 @@ func (i *IntegrationSuite) SetupTest() {
 	i.setupQuoterAPI()
 	i.setupRelayer()
 	i.setupGuard()
+}
+
+func (i *IntegrationSuite) TearDownTest() {
+	// Clean up the mock server
+	if i.mockCoinGeckoServer != nil {
+		i.mockCoinGeckoServer.Close()
+		i.mockCoinGeckoServer = nil
+	}
+
+	pricer.UnsafeResetCoingeckoMap()
+	i.TestSuite.TearDownTest()
 }
 
 // getOtherBackend gets the backend that is not the current one. This is a helper

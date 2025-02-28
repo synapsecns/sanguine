@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/synapsecns/sanguine/core"
 	"io"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -40,6 +42,9 @@ type cachedPrice struct {
 var (
 	globalCache = make(map[string]cachedPrice)
 	cacheMu     sync.Mutex
+
+	// Add a separate RWMutex for coingeckoIDLookup
+	coingeckoMu sync.RWMutex
 )
 
 // NewCoingeckoPriceFetcher creates a new instance of CoingeckoPriceFetcherImpl.
@@ -62,6 +67,80 @@ var coingeckoIDLookup = map[string]string{
 	"ETH":  "ethereum",
 	"BERA": "berachain-bera",
 	"HYPE": "hyperliquid",
+}
+
+// Store original coingecko map values for reset capability
+var originalCoingeckoIDLookup map[string]string
+
+// init function to store the original map values
+func init() {
+	originalCoingeckoIDLookup = make(map[string]string)
+	for k, v := range coingeckoIDLookup {
+		originalCoingeckoIDLookup[k] = v
+	}
+}
+
+// UnsafeGetCoingeckoIDMap returns a copy of the coingeckoIDLookup map.
+// This method is only meant to be used in test environments and will return an error if used in production.
+func UnsafeGetCoingeckoIDMap() (map[string]string, error) {
+	// Only allow in test environments
+	if os.Getenv("GO_ENVIRONMENT") != "test" && os.Getenv("GO_ENV") != "test" && os.Getenv("ENVIRONMENT") != "test" {
+		return nil, fmt.Errorf("UnsafeGetCoingeckoIDMap can only be called in test environments")
+	}
+
+	coingeckoMu.RLock()
+	defer coingeckoMu.RUnlock()
+
+	// Make a copy of the map
+	result := make(map[string]string)
+	for k, v := range coingeckoIDLookup {
+		result[k] = v
+	}
+
+	return result, nil
+}
+
+// UnsafeUpdateCoingeckoMap updates the coingeckoIDLookup map with the provided entries.
+// This method is only meant to be used in test environments and will return an error if used in production.
+func UnsafeUpdateCoingeckoMap(entries map[string]string) error {
+	// Only allow updates in test environments
+	if !(os.Getenv("GO_ENVIRONMENT") != "test" || os.Getenv("GO_ENV") != "test" || os.Getenv("ENVIRONMENT") != "test" || core.HasEnv("CI")) {
+		panic("UnsafeUpdateCoingeckoMap can only be called in test environments")
+	}
+
+	coingeckoMu.Lock()
+	defer coingeckoMu.Unlock()
+
+	// Update the map with new entries
+	for token, coinGeckoID := range entries {
+		coingeckoIDLookup[token] = coinGeckoID
+	}
+
+	return nil
+}
+
+// UnsafeResetCoingeckoMap resets the coingeckoIDLookup map to its original state.
+// This method is only meant to be used in test environments and will return an error if used in production.
+func UnsafeResetCoingeckoMap() error {
+	// Only allow resets in test environments
+	if os.Getenv("GO_ENVIRONMENT") != "test" && os.Getenv("GO_ENV") != "test" && os.Getenv("ENVIRONMENT") != "test" {
+		return fmt.Errorf("UnsafeResetCoingeckoMap can only be called in test environments")
+	}
+
+	coingeckoMu.Lock()
+	defer coingeckoMu.Unlock()
+
+	// Clear current map
+	for k := range coingeckoIDLookup {
+		delete(coingeckoIDLookup, k)
+	}
+
+	// Restore original values
+	for k, v := range originalCoingeckoIDLookup {
+		coingeckoIDLookup[k] = v
+	}
+
+	return nil
 }
 
 // GetPrice fetches the price of a token from coingecko.
@@ -92,16 +171,32 @@ func (c *CoingeckoPriceFetcherImpl) GetPrice(ctx context.Context, token string) 
 	}
 
 	span.SetAttributes(attribute.Bool("used_cached_price", false))
+
+	coingeckoMu.RLock()
 	coingeckoID, ok := coingeckoIDLookup[token]
+	coingeckoMu.RUnlock()
+
 	if !ok {
 		return price, fmt.Errorf("could not get coingecko id for token: %s", token)
 	}
+
 	apiKey := c.relConfig.CoinGeckoApiKey
-	var url string
-	if apiKey != "" {
-		url = fmt.Sprintf("https://pro-api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=USD&x_cg_pro_api_key=%s", coingeckoID, apiKey)
+	var baseURL string
+
+	// Use the custom CoinGecko API URL if configured, otherwise use the default
+	if c.relConfig.CoinGeckoAPIURL != "" {
+		baseURL = c.relConfig.CoinGeckoAPIURL
+	} else if apiKey != "" {
+		baseURL = "https://pro-api.coingecko.com/api/v3"
 	} else {
-		url = fmt.Sprintf("https://api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=USD", coingeckoID)
+		baseURL = "https://api.coingecko.com/api/v3"
+	}
+
+	var url string
+	if apiKey != "" && c.relConfig.CoinGeckoAPIURL == "" { // Only add API key if using official endpoint
+		url = fmt.Sprintf("%s/simple/price?ids=%s&vs_currencies=USD&x_cg_pro_api_key=%s", baseURL, coingeckoID, apiKey)
+	} else {
+		url = fmt.Sprintf("%s/simple/price?ids=%s&vs_currencies=USD", baseURL, coingeckoID)
 	}
 
 	// fetch price from coingecko
