@@ -1420,3 +1420,92 @@ export const SPECTRAL: BridgeableToken = {
   imgUrl:
     'https://105bc697.sanguine-fe.pages.dev/_next/static/media/spectral.6d51750c.svg',
 }
+
+export const METIS: BridgeableToken = {
+  priorityRank: 300,
+  addresses: {
+    [CHAINS.DFK.id]: '0x43E8E55792D6317328e5c6B0A0C89eF4b8102Fa2',
+    [CHAINS.KLAYTN.id]: '0x543f1b2176F7E677a95D01ca83551FAa08F83D9F',
+    [CHAINS.METIS.id]: NativeTokenAddress,
+  },
+  decimals: {
+    [CHAINS.DFK.id]: 18,
+    [CHAINS.KLAYTN.id]: 18,
+    [CHAINS.METIS.id]: 18,
+  },
+  symbol: 'Metis',
+  name: 'Metis Token',
+  swapableType: 'Metis',
+  color: 'blue',
+  routeSymbol: 'Metis',
+  imgUrl:
+    'https://45b41e43.sanguine-fe.pages.dev/_next/static/media/metis.90b6abf0.svg',
+}
+
+export const BERA: BridgeableToken = {
+  priorityRank: 300,
+  addresses: {
+    [CHAINS.BERACHAIN.id]: NativeTokenAddress,
+  },
+  decimals: {
+    [CHAINS.BERACHAIN.id]: 18,
+  },
+  symbol: 'BERA',
+  name: 'BERA',
+  swapableType: 'BERA',
+  color: 'gray',
+  routeSymbol: 'BERA',
+  imgUrl:
+    'https://45b41e43.sanguine-fe.pages.dev/_next/static/media/berachain.57304c86.svg',
+}
+
+export const BNB: BridgeableToken = {
+  priorityRank: 300,
+  addresses: {
+    [CHAINS.BNBCHAIN.id]: NativeTokenAddress,
+  },
+  decimals: {
+    [CHAINS.BNBCHAIN.id]: 18,
+  },
+  symbol: 'BNB',
+  name: 'BNB',
+  swapableType: 'BNB',
+  color: 'yellow',
+  routeSymbol: 'BNB',
+  imgUrl:
+    'https://45b41e43.sanguine-fe.pages.dev/_next/static/media/bnb.8bf81f2a.svg',
+}
+
+export const CRO: BridgeableToken = {
+  priorityRank: 300,
+  addresses: {
+    [CHAINS.CRONOS.id]: NativeTokenAddress,
+  },
+  decimals: {
+    [CHAINS.CRONOS.id]: 18,
+  },
+  symbol: 'CRO',
+  name: 'Cronos',
+  swapableType: 'CRO',
+  color: 'blue',
+  routeSymbol: 'CRO',
+  imgUrl:
+    'https://45b41e43.sanguine-fe.pages.dev/_next/static/media/cronos.b06f8311.svg',
+}
+
+export const HYPE: BridgeableToken = {
+  addresses: {
+    [CHAINS.HYPEREVM.id]: NativeTokenAddress,
+  },
+  decimals: {
+    [CHAINS.HYPEREVM.id]: 18,
+  },
+  symbol: 'HYPE',
+  name: 'HYPE',
+  swapableType: 'HYPE',
+  color: 'green',
+  priorityRank: 300,
+  routeSymbol: 'HYPE',
+  imgUrl:
+    'https://45b41e43.sanguine-fe.pages.dev/_next/static/media/hyperliquid.3dafe2fd.svg',
+}

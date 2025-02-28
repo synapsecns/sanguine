@@ -59,8 +59,7 @@ jest.retryTimes(3)
 
 const EXPECTED_GAS_DROP: { [chainId: number]: BigNumber } = {
   [SupportedChainId.ETH]: BigNumber.from(0),
-  // TODO: reenable once both ARB airdrops are adjusted
-  // [SupportedChainId.ARBITRUM]: parseFixed('0.0003', 18),
+  [SupportedChainId.ARBITRUM]: parseFixed('0.00001', 18),
   [SupportedChainId.BSC]: parseFixed('0.0004', 18),
   [SupportedChainId.AVALANCHE]: parseFixed('0.025', 18),
 }
@@ -293,10 +292,9 @@ describe('SynapseSDK', () => {
           MEDIAN_TIME_BRIDGE[SupportedChainId.ETH]
         )
         expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        // TODO: reenable
-        // expect(result.gasDropAmount).toEqual(
-        //   EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
-        // )
+        expect(result.gasDropAmount).toEqual(
+          EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
+        )
         expect(result.originChainId).toEqual(SupportedChainId.ETH)
         expect(result.destChainId).toEqual(SupportedChainId.ARBITRUM)
       })
@@ -812,13 +810,12 @@ describe('SynapseSDK', () => {
         allQuotes[0].bridgeModuleName === 'SynapseCCTP' ||
           allQuotes[1].bridgeModuleName === 'SynapseCCTP'
       ).toBe(true)
-      // TODO: reenable
-      // expect(allQuotes[0].gasDropAmount).toEqual(
-      //   EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
-      // )
-      // expect(allQuotes[1].gasDropAmount).toEqual(
-      //   EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
-      // )
+      expect(allQuotes[0].gasDropAmount).toEqual(
+        EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
+      )
+      expect(allQuotes[1].gasDropAmount).toEqual(
+        EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
+      )
       expect(allQuotes[0].originChainId).toEqual(SupportedChainId.ETH)
       expect(allQuotes[0].destChainId).toEqual(SupportedChainId.ARBITRUM)
       expect(allQuotes[1].originChainId).toEqual(SupportedChainId.ETH)
@@ -847,10 +844,9 @@ describe('SynapseSDK', () => {
       expect(allQuotes.length).toEqual(1)
       expectCorrectBridgeQuote(allQuotes[0])
       expect(allQuotes[0].bridgeModuleName).toEqual('SynapseBridge')
-      // TODO: reenable
-      // expect(allQuotes[0].gasDropAmount).toEqual(
-      //   EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
-      // )
+      expect(allQuotes[0].gasDropAmount).toEqual(
+        EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
+      )
     })
   })
 

@@ -68,7 +68,7 @@ describe('Get Synapse TX ID Route', () => {
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty(
       'message',
-      'Invalid bridge module. Must be one of: SynapseBridge, SynapseCCTP, SynapseRFQ'
+      'Invalid bridge module. Must be one of: SynapseBridge, SynapseCCTP, SynapseRFQ, Gas.zip'
     )
   }, 10000)
 })

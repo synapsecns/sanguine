@@ -24,7 +24,7 @@ const fetchWithTimeout = async (
     }
     return response
   } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
+    if ((error as Error).name === 'AbortError') {
       logger.info({ name, url, timeout, params }, `${name}: timed out`)
     } else {
       logger.error(
