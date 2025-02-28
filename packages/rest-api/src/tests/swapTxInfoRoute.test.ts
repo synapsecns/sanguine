@@ -3,6 +3,7 @@ import express from 'express'
 
 import swapTxInfoRoute from '../routes/swapTxInfoRoute'
 import { DAI, USDC } from '../constants/bridgeable'
+import { UNSUPPORTED_CHAIN } from './testConstants'
 
 const app = express()
 app.use('/swapTxInfo', swapTxInfoRoute)
@@ -39,7 +40,7 @@ describe('Swap TX Info Route with Real Synapse Service', () => {
 
   it('should return 400 for unsupported chain, with error message', async () => {
     const response = await request(app).get('/swapTxInfo').query({
-      chain: '111',
+      chain: UNSUPPORTED_CHAIN,
       fromToken: USDC.addresses[1],
       toToken: DAI.addresses[1],
       amount: '1000',

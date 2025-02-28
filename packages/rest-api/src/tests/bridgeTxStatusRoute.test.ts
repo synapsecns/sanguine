@@ -2,6 +2,7 @@ import request from 'supertest'
 import express from 'express'
 
 import bridgeTxStatusRoute from '../routes/bridgeTxStatusRoute'
+import { UNSUPPORTED_CHAIN } from './testConstants'
 
 const app = express()
 app.use('/bridgeTxStatus', bridgeTxStatusRoute)
@@ -29,7 +30,7 @@ describe('Get Bridge TX Status Route', () => {
 
   it('should return 400 for unsupported destChainId', async () => {
     const response = await request(app).get('/bridgeTxStatus').query({
-      destChainId: '999',
+      destChainId: UNSUPPORTED_CHAIN,
       bridgeModule: 'bridge',
       synapseTxId:
         '0x9beb59b36ff4570d6b823b075dcd4fa9acd82dc4a28bf93a456ab8c93990604a',

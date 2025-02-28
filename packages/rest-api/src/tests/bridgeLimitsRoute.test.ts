@@ -4,6 +4,7 @@ import express from 'express'
 import bridgeLimitsRoute from '../routes/bridgeLimitsRoute'
 import { USDC, ETH } from '../constants/bridgeable'
 import { NativeGasAddress } from '../constants'
+import { UNSUPPORTED_CHAIN } from './testConstants'
 
 const app = express()
 app.use('/bridgeLimits', bridgeLimitsRoute)
@@ -51,7 +52,7 @@ describe('Get Bridge Limits Route', () => {
 
   it('should return 400 for unsupported fromChain', async () => {
     const response = await request(app).get('/bridgeLimits').query({
-      fromChain: '999',
+      fromChain: UNSUPPORTED_CHAIN,
       toChain: '137',
       fromToken: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
       toToken: USDC.addresses[137],
@@ -66,7 +67,7 @@ describe('Get Bridge Limits Route', () => {
   it('should return 400 for unsupported toChain', async () => {
     const response = await request(app).get('/bridgeLimits').query({
       fromChain: '137',
-      toChain: '999',
+      toChain: UNSUPPORTED_CHAIN,
       fromToken: USDC.addresses[137],
       toToken: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
     })
