@@ -46,6 +46,36 @@ func (s *QuoterSuite) TestGenerateQuotes() {
 	s.Equal(expectedQuotes, quotes)
 }
 
+func (s *QuoterSuite) TestGenerateQuotesDisparateNativeGas() {
+	os.Setenv("debugOutput", "generateQuote")
+
+	// Generate quotes for ETH >>> MATIC
+	balance := big.NewInt(1_000_000_000_000_000_000)
+	inv := map[int]map[common.Address]*big.Int{}
+	quotes, err := s.manager.GenerateQuotes(s.GetTestContext(), int(s.destination), common.HexToAddress("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"), balance, inv)
+	s.Require().NoError(err)
+
+	// the most we have on dest is 1 MATIC worth $0.50
+	// when priced into origin ETH at $2000, this sets a max origin of 0.000249749999999998 ETH
+	//
+
+	// Verify the quotes are generated as expected.
+	expectedQuotes := []model.PutRelayerQuoteRequest{
+		{
+			OriginChainID:           int(s.origin),
+			OriginTokenAddr:         "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+			DestChainID:             int(s.destination),
+			DestTokenAddr:           "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+			DestAmount:              balance.String(),
+			MaxOriginAmount:         balance.String(),
+			FixedFee:                "200100000000000000000", // suite's test GWEI produces a 200.10 MATIC gas fee.
+			OriginFastBridgeAddress: common.HexToAddress("0x123").Hex(),
+			DestFastBridgeAddress:   common.HexToAddress("0x456").Hex(),
+		},
+	}
+	s.Equal(expectedQuotes, quotes)
+}
+
 func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	os.Setenv("debugOutput", "generateQuote")
 

@@ -655,7 +655,14 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 
 		diffBps := new(big.Float).Mul(diffPct, big.NewFloat(10000))
 
-		fmt.Printf("Quote: %19s ($%10s) %4s.%-5d >>> %19s ($%10s) %4s.%-5d Diff: $%10s, DiffPct: %s, DiffBps: %s\n",
+		// Price the fee into DirectUSD
+		feePriced, err := m.feePricer.PricePair(ctx, uint32(input.DestChainID), 0, input.DestTokenAddr.String(), "DirectUSD", *fee)
+		if err != nil {
+			logger.Error("err feePriced PricePair: ", "error", err)
+			return nil, fmt.Errorf("err feePriced PricePair: %w", err)
+		}
+
+		fmt.Printf("Quote: %19s ($%10s) %4s.%-5d >>> %19s ($%10s) %4s.%-5d Diff: $%10s, DiffPct: %s, DiffBps: %s, Fee: %19s ($%10s)\n",
 			fmt.Sprintf("%19s", maxQuoteAmount.BaseToken.Units.Text('f', 9)),
 			fmt.Sprintf("%10s", maxQuoteAmount.BaseToken.Usd.Text('f', 3)),
 			fmt.Sprintf("%4s", maxQuoteAmount.BaseToken.Symbol), input.OriginChainID,
@@ -664,7 +671,9 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 			fmt.Sprintf("%4s", destAmountPriced.BaseToken.Symbol), input.DestChainID,
 			fmt.Sprintf("%10s", diffUsd.Text('f', 2)),
 			diffPct.Text('f', 6),
-			diffBps.Text('f', 2))
+			diffBps.Text('f', 2),
+			fmt.Sprintf("%19s", feePriced.BaseToken.Units.Text('f', 9)),
+			fmt.Sprintf("%10s", feePriced.BaseToken.Usd.Text('f', 3)))
 	}
 
 	// Safety mechanism. Output amount priced as USD cannot exceed the input amount priced as USD.
