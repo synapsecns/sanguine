@@ -282,13 +282,13 @@ func (f *feePricer) PricePair(parentCtx context.Context, baseTokenChain uint32, 
 		pricedValueWei.Set(pricedValueWeiInt)
 	}
 
-	// // debugOutput: uncomment for dev/debug log output
-	// fmt.Println(baseToken, "base_token_wei:  ", baseValueWei.String())
-	// fmt.Println(baseToken, "base_token_units:", baseValueUnits.Text('f', -1))
-	// fmt.Println(baseToken, "base_token_usd:  ", baseValueUsd.Text('f', -1))
-	// fmt.Println(pricedToken, "priced_token_usd:  ", pricedValueUsd.Text('f', -1))
-	// fmt.Println(pricedToken, "priced_token_units:", pricedValueUnits.Text('f', -1))
-	// fmt.Println(pricedToken, "priced_token_wei:  ", pricedValueWei.String())
+	// debugOutput: uncomment for dev/debug log output
+	fmt.Println(baseToken, "base_token_wei:  ", baseValueWei.String())
+	fmt.Println(baseToken, "base_token_units:", baseValueUnits.Text('f', -1))
+	fmt.Println(baseToken, "base_token_usd:  ", baseValueUsd.Text('f', -1))
+	fmt.Println(pricedToken, "priced_token_usd:  ", pricedValueUsd.Text('f', -1))
+	fmt.Println(pricedToken, "priced_token_units:", pricedValueUnits.Text('f', -1))
+	fmt.Println(pricedToken, "priced_token_wei:  ", pricedValueWei.String())
 
 	span.SetAttributes(
 		attribute.String("base_token_symbol", baseToken),
@@ -348,46 +348,17 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 	if err != nil {
 		return nil, err
 	}
-	nativeTokenPrice, err := f.GetTokenPrice(ctx, nativeToken)
+
+	// calculate the total Fee cost in native gas WEI
+	feeNativeWei := new(big.Int).Mul(gasPrice, big.NewInt(int64(gasEstimate)))
+
+	// price native gas WEI into the denomination token
+	feeNativeWeiPriced, err := f.PricePair(ctx, gasChain, denomChain, nativeToken, denomToken, *feeNativeWei)
 	if err != nil {
 		return nil, err
 	}
-	denomTokenPrice, err := f.GetTokenPrice(ctx, denomToken)
-	if err != nil {
-		return nil, err
-	}
-	denomTokenDecimals, err := f.config.GetTokenDecimals(denomChain, denomToken)
-	if err != nil {
-		return nil, err
-	}
-	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(denomTokenDecimals)), nil)
 
-	// Compute the fee.
-	var feeDenom *big.Float
-
-	feeNativeWei := new(big.Float).Mul(new(big.Float).SetInt(gasPrice), new(big.Float).SetFloat64(float64(gasEstimate)))
-	if denomToken == nativeToken {
-		// Denomination token is native token, so no need for unit conversion.
-		feeDenom = feeNativeWei
-	} else {
-
-		// The steps below convert a raw/wei value of our native gas units (feeNativeWei EG: 1234500000000000) into an equivalent amount in the "denom" Token
-
-		// convert native gas fee raw/wei into units
-		feeNativeUnits := new(big.Float).Quo(feeNativeWei, new(big.Float).SetInt(nativeDecimalsFactor))
-		// convert native gas fee units into USD value which can then be utilized as a normalizer between our native input and denominated output.
-		feeUSD := new(big.Float).Mul(feeNativeUnits, new(big.Float).SetFloat64(nativeTokenPrice))
-		// convert USD value into "denomToken" units
-		feeDenomUnits := new(big.Float).Quo(feeUSD, new(big.Float).SetFloat64(denomTokenPrice))
-		// convert denominated units into "denomToken" raw/wei value
-		feeDenom = new(big.Float).Mul(feeDenomUnits, new(big.Float).SetInt(denomDecimalsFactor))
-		span.SetAttributes(
-			attribute.String("fee_native_wei", feeNativeWei.String()),
-			attribute.String("fee_native_units", feeNativeUnits.Text('f', -1)),
-			attribute.String("fee_usd", feeUSD.Text('f', -1)),
-			attribute.String("fee_denom_units", feeDenomUnits.Text('f', -1)),
-		)
-	}
+	var feeDenom = new(big.Float).SetInt(feeNativeWeiPriced.PricedToken.Wei)
 
 	var multiplier float64
 	if isQuote {
@@ -406,16 +377,6 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 	// Note that this step rounds towards zero- we may need to apply rounding here if
 	// we want to be conservative and lean towards overestimating fees.
 	feeUSDCDecimalsScaled, _ := new(big.Float).Mul(feeDenom, new(big.Float).SetFloat64(multiplier)).Int(nil)
-	span.SetAttributes(
-		attribute.String("gas_price", gasPrice.String()),
-		attribute.Float64("native_token_price", nativeTokenPrice),
-		attribute.Float64("denom_token_price", denomTokenPrice),
-		attribute.Float64("multplier", multiplier),
-		attribute.Int("denom_token_decimals", int(denomTokenDecimals)),
-		attribute.String("fee_native_wei", feeNativeWei.String()),
-		attribute.String("fee_denom", feeDenom.Text('f', -1)),
-		attribute.String("fee_usdc_decimals_scaled", feeUSDCDecimalsScaled.String()),
-	)
 
 	if feeUSDCDecimalsScaled == nil {
 		return nil, fmt.Errorf("err getFee: nil fee return")
