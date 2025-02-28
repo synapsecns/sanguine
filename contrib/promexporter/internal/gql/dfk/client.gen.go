@@ -45,6 +45,11 @@ type Query struct {
 	Weapons            []*Weapon            "json:\"weapons\" graphql:\"weapons\""
 	WeaponAuction      *WeaponAuction       "json:\"weaponAuction\" graphql:\"weaponAuction\""
 	WeaponAuctions     []*WeaponAuction     "json:\"weaponAuctions\" graphql:\"weaponAuctions\""
+	Battle             *Battle              "json:\"battle\" graphql:\"battle\""
+	Battles            []*Battle            "json:\"battles\" graphql:\"battles\""
+	BattleRewards      []*BattleReward      "json:\"battleRewards\" graphql:\"battleRewards\""
+	Spectators         []*BattleSpectator   "json:\"spectators\" graphql:\"spectators\""
+	Sponsors           []*BattleSponsor     "json:\"sponsors\" graphql:\"sponsors\""
 }
 type StuckHeroes struct {
 	Heroes []*struct {
