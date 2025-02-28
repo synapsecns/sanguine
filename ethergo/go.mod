@@ -1,8 +1,8 @@
 module github.com/synapsecns/sanguine/ethergo
 
-go 1.22.1
+go 1.23.0
 
-toolchain go1.22.4
+toolchain go1.24.0
 
 require (
 	cloud.google.com/go/kms v1.17.1
@@ -62,7 +62,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.28.0
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.27.0
-	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
+	golang.org/x/exp v0.0.0-20250228200357-dead58393ab7
 	golang.org/x/sync v0.11.0
 	golang.org/x/time v0.5.0
 	google.golang.org/api v0.183.0
