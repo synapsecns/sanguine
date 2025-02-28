@@ -12,3 +12,23 @@ Grafana dashbaords are in the `/dashboards` directory.
 
 Make sure `METRICS_HANDLER` is set to `OTLP` otherwise this will no-op
 
+## Building
+
+### Using the build script
+
+For convenience, a build script is provided that includes the necessary flags to handle the memsize compatibility issue with Go 1.22+:
+
+```bash
+./build.sh ./...
+```
+
+### Manual build with flags
+
+If you encounter the error `link: github.com/fjl/memsize: invalid reference to runtime.stopTheWorld`, you need to use the following build command:
+
+```bash
+go build -ldflags=-checklinkname=0 ./...
+```
+
+This is because the `github.com/fjl/memsize` package attempts to access internal runtime functions that are restricted in Go 1.22+ (specifically `runtime.stopTheWorld`). The `-checklinkname=0` flag disables this restriction.
+

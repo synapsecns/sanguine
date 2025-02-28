@@ -306,7 +306,7 @@ jobs:
             ${{ runner.os }}-go-build-
       - name: Build
         # go build all workspaces
-        run: go build $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
+        run: go build -ldflags=-checklinkname=0 $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
         # see: https://www.reddit.com/r/golang/comments/476pae/how_to_speed_up_go_compiler_and_many_other_go/
         # this cannot use gomemlimit because we are running multiple builds in paralell
         env:

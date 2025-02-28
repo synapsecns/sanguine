@@ -430,13 +430,13 @@ func (_m *SimulatedTestBackend) FeeHistory(ctx context.Context, blockCount uint6
 	return r0, r1
 }
 
-// FilterLogs provides a mock function with given fields: ctx, query
-func (_m *SimulatedTestBackend) FilterLogs(ctx context.Context, query ethereum.FilterQuery) ([]types.Log, error) {
-	ret := _m.Called(ctx, query)
+// FilterLogs provides a mock function with given fields: ctx, q
+func (_m *SimulatedTestBackend) FilterLogs(ctx context.Context, q ethereum.FilterQuery) ([]types.Log, error) {
+	ret := _m.Called(ctx, q)
 
 	var r0 []types.Log
 	if rf, ok := ret.Get(0).(func(context.Context, ethereum.FilterQuery) []types.Log); ok {
-		r0 = rf(ctx, query)
+		r0 = rf(ctx, q)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]types.Log)
@@ -445,7 +445,7 @@ func (_m *SimulatedTestBackend) FilterLogs(ctx context.Context, query ethereum.F
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, ethereum.FilterQuery) error); ok {
-		r1 = rf(ctx, query)
+		r1 = rf(ctx, q)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1006,13 +1006,13 @@ func (_m *SimulatedTestBackend) Store(key *keystore.Key) {
 	_m.Called(key)
 }
 
-// SubscribeFilterLogs provides a mock function with given fields: ctx, query, ch
-func (_m *SimulatedTestBackend) SubscribeFilterLogs(ctx context.Context, query ethereum.FilterQuery, ch chan<- types.Log) (ethereum.Subscription, error) {
-	ret := _m.Called(ctx, query, ch)
+// SubscribeFilterLogs provides a mock function with given fields: ctx, q, ch
+func (_m *SimulatedTestBackend) SubscribeFilterLogs(ctx context.Context, q ethereum.FilterQuery, ch chan<- types.Log) (ethereum.Subscription, error) {
+	ret := _m.Called(ctx, q, ch)
 
 	var r0 ethereum.Subscription
 	if rf, ok := ret.Get(0).(func(context.Context, ethereum.FilterQuery, chan<- types.Log) ethereum.Subscription); ok {
-		r0 = rf(ctx, query, ch)
+		r0 = rf(ctx, q, ch)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(ethereum.Subscription)
@@ -1021,7 +1021,7 @@ func (_m *SimulatedTestBackend) SubscribeFilterLogs(ctx context.Context, query e
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, ethereum.FilterQuery, chan<- types.Log) error); ok {
-		r1 = rf(ctx, query, ch)
+		r1 = rf(ctx, q, ch)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -3,33 +3,26 @@ package multibackend
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/consensus/ethash"
-	"github.com/ethereum/go-ethereum/core"
-	"github.com/ethereum/go-ethereum/core/state"
 	"time"
 )
 
 // EmptyBlock mines an empty block at time. Must be greater than previous block time.
 func (b *SimulatedBackend) EmptyBlock(blockTime time.Time) {
-	// Get the last block
-	block, err := b.blockByHash(context.TODO(), b.pendingBlock.ParentHash())
+	// Get the current head block number
+	currentBlock, err := b.BlockByNumber(context.Background(), nil)
 	if err != nil {
-		panic("could not fetch parent")
+		panic(fmt.Sprintf("could not fetch current block: %v", err))
 	}
 
-	// create a new chain with the block
-	blocks, _ := core.GenerateChain(b.config, block, ethash.NewFaker(), b.database, 1, func(number int, block *core.BlockGen) {
-		var prevBlockTime int64
-		fmt.Println(block.Number())
-		if block.Number().Uint64() != 1 {
-			prevBlockTime = int64(block.PrevBlock(-1).Time())
+	// AdjustTime to the specified blockTime
+	timeDiff := blockTime.Sub(time.Unix(int64(currentBlock.Time()), 0))
+	if timeDiff > 0 {
+		err = b.Backend.AdjustTime(timeDiff)
+		if err != nil {
+			panic(fmt.Sprintf("could not adjust time: %v", err))
 		}
-		block.OffsetTime(blockTime.Unix() - prevBlockTime)
-	})
-	stateDB, _ := b.blockchain.State()
+	}
 
-	// add the empty block
-	b.pendingBlock = blocks[0]
-	b.pendingState, _ = state.New(b.pendingBlock.Root(), stateDB.Database(), nil)
-	b.Commit()
+	// Mine a new block
+	b.Backend.Commit()
 }

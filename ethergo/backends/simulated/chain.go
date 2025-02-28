@@ -61,7 +61,34 @@ func (s Client) NetworkID(ctx context.Context) (*big.Int, error) {
 
 // ChainConfig gets the chain config for the backend.
 func (s Client) ChainConfig() *params.ChainConfig {
-	return s.Blockchain().Config()
+	chainID, _ := s.ChainID(context.Background())
+	// Create a new chain config with the correct chain ID
+	return &params.ChainConfig{
+		ChainID:                       chainID,
+		HomesteadBlock:                params.AllEthashProtocolChanges.HomesteadBlock,
+		DAOForkBlock:                  params.AllEthashProtocolChanges.DAOForkBlock,
+		DAOForkSupport:                params.AllEthashProtocolChanges.DAOForkSupport,
+		EIP150Block:                   params.AllEthashProtocolChanges.EIP150Block,
+		EIP155Block:                   params.AllEthashProtocolChanges.EIP155Block,
+		EIP158Block:                   params.AllEthashProtocolChanges.EIP158Block,
+		ByzantiumBlock:                params.AllEthashProtocolChanges.ByzantiumBlock,
+		ConstantinopleBlock:           params.AllEthashProtocolChanges.ConstantinopleBlock,
+		PetersburgBlock:               params.AllEthashProtocolChanges.PetersburgBlock,
+		IstanbulBlock:                 params.AllEthashProtocolChanges.IstanbulBlock,
+		MuirGlacierBlock:              params.AllEthashProtocolChanges.MuirGlacierBlock,
+		BerlinBlock:                   params.AllEthashProtocolChanges.BerlinBlock,
+		LondonBlock:                   params.AllEthashProtocolChanges.LondonBlock,
+		ArrowGlacierBlock:             params.AllEthashProtocolChanges.ArrowGlacierBlock,
+		GrayGlacierBlock:              params.AllEthashProtocolChanges.GrayGlacierBlock,
+		MergeNetsplitBlock:            params.AllEthashProtocolChanges.MergeNetsplitBlock,
+		ShanghaiTime:                  params.AllEthashProtocolChanges.ShanghaiTime,
+		CancunTime:                    params.AllEthashProtocolChanges.CancunTime,
+		PragueTime:                    params.AllEthashProtocolChanges.PragueTime,
+		TerminalTotalDifficulty:       params.AllEthashProtocolChanges.TerminalTotalDifficulty,
+		TerminalTotalDifficultyPassed: params.AllEthashProtocolChanges.TerminalTotalDifficultyPassed,
+		Ethash:                        params.AllEthashProtocolChanges.Ethash,
+		Clique:                        params.AllEthashProtocolChanges.Clique,
+	}
 }
 
 // ChainID returns the chain id.

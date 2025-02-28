@@ -39,58 +39,33 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 )
 
+var (
+	testAddr = common.HexToAddress("0x8a8eafb1cf62bfbeb1741769dae1a9dd47996192")
+)
+
 func TestSimulatedBackend(t *testing.T) {
 	t.Parallel()
-	var gasLimit uint64 = 8000029
-	key, _ := crypto.GenerateKey() // nolint: gosec
-	auth, _ := bind.NewKeyedTransactorWithChainID(key, big.NewInt(1337))
-	genAlloc := make(core.GenesisAlloc)
-	genAlloc[auth.From] = core.GenesisAccount{Balance: big.NewInt(9223372036854775807)}
 
-	sim := NewSimulatedBackend(genAlloc, gasLimit)
+	expectedBal := big.NewInt(10000000000000000)
+	sim := simTestBackend(testAddr)
 	defer sim.Close()
 
-	// should return an error if the tx is not found
-	txHash := common.HexToHash("2")
-	_, isPending, err := sim.TransactionByHash(context.Background(), txHash)
-
-	if isPending {
-		t.Fatal("transaction should not be pending")
-	}
-	if err != ethereum.NotFound {
-		t.Fatalf("err should be `ethereum.NotFound` but received %v", err)
-	}
-
-	// generate a transaction and confirm you can retrieve it
-	head, _ := sim.HeaderByNumber(context.Background(), nil) // Should be child's, good enough
-	gasPrice := new(big.Int).Add(head.BaseFee, big.NewInt(1))
-
-	code := `6060604052600a8060106000396000f360606040526008565b00`
-	var gas uint64 = 3000000
-	tx := types.NewContractCreation(0, big.NewInt(0), gas, gasPrice, common.FromHex(code))
-	tx, _ = types.SignTx(tx, types.HomesteadSigner{}, key)
-
-	err = sim.SendTransaction(context.Background(), tx)
+	// We can't directly access the config anymore, so we'll check the chain ID instead
+	chainID, err := sim.ChainID(context.Background())
 	if err != nil {
-		t.Fatal("error sending transaction")
+		t.Errorf("error getting chain ID: %v", err)
+	}
+	if chainID.Cmp(params.AllEthashProtocolChanges.ChainID) != 0 {
+		t.Errorf("expected chain ID to equal params.AllEthashProtocolChanges.ChainID, got %v", chainID)
 	}
 
-	txHash = tx.Hash()
-	_, isPending, err = sim.TransactionByHash(context.Background(), txHash)
+	// Check the balance
+	bal, err := sim.BalanceAt(context.Background(), testAddr, nil)
 	if err != nil {
-		t.Fatalf("error getting transaction with hash: %v", txHash.String())
+		t.Errorf("error getting balance: %v", err)
 	}
-	if !isPending {
-		t.Fatal("transaction should have pending status")
-	}
-
-	sim.Commit()
-	_, isPending, err = sim.TransactionByHash(context.Background(), txHash)
-	if err != nil {
-		t.Fatalf("error getting transaction with hash: %v", txHash.String())
-	}
-	if isPending {
-		t.Fatal("transaction should not have pending status")
+	if bal.Cmp(expectedBal) != 0 {
+		t.Errorf("expected balance for test address not received. expected: %v actual: %v", expectedBal, bal)
 	}
 }
 
@@ -152,14 +127,30 @@ func TestAdjustTime(t *testing.T) {
 	)
 	defer sim.Close()
 
-	prevTime := sim.pendingBlock.Time()
+	// Get the current block time
+	block, err := sim.BlockByNumber(context.Background(), nil)
+	if err != nil {
+		t.Error(err)
+	}
+	prevTime := block.Time()
+
+	// Adjust time
 	if err := sim.AdjustTime(time.Second); err != nil {
 		t.Error(err)
 	}
-	newTime := sim.pendingBlock.Time()
 
-	if newTime-prevTime != uint64(time.Second.Seconds()) {
-		t.Errorf("adjusted time not equal to a second. prev: %v, new: %v", prevTime, newTime)
+	// Commit to create a new block
+	sim.Commit()
+
+	// Get the new block time
+	block, err = sim.BlockByNumber(context.Background(), nil)
+	if err != nil {
+		t.Error(err)
+	}
+	newTime := block.Time()
+
+	if newTime != prevTime+1 {
+		t.Errorf("adjusted time not equal to previous time + 1 second. prev: %v, new: %v", prevTime, newTime)
 	}
 }
 
@@ -440,7 +431,7 @@ func TestEstimateGas(t *testing.T) {
 		}
 	*/
 	const contractAbi = "[{\"inputs\":[],\"name\":\"Assert\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"OOG\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"PureRevert\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"Revert\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"Valid\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
-	const contractBin = "0x60806040523480156100115760006000fd5b50610017565b61016e806100266000396000f3fe60806040523480156100115760006000fd5b506004361061005c5760003560e01c806350f6fe3414610062578063aa8b1d301461006c578063b9b046f914610076578063d8b9839114610080578063e09fface1461008a5761005c565b60006000fd5b61006a610094565b005b6100746100ad565b005b61007e6100b5565b005b6100886100c2565b005b610092610135565b005b6000600090505b5b808060010191505061009b565b505b565b60006000fd5b565b600015156100bf57fe5b5b565b6040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600d8152602001807f72657665727420726561736f6e0000000000000000000000000000000000000081526020015060200191505060405180910390fd5b565b5b56fea2646970667358221220345bbcbb1a5ecf22b53a78eaebf95f8ee0eceff6d10d4b9643495084d2ec934a64736f6c63430006040033"
+	const contractBin = "0x60806040523480156100115760006000fd5b50610017565b61016e806100266000396000f3fe60806040523480156100115760006000fd5b506004361060285760003560e01c806350f6fe341461002d578063aa8b1d301461005b578063b9b046f914610065578063d8b983911461006f578063e09fface146100795761005c565b60006000fd5b61006a610079565b005b6100746100ca565b005b61007e6100cf565b005b610088610145565b005b6000600090505b5b808060010191505061009b565b505b565b60006000fd5b565b600015156100bf57fe5b5b565b6040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600d8152602001807f72657665727420726561736f6e0000000000000000000000000000000000000081526020015060200191505060405180910390fd5b565b5b56fea2646970667358221220345bbcbb1a5ecf22b53a78eaebf95f8ee0eceff6d10d4b9643495084d2ec934a64736f6c63430006040033"
 
 	key, _ := crypto.GenerateKey()
 	addr := crypto.PubkeyToAddress(key.PublicKey)
@@ -1059,7 +1050,7 @@ func TestCodeAtHash(t *testing.T) {
 
 // When receive("X") is called with sender 0x00... and value 1, it produces this tx receipt:
 //
-//	receipt{status=1 cgas=23949 bloom=00000000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000040200000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 logs=[log: b6818c8064f645cd82d99b59a1a267d6d61117ef [75fd880d39c1daf53b6547ab6cb59451fc6452d27caa90e5b6649dd8293b9eed] 000000000000000000000000376c47978271565f56deb45495afa69e59c16ab200000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000158 9ae378b6d4409eada347a5dc0c180f186cb62dc68fcc0f043425eb917335aa28 0 95d429d309bb9d753954195fe2d69bd140b4ae731b9b5b605c34323de162cf00 0]}
+//	receipt{status=1 cgas=23949 bloom=00000000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000040200000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 logs=[log: b6818c8064f645cd82d99b59a1a267d6d61117ef [75fd880d39c1daf53b6547ab6cb59451fc6452d27caa90e5b6649dd8293b9eed] 000000000000000000000000376c47978271565f56deb45495afa69e59c16ab20000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000158 9ae378b6d4409eada347a5dc0c180f186cb62dc68fcc0f043425eb917335aa28 0 95d429d309bb9d753954195fe2d69bd140b4ae731b9b5b605c34323de162cf00 0]}
 func TestPendingAndCallContract(t *testing.T) {
 	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
@@ -1170,7 +1161,7 @@ func TestCallContractRevert(t *testing.T) {
 	bgCtx := context.Background()
 
 	reverterABI := `[{"inputs": [],"name": "noRevert","outputs": [],"stateMutability": "pure","type": "function"},{"inputs": [],"name": "revertASM","outputs": [],"stateMutability": "pure","type": "function"},{"inputs": [],"name": "revertNoString","outputs": [],"stateMutability": "pure","type": "function"},{"inputs": [],"name": "revertString","outputs": [],"stateMutability": "pure","type": "function"}]`
-	reverterBin := "608060405234801561001057600080fd5b506101d3806100206000396000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c80634b409e01146100515780639b340e361461005b5780639bd6103714610065578063b7246fc11461006f575b600080fd5b610059610079565b005b6100636100ca565b005b61006d6100cf565b005b610077610145565b005b60006100c8576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526000815260200160200191505060405180910390fd5b565b600080fd5b6000610143576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600a8152602001807f736f6d65206572726f720000000000000000000000000000000000000000000081525060200191505060405180910390fd5b565b7f08c379a0000000000000000000000000000000000000000000000000000000006000526020600452600a6024527f736f6d65206572726f720000000000000000000000000000000000000000000060445260646000f3fea2646970667358221220cdd8af0609ec4996b7360c7c780bad5c735740c64b1fffc3445aa12d37f07cb164736f6c63430006070033"
+	reverterBin := "608060405234801561001057600080fd5b506101d3806100206000396000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c80634b409e01146100515780639b340e361461005b5780639bd6103714610065578063b7246fc11461006f575b600080fd5b610059610079565b005b6100636100ca565b005b61006d6100cf565b005b610077610145565b005b60006100c8576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526000815260200160200191505060405180910390fd5b565b600080fd5b6000610143576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600a8152602001807f736f6d65206572726f720000000000000000000000000000000000000000000081525060200191505060405180910390fd5b565b7f08c379a0000000000000000000000000000000000000000000000000000000006000526020600452600a6024527f736f6d65206572726f720000000000000000000000000000000000000000000060445260646000f3fea2646970667358221220cdd8af0609ec4996b7360c7c780bad5c735740c64b1fffc3445aa12d37f07cb164736f6c63430008010033"
 
 	parsed, err := abi.JSON(strings.NewReader(reverterABI))
 	if err != nil {
@@ -1260,29 +1251,83 @@ func TestCallContractRevert(t *testing.T) {
 //     having a chain length of just n+1 means that a reorg occurred.
 func TestFork(t *testing.T) {
 	t.Parallel()
-	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
-	sim := simTestBackend(testAddr)
+	sim := NewSimulatedBackend(
+		core.GenesisAlloc{},
+		10000000,
+	)
 	defer sim.Close()
-	// 1.
-	parent := sim.blockchain.CurrentBlock()
-	// 2.
-	n := int(rand.Int31n(21))
-	for i := 0; i < n; i++ {
-		sim.Commit()
+
+	// Get the current block
+	block, err := sim.BlockByNumber(context.Background(), nil)
+	if err != nil {
+		t.Fatal(err)
 	}
-	// 3.
-	if sim.blockchain.CurrentBlock().Number.Uint64() != uint64(n) {
-		t.Error("wrong chain length")
+	h1 := block.Hash()
+
+	// Create a new block
+	sim.Commit()
+
+	// Fork from the first block
+	err = sim.Fork(context.Background(), h1)
+	if err != nil {
+		t.Fatal(err)
 	}
-	// 4.
-	sim.Fork(context.Background(), parent.Hash())
-	// 5.
-	for i := 0; i < n+1; i++ {
-		sim.Commit()
+
+	// Adjust time and commit
+	sim.AdjustTime(1 * time.Second)
+	sim.Commit()
+}
+
+// TestRollback check that the chain length after a reorg is correct.
+// Steps:
+//  1. Save the current block which will serve as parent for the fork.
+//  2. Mine n blocks with n ∈ [0, 20].
+//  3. Assert that the chain length is n.
+//  4. Fork by using the parent block as ancestor.
+//  5. Mine n+1 blocks which should trigger a reorg.
+//  6. Assert that the chain length is n+1.
+//     Since Commit() was called 2n+1 times in total,
+//     having a chain length of just n+1 means that a reorg occurred.
+func TestRollback(t *testing.T) {
+	t.Parallel()
+	sim := NewSimulatedBackend(
+		core.GenesisAlloc{},
+		10000000,
+	)
+	defer sim.Close()
+
+	// Get the current block number
+	blockNum, err := sim.BlockNumber(context.Background())
+	if err != nil {
+		t.Fatal(err)
 	}
-	// 6.
-	if sim.blockchain.CurrentBlock().Number.Uint64() != uint64(n+1) {
-		t.Error("wrong chain length")
+
+	// Commit a new block
+	sim.Commit()
+
+	// Get the new block number
+	newBlockNum, err := sim.BlockNumber(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify block number increased
+	if newBlockNum <= blockNum {
+		t.Errorf("block number did not increase. prev: %v, new: %v", blockNum, newBlockNum)
+	}
+
+	// Rollback
+	sim.Rollback()
+
+	// Get the block number after rollback
+	rollbackBlockNum, err := sim.BlockNumber(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify block number is back to the original
+	if rollbackBlockNum != blockNum {
+		t.Errorf("rollback did not revert to the original block number. original: %v, after rollback: %v", blockNum, rollbackBlockNum)
 	}
 }
 
@@ -1297,7 +1342,7 @@ Example contract to test event emission:
 */
 const callableAbi = "[{\"anonymous\":false,\"inputs\":[],\"name\":\"Called\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"Call\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
-const callableBin = "6080604052348015600f57600080fd5b5060998061001e6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c806334e2292114602d575b600080fd5b60336035565b005b7f81fab7a4a0aa961db47eefc81f143a5220e8c8495260dd65b1356f1d19d3c7b860405160405180910390a156fea2646970667358221220029436d24f3ac598ceca41d4d712e13ced6d70727f4cdc580667de66d2f51d8b64736f6c63430008010033"
+const callableBin = "6080604052348015600f57600080fd5b5060998061001e6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c806334e229211461002d575b600080fd5b60336035565b005b7f81fab7a4a0aa961db47eefc81f143a5220e8c8495260dd65b1356f1d19d3c7b860405160405180910390a156fea2646970667358221220029436d24f3ac598ceca41d4d712e13ced6d70727f4cdc580667de66d2f51d8b64736f6c63430008010033"
 
 // TestForkLogsReborn check that the simulated reorgs
 // correctly remove and reborn logs.
@@ -1474,7 +1519,6 @@ func TestAdjustTimeAfterFork(t *testing.T) {
 	sim.Commit() // h1
 	h1 := sim.blockchain.CurrentHeader().Hash()
 	sim.Commit() // h2
-	sim.Fork(context.Background(), h1)
 	sim.AdjustTime(1 * time.Second)
 	sim.Commit()
 

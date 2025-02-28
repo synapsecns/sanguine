@@ -22,9 +22,6 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/trie"
-	"github.com/synapsecns/sanguine/ethergo/chain/gas/londinium"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus/ethash"
 	"github.com/ethereum/go-ethereum/core"
@@ -34,7 +31,10 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
-	. "github.com/stretchr/testify/assert"
+	"github.com/ethereum/go-ethereum/trie"
+	"github.com/stretchr/testify/suite"
+	. "github.com/synapsecns/sanguine/ethergo/chain/gas/londinium"
+	. "github.com/viant/toolbox/test"
 )
 
 type testBackend struct {
@@ -73,7 +73,9 @@ func newTestBackend(t *testing.T) *testBackend {
 	)
 	engine := ethash.NewFaker()
 	db := rawdb.NewMemoryDatabase()
-	triedb := trie.NewDatabase(db, nil)
+	triedb := trie.NewDatabaseWithConfig(db, &trie.Config{
+		Preimages: true,
+	})
 	genesis, _ := gspec.Commit(db, triedb)
 
 	// Generate testing blocks
@@ -87,7 +89,9 @@ func newTestBackend(t *testing.T) *testBackend {
 	})
 	// Construct testing chain
 	diskdb := rawdb.NewMemoryDatabase()
-	disktriedb := trie.NewDatabase(diskdb, nil)
+	disktriedb := trie.NewDatabaseWithConfig(diskdb, &trie.Config{
+		Preimages: true,
+	})
 	_, err := gspec.Commit(diskdb, disktriedb)
 	Nil(t, err)
 
@@ -109,13 +113,13 @@ func (b *testBackend) GetBlockByNumber(number uint64) *types.Block {
 }
 
 func (l *LondoniumSuite) TestSuggestPrice() {
-	config := londinium.Config{
+	config := Config{
 		Blocks:     3,
 		Percentile: 60,
 		Default:    big.NewInt(params.GWei),
 	}
 	backend := newTestBackend(l.T())
-	oracle := londinium.NewOracle(backend, config)
+	oracle := NewOracle(backend, config)
 
 	// The gas price sampled is: 32G, 31G, 30G, 29G, 28G, 27G
 	got, err := oracle.SuggestPrice(context.Background())
