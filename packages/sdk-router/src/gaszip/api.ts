@@ -16,7 +16,7 @@ interface TransactionStatusData {
 }
 
 interface Chains {
-  chains: [
+  chains?: [
     {
       name: string
       chain: number // native chain id
@@ -75,7 +75,7 @@ export const getChainIds = async (): Promise<number[]> => {
     return []
   }
   const data: Chains = await response.json()
-  return data.chains.map((chain) => chain.chain)
+  return data.chains?.map((chain) => chain.chain) ?? []
 }
 
 export const getGasZipQuote = async (
