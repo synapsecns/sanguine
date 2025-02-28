@@ -9,7 +9,7 @@ require (
 	github.com/davidmytton/url-verifier v1.0.1
 	github.com/dubonzi/otelresty v1.3.0
 	github.com/dustin/go-humanize v1.0.1
-	github.com/ethereum/go-ethereum v1.13.8
+	github.com/ethereum/go-ethereum v1.13.9
 	github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a
 	github.com/go-resty/resty/v2 v2.13.1
 	github.com/google/uuid v1.6.0

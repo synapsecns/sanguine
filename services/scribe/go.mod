@@ -27,7 +27,7 @@ require (
 	github.com/benbjohnson/immutable v0.4.3
 	github.com/brianvoe/gofakeit/v6 v6.27.0
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
-	github.com/ethereum/go-ethereum v1.13.8
+	github.com/ethereum/go-ethereum v1.13.9
 	github.com/friendsofgo/graphiql v0.2.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0

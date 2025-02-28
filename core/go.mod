@@ -14,7 +14,7 @@ require (
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cheekybits/genny v1.0.0
 	github.com/danielkov/gin-helmet v0.0.0-20171108135313-1387e224435e
-	github.com/ethereum/go-ethereum v1.13.8
+	github.com/ethereum/go-ethereum v1.13.9
 	github.com/fatih/structtag v1.2.0
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-contrib/requestid v0.0.6

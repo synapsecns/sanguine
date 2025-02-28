@@ -9,7 +9,7 @@ require (
 	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3
 	github.com/brianvoe/gofakeit/v6 v6.27.0
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
-	github.com/ethereum/go-ethereum v1.13.8
+	github.com/ethereum/go-ethereum v1.13.9
 	github.com/gin-gonic/gin v1.10.0
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
