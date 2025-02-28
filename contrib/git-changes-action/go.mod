@@ -1,8 +1,8 @@
 module github.com/synapsecns/sanguine/contrib/git-changes-action
 
-go 1.22.1
+go 1.23.0
 
-toolchain go1.22.4
+toolchain go1.24.0
 
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
@@ -24,7 +24,7 @@ require (
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/vishalkuo/bimap v0.0.0-20230830142743-a9fb9b52066c
 	github.com/xlab/treeprint v1.2.0
-	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
+	golang.org/x/exp v0.0.0-20250228200357-dead58393ab7
 	golang.org/x/mod v0.23.0
 	golang.org/x/oauth2 v0.21.0
 )
