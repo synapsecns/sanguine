@@ -80,6 +80,10 @@ describe('getAllQuotes', () => {
       jest.spyOn(console, 'error').mockImplementation(() => {
         // Do nothing
       })
+
+      jest.spyOn(console, 'info').mockImplementation(() => {
+        // Do nothing
+      })
     })
 
     afterEach(() => {
@@ -90,7 +94,7 @@ describe('getAllQuotes', () => {
       fetchMock.mockResponseOnce(JSON.stringify(quotesAPI), { status: 500 })
       const result = await getAllQuotes()
       expect(result).toEqual([])
-      expect(console.error).toHaveBeenCalled()
+      expect(console.info).toHaveBeenCalled()
     })
 
     it('when fetch throws an error', async () => {
@@ -106,7 +110,7 @@ describe('getAllQuotes', () => {
       )
       const result = await getAllQuotes()
       expect(result).toEqual([])
-      expect(console.error).toHaveBeenCalled()
+      expect(console.info).toHaveBeenCalled()
     })
   })
 })
