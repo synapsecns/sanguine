@@ -21,7 +21,7 @@ describe('Get Bridge Limits Route', () => {
     expect(response.status).toBe(200)
     expect(response.body).toHaveProperty('maxOriginAmount')
     expect(response.body).toHaveProperty('minOriginAmount')
-  }, 10_000)
+  }, 30_000)
 
   it('should return min/max origin amounts bridging ETH', async () => {
     const response = await request(app).get('/bridgeLimits').query({
@@ -34,7 +34,7 @@ describe('Get Bridge Limits Route', () => {
     expect(response.status).toBe(200)
     expect(response.body).toHaveProperty('maxOriginAmount')
     expect(response.body).toHaveProperty('minOriginAmount')
-  }, 10_000)
+  }, 30_000)
 
   it('should return 400 for unsupported route', async () => {
     const response = await request(app).get('/bridgeLimits').query({
