@@ -641,25 +641,25 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 		return nil, fmt.Errorf("err destAmountPriced PricePair: %w", err)
 	}
 
-	absDifference := new(big.Float).Abs(new(big.Float).Sub(maxQuoteAmount.BaseToken.Usd, destAmountPriced.PricedToken.Usd))
-	percentageDifference := new(big.Float).Quo(absDifference, maxQuoteAmount.BaseToken.Usd)
-
-	dollarTolerance := big.NewFloat(1.0)
-	percentageTolerance := big.NewFloat(0.5)
+	diffUsd := new(big.Float).Abs(new(big.Float).Sub(maxQuoteAmount.BaseToken.Usd, destAmountPriced.PricedToken.Usd))
+	diffPct := new(big.Float).Quo(diffUsd, maxQuoteAmount.BaseToken.Usd)
+	diffBps := new(big.Float).Mul(diffPct, big.NewFloat(10000))
 
 	// debugOutput: uncomment for dev/debug log output
-	fmt.Printf("Quote: %19s ($%10s) %4s.%-5d >>> %19s ($%10s) %4s.%-5d Diff: $%10s, DiffPct: %s\n",
+	fmt.Printf("Quote: %19s ($%10s) %4s.%-5d >>> %19s ($%10s) %4s.%-5d Diff: $%10s, DiffPct: %s, DiffBps: %s\n",
 		fmt.Sprintf("%19s", maxQuoteAmount.BaseToken.Units.Text('f', 9)),
 		fmt.Sprintf("%10s", maxQuoteAmount.BaseToken.Usd.Text('f', 3)),
 		fmt.Sprintf("%4s", maxQuoteAmount.BaseToken.Symbol), input.OriginChainID,
 		fmt.Sprintf("%19s", destAmountPriced.BaseToken.Units.Text('f', 9)),
 		fmt.Sprintf("%10s", destAmountPriced.BaseToken.Usd.Text('f', 3)),
 		fmt.Sprintf("%4s", destAmountPriced.BaseToken.Symbol), input.DestChainID,
-		fmt.Sprintf("%10s", absDifference.Text('f', 2)),
-		percentageDifference.Text('f', 4))
+		fmt.Sprintf("%10s", diffUsd.Text('f', 2)),
+		diffPct.Text('f', 6),
+		diffBps.Text('f', 2))
 
-	if absDifference.Cmp(dollarTolerance) > 0 && percentageDifference.Cmp(percentageTolerance) > 0 {
-		return nil, fmt.Errorf("safety check. USD Gap btwn quote amounts is excessive: origin USD %s, dest USD %s", maxQuoteAmount.BaseToken.Usd.Text('f', 2), destAmountPriced.BaseToken.Usd.Text('f', 2))
+	// Safety mechanism. Output amount priced as USD cannot exceed the input amount priced as USD.
+	if destAmountPriced.PricedToken.Usd.Cmp(maxQuoteAmount.BaseToken.Usd) > 0 {
+		return nil, fmt.Errorf("safety check. Destination USD exceeds origin USD: origin USD %s, dest USD %s", maxQuoteAmount.BaseToken.Usd.Text('f', 2), destAmountPriced.PricedToken.Usd.Text('f', 2))
 	}
 
 	quote = &model.PutRelayerQuoteRequest{
