@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.23...@synapsecns/rest-api@1.9.0) (2025-02-28)
+
+
+### Bug Fixes
+
+* add Metis token to rest-api ([c49ec66](https://github.com/synapsecns/sanguine/commit/c49ec66eafcef8e9f0bbef7924ffe654536736f5))
+* increase Bridge Limits Route test timeout ([bb601a4](https://github.com/synapsecns/sanguine/commit/bb601a40716d416205106d36277ae65a2d3342d1))
+* tests with unsupported chain ID ([d8f3c07](https://github.com/synapsecns/sanguine/commit/d8f3c0726bf8f20db384dfa7055b7ad90ae6f861))
+* token/cahins amount tests ([78dc595](https://github.com/synapsecns/sanguine/commit/78dc595d8643c3ae8df8c081566e6c11db4b3999))
+
+
+### Features
+
+* add gas.zip to valid brige modules ([7f34713](https://github.com/synapsecns/sanguine/commit/7f34713f2a17a74cfc5da3599caa93c08e3cb567))
+* add HYPE, HyperEVM, more native tokens to rest-api ([70b4310](https://github.com/synapsecns/sanguine/commit/70b4310583dd7b434fe6ad773b8e7767da911aeb))
+* update rest-api bridge map ([4360fc7](https://github.com/synapsecns/sanguine/commit/4360fc713afa9c8f84c3578189724d790b4059fe))
+
+
+
+
+
 ## [1.8.23](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.22...@synapsecns/rest-api@1.8.23) (2025-02-28)
 
 **Note:** Version bump only for package @synapsecns/rest-api
