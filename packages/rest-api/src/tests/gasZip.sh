@@ -37,7 +37,8 @@ extract_json_field() {
   local field_name=$2
   local parent_name=$3
 
-  local value=$(echo "$json_object" | jq -r ".$field_name")
+  local value
+  value=$(echo "$json_object" | jq -r ".$field_name")
 
   if [ -z "$value" ] || [ "$value" = "null" ]; then
     echo "    ❌ $field_name not found in $parent_name for $chainName" >&2
