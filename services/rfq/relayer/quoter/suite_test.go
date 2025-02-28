@@ -55,7 +55,7 @@ func (s *QuoterSuite) SetupTest() {
 						Decimals: 6,
 					},
 					"ETH": {
-						Address:  "",
+						Address:  "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
@@ -81,7 +81,7 @@ func (s *QuoterSuite) SetupTest() {
 						Decimals: 6,
 					},
 					"MATIC": {
-						Address:  "",
+						Address:  "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
 						PriceUSD: 0.5,
 						Decimals: 18,
 					},
@@ -139,6 +139,13 @@ func (s *QuoterSuite) SetupTest() {
 	gasPrice := big.NewInt(100_000_000_000) // 100 gwei
 	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Return(gasPrice, nil)
 	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "USDC").Return(1., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "DirectUSD").Return(1., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "ETH").Return(2000., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "MATIC").Return(0.5, nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "BTC").Return(95000., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "BNB").Return(600., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "HYPE").Return(15., nil)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, mock.Anything).Return(0., fmt.Errorf("not using mocked price"))
 	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler())
 	go func() { feePricer.Start(s.GetTestContext()) }()

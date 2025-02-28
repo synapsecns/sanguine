@@ -3,6 +3,7 @@ package quoter_test
 import (
 	"fmt"
 	"math/big"
+	"os"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/mock"
@@ -20,6 +21,8 @@ import (
 )
 
 func (s *QuoterSuite) TestGenerateQuotes() {
+	os.Setenv("debugOutput", "generateQuote")
+
 	// Generate quotes for USDC on the destination chain.
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 	inv := map[int]map[common.Address]*big.Int{}
@@ -44,6 +47,8 @@ func (s *QuoterSuite) TestGenerateQuotes() {
 }
 
 func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
+	os.Setenv("debugOutput", "generateQuote")
+
 	// Generate quotes for ETH on the destination chain.
 	balance, _ := new(big.Int).SetString("1000000000000000000", 10) // 1 ETH
 	inv := map[int]map[common.Address]*big.Int{}
@@ -108,6 +113,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 }
 
 func (s *QuoterSuite) TestShouldProcess() {
+
 	// Should process a valid quote.
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 	fee := big.NewInt(100_050_000)      // 100.05 USDC
@@ -146,6 +152,7 @@ func (s *QuoterSuite) TestShouldProcess() {
 }
 
 func (s *QuoterSuite) TestIsProfitable() {
+
 	// Set fee to breakeven; i.e. destAmount = originAmount - fee.
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 	fee := big.NewInt(100_050_000)      // 100.05 USDC
@@ -203,6 +210,7 @@ func (s *QuoterSuite) TestIsProfitable() {
 }
 
 func (s *QuoterSuite) TestGetOriginAmountActiveQuotes() {
+
 	origin := int(s.origin)
 	dest := int(s.destination)
 	address := common.HexToAddress("0x0b2c639c533813f4aa9d7837caf62653d097ff85")
@@ -445,6 +453,7 @@ func (s *QuoterSuite) TestGetOriginAmountActiveQuotes() {
 }
 
 func (s *QuoterSuite) TestGetOriginAmount() {
+
 	origin := int(s.origin)
 	dest := int(s.destination)
 	address := common.HexToAddress("0x0b2c639c533813f4aa9d7837caf62653d097ff85")
@@ -572,6 +581,13 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 func (s *QuoterSuite) setGasSufficiency(sufficient bool) {
 	clientFetcher := new(fetcherMocks.ClientFetcher)
 	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "USDC").Return(1., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "DirectUSD").Return(1., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "ETH").Return(2000., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "MATIC").Return(0.5, nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "BTC").Return(95000., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "BNB").Return(600., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "HYPE").Return(15., nil)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, mock.Anything).Return(0., fmt.Errorf("not using mocked price"))
 	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler())
 	inventoryManager := new(inventoryMocks.Manager)
@@ -585,6 +601,7 @@ func (s *QuoterSuite) setGasSufficiency(sufficient bool) {
 }
 
 func (s *QuoterSuite) TestGetDestAmount() {
+
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 
 	origin := int(s.origin)

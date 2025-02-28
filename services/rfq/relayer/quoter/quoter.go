@@ -600,14 +600,14 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 		maxQuoteAmountOrigin = big.NewInt(0)
 	} else if err != nil {
 
-		logger.Error("Error getting quote amount", "error", err)
+		logger.Error("err getOriginAmount: ", err)
 		return nil, err
 	}
 
 	// Calculate the fee for this route
 	destToken, err := m.config.GetTokenName(uint32(input.DestChainID), input.DestTokenAddr.Hex())
 	if err != nil {
-		logger.Error("Error getting dest token ID", "error", err)
+		logger.Error("err GetTokenName", err)
 		return nil, fmt.Errorf("error getting dest token ID: %w", err)
 	}
 	fee, err := m.feePricer.GetTotalFee(ctx, uint32(input.OriginChainID), uint32(input.DestChainID), destToken, true)
@@ -617,7 +617,7 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 	}
 	originRFQAddr, err := m.config.GetRFQAddress(input.OriginChainID)
 	if err != nil {
-		logger.Error("err GetRfqAddress: ", "error", err)
+		logger.Error("err GetRfqAddress: ", err)
 		return nil, fmt.Errorf("err GetRfqAddress: %w", err)
 	}
 
@@ -625,7 +625,7 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 	maxQuoteAmount, err := m.feePricer.PricePair(ctx, uint32(input.OriginChainID), uint32(input.DestChainID), input.OriginTokenAddr.String(), input.DestTokenAddr.String(), *maxQuoteAmountOrigin)
 
 	if err != nil {
-		logger.Error("err maxQuoteOriginDest PricePair: ", "error", err)
+		logger.Error("err maxQuoteOriginDest PricePair: ", err)
 		return nil, fmt.Errorf("err maxQuoteOriginDest PricePair: %w", err)
 	}
 
@@ -643,11 +643,18 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 	}
 
 	diffUsd := new(big.Float).Abs(new(big.Float).Sub(maxQuoteAmount.BaseToken.Usd, destAmountPriced.PricedToken.Usd))
-	diffPct := new(big.Float).Quo(diffUsd, maxQuoteAmount.BaseToken.Usd)
-	diffBps := new(big.Float).Mul(diffPct, big.NewFloat(10000))
+	var diffPct *big.Float
+	if maxQuoteAmount.BaseToken.Usd.Cmp(big.NewFloat(0)) == 0 {
+		diffPct = big.NewFloat(0)
+	} else {
+		diffPct = new(big.Float).Quo(diffUsd, maxQuoteAmount.BaseToken.Usd)
+	}
 
 	// add "generateQuote" to debugOutput env var for dev/debug output
 	if strings.Contains(strings.ToLower(os.Getenv("debugOutput")), "generatequote") {
+
+		diffBps := new(big.Float).Mul(diffPct, big.NewFloat(10000))
+
 		fmt.Printf("Quote: %19s ($%10s) %4s.%-5d >>> %19s ($%10s) %4s.%-5d Diff: $%10s, DiffPct: %s, DiffBps: %s\n",
 			fmt.Sprintf("%19s", maxQuoteAmount.BaseToken.Units.Text('f', 9)),
 			fmt.Sprintf("%10s", maxQuoteAmount.BaseToken.Usd.Text('f', 3)),
@@ -763,6 +770,9 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 	// Calculate quoteAmountDest based on reduced quotePct
 	quoteAmountDest, _ := new(big.Float).Mul(quoteAmountDestFull, new(big.Float).SetFloat64(quotePct/100)).Int(nil)
 
+	// Preliminary quote amount is now known and is denominated by the destination token.
+	// The following steps apply various adjustments via the *origin" token's denomination & thus we need to price
+	// our quote amount into origin denomination at this point.
 	quoteAmountOriginPriced, err := m.feePricer.PricePair(ctx, uint32(input.DestChainID), uint32(input.OriginChainID), input.DestTokenAddr.String(), input.OriginTokenAddr.String(), *quoteAmountDest)
 	if err != nil {
 		return nil, fmt.Errorf("err quoteAmountOriginPriced PricePair: %w", err)
@@ -808,8 +818,8 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 	}
 
 	// at this point we have a number of adjustments to make to the quote amount that are based on destination denomations.
-	// so in order to do this we need to take our quoteAmountOrigin (which has been potentially modified since it was first calculated abobve)
-	// and reprice it back into destination denomination
+	// so in order to do this we need to take our quoteAmountOrigin (which has been potentially modified since it was first calculated above)
+	// and reprice it *back* into destination denomination
 	quoteAmountDestPriced, err := m.feePricer.PricePair(ctx, uint32(input.OriginChainID), uint32(input.DestChainID), input.OriginTokenAddr.String(), input.DestTokenAddr.String(), *quoteAmountOrigin)
 
 	// Clip the quoteAmount by the dest balance
