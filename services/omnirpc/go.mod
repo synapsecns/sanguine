@@ -1,8 +1,8 @@
 module github.com/synapsecns/sanguine/services/omnirpc
 
-go 1.22.1
+go 1.23.0
 
-toolchain go1.22.4
+toolchain go1.24.0
 
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
@@ -46,7 +46,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.28.0
 	go.opentelemetry.io/otel/trace v1.28.0
 	go.uber.org/automaxprocs v1.5.3
-	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
+	golang.org/x/exp v0.0.0-20250228200357-dead58393ab7
 	golang.org/x/sync v0.11.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.29.3
