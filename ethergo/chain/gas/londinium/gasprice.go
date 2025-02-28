@@ -34,8 +34,8 @@ const sampleNumber = 3 // Number of transactions sampled in a block
 // DefaultMaxPrice is the default max price of a tx.
 var DefaultMaxPrice = big.NewInt(500 * params.GWei)
 
-// Config is the londinium config format.
-type Config struct {
+// OracleConfig is the londinium oracle config format.
+type OracleConfig struct {
 	Blocks     int
 	Percentile int
 	Default    *big.Int `toml:",omitempty"`
@@ -65,7 +65,7 @@ type Oracle struct {
 
 // NewOracle returns a new gasprice oracle which can recommend suitable
 // gasprice for newly created transaction.
-func NewOracle(backend OracleBackend, params Config) *Oracle {
+func NewOracle(backend OracleBackend, params OracleConfig) *Oracle {
 	blocks := params.Blocks
 	if blocks < 1 {
 		blocks = 1

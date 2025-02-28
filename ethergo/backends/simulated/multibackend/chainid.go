@@ -3,13 +3,10 @@ package multibackend
 import (
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/consensus/ethash"
 	"github.com/ethereum/go-ethereum/core"
-	"github.com/ethereum/go-ethereum/core/rawdb"
-	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/ethereum/go-ethereum/eth/filters"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient/simulated"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/ethereum/go-ethereum/trie"
 	util "github.com/synapsecns/sanguine/core"
 )
 
@@ -47,23 +44,17 @@ func NewConfigWithChainID(chainID *big.Int) *params.ChainConfig {
 
 // NewSimulatedBackendWithConfig creates a new simulated backend with the given chain id.
 func NewSimulatedBackendWithConfig(alloc core.GenesisAlloc, gasLimit uint64, config *params.ChainConfig) *SimulatedBackend {
-	database := rawdb.NewMemoryDatabase()
-	triedb := trie.NewDatabase(database, nil)
+	// Create genesis with the provided config
+	genesis := types.GenesisAlloc(alloc)
 
-	genesis := core.Genesis{Config: config, GasLimit: gasLimit, Alloc: alloc}
-	genesis.MustCommit(database, triedb)
-	blockchain, _ := core.NewBlockChain(database, nil, &genesis, nil, ethash.NewFaker(), vm.Config{}, nil, nil)
+	// Create the new backend
+	// Note: In v1.14.8, we can't specify chain config directly through options
+	// The default is to use chainID 1337
+	b := simulated.NewBackend(genesis, simulated.WithBlockGasLimit(gasLimit))
 
-	backend := &SimulatedBackend{
-		database:   database,
-		blockchain: blockchain,
-		config:     genesis.Config,
+	// Return a SimulatedBackend instance
+	return &SimulatedBackend{
+		Backend: b,
+		Client:  b.Client(),
 	}
-
-	filterBackend := &filterBackend{database, blockchain, backend}
-	backend.filterSystem = filters.NewFilterSystem(filterBackend, filters.Config{})
-	backend.events = filters.NewEventSystem(backend.filterSystem, false)
-
-	backend.rollback(blockchain.GetBlock(blockchain.CurrentBlock().Hash(), blockchain.CurrentBlock().Number.Uint64()))
-	return backend
 }

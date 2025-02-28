@@ -32,7 +32,6 @@ func GetConfig() gasprice.Config {
 	config.MaxPrice = big.NewInt(params.GWei * 750)
 	config.IgnorePrice = core.CopyBigInt(ethconfig.FullNodeGPO.IgnorePrice)
 	config.Percentile = 90
-	config.Default = big.NewInt(params.GWei)
 	return config
 }
 

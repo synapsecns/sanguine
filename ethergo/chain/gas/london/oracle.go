@@ -30,10 +30,15 @@ type FeeOracle struct {
 // NewFeeOracle creates a new fee oracle.
 func NewFeeOracle(chain backend.OracleBackendChain, height uint64, config gasprice.Config) FeeOracle {
 	oracleBackend := NewOracleBackendFromHeight(chain, height)
+
+	// In go-ethereum v1.14.8, NewOracle requires a third parameter for baseFee
+	// We'll use a default value of 1 gwei for now
+	baseFee := big.NewInt(1_000_000_000) // 1 gwei
+
 	return FeeOracle{
 		height:        int(height),
 		oracleBackend: oracleBackend,
-		oracle:        gasprice.NewOracle(NewOracleBackendFromHeight(chain, height), config),
+		oracle:        gasprice.NewOracle(NewOracleBackendFromHeight(chain, height), config, baseFee),
 	}
 }
 

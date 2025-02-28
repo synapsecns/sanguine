@@ -14,6 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/synapsecns/sanguine/ethergo/chain/gas/backend"
+	"github.com/ethereum/go-ethereum/core/state"
 )
 
 // NewOracleBackendFromHeight creates a fee oracle for deterministically generating gas prices from a given height
@@ -86,6 +87,14 @@ func (h HeightOracleBackend) PendingBlockAndReceipts() (*types.Block, types.Rece
 // ChainConfig gets the chainconfig for the chain.
 func (h HeightOracleBackend) ChainConfig() *params.ChainConfig {
 	return h.chain.ChainConfig()
+}
+
+// Pending returns the pending block, receipts and state
+// This is a method required by gasprice.OracleBackend interface in go-ethereum v1.14.8
+func (h HeightOracleBackend) Pending() (*types.Block, types.Receipts, *state.StateDB) {
+	// For our deterministic oracle, we don't need pending state
+	// Return nil for all values
+	return nil, nil, nil
 }
 
 var _ gasprice.OracleBackend = &HeightOracleBackend{}

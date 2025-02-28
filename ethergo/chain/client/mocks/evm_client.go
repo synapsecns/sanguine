@@ -62,8 +62,8 @@ func (_m *EVMClient) BatchCallContext(ctx context.Context, b []rpc.BatchElem) er
 	return r0
 }
 
-// BatchContext provides a mock function with given fields: ctx, calls
-func (_m *EVMClient) BatchContext(ctx context.Context, calls ...w3types.Caller) error {
+// BatchWithContext provides a mock function with given fields: ctx, calls
+func (_m *EVMClient) BatchWithContext(ctx context.Context, calls ...w3types.RPCCaller) error {
 	_va := make([]interface{}, len(calls))
 	for _i := range calls {
 		_va[_i] = calls[_i]
@@ -74,7 +74,7 @@ func (_m *EVMClient) BatchContext(ctx context.Context, calls ...w3types.Caller) 
 	ret := _m.Called(_ca...)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, ...w3types.Caller) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, ...w3types.RPCCaller) error); ok {
 		r0 = rf(ctx, calls...)
 	} else {
 		r0 = ret.Error(0)

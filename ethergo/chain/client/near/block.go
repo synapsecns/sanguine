@@ -129,5 +129,11 @@ func getBlock(ctx context.Context, c AuroraClient, method string, args ...interf
 		return nil, err
 	}
 
-	return types.NewBlockWithHeader(head).WithBody(txes, uncles), nil
+	// Create a types.Body with the transactions and uncles
+	blockBody := types.Body{
+		Transactions: txes,
+		Uncles:       uncles,
+	}
+
+	return types.NewBlockWithHeader(head).WithBody(blockBody), nil
 }

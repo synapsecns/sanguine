@@ -53,7 +53,7 @@ type EVMClient interface {
 	BlockNumber(ctx context.Context) (uint64, error)
 	// BatchContext uses w3 as a helper method for batch calls
 	// Deprecated: use BatchCallContext and stop using chain/client
-	BatchContext(ctx context.Context, calls ...w3types.Caller) error
+	BatchContext(ctx context.Context, calls ...w3types.RPCCaller) error
 	// Web3Version gets the web3 version
 	Web3Version(ctx context.Context) (version string, err error)
 }
@@ -85,7 +85,7 @@ func (c *clientImpl) Web3Version(ctx context.Context) (version string, err error
 	return version, nil
 }
 
-func (c *clientImpl) BatchContext(ctx context.Context, calls ...w3types.Caller) error {
+func (c *clientImpl) BatchContext(ctx context.Context, calls ...w3types.RPCCaller) error {
 	//nolint:wrapcheck
 	return c.w3Client.CallCtx(ctx, calls...)
 }
