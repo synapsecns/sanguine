@@ -968,6 +968,421 @@ type AuctionFilter struct {
 	PurchasePriceNotIn   []*string `json:"purchasePrice_not_in,omitempty"`
 }
 
+type Battle struct {
+	ID                      string             `json:"id"`
+	Host                    *Profile           `json:"host,omitempty"`
+	Opponent                *Profile           `json:"opponent,omitempty"`
+	Winner                  *Profile           `json:"winner,omitempty"`
+	BattleStartTime         *int64             `json:"battleStartTime,omitempty"`
+	VotingEnabledWithWindow *bool              `json:"votingEnabledWithWindow,omitempty"`
+	SetupTime               *int64             `json:"setupTime,omitempty"`
+	MinRank                 *int64             `json:"minRank,omitempty"`
+	MaxRank                 *int64             `json:"maxRank,omitempty"`
+	MinRarity               *int64             `json:"minRarity,omitempty"`
+	MaxRarity               *int64             `json:"maxRarity,omitempty"`
+	BattleInventory         *int64             `json:"battleInventory,omitempty"`
+	BattleBudget            *int64             `json:"battleBudget,omitempty"`
+	MinHeroStatScore        *int64             `json:"minHeroStatScore,omitempty"`
+	MaxHeroStatScore        *int64             `json:"maxHeroStatScore,omitempty"`
+	MinTeamStatScore        *int64             `json:"minTeamStatScore,omitempty"`
+	MaxTeamStatScore        *int64             `json:"maxTeamStatScore,omitempty"`
+	MinLevel                *int64             `json:"minLevel,omitempty"`
+	MaxLevel                *int64             `json:"maxLevel,omitempty"`
+	ExcludedClasses         *int64             `json:"excludedClasses,omitempty"`
+	ExcludedConsumables     *int64             `json:"excludedConsumables,omitempty"`
+	ExcludedOrigin          *int64             `json:"excludedOrigin,omitempty"`
+	ShotClockDuration       *int64             `json:"shotClockDuration,omitempty"`
+	BankedShotClockTime     *int64             `json:"bankedShotClockTime,omitempty"`
+	ShotClockPenaltyMode    *int64             `json:"shotClockPenaltyMode,omitempty"`
+	ShotClockForfeitCount   *int64             `json:"shotClockForfeitCount,omitempty"`
+	PartyCount              *int64             `json:"partyCount,omitempty"`
+	BattleState             *int64             `json:"battleState,omitempty"`
+	PrivateBattle           *bool              `json:"privateBattle,omitempty"`
+	AllUniqueClasses        *bool              `json:"allUniqueClasses,omitempty"`
+	NoTripleClasses         *bool              `json:"noTripleClasses,omitempty"`
+	AllowEarlyBattleStart   *bool              `json:"allowEarlyBattleStart,omitempty"`
+	OnlyPj                  *bool              `json:"onlyPJ,omitempty"`
+	AutoRandom              *bool              `json:"autoRandom,omitempty"`
+	GloryBout               *bool              `json:"gloryBout,omitempty"`
+	MapID                   *int64             `json:"mapId,omitempty"`
+	MinGlories              *int64             `json:"minGlories,omitempty"`
+	HostGlories             *int64             `json:"hostGlories,omitempty"`
+	OpponentGlories         *int64             `json:"opponentGlories,omitempty"`
+	SponsorCount            *int64             `json:"sponsorCount,omitempty"`
+	InfluenceSideA          *int64             `json:"influenceSideA,omitempty"`
+	InfluenceSideB          *int64             `json:"influenceSideB,omitempty"`
+	SpectatorCountSideA     *int64             `json:"spectatorCountSideA,omitempty"`
+	SpectatorCountSideB     *int64             `json:"spectatorCountSideB,omitempty"`
+	Removed                 *bool              `json:"removed,omitempty"`
+	MustIncludeClass1       *bool              `json:"mustIncludeClass1,omitempty"`
+	IncludedClass1          *int64             `json:"includedClass1,omitempty"`
+	HostHeroes              []*Hero            `json:"hostHeroes,omitempty"`
+	OpponentHeroes          []*Hero            `json:"opponentHeroes,omitempty"`
+	Rewards                 []*BattleReward    `json:"rewards,omitempty"`
+	Spectators              []*BattleSpectator `json:"spectators,omitempty"`
+	Sponsors                []*BattleSponsor   `json:"sponsors,omitempty"`
+}
+
+type BattleFilter struct {
+	ID                         *string   `json:"id,omitempty"`
+	IDNot                      *string   `json:"id_not,omitempty"`
+	IDIn                       []*string `json:"id_in,omitempty"`
+	IDNotIn                    []*string `json:"id_not_in,omitempty"`
+	Host                       *string   `json:"host,omitempty"`
+	HostNot                    *string   `json:"host_not,omitempty"`
+	HostIn                     []*string `json:"host_in,omitempty"`
+	HostNotIn                  []*string `json:"host_not_in,omitempty"`
+	Opponent                   *string   `json:"opponent,omitempty"`
+	OpponentNot                *string   `json:"opponent_not,omitempty"`
+	OpponentIn                 []*string `json:"opponent_in,omitempty"`
+	OpponentNotIn              []*string `json:"opponent_not_in,omitempty"`
+	Winner                     *string   `json:"winner,omitempty"`
+	WinnerNot                  *string   `json:"winner_not,omitempty"`
+	WinnerIn                   []*string `json:"winner_in,omitempty"`
+	WinnerNotIn                []*string `json:"winner_not_in,omitempty"`
+	BattleStartTime            *int64    `json:"battleStartTime,omitempty"`
+	BattleStartTimeNot         *int64    `json:"battleStartTime_not,omitempty"`
+	BattleStartTimeGt          []*int64  `json:"battleStartTime_gt,omitempty"`
+	BattleStartTimeLt          []*int64  `json:"battleStartTime_lt,omitempty"`
+	BattleStartTimeGte         []*int64  `json:"battleStartTime_gte,omitempty"`
+	BattleStartTimeLte         []*int64  `json:"battleStartTime_lte,omitempty"`
+	BattleStartTimeIn          []*int64  `json:"battleStartTime_in,omitempty"`
+	BattleStartTimeNotIn       []*int64  `json:"battleStartTime_not_in,omitempty"`
+	VotingEnabledWithWindow    *bool     `json:"votingEnabledWithWindow,omitempty"`
+	VotingEnabledWithWindowNot *bool     `json:"votingEnabledWithWindow_not,omitempty"`
+	SetupTime                  *int64    `json:"setupTime,omitempty"`
+	SetupTimeNot               *int64    `json:"setupTime_not,omitempty"`
+	SetupTimeGt                []*int64  `json:"setupTime_gt,omitempty"`
+	SetupTimeLt                []*int64  `json:"setupTime_lt,omitempty"`
+	SetupTimeGte               []*int64  `json:"setupTime_gte,omitempty"`
+	SetupTimeLte               []*int64  `json:"setupTime_lte,omitempty"`
+	SetupTimeIn                []*int64  `json:"setupTime_in,omitempty"`
+	SetupTimeNotIn             []*int64  `json:"setupTime_not_in,omitempty"`
+	MinRank                    *int64    `json:"minRank,omitempty"`
+	MinRankNot                 *int64    `json:"minRank_not,omitempty"`
+	MinRankGt                  *int64    `json:"minRank_gt,omitempty"`
+	MinRankLt                  *int64    `json:"minRank_lt,omitempty"`
+	MinRankGte                 *int64    `json:"minRank_gte,omitempty"`
+	MinRankLte                 *int64    `json:"minRank_lte,omitempty"`
+	MinRankIn                  []*int64  `json:"minRank_in,omitempty"`
+	MinRankNotIn               []*int64  `json:"minRank_not_in,omitempty"`
+	MaxRank                    *int64    `json:"maxRank,omitempty"`
+	MaxRankNot                 *int64    `json:"maxRank_not,omitempty"`
+	MaxRankGt                  *int64    `json:"maxRank_gt,omitempty"`
+	MaxRankLt                  *int64    `json:"maxRank_lt,omitempty"`
+	MaxRankGte                 *int64    `json:"maxRank_gte,omitempty"`
+	MaxRankLte                 *int64    `json:"maxRank_lte,omitempty"`
+	MaxRankIn                  []*int64  `json:"maxRank_in,omitempty"`
+	MaxRankNotIn               []*int64  `json:"maxRank_not_in,omitempty"`
+	MinRarity                  *int64    `json:"minRarity,omitempty"`
+	MinRarityNot               *int64    `json:"minRarity_not,omitempty"`
+	MinRarityGt                *int64    `json:"minRarity_gt,omitempty"`
+	MinRarityLt                *int64    `json:"minRarity_lt,omitempty"`
+	MinRarityGte               *int64    `json:"minRarity_gte,omitempty"`
+	MinRarityLte               *int64    `json:"minRarity_lte,omitempty"`
+	MinRarityIn                []*int64  `json:"minRarity_in,omitempty"`
+	MinRarityNotIn             []*int64  `json:"minRarity_not_in,omitempty"`
+	MaxRarity                  *int64    `json:"maxRarity,omitempty"`
+	MaxRarityNot               *int64    `json:"maxRarity_not,omitempty"`
+	MaxRarityGt                *int64    `json:"maxRarity_gt,omitempty"`
+	MaxRarityLt                *int64    `json:"maxRarity_lt,omitempty"`
+	MaxRarityGte               *int64    `json:"maxRarity_gte,omitempty"`
+	MaxRarityLte               *int64    `json:"maxRarity_lte,omitempty"`
+	MaxRarityIn                []*int64  `json:"maxRarity_in,omitempty"`
+	MaxRarityNotIn             []*int64  `json:"maxRarity_not_in,omitempty"`
+	BattleInventory            *int64    `json:"battleInventory,omitempty"`
+	BattleInventoryNot         *int64    `json:"battleInventory_not,omitempty"`
+	BattleInventoryIn          []*int64  `json:"battleInventory_in,omitempty"`
+	BattleInventoryNotIn       []*int64  `json:"battleInventory_not_in,omitempty"`
+	BattleBudget               *int64    `json:"battleBudget,omitempty"`
+	BattleBudgetNot            *int64    `json:"battleBudget_not,omitempty"`
+	BattleBudgetGt             *int64    `json:"battleBudget_gt,omitempty"`
+	BattleBudgetLt             *int64    `json:"battleBudget_lt,omitempty"`
+	BattleBudgetGte            *int64    `json:"battleBudget_gte,omitempty"`
+	BattleBudgetLte            *int64    `json:"battleBudget_lte,omitempty"`
+	BattleBudgetIn             []*int64  `json:"battleBudget_in,omitempty"`
+	BattleBudgetNotIn          []*int64  `json:"battleBudget_not_in,omitempty"`
+	MinHeroStatScore           *int64    `json:"minHeroStatScore,omitempty"`
+	MinHeroStatScoreNot        *int64    `json:"minHeroStatScore_not,omitempty"`
+	MinHeroStatScoreGt         *int64    `json:"minHeroStatScore_gt,omitempty"`
+	MinHeroStatScoreLt         *int64    `json:"minHeroStatScore_lt,omitempty"`
+	MinHeroStatScoreGte        *int64    `json:"minHeroStatScore_gte,omitempty"`
+	MinHeroStatScoreLte        *int64    `json:"minHeroStatScore_lte,omitempty"`
+	MinHeroStatScoreIn         []*int64  `json:"minHeroStatScore_in,omitempty"`
+	MinHeroStatScoreNotIn      []*int64  `json:"minHeroStatScore_not_in,omitempty"`
+	MaxHeroStatScore           *int64    `json:"maxHeroStatScore,omitempty"`
+	MaxHeroStatScoreNot        *int64    `json:"maxHeroStatScore_not,omitempty"`
+	MaxHeroStatScoreGt         *int64    `json:"maxHeroStatScore_gt,omitempty"`
+	MaxHeroStatScoreLt         *int64    `json:"maxHeroStatScore_lt,omitempty"`
+	MaxHeroStatScoreGte        *int64    `json:"maxHeroStatScore_gte,omitempty"`
+	MaxHeroStatScoreLte        *int64    `json:"maxHeroStatScore_lte,omitempty"`
+	MaxHeroStatScoreIn         []*int64  `json:"maxHeroStatScore_in,omitempty"`
+	MaxHeroStatScoreNotIn      []*int64  `json:"maxHeroStatScore_not_in,omitempty"`
+	MinTeamStatScore           *int64    `json:"minTeamStatScore,omitempty"`
+	MinTeamStatScoreNot        *int64    `json:"minTeamStatScore_not,omitempty"`
+	MinTeamStatScoreGt         *int64    `json:"minTeamStatScore_gt,omitempty"`
+	MinTeamStatScoreLt         *int64    `json:"minTeamStatScore_lt,omitempty"`
+	MinTeamStatScoreGte        *int64    `json:"minTeamStatScore_gte,omitempty"`
+	MinTeamStatScoreLte        *int64    `json:"minTeamStatScore_lte,omitempty"`
+	MinTeamStatScoreIn         []*int64  `json:"minTeamStatScore_in,omitempty"`
+	MinTeamStatScoreNotIn      []*int64  `json:"minTeamStatScore_not_in,omitempty"`
+	MaxTeamStatScore           *int64    `json:"maxTeamStatScore,omitempty"`
+	MaxTeamStatScoreNot        *int64    `json:"maxTeamStatScore_not,omitempty"`
+	MaxTeamStatScoreGt         *int64    `json:"maxTeamStatScore_gt,omitempty"`
+	MaxTeamStatScoreLt         *int64    `json:"maxTeamStatScore_lt,omitempty"`
+	MaxTeamStatScoreGte        *int64    `json:"maxTeamStatScore_gte,omitempty"`
+	MaxTeamStatScoreLte        *int64    `json:"maxTeamStatScore_lte,omitempty"`
+	MaxTeamStatScoreIn         []*int64  `json:"maxTeamStatScore_in,omitempty"`
+	MaxTeamStatScoreNotIn      []*int64  `json:"maxTeamStatScore_not_in,omitempty"`
+	MinLevel                   *int64    `json:"minLevel,omitempty"`
+	MinLevelNot                *int64    `json:"minLevel_not,omitempty"`
+	MinLevelGt                 *int64    `json:"minLevel_gt,omitempty"`
+	MinLevelLt                 *int64    `json:"minLevel_lt,omitempty"`
+	MinLevelGte                *int64    `json:"minLevel_gte,omitempty"`
+	MinLevelLte                *int64    `json:"minLevel_lte,omitempty"`
+	MinLevelIn                 []*int64  `json:"minLevel_in,omitempty"`
+	MinLevelNotIn              []*int64  `json:"minLevel_not_in,omitempty"`
+	MaxLevel                   *int64    `json:"maxLevel,omitempty"`
+	MaxLevelNot                *int64    `json:"maxLevel_not,omitempty"`
+	MaxLevelGt                 *int64    `json:"maxLevel_gt,omitempty"`
+	MaxLevelLt                 *int64    `json:"maxLevel_lt,omitempty"`
+	MaxLevelGte                *int64    `json:"maxLevel_gte,omitempty"`
+	MaxLevelLte                *int64    `json:"maxLevel_lte,omitempty"`
+	MaxLevelIn                 []*int64  `json:"maxLevel_in,omitempty"`
+	MaxLevelNotIn              []*int64  `json:"maxLevel_not_in,omitempty"`
+	ExcludedClasses            *int64    `json:"excludedClasses,omitempty"`
+	ExcludedClassesNot         *int64    `json:"excludedClasses_not,omitempty"`
+	ExcludedClassesIn          []*int64  `json:"excludedClasses_in,omitempty"`
+	ExcludedClassesNotIn       []*int64  `json:"excludedClasses_not_in,omitempty"`
+	ExcludedConsumables        *int64    `json:"excludedConsumables,omitempty"`
+	ExcludedConsumablesNot     *int64    `json:"excludedConsumables_not,omitempty"`
+	ExcludedConsumablesIn      []*int64  `json:"excludedConsumables_in,omitempty"`
+	ExcludedConsumablesNotIn   []*int64  `json:"excludedConsumables_not_in,omitempty"`
+	ExcludedOrigin             *int64    `json:"excludedOrigin,omitempty"`
+	ExcludedOriginNot          *int64    `json:"excludedOrigin_not,omitempty"`
+	ExcludedOriginIn           []*int64  `json:"excludedOrigin_in,omitempty"`
+	ExcludedOriginNotIn        []*int64  `json:"excludedOrigin_not_in,omitempty"`
+	ShotClockDuration          *int64    `json:"shotClockDuration,omitempty"`
+	ShotClockDurationNot       *int64    `json:"shotClockDuration_not,omitempty"`
+	ShotClockDurationGt        *int64    `json:"shotClockDuration_gt,omitempty"`
+	ShotClockDurationLt        *int64    `json:"shotClockDuration_lt,omitempty"`
+	ShotClockDurationGte       *int64    `json:"shotClockDuration_gte,omitempty"`
+	ShotClockDurationLte       *int64    `json:"shotClockDuration_lte,omitempty"`
+	ShotClockDurationIn        []*int64  `json:"shotClockDuration_in,omitempty"`
+	ShotClockDurationNotIn     []*int64  `json:"shotClockDuration_not_in,omitempty"`
+	BankedShotClockTime        *int64    `json:"bankedShotClockTime,omitempty"`
+	BankedShotClockTimeNot     *int64    `json:"bankedShotClockTime_not,omitempty"`
+	BankedShotClockTimeGt      *int64    `json:"bankedShotClockTime_gt,omitempty"`
+	BankedShotClockTimeLt      *int64    `json:"bankedShotClockTime_lt,omitempty"`
+	BankedShotClockTimeGte     *int64    `json:"bankedShotClockTime_gte,omitempty"`
+	BankedShotClockTimeLte     *int64    `json:"bankedShotClockTime_lte,omitempty"`
+	BankedShotClockTimeIn      []*int64  `json:"bankedShotClockTime_in,omitempty"`
+	BankedShotClockTimeNotIn   []*int64  `json:"bankedShotClockTime_not_in,omitempty"`
+	ShotClockPenaltyMode       *int64    `json:"shotClockPenaltyMode,omitempty"`
+	ShotClockPenaltyModeNot    *int64    `json:"shotClockPenaltyMode_not,omitempty"`
+	ShotClockPenaltyModeIn     []*int64  `json:"shotClockPenaltyMode_in,omitempty"`
+	ShotClockPenaltyModeNotIn  []*int64  `json:"shotClockPenaltyMode_not_in,omitempty"`
+	ShotClockForfeitCount      *int64    `json:"shotClockForfeitCount,omitempty"`
+	ShotClockForfeitCountNot   *int64    `json:"shotClockForfeitCount_not,omitempty"`
+	ShotClockForfeitCountGt    *int64    `json:"shotClockForfeitCount_gt,omitempty"`
+	ShotClockForfeitCountLt    *int64    `json:"shotClockForfeitCount_lt,omitempty"`
+	ShotClockForfeitCountGte   *int64    `json:"shotClockForfeitCount_gte,omitempty"`
+	ShotClockForfeitCountLte   *int64    `json:"shotClockForfeitCount_lte,omitempty"`
+	ShotClockForfeitCountIn    []*int64  `json:"shotClockForfeitCount_in,omitempty"`
+	ShotClockForfeitCountNotIn []*int64  `json:"shotClockForfeitCount_not_in,omitempty"`
+	PartyCount                 *int64    `json:"partyCount,omitempty"`
+	PartyCountNot              *int64    `json:"partyCount_not,omitempty"`
+	PartyCountGt               *int64    `json:"partyCount_gt,omitempty"`
+	PartyCountLt               *int64    `json:"partyCount_lt,omitempty"`
+	PartyCountGte              *int64    `json:"partyCount_gte,omitempty"`
+	PartyCountLte              *int64    `json:"partyCount_lte,omitempty"`
+	PartyCountIn               []*int64  `json:"partyCount_in,omitempty"`
+	PartyCountNotIn            []*int64  `json:"partyCount_not_in,omitempty"`
+	BattleState                *int64    `json:"battleState,omitempty"`
+	BattleStateNot             *int64    `json:"battleState_not,omitempty"`
+	BattleStateIn              []*int64  `json:"battleState_in,omitempty"`
+	BattleStateNotIn           []*int64  `json:"battleState_not_in,omitempty"`
+	PrivateBattle              *bool     `json:"privateBattle,omitempty"`
+	PrivateBattleNot           *bool     `json:"privateBattle_not,omitempty"`
+	AllUniqueClasses           *bool     `json:"allUniqueClasses,omitempty"`
+	AllUniqueClassesNot        *bool     `json:"allUniqueClasses_not,omitempty"`
+	NoTripleClasses            *bool     `json:"noTripleClasses,omitempty"`
+	NoTripleClassesNot         *bool     `json:"noTripleClasses_not,omitempty"`
+	AllowEarlyBattleStart      *bool     `json:"allowEarlyBattleStart,omitempty"`
+	AllowEarlyBattleStartNot   *bool     `json:"allowEarlyBattleStart_not,omitempty"`
+	OnlyPj                     *bool     `json:"onlyPJ,omitempty"`
+	OnlyPjNot                  *bool     `json:"onlyPJ_not,omitempty"`
+	AutoRandom                 *bool     `json:"autoRandom,omitempty"`
+	AutoRandomNot              *bool     `json:"autoRandom_not,omitempty"`
+	GloryBout                  *bool     `json:"gloryBout,omitempty"`
+	GloryBoutNot               *bool     `json:"gloryBout_not,omitempty"`
+	MapID                      *int64    `json:"mapId,omitempty"`
+	MapIDNot                   *int64    `json:"mapId_not,omitempty"`
+	MapIDGt                    *int64    `json:"mapId_gt,omitempty"`
+	MapIDLt                    *int64    `json:"mapId_lt,omitempty"`
+	MapIDGte                   *int64    `json:"mapId_gte,omitempty"`
+	MapIDLte                   *int64    `json:"mapId_lte,omitempty"`
+	MapIDIn                    []*int64  `json:"mapId_in,omitempty"`
+	MapIDNotIn                 []*int64  `json:"mapId_not_in,omitempty"`
+	MinGlories                 *int64    `json:"minGlories,omitempty"`
+	MinGloriesNot              *int64    `json:"minGlories_not,omitempty"`
+	MinGloriesGt               *int64    `json:"minGlories_gt,omitempty"`
+	MinGloriesLt               *int64    `json:"minGlories_lt,omitempty"`
+	MinGloriesGte              *int64    `json:"minGlories_gte,omitempty"`
+	MinGloriesLte              *int64    `json:"minGlories_lte,omitempty"`
+	MinGloriesIn               []*int64  `json:"minGlories_in,omitempty"`
+	MinGloriesNotIn            []*int64  `json:"minGlories_not_in,omitempty"`
+	HostGlories                *int64    `json:"hostGlories,omitempty"`
+	HostGloriesNot             *int64    `json:"hostGlories_not,omitempty"`
+	HostGloriesGt              *int64    `json:"hostGlories_gt,omitempty"`
+	HostGloriesLt              *int64    `json:"hostGlories_lt,omitempty"`
+	HostGloriesGte             *int64    `json:"hostGlories_gte,omitempty"`
+	HostGloriesLte             *int64    `json:"hostGlories_lte,omitempty"`
+	HostGloriesIn              []*int64  `json:"hostGlories_in,omitempty"`
+	HostGloriesNotIn           []*int64  `json:"hostGlories_not_in,omitempty"`
+	OpponentGlories            *int64    `json:"opponentGlories,omitempty"`
+	OpponentGloriesNot         *int64    `json:"opponentGlories_not,omitempty"`
+	OpponentGloriesGt          *int64    `json:"opponentGlories_gt,omitempty"`
+	OpponentGloriesLt          *int64    `json:"opponentGlories_lt,omitempty"`
+	OpponentGloriesGte         *int64    `json:"opponentGlories_gte,omitempty"`
+	OpponentGloriesLte         *int64    `json:"opponentGlories_lte,omitempty"`
+	OpponentGloriesIn          []*int64  `json:"opponentGlories_in,omitempty"`
+	OpponentGloriesNotIn       []*int64  `json:"opponentGlories_not_in,omitempty"`
+	SponsorCount               *int64    `json:"sponsorCount,omitempty"`
+	SponsorCountNot            *int64    `json:"sponsorCount_not,omitempty"`
+	SponsorCountGt             *int64    `json:"sponsorCount_gt,omitempty"`
+	SponsorCountLt             *int64    `json:"sponsorCount_lt,omitempty"`
+	SponsorCountGte            *int64    `json:"sponsorCount_gte,omitempty"`
+	SponsorCountLte            *int64    `json:"sponsorCount_lte,omitempty"`
+	SponsorCountIn             []*int64  `json:"sponsorCount_in,omitempty"`
+	SponsorCountNotIn          []*int64  `json:"sponsorCount_not_in,omitempty"`
+	InfluenceSideA             *int64    `json:"influenceSideA,omitempty"`
+	InfluenceSideANot          *int64    `json:"influenceSideA_not,omitempty"`
+	InfluenceSideAGt           *int64    `json:"influenceSideA_gt,omitempty"`
+	InfluenceSideALt           *int64    `json:"influenceSideA_lt,omitempty"`
+	InfluenceSideAGte          *int64    `json:"influenceSideA_gte,omitempty"`
+	InfluenceSideALte          *int64    `json:"influenceSideA_lte,omitempty"`
+	InfluenceSideAIn           []*int64  `json:"influenceSideA_in,omitempty"`
+	InfluenceSideANotIn        []*int64  `json:"influenceSideA_not_in,omitempty"`
+	InfluenceSideB             *int64    `json:"influenceSideB,omitempty"`
+	InfluenceSideBNot          *int64    `json:"influenceSideB_not,omitempty"`
+	InfluenceSideBGt           *int64    `json:"influenceSideB_gt,omitempty"`
+	InfluenceSideBLt           *int64    `json:"influenceSideB_lt,omitempty"`
+	InfluenceSideBGte          *int64    `json:"influenceSideB_gte,omitempty"`
+	InfluenceSideBLte          *int64    `json:"influenceSideB_lte,omitempty"`
+	InfluenceSideBIn           []*int64  `json:"influenceSideB_in,omitempty"`
+	InfluenceSideBNotIn        []*int64  `json:"influenceSideB_not_in,omitempty"`
+	SpectatorCountSideA        *int64    `json:"spectatorCountSideA,omitempty"`
+	SpectatorCountSideANot     *int64    `json:"spectatorCountSideA_not,omitempty"`
+	SpectatorCountSideAGt      *int64    `json:"spectatorCountSideA_gt,omitempty"`
+	SpectatorCountSideALt      *int64    `json:"spectatorCountSideA_lt,omitempty"`
+	SpectatorCountSideAGte     *int64    `json:"spectatorCountSideA_gte,omitempty"`
+	SpectatorCountSideALte     *int64    `json:"spectatorCountSideA_lte,omitempty"`
+	SpectatorCountSideAIn      []*int64  `json:"spectatorCountSideA_in,omitempty"`
+	SpectatorCountSideANotIn   []*int64  `json:"spectatorCountSideA_not_in,omitempty"`
+	SpectatorCountSideB        *int64    `json:"spectatorCountSideB,omitempty"`
+	SpectatorCountSideBNot     *int64    `json:"spectatorCountSideB_not,omitempty"`
+	SpectatorCountSideBGt      *int64    `json:"spectatorCountSideB_gt,omitempty"`
+	SpectatorCountSideBLt      *int64    `json:"spectatorCountSideB_lt,omitempty"`
+	SpectatorCountSideBGte     *int64    `json:"spectatorCountSideB_gte,omitempty"`
+	SpectatorCountSideBLte     *int64    `json:"spectatorCountSideB_lte,omitempty"`
+	SpectatorCountSideBIn      []*int64  `json:"spectatorCountSideB_in,omitempty"`
+	SpectatorCountSideBNotIn   []*int64  `json:"spectatorCountSideB_not_in,omitempty"`
+	MustIncludeClass1          *bool     `json:"mustIncludeClass1,omitempty"`
+	MustIncludeClass1Not       *bool     `json:"mustIncludeClass1_not,omitempty"`
+	IncludedClass1             *int64    `json:"includedClass1,omitempty"`
+	IncludedClass1Not          *int64    `json:"includedClass1_not,omitempty"`
+	IncludedClass1In           []*int64  `json:"includedClass1_in,omitempty"`
+	IncludedClass1NotIn        []*int64  `json:"includedClass1_not_in,omitempty"`
+	Removed                    *bool     `json:"removed,omitempty"`
+	RemovedNot                 *bool     `json:"removed_not,omitempty"`
+}
+
+type BattleReward struct {
+	Battle      *Battle `json:"battle,omitempty"`
+	Token       string  `json:"token"`
+	IsGasToken  bool    `json:"isGasToken"`
+	TotalAmount string  `json:"totalAmount"`
+}
+
+type BattleRewardFilter struct {
+	BattleID       *string   `json:"battleId,omitempty"`
+	BattleIDNot    *string   `json:"battleId_not,omitempty"`
+	BattleIDIn     []*string `json:"battleId_in,omitempty"`
+	BattleIDNotIn  []*string `json:"battleId_not_in,omitempty"`
+	Token          *string   `json:"token,omitempty"`
+	TokenNot       *string   `json:"token_not,omitempty"`
+	TokenIn        []*string `json:"token_in,omitempty"`
+	TokenNotIn     []*string `json:"token_not_in,omitempty"`
+	IsGasToken     *bool     `json:"isGasToken,omitempty"`
+	IsGasTokenNot  *bool     `json:"isGasToken_not,omitempty"`
+	TotalAmount    *string   `json:"totalAmount,omitempty"`
+	TotalAmountNot *string   `json:"totalAmount_not,omitempty"`
+	TotalAmountGt  *string   `json:"totalAmount_gt,omitempty"`
+	TotalAmountLt  *string   `json:"totalAmount_lt,omitempty"`
+	TotalAmountGte *string   `json:"totalAmount_gte,omitempty"`
+	TotalAmountLte *string   `json:"totalAmount_lte,omitempty"`
+}
+
+type BattleSpectator struct {
+	Battle    Battle   `json:"battle"`
+	Spectator *Profile `json:"spectator,omitempty"`
+	Side      int64    `json:"side"`
+	Influence int64    `json:"influence"`
+}
+
+type BattleSpectatorFilter struct {
+	BattleID       *string   `json:"battleId,omitempty"`
+	BattleIDNot    *string   `json:"battleId_not,omitempty"`
+	BattleIDIn     []*string `json:"battleId_in,omitempty"`
+	BattleIDNotIn  []*string `json:"battleId_not_in,omitempty"`
+	Spectator      *string   `json:"spectator,omitempty"`
+	SpectatorNot   *string   `json:"spectator_not,omitempty"`
+	SpectatorIn    []*string `json:"spectator_in,omitempty"`
+	SpectatorNotIn []*string `json:"spectator_not_in,omitempty"`
+	Side           *int64    `json:"side,omitempty"`
+	SideNot        *int64    `json:"side_not,omitempty"`
+	Influence      *int64    `json:"influence,omitempty"`
+	InfluenceNot   *int64    `json:"influence_not,omitempty"`
+	InfluenceGt    *int64    `json:"influence_gt,omitempty"`
+	InfluenceLt    *int64    `json:"influence_lt,omitempty"`
+	InfluenceGte   *int64    `json:"influence_gte,omitempty"`
+	InfluenceLte   *int64    `json:"influence_lte,omitempty"`
+	InfluenceIn    []*int64  `json:"influence_in,omitempty"`
+	InfluenceNotIn []*int64  `json:"influence_not_in,omitempty"`
+}
+
+type BattleSponsor struct {
+	Battle     Battle   `json:"battle"`
+	Amount     string   `json:"amount"`
+	IsGasToken bool     `json:"isGasToken"`
+	Sponsor    *Profile `json:"sponsor,omitempty"`
+	Token      string   `json:"token"`
+}
+
+type BattleSponsorFilter struct {
+	BattleID      *string   `json:"battleId,omitempty"`
+	BattleIDNot   *string   `json:"battleId_not,omitempty"`
+	BattleIDIn    []*string `json:"battleId_in,omitempty"`
+	BattleIDNotIn []*string `json:"battleId_not_in,omitempty"`
+	Amount        *string   `json:"amount,omitempty"`
+	AmountNot     *string   `json:"amount_not,omitempty"`
+	AmountGt      *string   `json:"amount_gt,omitempty"`
+	AmountLt      *string   `json:"amount_lt,omitempty"`
+	AmountGte     *string   `json:"amount_gte,omitempty"`
+	AmountLte     *string   `json:"amount_lte,omitempty"`
+	IsGasToken    *bool     `json:"isGasToken,omitempty"`
+	IsGasTokenNot *bool     `json:"isGasToken_not,omitempty"`
+	Sponsor       *string   `json:"sponsor,omitempty"`
+	SponsorNot    *string   `json:"sponsor_not,omitempty"`
+	SponsorIn     []*string `json:"sponsor_in,omitempty"`
+	SponsorNotIn  []*string `json:"sponsor_not_in,omitempty"`
+	Token         *string   `json:"token,omitempty"`
+	TokenNot      *string   `json:"token_not,omitempty"`
+	TokenIn       []*string `json:"token_in,omitempty"`
+	TokenNotIn    []*string `json:"token_not_in,omitempty"`
+}
+
 type BazaarOrder struct {
 	OrderID           string   `json:"orderId"`
 	Network           string   `json:"network"`
@@ -3672,6 +4087,266 @@ func (e *AuctionOrderBy) UnmarshalGQL(v interface{}) error {
 }
 
 func (e AuctionOrderBy) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type BattleOrderBy string
+
+const (
+	BattleOrderByID                      BattleOrderBy = "id"
+	BattleOrderByHost                    BattleOrderBy = "host"
+	BattleOrderByOpponent                BattleOrderBy = "opponent"
+	BattleOrderByWinner                  BattleOrderBy = "winner"
+	BattleOrderByBattleStartTime         BattleOrderBy = "battleStartTime"
+	BattleOrderByVotingEnabledWithWindow BattleOrderBy = "votingEnabledWithWindow"
+	BattleOrderBySetupTime               BattleOrderBy = "setupTime"
+	BattleOrderByMinRank                 BattleOrderBy = "minRank"
+	BattleOrderByMaxRank                 BattleOrderBy = "maxRank"
+	BattleOrderByMinRarity               BattleOrderBy = "minRarity"
+	BattleOrderByMaxRarity               BattleOrderBy = "maxRarity"
+	BattleOrderByBattleInventory         BattleOrderBy = "battleInventory"
+	BattleOrderByBattleBudget            BattleOrderBy = "battleBudget"
+	BattleOrderByMinHeroStatScore        BattleOrderBy = "minHeroStatScore"
+	BattleOrderByMaxHeroStatScore        BattleOrderBy = "maxHeroStatScore"
+	BattleOrderByMinTeamStatScore        BattleOrderBy = "minTeamStatScore"
+	BattleOrderByMaxTeamStatScore        BattleOrderBy = "maxTeamStatScore"
+	BattleOrderByMinLevel                BattleOrderBy = "minLevel"
+	BattleOrderByMaxLevel                BattleOrderBy = "maxLevel"
+	BattleOrderByExcludedClasses         BattleOrderBy = "excludedClasses"
+	BattleOrderByExcludedConsumables     BattleOrderBy = "excludedConsumables"
+	BattleOrderByExcludedOrigin          BattleOrderBy = "excludedOrigin"
+	BattleOrderByShotClockDuration       BattleOrderBy = "shotClockDuration"
+	BattleOrderByBankedShotClockTime     BattleOrderBy = "bankedShotClockTime"
+	BattleOrderByShotClockPenaltyMode    BattleOrderBy = "shotClockPenaltyMode"
+	BattleOrderByShotClockForfeitCount   BattleOrderBy = "shotClockForfeitCount"
+	BattleOrderByPartyCount              BattleOrderBy = "partyCount"
+	BattleOrderByBattleState             BattleOrderBy = "battleState"
+	BattleOrderByPrivateBattle           BattleOrderBy = "privateBattle"
+	BattleOrderByAllUniqueClasses        BattleOrderBy = "allUniqueClasses"
+	BattleOrderByNoTripleClasses         BattleOrderBy = "noTripleClasses"
+	BattleOrderByAllowEarlyBattleStart   BattleOrderBy = "allowEarlyBattleStart"
+	BattleOrderByOnlyPj                  BattleOrderBy = "onlyPJ"
+	BattleOrderByAutoRandom              BattleOrderBy = "autoRandom"
+	BattleOrderByGloryBout               BattleOrderBy = "gloryBout"
+	BattleOrderByMapID                   BattleOrderBy = "mapId"
+	BattleOrderByMinGlories              BattleOrderBy = "minGlories"
+	BattleOrderByHostGlories             BattleOrderBy = "hostGlories"
+	BattleOrderByOpponentGlories         BattleOrderBy = "opponentGlories"
+	BattleOrderBySponsorCount            BattleOrderBy = "sponsorCount"
+	BattleOrderByInfluenceSideA          BattleOrderBy = "influenceSideA"
+	BattleOrderByInfluenceSideB          BattleOrderBy = "influenceSideB"
+	BattleOrderBySpectatorCountSideA     BattleOrderBy = "spectatorCountSideA"
+	BattleOrderBySpectatorCountSideB     BattleOrderBy = "spectatorCountSideB"
+	BattleOrderByMustIncludeClass1       BattleOrderBy = "mustIncludeClass1"
+	BattleOrderByIncludedClass1          BattleOrderBy = "includedClass1"
+	BattleOrderByRemoved                 BattleOrderBy = "removed"
+)
+
+var AllBattleOrderBy = []BattleOrderBy{
+	BattleOrderByID,
+	BattleOrderByHost,
+	BattleOrderByOpponent,
+	BattleOrderByWinner,
+	BattleOrderByBattleStartTime,
+	BattleOrderByVotingEnabledWithWindow,
+	BattleOrderBySetupTime,
+	BattleOrderByMinRank,
+	BattleOrderByMaxRank,
+	BattleOrderByMinRarity,
+	BattleOrderByMaxRarity,
+	BattleOrderByBattleInventory,
+	BattleOrderByBattleBudget,
+	BattleOrderByMinHeroStatScore,
+	BattleOrderByMaxHeroStatScore,
+	BattleOrderByMinTeamStatScore,
+	BattleOrderByMaxTeamStatScore,
+	BattleOrderByMinLevel,
+	BattleOrderByMaxLevel,
+	BattleOrderByExcludedClasses,
+	BattleOrderByExcludedConsumables,
+	BattleOrderByExcludedOrigin,
+	BattleOrderByShotClockDuration,
+	BattleOrderByBankedShotClockTime,
+	BattleOrderByShotClockPenaltyMode,
+	BattleOrderByShotClockForfeitCount,
+	BattleOrderByPartyCount,
+	BattleOrderByBattleState,
+	BattleOrderByPrivateBattle,
+	BattleOrderByAllUniqueClasses,
+	BattleOrderByNoTripleClasses,
+	BattleOrderByAllowEarlyBattleStart,
+	BattleOrderByOnlyPj,
+	BattleOrderByAutoRandom,
+	BattleOrderByGloryBout,
+	BattleOrderByMapID,
+	BattleOrderByMinGlories,
+	BattleOrderByHostGlories,
+	BattleOrderByOpponentGlories,
+	BattleOrderBySponsorCount,
+	BattleOrderByInfluenceSideA,
+	BattleOrderByInfluenceSideB,
+	BattleOrderBySpectatorCountSideA,
+	BattleOrderBySpectatorCountSideB,
+	BattleOrderByMustIncludeClass1,
+	BattleOrderByIncludedClass1,
+	BattleOrderByRemoved,
+}
+
+func (e BattleOrderBy) IsValid() bool {
+	switch e {
+	case BattleOrderByID, BattleOrderByHost, BattleOrderByOpponent, BattleOrderByWinner, BattleOrderByBattleStartTime, BattleOrderByVotingEnabledWithWindow, BattleOrderBySetupTime, BattleOrderByMinRank, BattleOrderByMaxRank, BattleOrderByMinRarity, BattleOrderByMaxRarity, BattleOrderByBattleInventory, BattleOrderByBattleBudget, BattleOrderByMinHeroStatScore, BattleOrderByMaxHeroStatScore, BattleOrderByMinTeamStatScore, BattleOrderByMaxTeamStatScore, BattleOrderByMinLevel, BattleOrderByMaxLevel, BattleOrderByExcludedClasses, BattleOrderByExcludedConsumables, BattleOrderByExcludedOrigin, BattleOrderByShotClockDuration, BattleOrderByBankedShotClockTime, BattleOrderByShotClockPenaltyMode, BattleOrderByShotClockForfeitCount, BattleOrderByPartyCount, BattleOrderByBattleState, BattleOrderByPrivateBattle, BattleOrderByAllUniqueClasses, BattleOrderByNoTripleClasses, BattleOrderByAllowEarlyBattleStart, BattleOrderByOnlyPj, BattleOrderByAutoRandom, BattleOrderByGloryBout, BattleOrderByMapID, BattleOrderByMinGlories, BattleOrderByHostGlories, BattleOrderByOpponentGlories, BattleOrderBySponsorCount, BattleOrderByInfluenceSideA, BattleOrderByInfluenceSideB, BattleOrderBySpectatorCountSideA, BattleOrderBySpectatorCountSideB, BattleOrderByMustIncludeClass1, BattleOrderByIncludedClass1, BattleOrderByRemoved:
+		return true
+	}
+	return false
+}
+
+func (e BattleOrderBy) String() string {
+	return string(e)
+}
+
+func (e *BattleOrderBy) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = BattleOrderBy(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid BattleOrderBy", str)
+	}
+	return nil
+}
+
+func (e BattleOrderBy) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type BattleRewardOrderBy string
+
+const (
+	BattleRewardOrderByIsGasToken  BattleRewardOrderBy = "isGasToken"
+	BattleRewardOrderByToken       BattleRewardOrderBy = "token"
+	BattleRewardOrderByTotalAmount BattleRewardOrderBy = "totalAmount"
+)
+
+var AllBattleRewardOrderBy = []BattleRewardOrderBy{
+	BattleRewardOrderByIsGasToken,
+	BattleRewardOrderByToken,
+	BattleRewardOrderByTotalAmount,
+}
+
+func (e BattleRewardOrderBy) IsValid() bool {
+	switch e {
+	case BattleRewardOrderByIsGasToken, BattleRewardOrderByToken, BattleRewardOrderByTotalAmount:
+		return true
+	}
+	return false
+}
+
+func (e BattleRewardOrderBy) String() string {
+	return string(e)
+}
+
+func (e *BattleRewardOrderBy) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = BattleRewardOrderBy(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid BattleRewardOrderBy", str)
+	}
+	return nil
+}
+
+func (e BattleRewardOrderBy) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type BattleSpectatorOrderBy string
+
+const (
+	BattleSpectatorOrderByInfluence BattleSpectatorOrderBy = "influence"
+	BattleSpectatorOrderBySide      BattleSpectatorOrderBy = "side"
+)
+
+var AllBattleSpectatorOrderBy = []BattleSpectatorOrderBy{
+	BattleSpectatorOrderByInfluence,
+	BattleSpectatorOrderBySide,
+}
+
+func (e BattleSpectatorOrderBy) IsValid() bool {
+	switch e {
+	case BattleSpectatorOrderByInfluence, BattleSpectatorOrderBySide:
+		return true
+	}
+	return false
+}
+
+func (e BattleSpectatorOrderBy) String() string {
+	return string(e)
+}
+
+func (e *BattleSpectatorOrderBy) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = BattleSpectatorOrderBy(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid BattleSpectatorOrderBy", str)
+	}
+	return nil
+}
+
+func (e BattleSpectatorOrderBy) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type BattleSponsorOrderBy string
+
+const (
+	BattleSponsorOrderByAmount     BattleSponsorOrderBy = "amount"
+	BattleSponsorOrderByIsGasToken BattleSponsorOrderBy = "isGasToken"
+	BattleSponsorOrderBySponsor    BattleSponsorOrderBy = "sponsor"
+	BattleSponsorOrderByToken      BattleSponsorOrderBy = "token"
+)
+
+var AllBattleSponsorOrderBy = []BattleSponsorOrderBy{
+	BattleSponsorOrderByAmount,
+	BattleSponsorOrderByIsGasToken,
+	BattleSponsorOrderBySponsor,
+	BattleSponsorOrderByToken,
+}
+
+func (e BattleSponsorOrderBy) IsValid() bool {
+	switch e {
+	case BattleSponsorOrderByAmount, BattleSponsorOrderByIsGasToken, BattleSponsorOrderBySponsor, BattleSponsorOrderByToken:
+		return true
+	}
+	return false
+}
+
+func (e BattleSponsorOrderBy) String() string {
+	return string(e)
+}
+
+func (e *BattleSponsorOrderBy) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = BattleSponsorOrderBy(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid BattleSponsorOrderBy", str)
+	}
+	return nil
+}
+
+func (e BattleSponsorOrderBy) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
