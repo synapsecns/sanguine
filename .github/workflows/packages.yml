@@ -47,6 +47,7 @@ jobs:
   test:
       runs-on: ubuntu-latest
       env:
+        OMNIRPC_BASE_URL: ${{ secrets.OMNIRPC_BASE_URL }}
         SDK_RPC_URL: ${{ secrets.SDK_RPC_URL }}
 
       steps:
