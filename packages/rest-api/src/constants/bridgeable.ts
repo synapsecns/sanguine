@@ -1421,6 +1421,27 @@ export const SPECTRAL: BridgeableToken = {
     'https://105bc697.sanguine-fe.pages.dev/_next/static/media/spectral.6d51750c.svg',
 }
 
+export const METIS: BridgeableToken = {
+  priorityRank: 300,
+  addresses: {
+    [CHAINS.DFK.id]: '0x43E8E55792D6317328e5c6B0A0C89eF4b8102Fa2',
+    [CHAINS.KLAYTN.id]: '0x543f1b2176F7E677a95D01ca83551FAa08F83D9F',
+    [CHAINS.METIS.id]: NativeTokenAddress,
+  },
+  decimals: {
+    [CHAINS.DFK.id]: 18,
+    [CHAINS.KLAYTN.id]: 18,
+    [CHAINS.METIS.id]: 18,
+  },
+  symbol: 'Metis',
+  name: 'Metis Token',
+  swapableType: 'Metis',
+  color: 'blue',
+  routeSymbol: 'Metis',
+  imgUrl:
+    'https://45b41e43.sanguine-fe.pages.dev/_next/static/media/metis.90b6abf0.svg',
+}
+
 export const BERA: BridgeableToken = {
   priorityRank: 300,
   addresses: {
