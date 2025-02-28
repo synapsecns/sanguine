@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -645,17 +646,19 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 	diffPct := new(big.Float).Quo(diffUsd, maxQuoteAmount.BaseToken.Usd)
 	diffBps := new(big.Float).Mul(diffPct, big.NewFloat(10000))
 
-	// debugOutput: uncomment for dev/debug log output
-	fmt.Printf("Quote: %19s ($%10s) %4s.%-5d >>> %19s ($%10s) %4s.%-5d Diff: $%10s, DiffPct: %s, DiffBps: %s\n",
-		fmt.Sprintf("%19s", maxQuoteAmount.BaseToken.Units.Text('f', 9)),
-		fmt.Sprintf("%10s", maxQuoteAmount.BaseToken.Usd.Text('f', 3)),
-		fmt.Sprintf("%4s", maxQuoteAmount.BaseToken.Symbol), input.OriginChainID,
-		fmt.Sprintf("%19s", destAmountPriced.BaseToken.Units.Text('f', 9)),
-		fmt.Sprintf("%10s", destAmountPriced.BaseToken.Usd.Text('f', 3)),
-		fmt.Sprintf("%4s", destAmountPriced.BaseToken.Symbol), input.DestChainID,
-		fmt.Sprintf("%10s", diffUsd.Text('f', 2)),
-		diffPct.Text('f', 6),
-		diffBps.Text('f', 2))
+	// add "generateQuote" to debugOutput env var for dev/debug output
+	if strings.Contains(strings.ToLower(os.Getenv("debugOutput")), "generatequote") {
+		fmt.Printf("Quote: %19s ($%10s) %4s.%-5d >>> %19s ($%10s) %4s.%-5d Diff: $%10s, DiffPct: %s, DiffBps: %s\n",
+			fmt.Sprintf("%19s", maxQuoteAmount.BaseToken.Units.Text('f', 9)),
+			fmt.Sprintf("%10s", maxQuoteAmount.BaseToken.Usd.Text('f', 3)),
+			fmt.Sprintf("%4s", maxQuoteAmount.BaseToken.Symbol), input.OriginChainID,
+			fmt.Sprintf("%19s", destAmountPriced.BaseToken.Units.Text('f', 9)),
+			fmt.Sprintf("%10s", destAmountPriced.BaseToken.Usd.Text('f', 3)),
+			fmt.Sprintf("%4s", destAmountPriced.BaseToken.Symbol), input.DestChainID,
+			fmt.Sprintf("%10s", diffUsd.Text('f', 2)),
+			diffPct.Text('f', 6),
+			diffBps.Text('f', 2))
+	}
 
 	// Safety mechanism. Output amount priced as USD cannot exceed the input amount priced as USD.
 	if destAmountPriced.PricedToken.Usd.Cmp(maxQuoteAmount.BaseToken.Usd) > 0 {

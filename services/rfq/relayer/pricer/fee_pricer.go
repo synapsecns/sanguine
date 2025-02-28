@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -282,13 +284,15 @@ func (f *feePricer) PricePair(parentCtx context.Context, baseTokenChain uint32, 
 		pricedValueWei.Set(pricedValueWeiInt)
 	}
 
-	// debugOutput: uncomment for dev/debug log output
-	fmt.Println(baseToken, "base_token_wei:  ", baseValueWei.String())
-	fmt.Println(baseToken, "base_token_units:", baseValueUnits.Text('f', -1))
-	fmt.Println(baseToken, "base_token_usd:  ", baseValueUsd.Text('f', -1))
-	fmt.Println(pricedToken, "priced_token_usd:  ", pricedValueUsd.Text('f', -1))
-	fmt.Println(pricedToken, "priced_token_units:", pricedValueUnits.Text('f', -1))
-	fmt.Println(pricedToken, "priced_token_wei:  ", pricedValueWei.String())
+	// add "pricePair" to debugOutput env var for dev/debug output
+	if strings.Contains(strings.ToLower(os.Getenv("debugOutput")), "pricepair") {
+		fmt.Println(baseToken, "base_token_wei:  ", baseValueWei.String())
+		fmt.Println(baseToken, "base_token_units:", baseValueUnits.Text('f', -1))
+		fmt.Println(baseToken, "base_token_usd:  ", baseValueUsd.Text('f', -1))
+		fmt.Println(pricedToken, "priced_token_usd:  ", pricedValueUsd.Text('f', -1))
+		fmt.Println(pricedToken, "priced_token_units:", pricedValueUnits.Text('f', -1))
+		fmt.Println(pricedToken, "priced_token_wei:  ", pricedValueWei.String())
+	}
 
 	span.SetAttributes(
 		attribute.String("base_token_symbol", baseToken),
