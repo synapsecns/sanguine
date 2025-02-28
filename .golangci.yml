@@ -1,26 +1,20 @@
 run:
   tests: true
-  skip-dirs-use-default: false
-  skip-dirs:
-    - grpc/client/rest/*
-    - bundle/*
-    - generated/*
-    - otelginmetrics/*
   timeout: 15m
-  skip-files:
-    - '.*\\.abigen\\.go$'
-    - '.*\\.metadata\\.go$'
-    - '.*\\.pb\\.go$'
-    - '.*_gen.go$'
 
 linters-settings:
   gofmt:
     simplify: true
+  govet:
+    # Using proper analyzer name for shadow checking
+    enable:
+      - shadow
   misspell:
     locale: US
   gocritic:
     disabled-checks:
       - appendAssign
+
 linters:
   enable-all: true
   disable:
@@ -30,9 +24,6 @@ linters:
     # Some lines are over 80 characters on purpose and we don't want to make them
     # even longer by marking them as 'nolint'.
     - lll
-
-    # We don't care (enough) about misaligned structs to lint that.
-    - maligned
 
     # We have long functions, especially in tests. Moving or renaming those would
     # trigger funlen problems that we may not want to solve at that time.
@@ -58,15 +49,12 @@ linters:
     - wsl
     # skip for post set
     - exhaustruct
-    - exhaustivestruct
-    # if short
-    - ifshort
     # we want to use todo
     - godox
     # skip new line return until autofix works for it
     - nlreturn
     # go 1.13 error
-    - goerr113
+    - err113 # renamed from goerr113
     # disable gci
     - gci
     # disable gofumpt
@@ -75,8 +63,6 @@ linters:
     - gomnd
     # allow println
     - forbidigo
-    # disabled (todo: enable)
-    - interfacer
     # Allow nolint
     - nolintlint
     # we use external json tags
@@ -89,7 +75,6 @@ linters:
     - ireturn
     - nonamedreturns
     - contextcheck
-    - nosnakecase
     - depguard
     # we use core/testsuite.Err() etc that don't get caught by this linter and result in false positives.
     - testifylint
@@ -103,9 +88,24 @@ linters:
     - mnd
     # constants
     - goconst
+    # removed deprecated linters (added execinquery and exportloopref)
+    - execinquery
+    - exportloopref
   fast: false
 
 issues:
+  # Moved from run section as per deprecation warnings
+  exclude-dirs:
+    - grpc/client/rest/*
+    - bundle/*
+    - generated/*
+    - otelginmetrics/*
+  exclude-dirs-use-default: false
+  exclude-files:
+    - '.*\\.abigen\\.go$'
+    - '.*\\.metadata\\.go$'
+    - '.*\\.pb\\.go$'
+    - '.*_gen.go$'
   # We use dot imports extensively in tests. Usually for testify assertions
   exclude-rules:
     - path: _test\.go
