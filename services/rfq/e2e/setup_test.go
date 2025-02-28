@@ -2,9 +2,12 @@ package e2e_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"net/http"
+	"net/http/httptest"
+	"os"
 	"slices"
 	"strconv"
 	"sync"
@@ -37,6 +40,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/guard/guardconfig"
 	guardConnect "github.com/synapsecns/sanguine/services/rfq/guard/guarddb/connect"
 	guardService "github.com/synapsecns/sanguine/services/rfq/guard/service"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
@@ -261,6 +265,91 @@ func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token 
 	}
 }
 
+func (i *IntegrationSuite) setupMockCoinGeckoServer() {
+	// Set test environment
+	err := os.Setenv("GO_ENVIRONMENT", "test")
+	i.NoError(err)
+
+	// Create a handler for the mock server
+	handler := http.NewServeMux()
+
+	// Handle the /api/v3/simple/price endpoint
+	handler.HandleFunc("/api/v3/simple/price", func(w http.ResponseWriter, r *http.Request) {
+		// Parse the request URL
+		queryParams := r.URL.Query()
+		ids := queryParams.Get("ids")
+
+		if ids == "" {
+			http.Error(w, "Missing 'ids' parameter", http.StatusBadRequest)
+			return
+		}
+
+		// Get the current coingeckoIDLookup map
+		idMap, err := pricer.UnsafeGetCoingeckoIDMap()
+		if err != nil {
+			http.Error(w, "Error accessing CoinGecko IDs", http.StatusInternalServerError)
+			return
+		}
+
+		// Create a map to hold the coin data
+		response := make(map[string]map[string]float64)
+
+		// Check if the requested coin ID exists in our map (by value)
+		coinID := ids
+		found := false
+		mockPrice := 1.0 // Default price for testing
+
+		// Special case for common tokens
+		switch coinID {
+		case "ethereum":
+			mockPrice = 2000.0
+		case "usd-coin":
+			mockPrice = 1.0
+		case "berachain-bera":
+			mockPrice = 5.0
+		case "hyperliquid":
+			mockPrice = 10.0
+		}
+
+		// Check if the ID is in our lookup map values
+		for _, id := range idMap {
+			if id == coinID {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			http.Error(w, fmt.Sprintf("Unknown coin ID: %s", coinID), http.StatusNotFound)
+			return
+		}
+
+		// Set the price data
+		response[coinID] = map[string]float64{
+			"usd": mockPrice,
+		}
+
+		// Return the response as JSON
+		w.Header().Set("Content-Type", "application/json")
+		jsonResponse, err := json.Marshal(response)
+		if err != nil {
+			http.Error(w, "Error creating response", http.StatusInternalServerError)
+			return
+		}
+
+		_, err = w.Write(jsonResponse)
+		if err != nil {
+			i.T().Logf("Error writing response: %v", err)
+		}
+	})
+
+	// Create a test server
+	i.mockCoinGeckoServer = httptest.NewServer(handler)
+
+	// Log the server URL for debugging
+	i.T().Logf("Mock CoinGecko server running at %s", i.mockCoinGeckoServer.URL)
+}
+
 func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 	// construct the config
 	relayerAPIPort, err := freeport.GetFreePort()
@@ -268,6 +357,13 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 	dsn := filet.TmpDir(i.T(), "")
 	cctpContractOrigin, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), i.originBackend)
 	cctpContractDest, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), i.destBackend)
+
+	// Add the mock CoinGecko API URL if the server is running
+	coinGeckoAPIURL := ""
+	if i.mockCoinGeckoServer != nil {
+		coinGeckoAPIURL = i.mockCoinGeckoServer.URL + "/api/v3"
+	}
+
 	return relconfig.Config{
 		// generated ex-post facto
 		Chains: map[int]relconfig.ChainConfig{
@@ -330,6 +426,7 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 		},
 		RebalanceInterval: 0,
 		VolumeLimit:       10_000,
+		CoinGeckoAPIURL:   coinGeckoAPIURL,
 	}
 }
 
