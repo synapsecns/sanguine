@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-constants@1.8.8...@synapsecns/synapse-constants@1.8.9) (2025-03-01)
+
+
+### Bug Fixes
+
+* yarn lock file ([#3548](https://github.com/synapsecns/sanguine/issues/3548)) ([031021e](https://github.com/synapsecns/sanguine/commit/031021eca8c51dfb0003c3a96dedae9304742b76))
+
+
+
+
+
 ## [1.8.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-constants@1.8.7...@synapsecns/synapse-constants@1.8.8) (2025-03-01)
 
 **Note:** Version bump only for package @synapsecns/synapse-constants
