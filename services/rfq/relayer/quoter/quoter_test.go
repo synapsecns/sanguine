@@ -3,6 +3,7 @@ package quoter_test
 import (
 	"fmt"
 	"math/big"
+	"os"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/mock"
@@ -20,6 +21,8 @@ import (
 )
 
 func (s *QuoterSuite) TestGenerateQuotes() {
+	os.Setenv("debugOutput", "generateQuote")
+
 	// Generate quotes for USDC on the destination chain.
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 	inv := map[int]map[common.Address]*big.Int{}
@@ -43,7 +46,87 @@ func (s *QuoterSuite) TestGenerateQuotes() {
 	s.Equal(expectedQuotes, quotes)
 }
 
+func (s *QuoterSuite) TestGenerateQuotesDisparateNativeGas() {
+	os.Setenv("debugOutput", "generateQuote,pricePair")
+
+	// Generate quotes for ETH >>> MATIC
+	balance := big.NewInt(1_000_000_000_000_000_000)
+	inv := map[int]map[common.Address]*big.Int{}
+	quotes, err := s.manager.GenerateQuotes(s.GetTestContext(), int(s.destination), common.HexToAddress("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"), balance, inv)
+	s.Require().NoError(err)
+
+	// Verify the quotes are generated as expected.
+	expectedQuotes := []model.PutRelayerQuoteRequest{
+		{
+			OriginChainID:           int(s.origin),
+			OriginTokenAddr:         "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+			DestChainID:             int(s.destination),
+			DestTokenAddr:           "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+			DestAmount:              "998999999999992000",    // dest balance (1 Matic) less the gas reserve of 0.001 matic (1e15)
+			MaxOriginAmount:         "249749999999998",       // max orig is 1 MATIC's worth of ETH -- USD value $0.50
+			FixedFee:                "200100000000000000000", // suite's test GWEI produces a 200.10 MATIC ($100.05) gas fee.
+			OriginFastBridgeAddress: common.HexToAddress("0x123").Hex(),
+			DestFastBridgeAddress:   common.HexToAddress("0x456").Hex(),
+		},
+	}
+	s.Equal(expectedQuotes, quotes)
+}
+
+func (s *QuoterSuite) TestGenerateQuotesDisparateTokens() {
+	os.Setenv("debugOutput", "generateQuote,pricePair")
+
+	// Generate quotes for 1 BNB @ $600 > BTC @ $95K
+	balance := big.NewInt(1_0000_0000)
+	inv := map[int]map[common.Address]*big.Int{}
+	quotes, err := s.manager.GenerateQuotes(s.GetTestContext(), int(s.destination), common.HexToAddress("0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"), balance, inv)
+	s.Require().NoError(err)
+
+	// Verify the quotes are generated as expected.
+	expectedQuotes := []model.PutRelayerQuoteRequest{
+		{
+			OriginChainID:           int(s.origin),
+			OriginTokenAddr:         "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
+			DestChainID:             int(s.destination),
+			DestTokenAddr:           "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+			DestAmount:              "99999999",              // dest balance (1 BTC) less the gas reserve of 0.001 (1e15)
+			MaxOriginAmount:         "158333331750000000016", // max orig is 1 BTC's worth of BNB -- USD value $95K
+			FixedFee:                "105315",                // suite's test GWEI produces a 0.010513 BTC ($100.05) gas fee.
+			OriginFastBridgeAddress: common.HexToAddress("0x123").Hex(),
+			DestFastBridgeAddress:   common.HexToAddress("0x456").Hex(),
+		},
+	}
+	s.Equal(expectedQuotes, quotes)
+}
+
+func (s *QuoterSuite) TestGenerateQuotesDisparateGasToTokens() {
+	os.Setenv("debugOutput", "generateQuote,pricePair")
+
+	// Generate quotes for 1.56789 BNB @ $600 > MATIC  @  $0.50
+	balance, _ := new(big.Int).SetString("1567890000000000000", 10)
+	inv := map[int]map[common.Address]*big.Int{}
+	quotes, err := s.manager.GenerateQuotes(s.GetTestContext(), 42161, common.HexToAddress("0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"), balance, inv)
+	s.Require().NoError(err)
+
+	// Verify the quotes are generated as expected.
+	expectedQuotes := []model.PutRelayerQuoteRequest{
+		{
+			OriginChainID:           137,
+			OriginTokenAddr:         "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+			DestChainID:             42161,
+			DestTokenAddr:           "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
+			DestAmount:              "1567890000000000000",    // original dest balance less the gas reserve
+			MaxOriginAmount:         "1881468000000000000128", // max orig is 1.56789 BNB's worth of Matic -- USD value $940.734
+			FixedFee:                "333374999999999999",     // suite's test GWEI produces a 0.33337~ BNB ($200.025) gas fee.
+			OriginFastBridgeAddress: common.HexToAddress("0x456").Hex(),
+			DestFastBridgeAddress:   common.HexToAddress("0x123").Hex(),
+		},
+	}
+	s.Equal(expectedQuotes, quotes)
+}
+
 func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
+	os.Setenv("debugOutput", "generateQuote")
+
 	// Generate quotes for ETH on the destination chain.
 	balance, _ := new(big.Int).SetString("1000000000000000000", 10) // 1 ETH
 	inv := map[int]map[common.Address]*big.Int{}
@@ -108,6 +191,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 }
 
 func (s *QuoterSuite) TestShouldProcess() {
+
 	// Should process a valid quote.
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 	fee := big.NewInt(100_050_000)      // 100.05 USDC
@@ -146,6 +230,7 @@ func (s *QuoterSuite) TestShouldProcess() {
 }
 
 func (s *QuoterSuite) TestIsProfitable() {
+
 	// Set fee to breakeven; i.e. destAmount = originAmount - fee.
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 	fee := big.NewInt(100_050_000)      // 100.05 USDC
@@ -203,6 +288,7 @@ func (s *QuoterSuite) TestIsProfitable() {
 }
 
 func (s *QuoterSuite) TestGetOriginAmountActiveQuotes() {
+
 	origin := int(s.origin)
 	dest := int(s.destination)
 	address := common.HexToAddress("0x0b2c639c533813f4aa9d7837caf62653d097ff85")
@@ -445,6 +531,7 @@ func (s *QuoterSuite) TestGetOriginAmountActiveQuotes() {
 }
 
 func (s *QuoterSuite) TestGetOriginAmount() {
+
 	origin := int(s.origin)
 	dest := int(s.destination)
 	address := common.HexToAddress("0x0b2c639c533813f4aa9d7837caf62653d097ff85")
@@ -572,6 +659,13 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 func (s *QuoterSuite) setGasSufficiency(sufficient bool) {
 	clientFetcher := new(fetcherMocks.ClientFetcher)
 	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "USDC").Return(1., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "DirectUSD").Return(1., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "ETH").Return(2000., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "MATIC").Return(0.5, nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "BTC").Return(95000., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "BNB").Return(600., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "HYPE").Return(15., nil)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, mock.Anything).Return(0., fmt.Errorf("not using mocked price"))
 	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler())
 	inventoryManager := new(inventoryMocks.Manager)
@@ -585,6 +679,7 @@ func (s *QuoterSuite) setGasSufficiency(sufficient bool) {
 }
 
 func (s *QuoterSuite) TestGetDestAmount() {
+
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 
 	origin := int(s.origin)

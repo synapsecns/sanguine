@@ -396,7 +396,8 @@ func (c Config) GetQuoteOffsetBps(chainID int, tokenName string, isOrigin bool) 
 
 	tokenCfg, ok := chainCfg.Tokens[tokenName]
 	if !ok {
-		return 0, fmt.Errorf("no token config for chain %d and token %s", chainID, tokenName)
+		// This is not necessarily a problem if an asset legitimately does not exist on a chain but can be swapped into.
+		return 0.0, nil //fmt.Errorf("no token config for chain %d and token %s", chainID, tokenName)
 	}
 
 	offset := tokenCfg.QuoteOffsetBps
@@ -682,6 +683,13 @@ func (c Config) GetQuotableTokens(token string) ([]string, error) {
 
 // GetTokenDecimals returns the token decimals for the given chain and token.
 func (c Config) GetTokenDecimals(chainID uint32, token string) (uint8, error) {
+
+	// "DirectUSD" is a special identifier we can use to price assets directly to USD while also following roughly the same logic as any other asset.
+	// Set to a flat 5 decimal denomination
+	if token == "DirectUSD" {
+		return 5, nil
+	}
+
 	chainConfig, ok := c.Chains[int(chainID)]
 	if !ok {
 		return 0, fmt.Errorf("could not get chain config for chainID: %d", chainID)
@@ -705,6 +713,10 @@ func (c Config) GetTokens(chainID uint32) (map[string]TokenConfig, error) {
 
 // GetTokenName returns the token name for the given chain and address.
 func (c Config) GetTokenName(chain uint32, addr string) (string, error) {
+	// if nothing is mapped on either side, system will default to 0x00000 and can false match
+	if common.HexToAddress(addr).Hex() == "0x0000000000000000000000000000000000000000" {
+		return "", fmt.Errorf("invalid address: %s", addr)
+	}
 	chainConfig, ok := c.Chains[int(chain)]
 	if !ok {
 		return "", fmt.Errorf("no chain config for chain %d", chain)

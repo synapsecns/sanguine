@@ -49,6 +49,8 @@ type Config struct {
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
 	// ScreenerAPIUrl is the TRM API url.
 	ScreenerAPIUrl string `yaml:"screener_api_url"`
+	// ScreenerAPIUrl is the TRM API url.
+	CoinGeckoApiKey string `yaml:"coingecko_api_key"`
 	// DBSelectorInterval is the interval for the db selector.
 	DBSelectorInterval time.Duration `yaml:"db_selector_interval"`
 	// RebalanceInterval is the interval for rebalancing.

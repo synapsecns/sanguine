@@ -55,17 +55,17 @@ func (s *QuoterSuite) SetupTest() {
 						Decimals: 6,
 					},
 					"ETH": {
-						Address:  "",
+						Address:  "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
 					"BNB": {
-						Address:  "",
+						Address:  "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
 						PriceUSD: 600,
 						Decimals: 18,
 					},
 					"BTC": {
-						Address:  "",
+						Address:  "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
 						PriceUSD: 95000,
 						Decimals: 8,
 					},
@@ -81,7 +81,7 @@ func (s *QuoterSuite) SetupTest() {
 						Decimals: 6,
 					},
 					"MATIC": {
-						Address:  "",
+						Address:  "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
 						PriceUSD: 0.5,
 						Decimals: 18,
 					},
@@ -91,12 +91,12 @@ func (s *QuoterSuite) SetupTest() {
 						Decimals: 18,
 					},
 					"BNB": {
-						Address:  "",
+						Address:  "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
 						PriceUSD: 600,
 						Decimals: 18,
 					},
 					"BTC": {
-						Address:  "",
+						Address:  "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
 						PriceUSD: 95000,
 						Decimals: 8,
 					},
@@ -127,6 +127,9 @@ func (s *QuoterSuite) SetupTest() {
 		QuotableTokens: map[string][]string{
 			"42161-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": {"137-0x0b2c639c533813f4aa9d7837caf62653d097ff85", "10-0x0b2c639c533813f4aa9d7837caf62653d097ff85"},
 			"42161-0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE": {"137-0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "1-0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"},
+			// BNB>>BTC
+			"42161-0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB": {"137-0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"},
+			"137-0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":   {"42161-0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"},
 			// "1-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48":     {"42161-0xaf88d065e77c8cc2239327c5edb3a432268e5831", "10-0x0b2c639c533813f4aa9d7837caf62653d097ff85"},
 			// "10-0x0b2c639c533813f4aa9d7837caf62653d097ff85":    {"1-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "42161-0xaf88d065e77c8cc2239327c5edb3a432268e5831"},
 		},
@@ -139,6 +142,13 @@ func (s *QuoterSuite) SetupTest() {
 	gasPrice := big.NewInt(100_000_000_000) // 100 gwei
 	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Return(gasPrice, nil)
 	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "USDC").Return(1., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "DirectUSD").Return(1., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "ETH").Return(2000., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "MATIC").Return(0.5, nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "BTC").Return(95000., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "BNB").Return(600., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "HYPE").Return(15., nil)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, mock.Anything).Return(0., fmt.Errorf("not using mocked price"))
 	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler())
 	go func() { feePricer.Start(s.GetTestContext()) }()

@@ -133,3 +133,10 @@ main
 
 # golang-ci-lint binary
 contrib/golang-ci-lint/golang-ci-lint
+
+# ignore any rfq config files that are not the template
+services/rfq/**/config*.yaml
+services/rfq/**/config*.yml
+!services/rfq/**/config.yml
+
+*signer.txt

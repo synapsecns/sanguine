@@ -87,7 +87,7 @@ func NewChainListener(omnirpcClient client.EVM, store listenerDB.ChainListenerDB
 
 // defaultPollInterval.
 const (
-	maxGetLogsRange = 2000
+	maxGetLogsRange = 50
 )
 
 func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err error) {
