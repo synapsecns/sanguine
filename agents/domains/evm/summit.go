@@ -123,7 +123,7 @@ func (a summitContract) GetAttestation(ctx context.Context, attNonce uint32) (ty
 	}
 
 	if len(rawAttestation.AttPayload) == 0 {
-		//nolint:nil,nil
+		//nolint:nilnil
 		return nil, nil
 	}
 
