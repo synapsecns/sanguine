@@ -150,4 +150,4 @@ issues:
         - staticcheck
         - wrapcheck
   exclude-use-default: false
-  new-from-rev: 9fe0f033b73acf6b8240f0a832c4b4d21e68181b
+  new-from-rev: d178250bbe95bd35e04038a9a11902a52cd6d169
