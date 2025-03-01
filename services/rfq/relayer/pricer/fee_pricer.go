@@ -33,7 +33,7 @@ type FeePricer interface {
 	// GetTokenPrice returns the price of a token in USD.
 	GetTokenPrice(ctx context.Context, token string) (float64, error)
 	// PricePair calculates the price of a token pair from one chain to another.
-	PricePair(parentCtx context.Context, baseTokenChain uint32, pricedTokenChain uint32, baseToken string, pricedToken string, baseValueWei big.Int) (_ *PricedValuePair, err error)
+	PricePair(parentCtx context.Context, stepLabel string, baseTokenChain uint32, pricedTokenChain uint32, baseToken string, pricedToken string, baseValueWei big.Int) (_ *PricedValuePair, err error)
 }
 
 type feePricer struct {
@@ -206,8 +206,11 @@ func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination u
 	return totalFee, nil
 }
 
-func (f *feePricer) PricePair(parentCtx context.Context, baseTokenChain uint32, pricedTokenChain uint32, baseToken string, pricedToken string, baseValueWei big.Int) (_ *PricedValuePair, err error) {
-	ctx, span := f.handler.Tracer().Start(parentCtx, "PricePair", trace.WithAttributes())
+func (f *feePricer) PricePair(parentCtx context.Context, stepLabel string, baseTokenChain uint32, pricedTokenChain uint32, baseToken string, pricedToken string, baseValueWei big.Int) (_ *PricedValuePair, err error) {
+	ctx, span := f.handler.Tracer().Start(parentCtx, "PricePair", trace.WithAttributes(
+		// stepLabel is an arbitrary & short sting to help provide debugging context to the logs & traces for this exact invocation of PricePair.
+		attribute.String("step_label", stepLabel),
+	))
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -253,6 +256,18 @@ func (f *feePricer) PricePair(parentCtx context.Context, baseTokenChain uint32, 
 	}
 	pricedTokenDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(pricedTokenDecimals)), nil)
 
+	// simplify label for DirectUSD special identifier
+	if baseToken == "DirectUSD" {
+		baseToken = "USD"
+	}
+	if pricedToken == "DirectUSD" {
+		pricedToken = "USD"
+	}
+
+	pairLabel := fmt.Sprintf("%s>%s", strings.Replace(fmt.Sprintf("%s.%d", baseToken, baseTokenChain), "USD."+fmt.Sprint(baseTokenChain), "USD", 1), strings.Replace(fmt.Sprintf("%s.%d", pricedToken, pricedTokenChain), "USD."+fmt.Sprint(pricedTokenChain), "USD", 1))
+
+	span.SetAttributes(attribute.String("pair_label", pairLabel))
+
 	// This will be the final wei output
 	var pricedValueWei big.Int
 
@@ -286,12 +301,12 @@ func (f *feePricer) PricePair(parentCtx context.Context, baseTokenChain uint32, 
 
 	// add "pricePair" to debugOutput env var for dev/debug output
 	if strings.Contains(strings.ToLower(os.Getenv("debugOutput")), "pricepair") {
-		fmt.Println(baseToken, "base_token_wei:  ", baseValueWei.String())
-		fmt.Println(baseToken, "base_token_units:", baseValueUnits.Text('f', -1))
-		fmt.Println(baseToken, "base_token_usd:  ", baseValueUsd.Text('f', -1))
-		fmt.Println(pricedToken, "priced_token_usd:  ", pricedValueUsd.Text('f', -1))
-		fmt.Println(pricedToken, "priced_token_units:", pricedValueUnits.Text('f', -1))
-		fmt.Println(pricedToken, "priced_token_wei:  ", pricedValueWei.String())
+		fmt.Printf("%-25s%-20s%-5s base_____wei: %s\n", stepLabel, pairLabel, baseToken, baseValueWei.String())
+		fmt.Printf("%-25s%-20s%-5s base___units: %s\n", stepLabel, pairLabel, baseToken, baseValueUnits.Text('f', -1))
+		fmt.Printf("%-25s%-20s%-5s base_____usd: %s\n", stepLabel, pairLabel, baseToken, baseValueUsd.Text('f', -1))
+		fmt.Printf("%-25s%-20s%-5s priced___usd: %s\n", stepLabel, pairLabel, pricedToken, pricedValueUsd.Text('f', -1))
+		fmt.Printf("%-25s%-20s%-5s priced_units: %s\n", stepLabel, pairLabel, pricedToken, pricedValueUnits.Text('f', -1))
+		fmt.Printf("%-25s%-20s%-5s priced___wei: %s\n", stepLabel, pairLabel, pricedToken, pricedValueWei.String())
 	}
 
 	span.SetAttributes(
@@ -357,7 +372,7 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 	feeNativeWei := new(big.Int).Mul(gasPrice, big.NewInt(int64(gasEstimate)))
 
 	// price native gas WEI into the denomination token
-	feeNativeWeiPriced, err := f.PricePair(ctx, gasChain, denomChain, nativeToken, denomToken, *feeNativeWei)
+	feeNativeWeiPriced, err := f.PricePair(ctx, "getFee", gasChain, denomChain, nativeToken, denomToken, *feeNativeWei)
 	if err != nil {
 		return nil, err
 	}

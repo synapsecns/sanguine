@@ -60,12 +60,12 @@ func (s *QuoterSuite) SetupTest() {
 						Decimals: 18,
 					},
 					"BNB": {
-						Address:  "",
+						Address:  "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
 						PriceUSD: 600,
 						Decimals: 18,
 					},
 					"BTC": {
-						Address:  "",
+						Address:  "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
 						PriceUSD: 95000,
 						Decimals: 8,
 					},
@@ -91,12 +91,12 @@ func (s *QuoterSuite) SetupTest() {
 						Decimals: 18,
 					},
 					"BNB": {
-						Address:  "",
+						Address:  "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
 						PriceUSD: 600,
 						Decimals: 18,
 					},
 					"BTC": {
-						Address:  "",
+						Address:  "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
 						PriceUSD: 95000,
 						Decimals: 8,
 					},
@@ -127,6 +127,9 @@ func (s *QuoterSuite) SetupTest() {
 		QuotableTokens: map[string][]string{
 			"42161-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": {"137-0x0b2c639c533813f4aa9d7837caf62653d097ff85", "10-0x0b2c639c533813f4aa9d7837caf62653d097ff85"},
 			"42161-0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE": {"137-0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "1-0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"},
+			// BNB>>BTC
+			"42161-0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB": {"137-0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"},
+			"137-0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":   {"42161-0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"},
 			// "1-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48":     {"42161-0xaf88d065e77c8cc2239327c5edb3a432268e5831", "10-0x0b2c639c533813f4aa9d7837caf62653d097ff85"},
 			// "10-0x0b2c639c533813f4aa9d7837caf62653d097ff85":    {"1-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "42161-0xaf88d065e77c8cc2239327c5edb3a432268e5831"},
 		},

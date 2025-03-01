@@ -48,42 +48,42 @@ func (s *PricerSuite) TestPricePairs() {
 
 	// 1 ETH priced into various values
 	baseValueWei := big.NewInt(1e18)
-	fee, err := feePricer.PricePair(s.GetTestContext(), s.origin, s.destination, "ETH", "USDC", *baseValueWei)
+	fee, err := feePricer.PricePair(s.GetTestContext(), "Case 1 - ETH>USDC", s.origin, s.destination, "ETH", "USDC", *baseValueWei)
 	s.NoError(err)
 	expectedWei := new(big.Int).Mul(big.NewInt(2000), big.NewInt(1e6))
 	s.Equal(expectedWei, fee.PricedToken.Wei)
 
-	fee, err = feePricer.PricePair(s.GetTestContext(), s.origin, s.destination, "ETH", "MATIC", *baseValueWei)
+	fee, err = feePricer.PricePair(s.GetTestContext(), "Case 2 - ETH>MATIC", s.origin, s.destination, "ETH", "MATIC", *baseValueWei)
 	s.NoError(err)
 	// $2000 of ETH priced into Matic at $0.50 = 4000 WEI
 	expectedWei = new(big.Int).Mul(big.NewInt(4000), big.NewInt(1e18))
 	s.Equal(expectedWei, fee.PricedToken.Wei)
 
-	fee, err = feePricer.PricePair(s.GetTestContext(), s.origin, s.destination, "ETH", "DirectUSD", *baseValueWei)
+	fee, err = feePricer.PricePair(s.GetTestContext(), "Case 3 - ETH>DirectUSD", s.origin, s.destination, "ETH", "DirectUSD", *baseValueWei)
 	s.NoError(err)
 	expectedWei = new(big.Int).Mul(big.NewInt(2000), big.NewInt(1e5))
 	s.Equal(expectedWei, fee.PricedToken.Wei)
 
 	// $2000 of ETH priced into BNB at $600 = 3333333333333333333 WEI  (3.333~ BNB)
-	fee, err = feePricer.PricePair(s.GetTestContext(), s.origin, s.destination, "ETH", "BNB", *baseValueWei)
+	fee, err = feePricer.PricePair(s.GetTestContext(), "Case 4 - ETH>BNB", s.origin, s.destination, "ETH", "BNB", *baseValueWei)
 	s.NoError(err)
 	expectedWei = big.NewInt(3333333333333333333)
 	s.Equal(expectedWei, fee.PricedToken.Wei)
 
 	// 3.333~~~ of BNB priced back into ETH at $2000 = 1 ETH
-	fee, err = feePricer.PricePair(s.GetTestContext(), s.destination, s.origin, "BNB", "ETH", *fee.PricedToken.Wei)
+	fee, err = feePricer.PricePair(s.GetTestContext(), "Case 5 - BNB>ETH", s.destination, s.origin, "BNB", "ETH", *fee.PricedToken.Wei)
 	s.NoError(err)
 	expectedWei = big.NewInt(999999999999999999) // 0.999~ ETH in reality due to precision loss of pricing
 	s.Equal(expectedWei, fee.PricedToken.Wei)
 
 	// $2000 of ETH priced into BTC at $95,000.00 = 2105263 WEI  (0.02105263 BTC)
-	fee, err = feePricer.PricePair(s.GetTestContext(), s.origin, s.destination, "ETH", "BTC", *baseValueWei)
+	fee, err = feePricer.PricePair(s.GetTestContext(), "Case 6 - ETH>BTC", s.origin, s.destination, "ETH", "BTC", *baseValueWei)
 	s.NoError(err)
 	expectedWei = big.NewInt(2105263)
 	s.Equal(expectedWei, fee.PricedToken.Wei)
 
 	// 0.02105263 of BTC priced back into ETH at $2000 = 1 ETH
-	fee, err = feePricer.PricePair(s.GetTestContext(), s.destination, s.origin, "BTC", "ETH", *fee.PricedToken.Wei)
+	fee, err = feePricer.PricePair(s.GetTestContext(), "Case 7 - BTC>ETH", s.destination, s.origin, "BTC", "ETH", *fee.PricedToken.Wei)
 	s.NoError(err)
 	expectedWei = big.NewInt(999999924999999999) // 0.999~ ETH in reality due to precision loss of pricing from BTC's 8 decimals
 	s.Equal(expectedWei, fee.PricedToken.Wei)
@@ -91,7 +91,7 @@ func (s *PricerSuite) TestPricePairs() {
 	// test w/ random unusually high amount of eth (15734.985734985734530000)
 	baseValueWei = new(big.Int).Mul(big.NewInt(1573498573498573453), big.NewInt(1e4))
 
-	fee, err = feePricer.PricePair(s.GetTestContext(), s.origin, s.destination, "ETH", "DirectUSD", *baseValueWei)
+	fee, err = feePricer.PricePair(s.GetTestContext(), "Case 8 - ETH>DirectUSD", s.origin, s.destination, "ETH", "DirectUSD", *baseValueWei)
 	s.NoError(err)
 	expectedWei = big.NewInt(3146997146997) // $31,469,971.46997 with ETH at $2000
 	s.Equal(expectedWei, fee.PricedToken.Wei)
