@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.42.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.42.3...@synapsecns/synapse-interface@0.42.4) (2025-03-02)
+
+
+### Bug Fixes
+
+* **synapse-interface:** unpause Klaytn chain ([#3550](https://github.com/synapsecns/sanguine/issues/3550)) ([ea18e3f](https://github.com/synapsecns/sanguine/commit/ea18e3f26dd85f7226a7ccd36f1de7b3ef89e442))
+
+
+
+
+
 ## [0.42.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.42.2...@synapsecns/synapse-interface@0.42.3) (2025-03-01)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
