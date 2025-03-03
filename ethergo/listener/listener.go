@@ -87,7 +87,7 @@ func NewChainListener(omnirpcClient client.EVM, store listenerDB.ChainListenerDB
 
 // defaultPollInterval.
 const (
-	maxGetLogsRange = 50
+	maxGetLogsRange = 2000
 )
 
 func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err error) {
@@ -176,8 +176,16 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 	// Note: this does not cover the edge case of a reorg that includes a new tx
 	endBlock = c.latestBlock
 	lastUnconfirmedBlock := c.latestBlock
-	if c.startBlock+maxGetLogsRange < c.latestBlock {
-		endBlock = c.startBlock + maxGetLogsRange
+
+	getLogsRange := maxGetLogsRange
+
+	// TODO: set thru env/config rather than hardcode override
+	if int(c.chainID) == 999 {
+		getLogsRange = 50
+	}
+
+	if c.startBlock+uint64(getLogsRange) < c.latestBlock {
+		endBlock = c.startBlock + uint64(getLogsRange)
 		// This will be used as the bottom of the range in the next iteration
 		lastUnconfirmedBlock = endBlock
 		c.pollInterval = 0
