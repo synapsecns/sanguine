@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/synapsecns/sanguine/core"
 	"io"
 	"net/http"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/synapsecns/sanguine/core"
 
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/instrumentation/httpcapture"
@@ -154,8 +155,8 @@ func (c *CoingeckoPriceFetcherImpl) GetPrice(ctx context.Context, token string) 
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// "DirectUSD" is a special identifier we can use to price assets directly to USD while also following roughly the same logic as any other asset.
-	if token == "DirectUSD" {
+	// "USD" is a special identifier we can use to price assets directly to USD while also following roughly the same logic as any other asset.
+	if token == "USD" {
 		price = 1.0
 		return price, nil
 	}

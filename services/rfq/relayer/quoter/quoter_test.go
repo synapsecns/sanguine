@@ -233,11 +233,6 @@ func (s *QuoterSuite) TestShouldProcess() {
 	}
 	s.True(s.manager.ShouldProcess(s.GetTestContext(), quote))
 
-	// Set different numbers of decimals for origin / dest tokens; should never process this.
-	badQuote := quote
-	badQuote.DestTokenDecimals = 18
-	s.False(s.manager.ShouldProcess(s.GetTestContext(), badQuote))
-
 	// Toggle relayPaused
 	s.manager.SetRelayPaused(true)
 	s.False(s.manager.ShouldProcess(s.GetTestContext(), quote))
@@ -683,7 +678,7 @@ func (s *QuoterSuite) setGasSufficiency(sufficient bool) {
 	clientFetcher := new(fetcherMocks.ClientFetcher)
 	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "USDC").Return(1., nil)
-	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "DirectUSD").Return(1., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "USD").Return(1., nil)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "ETH").Return(2000., nil)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "MATIC").Return(0.5, nil)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "BTC").Return(95000., nil)

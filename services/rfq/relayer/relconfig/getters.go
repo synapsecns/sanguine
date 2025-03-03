@@ -684,9 +684,9 @@ func (c Config) GetQuotableTokens(token string) ([]string, error) {
 // GetTokenDecimals returns the token decimals for the given chain and token.
 func (c Config) GetTokenDecimals(chainID uint32, token string) (uint8, error) {
 
-	// "DirectUSD" is a special identifier we can use to price assets directly to USD while also following roughly the same logic as any other asset.
+	// "USD" is a special identifier we can use to price assets directly to USD while also following roughly the same logic as any other asset.
 	// Set to a flat 5 decimal denomination
-	if token == "DirectUSD" {
+	if token == "USD" {
 		return 5, nil
 	}
 

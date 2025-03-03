@@ -32,8 +32,8 @@ type FeePricer interface {
 	GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, error)
 	// GetTokenPrice returns the price of a token in USD.
 	GetTokenPrice(ctx context.Context, token string) (float64, error)
-	// PricePair calculates the price of a token pair from one chain to another.
-	PricePair(parentCtx context.Context, stepLabel string, baseTokenChain uint32, pricedTokenChain uint32, baseToken string, pricedToken string, baseValueWei big.Int) (_ *PricedValuePair, err error)
+	// GetPricePair calculates the price of a token pair from one chain to another.
+	GetPricePair(parentCtx context.Context, stepLabel string, baseTokenChain uint32, pricedTokenChain uint32, baseToken string, pricedToken string, baseValueWei big.Int) (_ *PricedValuePair, err error)
 }
 
 type feePricer struct {
@@ -206,9 +206,9 @@ func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination u
 	return totalFee, nil
 }
 
-func (f *feePricer) PricePair(parentCtx context.Context, stepLabel string, baseTokenChain uint32, pricedTokenChain uint32, baseToken string, pricedToken string, baseValueWei big.Int) (_ *PricedValuePair, err error) {
-	ctx, span := f.handler.Tracer().Start(parentCtx, "PricePair", trace.WithAttributes(
-		// stepLabel is an arbitrary & short sting to help provide debugging context to the logs & traces for this exact invocation of PricePair.
+func (f *feePricer) GetPricePair(parentCtx context.Context, stepLabel string, baseTokenChain uint32, pricedTokenChain uint32, baseToken string, pricedToken string, baseValueWei big.Int) (_ *PricedValuePair, err error) {
+	ctx, span := f.handler.Tracer().Start(parentCtx, "GetPricePair", trace.WithAttributes(
+		// stepLabel is an arbitrary & short sting to help provide debugging context to the logs & traces for this exact invocation of GetPricePair.
 		attribute.String("step_label", stepLabel),
 	))
 
@@ -222,6 +222,7 @@ func (f *feePricer) PricePair(parentCtx context.Context, stepLabel string, baseT
 		baseTokenDecimalsFactor, pricedTokenDecimalsFactor *big.Int
 	)
 
+	// TODO: Create a common GetTokenMetadata func that can be used for base & denom here -- and elsewhere.
 	// ###################   baseToken lookups:
 	if common.IsHexAddress(baseToken) {
 		baseToken, err = f.config.GetTokenName(baseTokenChain, baseToken)
@@ -233,12 +234,17 @@ func (f *feePricer) PricePair(parentCtx context.Context, stepLabel string, baseT
 	if err != nil {
 		return nil, err
 	}
+	if baseTokenSpotUsd <= 0 {
+		return nil, fmt.Errorf("invalid baseTokenSpotUsd: %f", baseTokenSpotUsd)
+	}
+
 	baseTokenDecimals, err = f.config.GetTokenDecimals(baseTokenChain, baseToken)
 	if err != nil {
 		return nil, err
 	}
 	baseTokenDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(baseTokenDecimals)), nil)
 
+	// TODO: Create a common GetTokenMetadata func that can be used for base & denom here -- and elsewhere.
 	// ###################   pricedToken lookups:
 	if common.IsHexAddress(pricedToken) {
 		pricedToken, err = f.config.GetTokenName(pricedTokenChain, pricedToken)
@@ -250,23 +256,46 @@ func (f *feePricer) PricePair(parentCtx context.Context, stepLabel string, baseT
 	if err != nil {
 		return nil, err
 	}
+
+	if pricedTokenSpotUsd <= 0 {
+		return nil, fmt.Errorf("invalid pricedTokenSpotUsd: %f", pricedTokenSpotUsd)
+	}
+
 	pricedTokenDecimals, err = f.config.GetTokenDecimals(pricedTokenChain, pricedToken)
 	if err != nil {
 		return nil, err
 	}
 	pricedTokenDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(pricedTokenDecimals)), nil)
 
-	// simplify label for DirectUSD special identifier
-	if baseToken == "DirectUSD" {
-		baseToken = "USD"
-	}
-	if pricedToken == "DirectUSD" {
-		pricedToken = "USD"
-	}
-
+	// With all token/decimal/price lookups resolved, construct a concicse pair label to aid with debug/log/trace context
+	// EG: ETH.42161>USDC.8453
+	//
+	// In addition, for "USD" -- do not print the chain component since it will just be a confusing placeholder
+	// EG: ETH.42161>USD
 	pairLabel := fmt.Sprintf("%s>%s", strings.Replace(fmt.Sprintf("%s.%d", baseToken, baseTokenChain), "USD."+fmt.Sprint(baseTokenChain), "USD", 1), strings.Replace(fmt.Sprintf("%s.%d", pricedToken, pricedTokenChain), "USD."+fmt.Sprint(pricedTokenChain), "USD", 1))
 
 	span.SetAttributes(attribute.String("pair_label", pairLabel))
+
+	// if zero basevaluewei is supplied, early return a zeroed-out result.
+	if baseValueWei.Cmp(big.NewInt(0)) == 0 {
+		zeroResult := &PricedValuePair{
+			BaseToken: TokenValue{
+				Symbol:  baseToken,
+				SpotUsd: baseTokenSpotUsd,
+				Wei:     big.NewInt(0),
+				Units:   big.NewFloat(0),
+				Usd:     big.NewFloat(0),
+			},
+			PricedToken: TokenValue{
+				Symbol:  pricedToken,
+				SpotUsd: pricedTokenSpotUsd,
+				Wei:     big.NewInt(0),
+				Units:   big.NewFloat(0),
+				Usd:     big.NewFloat(0),
+			},
+		}
+		return zeroResult, nil
+	}
 
 	// This will be the final wei output
 	var pricedValueWei big.Int
@@ -372,7 +401,7 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 	feeNativeWei := new(big.Int).Mul(gasPrice, big.NewInt(int64(gasEstimate)))
 
 	// price native gas WEI into the denomination token
-	feeNativeWeiPriced, err := f.PricePair(ctx, "getFee", gasChain, denomChain, nativeToken, denomToken, *feeNativeWei)
+	feeNativeWeiPriced, err := f.GetPricePair(ctx, "getFee", gasChain, denomChain, nativeToken, denomToken, *feeNativeWei)
 	if err != nil {
 		return nil, err
 	}
@@ -395,13 +424,13 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 	// Apply the fixed fee multiplier.
 	// Note that this step rounds towards zero- we may need to apply rounding here if
 	// we want to be conservative and lean towards overestimating fees.
-	feeUSDCDecimalsScaled, _ := new(big.Float).Mul(feeDenom, new(big.Float).SetFloat64(multiplier)).Int(nil)
+	feeDenomScaled, _ := new(big.Float).Mul(feeDenom, new(big.Float).SetFloat64(multiplier)).Int(nil)
 
-	if feeUSDCDecimalsScaled == nil {
+	if feeDenomScaled == nil {
 		return nil, fmt.Errorf("err getFee: nil fee return")
 	}
 
-	return feeUSDCDecimalsScaled, nil
+	return feeDenomScaled, nil
 }
 
 // getGasPrice returns the gas price for a given chainID in native units.
@@ -463,13 +492,4 @@ func (f *feePricer) GetTokenPrice(ctx context.Context, token string) (price floa
 		span.SetAttributes(attribute.Float64("cache_price", price))
 	}
 	return price, nil
-}
-
-func (f *feePricer) getTokenPriceFromConfig(token string) (float64, error) {
-	for _, chainConfig := range f.config.GetChains() {
-		if tokenConfig, exists := chainConfig.Tokens[token]; exists {
-			return tokenConfig.PriceUSD, nil
-		}
-	}
-	return 0, fmt.Errorf("could not get price for token: %s", token)
 }
