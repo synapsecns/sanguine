@@ -124,7 +124,7 @@ func (s *QuoterSuite) TestGenerateQuotesDisparateGasToTokens() {
 	s.Equal(expectedQuotes, quotes)
 }
 
-func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
+func (s *QuoterSuite) TestMinGasReserve() {
 	os.Setenv("debugOutput", "generateQuote")
 
 	// Generate quotes for ETH on the destination chain.
@@ -139,6 +139,17 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 
 	// Verify the quotes are generated as expected.
 	expectedQuotes := []model.PutRelayerQuoteRequest{
+		{
+			OriginChainID:           int(s.origin),
+			OriginTokenAddr:         "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
+			DestChainID:             int(s.destinationEth),
+			DestTokenAddr:           util.EthAddress.String(),
+			DestAmount:              "998999999999999998",  // ~0.999 ETH
+			MaxOriginAmount:         "3329999999999999996", // 3.33 BNB
+			FixedFee:                "150000000000000000",  // (500k gas + 1m gas) * 100 gwei
+			OriginFastBridgeAddress: common.HexToAddress("0x123").Hex(),
+			DestFastBridgeAddress:   common.HexToAddress("0x789").Hex(),
+		},
 		{
 			OriginChainID:           int(s.origin),
 			OriginTokenAddr:         util.EthAddress.String(),
@@ -168,6 +179,17 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	expectedQuotes = []model.PutRelayerQuoteRequest{
 		{
 			OriginChainID:           int(s.origin),
+			OriginTokenAddr:         "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
+			DestChainID:             int(s.destinationEth),
+			DestTokenAddr:           util.EthAddress.String(),
+			DestAmount:              "899999999999999998",  // ~0.9 ETH
+			MaxOriginAmount:         "2999999999999999996", // ~3 BNB
+			FixedFee:                "150000000000000000",  // (500k gas + 1m gas) * 100 gwei
+			OriginFastBridgeAddress: common.HexToAddress("0x123").Hex(),
+			DestFastBridgeAddress:   common.HexToAddress("0x789").Hex(),
+		},
+		{
+			OriginChainID:           int(s.origin),
 			OriginTokenAddr:         util.EthAddress.String(),
 			DestChainID:             int(s.destinationEth),
 			DestTokenAddr:           util.EthAddress.String(),
@@ -180,8 +202,9 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	}
 	s.Equal(expectedQuotes, quotes)
 
-	// Set MinGasToken to balance and make sure no quotes are generated.
-	s.config.BaseChainConfig.MinGasToken = "1000000000000000001" // 0.1 ETH
+	// Set MinGasToken to an amount that exceeds the balance.
+	// This should cause no quotes to be generated.
+	s.config.BaseChainConfig.MinGasToken = "1000000000000000001" // 1.000~1 ETH
 	s.manager.SetConfig(s.config)
 
 	quotes, err = s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), util.EthAddress, balance, inv)

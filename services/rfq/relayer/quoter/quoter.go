@@ -662,18 +662,19 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 			return nil, fmt.Errorf("err feePriced PricePair: %w", err)
 		}
 
-		fmt.Printf("Quote: %19s ($%10s) %4s.%-5d >>> %19s ($%10s) %4s.%-5d Diff: $%10s, DiffPct: %s, DiffBps: %s, Fee: %19s ($%10s)\n",
-			fmt.Sprintf("%19s", maxQuoteAmount.BaseToken.Units.Text('f', 9)),
-			fmt.Sprintf("%10s", maxQuoteAmount.BaseToken.Usd.Text('f', 3)),
+		fmt.Printf("Quote: %12s ($%10s) %4s.%-5d >> %12s ($%10s) %4s.%-5d Diff$: %5s, Diff%%: %s, DiffBps: %s, DestFee: %12s ($%7s) %s \n",
+			fmt.Sprintf("%12s", maxQuoteAmount.BaseToken.Units.Text('f', 6)),
+			fmt.Sprintf("%12s", maxQuoteAmount.BaseToken.Usd.Text('f', 3)),
 			fmt.Sprintf("%4s", maxQuoteAmount.BaseToken.Symbol), input.OriginChainID,
-			fmt.Sprintf("%19s", destAmountPriced.BaseToken.Units.Text('f', 9)),
-			fmt.Sprintf("%10s", destAmountPriced.BaseToken.Usd.Text('f', 3)),
+			fmt.Sprintf("%12s", destAmountPriced.BaseToken.Units.Text('f', 6)),
+			fmt.Sprintf("%12s", destAmountPriced.BaseToken.Usd.Text('f', 3)),
 			fmt.Sprintf("%4s", destAmountPriced.BaseToken.Symbol), input.DestChainID,
-			fmt.Sprintf("%10s", diffUsd.Text('f', 2)),
-			diffPct.Text('f', 6),
+			fmt.Sprintf("%5s", diffUsd.Text('f', 2)),
+			diffPct.Text('f', 4),
 			diffBps.Text('f', 2),
-			fmt.Sprintf("%19s", feePriced.BaseToken.Units.Text('f', 9)),
-			fmt.Sprintf("%10s", feePriced.BaseToken.Usd.Text('f', 3)))
+			fmt.Sprintf("%12s", feePriced.BaseToken.Units.Text('f', 6)),
+			fmt.Sprintf("%12s", feePriced.BaseToken.Usd.Text('f', 3)),
+			feePriced.BaseToken.Symbol)
 	}
 
 	// Safety mechanism. Output amount priced as USD cannot exceed the input amount priced as USD.
