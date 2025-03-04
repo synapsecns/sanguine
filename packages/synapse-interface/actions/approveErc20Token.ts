@@ -4,7 +4,7 @@ import {
   waitForTransactionReceipt,
   writeContract,
 } from '@wagmi/core'
-import { Address, erc20Abi, Abi } from 'viem'
+import { Address, erc20Abi, ContractFunctionExecutionError, Abi } from 'viem'
 
 import { MAX_UINT256 } from '@/constants'
 import { USDT } from '@/constants/tokens/bridgeable'
@@ -31,13 +31,44 @@ export const approveErc20Token = async ({
     abi = erc20Abi
   }
   amount = amount ?? MAX_UINT256
-  const txReceipt = await _submitApproval({
-    chainId,
-    address: tokenAddress,
-    abi,
-    amount,
-    spender,
-  })
+
+  let txReceipt
+
+  try {
+    txReceipt = await _submitApproval({
+      chainId,
+      address: tokenAddress,
+      abi,
+      amount,
+      spender,
+    })
+  } catch (error) {
+    // Check if the error was caused by the approve simulation being reverted.
+    if (
+      error instanceof ContractFunctionExecutionError &&
+      error.message.includes('revert')
+    ) {
+      // Reset allowance to zero first.
+      // TODO: do we need to toast a message here explaining the two-step process?
+      await _submitApproval({
+        chainId,
+        address: tokenAddress,
+        abi,
+        spender,
+        amount: 0n,
+      })
+      txReceipt = await _submitApproval({
+        chainId,
+        address: tokenAddress,
+        abi,
+        amount,
+        spender,
+      })
+    } else {
+      // Unrelated error, rethrow.
+      throw error
+    }
+  }
 
   return txReceipt
 }
