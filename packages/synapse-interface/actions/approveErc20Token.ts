@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast'
 import {
   type SimulateContractParameters,
   simulateContract,
@@ -48,8 +49,12 @@ export const approveErc20Token = async ({
       error instanceof ContractFunctionExecutionError &&
       error.message.includes('revert')
     ) {
-      // Reset allowance to zero first.
-      // TODO: do we need to toast a message here explaining the two-step process?
+      // TODO: translation
+      const msg = 'Resetting allowance to zero first'
+      const pendingPopup = toast(msg, {
+        id: 'reset-allowance-in-progress-popup',
+        duration: Infinity,
+      })
       await _submitApproval({
         chainId,
         address: tokenAddress,
@@ -57,6 +62,7 @@ export const approveErc20Token = async ({
         spender,
         amount: 0n,
       })
+      toast.dismiss(pendingPopup)
       txReceipt = await _submitApproval({
         chainId,
         address: tokenAddress,
