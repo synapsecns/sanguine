@@ -19,6 +19,10 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// exported constant used to apply special pricing behavior for USD as opposed to any token asset
+// eg: If we are pricing an ETH value into US Dollars (not USDC) then we can supply USD_ as the "Price" asset
+const USD_ = "USD"
+
 // CoingeckoPriceFetcher is an interface for fetching prices from coingecko.
 //
 //go:generate go run github.com/vektra/mockery/v2 --name CoingeckoPriceFetcher --output ./mocks --case=underscore
@@ -155,8 +159,8 @@ func (c *CoingeckoPriceFetcherImpl) GetPrice(ctx context.Context, token string) 
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// "USD" is a special identifier we can use to price assets directly to USD while also following roughly the same logic as any other asset.
-	if token == "USD" {
+	// USD_ is a special identifier we can use to price assets directly to USD while also following roughly the same logic as any other asset.
+	if token == USD_ {
 		price = 1.0
 		return price, nil
 	}

@@ -629,7 +629,7 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 	}
 
 	// for final safety check comparisons, reprice the dest amount
-	destAmountPriced, err := m.feePricer.GetPricePair(ctx, "5- Final Safety", uint32(input.DestChainID), 0, input.DestTokenAddr.String(), "USD", *destAmount)
+	destAmountPriced, err := m.feePricer.GetPricePair(ctx, "5- Final Safety", uint32(input.DestChainID), 0, input.DestTokenAddr.String(), pricer.USD_, *destAmount)
 	if err != nil {
 		logger.Error("err destAmountPriced GetPricePair: ", "error", err)
 		return nil, fmt.Errorf("err destAmountPriced GetPricePair: %w", err)
@@ -649,7 +649,7 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 		diffBps := new(big.Float).Mul(diffPct, big.NewFloat(10000))
 
 		// Price the fee into USD
-		feePriced, err := m.feePricer.GetPricePair(ctx, "6- Fee to USD", uint32(input.DestChainID), 0, input.DestTokenAddr.String(), "USD", *fee)
+		feePriced, err := m.feePricer.GetPricePair(ctx, "6- Fee to USD", uint32(input.DestChainID), 0, input.DestTokenAddr.String(), pricer.USD_, *fee)
 		if err != nil {
 			logger.Error("err feePriced GetPricePair: ", "error", err)
 			return nil, fmt.Errorf("err feePriced GetPricePair: %w", err)

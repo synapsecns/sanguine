@@ -98,8 +98,6 @@ func (f *feePricer) Start(ctx context.Context) {
 	}()
 }
 
-var nativeDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(18)), nil)
-
 func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination uint32, denomToken string, isQuote bool) (*big.Int, error) {
 	var err error
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getOriginFee", trace.WithAttributes(
@@ -270,7 +268,7 @@ func (f *feePricer) GetPricePair(parentCtx context.Context, stepLabel string, ba
 	// With all token/decimal/price lookups resolved, construct a concicse pair label to aid with debug/log/trace context
 	// EG: ETH.42161>USDC.8453
 	//
-	// In addition, for "USD" -- do not print the chain component since it will just be a confusing placeholder
+	// In addition, for "USD" (from special USD_ constant) -- do not print the chain component since it will just be a confusing placeholder
 	// EG: ETH.42161>USD
 	pairLabel := fmt.Sprintf("%s>%s", strings.Replace(fmt.Sprintf("%s.%d", baseToken, baseTokenChain), "USD."+fmt.Sprint(baseTokenChain), "USD", 1), strings.Replace(fmt.Sprintf("%s.%d", pricedToken, pricedTokenChain), "USD."+fmt.Sprint(pricedTokenChain), "USD", 1))
 

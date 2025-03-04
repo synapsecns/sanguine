@@ -3,6 +3,8 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -14,7 +16,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/usdc"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/usdt"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/weth9"
-	"math/big"
 )
 
 // MockERC20Deployer deploys a mock erc20 contract.

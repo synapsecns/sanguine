@@ -40,7 +40,7 @@ func (s *PricerSuite) TestPricePairs() {
 	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
 	priceFetcher := getPriceFetcher(nil)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "USDC").Return(1., nil)
-	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "USD").Return(1., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, pricer.USD_).Return(1., nil)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "ETH").Return(2000., nil)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "MATIC").Return(0.5, nil)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "BTC").Return(95000., nil)
@@ -62,7 +62,7 @@ func (s *PricerSuite) TestPricePairs() {
 	expectedWei = new(big.Int).Mul(big.NewInt(4000), big.NewInt(1e18))
 	s.Equal(expectedWei, fee.PricedToken.Wei)
 
-	fee, err = feePricer.GetPricePair(s.GetTestContext(), "Case 3 - ETH>USD", s.origin, s.destination, "ETH", "USD", *baseValueWei)
+	fee, err = feePricer.GetPricePair(s.GetTestContext(), "Case 3 - ETH>USD", s.origin, s.destination, "ETH", pricer.USD_, *baseValueWei)
 	s.NoError(err)
 	expectedWei = new(big.Int).Mul(big.NewInt(2000), big.NewInt(1e5))
 	s.Equal(expectedWei, fee.PricedToken.Wei)
@@ -94,7 +94,7 @@ func (s *PricerSuite) TestPricePairs() {
 	// test w/ random unusually high amount of eth (15734.985734985734530000)
 	baseValueWei = new(big.Int).Mul(big.NewInt(1573498573498573453), big.NewInt(1e4))
 
-	fee, err = feePricer.GetPricePair(s.GetTestContext(), "Case 8 - ETH>USD", s.origin, s.destination, "ETH", "USD", *baseValueWei)
+	fee, err = feePricer.GetPricePair(s.GetTestContext(), "Case 8 - ETH>USD", s.origin, s.destination, "ETH", pricer.USD_, *baseValueWei)
 	s.NoError(err)
 	expectedWei = big.NewInt(3146997146997) // $31,469,971.46997 with ETH at $2000
 	s.Equal(expectedWei, fee.PricedToken.Wei)

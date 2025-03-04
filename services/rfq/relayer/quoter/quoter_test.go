@@ -678,7 +678,7 @@ func (s *QuoterSuite) setGasSufficiency(sufficient bool) {
 	clientFetcher := new(fetcherMocks.ClientFetcher)
 	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "USDC").Return(1., nil)
-	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "USD").Return(1., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, pricer.USD_).Return(1., nil)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "ETH").Return(2000., nil)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "MATIC").Return(0.5, nil)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "BTC").Return(95000., nil)
