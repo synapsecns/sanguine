@@ -35,6 +35,7 @@ export const approveErc20Token = async ({
   amount = amount ?? MAX_UINT256
 
   let txReceipt
+  let pendingPopup: string | undefined
 
   try {
     txReceipt = await _submitApproval({
@@ -56,7 +57,7 @@ export const approveErc20Token = async ({
           id="Resetting allowance to zero first"
         />
       )
-      const pendingPopup = toast(msg, {
+      pendingPopup = toast(msg, {
         id: 'reset-allowance-in-progress-popup',
         duration: Infinity,
       })
@@ -79,6 +80,8 @@ export const approveErc20Token = async ({
       // Unrelated error, rethrow.
       throw error
     }
+  } finally {
+    toast.dismiss(pendingPopup)
   }
 
   return txReceipt
