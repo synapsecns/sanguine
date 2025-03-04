@@ -73,7 +73,7 @@ restApiURL=$1
 # Remove trailing slash
 restApiURL="${restApiURL%%/}"
 if [ -z "$restApiURL" ]; then
-  echo "Usage: ./src/tests/gasZip.sh <rest-api-URL>" >&2
+  echo "Usage: ./src/tests/rfq.sh <rest-api-URL>" >&2
   exit 1
 fi
 
