@@ -12,6 +12,7 @@ import { USDT } from '@/constants/tokens/bridgeable'
 import { USDT_ABI } from '@/constants/abis/usdtAbi'
 import { ETH as Ethereum } from '@/constants/chains/master'
 import { wagmiConfig } from '@/wagmiConfig'
+import { TranslatedText } from '@/components/ui/TranslatedText'
 
 export const approveErc20Token = async ({
   chainId,
@@ -49,8 +50,12 @@ export const approveErc20Token = async ({
       error instanceof ContractFunctionExecutionError &&
       error.message.includes('revert')
     ) {
-      // TODO: translation
-      const msg = 'Resetting allowance to zero first'
+      const msg = (
+        <TranslatedText
+          namespace="Pools.Other"
+          id="Resetting allowance to zero first"
+        />
+      )
       const pendingPopup = toast(msg, {
         id: 'reset-allowance-in-progress-popup',
         duration: Infinity,
