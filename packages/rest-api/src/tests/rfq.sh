@@ -1,36 +1,20 @@
 #!/usr/bin/env bash
-# Usage: ./src/tests/gasZip.sh <rest-api-URL>
+# Usage: ./src/tests/rfq.sh <rest-api-URL>
 # Exit immediately if a command exits with a non-zero status
 set -e
 # Trap SIGINT (Ctrl+C) and exit the script
 trap "echo 'Script terminated by user'; exit" INT
 
-TESTED_MODULE='Gas.zip'
+TESTED_MODULE='SynapseRFQ'
 ADDR='0x0000000000000000000000000000000000000001'
 GAS_TOKEN='0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-# List of possible inbound chains from https://www.gas.zip (without Ethereum)
-# Must match chains names in https://backend.gas.zip/v2/chains
-CHAIN_NAMES=(
-  'Arbitrum One'
-  'Avalanche'
-  'Base Mainnet'
-  'Berachain'
-  'Blast'
-  'BSC Mainnet'
-  'Cronos'
-  'Fantom'
-  'Hyperliquid EVM'
-  'Metis'
-  'OP Mainnet'
-  'Polygon'
-  'zkScroll'
-  'Unichain'
-  'WorldChain'
-)
 ETH_CHAIN_ID=1
 AMOUNT=0.001
+AMOUNT_RAW=1000000000000000
 AMOUNT_HEX=0x038d7ea4c68000
-DEPOSIT_ADDRESS='0x391E7C679d29bD940d63be94AD22A25d25b5A604'
+ROUTER_ADDRESS='0x00cD000000003f7F682BE4813200893d4e690000'
+
+RFQ_API_URL='https://rfq-api.omnirpc.io/quotes'
 
 # Extract a field from JSON and check if it exists.
 extract_json_field() {
@@ -56,37 +40,70 @@ check_field() {
   local actual_value=$2
   local expected_value=$3
   local quote=$4
+  local exact_match=${5:-true}
 
-  if [ "$actual_value" != "$expected_value" ]; then
+  # Convert to exact match regex pattern if needed
+  if [ "$exact_match" = "true" ]; then
+    # Wrap with ^ and $ for exact match
+    expected_value="^${expected_value}$"
+  fi
+
+  # Use regex comparison
+  if [[ ! "$actual_value" =~ $expected_value ]]; then
     echo "    ❌ $TESTED_MODULE calldata.$field_name INCORRECT for $chainName" >&2
-    echo "       Expected: $expected_value" >&2
+    if [ "$exact_match" = "true" ]; then
+      # Remove ^ and $ for display
+      echo "       Expected: ${expected_value:1:-1}" >&2
+    else
+      echo "       Expected: $expected_value" >&2
+    fi
     echo "         Actual: $actual_value" >&2
     echo "       Quote: $quote" >&2
     exit 1
   fi
 }
 
+encode_address() {
+  address=$1
+  # Add leading zeroes, remove 0x prefix, cast to lowercase
+  echo "000000000000000000000000${address:2}" | tr '[:upper:]' '[:lower:]'
+}
+
 restApiURL=$1
 # Remove trailing slash
 restApiURL="${restApiURL%%/}"
 if [ -z "$restApiURL" ]; then
-  echo "Usage: ./src/tests/gasZip.sh <rest-api-URL>" >&2
+  echo "Usage: ./src/tests/rfq.sh <rest-api-URL>" >&2
   exit 1
 fi
 
 chains=$(curl -s "https://backend.gas.zip/v2/chains" | jq '.chains')
 
+# Get filtered quotes
+quotes=$(curl -s "$RFQ_API_URL" | jq \
+  --argjson eth_chain_id "$ETH_CHAIN_ID" \
+  --arg gas_token "$GAS_TOKEN" \
+  --argjson min_amount "$AMOUNT_RAW" \
+  '.[] | select(
+    .origin_chain_id == $eth_chain_id and
+    .origin_token_addr == $gas_token and
+    .dest_token_addr == $gas_token and
+    (.max_origin_amount | tonumber) >= $min_amount and
+    (.fixed_fee | tonumber) < $min_amount
+  )')
+
+# Extract unique destination chain IDs
+dest_chains=$(echo "$quotes" | jq -r '.dest_chain_id' | sort -n | uniq)
+
 echo "Testing $AMOUNT ETH from Ethereum Mainnet (chain ID: $ETH_CHAIN_ID) via $TESTED_MODULE"
-for chainName in "${CHAIN_NAMES[@]}"; do
-  # Find element in chains array that has "name" equal to chainName
-  chain=$(echo "$chains" | jq --arg chainName "$chainName" '.[] | select(.name == $chainName)')
-  if [ -z "$chain" ]; then
-    echo "  ❌ Chain not found: $chainName" >&2
-    exit 1
+for chainId in $dest_chains; do
+  chain=$(echo "$chains" | jq --arg id "$chainId" '.[] | select(.chain == ($id | tonumber))')
+  chainName=$(echo "$chain" | jq -r '.name')
+  if [ -z "$chainName" ]; then
+    chainName="Unknown chain"
   fi
-  chainId=$(echo "$chain" | jq -r '.chain')
-  short=$(echo "$chain" | jq -r '.short')
-  expectedData="0x01$(printf "%04x" "$short")"
+  # bridge(recipient, chainId, token, amount, ...)
+  expectedDataPrefix="0xc2288147$(encode_address "$ADDR")$(printf "%064x" "$chainId")$(encode_address "$GAS_TOKEN")$(printf "%064x" "$AMOUNT_RAW")"
   echo "  To $chainName (chain ID: $chainId)"
   quotes=$(curl -s "$restApiURL/bridge?fromChain=$ETH_CHAIN_ID&toChain=$chainId&fromToken=$GAS_TOKEN&toToken=$GAS_TOKEN&amount=$AMOUNT&originUserAddress=$ADDR&destAddress=$ADDR")
   quotesType=$(echo "$quotes" | jq -r 'type')
@@ -96,11 +113,8 @@ for chainName in "${CHAIN_NAMES[@]}"; do
     exit 1
   fi
   # Check that module quote exists
-  quote=$(echo "$quotes" | jq --arg TESTED_MODULE "$TESTED_MODULE" '.[] | select(.bridgeModuleName == $TESTED_MODULE)')
-  if [ -z "$quote" ]; then
-    echo "    ❌ $TESTED_MODULE quote not found for $chainName" >&2
-    exit 1
-  fi
+  # Select quote with maximum amountOut value
+  quote=$(echo "$quotes" | jq --arg TESTED_MODULE "$TESTED_MODULE" '[ .[] | select(.bridgeModuleName == $TESTED_MODULE) ] | sort_by(.maxAmountOutStr | tonumber) | last')
   # Extract fields and check if they exist
   maxAmountOut=$(extract_json_field "$quote" "maxAmountOutStr" "quote")
   calldata=$(extract_json_field "$quote" "callData" "quote")
@@ -109,9 +123,9 @@ for chainName in "${CHAIN_NAMES[@]}"; do
   value_hex=$(extract_json_field "$calldata" "value.hex" "callData")
   data=$(extract_json_field "$calldata" "data" "callData")
   # Check if the extracted fields are correct
-  check_field "to" "$to" "$DEPOSIT_ADDRESS" "$quote"
+  check_field "to" "$to" "$ROUTER_ADDRESS" "$quote"
   check_field "value.hex" "$value_hex" "$AMOUNT_HEX" "$quote"
-  check_field "data" "$data" "$expectedData" "$quote"
+  check_field "data" "$data" "$expectedDataPrefix.*" "$quote" false
   echo "    ✅ $TESTED_MODULE quote found for $chainName: $maxAmountOut"
 done
 
