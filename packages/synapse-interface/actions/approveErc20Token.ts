@@ -4,7 +4,7 @@ import {
   waitForTransactionReceipt,
   writeContract,
 } from '@wagmi/core'
-import { Address, erc20Abi } from 'viem'
+import { Address, erc20Abi, Abi } from 'viem'
 
 import { MAX_UINT256 } from '@/constants'
 import { USDT } from '@/constants/tokens/bridgeable'
@@ -30,13 +30,37 @@ export const approveErc20Token = async ({
   } else {
     abi = erc20Abi
   }
-
-  const { request } = await simulateContract(wagmiConfig, {
+  amount = amount ?? MAX_UINT256
+  const txReceipt = await _submitApproval({
     chainId,
     address: tokenAddress,
     abi,
+    amount,
+    spender,
+  })
+
+  return txReceipt
+}
+
+const _submitApproval = async ({
+  chainId,
+  address,
+  abi,
+  spender,
+  amount,
+}: {
+  chainId: number
+  address: Address
+  abi: Abi
+  spender: Address
+  amount: bigint
+}) => {
+  const { request } = await simulateContract(wagmiConfig, {
+    chainId,
+    address,
+    abi,
     functionName: 'approve',
-    args: [spender, amount ?? MAX_UINT256],
+    args: [spender, amount],
   } as SimulateContractParameters)
 
   const hash = await writeContract(wagmiConfig, request)
