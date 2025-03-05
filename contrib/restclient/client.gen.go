@@ -166,6 +166,9 @@ type GetBridgeParams struct {
 
 	// OriginUserAddress The address of the user on the origin chain
 	OriginUserAddress *string `form:"originUserAddress,omitempty" json:"originUserAddress,omitempty"`
+
+	// DestAddress The destination address of the user on the destination chain
+	DestAddress *string `form:"destAddress,omitempty" json:"destAddress,omitempty"`
 }
 
 // GetBridgeLimitsParams defines parameters for GetBridgeLimits.
@@ -271,6 +274,9 @@ type GetSwapParams struct {
 
 	// Amount The amount of tokens to swap
 	Amount float32 `form:"amount" json:"amount"`
+
+	// Address The address of the user
+	Address string `form:"address" json:"address"`
 }
 
 // GetSwapTxInfoParams defines parameters for GetSwapTxInfo.
@@ -1020,6 +1026,22 @@ func NewGetBridgeRequest(server string, params *GetBridgeParams) (*http.Request,
 		if params.OriginUserAddress != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "originUserAddress", runtime.ParamLocationQuery, *params.OriginUserAddress); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.DestAddress != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "destAddress", runtime.ParamLocationQuery, *params.DestAddress); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -1998,6 +2020,18 @@ func NewGetSwapRequest(server string, params *GetSwapParams) (*http.Request, err
 		}
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "amount", runtime.ParamLocationQuery, params.Amount); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "address", runtime.ParamLocationQuery, params.Address); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err

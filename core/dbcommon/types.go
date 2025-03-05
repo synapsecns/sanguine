@@ -17,6 +17,8 @@ const (
 	Sqlite DBType = iota // sqlite
 	// Clickhouse performant db by yandex.
 	Clickhouse DBType = iota // clickhouse
+	// Postgres is a postgres db.
+	Postgres DBType = iota // postgres
 )
 
 // DBTypeFromString parses a database type from a string.
@@ -28,6 +30,8 @@ func DBTypeFromString(str string) (DBType, error) {
 		return Sqlite, nil
 	case Clickhouse.String():
 		return Clickhouse, nil
+	case Postgres.String():
+		return Postgres, nil
 	default:
 		return DBType(-1), fmt.Errorf("could not convert %s to %T, must be one of %s", str, DBType(-1), allDBTypesList())
 	}
