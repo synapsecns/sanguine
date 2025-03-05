@@ -1,9 +1,6 @@
 import { validationResult } from 'express-validator'
-import { formatUnits, parseUnits } from '@ethersproject/units'
-import { BigNumber } from '@ethersproject/bignumber'
 
 import { Synapse } from '../services/synapseService'
-import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 import { logger } from '../middleware/logger'
 import {
   DEFAULT_SWAP_SLIPPAGE_BIPS,
@@ -26,10 +23,6 @@ export const swapV2Controller = async (req, res) => {
         slippage?: string
       }
 
-    const fromTokenInfo = tokenAddressToToken(chain.toString(), fromToken)
-    const toTokenInfo = tokenAddressToToken(chain.toString(), toToken)
-
-    const amountInWei = parseUnits(amount.toString(), fromTokenInfo.decimals)
     // Convert percentage slippage to bips
     const slippageBips = slippage
       ? Number(slippage) * 100
@@ -39,7 +32,7 @@ export const swapV2Controller = async (req, res) => {
       Number(chain),
       fromToken,
       toToken,
-      amountInWei,
+      amount,
       {
         to: address,
         slippage: {
@@ -49,16 +42,11 @@ export const swapV2Controller = async (req, res) => {
       }
     )
 
-    const formattedMaxAmountOut = formatUnits(
-      BigNumber.from(maxAmountOut),
-      toTokenInfo.decimals
-    )
-
     const callData = address ? tx : null
 
     const payload = {
       routerAddress,
-      maxAmountOut: formattedMaxAmountOut,
+      maxAmountOut: maxAmountOut.toString(),
       callData,
     }
 
