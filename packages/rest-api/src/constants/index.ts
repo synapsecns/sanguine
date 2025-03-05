@@ -1,5 +1,7 @@
 import { CHAINS } from './chains'
 
+export * from './slippage'
+
 export const EXPLORER_GRAPHQL_URL = 'https://explorer.omnirpc.io/graphql'
 
 export const VALID_BRIDGE_MODULES = [
