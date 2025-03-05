@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.42.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.42.4...@synapsecns/synapse-interface@0.42.5) (2025-03-05)
+
+
+### Bug Fixes
+
+* **synapse-interface:** two step approvals [SYN-62] ([#3562](https://github.com/synapsecns/sanguine/issues/3562)) ([2f7ccb2](https://github.com/synapsecns/sanguine/commit/2f7ccb28fe83020ece156340f3f68a954e83fa30))
+
+
+
+
+
 ## [0.42.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.42.3...@synapsecns/synapse-interface@0.42.4) (2025-03-02)
 
 
