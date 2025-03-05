@@ -35,7 +35,6 @@ const EMPTY_QUOTE_V2: SwapQuoteV2 = {
 }
 
 export type SwapOptionsV2 = {
-  originUserAddress?: string
   to?: string
   slippage?: Slippage
   deadline?: number
@@ -55,7 +54,7 @@ export async function swapV2(
     tokenIn: handleNativeToken(tokenIn),
     tokenOut: handleNativeToken(tokenOut),
     amountIn,
-    msgSender: options.originUserAddress || USER_SIMULATED_ADDRESS,
+    msgSender: this.swapEngineSet.getTokenZap(chainId),
     finalRecipient: {
       entity: options.to ? RecipientEntity.User : RecipientEntity.UserSimulated,
       address: options.to || USER_SIMULATED_ADDRESS,
@@ -75,16 +74,15 @@ export async function swapV2(
   if (!route) {
     return EMPTY_QUOTE_V2
   }
-  const tx =
-    options.originUserAddress && options.to
-      ? await this.sirSet.completeIntentWithBalanceChecks(
-          chainId,
-          tokenIn,
-          amountIn,
-          options.deadline ?? calculateDeadline(TEN_MINUTES),
-          route.steps
-        )
-      : undefined
+  const tx = options.to
+    ? await this.sirSet.completeIntentWithBalanceChecks(
+        chainId,
+        tokenIn,
+        amountIn,
+        options.deadline ?? calculateDeadline(TEN_MINUTES),
+        route.steps
+      )
+    : undefined
   return {
     routerAddress: this.sirSet.getSirAddress(chainId),
     maxAmountOut: quote.expectedAmountOut,

@@ -41,7 +41,6 @@ export const swapV2Controller = async (req, res) => {
       toToken,
       amountInWei,
       {
-        originUserAddress: address,
         to: address,
         slippage: {
           numerator: slippageBips,
