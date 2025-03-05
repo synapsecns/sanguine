@@ -1,17 +1,14 @@
 import { ETH_USDC, ETH_USDT } from '../../../constants/testValues'
 import { SupportedChainId } from '../../../constants'
 import { USER_SIMULATED_ADDRESS } from '../../core'
-import {
-  KyberSwapEngine,
-  KyberSwapQuoteResponse,
-  KyberSwapBuildResponse,
-} from '../kyberSwapEngine'
+import { KyberSwapEngine, KyberSwapQuoteResponse } from '../kyberSwapEngine'
 
 global.fetch = require('node-fetch')
 
 const TEST_TIMEOUT = 5000
 
-describe('Integration test: KyberSwapEngine', () => {
+// Unskip to check if integration is working
+describe.skip('Integration test: KyberSwapEngine', () => {
   it('Ethereum USDC -> USDT', async () => {
     const kyberSwapEngine = new KyberSwapEngine()
     let response = await kyberSwapEngine.getQuoteResponse(
@@ -29,7 +26,7 @@ describe('Integration test: KyberSwapEngine', () => {
       return
     }
     const quoteResponse: KyberSwapQuoteResponse = await response.json()
-    console.log(JSON.stringify(quoteResponse, null, 2))
+    // console.log(JSON.stringify(quoteResponse, null, 2))
 
     response = await kyberSwapEngine.getBuildResponse(
       SupportedChainId.ETH,
@@ -47,7 +44,7 @@ describe('Integration test: KyberSwapEngine', () => {
     if (!response) {
       return
     }
-    const buildResponse: KyberSwapBuildResponse = await response.json()
-    console.log(JSON.stringify(buildResponse, null, 2))
+    // const buildResponse: KyberSwapBuildResponse = await response.json()
+    // console.log(JSON.stringify(buildResponse, null, 2))
   })
 })

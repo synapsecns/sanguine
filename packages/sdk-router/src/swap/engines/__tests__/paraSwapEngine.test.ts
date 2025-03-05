@@ -7,7 +7,8 @@ global.fetch = require('node-fetch')
 
 const TEST_TIMEOUT = 5000
 
-describe('Integration test: ParaSwapEngine', () => {
+// Unskip to check if integration is working
+describe.skip('Integration test: ParaSwapEngine', () => {
   it('Ethereum USDC -> USDT', async () => {
     const paraSwapEngine = new ParaSwapEngine([])
     const amount = '1234567890'

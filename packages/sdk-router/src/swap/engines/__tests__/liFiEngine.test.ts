@@ -7,7 +7,8 @@ global.fetch = require('node-fetch')
 
 const TEST_TIMEOUT = 5000
 
-describe('Integration test: LiFiEngine', () => {
+// Unskip to check if integration is working
+describe.skip('Integration test: LiFiEngine', () => {
   it('Arbitrum USDC -> USDT /quote', async () => {
     const liFiEngine = new LiFiEngine()
     const response = await liFiEngine.getQuoteResponse(
@@ -30,7 +31,7 @@ describe('Integration test: LiFiEngine', () => {
     if (!response) {
       return
     }
-    const quoteResponse = await response.json()
-    console.log(JSON.stringify(quoteResponse, null, 2))
+    // const quoteResponse = await response.json()
+    // console.log(JSON.stringify(quoteResponse, null, 2))
   })
 })
