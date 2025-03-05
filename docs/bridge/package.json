@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/bridge-docs",
-  "version": "0.6.4",
+  "version": "0.6.6",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
@@ -36,7 +36,7 @@
     "@docusaurus/utils-validation": "3.5.2",
     "@easyops-cn/docusaurus-search-local": "^0.44.5",
     "@mdx-js/react": "^3.0.0",
-    "@synapsecns/synapse-constants": "^1.8.7",
+    "@synapsecns/synapse-constants": "^1.8.9",
     "clsx": "^2.0.0",
     "docusaurus-plugin-openapi-docs": "^4.0.1",
     "docusaurus-theme-openapi-docs": "^4.0.1",

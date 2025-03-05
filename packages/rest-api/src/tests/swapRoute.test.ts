@@ -4,6 +4,7 @@ import express from 'express'
 import swapRoute from '../routes/swapRoute'
 import { NativeGasAddress, ZeroAddress } from '../constants'
 import { DAI, ETH, NETH, USDC, USDT } from '../constants/bridgeable'
+import { UNSUPPORTED_CHAIN } from './testConstants'
 
 const app = express()
 app.use('/swap', swapRoute)
@@ -53,7 +54,7 @@ describe('Swap Route with Real Synapse Service', () => {
 
   it('should return 400 for unsupported chain, with error message', async () => {
     const response = await request(app).get('/swap').query({
-      chain: '111',
+      chain: UNSUPPORTED_CHAIN,
       fromToken: USDC.addresses[1],
       toToken: DAI.addresses[1],
       amount: '1000',
