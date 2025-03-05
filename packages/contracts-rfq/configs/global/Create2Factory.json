@@ -1,0 +1,19 @@
+{
+  "salts": {
+    "SynapseIntentPreviewer": {
+      "creationCodeHash": "0x12fb48b8675a75c315e52c7cf1e0ef77c56afb352f9fcd4a39cb2e5a40879a2e",
+      "predictedAddress": "0x519519a57a6ea930f87e3436b6ea113a990ff519",
+      "salt": "0xf514d06efe11ada58f892070164058aa17abab39c5d6bf691c3a4151dd21754e"
+    },
+    "SynapseIntentRouter": {
+      "creationCodeHash": "0x3253ae5ea1c0785cc555234b9f3c300b553e4d45ea3ffd1631751d4ac0d20e4c",
+      "predictedAddress": "0x0000000051250060EEC6bc1Bd37dC3eF30c9be25",
+      "salt": "0x0000000000000000000000000000000000000000beadaee5030a520fc6ecd894"
+    },
+    "TokenZapV1": {
+      "creationCodeHash": "0x0579f3dfa5b06fcb2a8d5b22b48129653b0cae60101cdb136f8a20a38457015a",
+      "predictedAddress": "0x2aaaa9b71e479e6e2de7e091b09d61c25d2aaaa9",
+      "salt": "0x566ca17f3b6420f0dfdfd5f71caa05c961914ac9e989143fb1c3f7c0f2fe343d"
+    }
+  }
+}
