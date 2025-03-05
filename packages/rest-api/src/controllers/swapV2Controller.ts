@@ -55,10 +55,12 @@ export const swapV2Controller = async (req, res) => {
       toTokenInfo.decimals
     )
 
+    const callData = address ? tx : null
+
     const payload = {
       routerAddress,
       maxAmountOut: formattedMaxAmountOut,
-      callData: tx,
+      callData,
     }
 
     logger.info(`Successful swapV2Controller response`, {
