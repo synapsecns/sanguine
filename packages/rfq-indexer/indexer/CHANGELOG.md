@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/rfq-indexer@0.0.6...@synapsecns/rfq-indexer@0.0.7) (2025-03-06)
+
+**Note:** Version bump only for package @synapsecns/rfq-indexer
+
+
+
+
+
 ## [0.0.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/rfq-indexer@0.0.5...@synapsecns/rfq-indexer@0.0.6) (2025-02-18)
 
 **Note:** Version bump only for package @synapsecns/rfq-indexer
