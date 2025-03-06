@@ -206,6 +206,7 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 	}
 
 	// check relay amount
+	// IE: what is the maximum amount of output tokens that we're willing & able to give in exchange for the amount of origin tokens supplied?
 	maxRelayAmount := m.config.GetMaxRelayAmount(int(quote.Transaction.OriginChainId), quote.Transaction.OriginToken)
 	if maxRelayAmount != nil {
 		if quote.Transaction.OriginAmount.Cmp(maxRelayAmount) > 0 {
@@ -242,22 +243,33 @@ func (m *Manager) IsProfitable(parentCtx context.Context, quote reldb.QuoteReque
 	if err != nil {
 		return false, fmt.Errorf("error getting origin amount with offset: %w", err)
 	}
-	// assume that fee is denominated in dest token terms
+
+	// obtain the cost, denominated in the output asset
 	costAdj, err := m.getAmountWithOffset(ctx, quote.Transaction.DestChainId, quote.Transaction.DestToken, cost)
+
 	if err != nil {
 		return false, fmt.Errorf("error getting cost with offset: %w", err)
+	}
+
+	// price the cost so it can be compared to input
+	costAdjPriced, err := m.feePricer.GetPricePair(ctx, "costAdj to Origin Denom", quote.Transaction.DestChainId, quote.Transaction.OriginChainId, quote.Transaction.DestToken.String(), quote.Transaction.OriginToken.String(), *costAdj)
+
+	if err != nil {
+		logger.Error("err costAdjPriced GetPricePair: ", err)
+		return false, fmt.Errorf("err costAdjPriced GetPricePair: %w", err)
 	}
 
 	span.SetAttributes(
 		attribute.String("origin_amount_adj", originAmountAdj.String()),
 		attribute.String("cost_adj", costAdj.String()),
+		attribute.String("cost_adj_priced", costAdjPriced.PricedToken.Wei.String()),
 		attribute.String("origin_amount", quote.Transaction.OriginAmount.String()),
 		attribute.String("dest_amount", quote.Transaction.DestAmount.String()),
 		attribute.String("fee", fee.String()),
 		attribute.String("cost", cost.String()),
 	)
 
-	return originAmountAdj.Cmp(costAdj) >= 0, nil
+	return originAmountAdj.Cmp(costAdjPriced.PricedToken.Wei) >= 0, nil
 }
 
 func (m *Manager) getAmountWithOffset(ctx context.Context, chainID uint32, tokenAddr common.Address, amount *big.Int) (*big.Int, error) {
