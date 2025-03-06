@@ -95,7 +95,7 @@ const configByChainId = {
     transport: http(process.env.HYPEREVM_MAINNET_RPC),
     chainName: 'hyperevm',
     FastBridgeV2Address: '0x63c3211257CcE0c12c7c7A6DBb75960fEaBF45Be',
-    FastBridgeV2StartBlock: 256939, // first block and new block
+    FastBridgeV2StartBlock: 698460, // first activity
   },
   disableCache: true,
 }
