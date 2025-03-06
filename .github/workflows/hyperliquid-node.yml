@@ -7,8 +7,9 @@ on:
     branches:
       - main  # Adjust branch as needed
       - feat/hl
+      - fix/hyperliquid-arm64
     paths:
-      - 'Dockerfile'
+      - 'docker/hyperliquid.Dockerfile'
       - '.github/workflows/hyperliquid-node.yml'
 
 jobs:
@@ -19,11 +20,15 @@ jobs:
       actions: read
       contents: read
     steps:
-      - name: Git Checkout
+      - name: Git Checkout (Sanguine)
+        uses: actions/checkout@v4
+
+      - name: Git Checkout (Hyperliquid)
         uses: actions/checkout@v4
         with:
           repository: 'hyperliquid-dex/node'
           ref: 'main'
+          path: 'hyperliquid-node'
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -48,6 +53,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
+          file: ./docker/hyperliquid.Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
@@ -64,11 +70,15 @@ jobs:
       actions: read
       contents: read
     steps:
-      - name: Git Checkout
+      - name: Git Checkout (Sanguine)
+        uses: actions/checkout@v4
+
+      - name: Git Checkout (Hyperliquid)
         uses: actions/checkout@v4
         with:
           repository: 'hyperliquid-dex/node'
           ref: 'main'
+          path: 'hyperliquid-node'
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -93,6 +103,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
+          file: ./docker/hyperliquid.Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
