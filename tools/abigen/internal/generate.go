@@ -460,7 +460,8 @@ func getSolcURL(version, platform string) (string, error) {
 	if platform == "macosx-aarch64" {
 		// For Apple Silicon, check if we're using a version that has native binaries
 		if isSemverGreaterOrEqual(version, "0.8.5") {
-			return fmt.Sprintf("%s/solc-macos-aarch64", baseURL), nil
+			// The correct filename is "solc-macos" with no architecture suffix
+			return fmt.Sprintf("%s/solc-macos", baseURL), nil
 		}
 		
 		// Fall back to x86_64 version that will run using Rosetta 2
