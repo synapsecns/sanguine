@@ -195,6 +195,7 @@ export const networkDetails = {
       address: configByChainId[hyperevmChainId].FastBridgeV2Address,
       abi: FastBridgeV2Abi,
       startBlock: configByChainId[hyperevmChainId].FastBridgeV2StartBlock,
+      maxBlockRange: 50,
     },
   },
 } as Record<number, AddressConfig>
