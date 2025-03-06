@@ -23,7 +23,7 @@ require (
 	github.com/Yamashou/gqlgenc v0.10.0
 	github.com/cornelk/hashmap v1.0.8
 	github.com/creasty/defaults v1.7.0
-	github.com/ethereum/go-ethereum v1.13.8
+	github.com/ethereum/go-ethereum v1.13.9
 	github.com/gin-gonic/gin v1.10.0
 	github.com/hedzr/log v1.6.3
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
