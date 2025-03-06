@@ -72,17 +72,21 @@ const EmptyKyberSwapQuote: KyberSwapQuote = {
   },
 }
 
+/**
+ * Chains supported by KyberSwap, ordered lexicographically.
+ */
 const KyberSwapChainMap: Record<number, string> = {
-  [SupportedChainId.ETH]: 'ethereum',
-  [SupportedChainId.OPTIMISM]: 'optimism',
-  [SupportedChainId.BSC]: 'bsc',
-  [SupportedChainId.POLYGON]: 'polygon',
-  [SupportedChainId.FANTOM]: 'fantom',
-  [SupportedChainId.BASE]: 'base',
   [SupportedChainId.ARBITRUM]: 'arbitrum',
   [SupportedChainId.AVALANCHE]: 'avalanche',
-  [SupportedChainId.LINEA]: 'linea',
+  [SupportedChainId.BASE]: 'base',
+  [SupportedChainId.BERACHAIN]: 'berachain',
   [SupportedChainId.BLAST]: 'blast',
+  [SupportedChainId.BSC]: 'bsc',
+  [SupportedChainId.ETH]: 'ethereum',
+  [SupportedChainId.FANTOM]: 'fantom',
+  [SupportedChainId.LINEA]: 'linea',
+  [SupportedChainId.OPTIMISM]: 'optimism',
+  [SupportedChainId.POLYGON]: 'polygon',
   [SupportedChainId.SCROLL]: 'scroll',
 }
 
