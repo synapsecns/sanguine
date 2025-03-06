@@ -1343,6 +1343,165 @@
         "tags": ["Synapse Bridge REST API"]
       }
     },
+    "/swap/v2": {
+      "get": {
+        "summary": "Get swap quote for arbitrary tokens on a specific chain",
+        "description": "Retrieve detailed swap quote exchanging any token for any other on a specified chain. Note that amounts are expressed in token's native decimals, not in human-readable format.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "chain",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The chain ID where the swap will occur"
+          },
+          {
+            "in": "query",
+            "name": "fromToken",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the token to swap from"
+          },
+          {
+            "in": "query",
+            "name": "toToken",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The address of the token to swap to"
+          },
+          {
+            "in": "query",
+            "name": "amount",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The amount of tokens to swap in the token's native decimals"
+          },
+          {
+            "in": "query",
+            "name": "address",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Optional. The address that will perform the swap and receive its proceeds. If provided, returns transaction data."
+          },
+          {
+            "in": "query",
+            "name": "slippage",
+            "required": false,
+            "schema": {
+              "type": "number"
+            },
+            "description": "Optional. The maximum allowed slippage percentage (0-100). Defaults to 0.5%."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "routerAddress": {
+                      "type": "string",
+                      "description": "The address of the router contract"
+                    },
+                    "maxAmountOut": {
+                      "type": "string",
+                      "description": "The maximum amount of tokens that will be received in the token's native decimals"
+                    },
+                    "callData": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "Transaction data object, only provided if address parameter was included"
+                    }
+                  }
+                },
+                "example": {
+                  "routerAddress": "0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a",
+                  "maxAmountOut": "999746386",
+                  "callData": {
+                    "to": "0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a",
+                    "data": "0x...",
+                    "value": "0"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "string"
+                          },
+                          "msg": {
+                            "type": "string"
+                          },
+                          "param": {
+                            "type": "string"
+                          },
+                          "location": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "errors": [
+                    {
+                      "value": "111",
+                      "msg": "Unsupported chain",
+                      "param": "chain",
+                      "location": "query"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "An unexpected error occurred in /swap/v2. Please try again later."
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Synapse Bridge REST API"]
+      }
+    },
     "/swapTxInfo": {
       "get": {
         "summary": "[Deprecated] in favor of using the /swap endpoint, which now returns call data",
