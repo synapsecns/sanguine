@@ -12,10 +12,6 @@ import (
 
 // IInboxTransactor ...
 type IInboxTransactor interface {
-	// AcceptOwnership is a paid mutator transaction binding the contract method 0x79ba5097.
-	//
-	// Solidity: function acceptOwnership() returns()
-	AcceptOwnership(opts *bind.TransactOpts) (*types.Transaction, error)
 	// Initialize is a paid mutator transaction binding the contract method 0xf8c8765e.
 	//
 	// Solidity: function initialize(address agentManager_, address origin_, address destination_, address summit_) returns()
@@ -44,18 +40,18 @@ type IInboxTransactor interface {
 	//
 	// Solidity: function submitSnapshot(bytes snapPayload, bytes snapSignature) returns(bytes attPayload, bytes32 agentRoot_, uint256[] snapGas)
 	SubmitSnapshot(opts *bind.TransactOpts, snapPayload []byte, snapSignature []byte) (*types.Transaction, error)
-	// SubmitStateReportWithAttestation is a paid mutator transaction binding the contract method 0x243b9224.
+	// SubmitStateReportWithAttestation is a paid mutator transaction binding the contract method 0x0b6b985c.
 	//
-	// Solidity: function submitStateReportWithAttestation(uint8 stateIndex, bytes srSignature, bytes snapPayload, bytes attPayload, bytes attSignature) returns(bool wasAccepted)
-	SubmitStateReportWithAttestation(opts *bind.TransactOpts, stateIndex uint8, srSignature []byte, snapPayload []byte, attPayload []byte, attSignature []byte) (*types.Transaction, error)
-	// SubmitStateReportWithSnapshot is a paid mutator transaction binding the contract method 0x333138e2.
+	// Solidity: function submitStateReportWithAttestation(uint256 stateIndex, bytes srSignature, bytes snapPayload, bytes attPayload, bytes attSignature) returns(bool wasAccepted)
+	SubmitStateReportWithAttestation(opts *bind.TransactOpts, stateIndex *big.Int, srSignature []byte, snapPayload []byte, attPayload []byte, attSignature []byte) (*types.Transaction, error)
+	// SubmitStateReportWithSnapshot is a paid mutator transaction binding the contract method 0x62389709.
 	//
-	// Solidity: function submitStateReportWithSnapshot(uint8 stateIndex, bytes srSignature, bytes snapPayload, bytes snapSignature) returns(bool wasAccepted)
-	SubmitStateReportWithSnapshot(opts *bind.TransactOpts, stateIndex uint8, srSignature []byte, snapPayload []byte, snapSignature []byte) (*types.Transaction, error)
-	// SubmitStateReportWithSnapshotProof is a paid mutator transaction binding the contract method 0xbe7e63da.
+	// Solidity: function submitStateReportWithSnapshot(uint256 stateIndex, bytes srSignature, bytes snapPayload, bytes snapSignature) returns(bool wasAccepted)
+	SubmitStateReportWithSnapshot(opts *bind.TransactOpts, stateIndex *big.Int, srSignature []byte, snapPayload []byte, snapSignature []byte) (*types.Transaction, error)
+	// SubmitStateReportWithSnapshotProof is a paid mutator transaction binding the contract method 0x0db27e77.
 	//
-	// Solidity: function submitStateReportWithSnapshotProof(uint8 stateIndex, bytes statePayload, bytes srSignature, bytes32[] snapProof, bytes attPayload, bytes attSignature) returns(bool wasAccepted)
-	SubmitStateReportWithSnapshotProof(opts *bind.TransactOpts, stateIndex uint8, statePayload []byte, srSignature []byte, snapProof [][32]byte, attPayload []byte, attSignature []byte) (*types.Transaction, error)
+	// Solidity: function submitStateReportWithSnapshotProof(uint256 stateIndex, bytes statePayload, bytes srSignature, bytes32[] snapProof, bytes attPayload, bytes attSignature) returns(bool wasAccepted)
+	SubmitStateReportWithSnapshotProof(opts *bind.TransactOpts, stateIndex *big.Int, statePayload []byte, srSignature []byte, snapProof [][32]byte, attPayload []byte, attSignature []byte) (*types.Transaction, error)
 	// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 	//
 	// Solidity: function transferOwnership(address newOwner) returns()
@@ -80,16 +76,16 @@ type IInboxTransactor interface {
 	//
 	// Solidity: function verifyStateReport(bytes statePayload, bytes srSignature) returns(bool isValidReport)
 	VerifyStateReport(opts *bind.TransactOpts, statePayload []byte, srSignature []byte) (*types.Transaction, error)
-	// VerifyStateWithAttestation is a paid mutator transaction binding the contract method 0x7d9978ae.
+	// VerifyStateWithAttestation is a paid mutator transaction binding the contract method 0x200f6b66.
 	//
-	// Solidity: function verifyStateWithAttestation(uint8 stateIndex, bytes snapPayload, bytes attPayload, bytes attSignature) returns(bool isValidState)
-	VerifyStateWithAttestation(opts *bind.TransactOpts, stateIndex uint8, snapPayload []byte, attPayload []byte, attSignature []byte) (*types.Transaction, error)
-	// VerifyStateWithSnapshot is a paid mutator transaction binding the contract method 0x8671012e.
+	// Solidity: function verifyStateWithAttestation(uint256 stateIndex, bytes snapPayload, bytes attPayload, bytes attSignature) returns(bool isValidState)
+	VerifyStateWithAttestation(opts *bind.TransactOpts, stateIndex *big.Int, snapPayload []byte, attPayload []byte, attSignature []byte) (*types.Transaction, error)
+	// VerifyStateWithSnapshot is a paid mutator transaction binding the contract method 0x213a6ddb.
 	//
-	// Solidity: function verifyStateWithSnapshot(uint8 stateIndex, bytes snapPayload, bytes snapSignature) returns(bool isValidState)
-	VerifyStateWithSnapshot(opts *bind.TransactOpts, stateIndex uint8, snapPayload []byte, snapSignature []byte) (*types.Transaction, error)
-	// VerifyStateWithSnapshotProof is a paid mutator transaction binding the contract method 0xe3097af8.
+	// Solidity: function verifyStateWithSnapshot(uint256 stateIndex, bytes snapPayload, bytes snapSignature) returns(bool isValidState)
+	VerifyStateWithSnapshot(opts *bind.TransactOpts, stateIndex *big.Int, snapPayload []byte, snapSignature []byte) (*types.Transaction, error)
+	// VerifyStateWithSnapshotProof is a paid mutator transaction binding the contract method 0x7be8e738.
 	//
-	// Solidity: function verifyStateWithSnapshotProof(uint8 stateIndex, bytes statePayload, bytes32[] snapProof, bytes attPayload, bytes attSignature) returns(bool isValidState)
-	VerifyStateWithSnapshotProof(opts *bind.TransactOpts, stateIndex uint8, statePayload []byte, snapProof [][32]byte, attPayload []byte, attSignature []byte) (*types.Transaction, error)
+	// Solidity: function verifyStateWithSnapshotProof(uint256 stateIndex, bytes statePayload, bytes32[] snapProof, bytes attPayload, bytes attSignature) returns(bool isValidState)
+	VerifyStateWithSnapshotProof(opts *bind.TransactOpts, stateIndex *big.Int, statePayload []byte, snapProof [][32]byte, attPayload []byte, attSignature []byte) (*types.Transaction, error)
 }

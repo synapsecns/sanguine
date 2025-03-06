@@ -22,29 +22,6 @@ type ILightManager struct {
 	mock.Mock
 }
 
-// AcceptOwnership provides a mock function with given fields: opts
-func (_m *ILightManager) AcceptOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
-	ret := _m.Called(opts)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts) *types.Transaction); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Address provides a mock function with given fields:
 func (_m *ILightManager) Address() common.Address {
 	ret := _m.Called()
@@ -98,29 +75,6 @@ func (_m *ILightManager) AgentStatus(opts *bind.CallOpts, agent common.Address) 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts, common.Address) error); ok {
 		r1 = rf(opts, agent)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// CancelProposedAgentRoot provides a mock function with given fields: opts
-func (_m *ILightManager) CancelProposedAgentRoot(opts *bind.TransactOpts) (*types.Transaction, error) {
-	ret := _m.Called(opts)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts) *types.Transaction); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts) error); ok {
-		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -185,29 +139,6 @@ func (_m *ILightManager) DisputeStatus(opts *bind.CallOpts, agent common.Address
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.CallOpts, common.Address) error); ok {
 		r1 = rf(opts, agent)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// FilterAgentRootProposed provides a mock function with given fields: opts
-func (_m *ILightManager) FilterAgentRootProposed(opts *bind.FilterOpts) (*lightmanager.LightManagerAgentRootProposedIterator, error) {
-	ret := _m.Called(opts)
-
-	var r0 *lightmanager.LightManagerAgentRootProposedIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *lightmanager.LightManagerAgentRootProposedIterator); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*lightmanager.LightManagerAgentRootProposedIterator)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
-		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -284,29 +215,6 @@ func (_m *ILightManager) FilterInitialized(opts *bind.FilterOpts) (*lightmanager
 	return r0, r1
 }
 
-// FilterOwnershipTransferStarted provides a mock function with given fields: opts, previousOwner, newOwner
-func (_m *ILightManager) FilterOwnershipTransferStarted(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*lightmanager.LightManagerOwnershipTransferStartedIterator, error) {
-	ret := _m.Called(opts, previousOwner, newOwner)
-
-	var r0 *lightmanager.LightManagerOwnershipTransferStartedIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []common.Address, []common.Address) *lightmanager.LightManagerOwnershipTransferStartedIterator); ok {
-		r0 = rf(opts, previousOwner, newOwner)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*lightmanager.LightManagerOwnershipTransferStartedIterator)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []common.Address, []common.Address) error); ok {
-		r1 = rf(opts, previousOwner, newOwner)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // FilterOwnershipTransferred provides a mock function with given fields: opts, previousOwner, newOwner
 func (_m *ILightManager) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*lightmanager.LightManagerOwnershipTransferredIterator, error) {
 	ret := _m.Called(opts, previousOwner, newOwner)
@@ -323,52 +231,6 @@ func (_m *ILightManager) FilterOwnershipTransferred(opts *bind.FilterOpts, previ
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []common.Address, []common.Address) error); ok {
 		r1 = rf(opts, previousOwner, newOwner)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// FilterProposedAgentRootCancelled provides a mock function with given fields: opts
-func (_m *ILightManager) FilterProposedAgentRootCancelled(opts *bind.FilterOpts) (*lightmanager.LightManagerProposedAgentRootCancelledIterator, error) {
-	ret := _m.Called(opts)
-
-	var r0 *lightmanager.LightManagerProposedAgentRootCancelledIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *lightmanager.LightManagerProposedAgentRootCancelledIterator); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*lightmanager.LightManagerProposedAgentRootCancelledIterator)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// FilterProposedAgentRootResolved provides a mock function with given fields: opts
-func (_m *ILightManager) FilterProposedAgentRootResolved(opts *bind.FilterOpts) (*lightmanager.LightManagerProposedAgentRootResolvedIterator, error) {
-	ret := _m.Called(opts)
-
-	var r0 *lightmanager.LightManagerProposedAgentRootResolvedIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *lightmanager.LightManagerProposedAgentRootResolvedIterator); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*lightmanager.LightManagerProposedAgentRootResolvedIterator)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
-		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -686,29 +548,6 @@ func (_m *ILightManager) Owner(opts *bind.CallOpts) (common.Address, error) {
 	return r0, r1
 }
 
-// ParseAgentRootProposed provides a mock function with given fields: log
-func (_m *ILightManager) ParseAgentRootProposed(log types.Log) (*lightmanager.LightManagerAgentRootProposed, error) {
-	ret := _m.Called(log)
-
-	var r0 *lightmanager.LightManagerAgentRootProposed
-	if rf, ok := ret.Get(0).(func(types.Log) *lightmanager.LightManagerAgentRootProposed); ok {
-		r0 = rf(log)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*lightmanager.LightManagerAgentRootProposed)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
-		r1 = rf(log)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // ParseDisputeOpened provides a mock function with given fields: log
 func (_m *ILightManager) ParseDisputeOpened(log types.Log) (*lightmanager.LightManagerDisputeOpened, error) {
 	ret := _m.Called(log)
@@ -778,29 +617,6 @@ func (_m *ILightManager) ParseInitialized(log types.Log) (*lightmanager.LightMan
 	return r0, r1
 }
 
-// ParseOwnershipTransferStarted provides a mock function with given fields: log
-func (_m *ILightManager) ParseOwnershipTransferStarted(log types.Log) (*lightmanager.LightManagerOwnershipTransferStarted, error) {
-	ret := _m.Called(log)
-
-	var r0 *lightmanager.LightManagerOwnershipTransferStarted
-	if rf, ok := ret.Get(0).(func(types.Log) *lightmanager.LightManagerOwnershipTransferStarted); ok {
-		r0 = rf(log)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*lightmanager.LightManagerOwnershipTransferStarted)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
-		r1 = rf(log)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // ParseOwnershipTransferred provides a mock function with given fields: log
 func (_m *ILightManager) ParseOwnershipTransferred(log types.Log) (*lightmanager.LightManagerOwnershipTransferred, error) {
 	ret := _m.Called(log)
@@ -811,52 +627,6 @@ func (_m *ILightManager) ParseOwnershipTransferred(log types.Log) (*lightmanager
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*lightmanager.LightManagerOwnershipTransferred)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
-		r1 = rf(log)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ParseProposedAgentRootCancelled provides a mock function with given fields: log
-func (_m *ILightManager) ParseProposedAgentRootCancelled(log types.Log) (*lightmanager.LightManagerProposedAgentRootCancelled, error) {
-	ret := _m.Called(log)
-
-	var r0 *lightmanager.LightManagerProposedAgentRootCancelled
-	if rf, ok := ret.Get(0).(func(types.Log) *lightmanager.LightManagerProposedAgentRootCancelled); ok {
-		r0 = rf(log)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*lightmanager.LightManagerProposedAgentRootCancelled)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
-		r1 = rf(log)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ParseProposedAgentRootResolved provides a mock function with given fields: log
-func (_m *ILightManager) ParseProposedAgentRootResolved(log types.Log) (*lightmanager.LightManagerProposedAgentRootResolved, error) {
-	ret := _m.Called(log)
-
-	var r0 *lightmanager.LightManagerProposedAgentRootResolved
-	if rf, ok := ret.Get(0).(func(types.Log) *lightmanager.LightManagerProposedAgentRootResolved); ok {
-		r0 = rf(log)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*lightmanager.LightManagerProposedAgentRootResolved)
 		}
 	}
 
@@ -916,85 +686,6 @@ func (_m *ILightManager) ParseStatusUpdated(log types.Log) (*lightmanager.LightM
 	return r0, r1
 }
 
-// PendingOwner provides a mock function with given fields: opts
-func (_m *ILightManager) PendingOwner(opts *bind.CallOpts) (common.Address, error) {
-	ret := _m.Called(opts)
-
-	var r0 common.Address
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) common.Address); ok {
-		r0 = rf(opts)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(common.Address)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ProposeAgentRootWhenStuck provides a mock function with given fields: opts, agentRoot_
-func (_m *ILightManager) ProposeAgentRootWhenStuck(opts *bind.TransactOpts, agentRoot_ [32]byte) (*types.Transaction, error) {
-	ret := _m.Called(opts, agentRoot_)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, [32]byte) *types.Transaction); ok {
-		r0 = rf(opts, agentRoot_)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, [32]byte) error); ok {
-		r1 = rf(opts, agentRoot_)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ProposedAgentRootData provides a mock function with given fields: opts
-func (_m *ILightManager) ProposedAgentRootData(opts *bind.CallOpts) (struct {
-	AgentRoot  [32]byte
-	ProposedAt *big.Int
-}, error) {
-	ret := _m.Called(opts)
-
-	var r0 struct {
-		AgentRoot  [32]byte
-		ProposedAt *big.Int
-	}
-	if rf, ok := ret.Get(0).(func(*bind.CallOpts) struct {
-		AgentRoot  [32]byte
-		ProposedAt *big.Int
-	}); ok {
-		r0 = rf(opts)
-	} else {
-		r0 = ret.Get(0).(struct {
-			AgentRoot  [32]byte
-			ProposedAt *big.Int
-		})
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
-		r1 = rf(opts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // RemoteWithdrawTips provides a mock function with given fields: opts, msgOrigin, proofMaturity, recipient, amount
 func (_m *ILightManager) RemoteWithdrawTips(opts *bind.TransactOpts, msgOrigin uint32, proofMaturity *big.Int, recipient common.Address, amount *big.Int) (*types.Transaction, error) {
 	ret := _m.Called(opts, msgOrigin, proofMaturity, recipient, amount)
@@ -1041,13 +732,13 @@ func (_m *ILightManager) RenounceOwnership(opts *bind.TransactOpts) (*types.Tran
 	return r0, r1
 }
 
-// ResolveProposedAgentRoot provides a mock function with given fields: opts
-func (_m *ILightManager) ResolveProposedAgentRoot(opts *bind.TransactOpts) (*types.Transaction, error) {
-	ret := _m.Called(opts)
+// ResolveStuckDispute provides a mock function with given fields: opts, domain, slashedAgent
+func (_m *ILightManager) ResolveStuckDispute(opts *bind.TransactOpts, domain uint32, slashedAgent common.Address) (*types.Transaction, error) {
+	ret := _m.Called(opts, domain, slashedAgent)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bind.TransactOpts) *types.Transaction); ok {
-		r0 = rf(opts)
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, common.Address) *types.Transaction); ok {
+		r0 = rf(opts, domain, slashedAgent)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -1055,8 +746,8 @@ func (_m *ILightManager) ResolveProposedAgentRoot(opts *bind.TransactOpts) (*typ
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.TransactOpts) error); ok {
-		r1 = rf(opts)
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, common.Address) error); ok {
+		r1 = rf(opts, domain, slashedAgent)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1198,29 +889,6 @@ func (_m *ILightManager) Version(opts *bind.CallOpts) (string, error) {
 	return r0, r1
 }
 
-// WatchAgentRootProposed provides a mock function with given fields: opts, sink
-func (_m *ILightManager) WatchAgentRootProposed(opts *bind.WatchOpts, sink chan<- *lightmanager.LightManagerAgentRootProposed) (event.Subscription, error) {
-	ret := _m.Called(opts, sink)
-
-	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerAgentRootProposed) event.Subscription); ok {
-		r0 = rf(opts, sink)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(event.Subscription)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerAgentRootProposed) error); ok {
-		r1 = rf(opts, sink)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // WatchDisputeOpened provides a mock function with given fields: opts, sink
 func (_m *ILightManager) WatchDisputeOpened(opts *bind.WatchOpts, sink chan<- *lightmanager.LightManagerDisputeOpened) (event.Subscription, error) {
 	ret := _m.Called(opts, sink)
@@ -1290,29 +958,6 @@ func (_m *ILightManager) WatchInitialized(opts *bind.WatchOpts, sink chan<- *lig
 	return r0, r1
 }
 
-// WatchOwnershipTransferStarted provides a mock function with given fields: opts, sink, previousOwner, newOwner
-func (_m *ILightManager) WatchOwnershipTransferStarted(opts *bind.WatchOpts, sink chan<- *lightmanager.LightManagerOwnershipTransferStarted, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
-	ret := _m.Called(opts, sink, previousOwner, newOwner)
-
-	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerOwnershipTransferStarted, []common.Address, []common.Address) event.Subscription); ok {
-		r0 = rf(opts, sink, previousOwner, newOwner)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(event.Subscription)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerOwnershipTransferStarted, []common.Address, []common.Address) error); ok {
-		r1 = rf(opts, sink, previousOwner, newOwner)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // WatchOwnershipTransferred provides a mock function with given fields: opts, sink, previousOwner, newOwner
 func (_m *ILightManager) WatchOwnershipTransferred(opts *bind.WatchOpts, sink chan<- *lightmanager.LightManagerOwnershipTransferred, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
 	ret := _m.Called(opts, sink, previousOwner, newOwner)
@@ -1329,52 +974,6 @@ func (_m *ILightManager) WatchOwnershipTransferred(opts *bind.WatchOpts, sink ch
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerOwnershipTransferred, []common.Address, []common.Address) error); ok {
 		r1 = rf(opts, sink, previousOwner, newOwner)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// WatchProposedAgentRootCancelled provides a mock function with given fields: opts, sink
-func (_m *ILightManager) WatchProposedAgentRootCancelled(opts *bind.WatchOpts, sink chan<- *lightmanager.LightManagerProposedAgentRootCancelled) (event.Subscription, error) {
-	ret := _m.Called(opts, sink)
-
-	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerProposedAgentRootCancelled) event.Subscription); ok {
-		r0 = rf(opts, sink)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(event.Subscription)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerProposedAgentRootCancelled) error); ok {
-		r1 = rf(opts, sink)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// WatchProposedAgentRootResolved provides a mock function with given fields: opts, sink
-func (_m *ILightManager) WatchProposedAgentRootResolved(opts *bind.WatchOpts, sink chan<- *lightmanager.LightManagerProposedAgentRootResolved) (event.Subscription, error) {
-	ret := _m.Called(opts, sink)
-
-	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerProposedAgentRootResolved) event.Subscription); ok {
-		r0 = rf(opts, sink)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(event.Subscription)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *lightmanager.LightManagerProposedAgentRootResolved) error); ok {
-		r1 = rf(opts, sink)
 	} else {
 		r1 = ret.Error(1)
 	}
