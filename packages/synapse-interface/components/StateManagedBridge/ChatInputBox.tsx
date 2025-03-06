@@ -46,7 +46,7 @@ export const ChatInputBox = () => {
   }
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !isProcessing && input.trim() && isConnected) {
+    if (e.key === 'Enter' && !isProcessing && input.trim()) {
       handleSubmit()
     }
   }
@@ -69,15 +69,11 @@ export const ChatInputBox = () => {
       )
     }
     
-    if (!isConnected) {
-      return t('Connect Wallet')
-    }
-    
     return t('Send')
   }
 
   // Determine if button should be disabled
-  const isButtonDisabled = isProcessing || !input.trim() || !isConnected
+  const isButtonDisabled = isProcessing || !input.trim()
 
   return (
     <div className="transition-all duration-200">
