@@ -230,11 +230,52 @@ func compileSolidity(version string, filePath string, optimizeRuns int, evmVersi
 		return nil, fmt.Errorf("solc direct binary execution failed: %w\n%s", err, stderr.Bytes())
 	}
 
+	// Parse output
 	contract, err := compiler.ParseCombinedJSON(stdout.Bytes(), string(solContents), version, version, strings.Join(args, " "))
 	if err != nil {
 		return nil, fmt.Errorf("could not parse json: %w", err)
 	}
-	return contract, nil
+
+	// Normalize the contract names to match Docker format
+	// Docker uses "solidity/file.sol:Contract" format while direct binary uses "file.sol:Contract"
+	normalizedContracts := make(map[string]*compiler.Contract)
+	for key, value := range contract {
+		// Check if the key already has the "solidity/" prefix
+		if !strings.HasPrefix(key, "solidity/") {
+			normalizedKey := "solidity/" + key
+			
+			// We also need to normalize the metadata to ensure the compilationTarget path matches
+			var metadataObj map[string]interface{}
+			if err := json.Unmarshal([]byte(value.Info.Metadata), &metadataObj); err == nil {
+				if settings, ok := metadataObj["settings"].(map[string]interface{}); ok {
+					if compilationTarget, ok := settings["compilationTarget"].(map[string]interface{}); ok {
+						// Create a new compilationTarget with the normalized paths
+						newTarget := make(map[string]interface{})
+						for filePath, contractName := range compilationTarget {
+							if !strings.HasPrefix(filePath, "solidity/") {
+								newTarget["solidity/"+filePath] = contractName
+							} else {
+								newTarget[filePath] = contractName
+							}
+						}
+						// Replace the old compilationTarget with the new one
+						settings["compilationTarget"] = newTarget
+						
+						// Marshal the metadata back to string
+						if newMetadata, err := json.Marshal(metadataObj); err == nil {
+							value.Info.Metadata = string(newMetadata)
+						}
+					}
+				}
+			}
+			
+			normalizedContracts[normalizedKey] = value
+		} else {
+			normalizedContracts[key] = value
+		}
+	}
+	
+	return normalizedContracts, nil
 }
 
 // createRunFile creates a bash file to run a command in the specified version of solidity.
