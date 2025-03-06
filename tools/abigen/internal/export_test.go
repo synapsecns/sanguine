@@ -19,3 +19,8 @@ func CompileSolidity(version string, filePath string, optimizeRuns int, evmVersi
 func FilePathsAreEqual(file1 string, file2 string) (equal bool, err error) {
 	return filePathsAreEqual(file1, file2)
 }
+
+// GetSolcBinary exports getSolcBinary for testing.
+func GetSolcBinary(version string) (string, error) {
+	return getSolcBinary(version)
+}
