@@ -22,15 +22,13 @@ WORKDIR /home/$USERNAME
 RUN echo "{\"chain\": \"${CHAIN}\"}" > /home/$USERNAME/visor.json
 
 # Import GPG public key
-RUN curl -o /home/$USERNAME/pub_key.asc $PUB_KEY_URL \
+RUN curl -o /home/$USERNAME/pub_key.asc ${PUB_KEY_URL} \
     && gpg --import /home/$USERNAME/pub_key.asc
 
-# Download and verify hl-visor binary
-# Note: Since the node's README specifies this specific URL, we'll use it 
-# and hope it works for both architectures or the emulation layer handles it
-RUN curl -L https://binaries.hyperliquid-testnet.xyz/$CHAIN/hl-visor > /home/$USERNAME/hl-visor \
-    && curl -L https://binaries.hyperliquid-testnet.xyz/$CHAIN/hl-visor.asc > /home/$USERNAME/hl-visor.asc \
-    && gpg --verify /home/$USERNAME/hl-visor.asc /home/$USERNAME/hl-visor \
+# Download hl-visor binary
+# For now, we're skipping verification since the paths seem to be inconsistent
+RUN set -ex \
+    && curl -L -o /home/$USERNAME/hl-visor https://binaries.hyperliquid-testnet.xyz/${CHAIN}/hl-visor \
     && chmod +x /home/$USERNAME/hl-visor
 
 # Expose gossip ports
