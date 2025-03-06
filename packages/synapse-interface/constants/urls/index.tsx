@@ -187,3 +187,6 @@ export const BLAZE_API_URL = 'https://synapse.dorime.org/api/v1/analytics'
 export const LLAMA_API_URL = 'https://api.llama.fi/protocol/synapse'
 
 export const BRIDGESYN_ANALYTICS_API = 'https://explorer.omnirpc.io/graphql'
+
+/** CX Links */
+export const DOCS_CX_URL = 'https://cortexprotocol.com'

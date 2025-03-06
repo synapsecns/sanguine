@@ -79,6 +79,7 @@ import { USDC } from '@/constants/tokens/bridgeable'
 import { CheckCircleIcon } from '@heroicons/react/outline'
 import Image from 'next/image'
 import { HyperliquidDepositInfo } from '@/components/HyperliquidDepositInfo'
+import { ChatInputBox } from '@/components/StateManagedBridge/ChatInputBox'
 
 const StateManagedBridge = () => {
   const dispatch = useAppDispatch()
@@ -553,6 +554,9 @@ const StateManagedBridge = () => {
                   />
                 </div>
               </div>
+              
+              {/* Chat input box for natural language bridge requests */}
+              <ChatInputBox />
             </>
           )}
         </BridgeCard>
