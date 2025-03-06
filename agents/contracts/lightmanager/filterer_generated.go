@@ -11,18 +11,6 @@ import (
 
 // ILightManagerFilterer ...
 type ILightManagerFilterer interface {
-	// FilterAgentRootProposed is a free log retrieval operation binding the contract event 0xc222e0af9f2301ee0bfafe1044550b0553f5bdc4a65cb92cc2568820b5bf2944.
-	//
-	// Solidity: event AgentRootProposed(bytes32 newRoot)
-	FilterAgentRootProposed(opts *bind.FilterOpts) (*LightManagerAgentRootProposedIterator, error)
-	// WatchAgentRootProposed is a free log subscription operation binding the contract event 0xc222e0af9f2301ee0bfafe1044550b0553f5bdc4a65cb92cc2568820b5bf2944.
-	//
-	// Solidity: event AgentRootProposed(bytes32 newRoot)
-	WatchAgentRootProposed(opts *bind.WatchOpts, sink chan<- *LightManagerAgentRootProposed) (event.Subscription, error)
-	// ParseAgentRootProposed is a log parse operation binding the contract event 0xc222e0af9f2301ee0bfafe1044550b0553f5bdc4a65cb92cc2568820b5bf2944.
-	//
-	// Solidity: event AgentRootProposed(bytes32 newRoot)
-	ParseAgentRootProposed(log types.Log) (*LightManagerAgentRootProposed, error)
 	// FilterDisputeOpened is a free log retrieval operation binding the contract event 0xd0672fae056abe2bf0637742527d49add67fdb68192a6c6f6bf86eac19fe0530.
 	//
 	// Solidity: event DisputeOpened(uint256 disputeIndex, uint32 guardIndex, uint32 notaryIndex)
@@ -59,18 +47,6 @@ type ILightManagerFilterer interface {
 	//
 	// Solidity: event Initialized(uint8 version)
 	ParseInitialized(log types.Log) (*LightManagerInitialized, error)
-	// FilterOwnershipTransferStarted is a free log retrieval operation binding the contract event 0x38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e22700.
-	//
-	// Solidity: event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner)
-	FilterOwnershipTransferStarted(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*LightManagerOwnershipTransferStartedIterator, error)
-	// WatchOwnershipTransferStarted is a free log subscription operation binding the contract event 0x38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e22700.
-	//
-	// Solidity: event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner)
-	WatchOwnershipTransferStarted(opts *bind.WatchOpts, sink chan<- *LightManagerOwnershipTransferStarted, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error)
-	// ParseOwnershipTransferStarted is a log parse operation binding the contract event 0x38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e22700.
-	//
-	// Solidity: event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner)
-	ParseOwnershipTransferStarted(log types.Log) (*LightManagerOwnershipTransferStarted, error)
 	// FilterOwnershipTransferred is a free log retrieval operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
 	//
 	// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
@@ -83,30 +59,6 @@ type ILightManagerFilterer interface {
 	//
 	// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
 	ParseOwnershipTransferred(log types.Log) (*LightManagerOwnershipTransferred, error)
-	// FilterProposedAgentRootCancelled is a free log retrieval operation binding the contract event 0xc9b788a7a7ebe95a0a3f82c9850959f0cc1657d1fb19a05ad1cf60877651725f.
-	//
-	// Solidity: event ProposedAgentRootCancelled(bytes32 proposedRoot)
-	FilterProposedAgentRootCancelled(opts *bind.FilterOpts) (*LightManagerProposedAgentRootCancelledIterator, error)
-	// WatchProposedAgentRootCancelled is a free log subscription operation binding the contract event 0xc9b788a7a7ebe95a0a3f82c9850959f0cc1657d1fb19a05ad1cf60877651725f.
-	//
-	// Solidity: event ProposedAgentRootCancelled(bytes32 proposedRoot)
-	WatchProposedAgentRootCancelled(opts *bind.WatchOpts, sink chan<- *LightManagerProposedAgentRootCancelled) (event.Subscription, error)
-	// ParseProposedAgentRootCancelled is a log parse operation binding the contract event 0xc9b788a7a7ebe95a0a3f82c9850959f0cc1657d1fb19a05ad1cf60877651725f.
-	//
-	// Solidity: event ProposedAgentRootCancelled(bytes32 proposedRoot)
-	ParseProposedAgentRootCancelled(log types.Log) (*LightManagerProposedAgentRootCancelled, error)
-	// FilterProposedAgentRootResolved is a free log retrieval operation binding the contract event 0xa2ec8d9db1d036a8700a09e8e0e537805f87edd54181a1fc08a71db281744b4e.
-	//
-	// Solidity: event ProposedAgentRootResolved(bytes32 proposedRoot)
-	FilterProposedAgentRootResolved(opts *bind.FilterOpts) (*LightManagerProposedAgentRootResolvedIterator, error)
-	// WatchProposedAgentRootResolved is a free log subscription operation binding the contract event 0xa2ec8d9db1d036a8700a09e8e0e537805f87edd54181a1fc08a71db281744b4e.
-	//
-	// Solidity: event ProposedAgentRootResolved(bytes32 proposedRoot)
-	WatchProposedAgentRootResolved(opts *bind.WatchOpts, sink chan<- *LightManagerProposedAgentRootResolved) (event.Subscription, error)
-	// ParseProposedAgentRootResolved is a log parse operation binding the contract event 0xa2ec8d9db1d036a8700a09e8e0e537805f87edd54181a1fc08a71db281744b4e.
-	//
-	// Solidity: event ProposedAgentRootResolved(bytes32 proposedRoot)
-	ParseProposedAgentRootResolved(log types.Log) (*LightManagerProposedAgentRootResolved, error)
 	// FilterRootUpdated is a free log retrieval operation binding the contract event 0x2cbc14f49c068133583f7cb530018af451c87c1cf1327cf2a4ff4698c4730aa4.
 	//
 	// Solidity: event RootUpdated(bytes32 newRoot)

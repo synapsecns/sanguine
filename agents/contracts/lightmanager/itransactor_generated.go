@@ -12,14 +12,6 @@ import (
 
 // ILightManagerTransactor ...
 type ILightManagerTransactor interface {
-	// AcceptOwnership is a paid mutator transaction binding the contract method 0x79ba5097.
-	//
-	// Solidity: function acceptOwnership() returns()
-	AcceptOwnership(opts *bind.TransactOpts) (*types.Transaction, error)
-	// CancelProposedAgentRoot is a paid mutator transaction binding the contract method 0x91ea3c34.
-	//
-	// Solidity: function cancelProposedAgentRoot() returns()
-	CancelProposedAgentRoot(opts *bind.TransactOpts) (*types.Transaction, error)
 	// Initialize is a paid mutator transaction binding the contract method 0xc0c53b8b.
 	//
 	// Solidity: function initialize(address origin_, address destination_, address inbox_) returns()
@@ -32,10 +24,6 @@ type ILightManagerTransactor interface {
 	//
 	// Solidity: function openDispute(uint32 guardIndex, uint32 notaryIndex) returns()
 	OpenDispute(opts *bind.TransactOpts, guardIndex uint32, notaryIndex uint32) (*types.Transaction, error)
-	// ProposeAgentRootWhenStuck is a paid mutator transaction binding the contract method 0xdbad9562.
-	//
-	// Solidity: function proposeAgentRootWhenStuck(bytes32 agentRoot_) returns()
-	ProposeAgentRootWhenStuck(opts *bind.TransactOpts, agentRoot_ [32]byte) (*types.Transaction, error)
 	// RemoteWithdrawTips is a paid mutator transaction binding the contract method 0x1fa07138.
 	//
 	// Solidity: function remoteWithdrawTips(uint32 msgOrigin, uint256 proofMaturity, address recipient, uint256 amount) returns(bytes4 magicValue)
@@ -44,10 +32,10 @@ type ILightManagerTransactor interface {
 	//
 	// Solidity: function renounceOwnership() returns()
 	RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error)
-	// ResolveProposedAgentRoot is a paid mutator transaction binding the contract method 0x38416281.
+	// ResolveStuckDispute is a paid mutator transaction binding the contract method 0x89791e17.
 	//
-	// Solidity: function resolveProposedAgentRoot() returns()
-	ResolveProposedAgentRoot(opts *bind.TransactOpts) (*types.Transaction, error)
+	// Solidity: function resolveStuckDispute(uint32 domain, address slashedAgent) returns()
+	ResolveStuckDispute(opts *bind.TransactOpts, domain uint32, slashedAgent common.Address) (*types.Transaction, error)
 	// SetAgentRoot is a paid mutator transaction binding the contract method 0x58668176.
 	//
 	// Solidity: function setAgentRoot(bytes32 agentRoot_) returns()
