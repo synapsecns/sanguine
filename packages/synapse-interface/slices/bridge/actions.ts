@@ -10,11 +10,12 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 import { toast } from 'react-hot-toast'
+import { BRIDGE_PARSER_API_URL } from '@/constants/urls'
 
 // Real API integration to parse bridge requests
 async function extractParameters(input: string): Promise<any> {
   try {
-    const response = await fetch('http://localhost:4000/api/parse-bridge-request', {
+    const response = await fetch(BRIDGE_PARSER_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
