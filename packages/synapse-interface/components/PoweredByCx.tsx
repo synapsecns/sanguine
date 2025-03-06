@@ -10,14 +10,14 @@ export const PoweredByCx = () => {
   return (
     <Link
       href={DOCS_CX_URL}
-      className="flex gap-2 items-center text-sm text-secondaryTextColor hover:underline hover:text-white hover:bg-bgLighter rounded-md p-1.5 px-2.5 opacity-80 hover:opacity-100 transition-all"
+      className="flex gap-1.5 items-center text-xs text-secondaryTextColor hover:underline hover:text-white hover:bg-bgLighter rounded-md p-1 px-2 opacity-80 hover:opacity-100 transition-all"
       target="_blank"
       rel="noopener noreferrer"
     >
       <Image
         alt="Cortex icon"
-        width="18"
-        height="18"
+        width="16"
+        height="16"
         src="https://cortexprotocol.com/icon.svg"
         className="-translate-y-px"
       />

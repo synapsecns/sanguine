@@ -80,15 +80,13 @@ export const ChatInputBox = () => {
   const isButtonDisabled = isProcessing || !input.trim() || !isConnected
 
   return (
-    <div className="mt-4 p-3 transition-all duration-200">
-      <div className="text-sm text-secondaryTextColor mb-2">
-        Autofill with a simple command:
-      </div>
-      <div className="flex items-center gap-2">
-        <div className={`flex items-center gap-4 p-2 rounded-md w-full
+    <div className="transition-all duration-200">
+      <div className="flex items-center">
+        <div className={`flex items-center gap-4 p-2 pr-1 rounded-md w-full
                         bg-white dark:bg-inherit
-                        border border-zinc-200 dark:border-zinc-700
-                        ${isFocused ? 'border-primary dark:border-primary' : ''}`}>
+                        border ${isFocused 
+                          ? 'border-fuchsia-500 dark:border-fuchsia-400' 
+                          : 'border-zinc-200 dark:border-zinc-700'}`}>
           <input
             type="text"
             value={input}
@@ -96,29 +94,37 @@ export const ChatInputBox = () => {
             onKeyDown={handleKeyDown}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            className="w-full bg-transparent border-none p-0 placeholder:text-zinc-500 placeholder:dark:text-zinc-400 text-black dark:text-white focus:outline-none"
-            placeholder="e.g., Bridge 50 USDC from Base to Arb"
+            className="w-full bg-transparent border-none p-0 placeholder:text-zinc-500 placeholder:dark:text-zinc-400 text-black dark:text-white focus:outline-none focus:ring-0"
+            placeholder="Autofill with AI"
             disabled={isProcessing}
             autoComplete="off"
           />
+          <button
+            onClick={handleSubmit}
+            disabled={isButtonDisabled}
+            className={`flex items-center justify-center rounded-full w-8 h-8 ml-1 transition-all duration-200
+                      ${isButtonDisabled 
+                        ? 'opacity-50 text-gray-400 cursor-not-allowed' 
+                        : 'text-fuchsia-500 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30'}`}
+          >
+            {isProcessing ? (
+              <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            )}
+          </button>
         </div>
-        <Button
-          onClick={handleSubmit}
-          disabled={isButtonDisabled}
-          className={`whitespace-nowrap px-3 py-2 transition-all duration-200
-                     ${isButtonDisabled 
-                      ? 'opacity-50 bg-gray-600' 
-                      : 'enabled:bg-gradient-to-r !from-fuchsia-500 !to-purple-500 dark:!to-purple-600 hover:opacity-80'}`}
-        >
-          {getButtonText()}
-        </Button>
       </div>
       
       {/* Two-column layout for examples and branding */}
-      <div className="mt-2 grid grid-cols-2">
-        <div className="text-xs text-secondaryTextColor">
-          Try: "100 ETH to Arb"<br />
-          or "USDC from Op to Base"
+      <div className="mt-2 grid grid-cols-3">
+        <div className="text-xs text-secondaryTextColor col-span-2">
+          Try: "100 ETH to Arb" or "USDC from Op to Base"
         </div>
         <div className="flex justify-end">
           <PoweredByCx />
