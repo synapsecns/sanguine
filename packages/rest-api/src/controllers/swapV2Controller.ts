@@ -28,19 +28,17 @@ export const swapV2Controller = async (req, res) => {
       ? Number(slippage) * 100
       : DEFAULT_SWAP_SLIPPAGE_BIPS
 
-    const { routerAddress, maxAmountOut, tx } = await Synapse.swapV2(
-      Number(chain),
-      fromToken,
-      toToken,
-      amount,
-      {
-        to: address,
-        slippage: {
-          numerator: slippageBips,
-          denominator: SLIPPAGE_BIPS_DENOMINATOR,
-        },
-      }
-    )
+    const { routerAddress, maxAmountOut, tx } = await Synapse.swapV2({
+      chainId: Number(chain),
+      tokenIn: fromToken,
+      tokenOut: toToken,
+      amountIn: amount,
+      to: address,
+      slippage: {
+        numerator: slippageBips,
+        denominator: SLIPPAGE_BIPS_DENOMINATOR,
+      },
+    })
 
     const callData = address ? tx : null
 

@@ -34,7 +34,11 @@ const EMPTY_QUOTE_V2: SwapQuoteV2 = {
   maxAmountOut: Zero,
 }
 
-export type SwapOptionsV2 = {
+export type SwapV2Parameters = {
+  chainId: number
+  tokenIn: string
+  tokenOut: string
+  amountIn: BigintIsh
   to?: string
   slippage?: Slippage
   deadline?: number
@@ -43,11 +47,16 @@ export type SwapOptionsV2 = {
 
 export async function swapV2(
   this: SynapseSDK,
-  chainId: number,
-  tokenIn: string,
-  tokenOut: string,
-  amountIn: BigintIsh,
-  options: SwapOptionsV2 = {}
+  {
+    chainId,
+    tokenIn,
+    tokenOut,
+    amountIn,
+    to,
+    slippage,
+    deadline,
+    restrictComplexity,
+  }: SwapV2Parameters
 ): Promise<SwapQuoteV2> {
   const input: RouteInput = {
     chainId,
@@ -56,10 +65,10 @@ export async function swapV2(
     amountIn,
     msgSender: this.swapEngineSet.getTokenZap(chainId),
     finalRecipient: {
-      entity: options.to ? RecipientEntity.User : RecipientEntity.UserSimulated,
-      address: options.to || USER_SIMULATED_ADDRESS,
+      entity: to ? RecipientEntity.User : RecipientEntity.UserSimulated,
+      address: to || USER_SIMULATED_ADDRESS,
     },
-    restrictComplexity: options.restrictComplexity ?? false,
+    restrictComplexity: restrictComplexity ?? false,
   }
   const quote = await this.swapEngineSet.getBestQuote(input, {
     allowMultiStep: true,
@@ -69,17 +78,17 @@ export async function swapV2(
   }
   const route = await this.swapEngineSet.generateRoute(input, quote, {
     allowMultiStep: true,
-    slippage: options.slippage,
+    slippage,
   })
   if (!route) {
     return EMPTY_QUOTE_V2
   }
-  const tx = options.to
+  const tx = to
     ? await this.sirSet.completeIntentWithBalanceChecks(
         chainId,
         tokenIn,
         amountIn,
-        options.deadline ?? calculateDeadline(TEN_MINUTES),
+        deadline ?? calculateDeadline(TEN_MINUTES),
         route.steps
       )
     : undefined
