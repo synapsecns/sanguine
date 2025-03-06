@@ -5,9 +5,9 @@ import { isAddress } from 'ethers/lib/utils'
 import { showFirstValidationError } from '../middleware/showFirstValidationError'
 import { swapV2Controller } from '../controllers/swapV2Controller'
 import { CHAINS_ARRAY } from '../constants/chains'
+import { INTENTS_SUPPORTED_CHAIN_IDS } from '../constants'
 import { checksumAddresses } from '../middleware/checksumAddresses'
 import { normalizeNativeTokenAddress } from '../middleware/normalizeNativeTokenAddress'
-import { validSwapChain } from '../validations/validSwapChain'
 
 const router: express.Router = express.Router()
 
@@ -22,7 +22,9 @@ router.get(
       .withMessage('chain is required')
       .isNumeric()
       .custom((value) => CHAINS_ARRAY.some((c) => c.id === Number(value)))
-      .withMessage('Unsupported chain'),
+      .withMessage('Unsupported chain')
+      .custom((value) => INTENTS_SUPPORTED_CHAIN_IDS.includes(Number(value)))
+      .withMessage('Swap not supported for given chain'),
     check('fromToken')
       .exists()
       .withMessage('fromToken is required')
@@ -34,13 +36,6 @@ router.get(
       .custom((value) => isAddress(value))
       .withMessage('Invalid toToken address'),
     check('amount').exists().withMessage('amount is required').isInt(),
-    check()
-      .custom((_value, { req }) => {
-        const { chain } = req.query
-
-        return validSwapChain(chain)
-      })
-      .withMessage('Swap not supported for given chain'),
     check('address')
       .optional()
       .custom((value) => isAddress(value))
