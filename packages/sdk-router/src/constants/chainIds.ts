@@ -92,12 +92,22 @@ export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
 ].filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
 
 /**
- * List of chain ids where SynapseIntentRouter is deployed, ordered by chain id.
- * Note: this is currently serving as an entry point for FastBridgeV2, but will support other modules in the future.
+ * List of chain ids where SynapseIntentRouter is deployed, ordered lexicographically.
+ * Note: this is currently serving as an entry point for swaps between arbitrary tokens,
+ * but will also support bridge modules in the future.
  */
 export const INTENTS_SUPPORTED_CHAIN_IDS: number[] = [
-  SupportedChainId.OPTIMISM,
   SupportedChainId.ARBITRUM,
+  SupportedChainId.BASE,
+  SupportedChainId.BERACHAIN,
+  SupportedChainId.BLAST,
+  SupportedChainId.BSC,
+  SupportedChainId.ETH,
+  SupportedChainId.LINEA,
+  SupportedChainId.OPTIMISM,
+  SupportedChainId.SCROLL,
+  SupportedChainId.UNICHAIN,
+  SupportedChainId.WORLDCHAIN,
 ].filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
 
 /**

@@ -68,14 +68,12 @@ export const FAST_BRIDGE_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
 
 /**
  * SynapseIntentRouter contract address for all chains except ones from SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP.
- * TODO: this is a staging SynapseIntentRouter deployment, update to the production deployment when ready.
  */
-const SYNAPSE_INTENT_ROUTER_ADDRESS =
-  '0x018396706193B16F8a1b20B87B2dcC840979D7EA'
+const SIR_ADDRESS = '0x0000000051250060EEC6bc1Bd37dC3eF30c9be25'
 const SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP: AddressMap = {}
 export const SYNAPSE_INTENT_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
   INTENTS_SUPPORTED_CHAIN_IDS,
-  SYNAPSE_INTENT_ROUTER_ADDRESS,
+  SIR_ADDRESS,
   SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP
 )
 
@@ -83,7 +81,7 @@ export const SYNAPSE_INTENT_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
  * TokenZapV1 contract address for all chains except ones from TOKEN_ZAP_V1_EXCEPTION_MAP.
  * TODO: this is a staging TokenZapV1 deployment, update to the production deployment when ready.
  */
-const TOKEN_ZAP_V1_ADDRESS = '0x6C6FA1cE8160bb680f7a1dd2068c7302bA2a9eaB'
+const TOKEN_ZAP_V1_ADDRESS = '0x2aAaa9b71E479e6e2De7E091b09D61C25D2AAAa9'
 const TOKEN_ZAP_V1_EXCEPTION_MAP: AddressMap = {}
 export const TOKEN_ZAP_V1_ADDRESS_MAP: AddressMap = generateAddressMap(
   INTENTS_SUPPORTED_CHAIN_IDS,
@@ -93,26 +91,33 @@ export const TOKEN_ZAP_V1_ADDRESS_MAP: AddressMap = generateAddressMap(
 
 /**
  * SynapseIntentPreviewer contract address for all chains except ones from SYNAPSE_INTENT_PREVIEWER_EXCEPTION_MAP.
- * TODO: this is a staging SynapseIntentPreviewer deployment, update to the production deployment when ready.
  */
-const SYNAPSE_INTENT_PREVIEWER_ADDRESS =
-  '0xc542Df6aA3813b49EE8A5A07f82eA0EaAa006bFa'
+const SIP_ADDRESS = '0x519519a57a6Ea930f87e3436b6ea113A990fF519'
 const SYNAPSE_INTENT_PREVIEWER_EXCEPTION_MAP: AddressMap = {}
 export const SYNAPSE_INTENT_PREVIEWER_ADDRESS_MAP: AddressMap =
   generateAddressMap(
     INTENTS_SUPPORTED_CHAIN_IDS,
-    SYNAPSE_INTENT_PREVIEWER_ADDRESS,
+    SIP_ADDRESS,
     SYNAPSE_INTENT_PREVIEWER_EXCEPTION_MAP
   )
 
 /**
  * SwapQuoterV2 contract address on Ethereum. Addresses for other chains are defined in the
  * SWAP_QUOTER_V2_EXCEPTION_MAP.
+ * TODO: unified deployments
  */
 const SWAP_QUOTER_V2_ADDRESS = '0x5682dC851C33adb48F6958a963A5d3Aa31F6f184'
 const SWAP_QUOTER_V2_EXCEPTION_MAP: AddressMap = {
   [SupportedChainId.ARBITRUM]: '0xE402cC7826dD835FCe5E3cFb61D56703fEbc2642',
+  [SupportedChainId.BASE]: '0x9FBFf54b967654B0c76b174D2B95614060Dd6B07',
+  [SupportedChainId.BERACHAIN]: '0xc5269d5143B37877A1041DfaF2C21a76E709AF27',
+  [SupportedChainId.BLAST]: '0xbAD189BDF6a05FDaFA33CA917d094A64954093c4',
+  [SupportedChainId.BSC]: '0x1Db5a1d5D80fDEfc098635d3869Fa94d6fA44F5a',
+  [SupportedChainId.LINEA]: '0x55DEc55aDbd9a2102438339A294CB921A5248285',
   [SupportedChainId.OPTIMISM]: '0xd6Bdb96b356F4F51bf491297DF03F25DCd0cBf6D',
+  [SupportedChainId.SCROLL]: '0x55DEc55aDbd9a2102438339A294CB921A5248285',
+  [SupportedChainId.UNICHAIN]: '0x55DEc55aDbd9a2102438339A294CB921A5248285',
+  [SupportedChainId.WORLDCHAIN]: '0xc5269d5143B37877A1041DfaF2C21a76E709AF27',
 }
 export const SWAP_QUOTER_V2_ADDRESS_MAP: AddressMap = generateAddressMap(
   INTENTS_SUPPORTED_CHAIN_IDS,
