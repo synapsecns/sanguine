@@ -4,9 +4,14 @@ ARG USERNAME=hluser
 ARG USER_UID=10000
 ARG USER_GID=$USER_UID
 ARG CHAIN=Testnet
+ARG TARGETARCH
 
 # Define URLs as environment variables
 ARG PUB_KEY_URL=https://raw.githubusercontent.com/hyperliquid-dex/node/refs/heads/main/pub_key.asc
+ARG HL_VISOR_URL_AMD64=https://binaries.hyperliquid-testnet.xyz/${CHAIN}/hl-visor-amd64
+ARG HL_VISOR_URL_ARM64=https://binaries.hyperliquid-testnet.xyz/${CHAIN}/hl-visor-arm64
+ARG HL_VISOR_ASC_URL_AMD64=https://binaries.hyperliquid-testnet.xyz/${CHAIN}/hl-visor-amd64.asc
+ARG HL_VISOR_ASC_URL_ARM64=https://binaries.hyperliquid-testnet.xyz/${CHAIN}/hl-visor-arm64.asc
 
 # Create user and install dependencies
 RUN groupadd --gid $USER_GID $USERNAME \
@@ -22,17 +27,18 @@ WORKDIR /home/$USERNAME
 RUN echo "{\"chain\": \"${CHAIN}\"}" > /home/$USERNAME/visor.json
 
 # Import GPG public key
-RUN curl -o /home/$USERNAME/pub_key.asc ${PUB_KEY_URL} \
+RUN curl -o /home/$USERNAME/pub_key.asc $PUB_KEY_URL \
     && gpg --import /home/$USERNAME/pub_key.asc
 
-# Download hl-visor binary based on chain
-# For now, we're skipping verification since the paths seem to be inconsistent
-RUN set -ex \
-    && if [ "${CHAIN}" = "Mainnet" ]; then \
-         curl -L -o /home/$USERNAME/hl-visor https://binaries.hyperliquid.xyz/Mainnet/hl-visor; \
-       else \
-         curl -L -o /home/$USERNAME/hl-visor https://binaries.hyperliquid-testnet.xyz/Testnet/hl-visor; \
-       fi \
+# Download and verify hl-visor binary based on architecture
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+        curl -o /home/$USERNAME/hl-visor $HL_VISOR_URL_AMD64 \
+        && curl -o /home/$USERNAME/hl-visor.asc $HL_VISOR_ASC_URL_AMD64; \
+    else \
+        curl -o /home/$USERNAME/hl-visor $HL_VISOR_URL_ARM64 \
+        && curl -o /home/$USERNAME/hl-visor.asc $HL_VISOR_ASC_URL_ARM64; \
+    fi \
+    && gpg --verify /home/$USERNAME/hl-visor.asc /home/$USERNAME/hl-visor \
     && chmod +x /home/$USERNAME/hl-visor
 
 # Expose gossip ports and ETH RPC port
