@@ -3,7 +3,7 @@ FROM ubuntu:24.04
 ARG USERNAME=hluser
 ARG USER_UID=10000
 ARG USER_GID=$USER_UID
-ARG CHAIN=Testnet
+ARG CHAIN=Testnet  # Always default to Testnet since Mainnet binary is not publicly accessible
 
 # Define URLs as environment variables
 ARG PUB_KEY_URL=https://raw.githubusercontent.com/hyperliquid-dex/node/refs/heads/main/pub_key.asc
@@ -18,17 +18,17 @@ RUN groupadd --gid $USER_GID $USERNAME \
 USER $USERNAME
 WORKDIR /home/$USERNAME
 
-# Configure chain based on build arg
+# Configure chain based on build arg (but only use Testnet for the binary)
 RUN echo "{\"chain\": \"${CHAIN}\"}" > /home/$USERNAME/visor.json
 
 # Import GPG public key
 RUN curl -o /home/$USERNAME/pub_key.asc ${PUB_KEY_URL} \
     && gpg --import /home/$USERNAME/pub_key.asc
 
-# Download hl-visor binary
+# Download hl-visor binary (always use Testnet binary)
 # For now, we're skipping verification since the paths seem to be inconsistent
 RUN set -ex \
-    && curl -L -o /home/$USERNAME/hl-visor https://binaries.hyperliquid-testnet.xyz/${CHAIN}/hl-visor \
+    && curl -L -o /home/$USERNAME/hl-visor https://binaries.hyperliquid-testnet.xyz/Testnet/hl-visor \
     && chmod +x /home/$USERNAME/hl-visor
 
 # Expose gossip ports
