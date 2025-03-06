@@ -49,8 +49,16 @@ jobs:
           build-args: |
             CHAIN=Testnet
 
+      - name: Set Date Tag
+        id: date
+        run: echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+
       - name: Tag with Date
-        run: |
-          TODAY=$(date +%Y-%m-%d)
-          docker tag ghcr.io/synapsecns/hyperliquid:latest ghcr.io/synapsecns/hyperliquid:testnet-${TODAY}
-          docker push ghcr.io/synapsecns/hyperliquid:testnet-${TODAY}
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/synapsecns/hyperliquid:testnet-${{ steps.date.outputs.date }}
+          build-args: |
+            CHAIN=Testnet
