@@ -46,7 +46,6 @@ jobs:
             ghcr.io/synapsecns/hyperliquid:latest
             ghcr.io/synapsecns/hyperliquid:testnet-latest
             ghcr.io/synapsecns/hyperliquid:testnet-${{ github.sha }}
-            ghcr.io/synapsecns/hyperliquid:testnet-$(date +%Y-%m-%d)
           build-args: |
             CHAIN=Testnet
 
