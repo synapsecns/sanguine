@@ -314,6 +314,8 @@ const config = createConfig({
         [configByChainId[hyperevmChainId].chainName]: {
           address: networkDetails[hyperevmChainId]?.FastBridgeV2.address,
           startBlock: networkDetails[hyperevmChainId]?.FastBridgeV2.startBlock,
+          maxBlockRange:
+            networkDetails[hyperevmChainId]?.FastBridgeV2.maxBlockRange,
         },
       },
       abi: FastBridgeV2Abi,
