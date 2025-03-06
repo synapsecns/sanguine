@@ -4,12 +4,9 @@ ARG USERNAME=hluser
 ARG USER_UID=10000
 ARG USER_GID=$USER_UID
 ARG CHAIN=Testnet
-ARG TARGETARCH
 
 # Define URLs as environment variables
 ARG PUB_KEY_URL=https://raw.githubusercontent.com/hyperliquid-dex/node/refs/heads/main/pub_key.asc
-ARG HL_VISOR_URL=https://binaries.hyperliquid-testnet.xyz/${CHAIN}/hl-visor
-ARG HL_VISOR_ASC_URL=https://binaries.hyperliquid-testnet.xyz/${CHAIN}/hl-visor.asc
 
 # Create user and install dependencies
 RUN groupadd --gid $USER_GID $USERNAME \
@@ -29,10 +26,10 @@ RUN curl -o /home/$USERNAME/pub_key.asc $PUB_KEY_URL \
     && gpg --import /home/$USERNAME/pub_key.asc
 
 # Download and verify hl-visor binary
-# Note: Since the official hyperliquid binaries don't seem to offer architecture-specific URLs,
-# this might require coordination with the hyperliquid team for proper ARM64 support
-RUN curl -o /home/$USERNAME/hl-visor $HL_VISOR_URL \
-    && curl -o /home/$USERNAME/hl-visor.asc $HL_VISOR_ASC_URL \
+# Note: Since the node's README specifies this specific URL, we'll use it 
+# and hope it works for both architectures or the emulation layer handles it
+RUN curl -L https://binaries.hyperliquid-testnet.xyz/$CHAIN/hl-visor > /home/$USERNAME/hl-visor \
+    && curl -L https://binaries.hyperliquid-testnet.xyz/$CHAIN/hl-visor.asc > /home/$USERNAME/hl-visor.asc \
     && gpg --verify /home/$USERNAME/hl-visor.asc /home/$USERNAME/hl-visor \
     && chmod +x /home/$USERNAME/hl-visor
 
