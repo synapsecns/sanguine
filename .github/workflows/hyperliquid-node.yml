@@ -52,5 +52,5 @@ jobs:
       - name: Tag with Date
         run: |
           TODAY=$(date +%Y-%m-%d)
-          docker tag ghcr.io/synapsecns/hyperliquid:testnet-latest ghcr.io/synapsecns/hyperliquid:testnet-${TODAY}
+          docker tag ghcr.io/synapsecns/hyperliquid:latest ghcr.io/synapsecns/hyperliquid:testnet-${TODAY}
           docker push ghcr.io/synapsecns/hyperliquid:testnet-${TODAY}
