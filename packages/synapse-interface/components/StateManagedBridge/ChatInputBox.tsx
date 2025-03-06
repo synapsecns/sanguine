@@ -46,7 +46,7 @@ export const ChatInputBox = () => {
   }
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !isProcessing && input.trim() && isConnected) {
+    if (e.key === 'Enter' && !isProcessing && input.trim()) {
       handleSubmit()
     }
   }
@@ -69,15 +69,11 @@ export const ChatInputBox = () => {
       )
     }
     
-    if (!isConnected) {
-      return t('Connect Wallet')
-    }
-    
     return t('Send')
   }
 
   // Determine if button should be disabled
-  const isButtonDisabled = isProcessing || !input.trim() || !isConnected
+  const isButtonDisabled = isProcessing || !input.trim()
 
   return (
     <div className="mt-4 p-3 transition-all duration-200">
@@ -96,7 +92,7 @@ export const ChatInputBox = () => {
             onKeyDown={handleKeyDown}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            className="w-full bg-transparent border-none p-0 placeholder:text-zinc-500 placeholder:dark:text-zinc-400 text-black dark:text-white focus:outline-none"
+            className="w-full bg-transparent border-none p-0 placeholder:text-zinc-500 placeholder:dark:text-zinc-400 text-black dark:text-white focus:outline-none focus:ring-0"
             placeholder="e.g., Bridge 50 USDC from Base to Arb"
             disabled={isProcessing}
             autoComplete="off"
