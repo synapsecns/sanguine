@@ -8,7 +8,8 @@ import {
 } from './quote'
 
 const DEFAULT_API_URL = 'https://rfq-api.omnirpc.io'
-const CUSTOM_API_URL = process.env.RFQ_API_URL
+const CUSTOM_API_URL =
+  process.env.RFQ_API_URL || 'https://rfq-api-stage.omnirpc.io'
 const API_TIMEOUT = 2000
 
 /**
