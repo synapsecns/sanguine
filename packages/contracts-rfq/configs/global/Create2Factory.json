@@ -7,8 +7,8 @@
     },
     "SynapseIntentRouter": {
       "creationCodeHash": "0x3253ae5ea1c0785cc555234b9f3c300b553e4d45ea3ffd1631751d4ac0d20e4c",
-      "predictedAddress": "0x0000000051250060EEC6bc1Bd37dC3eF30c9be25",
-      "salt": "0x0000000000000000000000000000000000000000beadaee5030a520fc6ecd894"
+      "predictedAddress": "0x512000a034e154908efb1ec48579f4ffdb000512",
+      "salt": "0xe67e83df7f4922760120db0f05ed58be3aa01375eb907a315cdbc8702beb6ea1"
     },
     "TokenZapV1": {
       "creationCodeHash": "0x0579f3dfa5b06fcb2a8d5b22b48129653b0cae60101cdb136f8a20a38457015a",
