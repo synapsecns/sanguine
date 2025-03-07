@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.16.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.16.1...@synapsecns/contracts-rfq@0.16.2) (2025-03-07)
+
+
+### Bug Fixes
+
+* mockCallRevert internal revert ([#3575](https://github.com/synapsecns/sanguine/issues/3575)) ([3f9cd1b](https://github.com/synapsecns/sanguine/commit/3f9cd1bcf29c1d5af6b766ca0318d50f5e42a57c))
+
+
+
+
+
 ## [0.16.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.16.0...@synapsecns/contracts-rfq@0.16.1) (2025-02-19)
 
 **Note:** Version bump only for package @synapsecns/contracts-rfq
