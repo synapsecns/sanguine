@@ -2,6 +2,7 @@ import { zeroAddress } from 'viem'
 import ageurLogo from '@assets/icons/ageur.svg'
 import avaxLogo from '@assets/icons/avax.svg'
 import btcLogo from '@assets/icons/btc.svg'
+import bnbLogo from '@assets/icons/bnb.svg'
 import busdLogo from '@assets/icons/busd.svg'
 import crvusdLogo from '@assets/icons/crvusd.svg'
 import linkLogo from '@assets/icons/link.svg'
@@ -42,6 +43,10 @@ import usdtLogo from '@assets/icons/usdt.svg'
 import vstaLogo from '@assets/icons/vsta.svg'
 import wbtcLogo from '@assets/icons/wbtc.svg'
 import wethLogo from '@assets/icons/weth.svg'
+// TODO: correct logo for these native tokens
+import beraLogo from '@assets/chains/berachain.svg'
+import croLogo from '@assets/chains/cronos.svg'
+import hypeLogo from '@assets/chains/hyperliquid.svg'
 
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
@@ -413,6 +418,7 @@ export const USDC = new Token({
     [CHAINS.BASE.id]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
     [CHAINS.SCROLL.id]: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
     [CHAINS.LINEA.id]: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
+    [CHAINS.UNICHAIN.id]: '0x078d782b760474a361dda0af3839290b0ef57ad6',
   },
   decimals: {
     [CHAINS.ETH.id]: 6,
@@ -430,6 +436,7 @@ export const USDC = new Token({
     [CHAINS.BASE.id]: 6,
     [CHAINS.SCROLL.id]: 6,
     [CHAINS.LINEA.id]: 6,
+    [CHAINS.UNICHAIN.id]: 6,
   },
   symbol: 'USDC',
   name: 'USD Coin',
@@ -712,6 +719,8 @@ export const ETH = new Token({
     [CHAINS.SCROLL.id]: zeroAddress,
     [CHAINS.LINEA.id]: zeroAddress,
     [CHAINS.WORLDCHAIN.id]: zeroAddress,
+    [CHAINS.UNICHAIN.id]: zeroAddress,
+    [CHAINS.BERACHAIN.id]: '0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590',
     [CHAINS.BNB.id]: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
   },
   decimals: 18,
@@ -862,6 +871,7 @@ export const USDCe = new Token({
     [CHAINS.AURORA.id]: '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802',
     [CHAINS.POLYGON.id]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
     [CHAINS.WORLDCHAIN.id]: '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1',
+    [CHAINS.BERACHAIN.id]: '0x549943e04f40284185054145c6E4e9568C1D3241',
   },
   decimals: 6,
   symbol: 'USDC.e',
@@ -1126,7 +1136,7 @@ export const WFTM = new Token({
 export const WETH = new Token({
   addresses: {
     [CHAINS.ETH.id]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    [CHAINS.OPTIMISM.id]: '0x121ab82b49B2BC4c7901CA46B8277962b4350204',
+    [CHAINS.OPTIMISM.id]: '0x4200000000000000000000000000000000000006',
     [CHAINS.BOBA.id]: '0xd203De32170130082896b4111eDF825a4774c18E',
     [CHAINS.METIS.id]: '0x420000000000000000000000000000000000000A',
     [CHAINS.MOONBEAM.id]: '0x3192Ae73315c3634Ffa217f71CF6CBc30FeE349A',
@@ -1135,6 +1145,7 @@ export const WETH = new Token({
     [CHAINS.BASE.id]: '0x4200000000000000000000000000000000000006',
     [CHAINS.ARBITRUM.id]: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
     [CHAINS.BLAST.id]: '0x4300000000000000000000000000000000000004',
+    [CHAINS.BERACHAIN.id]: '0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590',
   },
   decimals: 18,
   symbol: 'WETH',
@@ -1247,4 +1258,68 @@ export const METIS = new Token({
   logo: metisLogo,
   color: 'blue',
   routeSymbol: 'Metis',
+})
+
+export const BERA = new Token({
+  addresses: {
+    [CHAINS.BERACHAIN.id]: zeroAddress,
+  },
+  decimals: 18,
+  symbol: 'BERA',
+  name: 'Bera',
+  logo: beraLogo,
+  isNative: true,
+  swapableType: 'BERA',
+  color: 'gray',
+  visibilityRank: 90,
+  priorityRank: 300,
+  routeSymbol: 'BERA',
+})
+
+export const BNB = new Token({
+  addresses: {
+    [CHAINS.BNB.id]: zeroAddress,
+  },
+  decimals: 18,
+  symbol: 'BNB',
+  name: 'BNB',
+  logo: bnbLogo,
+  isNative: true,
+  swapableType: 'BNB',
+  color: 'yellow',
+  visibilityRank: 90,
+  priorityRank: 300,
+  routeSymbol: 'BNB',
+})
+
+export const CRO = new Token({
+  addresses: {
+    [CHAINS.CRONOS.id]: zeroAddress,
+  },
+  decimals: 18,
+  symbol: 'CRO',
+  name: 'Cronos',
+  logo: croLogo,
+  isNative: true,
+  swapableType: 'CRO',
+  color: 'blue',
+  visibilityRank: 90,
+  priorityRank: 300,
+  routeSymbol: 'CRO',
+})
+
+export const HYPE = new Token({
+  addresses: {
+    [CHAINS.HYPEREVM.id]: zeroAddress,
+  },
+  decimals: 18,
+  symbol: 'HYPE',
+  name: 'HyperEVM',
+  logo: hypeLogo,
+  isNative: true,
+  swapableType: 'HYPE',
+  color: 'green',
+  visibilityRank: 90,
+  priorityRank: 300,
+  routeSymbol: 'HYPE',
 })

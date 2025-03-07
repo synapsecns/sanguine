@@ -3,6 +3,110 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.9.4...@synapsecns/rest-api@1.10.0) (2025-03-07)
+
+
+### Features
+
+* Swap Engines [SYN-29] [SYN-35] ([#3563](https://github.com/synapsecns/sanguine/issues/3563)) ([537520e](https://github.com/synapsecns/sanguine/commit/537520e9b84431a4a2705d9616c9e2ebb514ac57))
+
+
+
+
+
+## [1.9.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.9.3...@synapsecns/rest-api@1.9.4) (2025-03-04)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.9.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.9.2...@synapsecns/rest-api@1.9.3) (2025-03-01)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.9.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.9.1...@synapsecns/rest-api@1.9.2) (2025-03-01)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.9.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.9.0...@synapsecns/rest-api@1.9.1) (2025-03-01)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+# [1.9.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.23...@synapsecns/rest-api@1.9.0) (2025-02-28)
+
+
+### Bug Fixes
+
+* add Metis token to rest-api ([c49ec66](https://github.com/synapsecns/sanguine/commit/c49ec66eafcef8e9f0bbef7924ffe654536736f5))
+* increase Bridge Limits Route test timeout ([bb601a4](https://github.com/synapsecns/sanguine/commit/bb601a40716d416205106d36277ae65a2d3342d1))
+* tests with unsupported chain ID ([d8f3c07](https://github.com/synapsecns/sanguine/commit/d8f3c0726bf8f20db384dfa7055b7ad90ae6f861))
+* token/cahins amount tests ([78dc595](https://github.com/synapsecns/sanguine/commit/78dc595d8643c3ae8df8c081566e6c11db4b3999))
+
+
+### Features
+
+* add gas.zip to valid brige modules ([7f34713](https://github.com/synapsecns/sanguine/commit/7f34713f2a17a74cfc5da3599caa93c08e3cb567))
+* add HYPE, HyperEVM, more native tokens to rest-api ([70b4310](https://github.com/synapsecns/sanguine/commit/70b4310583dd7b434fe6ad773b8e7767da911aeb))
+* update rest-api bridge map ([4360fc7](https://github.com/synapsecns/sanguine/commit/4360fc713afa9c8f84c3578189724d790b4059fe))
+
+
+
+
+
+## [1.8.23](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.22...@synapsecns/rest-api@1.8.23) (2025-02-28)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.8.22](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.21...@synapsecns/rest-api@1.8.22) (2025-02-27)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.8.21](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.20...@synapsecns/rest-api@1.8.21) (2025-02-25)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.8.20](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.19...@synapsecns/rest-api@1.8.20) (2025-02-25)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.8.19](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.18...@synapsecns/rest-api@1.8.19) (2025-02-21)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
 ## [1.8.18](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.8.17...@synapsecns/rest-api@1.8.18) (2025-02-06)
 
 **Note:** Version bump only for package @synapsecns/rest-api

@@ -11,11 +11,12 @@ func _() {
 	_ = x[Mysql-0]
 	_ = x[Sqlite-1]
 	_ = x[Clickhouse-2]
+	_ = x[Postgres-3]
 }
 
-const _DBType_name = "mysqlsqliteclickhouse"
+const _DBType_name = "mysqlsqliteclickhousepostgres"
 
-var _DBType_index = [...]uint8{0, 5, 11, 21}
+var _DBType_index = [...]uint8{0, 5, 11, 21, 29}
 
 func (i DBType) String() string {
 	if i < 0 || i >= DBType(len(_DBType_index)-1) {

@@ -1,6 +1,7 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import invariant from 'tiny-invariant'
 
+import { GasZipModuleSet } from './gaszip'
 import { FastBridgeRouterSet } from './rfq'
 import {
   SynapseRouterSet,
@@ -8,15 +9,21 @@ import {
   ChainProvider,
   PoolToken,
 } from './router'
+import { SwapEngineSet } from './swap/swapEngineSet'
 import * as operations from './operations'
 import { ETH_NATIVE_TOKEN_ADDRESS } from './utils/handleNativeToken'
 import { SynapseModuleSet, Query } from './module'
+import { SynapseIntentRouterSet } from './sir/synapseIntentRouterSet'
 
 class SynapseSDK {
   public allModuleSets: SynapseModuleSet[]
   public synapseRouterSet: SynapseRouterSet
   public synapseCCTPRouterSet: SynapseCCTPRouterSet
   public fastBridgeRouterSet: FastBridgeRouterSet
+  public gasZipModuleSet: GasZipModuleSet
+
+  public sirSet: SynapseIntentRouterSet
+  public swapEngineSet: SwapEngineSet
   public providers: { [chainId: number]: Provider }
 
   /**
@@ -45,11 +52,15 @@ class SynapseSDK {
     this.synapseRouterSet = new SynapseRouterSet(chainProviders)
     this.synapseCCTPRouterSet = new SynapseCCTPRouterSet(chainProviders)
     this.fastBridgeRouterSet = new FastBridgeRouterSet(chainProviders)
+    this.gasZipModuleSet = new GasZipModuleSet(chainProviders)
     this.allModuleSets = [
       this.synapseRouterSet,
       this.synapseCCTPRouterSet,
       this.fastBridgeRouterSet,
+      this.gasZipModuleSet,
     ]
+    this.sirSet = new SynapseIntentRouterSet(chainProviders)
+    this.swapEngineSet = new SwapEngineSet(chainProviders)
   }
 
   // Define Bridge operations
@@ -75,6 +86,7 @@ class SynapseSDK {
   // Define Swap operations
   public swap = operations.swap
   public swapQuote = operations.swapQuote
+  public swapV2 = operations.swapV2
 
   // Define Query operations
   public applyBridgeDeadline = operations.applyBridgeDeadline

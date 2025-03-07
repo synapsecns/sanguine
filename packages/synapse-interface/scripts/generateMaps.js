@@ -1,13 +1,15 @@
+require('dotenv').config()
+
 const { ethers } = require('ethers')
 
 const { prettyPrintTS } = require('./utils/prettyPrintTs')
+const { fetchGasZipData } = require('./utils/fetchGasZipData')
 const { fetchRfqData } = require('./utils/fetchRfqData')
-// Provider URLs
-const providers = require('./data/providers.json')
 // List of ignored bridge symbols
 const ignoredBridgeSymbols = require('./data/ignoredBridgeSymbols.json')
 // Symbol overrides (for tokens with incorrect on-chain symbols)
 const symbolOverrides = require('./data/symbolOverrides.json')
+const providerOverrides = require('./data/providerOverrides.json')
 // Contract ABIs
 const SynapseRouterABI = require('./abi/SynapseRouter.json')
 const SynapseCCTPABI = require('./abi/SynapseCCTP.json')
@@ -19,12 +21,6 @@ const DefaultPoolABI = require('./abi/IDefaultPool.json')
 // const rfqResponse = require('./data/rfqResponse.json')
 // ETH address
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-
-// Format is { chainId: providerUrl }
-// Replace providerUrl with new ethers.providers.JsonRpcProvider(providerUrl)
-Object.keys(providers).forEach((chainId) => {
-  providers[chainId] = new ethers.providers.JsonRpcProvider(providers[chainId])
-})
 
 // Contract addresses
 const SynapseRouterAddress = '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a'
@@ -43,8 +39,26 @@ const allowedChainIdsForSynapseCCTPRouter = [1, 10, 137, 8453, 42161, 43114]
 
 // Chain IDs where RFQ is allowed
 const allowedChainIdsForRfq = [
-  1, 10, 56, 480, 8453, 42161, 59144, 81457, 534352,
+  1, 10, 56, 130, 480, 8453, 42161, 59144, 80094, 81457, 534352,
 ]
+
+const allChainIds = Array.from(
+  new Set([
+    ...allowedChainIdsForSynapseBridge,
+    ...allowedChainIdsForSynapseCCTPRouter,
+    ...allowedChainIdsForRfq,
+  ])
+)
+if (!process.env.RPC_URL) {
+  throw new Error('RPC_URL is not defined in the environment variables')
+}
+// Format is { chainId: provider }
+const providers = allChainIds.reduce((acc, chainId) => {
+  acc[chainId] = new ethers.providers.JsonRpcProvider(
+    providerOverrides[chainId] || `${process.env.RPC_URL}/${chainId}`
+  )
+  return acc
+}, {})
 
 // Get SynapseRouter contract instances for each chain
 const SynapseRouters = {}
@@ -250,6 +264,15 @@ const getFastBridgeOriginMap = async (chainId, rfqResponse) => {
   return tokensToSymbols
 }
 
+const getGasZipOriginMap = async (chainId, gasZipChains) => {
+  if (!gasZipChains.includes(Number(chainId))) {
+    return {}
+  }
+  const tokensToSymbols = {}
+  tokensToSymbols[ETH] = new Set(['Gas.zip'])
+  return tokensToSymbols
+}
+
 // Function to get a list of bridge token symbols that could be swapped
 // into a token on a destination chain.
 const getDestinationBridgeSymbols = async (chainId, token) => {
@@ -359,6 +382,7 @@ const printMaps = async () => {
   console.log('Starting on chains: ', Object.keys(providers))
 
   const rfqResponse = await fetchRfqData()
+  const gasZipChains = await fetchGasZipData()
   await Promise.all(
     Object.keys(providers).map(async (chainId) => {
       // Get map from token to set of bridge token symbols
@@ -372,6 +396,11 @@ const printMaps = async () => {
       const rfqOriginMap = await getFastBridgeOriginMap(chainId, rfqResponse)
       Object.keys(rfqOriginMap).forEach((token) => {
         addSetToMap(originMap, token, rfqOriginMap[token])
+      })
+      // Add tokens from Gas.zip originMap to global originMap
+      const gasZipOriginMap = await getGasZipOriginMap(chainId, gasZipChains)
+      Object.keys(gasZipOriginMap).forEach((token) => {
+        addSetToMap(originMap, token, gasZipOriginMap[token])
       })
       const tokens = {}
       await Promise.all(
@@ -401,6 +430,11 @@ const printMaps = async () => {
           ) {
             tokens[token].destination.push(getRFQSymbol(tokens[token].symbol))
           }
+          // Check if token is a native asset on a GasZip supported chain
+          if (token === ETH && gasZipChains.includes(Number(chainId))) {
+            tokens[token].destination.push('Gas.zip')
+          }
+          tokens[token].destination = tokens[token].destination.sort()
         })
       )
       bridgeMap[chainId] = sortMapByKeys(tokens)
@@ -469,6 +503,8 @@ const getTokenDecimals = async (chainId, token) => {
 const getRFQSymbol = (symbol) => {
   if (symbol === 'USDC.e') {
     return 'RFQ.USDC'
+  } else if (symbol === 'WETH') {
+    return 'RFQ.ETH'
   } else {
     return `RFQ.${symbol}`
   }

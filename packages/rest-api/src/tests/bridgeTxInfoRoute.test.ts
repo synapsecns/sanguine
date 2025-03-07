@@ -4,6 +4,7 @@ import express from 'express'
 import bridgeTxInfoRoute from '../routes/bridgeTxInfoRoute'
 import { USDC } from '../constants/bridgeable'
 import { NativeGasAddress } from '../constants'
+import { UNSUPPORTED_CHAIN } from './testConstants'
 
 const app = express()
 app.use('/bridgeTxInfo', bridgeTxInfoRoute)
@@ -86,7 +87,7 @@ describe('Bridge TX Info Route', () => {
 
   it('should return 400 for unsupported fromChain', async () => {
     const response = await request(app).get('/bridgeTxInfo').query({
-      fromChain: '999',
+      fromChain: UNSUPPORTED_CHAIN,
       toChain: '137',
       fromToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       toToken: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',

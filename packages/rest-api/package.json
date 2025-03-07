@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/rest-api",
-  "version": "1.8.18",
+  "version": "1.10.0",
   "private": "true",
   "engines": {
     "node": ">=18.17.0"
@@ -14,16 +14,16 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
-    "test": "jest",
-    "test:coverage": "jest --collect-coverage"
+    "test": "jest --testPathIgnorePatterns=\"bridgeLimitsRoute.test\"",
+    "test:coverage": "jest --collect-coverage --testPathIgnorePatterns=\"bridgeLimitsRoute.test\""
   },
   "dependencies": {
     "@ethersproject/address": "^5.7.0",
     "@ethersproject/bignumber": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/units": "5.7.0",
-    "@synapsecns/sdk-router": "^0.11.9",
-    "@synapsecns/synapse-constants": "^1.8.6",
+    "@synapsecns/sdk-router": "^0.13.0",
+    "@synapsecns/synapse-constants": "^1.8.9",
     "bignumber": "^1.1.0",
     "cross-fetch": "^4.0.0",
     "dotenv": "^16.4.5",

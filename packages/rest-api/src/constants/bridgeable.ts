@@ -437,6 +437,7 @@ export const USDC: BridgeableToken = {
     [CHAINS.POLYGON.id]: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
     [CHAINS.SCROLL.id]: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
     [CHAINS.LINEA.id]: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
+    [CHAINS.UNICHAIN.id]: '0x078d782b760474a361dda0af3839290b0ef57ad6',
   },
   decimals: {
     [CHAINS.ETHEREUM.id]: 6,
@@ -454,6 +455,7 @@ export const USDC: BridgeableToken = {
     [CHAINS.POLYGON.id]: 6,
     [CHAINS.SCROLL.id]: 6,
     [CHAINS.LINEA.id]: 6,
+    [CHAINS.UNICHAIN.id]: 6,
   },
   symbol: 'USDC',
   name: 'USD Coin',
@@ -808,6 +810,7 @@ export const ETH: BridgeableToken = {
     [CHAINS.SCROLL.id]: NativeTokenAddress,
     [CHAINS.LINEA.id]: NativeTokenAddress,
     [CHAINS.WORLDCHAIN.id]: NativeTokenAddress,
+    [CHAINS.UNICHAIN.id]: NativeTokenAddress,
     [CHAINS.BNBCHAIN.id]: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
   },
   decimals: {
@@ -822,6 +825,7 @@ export const ETH: BridgeableToken = {
     [CHAINS.SCROLL.id]: 18,
     [CHAINS.LINEA.id]: 18,
     [CHAINS.WORLDCHAIN.id]: 18,
+    [CHAINS.UNICHAIN.id]: 18,
     [CHAINS.BNBCHAIN.id]: 18,
   },
   symbol: 'ETH',
@@ -1000,6 +1004,7 @@ export const USDCe: BridgeableToken = {
     [CHAINS.AURORA.id]: '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802',
     [CHAINS.POLYGON.id]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
     [CHAINS.WORLDCHAIN.id]: '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1',
+    [CHAINS.BERACHAIN.id]: '0x549943e04f40284185054145c6E4e9568C1D3241',
   },
   decimals: {
     [CHAINS.OPTIMISM.id]: 6,
@@ -1008,6 +1013,7 @@ export const USDCe: BridgeableToken = {
     [CHAINS.AURORA.id]: 6,
     [CHAINS.POLYGON.id]: 6,
     [CHAINS.WORLDCHAIN.id]: 6,
+    [CHAINS.BERACHAIN.id]: 6,
   },
   symbol: 'USDC.e',
   name: 'Bridged USDC',
@@ -1300,6 +1306,7 @@ export const WETH: BridgeableToken = {
     [CHAINS.BASE.id]: '0x4200000000000000000000000000000000000006',
     [CHAINS.ARBITRUM.id]: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
     [CHAINS.BLAST.id]: '0x4300000000000000000000000000000000000004',
+    [CHAINS.BERACHAIN.id]: '0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590',
   },
   decimals: {
     [CHAINS.ETHEREUM.id]: 18,
@@ -1312,6 +1319,7 @@ export const WETH: BridgeableToken = {
     [CHAINS.BASE.id]: 18,
     [CHAINS.ARBITRUM.id]: 18,
     [CHAINS.BLAST.id]: 18,
+    [CHAINS.BERACHAIN.id]: 18,
   },
   symbol: 'WETH',
   name: 'Wrapped ETH',
@@ -1411,4 +1419,93 @@ export const SPECTRAL: BridgeableToken = {
   routeSymbol: 'SPEC',
   imgUrl:
     'https://105bc697.sanguine-fe.pages.dev/_next/static/media/spectral.6d51750c.svg',
+}
+
+export const METIS: BridgeableToken = {
+  priorityRank: 300,
+  addresses: {
+    [CHAINS.DFK.id]: '0x43E8E55792D6317328e5c6B0A0C89eF4b8102Fa2',
+    [CHAINS.KLAYTN.id]: '0x543f1b2176F7E677a95D01ca83551FAa08F83D9F',
+    [CHAINS.METIS.id]: NativeTokenAddress,
+  },
+  decimals: {
+    [CHAINS.DFK.id]: 18,
+    [CHAINS.KLAYTN.id]: 18,
+    [CHAINS.METIS.id]: 18,
+  },
+  symbol: 'Metis',
+  name: 'Metis Token',
+  swapableType: 'Metis',
+  color: 'blue',
+  routeSymbol: 'Metis',
+  imgUrl:
+    'https://45b41e43.sanguine-fe.pages.dev/_next/static/media/metis.90b6abf0.svg',
+}
+
+export const BERA: BridgeableToken = {
+  priorityRank: 300,
+  addresses: {
+    [CHAINS.BERACHAIN.id]: NativeTokenAddress,
+  },
+  decimals: {
+    [CHAINS.BERACHAIN.id]: 18,
+  },
+  symbol: 'BERA',
+  name: 'BERA',
+  swapableType: 'BERA',
+  color: 'gray',
+  routeSymbol: 'BERA',
+  imgUrl:
+    'https://45b41e43.sanguine-fe.pages.dev/_next/static/media/berachain.57304c86.svg',
+}
+
+export const BNB: BridgeableToken = {
+  priorityRank: 300,
+  addresses: {
+    [CHAINS.BNBCHAIN.id]: NativeTokenAddress,
+  },
+  decimals: {
+    [CHAINS.BNBCHAIN.id]: 18,
+  },
+  symbol: 'BNB',
+  name: 'BNB',
+  swapableType: 'BNB',
+  color: 'yellow',
+  routeSymbol: 'BNB',
+  imgUrl:
+    'https://45b41e43.sanguine-fe.pages.dev/_next/static/media/bnb.8bf81f2a.svg',
+}
+
+export const CRO: BridgeableToken = {
+  priorityRank: 300,
+  addresses: {
+    [CHAINS.CRONOS.id]: NativeTokenAddress,
+  },
+  decimals: {
+    [CHAINS.CRONOS.id]: 18,
+  },
+  symbol: 'CRO',
+  name: 'Cronos',
+  swapableType: 'CRO',
+  color: 'blue',
+  routeSymbol: 'CRO',
+  imgUrl:
+    'https://45b41e43.sanguine-fe.pages.dev/_next/static/media/cronos.b06f8311.svg',
+}
+
+export const HYPE: BridgeableToken = {
+  addresses: {
+    [CHAINS.HYPEREVM.id]: NativeTokenAddress,
+  },
+  decimals: {
+    [CHAINS.HYPEREVM.id]: 18,
+  },
+  symbol: 'HYPE',
+  name: 'HYPE',
+  swapableType: 'HYPE',
+  color: 'green',
+  priorityRank: 300,
+  routeSymbol: 'HYPE',
+  imgUrl:
+    'https://45b41e43.sanguine-fe.pages.dev/_next/static/media/hyperliquid.3dafe2fd.svg',
 }

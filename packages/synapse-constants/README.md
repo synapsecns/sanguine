@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/synapse-constants?style=flat-square)](https://www.npmjs.com/package/synapse-constants)
 
-This package contains the Synapse Protocol Token and Chain Constants
+This package contains the Synapse Protocol Token and Chain Constants.
 
 ## Installation
 

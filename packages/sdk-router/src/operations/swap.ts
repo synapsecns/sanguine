@@ -1,3 +1,4 @@
+import { AddressZero, Zero } from '@ethersproject/constants'
 import { PopulatedTransaction } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
 
@@ -10,7 +11,93 @@ import {
 } from '../module'
 import { handleNativeToken } from '../utils/handleNativeToken'
 import { SynapseSDK } from '../sdk'
-import { TEN_MINUTES, applyOptionalDeadline } from '../utils/deadlines'
+import {
+  RecipientEntity,
+  RouteInput,
+  Slippage,
+  USER_SIMULATED_ADDRESS,
+} from '../swap'
+import {
+  TEN_MINUTES,
+  applyOptionalDeadline,
+  calculateDeadline,
+} from '../utils/deadlines'
+
+export type SwapQuoteV2 = {
+  routerAddress: string
+  maxAmountOut: BigNumber
+  tx?: PopulatedTransaction
+}
+
+const EMPTY_QUOTE_V2: SwapQuoteV2 = {
+  routerAddress: AddressZero,
+  maxAmountOut: Zero,
+}
+
+export type SwapV2Parameters = {
+  chainId: number
+  tokenIn: string
+  tokenOut: string
+  amountIn: BigintIsh
+  to?: string
+  slippage?: Slippage
+  deadline?: number
+  restrictComplexity?: boolean
+}
+
+export async function swapV2(
+  this: SynapseSDK,
+  {
+    chainId,
+    tokenIn,
+    tokenOut,
+    amountIn,
+    to,
+    slippage,
+    deadline,
+    restrictComplexity,
+  }: SwapV2Parameters
+): Promise<SwapQuoteV2> {
+  const input: RouteInput = {
+    chainId,
+    tokenIn: handleNativeToken(tokenIn),
+    tokenOut: handleNativeToken(tokenOut),
+    amountIn,
+    msgSender: this.swapEngineSet.getTokenZap(chainId),
+    finalRecipient: {
+      entity: to ? RecipientEntity.User : RecipientEntity.UserSimulated,
+      address: to || USER_SIMULATED_ADDRESS,
+    },
+    restrictComplexity: restrictComplexity ?? false,
+  }
+  const quote = await this.swapEngineSet.getBestQuote(input, {
+    allowMultiStep: true,
+  })
+  if (!quote) {
+    return EMPTY_QUOTE_V2
+  }
+  const route = await this.swapEngineSet.generateRoute(input, quote, {
+    allowMultiStep: true,
+    slippage,
+  })
+  if (!route) {
+    return EMPTY_QUOTE_V2
+  }
+  const tx = to
+    ? await this.sirSet.completeIntentWithBalanceChecks(
+        chainId,
+        tokenIn,
+        amountIn,
+        deadline ?? calculateDeadline(TEN_MINUTES),
+        route.steps
+      )
+    : undefined
+  return {
+    routerAddress: this.sirSet.getSirAddress(chainId),
+    maxAmountOut: quote.expectedAmountOut,
+    tx,
+  }
+}
 
 /**
  * Performs a swap through a Synapse Router.
