@@ -206,18 +206,18 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 	}
 
 	// check relay amount versus origin & dest constraints
-	maxRelayAmount_orig := m.config.GetMaxRelayAmount(int(quote.Transaction.OriginChainId), quote.Transaction.OriginToken)
-	if maxRelayAmount_orig != nil {
-		if quote.Transaction.OriginAmount.Cmp(maxRelayAmount_orig) > 0 {
-			span.AddEvent("relay amount > maxRelayAmount_orig")
+	maxRelayAmountOrig := m.config.GetMaxRelayAmount(int(quote.Transaction.OriginChainId), quote.Transaction.OriginToken)
+	if maxRelayAmountOrig != nil {
+		if quote.Transaction.OriginAmount.Cmp(maxRelayAmountOrig) > 0 {
+			span.AddEvent("relay amount > maxRelayAmountOrig")
 			return false, nil
 		}
 	}
 
-	maxRelayAmount_dest := m.config.GetMaxRelayAmount(int(quote.Transaction.DestChainId), quote.Transaction.DestToken)
-	if maxRelayAmount_dest != nil {
-		if quote.Transaction.DestAmount.Cmp(maxRelayAmount_dest) > 0 {
-			span.AddEvent("relay amount > maxRelayAmount_dest")
+	maxRelayAmountDest := m.config.GetMaxRelayAmount(int(quote.Transaction.DestChainId), quote.Transaction.DestToken)
+	if maxRelayAmountDest != nil {
+		if quote.Transaction.DestAmount.Cmp(maxRelayAmountDest) > 0 {
+			span.AddEvent("relay amount > maxRelayAmountDest")
 			return false, nil
 		}
 	}

@@ -32,8 +32,31 @@ type FeePricer interface {
 	GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, error)
 	// GetTokenPrice returns the price of a token in USD.
 	GetTokenPrice(ctx context.Context, token string) (float64, error)
-	// GetPricePair calculates the price of a token pair from one chain to another.
-	// "Base" = the asset to be priced (EG: ETHER), "Priced" = the asset to price into. (EG: USDC)
+	// GetPricePair starts with a specified value of a base token and prices it into an equivalent value of another token.
+	//
+	// "Base" = the asset that is being priced from, "Priced" = the asset that is being priced into
+	//
+	// example:
+	// ETH is worth $2000.00 USD and USDC is worth $1.00 USD.
+	//
+	// Price 2.5 Arbitrum ETH into Optimism USDC.
+	// AKA: I have 2.5 Units of Arbitrum Ether -- what is an equivalently valued amount of Optimism USDC?
+	//
+	// GetPricePair params: baseTokenChain = 42161, baseToken = 'ETH', pricedTokenChain = 10, pricedToken = 'USDC', baseValueWei = 2500000000000000000
+	// The relevant results (roughly in order of calculation) are:
+	//
+	//  BaseToken.Symbol = 'ETH'
+	//  PricedToken.Symbol = 'USDC'
+	//  BaseToken.SpotUsd = 2000.00
+	//  PricedToken.SpotUsd = 1.00
+	//
+	// 	BaseToken.Wei = 2500000000000000000
+	//  BaseToken.Units = 2.5
+	//  BaseToken.USD = 5000.00
+	//  PricedToken.USD = 5000.00
+	//  PricedToken.Units = 5000.0
+	// 	PricedToken.Wei = 5000000000
+	//
 	GetPricePair(parentCtx context.Context, stepLabel string, baseTokenChain uint32, pricedTokenChain uint32, baseToken string, pricedToken string, baseValueWei big.Int) (_ *PricedValuePair, err error)
 }
 
