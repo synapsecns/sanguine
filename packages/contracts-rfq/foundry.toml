@@ -23,12 +23,15 @@ sort_imports = true
 [rpc_endpoints]
 arbitrum = "${ARBITRUM_RPC}"
 base = "${BASE_RPC}"
+berachain = "${BERACHAIN_RPC}"
 blast = "${BLAST_RPC}"
 bnb = "${BNB_RPC}"
+ethereum = "${ETHEREUM_RPC}"
+hyperevm = "${HYPEREVM_RPC}"
 linea = "${LINEA_RPC}"
-mainnet = "${MAINNET_RPC}"
 optimism = "${OPTIMISM_RPC}"
 scroll = "${SCROLL_RPC}"
+unichain = "${UNICHAIN_RPC}"
 worldchain = "${WORLDCHAIN_RPC}"
 
 # Testnets
@@ -41,22 +44,25 @@ scroll_sepolia = "${SCROLL_SEPOLIA_RPC}"
 
 
 [etherscan]
-arbitrum = { key = "${ARBITRUM_VERIFIER_KEY}", url = "${ARBITRUM_VERIFIER_URL}" }
-base = { key = "${BASE_VERIFIER_KEY}", url = "${BASE_VERIFIER_URL}" }
-blast = { key = "${BLAST_VERIFIER_KEY}", url = "${BLAST_VERIFIER_URL}" }
-bnb = { key = "${BNB_VERIFIER_KEY}", url = "${BNB_VERIFIER_URL}" }
-linea = { key = "${LINEA_VERIFIER_KEY}", url = "${LINEA_VERIFIER_URL}" }
-mainnet = { key = "${MAINNET_VERIFIER_KEY}", url = "${MAINNET_VERIFIER_URL}" }
-optimism = { key = "${OPTIMISM_VERIFIER_KEY}", url = "${OPTIMISM_VERIFIER_URL}" }
-scroll = { key = "${SCROLL_VERIFIER_KEY}", url = "${SCROLL_VERIFIER_URL}" }
-worldchain = { key = "${WORLDCHAIN_VERIFIER_KEY}", url = "${WORLDCHAIN_VERIFIER_URL}" }
+arbitrum = { key = "${ARBITRUM_VERIFIER_KEY}", url = "${ARBITRUM_VERIFIER_URL}", chain = 42161 }
+base = { key = "${BASE_VERIFIER_KEY}", url = "${BASE_VERIFIER_URL}", chain = 8453 }
+berachain = { key = "${BERACHAIN_VERIFIER_KEY}", url = "${BERACHAIN_VERIFIER_URL}", chain = 80094 }
+blast = { key = "${BLAST_VERIFIER_KEY}", url = "${BLAST_VERIFIER_URL}", chain = 81457 }
+bnb = { key = "${BNB_VERIFIER_KEY}", url = "${BNB_VERIFIER_URL}", chain = 56 }
+ethereum = { key = "${ETHEREUM_VERIFIER_KEY}", url = "${ETHEREUM_VERIFIER_URL}", chain = 1 }
+hyperevm = { key = "${HYPEREVM_VERIFIER_KEY}", url = "${HYPEREVM_VERIFIER_URL}", chain = 999 }
+linea = { key = "${LINEA_VERIFIER_KEY}", url = "${LINEA_VERIFIER_URL}", chain = 59144 }
+optimism = { key = "${OPTIMISM_VERIFIER_KEY}", url = "${OPTIMISM_VERIFIER_URL}", chain = 10 }
+scroll = { key = "${SCROLL_VERIFIER_KEY}", url = "${SCROLL_VERIFIER_URL}", chain = 534352 }
+unichain = { key = "${UNICHAIN_VERIFIER_KEY}", url = "${UNICHAIN_VERIFIER_URL}", chain = 130 }
+worldchain = { key = "${WORLDCHAIN_VERIFIER_KEY}", url = "${WORLDCHAIN_VERIFIER_URL}", chain = 480 }
 
 # Testnets
-arb_sepolia = { key = "${ARB_SEPOLIA_VERIFIER_KEY}", url = "${ARB_SEPOLIA_VERIFIER_URL}" }
-base_sepolia = { key = "${BASE_SEPOLIA_VERIFIER_KEY}", url = "${BASE_SEPOLIA_VERIFIER_URL}" }
-bnb_testnet = { key = "${BNB_TESTNET_VERIFIER_KEY}", url = "${BNB_TESTNET_VERIFIER_URL}" }
-eth_sepolia = { key = "${ETH_SEPOLIA_VERIFIER_KEY}", url = "${ETH_SEPOLIA_VERIFIER_URL}" }
-op_sepolia = { key = "${OP_SEPOLIA_VERIFIER_KEY}", url = "${OP_SEPOLIA_VERIFIER_URL}" }
-scroll_sepolia = { key = "${SCROLL_SEPOLIA_VERIFIER_KEY}", url = "${SCROLL_SEPOLIA_VERIFIER_URL}" }
+arb_sepolia = { key = "${ARB_SEPOLIA_VERIFIER_KEY}", url = "${ARB_SEPOLIA_VERIFIER_URL}", chain = 421614 }
+base_sepolia = { key = "${BASE_SEPOLIA_VERIFIER_KEY}", url = "${BASE_SEPOLIA_VERIFIER_URL}", chain = 84532 }
+bnb_testnet = { key = "${BNB_TESTNET_VERIFIER_KEY}", url = "${BNB_TESTNET_VERIFIER_URL}", chain = 97 }
+eth_sepolia = { key = "${ETH_SEPOLIA_VERIFIER_KEY}", url = "${ETH_SEPOLIA_VERIFIER_URL}", chain = 11155111 }
+op_sepolia = { key = "${OP_SEPOLIA_VERIFIER_KEY}", url = "${OP_SEPOLIA_VERIFIER_URL}", chain = 11155420 }
+scroll_sepolia = { key = "${SCROLL_SEPOLIA_VERIFIER_KEY}", url = "${SCROLL_SEPOLIA_VERIFIER_URL}", chain = 534351 }
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
