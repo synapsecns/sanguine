@@ -152,11 +152,17 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     feeAmount: BigNumber
     feeConfig: FeeConfig
   }> {
-    // Origin Out vs Dest Out is the effective fee
+    // TODO: do we actually need to return non-zero alues here?
+    // Origin Out vs Dest Out is the effective fee if amountOut is within 1% of amountIn.
+    // Otherwise origin and destination tokens are different, so the SDK has no means to determine the effective fee.
+    const amountIn = bridgeRoute.originQuery.minAmountOut
+    const amountOut = bridgeRoute.destQuery.minAmountOut
+    const feeAmount =
+      amountOut.gte(amountIn.mul(99).div(100)) && amountOut.lte(amountIn)
+        ? amountIn.sub(amountOut)
+        : Zero
     return {
-      feeAmount: bridgeRoute.originQuery.minAmountOut.sub(
-        bridgeRoute.destQuery.minAmountOut
-      ),
+      feeAmount,
       feeConfig: {
         bridgeFee: 0,
         minFee: BigNumber.from(0),
