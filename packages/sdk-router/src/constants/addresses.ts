@@ -69,7 +69,7 @@ export const FAST_BRIDGE_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
 /**
  * SynapseIntentRouter contract address for all chains except ones from SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP.
  */
-const SIR_ADDRESS = '0x0000000051250060EEC6bc1Bd37dC3eF30c9be25'
+const SIR_ADDRESS = '0x512000a034E154908Efb1eC48579F4ffDb000512'
 const SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP: AddressMap = {}
 export const SYNAPSE_INTENT_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
   INTENTS_SUPPORTED_CHAIN_IDS,
