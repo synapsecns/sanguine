@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.9.4...@synapsecns/rest-api@1.10.0) (2025-03-07)
+
+
+### Features
+
+* Swap Engines [SYN-29] [SYN-35] ([#3563](https://github.com/synapsecns/sanguine/issues/3563)) ([537520e](https://github.com/synapsecns/sanguine/commit/537520e9b84431a4a2705d9616c9e2ebb514ac57))
+
+
+
+
+
 ## [1.9.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.9.3...@synapsecns/rest-api@1.9.4) (2025-03-04)
 
 **Note:** Version bump only for package @synapsecns/rest-api

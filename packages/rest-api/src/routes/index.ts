@@ -3,6 +3,7 @@ import express from 'express'
 import indexRoute from './indexRoute'
 import swapRoute from './swapRoute'
 import swapTxInfoRoute from './swapTxInfoRoute'
+import swapV2Route from './swapV2Route'
 import bridgeRoute from './bridgeRoute'
 import bridgeTxInfoRoute from './bridgeTxInfoRoute'
 import synapseTxIdRoute from './synapseTxIdRoute'
@@ -19,6 +20,7 @@ const router: express.Router = express.Router()
 router.use('/', indexRoute)
 router.use('/swap', swapRoute)
 router.use('/swapTxInfo', swapTxInfoRoute)
+router.use('/swap/v2', swapV2Route)
 router.use('/bridge', bridgeRoute)
 router.use('/bridgeTxInfo', bridgeTxInfoRoute)
 router.use('/bridgeLimits', bridgeLimitsRoute)

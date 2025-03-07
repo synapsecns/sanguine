@@ -1,0 +1,115 @@
+name: 'Build Hyperliquid Node Image'
+on:
+  schedule:
+    - cron: '30 1 * * *'  # Run daily at 1:30 UTC
+  workflow_dispatch:  # Allow manual triggering
+  push:
+    branches:
+      - main  # Adjust branch as needed
+      - feat/hl
+      - fix/hyperliquid-arm64
+    paths:
+      - 'docker/hyperliquid.Dockerfile'
+      - '.github/workflows/hyperliquid-node.yml'
+
+jobs:
+  build-testnet:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      actions: read
+      contents: read
+    steps:
+      - name: Git Checkout (Sanguine)
+        uses: actions/checkout@v4
+
+      - name: Git Checkout (Hyperliquid)
+        uses: actions/checkout@v4
+        with:
+          repository: 'hyperliquid-dex/node'
+          ref: 'main'
+          path: 'hyperliquid-node'
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: network=host
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set Date Tag
+        id: date
+        run: echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+
+      - name: Build and Push Testnet Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/hyperliquid.Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ghcr.io/synapsecns/hyperliquid:testnet-latest
+            ghcr.io/synapsecns/hyperliquid:testnet-${{ github.sha }}
+            ghcr.io/synapsecns/hyperliquid:testnet-${{ steps.date.outputs.date }}
+          build-args: |
+            CHAIN=Testnet
+
+  build-mainnet:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      actions: read
+      contents: read
+    steps:
+      - name: Git Checkout (Sanguine)
+        uses: actions/checkout@v4
+
+      - name: Git Checkout (Hyperliquid)
+        uses: actions/checkout@v4
+        with:
+          repository: 'hyperliquid-dex/node'
+          ref: 'main'
+          path: 'hyperliquid-node'
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: network=host
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set Date Tag
+        id: date
+        run: echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+
+      - name: Build and Push Mainnet Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/hyperliquid.Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ghcr.io/synapsecns/hyperliquid:latest
+            ghcr.io/synapsecns/hyperliquid:mainnet-latest
+            ghcr.io/synapsecns/hyperliquid:mainnet-${{ github.sha }}
+            ghcr.io/synapsecns/hyperliquid:mainnet-${{ steps.date.outputs.date }}
+          build-args: |
+            CHAIN=Mainnet
