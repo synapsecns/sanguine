@@ -205,12 +205,19 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		return false, nil
 	}
 
-	// check relay amount
-	// IE: what is the maximum amount of output tokens that we're willing & able to give in exchange for the amount of origin tokens supplied?
-	maxRelayAmount := m.config.GetMaxRelayAmount(int(quote.Transaction.OriginChainId), quote.Transaction.OriginToken)
-	if maxRelayAmount != nil {
-		if quote.Transaction.OriginAmount.Cmp(maxRelayAmount) > 0 {
-			span.AddEvent("origin amount is greater than max relay amount")
+	// check relay amount versus origin & dest constraints
+	maxRelayAmount_orig := m.config.GetMaxRelayAmount(int(quote.Transaction.OriginChainId), quote.Transaction.OriginToken)
+	if maxRelayAmount_orig != nil {
+		if quote.Transaction.OriginAmount.Cmp(maxRelayAmount_orig) > 0 {
+			span.AddEvent("relay amount > maxRelayAmount_orig")
+			return false, nil
+		}
+	}
+
+	maxRelayAmount_dest := m.config.GetMaxRelayAmount(int(quote.Transaction.DestChainId), quote.Transaction.DestToken)
+	if maxRelayAmount_dest != nil {
+		if quote.Transaction.DestAmount.Cmp(maxRelayAmount_dest) > 0 {
+			span.AddEvent("relay amount > maxRelayAmount_dest")
 			return false, nil
 		}
 	}

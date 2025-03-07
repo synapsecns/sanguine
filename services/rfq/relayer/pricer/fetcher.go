@@ -21,6 +21,8 @@ import (
 
 // exported constant used to apply special pricing behavior for USD as opposed to any token asset
 // eg: If we are pricing an ETH value into US Dollars (not USDC) then we can supply USD_ as the "Price" asset
+//
+// TODO: find a better home for global constants like this
 const USD_ = "USD"
 
 // CoingeckoPriceFetcher is an interface for fetching prices from coingecko.

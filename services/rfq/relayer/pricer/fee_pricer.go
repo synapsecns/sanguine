@@ -33,6 +33,7 @@ type FeePricer interface {
 	// GetTokenPrice returns the price of a token in USD.
 	GetTokenPrice(ctx context.Context, token string) (float64, error)
 	// GetPricePair calculates the price of a token pair from one chain to another.
+	// "Base" = the asset to be priced (EG: ETHER), "Priced" = the asset to price into. (EG: USDC)
 	GetPricePair(parentCtx context.Context, stepLabel string, baseTokenChain uint32, pricedTokenChain uint32, baseToken string, pricedToken string, baseValueWei big.Int) (_ *PricedValuePair, err error)
 }
 
