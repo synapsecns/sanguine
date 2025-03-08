@@ -1,7 +1,7 @@
 {
   "name": "@synapsecns/rfq-indexer-api",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -51,7 +51,7 @@
     "@types/pg": "^8.11.9",
     "@types/supertest": "^6.0.2",
     "@types/swagger-jsdoc": "6.0.4",
-    "@types/swagger-ui-express": "4.1.6",
+    "@types/swagger-ui-express": "4.1.8",
     "dotenv": "^16.4.5",
     "express-validator": "^7.2.0",
     "swagger-jsdoc": "^6.2.8",
