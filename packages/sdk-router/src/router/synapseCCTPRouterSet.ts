@@ -15,6 +15,7 @@ export class SynapseCCTPRouterSet extends RouterSet {
     'CircleRequestSentEvent',
     'CircleRequestFulfilledEvent',
   ]
+  public readonly isBridgeV2Supported = false
 
   constructor(chains: ChainProvider[]) {
     super(chains, CCTP_ROUTER_ADDRESS_MAP, SynapseCCTPRouter)

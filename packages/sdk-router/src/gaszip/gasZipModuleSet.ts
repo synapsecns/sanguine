@@ -21,6 +21,8 @@ const MEDIAN_TIME_GAS_ZIP = 30
 export class GasZipModuleSet extends SynapseModuleSet {
   public readonly bridgeModuleName = 'Gas.zip'
   public readonly allEvents = []
+  // Gas.zip does not support swaps on neither origin nor destination chains.
+  public readonly isBridgeV2Supported = false
 
   public modules: {
     [chainId: number]: GasZipModule

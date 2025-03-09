@@ -9,7 +9,131 @@ import {
   SynapseModuleSet,
   Query,
   applyDeadlineToQuery,
+  BridgeQuoteV2,
 } from '../module'
+import { Slippage } from '../swap'
+
+/**
+ * Parameters for the `bridgeV2` function.
+ *
+ * @param originChainId - ID of the origin chain, where funds will be sent from.
+ * @param destChainId - ID of the destination chain, where funds will be received.
+ * @param tokenIn - Address of the token to be bridged from the origin chain.
+ * @param tokenOut - Address of the token to be received on the destination chain.
+ * @param amountIn - Amount of input tokens on the origin chain.
+ * @param originSender - Optional address of the sender on the origin chain. No calldata is returned if not provided.
+ * @param destRecipient - Optional address of the recipient on the destination chain, defaults to `originSender`.
+ * @param slippage - Optional slippage percentage to apply to the proceeds of the bridge operation.
+ * @param deadline - Optional deadline for the bridge operation to be performed on the origin chain.
+ */
+export type BridgeV2Parameters = {
+  originChainId: number
+  destChainId: number
+  tokenIn: string
+  tokenOut: string
+  amountIn: BigintIsh
+  originSender?: string
+  destRecipient?: string
+  slippage?: Slippage
+  deadline?: number
+}
+
+export async function bridgeV2(
+  this: SynapseSDK,
+  params: BridgeV2Parameters
+): Promise<BridgeQuoteV2[]> {
+  params.tokenIn = handleNativeToken(params.tokenIn)
+  params.tokenOut = handleNativeToken(params.tokenOut)
+  const bridgeV2Modules = this.allModuleSets.filter(
+    (set) => set.isBridgeV2Supported
+  )
+  const [bridgeV1Quotes, bridgeV2Quotes] = await Promise.all([
+    _collectV1Quotes.call(this, params, bridgeV2Modules),
+    _collectV2Quotes.call(this, params, bridgeV2Modules),
+  ])
+  // Combine the quotes and sort by maxAmountOut in descending order
+  return [...bridgeV1Quotes, ...bridgeV2Quotes].sort((a, b) =>
+    a.maxAmountOut.gt(b.maxAmountOut) ? -1 : 1
+  )
+}
+
+async function _collectV1Quotes(
+  this: SynapseSDK,
+  params: BridgeV2Parameters,
+  bridgeV2Modules: SynapseModuleSet[]
+): Promise<BridgeQuoteV2[]> {
+  const deadlineBN = params.deadline
+    ? BigNumber.from(params.deadline)
+    : undefined
+  const bridgeV1Quotes = await allBridgeQuotes.call(
+    this,
+    params.originChainId,
+    params.destChainId,
+    params.tokenIn,
+    params.tokenOut,
+    params.amountIn,
+    {
+      deadline: deadlineBN,
+      originUserAddress: params.originSender,
+      excludedModules: bridgeV2Modules.map((set) => set.bridgeModuleName),
+    }
+  )
+  return Promise.all(
+    bridgeV1Quotes.map(async (quote: BridgeQuote) => {
+      // Apply slippage
+      const { originQuery: originQuerySlippage, destQuery: destQuerySlippage } =
+        applyBridgeSlippage.call(
+          this,
+          quote.bridgeModuleName,
+          quote.originQuery,
+          quote.destQuery,
+          params.slippage?.numerator,
+          params.slippage?.denominator
+        )
+      // Apply deadline
+      const { originQuery, destQuery } = applyBridgeDeadline.call(
+        this,
+        quote.bridgeModuleName,
+        originQuerySlippage,
+        destQuerySlippage,
+        deadlineBN
+      )
+      // Generate the transaction calldata
+      const tx = params.originSender
+        ? await bridge.call(
+            this,
+            params.destRecipient || params.originSender,
+            quote.routerAddress,
+            params.originChainId,
+            params.destChainId,
+            params.tokenIn,
+            params.amountIn,
+            originQuery,
+            destQuery
+          )
+        : undefined
+      return {
+        id: quote.id,
+        originChainId: params.originChainId,
+        destChainId: params.destChainId,
+        routerAddress: quote.routerAddress,
+        maxAmountOut: quote.maxAmountOut,
+        estimatedTime: quote.estimatedTime,
+        bridgeModuleName: quote.bridgeModuleName,
+        gasDropAmount: quote.gasDropAmount,
+        tx,
+      }
+    })
+  )
+}
+
+async function _collectV2Quotes(
+  this: SynapseSDK,
+  params: BridgeV2Parameters,
+  bridgeV2Modules: SynapseModuleSet[]
+): Promise<BridgeQuoteV2[]> {
+  return []
+}
 
 /**
  * Creates a populated bridge transaction ready for signing and submission to the origin chain.

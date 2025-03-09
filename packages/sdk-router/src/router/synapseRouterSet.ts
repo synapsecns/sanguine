@@ -24,6 +24,7 @@ export class SynapseRouterSet extends RouterSet {
     'WithdrawAndRemoveEvent',
     'RedeemV2Event',
   ]
+  public readonly isBridgeV2Supported = false
 
   constructor(chains: ChainProvider[]) {
     super(chains, ROUTER_ADDRESS_MAP, SynapseRouter)

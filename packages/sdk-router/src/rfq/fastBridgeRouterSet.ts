@@ -29,6 +29,8 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
 
   public readonly bridgeModuleName = 'SynapseRFQ'
   public readonly allEvents = ['BridgeRequestedEvent', 'BridgeRelayedEvent']
+  // TODO: implement
+  public readonly isBridgeV2Supported = false
 
   public routers: {
     [chainId: number]: FastBridgeRouter

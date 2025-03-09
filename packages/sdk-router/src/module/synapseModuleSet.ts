@@ -11,6 +11,7 @@ import { Query } from './query'
 export abstract class SynapseModuleSet {
   abstract readonly bridgeModuleName: string
   abstract readonly allEvents: string[]
+  abstract readonly isBridgeV2Supported: boolean
 
   /**
    * Returns the estimated time for a bridge transaction to be completed,

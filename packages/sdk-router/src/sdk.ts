@@ -65,6 +65,7 @@ class SynapseSDK {
 
   // Define Bridge operations
   public bridge = operations.bridge
+  public bridgeV2 = operations.bridgeV2
   public bridgeQuote = operations.bridgeQuote
   public allBridgeQuotes = operations.allBridgeQuotes
   public getBridgeModuleName = operations.getBridgeModuleName
