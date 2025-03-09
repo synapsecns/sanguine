@@ -4,6 +4,8 @@ import { AddressZero, Zero } from '@ethersproject/constants'
 
 import {
   BridgeRoute,
+  BridgeRouteV2,
+  BridgeTokenCandidate,
   createNoSwapQuery,
   FeeConfig,
   Query,
@@ -63,6 +65,16 @@ export class GasZipModuleSet extends SynapseModuleSet {
    */
   public async getGasDropAmount(): Promise<BigNumber> {
     return Zero
+  }
+
+  public async getBridgeTokenCandidates(): Promise<BridgeTokenCandidate[]> {
+    return []
+  }
+
+  public async getBridgeRouteV2(): Promise<BridgeRouteV2> {
+    throw new Error(
+      'BridgeRouteV2 is not supported by ' + this.bridgeModuleName
+    )
   }
 
   /**

@@ -5,7 +5,7 @@ import { Zero } from '@ethersproject/constants'
 import { BridgeTokenType, SynapseRouter } from './synapseRouter'
 import { ChainProvider, RouterSet } from './routerSet'
 import { MEDIAN_TIME_BRIDGE, ROUTER_ADDRESS_MAP } from '../constants'
-import { BridgeRoute } from '../module'
+import { BridgeRoute, BridgeRouteV2, BridgeTokenCandidate } from '../module'
 
 /**
  * Wrapper class for interacting with a SynapseRouter contracts deployed on multiple chains.
@@ -62,5 +62,15 @@ export class SynapseRouterSet extends RouterSet {
    */
   public getSynapseRouter(chainId: number): SynapseRouter {
     return this.getExistingModule(chainId) as SynapseRouter
+  }
+
+  public async getBridgeTokenCandidates(): Promise<BridgeTokenCandidate[]> {
+    return []
+  }
+
+  public async getBridgeRouteV2(): Promise<BridgeRouteV2> {
+    throw new Error(
+      'BridgeRouteV2 is not supported by ' + this.bridgeModuleName
+    )
   }
 }

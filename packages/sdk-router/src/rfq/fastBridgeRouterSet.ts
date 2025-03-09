@@ -16,6 +16,8 @@ import {
   SynapseModuleSet,
   createNoSwapQuery,
   applySlippageToQuery,
+  BridgeTokenCandidate,
+  BridgeRouteV2,
 } from '../module'
 import { FastBridgeRouter } from './fastBridgeRouter'
 import { ChainProvider } from '../router'
@@ -85,6 +87,16 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
       return this.getFastBridgeRouter(bridgeRoute.destChainId).chainGasAmount()
     }
     return Zero
+  }
+
+  public async getBridgeTokenCandidates(): Promise<BridgeTokenCandidate[]> {
+    return []
+  }
+
+  public async getBridgeRouteV2(): Promise<BridgeRouteV2> {
+    throw new Error(
+      'BridgeRouteV2 is not supported by ' + this.bridgeModuleName
+    )
   }
 
   /**

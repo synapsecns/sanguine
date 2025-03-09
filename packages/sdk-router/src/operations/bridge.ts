@@ -1,5 +1,5 @@
 import invariant from 'tiny-invariant'
-import { BigNumber, PopulatedTransaction } from 'ethers'
+import { BigNumber, PopulatedTransaction, utils } from 'ethers'
 
 import { BigintIsh } from '../constants'
 import { SynapseSDK } from '../sdk'
@@ -11,7 +11,8 @@ import {
   applyDeadlineToQuery,
   BridgeQuoteV2,
 } from '../module'
-import { Slippage } from '../swap'
+import { RecipientEntity, RouteInput, Slippage } from '../swap'
+import { isSameAddress } from '../utils/addressUtils'
 
 /**
  * Parameters for the `bridgeV2` function.
@@ -132,7 +133,87 @@ async function _collectV2Quotes(
   params: BridgeV2Parameters,
   bridgeV2Modules: SynapseModuleSet[]
 ): Promise<BridgeQuoteV2[]> {
-  return []
+  const candidates = await Promise.all(
+    bridgeV2Modules.map(async (set) =>
+      set.getBridgeTokenCandidates({
+        originChainId: params.originChainId,
+        destChainId: params.destChainId,
+        tokenIn: params.tokenIn,
+        tokenOut: params.tokenOut,
+      })
+    )
+  )
+  // Flatten and remove duplicates
+  const originCandidates = candidates
+    .flat()
+    .map((c) => utils.getAddress(c.originToken))
+    .filter((c, index, self) => self.indexOf(c) === index)
+  const tokenZap = this.swapEngineSet.getTokenZap(params.originChainId)
+  const originRoutes = (
+    await Promise.all(
+      originCandidates.map(async (originTokenOut) => {
+        const input: RouteInput = {
+          chainId: params.originChainId,
+          tokenIn: params.tokenIn,
+          tokenOut: originTokenOut,
+          amountIn: params.amountIn,
+          msgSender: tokenZap,
+          finalRecipient: {
+            entity: RecipientEntity.Self,
+            address: tokenZap,
+          },
+          restrictComplexity: false,
+        }
+        const quote = await this.swapEngineSet.getBestQuote(input, {
+          allowMultiStep: true,
+        })
+        if (!quote) {
+          return
+        }
+        const route = await this.swapEngineSet.generateRoute(input, quote, {
+          allowMultiStep: true,
+          slippage: params.slippage,
+        })
+        return route
+          ? {
+              ...route,
+              originTokenOut,
+            }
+          : undefined
+      })
+    )
+  ).filter((route) => route !== undefined)
+  const bridgeQuotesV2 = await Promise.all(
+    bridgeV2Modules.map(async (moduleSet, index) =>
+      Promise.all(
+        candidates[index].map(async (bridgeToken) => {
+          const originRoute = originRoutes.find((route) =>
+            isSameAddress(bridgeToken.originToken, route.originTokenOut)
+          )
+          if (!originRoute) {
+            return
+          }
+          const bridgeRoute = await moduleSet.getBridgeRouteV2({
+            originAmountIn: originRoute.expectedAmountOut,
+            bridgeToken,
+            destTokenOut: params.tokenOut,
+            originSender: params.originSender,
+            destRecipient: params.destRecipient || params.originSender,
+            slippage: params.slippage,
+          })
+          const bridgeQuoteV2 = await this.sirSet.finalizeBridgeRouteV2(
+            params.tokenIn,
+            params.amountIn,
+            originRoute,
+            bridgeRoute,
+            params.deadline
+          )
+          return moduleSet.finalizeBridgeQuoteV2(bridgeQuoteV2)
+        })
+      )
+    )
+  )
+  return bridgeQuotesV2.flat().filter((quote) => quote !== undefined)
 }
 
 /**

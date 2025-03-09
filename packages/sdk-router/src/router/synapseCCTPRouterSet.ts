@@ -4,7 +4,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { SynapseCCTPRouter } from './synapseCCTPRouter'
 import { ChainProvider, RouterSet } from './routerSet'
 import { CCTP_ROUTER_ADDRESS_MAP, MEDIAN_TIME_CCTP } from '../constants'
-import { BridgeRoute } from '../module'
+import { BridgeRoute, BridgeRouteV2, BridgeTokenCandidate } from '../module'
 
 /**
  * Wrapper class for interacting with a SynapseCCTPRouter contracts deployed on multiple chains.
@@ -45,5 +45,15 @@ export class SynapseCCTPRouterSet extends RouterSet {
    */
   public getSynapseCCTPRouter(chainId: number): SynapseCCTPRouter {
     return this.getExistingModule(chainId) as SynapseCCTPRouter
+  }
+
+  public async getBridgeTokenCandidates(): Promise<BridgeTokenCandidate[]> {
+    return []
+  }
+
+  public async getBridgeRouteV2(): Promise<BridgeRouteV2> {
+    throw new Error(
+      'BridgeRouteV2 is not supported by ' + this.bridgeModuleName
+    )
   }
 }

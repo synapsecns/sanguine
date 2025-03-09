@@ -3,10 +3,33 @@ import { uuidv7 } from 'uuidv7'
 import invariant from 'tiny-invariant'
 
 import { BigintIsh } from '../constants'
-import { BridgeQuote, BridgeRoute, FeeConfig } from './types'
+import {
+  BridgeQuote,
+  BridgeQuoteV2,
+  BridgeRoute,
+  BridgeRouteV2,
+  BridgeTokenCandidate,
+  FeeConfig,
+} from './types'
 import { SynapseModule } from './synapseModule'
 import { applyOptionalDeadline } from '../utils/deadlines'
 import { Query } from './query'
+import { Slippage } from '../swap'
+
+export type GetBridgeTokenCandidatesParameters = {
+  originChainId: number
+  destChainId: number
+  tokenIn: string
+  tokenOut: string
+}
+
+export type GetBridgeRouteV2Parameters = {
+  originAmountIn: BigintIsh
+  bridgeToken: BridgeTokenCandidate
+  destTokenOut: string
+  destRecipient?: string
+  slippage?: Slippage
+}
 
 export abstract class SynapseModuleSet {
   abstract readonly bridgeModuleName: string
@@ -91,6 +114,14 @@ export abstract class SynapseModuleSet {
     }
     return module
   }
+
+  abstract getBridgeTokenCandidates(
+    params: GetBridgeTokenCandidatesParameters
+  ): Promise<BridgeTokenCandidate[]>
+
+  abstract getBridgeRouteV2(
+    params: GetBridgeRouteV2Parameters
+  ): Promise<BridgeRouteV2>
 
   /**
    * This method find all possible routes for a bridge transaction between two chains.
@@ -223,6 +254,18 @@ export abstract class SynapseModuleSet {
       gasDropAmount: await this.getGasDropAmount(bridgeRoute),
       originChainId: bridgeRoute.originChainId,
       destChainId: bridgeRoute.destChainId,
+    }
+  }
+
+  async finalizeBridgeQuoteV2(
+    bridgeQuote: BridgeQuoteV2
+  ): Promise<BridgeQuoteV2> {
+    return {
+      ...bridgeQuote,
+      id: uuidv7(),
+      estimatedTime: this.getEstimatedTime(bridgeQuote.originChainId),
+      bridgeModuleName: this.bridgeModuleName,
+      // TODO: handle gasDropAmount
     }
   }
 }
