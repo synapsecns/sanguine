@@ -160,10 +160,14 @@ export abstract class SynapseModuleSet {
    * User will receive this amount of gas tokens on the destination chain,
    * when the module transaction is completed.
    *
-   * @param bridgeRoute - The bridge route to get gas drop amount for.
+   * @param destChainId - The ID of the destination chain.
+   * @param destBridgeToken - The destination bridge token.
    * @returns A promise that resolves to the gas drop amount.
    */
-  abstract getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber>
+  abstract getGasDropAmount(
+    destChainId: number,
+    destBridgeToken: string
+  ): Promise<BigNumber>
 
   /**
    * Returns the default deadline periods for this bridge module.
@@ -251,13 +255,17 @@ export abstract class SynapseModuleSet {
       destQuery,
       estimatedTime: this.getEstimatedTime(bridgeRoute.originChainId),
       bridgeModuleName: bridgeRoute.bridgeModuleName,
-      gasDropAmount: await this.getGasDropAmount(bridgeRoute),
+      gasDropAmount: await this.getGasDropAmount(
+        bridgeRoute.destChainId,
+        bridgeRoute.bridgeToken.token
+      ),
       originChainId: bridgeRoute.originChainId,
       destChainId: bridgeRoute.destChainId,
     }
   }
 
   async finalizeBridgeQuoteV2(
+    bridgeToken: BridgeTokenCandidate,
     bridgeQuote: BridgeQuoteV2
   ): Promise<BridgeQuoteV2> {
     return {
@@ -265,7 +273,10 @@ export abstract class SynapseModuleSet {
       id: uuidv7(),
       estimatedTime: this.getEstimatedTime(bridgeQuote.originChainId),
       bridgeModuleName: this.bridgeModuleName,
-      // TODO: handle gasDropAmount
+      gasDropAmount: await this.getGasDropAmount(
+        bridgeQuote.destChainId,
+        bridgeToken.destToken
+      ),
     }
   }
 }

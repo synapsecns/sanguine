@@ -208,7 +208,7 @@ async function _collectV2Quotes(
             bridgeRoute,
             params.deadline
           )
-          return moduleSet.finalizeBridgeQuoteV2(bridgeQuoteV2)
+          return moduleSet.finalizeBridgeQuoteV2(bridgeToken, bridgeQuoteV2)
         })
       )
     )

@@ -5,7 +5,7 @@ import { Zero } from '@ethersproject/constants'
 import { BridgeTokenType, SynapseRouter } from './synapseRouter'
 import { ChainProvider, RouterSet } from './routerSet'
 import { MEDIAN_TIME_BRIDGE, ROUTER_ADDRESS_MAP } from '../constants'
-import { BridgeRoute, BridgeRouteV2, BridgeTokenCandidate } from '../module'
+import { BridgeRouteV2, BridgeTokenCandidate } from '../module'
 
 /**
  * Wrapper class for interacting with a SynapseRouter contracts deployed on multiple chains.
@@ -43,16 +43,17 @@ export class SynapseRouterSet extends RouterSet {
   /**
    * @inheritdoc SynapseModuleSet.getGasDropAmount
    */
-  public async getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber> {
-    const router = this.getSynapseRouter(bridgeRoute.destChainId)
+  public async getGasDropAmount(
+    destChainId: number,
+    destBridgeToken: string
+  ): Promise<BigNumber> {
+    const router = this.getSynapseRouter(destChainId)
     // Gas airdrop exists only for minted tokens
-    const tokenType = await router.getBridgeTokenType(
-      bridgeRoute.bridgeToken.token
-    )
+    const tokenType = await router.getBridgeTokenType(destBridgeToken)
     if (tokenType !== BridgeTokenType.Redeem) {
       return Zero
     }
-    return this.getSynapseRouter(bridgeRoute.destChainId).chainGasAmount()
+    return router.chainGasAmount()
   }
 
   /**

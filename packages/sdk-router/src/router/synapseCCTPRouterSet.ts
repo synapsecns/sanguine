@@ -4,7 +4,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { SynapseCCTPRouter } from './synapseCCTPRouter'
 import { ChainProvider, RouterSet } from './routerSet'
 import { CCTP_ROUTER_ADDRESS_MAP, MEDIAN_TIME_CCTP } from '../constants'
-import { BridgeRoute, BridgeRouteV2, BridgeTokenCandidate } from '../module'
+import { BridgeRouteV2, BridgeTokenCandidate } from '../module'
 
 /**
  * Wrapper class for interacting with a SynapseCCTPRouter contracts deployed on multiple chains.
@@ -34,8 +34,8 @@ export class SynapseCCTPRouterSet extends RouterSet {
   /**
    * @inheritdoc SynapseModuleSet.getGasDropAmount
    */
-  public async getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber> {
-    return this.getSynapseCCTPRouter(bridgeRoute.destChainId).chainGasAmount()
+  public async getGasDropAmount(destChainId: number): Promise<BigNumber> {
+    return this.getSynapseCCTPRouter(destChainId).chainGasAmount()
   }
 
   /**
