@@ -13,6 +13,7 @@ import { ChainProvider } from '../../router'
 import { marshallChainToken } from '../../rfq/ticker'
 import { EngineID, SlippageMax, toBasisPoints } from '../core'
 import {
+  getEmptyQuote,
   getEmptyRoute,
   RouteInput,
   SwapEngine,
@@ -65,10 +66,7 @@ type ParaSwapQuote = SwapEngineQuote & {
 }
 
 const EmptyParaSwapQuote: ParaSwapQuote = {
-  engineID: EngineID.ParaSwap,
-  engineName: EngineID[EngineID.ParaSwap],
-  chainId: 0,
-  expectedAmountOut: Zero,
+  ...getEmptyQuote(EngineID.ParaSwap),
   priceRoute: {
     srcDecimals: 0,
     destDecimals: 0,
@@ -128,6 +126,9 @@ export class ParaSwapEngine implements SwapEngine {
       engineID: this.id,
       engineName: EngineID[this.id],
       chainId,
+      tokenIn,
+      tokenOut,
+      amountIn: BigNumber.from(amountIn),
       expectedAmountOut: BigNumber.from(paraSwapResponse.priceRoute.destAmount),
       priceRoute: paraSwapResponse.priceRoute,
     }

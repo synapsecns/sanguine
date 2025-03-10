@@ -11,7 +11,7 @@ import {
   applyDeadlineToQuery,
   BridgeQuoteV2,
 } from '../module'
-import { RecipientEntity, RouteInput, Slippage } from '../swap'
+import { RecipientEntity, RouteInput, Slippage, SwapEngineRoute } from '../swap'
 import { isSameAddress } from '../utils/addressUtils'
 
 /**
@@ -175,20 +175,15 @@ async function _collectV2Quotes(
           slippage: params.slippage,
         })
         return route
-          ? {
-              ...route,
-              originTokenOut,
-            }
-          : undefined
       })
     )
-  ).filter((route) => route !== undefined)
+  ).filter((route): route is SwapEngineRoute => route !== undefined)
   const bridgeQuotesV2 = await Promise.all(
     bridgeV2Modules.map(async (moduleSet, index) =>
       Promise.all(
         candidates[index].map(async (bridgeToken) => {
           const originRoute = originRoutes.find((route) =>
-            isSameAddress(bridgeToken.originToken, route.originTokenOut)
+            isSameAddress(bridgeToken.originToken, route.tokenOut)
           )
           if (!originRoute) {
             return
@@ -213,7 +208,9 @@ async function _collectV2Quotes(
       )
     )
   )
-  return bridgeQuotesV2.flat().filter((quote) => quote !== undefined)
+  return bridgeQuotesV2
+    .flat()
+    .filter((quote): quote is BridgeQuoteV2 => quote !== undefined)
 }
 
 /**

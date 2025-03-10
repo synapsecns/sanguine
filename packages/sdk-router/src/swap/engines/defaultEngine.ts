@@ -88,6 +88,9 @@ export class DefaultEngine implements SwapEngine {
       engineID: this.id,
       engineName: EngineID[this.id],
       chainId,
+      tokenIn,
+      tokenOut,
+      amountIn: BigNumber.from(amountIn),
       expectedAmountOut: amountOut,
       steps: stepsOutput.map(({ token, amount, msgValue, zapData }) => ({
         token,

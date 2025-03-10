@@ -22,6 +22,9 @@ export class NoOpEngine implements SwapEngine {
       engineID: this.id,
       engineName: EngineID[this.id],
       chainId,
+      tokenIn,
+      tokenOut,
+      amountIn: BigNumber.from(amountIn),
       expectedAmountOut: BigNumber.from(amountIn),
       steps: [],
     }
