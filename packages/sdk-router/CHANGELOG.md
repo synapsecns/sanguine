@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.14.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.13.0...@synapsecns/sdk-router@0.14.0) (2025-03-10)
+
+
+### Features
+
+* **contracts-rfq:** deploy SIR [SYN-29] ([#3573](https://github.com/synapsecns/sanguine/issues/3573)) ([46b1018](https://github.com/synapsecns/sanguine/commit/46b1018dd7057acf479bb5caddbc4b7b5a377213)), closes [#3467](https://github.com/synapsecns/sanguine/issues/3467)
+
+
+
+
+
 # [0.13.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.12.3...@synapsecns/sdk-router@0.13.0) (2025-03-07)
 
 

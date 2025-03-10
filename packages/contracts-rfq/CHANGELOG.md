@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.17.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.16.2...@synapsecns/contracts-rfq@0.17.0) (2025-03-10)
+
+
+### Features
+
+* **contracts-rfq:** deploy SIR [SYN-29] ([#3573](https://github.com/synapsecns/sanguine/issues/3573)) ([46b1018](https://github.com/synapsecns/sanguine/commit/46b1018dd7057acf479bb5caddbc4b7b5a377213)), closes [#3467](https://github.com/synapsecns/sanguine/issues/3467)
+
+
+
+
+
 ## [0.16.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.16.1...@synapsecns/contracts-rfq@0.16.2) (2025-03-07)
 
 
