@@ -2,6 +2,7 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import invariant from 'tiny-invariant'
 import { Zero } from '@ethersproject/constants'
+import NodeCache from 'node-cache'
 
 import {
   BigintIsh,
@@ -33,6 +34,7 @@ import { IFastBridge } from '../typechain/FastBridge'
 
 export class FastBridgeRouterSet extends SynapseModuleSet {
   static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
+  static readonly ALL_QUOTES_CACHE_TTL = 10 // 10 seconds cache for getAllQuotes results
 
   public readonly bridgeModuleName = 'SynapseRFQ'
   public readonly allEvents = ['BridgeRequestedEvent', 'BridgeRelayedEvent']
@@ -45,10 +47,15 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     [chainId: number]: Provider
   }
 
+  private quotesCache: NodeCache
+
   constructor(chains: ChainProvider[]) {
     super()
     this.routers = {}
     this.providers = {}
+    this.quotesCache = new NodeCache({
+      stdTTL: FastBridgeRouterSet.ALL_QUOTES_CACHE_TTL,
+    })
     chains.forEach(({ chainId, provider }) => {
       const address = FAST_BRIDGE_ROUTER_ADDRESS_MAP[chainId]
       // Skip chains without a FastBridgeRouter address
@@ -87,7 +94,6 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     destChainId,
     tokenOut,
   }: GetBridgeTokenCandidatesParameters): Promise<BridgeTokenCandidate[]> {
-    // TODO: cache getQuotes calls
     const quotes = await this.getQuotes(originChainId, destChainId, tokenOut)
     // Filter out duplicates of the bridge token
     return Array.from(
@@ -120,7 +126,6 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
       BigNumber.from(originAmountIn),
       protocolFeeRate
     )
-    // TODO: cache getQuotes calls
     const quotes = (
       await this.getQuotes(
         originChainId,
@@ -346,6 +351,22 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   }
 
   /**
+   * Retrieves all quotes with caching.
+   *
+   * @returns A promise that resolves to all available quotes.
+   */
+  private async getCachedAllQuotes(): Promise<FastBridgeQuote[]> {
+    const cacheKey = 'all_quotes'
+    const cachedQuotes = this.quotesCache.get<FastBridgeQuote[]>(cacheKey)
+    if (cachedQuotes) {
+      return cachedQuotes
+    }
+    const allQuotes = await getAllQuotes()
+    this.quotesCache.set(cacheKey, allQuotes)
+    return allQuotes
+  }
+
+  /**
    * Get the list of quotes between two chains for a given final token.
    *
    * @param originChainId - The ID of the origin chain.
@@ -358,7 +379,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     destChainId: number,
     tokenOut: string
   ): Promise<FastBridgeQuote[]> {
-    const allQuotes = await getAllQuotes()
+    const allQuotes = await this.getCachedAllQuotes()
     const originFB = await this.getFastBridgeAddress(originChainId)
     const destFB = await this.getFastBridgeAddress(destChainId)
     return allQuotes
