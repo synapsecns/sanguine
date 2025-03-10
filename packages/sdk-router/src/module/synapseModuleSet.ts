@@ -27,6 +27,7 @@ export type GetBridgeRouteV2Parameters = {
   originAmountIn: BigintIsh
   bridgeToken: BridgeTokenCandidate
   destTokenOut: string
+  originSender?: string
   destRecipient?: string
   slippage?: Slippage
 }

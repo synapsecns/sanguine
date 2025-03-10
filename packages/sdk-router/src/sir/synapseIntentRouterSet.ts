@@ -10,7 +10,7 @@ import {
   TOKEN_ZAP_V1_ADDRESS_MAP,
 } from '../constants'
 import { ChainProvider } from '../router'
-import { encodeZapData, StepParams, SwapEngineRoute } from '../swap'
+import { StepParams, SwapEngineRoute } from '../swap'
 import { SynapseIntentRouter } from '../typechain/SynapseIntentRouter'
 import { adjustValueIfNative, isNativeToken } from '../utils/handleNativeToken'
 import { BridgeQuoteV2, BridgeRouteV2 } from '../module'
@@ -57,7 +57,7 @@ export class SynapseIntentRouterSet {
               token: bridgeRoute.bridgeToken.originToken,
               amount: FULL_BALANCE,
               msgValue: 0,
-              zapData: encodeZapData(bridgeRoute.zapData),
+              zapData: bridgeRoute.zapData,
             },
           ]
         )

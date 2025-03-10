@@ -2,7 +2,6 @@ import { PopulatedTransaction } from 'ethers'
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { Query } from './query'
-import { ZapDataV1 } from '../swap'
 
 /**
  * Matches BridgeToken returned by SynapseRouter (V1) and SynapseCCTPRouter.
@@ -93,7 +92,7 @@ export type BridgeTokenCandidate = {
 export type BridgeRouteV2 = {
   bridgeToken: BridgeTokenCandidate
   destAmountOut: BigNumber
-  zapData?: ZapDataV1
+  zapData?: string
 }
 
 /**
