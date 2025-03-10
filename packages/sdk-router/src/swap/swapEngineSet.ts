@@ -1,16 +1,9 @@
-import { hexlify } from '@ethersproject/bytes'
 import { Zero } from '@ethersproject/constants'
 import invariant from 'tiny-invariant'
 
 import { TOKEN_ZAP_V1_ADDRESS_MAP } from '../constants'
 import { ChainProvider } from '../router'
-import {
-  applySlippage,
-  decodeZapData,
-  encodeZapData,
-  Slippage,
-  SlippageZero,
-} from './core'
+import { applySlippage, Slippage, SlippageZero } from './core'
 import {
   DefaultEngine,
   KyberSwapEngine,
@@ -23,6 +16,7 @@ import {
   RouteInput,
   sanitizeMultiStepQuote,
   sanitizeMultiStepRoute,
+  setMinFinalAmount,
   SwapEngine,
   SwapEngineQuote,
   SwapEngineRoute,
@@ -110,17 +104,10 @@ export class SwapEngineSet {
     )
     route = options.allowMultiStep ? route : sanitizeMultiStepRoute(route)
     if (route.steps.length > 0) {
-      const lastStepIndex = route.steps.length - 1
-      const lastStepZapData = decodeZapData(
-        hexlify(route.steps[lastStepIndex].zapData)
+      route.steps = setMinFinalAmount(
+        route.steps,
+        applySlippage(quote.expectedAmountOut, options.slippage ?? SlippageZero)
       )
-      route.steps[lastStepIndex].zapData = encodeZapData({
-        ...lastStepZapData,
-        minFinalAmount: applySlippage(
-          quote.expectedAmountOut,
-          options.slippage ?? SlippageZero
-        ),
-      })
     }
     return route.expectedAmountOut.gt(Zero) ? route : undefined
   }
