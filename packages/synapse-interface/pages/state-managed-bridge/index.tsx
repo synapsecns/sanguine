@@ -334,16 +334,7 @@ const StateManagedBridge = () => {
           ? destinationAddress
           : address
 
-      const payload = await synapseSDK.bridge(
-        toAddress,
-        bridgeQuote.routerAddress,
-        fromChainId,
-        toChainId === HYPERLIQUID.id ? ARBITRUM.id : toChainId,
-        fromToken?.addresses[fromChainId as keyof Token['addresses']],
-        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]),
-        bridgeQuote.originQuery,
-        bridgeQuote.destQuery
-      )
+      const payload = bridgeQuote.tx!
 
       /** Setting custom gas limit for only Polygon transactions */
       let gasEstimate = undefined

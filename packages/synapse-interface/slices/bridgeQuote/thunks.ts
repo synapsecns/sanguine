@@ -40,16 +40,21 @@ export const fetchBridgeQuote = createAsyncThunk(
     },
     { rejectWithValue }
   ) => {
-    const allQuotes = await synapseSDK.allBridgeQuotes(
-      fromChainId,
-      toChainId,
-      fromToken.addresses[fromChainId],
-      toToken.addresses[toChainId],
-      stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]),
-      {
-        originUserAddress: address,
-      }
-    )
+    const allQuotes = await synapseSDK.bridgeV2({
+      originChainId: fromChainId,
+      destChainId: toChainId,
+      tokenIn: fromToken.addresses[fromChainId],
+      tokenOut: toToken.addresses[toChainId],
+      amountIn: stringToBigInt(
+        debouncedFromValue,
+        fromToken?.decimals[fromChainId]
+      ),
+      originSender: address,
+      slippage: {
+        numerator: 50,
+        denominator: 10000,
+      },
+    })
 
     const pausedBridgeModules = new Set(
       pausedModulesList
@@ -108,27 +113,17 @@ export const fetchBridgeQuote = createAsyncThunk(
 
     const {
       id,
-      feeAmount,
       routerAddress,
       maxAmountOut,
-      originQuery,
-      destQuery,
       estimatedTime,
       bridgeModuleName,
       gasDropAmount,
       originChainId,
       destChainId,
+      tx,
     } = quote
 
-    if (
-      !(
-        originQuery &&
-        maxAmountOut &&
-        destQuery &&
-        feeAmount &&
-        toChainId !== HYPERLIQUID.id
-      )
-    ) {
+    if (!(maxAmountOut && toChainId !== HYPERLIQUID.id)) {
       const msg = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken?.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
       return rejectWithValue(msg)
     }
@@ -139,13 +134,7 @@ export const fetchBridgeQuote = createAsyncThunk(
     // debouncedFromValue is in originToken decimals
     // originQuery.minAmountOut and feeAmount is in bridgeToken decimals
     // Adjust feeAmount to be in originToken decimals
-    const adjustedFeeAmount =
-      (BigInt(feeAmount) *
-        stringToBigInt(
-          `${debouncedFromValue}`,
-          fromToken?.decimals[fromChainId]
-        )) /
-      BigInt(originQuery.minAmountOut)
+    const adjustedFeeAmount = 0n
 
     const isUnsupported = AcceptedChainId[fromChainId] ? false : true
 
@@ -160,11 +149,6 @@ export const fetchBridgeQuote = createAsyncThunk(
             tokenAddress: fromToken?.addresses[fromChainId] as Address,
             spender: routerAddress,
           })
-
-    const {
-      originQuery: originQueryWithSlippage,
-      destQuery: destQueryWithSlippage,
-    } = synapseSDK.applyBridgeSlippage(bridgeModuleName, originQuery, destQuery)
 
     return {
       inputAmountForQuote: debouncedFromValue,
@@ -183,10 +167,9 @@ export const fetchBridgeQuote = createAsyncThunk(
         toValueBigInt,
         toToken.decimals[toChainId]
       ),
-      feeAmount,
+      feeAmount: BigInt(adjustedFeeAmount),
+      tx,
       delta: BigInt(maxAmountOut.toString()),
-      originQuery: originQueryWithSlippage,
-      destQuery: destQueryWithSlippage,
       estimatedTime,
       bridgeModuleName,
       gasDropAmount: BigInt(gasDropAmount.toString()),

@@ -81,8 +81,6 @@ export type BridgeQuote = {
   exchangeRate: bigint
   feeAmount: bigint
   delta: bigint
-  originQuery: QuoteQuery
-  destQuery: QuoteQuery
   estimatedTime: number
   bridgeModuleName: string
   gasDropAmount: bigint
@@ -90,6 +88,7 @@ export type BridgeQuote = {
   originChainId: number
   destChainId: number
   requestId: number
+  tx?: any
 }
 
 interface TokensByChain {
