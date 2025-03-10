@@ -91,6 +91,7 @@ export type BridgeTokenCandidate = {
 
 export type BridgeRouteV2 = {
   bridgeToken: BridgeTokenCandidate
+  minOriginAmount: BigNumber
   destAmountOut: BigNumber
   zapData?: string
 }

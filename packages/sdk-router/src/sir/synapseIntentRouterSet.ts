@@ -10,7 +10,12 @@ import {
   TOKEN_ZAP_V1_ADDRESS_MAP,
 } from '../constants'
 import { ChainProvider } from '../router'
-import { StepParams, SwapEngineRoute } from '../swap'
+import {
+  getMinFinalAmount,
+  setMinFinalAmount,
+  StepParams,
+  SwapEngineRoute,
+} from '../swap'
 import { SynapseIntentRouter } from '../typechain/SynapseIntentRouter'
 import { adjustValueIfNative, isNativeToken } from '../utils/handleNativeToken'
 import { BridgeQuoteV2, BridgeRouteV2 } from '../module'
@@ -45,6 +50,15 @@ export class SynapseIntentRouterSet {
     originDeadline?: number
   ): Promise<BridgeQuoteV2> {
     const originChainId = bridgeRoute.bridgeToken.originChainId
+    if (originRoute.steps.length > 0) {
+      const minFinalAmount = getMinFinalAmount(originRoute.steps)
+      if (minFinalAmount.lt(bridgeRoute.minOriginAmount)) {
+        originRoute.steps = setMinFinalAmount(
+          originRoute.steps,
+          bridgeRoute.minOriginAmount
+        )
+      }
+    }
     const tx = bridgeRoute.zapData
       ? await this.completeIntentWithBalanceChecks(
           originChainId,

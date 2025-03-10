@@ -24,7 +24,7 @@ import {
 import { FastBridgeRouter } from './fastBridgeRouter'
 import { ChainProvider } from '../router'
 import { calculateDeadline, ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
-import { FastBridgeQuote, applyQuote } from './quote'
+import { FastBridgeQuote, applyQuote, getOriginAmount } from './quote'
 import { marshallTicker } from './ticker'
 import { getAllQuotes } from './api'
 import { isSameAddress } from '../utils/addressUtils'
@@ -130,12 +130,18 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     ).filter((quote) =>
       isSameAddress(quote.ticker.originToken.token, bridgeToken.originToken)
     )
-    const destAmountOut = quotes
-      .map((quote) => applyQuote(quote, amount))
-      .reduce((a, b) => (a.gt(b) ? a : b), Zero)
-    // TODO: cap max origin slippage
+    const [destAmountOut, originFee] = quotes
+      .map((quote) => [
+        applyQuote(quote, amount),
+        // Convert fixed fee from dest token to origin token
+        getOriginAmount(quote, quote.fixedFee),
+      ])
+      .reduce((a, b) => (a[0].gt(b[0]) ? a : b), [Zero, Zero])
+    // Cap slippage to 5% of the fixed fee
+    const maxOriginSlippage = originFee.div(20)
     return {
       bridgeToken,
+      minOriginAmount: BigNumber.from(originAmountIn).sub(maxOriginSlippage),
       destAmountOut,
       zapData: await this.getBridgeZapData(
         bridgeToken,
@@ -399,6 +405,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     destRecipient?: string
   ): Promise<string | undefined> {
     if (
+      destAmountOut.isZero() ||
       !originSender ||
       !destRecipient ||
       isSameAddress(originSender, USER_SIMULATED_ADDRESS) ||
