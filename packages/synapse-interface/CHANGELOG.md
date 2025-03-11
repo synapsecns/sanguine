@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.43.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.0...@synapsecns/synapse-interface@0.43.1) (2025-03-11)
+
+
+### Bug Fixes
+
+* hide slippage between different type of assets for now [SYN-39] ([#3590](https://github.com/synapsecns/sanguine/issues/3590)) ([d91e424](https://github.com/synapsecns/sanguine/commit/d91e4242de605ba2217f6c33513a12ec59a6c7e3))
+
+
+
+
+
 # [0.43.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.42.7...@synapsecns/synapse-interface@0.43.0) (2025-03-11)
 
 
