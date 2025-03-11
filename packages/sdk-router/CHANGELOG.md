@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.15.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.14.0...@synapsecns/sdk-router@0.15.0) (2025-03-11)
+
+
+### Features
+
+* SDK new chains [SYN-45] ([#3535](https://github.com/synapsecns/sanguine/issues/3535)) ([6e956a3](https://github.com/synapsecns/sanguine/commit/6e956a335981235aa12bd6512b524f22ccee7ca0)), closes [#3537](https://github.com/synapsecns/sanguine/issues/3537)
+
+
+
+
+
 # [0.14.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.13.0...@synapsecns/sdk-router@0.14.0) (2025-03-10)
 
 
