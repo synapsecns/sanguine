@@ -676,7 +676,7 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 
 func (s *QuoterSuite) setGasSufficiency(sufficient bool) {
 	clientFetcher := new(fetcherMocks.ClientFetcher)
-	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
+	priceFetcher := new(priceMocks.PriceFetcher)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "USDC").Return(1., nil)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, pricer.USD_).Return(1., nil)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "ETH").Return(2000., nil)

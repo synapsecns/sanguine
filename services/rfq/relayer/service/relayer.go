@@ -127,7 +127,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not add imanager: %w", err)
 	}
 
-	priceFetcher := pricer.NewCoingeckoPriceFetcher(metricHandler, cfg.GetHTTPTimeout(), cfg)
+	priceFetcher := pricer.NewPriceFetcher(metricHandler, cfg.GetHTTPTimeout(), cfg)
 	fp := pricer.NewFeePricer(cfg, omniClient, priceFetcher, metricHandler)
 
 	apiClient, err := rfqAPIClient.NewAuthenticatedClient(metricHandler, cfg.GetRFQAPIURL(), sg)

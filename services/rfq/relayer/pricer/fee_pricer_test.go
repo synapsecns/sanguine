@@ -16,8 +16,8 @@ import (
 
 var defaultPrices = map[string]float64{"ETH": 2000., "USDC": 1., "MATIC": 0.5, "BNB": 600, "BTC": 95000}
 
-func getPriceFetcher(prices map[string]float64) *priceMocks.CoingeckoPriceFetcher {
-	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
+func getPriceFetcher(prices map[string]float64) *priceMocks.PriceFetcher {
+	priceFetcher := new(priceMocks.PriceFetcher)
 	for token, price := range defaultPrices {
 		if prices != nil {
 			providedPrice, ok := prices[token]

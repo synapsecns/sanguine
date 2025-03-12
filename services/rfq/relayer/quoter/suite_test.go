@@ -121,8 +121,7 @@ func (s *QuoterSuite) SetupTest() {
 			MinGasToken:       "1000000000000000", // 1e15
 		},
 		FeePricer: relconfig.FeePricerConfig{
-			GasPriceCacheTTLSeconds:   60,
-			TokenPriceCacheTTLSeconds: 60,
+			GasPriceCacheTTLSeconds: 60,
 		},
 		QuotableTokens: map[string][]string{
 			"42161-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": {"137-0x0b2c639c533813f4aa9d7837caf62653d097ff85", "10-0x0b2c639c533813f4aa9d7837caf62653d097ff85"},
@@ -138,7 +137,7 @@ func (s *QuoterSuite) SetupTest() {
 	// Build a FeePricer with mock gas price and mock token price.
 	clientFetcher := new(fetcherMocks.ClientFetcher)
 	client := new(clientMocks.EVM)
-	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
+	priceFetcher := new(priceMocks.PriceFetcher)
 	gasPrice := big.NewInt(100_000_000_000) // 100 gwei
 	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Return(gasPrice, nil)
 	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
