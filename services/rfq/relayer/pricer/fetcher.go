@@ -29,7 +29,7 @@ import (
 // TODO: find a better home for global constants like this
 const USD_ = "USD"
 
-// PriceFetcher is an interface for fetching prices from coingecko.
+// PriceFetcher is an interface for fetching prices from external sources.
 //
 //go:generate go run github.com/vektra/mockery/v2 --name PriceFetcher --output ./mocks --case=underscore
 type PriceFetcher interface {
@@ -215,6 +215,7 @@ func UnsafeResetTokenConfigMap() error {
 	return nil
 }
 
+// fetchPriceExternal fetches a token price from external sources, validates it, and caches it
 func (c *PriceFetcherImpl) fetchPriceExternal(ctx context.Context, token string, tokenConfig TokenPriceConfig) (price float64, err error) {
 
 	price, err = c.getExternalPrice(ctx, tokenConfig.PrimaryPrice)
@@ -327,6 +328,7 @@ func (c *PriceFetcherImpl) GetPrice(ctx context.Context, token string) (price fl
 	return c.GetPrice(ctx, token)
 }
 
+// getExternalPrice gets the price of a token from an external source
 func (c *PriceFetcherImpl) getExternalPrice(ctx context.Context, priceSource PriceSourceDetail) (float64, error) {
 	var price float64
 	var err error
@@ -356,17 +358,12 @@ func (c *PriceFetcherImpl) getExternalPrice(ctx context.Context, priceSource Pri
 	case "USD": // this can be used to force an asset's primary or verification price to be 1-to-1 with the US dollar
 		return 1.0, nil
 
-	case "CoinbaseExchange":
-		price, err = c.getPriceCoinGecko(ctx, priceSource.ExternalId)
-		if err != nil {
-			return 0, fmt.Errorf("getPriceCoinGecko: %w", err)
-		}
-		return price, nil
 	default:
 		return 0, fmt.Errorf("err unknown source: %s", priceSource.Source)
 	}
 }
 
+// getPricePyth gets the price of a token from Pyth
 func (c *PriceFetcherImpl) getPricePyth(ctx context.Context, pythTokenId string) (float64, error) {
 	var price float64
 
