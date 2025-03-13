@@ -279,6 +279,27 @@ type GetSwapParams struct {
 	Address string `form:"address" json:"address"`
 }
 
+// GetSwapV2Params defines parameters for GetSwapV2.
+type GetSwapV2Params struct {
+	// Chain The chain ID where the swap will occur
+	Chain int `form:"chain" json:"chain"`
+
+	// FromToken The address of the token to swap from
+	FromToken string `form:"fromToken" json:"fromToken"`
+
+	// ToToken The address of the token to swap to
+	ToToken string `form:"toToken" json:"toToken"`
+
+	// Amount The amount of tokens to swap in the token's native decimals
+	Amount string `form:"amount" json:"amount"`
+
+	// Address Optional. The address that will perform the swap and receive its proceeds. If provided, returns transaction data.
+	Address *string `form:"address,omitempty" json:"address,omitempty"`
+
+	// Slippage Optional. The maximum allowed slippage percentage (0-100). Defaults to 0.5%.
+	Slippage *float32 `form:"slippage,omitempty" json:"slippage,omitempty"`
+}
+
 // GetSwapTxInfoParams defines parameters for GetSwapTxInfo.
 type GetSwapTxInfoParams struct {
 	// Chain The chain ID where the swap will occur
@@ -476,6 +497,9 @@ type ClientInterface interface {
 
 	// GetSwap request
 	GetSwap(ctx context.Context, params *GetSwapParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetSwapV2 request
+	GetSwapV2(ctx context.Context, params *GetSwapV2Params, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSwapTxInfo request
 	GetSwapTxInfo(ctx context.Context, params *GetSwapTxInfoParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -816,6 +840,18 @@ func (c *Client) GetRfqStream(ctx context.Context, reqEditors ...RequestEditorFn
 
 func (c *Client) GetSwap(ctx context.Context, params *GetSwapParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSwapRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSwapV2(ctx context.Context, params *GetSwapV2Params, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSwapV2Request(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -2054,6 +2090,119 @@ func NewGetSwapRequest(server string, params *GetSwapParams) (*http.Request, err
 	return req, nil
 }
 
+// NewGetSwapV2Request generates requests for GetSwapV2
+func NewGetSwapV2Request(server string, params *GetSwapV2Params) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/swap/v2")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain", runtime.ParamLocationQuery, params.Chain); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromToken", runtime.ParamLocationQuery, params.FromToken); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toToken", runtime.ParamLocationQuery, params.ToToken); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "amount", runtime.ParamLocationQuery, params.Amount); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if params.Address != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "address", runtime.ParamLocationQuery, *params.Address); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Slippage != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "slippage", runtime.ParamLocationQuery, *params.Slippage); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetSwapTxInfoRequest generates requests for GetSwapTxInfo
 func NewGetSwapTxInfoRequest(server string, params *GetSwapTxInfoParams) (*http.Request, error) {
 	var err error
@@ -2399,6 +2548,9 @@ type ClientWithResponsesInterface interface {
 
 	// GetSwapWithResponse request
 	GetSwapWithResponse(ctx context.Context, params *GetSwapParams, reqEditors ...RequestEditorFn) (*GetSwapResponse, error)
+
+	// GetSwapV2WithResponse request
+	GetSwapV2WithResponse(ctx context.Context, params *GetSwapV2Params, reqEditors ...RequestEditorFn) (*GetSwapV2Response, error)
 
 	// GetSwapTxInfoWithResponse request
 	GetSwapTxInfoWithResponse(ctx context.Context, params *GetSwapTxInfoParams, reqEditors ...RequestEditorFn) (*GetSwapTxInfoResponse, error)
@@ -3355,6 +3507,48 @@ func (r GetSwapResponse) StatusCode() int {
 	return 0
 }
 
+type GetSwapV2Response struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// CallData Transaction data object, only provided if address parameter was included
+		CallData *map[string]interface{} `json:"callData"`
+
+		// MaxAmountOut The maximum amount of tokens that will be received in the token's native decimals
+		MaxAmountOut *string `json:"maxAmountOut,omitempty"`
+
+		// RouterAddress The address of the router contract
+		RouterAddress *string `json:"routerAddress,omitempty"`
+	}
+	JSON400 *struct {
+		Errors *[]struct {
+			Location *string `json:"location,omitempty"`
+			Msg      *string `json:"msg,omitempty"`
+			Param    *string `json:"param,omitempty"`
+			Value    *string `json:"value,omitempty"`
+		} `json:"errors,omitempty"`
+	}
+	JSON500 *struct {
+		Error *string `json:"error,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSwapV2Response) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSwapV2Response) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetSwapTxInfoResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -3767,6 +3961,15 @@ func (c *ClientWithResponses) GetSwapWithResponse(ctx context.Context, params *G
 		return nil, err
 	}
 	return ParseGetSwapResponse(rsp)
+}
+
+// GetSwapV2WithResponse request returning *GetSwapV2Response
+func (c *ClientWithResponses) GetSwapV2WithResponse(ctx context.Context, params *GetSwapV2Params, reqEditors ...RequestEditorFn) (*GetSwapV2Response, error) {
+	rsp, err := c.GetSwapV2(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSwapV2Response(rsp)
 }
 
 // GetSwapTxInfoWithResponse request returning *GetSwapTxInfoResponse
@@ -4987,6 +5190,64 @@ func ParseGetSwapResponse(rsp *http.Response) (*GetSwapResponse, error) {
 				Message  *string `json:"message,omitempty"`
 				Value    *string `json:"value,omitempty"`
 			} `json:"error,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest struct {
+			Error *string `json:"error,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSwapV2Response parses an HTTP response from a GetSwapV2WithResponse call
+func ParseGetSwapV2Response(rsp *http.Response) (*GetSwapV2Response, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSwapV2Response{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// CallData Transaction data object, only provided if address parameter was included
+			CallData *map[string]interface{} `json:"callData"`
+
+			// MaxAmountOut The maximum amount of tokens that will be received in the token's native decimals
+			MaxAmountOut *string `json:"maxAmountOut,omitempty"`
+
+			// RouterAddress The address of the router contract
+			RouterAddress *string `json:"routerAddress,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			Errors *[]struct {
+				Location *string `json:"location,omitempty"`
+				Msg      *string `json:"msg,omitempty"`
+				Param    *string `json:"param,omitempty"`
+				Value    *string `json:"value,omitempty"`
+			} `json:"errors,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
