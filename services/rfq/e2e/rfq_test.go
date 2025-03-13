@@ -83,48 +83,48 @@ func (i *IntegrationSuite) SetupTest() {
 	pricer.UnsafeUpdateTokenConfigMap(map[string]pricer.TokenPriceConfig{
 		"MockMintBurnToken": {
 			PrimaryPrice: pricer.PriceSourceDetail{
-				Source:     "CoinGecko",
-				ExternalId: "usdt",
+				Source:        "CoinGecko",
+				SourceTokenID: "usdt",
 			},
 			VerificationPrice: pricer.PriceSourceDetail{
-				Source:     "None",
-				ExternalId: "na",
+				Source:        "None",
+				SourceTokenID: "na",
 			},
 			DeviationTolerancePct: 5,
 			PriceCacheTTL:         20,
 		},
 		"WETH9": {
 			PrimaryPrice: pricer.PriceSourceDetail{
-				Source:     "CoinGecko",
-				ExternalId: "ethereum",
+				Source:        "CoinGecko",
+				SourceTokenID: "ethereum",
 			},
 			VerificationPrice: pricer.PriceSourceDetail{
-				Source:     "None",
-				ExternalId: "na",
+				Source:        "None",
+				SourceTokenID: "na",
 			},
 			DeviationTolerancePct: 5,
 			PriceCacheTTL:         20,
 		},
 		"USDT": {
 			PrimaryPrice: pricer.PriceSourceDetail{
-				Source:     "CoinGecko",
-				ExternalId: "usdt",
+				Source:        "CoinGecko",
+				SourceTokenID: "usdt",
 			},
 			VerificationPrice: pricer.PriceSourceDetail{
-				Source:     "None",
-				ExternalId: "na",
+				Source:        "None",
+				SourceTokenID: "na",
 			},
 			DeviationTolerancePct: 5,
 			PriceCacheTTL:         20,
 		},
 		"DAI": {
 			PrimaryPrice: pricer.PriceSourceDetail{
-				Source:     "CoinGecko",
-				ExternalId: "dai",
+				Source:        "CoinGecko",
+				SourceTokenID: "dai",
 			},
 			VerificationPrice: pricer.PriceSourceDetail{
-				Source:     "None",
-				ExternalId: "na",
+				Source:        "None",
+				SourceTokenID: "na",
 			},
 			DeviationTolerancePct: 5,
 			PriceCacheTTL:         20,

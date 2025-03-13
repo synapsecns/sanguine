@@ -313,7 +313,7 @@ func (i *IntegrationSuite) setupMockCoinGeckoServer() {
 
 		// Check if the ID is in our lookup map values
 		for _, config := range idMap {
-			if config.PrimaryPrice.ExternalId == coinID {
+			if config.PrimaryPrice.SourceTokenID == coinID {
 				found = true
 				break
 			}

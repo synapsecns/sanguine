@@ -72,8 +72,8 @@ func NewPriceFetcher(handler metrics.Handler, timeout time.Duration, relConfig r
 }
 
 type PriceSourceDetail struct {
-	Source     string
-	ExternalId string
+	Source        string
+	SourceTokenID string
 }
 
 type TokenPriceConfig struct {
@@ -95,48 +95,48 @@ type TokenPriceConfig struct {
 var tokenConfigs = map[string]TokenPriceConfig{
 	"USDC": {
 		PrimaryPrice: PriceSourceDetail{
-			Source:     "Pyth",
-			ExternalId: "0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a",
+			Source:        "Pyth",
+			SourceTokenID: "0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a",
 		},
 		VerificationPrice: PriceSourceDetail{
-			Source:     "USD",
-			ExternalId: "n/a",
+			Source:        "USD",
+			SourceTokenID: "n/a",
 		},
 		DeviationTolerancePct: 2,
 		PriceCacheTTL:         30,
 	},
 	"ETH": {
 		PrimaryPrice: PriceSourceDetail{
-			Source:     "Pyth",
-			ExternalId: "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace",
+			Source:        "Pyth",
+			SourceTokenID: "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace",
 		},
 		VerificationPrice: PriceSourceDetail{
-			Source:     "CoinGecko",
-			ExternalId: "ethereum",
+			Source:        "CoinGecko",
+			SourceTokenID: "ethereum",
 		},
 		DeviationTolerancePct: 5,
 		PriceCacheTTL:         5,
 	},
 	"BERA": {
 		PrimaryPrice: PriceSourceDetail{
-			Source:     "Pyth",
-			ExternalId: "0x962088abcfdbdb6e30db2e340c8cf887d9efb311b1f2f17b155a63dbb6d40265",
+			Source:        "Pyth",
+			SourceTokenID: "0x962088abcfdbdb6e30db2e340c8cf887d9efb311b1f2f17b155a63dbb6d40265",
 		},
 		VerificationPrice: PriceSourceDetail{
-			Source:     "CoinGecko",
-			ExternalId: "berachain-bera",
+			Source:        "CoinGecko",
+			SourceTokenID: "berachain-bera",
 		},
 		DeviationTolerancePct: 5,
 		PriceCacheTTL:         5,
 	},
 	"HYPE": {
 		PrimaryPrice: PriceSourceDetail{
-			Source:     "KuCoin",
-			ExternalId: "HYPE",
+			Source:        "KuCoin",
+			SourceTokenID: "HYPE",
 		},
 		VerificationPrice: PriceSourceDetail{
-			Source:     "CoinGecko",
-			ExternalId: "hyperliquid",
+			Source:        "CoinGecko",
+			SourceTokenID: "hyperliquid",
 		},
 		DeviationTolerancePct: 5,
 		PriceCacheTTL:         5,
@@ -339,21 +339,21 @@ func (c *PriceFetcherImpl) getExternalPrice(ctx context.Context, priceSource Pri
 
 	switch priceSource.Source {
 	case "CoinGecko":
-		price, err = c.getPriceCoinGecko(ctx, priceSource.ExternalId)
+		price, err = c.getPriceCoinGecko(ctx, priceSource.SourceTokenID)
 		if err != nil {
 			return 0, fmt.Errorf("getPriceCoinGecko: %w", err)
 		}
 		return price, nil
 
 	case "KuCoin":
-		price, err = c.getPriceKucoin(ctx, priceSource.ExternalId)
+		price, err = c.getPriceKucoin(ctx, priceSource.SourceTokenID)
 		if err != nil {
 			return 0, fmt.Errorf("getPriceKucoin: %w", err)
 		}
 		return price, nil
 
 	case "Pyth":
-		price, err = c.getPricePyth(ctx, priceSource.ExternalId)
+		price, err = c.getPricePyth(ctx, priceSource.SourceTokenID)
 		if err != nil {
 			return 0, fmt.Errorf("getPricePyth: %w", err)
 		}
