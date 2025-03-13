@@ -388,6 +388,7 @@ func (c *PriceFetcherImpl) getPricePyth(ctx context.Context, pythTokenId string)
 	defer func() {
 		closeErr := r.Body.Close()
 		if closeErr != nil {
+			fmt.Printf("Warning: getPricePyth r.Body.Close() fail: %v\n", closeErr)
 		}
 	}()
 
@@ -453,6 +454,7 @@ func (c *PriceFetcherImpl) getPriceKucoin(ctx context.Context, kucoinTokenId str
 	defer func() {
 		closeErr := r.Body.Close()
 		if closeErr != nil {
+			fmt.Printf("Warning: getPriceKucoin r.Body.Close() fail: %v\n", closeErr)
 		}
 	}()
 
@@ -524,6 +526,7 @@ func (c *PriceFetcherImpl) getPriceCoinGecko(ctx context.Context, coingeckoToken
 	defer func() {
 		closeErr := r.Body.Close()
 		if closeErr != nil {
+			fmt.Printf("Warning: getPriceCoinGecko r.Body.Close() fail: %v\n", closeErr)
 		}
 	}()
 
