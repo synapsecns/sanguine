@@ -244,7 +244,7 @@ func (c *PriceFetcherImpl) fetchPriceExternal(ctx context.Context, token string,
 		// Remove any existing cache of this price due to the consensus failure
 		priceCache.Delete(token)
 
-		return price, fmt.Errorf("err price consensus: pri = $%f, sec = $%f, %f%% diff", price, verificationPrice, percentageDiff)
+		return 0, fmt.Errorf("err price consensus: pri = $%f, sec = $%f, %f%% diff", price, verificationPrice, percentageDiff)
 	}
 
 	// add "fetchprice" to debugOutput env var for dev/debug output
@@ -310,13 +310,17 @@ func (c *PriceFetcherImpl) GetPrice(ctx context.Context, token string) (price fl
 		span.SetAttributes(attribute.Bool("used_cached_false", true))
 		price, err := c.fetchPriceExternal(ctx, token, tokenConfig)
 
+		if err != nil {
+			return 0, fmt.Errorf("err fetchPriceExternal: %w", err)
+		}
+
 		inFlightRequestsMu.Lock()
 		delete(inFlightRequests, token)
 		inFlightRequestsMu.Unlock()
 
 		cond.Broadcast()
 
-		return price, err
+		return price, nil
 	}
 	// Otherwise, wait until the in-flight price fetch is completed & then we can share the same result via cache
 	cond.Wait()
@@ -370,14 +374,14 @@ func (c *PriceFetcherImpl) getPricePyth(ctx context.Context, pythTokenId string)
 	// fetch price from Pyth
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return price, fmt.Errorf("err building request: %w", err)
+		return 0, fmt.Errorf("err building request: %w", err)
 	}
 	r, err := c.client.Do(req)
 	if err != nil {
-		return price, fmt.Errorf("err sending request: %w", err)
+		return 0, fmt.Errorf("err sending request: %w", err)
 	}
 	if r.StatusCode != http.StatusOK {
-		return price, fmt.Errorf("err response status: %v", r.Status)
+		return 0, fmt.Errorf("err response status: %v", r.Status)
 	}
 	defer func() {
 		closeErr := r.Body.Close()
@@ -387,7 +391,7 @@ func (c *PriceFetcherImpl) getPricePyth(ctx context.Context, pythTokenId string)
 
 	respBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		return price, fmt.Errorf("err response unreadable: %w", err)
+		return 0, fmt.Errorf("err response unreadable: %w", err)
 	}
 
 	// parse the price from the response
@@ -402,27 +406,27 @@ func (c *PriceFetcherImpl) getPricePyth(ctx context.Context, pythTokenId string)
 	}
 	err = json.Unmarshal(respBytes, &resp)
 	if err != nil {
-		return price, fmt.Errorf("err unmarshal fail: %w", err)
+		return 0, fmt.Errorf("err unmarshal fail: %w", err)
 	}
 
 	if len(resp.Parsed) == 0 {
-		return price, fmt.Errorf("err no price data found")
+		return 0, fmt.Errorf("err no price data found")
 	}
 
 	// do not consider price valid if it is stale by more than X minutes (ie: apparent Pyth failure)
 	currentTime := time.Now().Unix()
 	if currentTime-resp.Parsed[0].Price.PublishTime > 5*60 {
-		return price, fmt.Errorf("err stale price (%d)", resp.Parsed[0].Price.PublishTime)
+		return 0, fmt.Errorf("err stale price (%d)", resp.Parsed[0].Price.PublishTime)
 	}
 
 	if len(resp.Parsed) == 0 {
-		return price, fmt.Errorf("err no price data found")
+		return 0, fmt.Errorf("err no price data found")
 	}
 
 	// Convert the price to normal units using the expo value from the API response
 	rawPrice, err := strconv.ParseFloat(resp.Parsed[0].Price.Price, 64)
 	if err != nil {
-		return price, fmt.Errorf("err parsing price: %w", err)
+		return 0, fmt.Errorf("err parsing price: %w", err)
 	}
 	expo := resp.Parsed[0].Price.Expo
 	price = rawPrice * math.Pow10(expo)
@@ -439,14 +443,14 @@ func (c *PriceFetcherImpl) getPriceKucoin(ctx context.Context, kucoinTokenId str
 	// fetch price from kucoin
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return price, fmt.Errorf("err building request: %w", err)
+		return 0, fmt.Errorf("err building request: %w", err)
 	}
 	r, err := c.client.Do(req)
 	if err != nil {
-		return price, fmt.Errorf("err sending request: %w", err)
+		return 0, fmt.Errorf("err sending request: %w", err)
 	}
 	if r.StatusCode != http.StatusOK {
-		return price, fmt.Errorf("err response status: %v", r.Status)
+		return 0, fmt.Errorf("err response status: %v", r.Status)
 	}
 	defer func() {
 		closeErr := r.Body.Close()
@@ -456,7 +460,7 @@ func (c *PriceFetcherImpl) getPriceKucoin(ctx context.Context, kucoinTokenId str
 
 	respBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		return price, fmt.Errorf("err response unreadable: %w", err)
+		return 0, fmt.Errorf("err response unreadable: %w", err)
 	}
 
 	// parse the price
@@ -466,22 +470,22 @@ func (c *PriceFetcherImpl) getPriceKucoin(ctx context.Context, kucoinTokenId str
 	}
 	err = json.Unmarshal(respBytes, &resp)
 	if err != nil {
-		return price, fmt.Errorf("err unmarshal fail: %w", err)
+		return 0, fmt.Errorf("err unmarshal fail: %w", err)
 	}
 
 	// 200000  =  Success
 	if resp.Code != "200000" {
-		return price, fmt.Errorf("err response code: %s", resp.Code)
+		return 0, fmt.Errorf("err response code: %s", resp.Code)
 	}
 
 	// Extract the price for the given token ID
 	if val, ok := resp.Data[kucoinTokenId]; ok {
 		price, err = strconv.ParseFloat(val, 64)
 		if err != nil {
-			return price, fmt.Errorf("err parsing price: %w", err)
+			return 0, fmt.Errorf("err parsing price: %w", err)
 		}
 	} else {
-		return price, fmt.Errorf("err no price data found for token: %s", kucoinTokenId)
+		return 0, fmt.Errorf("err no price data found for token: %s", kucoinTokenId)
 	}
 
 	return price, nil
@@ -510,14 +514,14 @@ func (c *PriceFetcherImpl) getPriceCoinGecko(ctx context.Context, coingeckoToken
 	// fetch price from coingecko
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return price, fmt.Errorf("err building request: %w", err)
+		return 0, fmt.Errorf("err building request: %w", err)
 	}
 	r, err := c.client.Do(req)
 	if err != nil {
-		return price, fmt.Errorf("err sending request: %w", err)
+		return 0, fmt.Errorf("err sending request: %w", err)
 	}
 	if r.StatusCode != http.StatusOK {
-		return price, fmt.Errorf("err response status: %v", r.Status)
+		return 0, fmt.Errorf("err response status: %v", r.Status)
 	}
 	defer func() {
 		closeErr := r.Body.Close()
@@ -527,19 +531,19 @@ func (c *PriceFetcherImpl) getPriceCoinGecko(ctx context.Context, coingeckoToken
 
 	respBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		return price, fmt.Errorf("err response unreadable: %w", err)
+		return 0, fmt.Errorf("err response unreadable: %w", err)
 	}
 
 	// parse the price
 	var resp map[string]map[string]float64
 	err = json.Unmarshal(respBytes, &resp)
 	if err != nil {
-		return price, fmt.Errorf("err unmarshal fail: %w", err)
+		return 0, fmt.Errorf("err unmarshal fail: %w", err)
 	}
 	price, ok := resp[coingeckoTokenId]["usd"]
 
 	if !ok {
-		return price, fmt.Errorf("err usd price not found: %v", resp)
+		return 0, fmt.Errorf("err usd price not found: %v", resp)
 	}
 
 	return price, nil
