@@ -44,7 +44,9 @@ type PriceFetcherImpl struct {
 }
 
 var (
-	priceCache = ttlcache.New[string, float64]()
+	priceCache = ttlcache.New(
+		ttlcache.WithDisableTouchOnHit[string, float64](),
+	)
 
 	// Add a separate RWMutex for tokenIDLookup
 	tokenIDMu sync.RWMutex
@@ -417,10 +419,6 @@ func (c *PriceFetcherImpl) getPricePyth(ctx context.Context, pythTokenId string)
 	currentTime := time.Now().Unix()
 	if currentTime-resp.Parsed[0].Price.PublishTime > 5*60 {
 		return 0, fmt.Errorf("err stale price (%d)", resp.Parsed[0].Price.PublishTime)
-	}
-
-	if len(resp.Parsed) == 0 {
-		return 0, fmt.Errorf("err no price data found")
 	}
 
 	// Convert the price to normal units using the expo value from the API response
