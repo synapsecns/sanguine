@@ -238,10 +238,8 @@ func (c *PriceFetcherImpl) fetchPriceExternal(ctx context.Context, token string,
 	}
 
 	// confirm reasonable consensus btwn pri and sec price sources
-	percentageDiff := (verificationPrice - price) / price * 100
-	if percentageDiff < 0 {
-		percentageDiff = -percentageDiff
-	}
+	percentageDiff := math.Abs(verificationPrice-price) / price * 100
+
 	if percentageDiff > tokenConfig.DeviationTolerancePct {
 		// Remove any existing cache of this price due to the consensus failure
 		priceCache.Delete(token)
@@ -432,7 +430,7 @@ func (c *PriceFetcherImpl) getPricePyth(ctx context.Context, pythTokenId string)
 	return price, nil
 }
 
-// getPriceFromKucoin fetches the price of a token from Kucoin.
+// getPriceKucoin fetches the price of a token from Kucoin.
 func (c *PriceFetcherImpl) getPriceKucoin(ctx context.Context, kucoinTokenId string) (float64, error) {
 	var price float64
 
@@ -489,7 +487,7 @@ func (c *PriceFetcherImpl) getPriceKucoin(ctx context.Context, kucoinTokenId str
 	return price, nil
 }
 
-// getPriceFromCoinGecko fetches the price of a token from CoinGecko.
+// getPriceCoinGecko fetches the price of a token from CoinGecko.
 func (c *PriceFetcherImpl) getPriceCoinGecko(ctx context.Context, coingeckoTokenId string) (float64, error) {
 	var price float64
 
