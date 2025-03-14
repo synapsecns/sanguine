@@ -66,7 +66,8 @@ export const swapV2Controller = async (req, res) => {
       stack: err.stack,
     })
     res.status(500).json({
-      error: 'An unexpected error occurred in /swapV2. Please try again later.',
+      error:
+        'An unexpected error occurred in /swap/v2. Please try again later.',
     })
   }
 }
