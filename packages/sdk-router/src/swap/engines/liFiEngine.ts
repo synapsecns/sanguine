@@ -6,6 +6,7 @@ import { getWithTimeout } from '../../utils/api'
 import { logExecutionTime, logger } from '../../utils/logger'
 import { EngineID, SlippageMax, toFloat } from '../core'
 import {
+  getEmptyQuote,
   getEmptyRoute,
   RouteInput,
   SwapEngine,
@@ -41,12 +42,7 @@ type LiFiQuote = SwapEngineQuote & {
   tx?: TransactionData
 }
 
-const EmptyLiFiQuote: LiFiQuote = {
-  engineID: EngineID.LiFi,
-  engineName: EngineID[EngineID.LiFi],
-  chainId: 0,
-  expectedAmountOut: Zero,
-}
+const EmptyLiFiQuote: LiFiQuote = getEmptyQuote(EngineID.LiFi)
 
 export class LiFiEngine implements SwapEngine {
   readonly id: EngineID = EngineID.LiFi
@@ -87,6 +83,9 @@ export class LiFiEngine implements SwapEngine {
       engineID: this.id,
       engineName: EngineID[this.id],
       chainId,
+      tokenIn,
+      tokenOut,
+      amountIn: BigNumber.from(amountIn),
       expectedAmountOut: BigNumber.from(liFiResponse.estimate.toAmount),
       tx: liFiResponse.transactionRequest,
     }

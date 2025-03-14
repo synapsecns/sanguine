@@ -9,6 +9,7 @@ import { isNativeToken } from '../../utils/handleNativeToken'
 import { logger, logExecutionTime } from '../../utils/logger'
 import { EngineID, SlippageMax, toBasisPoints } from '../core'
 import {
+  getEmptyQuote,
   getEmptyRoute,
   RouteInput,
   SwapEngine,
@@ -63,10 +64,7 @@ type KyberSwapQuote = SwapEngineQuote & {
 }
 
 const EmptyKyberSwapQuote: KyberSwapQuote = {
-  engineID: EngineID.KyberSwap,
-  engineName: EngineID[EngineID.KyberSwap],
-  chainId: 0,
-  expectedAmountOut: Zero,
+  ...getEmptyQuote(EngineID.KyberSwap),
   routeSummary: {
     amountOut: '0',
   },
@@ -134,6 +132,9 @@ export class KyberSwapEngine implements SwapEngine {
       engineID: this.id,
       engineName: EngineID[this.id],
       chainId,
+      tokenIn,
+      tokenOut,
+      amountIn: BigNumber.from(amountIn),
       expectedAmountOut,
       routeSummary: kyberSwapQuoteResponse.data.routeSummary,
     }

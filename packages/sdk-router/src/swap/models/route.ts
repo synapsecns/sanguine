@@ -7,6 +7,9 @@ export type SwapEngineQuote = {
   engineID: EngineID
   engineName: string
   chainId: number
+  tokenIn: string
+  tokenOut: string
+  amountIn: BigNumber
   expectedAmountOut: BigNumber
   steps?: StepParams[]
 }
@@ -18,16 +21,16 @@ export const getEmptyQuote = (engineID: EngineID): SwapEngineQuote => {
     engineID,
     engineName: EngineID[engineID],
     chainId: 0,
+    tokenIn: '',
+    tokenOut: '',
+    amountIn: Zero,
     expectedAmountOut: Zero,
   }
 }
 
 export const getEmptyRoute = (engineID: EngineID): SwapEngineRoute => {
   return {
-    engineID,
-    engineName: EngineID[engineID],
-    chainId: 0,
-    expectedAmountOut: Zero,
+    ...getEmptyQuote(engineID),
     steps: [],
   }
 }

@@ -171,6 +171,33 @@ type GetBridgeParams struct {
 	DestAddress *string `form:"destAddress,omitempty" json:"destAddress,omitempty"`
 }
 
+// GetBridgeV2Params defines parameters for GetBridgeV2.
+type GetBridgeV2Params struct {
+	// FromChain The source chain ID (must support intents)
+	FromChain int `form:"fromChain" json:"fromChain"`
+
+	// ToChain The destination chain ID
+	ToChain int `form:"toChain" json:"toChain"`
+
+	// FromToken The address of the token on the source chain
+	FromToken string `form:"fromToken" json:"fromToken"`
+
+	// ToToken The address of the token on the destination chain
+	ToToken string `form:"toToken" json:"toToken"`
+
+	// Amount The amount of tokens to bridge in the token's native decimals
+	Amount int `form:"amount" json:"amount"`
+
+	// OriginUserAddress The address of the user on the origin chain (required to generate callData)
+	OriginUserAddress *string `form:"originUserAddress,omitempty" json:"originUserAddress,omitempty"`
+
+	// DestAddress The destination address for the bridge transaction (required to generate callData)
+	DestAddress *string `form:"destAddress,omitempty" json:"destAddress,omitempty"`
+
+	// Slippage Optional. The maximum allowed slippage percentage (0-100). Defaults to 0.5%.
+	Slippage *float32 `form:"slippage,omitempty" json:"slippage,omitempty"`
+}
+
 // GetBridgeLimitsParams defines parameters for GetBridgeLimits.
 type GetBridgeLimitsParams struct {
 	// FromChain The source chain ID.
@@ -429,6 +456,9 @@ type ClientInterface interface {
 	// GetBridge request
 	GetBridge(ctx context.Context, params *GetBridgeParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetBridgeV2 request
+	GetBridgeV2(ctx context.Context, params *GetBridgeV2Params, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetBridgeLimits request
 	GetBridgeLimits(ctx context.Context, params *GetBridgeLimitsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -552,6 +582,18 @@ func (c *Client) PutAck(ctx context.Context, body PutAckJSONRequestBody, reqEdit
 
 func (c *Client) GetBridge(ctx context.Context, params *GetBridgeParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetBridgeRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetBridgeV2(ctx context.Context, params *GetBridgeV2Params, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBridgeV2Request(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1078,6 +1120,147 @@ func NewGetBridgeRequest(server string, params *GetBridgeParams) (*http.Request,
 		if params.DestAddress != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "destAddress", runtime.ParamLocationQuery, *params.DestAddress); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetBridgeV2Request generates requests for GetBridgeV2
+func NewGetBridgeV2Request(server string, params *GetBridgeV2Params) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/bridge/v2")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromChain", runtime.ParamLocationQuery, params.FromChain); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toChain", runtime.ParamLocationQuery, params.ToChain); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromToken", runtime.ParamLocationQuery, params.FromToken); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toToken", runtime.ParamLocationQuery, params.ToToken); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "amount", runtime.ParamLocationQuery, params.Amount); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if params.OriginUserAddress != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "originUserAddress", runtime.ParamLocationQuery, *params.OriginUserAddress); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.DestAddress != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "destAddress", runtime.ParamLocationQuery, *params.DestAddress); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Slippage != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "slippage", runtime.ParamLocationQuery, *params.Slippage); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -2480,6 +2663,9 @@ type ClientWithResponsesInterface interface {
 	// GetBridgeWithResponse request
 	GetBridgeWithResponse(ctx context.Context, params *GetBridgeParams, reqEditors ...RequestEditorFn) (*GetBridgeResponse, error)
 
+	// GetBridgeV2WithResponse request
+	GetBridgeV2WithResponse(ctx context.Context, params *GetBridgeV2Params, reqEditors ...RequestEditorFn) (*GetBridgeV2Response, error)
+
 	// GetBridgeLimitsWithResponse request
 	GetBridgeLimitsWithResponse(ctx context.Context, params *GetBridgeLimitsParams, reqEditors ...RequestEditorFn) (*GetBridgeLimitsResponse, error)
 
@@ -2684,6 +2870,75 @@ func (r GetBridgeResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetBridgeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetBridgeV2Response struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]struct {
+		// BridgeModule The name of the bridge module used for this quote
+		BridgeModule *string `json:"bridgeModule,omitempty"`
+
+		// CallData Transaction data object, only provided if addresses were included
+		CallData *struct {
+			// Data Transaction calldata
+			Data *string `json:"data,omitempty"`
+
+			// To Contract address to call
+			To *string `json:"to,omitempty"`
+
+			// Value Amount of native currency to send with transaction (in native token decimals)
+			Value *string `json:"value,omitempty"`
+		} `json:"callData"`
+
+		// DestChainId The ID of the destination chain
+		DestChainId *int `json:"destChainId,omitempty"`
+
+		// EstimatedTime Estimated time for the bridge in seconds
+		EstimatedTime *int `json:"estimatedTime,omitempty"`
+
+		// GasDropAmount Amount of native token airdropped on destination chain (in native token decimals)
+		GasDropAmount *string `json:"gasDropAmount,omitempty"`
+
+		// Id Unique identifier for the quote (UUIDv7)
+		Id *string `json:"id,omitempty"`
+
+		// MaxAmountOut The maximum amount of tokens that will be received (in native token decimals)
+		MaxAmountOut *string `json:"maxAmountOut,omitempty"`
+
+		// OriginChainId The ID of the origin chain
+		OriginChainId *int `json:"originChainId,omitempty"`
+
+		// RouterAddress The address of the router contract
+		RouterAddress *string `json:"routerAddress,omitempty"`
+	}
+	JSON400 *struct {
+		Errors *[]struct {
+			Location *string `json:"location,omitempty"`
+			Msg      *string `json:"msg,omitempty"`
+			Param    *string `json:"param,omitempty"`
+			Value    *string `json:"value,omitempty"`
+		} `json:"errors,omitempty"`
+	}
+	JSON500 *struct {
+		Error *string `json:"error,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetBridgeV2Response) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetBridgeV2Response) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3750,6 +4005,15 @@ func (c *ClientWithResponses) GetBridgeWithResponse(ctx context.Context, params 
 	return ParseGetBridgeResponse(rsp)
 }
 
+// GetBridgeV2WithResponse request returning *GetBridgeV2Response
+func (c *ClientWithResponses) GetBridgeV2WithResponse(ctx context.Context, params *GetBridgeV2Params, reqEditors ...RequestEditorFn) (*GetBridgeV2Response, error) {
+	rsp, err := c.GetBridgeV2(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetBridgeV2Response(rsp)
+}
+
 // GetBridgeLimitsWithResponse request returning *GetBridgeLimitsResponse
 func (c *ClientWithResponses) GetBridgeLimitsWithResponse(ctx context.Context, params *GetBridgeLimitsParams, reqEditors ...RequestEditorFn) (*GetBridgeLimitsResponse, error) {
 	rsp, err := c.GetBridgeLimits(ctx, params, reqEditors...)
@@ -4134,6 +4398,91 @@ func ParseGetBridgeResponse(rsp *http.Response) (*GetBridgeResponse, error) {
 				Message  *string `json:"message,omitempty"`
 				Value    *string `json:"value,omitempty"`
 			} `json:"error,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest struct {
+			Error *string `json:"error,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetBridgeV2Response parses an HTTP response from a GetBridgeV2WithResponse call
+func ParseGetBridgeV2Response(rsp *http.Response) (*GetBridgeV2Response, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetBridgeV2Response{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []struct {
+			// BridgeModule The name of the bridge module used for this quote
+			BridgeModule *string `json:"bridgeModule,omitempty"`
+
+			// CallData Transaction data object, only provided if addresses were included
+			CallData *struct {
+				// Data Transaction calldata
+				Data *string `json:"data,omitempty"`
+
+				// To Contract address to call
+				To *string `json:"to,omitempty"`
+
+				// Value Amount of native currency to send with transaction (in native token decimals)
+				Value *string `json:"value,omitempty"`
+			} `json:"callData"`
+
+			// DestChainId The ID of the destination chain
+			DestChainId *int `json:"destChainId,omitempty"`
+
+			// EstimatedTime Estimated time for the bridge in seconds
+			EstimatedTime *int `json:"estimatedTime,omitempty"`
+
+			// GasDropAmount Amount of native token airdropped on destination chain (in native token decimals)
+			GasDropAmount *string `json:"gasDropAmount,omitempty"`
+
+			// Id Unique identifier for the quote (UUIDv7)
+			Id *string `json:"id,omitempty"`
+
+			// MaxAmountOut The maximum amount of tokens that will be received (in native token decimals)
+			MaxAmountOut *string `json:"maxAmountOut,omitempty"`
+
+			// OriginChainId The ID of the origin chain
+			OriginChainId *int `json:"originChainId,omitempty"`
+
+			// RouterAddress The address of the router contract
+			RouterAddress *string `json:"routerAddress,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			Errors *[]struct {
+				Location *string `json:"location,omitempty"`
+				Msg      *string `json:"msg,omitempty"`
+				Param    *string `json:"param,omitempty"`
+				Value    *string `json:"value,omitempty"`
+			} `json:"errors,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err

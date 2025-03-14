@@ -2,6 +2,7 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import invariant from 'tiny-invariant'
 import { Zero } from '@ethersproject/constants'
+import NodeCache from 'node-cache'
 
 import {
   BigintIsh,
@@ -16,19 +17,28 @@ import {
   SynapseModuleSet,
   createNoSwapQuery,
   applySlippageToQuery,
+  BridgeTokenCandidate,
+  BridgeRouteV2,
+  GetBridgeTokenCandidatesParameters,
+  GetBridgeRouteV2Parameters,
 } from '../module'
 import { FastBridgeRouter } from './fastBridgeRouter'
 import { ChainProvider } from '../router'
-import { ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
-import { FastBridgeQuote, applyQuote } from './quote'
+import { calculateDeadline, ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
+import { FastBridgeQuote, applyQuote, getOriginAmount } from './quote'
 import { marshallTicker } from './ticker'
 import { getAllQuotes } from './api'
+import { isSameAddress } from '../utils/addressUtils'
+import { encodeZapData, USER_SIMULATED_ADDRESS } from '../swap'
+import { IFastBridge } from '../typechain/FastBridge'
 
 export class FastBridgeRouterSet extends SynapseModuleSet {
   static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
+  static readonly ALL_QUOTES_CACHE_TTL = 10 // 10 seconds cache for getAllQuotes results
 
   public readonly bridgeModuleName = 'SynapseRFQ'
   public readonly allEvents = ['BridgeRequestedEvent', 'BridgeRelayedEvent']
+  public readonly isBridgeV2Supported = true
 
   public routers: {
     [chainId: number]: FastBridgeRouter
@@ -37,13 +47,15 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     [chainId: number]: Provider
   }
 
-  // The answer to life, the universe, and everything
-  private readonly GAS_REBATE_FLAG = '0x2a'
+  private quotesCache: NodeCache
 
   constructor(chains: ChainProvider[]) {
     super()
     this.routers = {}
     this.providers = {}
+    this.quotesCache = new NodeCache({
+      stdTTL: FastBridgeRouterSet.ALL_QUOTES_CACHE_TTL,
+    })
     chains.forEach(({ chainId, provider }) => {
       const address = FAST_BRIDGE_ROUTER_ADDRESS_MAP[chainId]
       // Skip chains without a FastBridgeRouter address
@@ -73,16 +85,76 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   /**
    * @inheritdoc SynapseModuleSet.getGasDropAmount
    */
-  public async getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber> {
-    // TODO: test this once chainGasAmount is set to be non-zero
-    if (
-      bridgeRoute.destQuery.rawParams
-        .toLowerCase()
-        .startsWith(this.GAS_REBATE_FLAG)
-    ) {
-      return this.getFastBridgeRouter(bridgeRoute.destChainId).chainGasAmount()
-    }
+  public async getGasDropAmount(): Promise<BigNumber> {
     return Zero
+  }
+
+  public async getBridgeTokenCandidates({
+    originChainId,
+    destChainId,
+    tokenOut,
+  }: GetBridgeTokenCandidatesParameters): Promise<BridgeTokenCandidate[]> {
+    const quotes = await this.getQuotes(originChainId, destChainId, tokenOut)
+    // Filter out duplicates of the bridge token
+    return Array.from(
+      new Map(
+        quotes.map((quote) => [marshallTicker(quote.ticker), quote])
+      ).values()
+    ).map((quote) => ({
+      originChainId,
+      destChainId,
+      originToken: quote.ticker.originToken.token,
+      destToken: quote.ticker.destToken.token,
+    }))
+  }
+
+  public async getBridgeRouteV2({
+    originAmountIn,
+    bridgeToken,
+    destTokenOut,
+    originSender,
+    destRecipient,
+  }: GetBridgeRouteV2Parameters): Promise<BridgeRouteV2> {
+    if (!isSameAddress(bridgeToken.destToken, destTokenOut)) {
+      throw new Error('Swaps on destination are not supported by FastBridge V1')
+    }
+    const originChainId = bridgeToken.originChainId
+    const protocolFeeRate = await this.getFastBridgeRouter(
+      originChainId
+    ).getProtocolFeeRate()
+    const amount = this.applyProtocolFeeRate(
+      BigNumber.from(originAmountIn),
+      protocolFeeRate
+    )
+    const quotes = (
+      await this.getQuotes(
+        originChainId,
+        bridgeToken.destChainId,
+        bridgeToken.destToken
+      )
+    ).filter((quote) =>
+      isSameAddress(quote.ticker.originToken.token, bridgeToken.originToken)
+    )
+    const [destAmountOut, originFee] = quotes
+      .map((quote) => [
+        applyQuote(quote, amount),
+        // Convert fixed fee from dest token to origin token
+        getOriginAmount(quote, quote.fixedFee),
+      ])
+      .reduce((a, b) => (a[0].gt(b[0]) ? a : b), [Zero, Zero])
+    // Cap slippage to 5% of the fixed fee
+    const maxOriginSlippage = originFee.div(20)
+    return {
+      bridgeToken,
+      minOriginAmount: BigNumber.from(originAmountIn).sub(maxOriginSlippage),
+      destAmountOut,
+      zapData: await this.getBridgeZapData(
+        bridgeToken,
+        destAmountOut,
+        originSender,
+        destRecipient
+      ),
+    }
   }
 
   /**
@@ -285,6 +357,22 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   }
 
   /**
+   * Retrieves all quotes with caching.
+   *
+   * @returns A promise that resolves to all available quotes.
+   */
+  private async getCachedAllQuotes(): Promise<FastBridgeQuote[]> {
+    const cacheKey = 'all_quotes'
+    const cachedQuotes = this.quotesCache.get<FastBridgeQuote[]>(cacheKey)
+    if (cachedQuotes) {
+      return cachedQuotes
+    }
+    const allQuotes = await getAllQuotes()
+    this.quotesCache.set(cacheKey, allQuotes)
+    return allQuotes
+  }
+
+  /**
    * Get the list of quotes between two chains for a given final token.
    *
    * @param originChainId - The ID of the origin chain.
@@ -297,7 +385,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     destChainId: number,
     tokenOut: string
   ): Promise<FastBridgeQuote[]> {
-    const allQuotes = await getAllQuotes()
+    const allQuotes = await this.getCachedAllQuotes()
     const originFB = await this.getFastBridgeAddress(originChainId)
     const destFB = await this.getFastBridgeAddress(destChainId)
     return allQuotes
@@ -335,5 +423,45 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     // Concatenate the originUserAddress (without 0x prefix) to the end of the rawParams.
     destQuery.rawParams = '0x00' + originUserAddress.slice(2)
     return destQuery
+  }
+
+  private async getBridgeZapData(
+    bridgeToken: BridgeTokenCandidate,
+    destAmountOut: BigNumber,
+    originSender?: string,
+    destRecipient?: string
+  ): Promise<string | undefined> {
+    if (
+      destAmountOut.isZero() ||
+      !originSender ||
+      !destRecipient ||
+      isSameAddress(originSender, USER_SIMULATED_ADDRESS) ||
+      isSameAddress(destRecipient, USER_SIMULATED_ADDRESS)
+    ) {
+      return undefined
+    }
+    const bridgeParams: IFastBridge.BridgeParamsStruct = {
+      dstChainId: bridgeToken.destChainId,
+      sender: originSender,
+      to: destRecipient,
+      originToken: bridgeToken.originToken,
+      destToken: bridgeToken.destToken,
+      // Will be set in encodeZapData below
+      originAmount: 0,
+      destAmount: destAmountOut,
+      sendChainGas: false,
+      deadline: calculateDeadline(this.getDefaultPeriods().destPeriod),
+    }
+    const fastBridge = await this.getFastBridgeRouter(
+      bridgeToken.originChainId
+    ).getFastBridgeContract()
+    const fastBridgeCalldata = (
+      await fastBridge.populateTransaction.bridge(bridgeParams)
+    ).data
+    return encodeZapData({
+      target: fastBridge.address,
+      payload: fastBridgeCalldata,
+      amountPosition: 4 + 32 * 5,
+    })
   }
 }

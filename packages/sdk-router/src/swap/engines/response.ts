@@ -61,6 +61,9 @@ export const generateAPIRoute = (
     engineID,
     engineName: EngineID[engineID],
     chainId: input.chainId,
+    tokenIn: input.tokenIn,
+    tokenOut: input.tokenOut,
+    amountIn: BigNumber.from(input.amountIn),
     expectedAmountOut: response.amountOut,
     steps: [
       {

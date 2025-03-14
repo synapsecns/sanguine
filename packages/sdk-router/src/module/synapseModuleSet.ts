@@ -3,14 +3,39 @@ import { uuidv7 } from 'uuidv7'
 import invariant from 'tiny-invariant'
 
 import { BigintIsh } from '../constants'
-import { BridgeQuote, BridgeRoute, FeeConfig } from './types'
+import {
+  BridgeQuote,
+  BridgeQuoteV2,
+  BridgeRoute,
+  BridgeRouteV2,
+  BridgeTokenCandidate,
+  FeeConfig,
+} from './types'
 import { SynapseModule } from './synapseModule'
 import { applyOptionalDeadline } from '../utils/deadlines'
 import { Query } from './query'
+import { Slippage } from '../swap'
+
+export type GetBridgeTokenCandidatesParameters = {
+  originChainId: number
+  destChainId: number
+  tokenIn: string
+  tokenOut: string
+}
+
+export type GetBridgeRouteV2Parameters = {
+  originAmountIn: BigintIsh
+  bridgeToken: BridgeTokenCandidate
+  destTokenOut: string
+  originSender?: string
+  destRecipient?: string
+  slippage?: Slippage
+}
 
 export abstract class SynapseModuleSet {
   abstract readonly bridgeModuleName: string
   abstract readonly allEvents: string[]
+  abstract readonly isBridgeV2Supported: boolean
 
   /**
    * Returns the estimated time for a bridge transaction to be completed,
@@ -91,6 +116,14 @@ export abstract class SynapseModuleSet {
     return module
   }
 
+  abstract getBridgeTokenCandidates(
+    params: GetBridgeTokenCandidatesParameters
+  ): Promise<BridgeTokenCandidate[]>
+
+  abstract getBridgeRouteV2(
+    params: GetBridgeRouteV2Parameters
+  ): Promise<BridgeRouteV2>
+
   /**
    * This method find all possible routes for a bridge transaction between two chains.
    *
@@ -128,10 +161,14 @@ export abstract class SynapseModuleSet {
    * User will receive this amount of gas tokens on the destination chain,
    * when the module transaction is completed.
    *
-   * @param bridgeRoute - The bridge route to get gas drop amount for.
+   * @param destChainId - The ID of the destination chain.
+   * @param destBridgeToken - The destination bridge token.
    * @returns A promise that resolves to the gas drop amount.
    */
-  abstract getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber>
+  abstract getGasDropAmount(
+    destChainId: number,
+    destBridgeToken: string
+  ): Promise<BigNumber>
 
   /**
    * Returns the default deadline periods for this bridge module.
@@ -219,9 +256,28 @@ export abstract class SynapseModuleSet {
       destQuery,
       estimatedTime: this.getEstimatedTime(bridgeRoute.originChainId),
       bridgeModuleName: bridgeRoute.bridgeModuleName,
-      gasDropAmount: await this.getGasDropAmount(bridgeRoute),
+      gasDropAmount: await this.getGasDropAmount(
+        bridgeRoute.destChainId,
+        bridgeRoute.bridgeToken.token
+      ),
       originChainId: bridgeRoute.originChainId,
       destChainId: bridgeRoute.destChainId,
+    }
+  }
+
+  async finalizeBridgeQuoteV2(
+    bridgeToken: BridgeTokenCandidate,
+    bridgeQuote: BridgeQuoteV2
+  ): Promise<BridgeQuoteV2> {
+    return {
+      ...bridgeQuote,
+      id: uuidv7(),
+      estimatedTime: this.getEstimatedTime(bridgeQuote.originChainId),
+      bridgeModuleName: this.bridgeModuleName,
+      gasDropAmount: await this.getGasDropAmount(
+        bridgeQuote.destChainId,
+        bridgeToken.destToken
+      ),
     }
   }
 }

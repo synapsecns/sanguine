@@ -1,6 +1,7 @@
 import { BigNumber, Contract, PopulatedTransaction } from 'ethers'
 import { Interface } from '@ethersproject/abi'
 import { Provider } from '@ethersproject/abstract-provider'
+import { Zero, MaxUint256 } from '@ethersproject/constants'
 
 import synapseIntentRouterAbi from '../abi/SynapseIntentRouter.json'
 import {
@@ -9,9 +10,18 @@ import {
   TOKEN_ZAP_V1_ADDRESS_MAP,
 } from '../constants'
 import { ChainProvider } from '../router'
-import { StepParams } from '../swap'
+import {
+  getMinFinalAmount,
+  setMinFinalAmount,
+  StepParams,
+  SwapEngineRoute,
+} from '../swap'
 import { SynapseIntentRouter } from '../typechain/SynapseIntentRouter'
 import { adjustValueIfNative, isNativeToken } from '../utils/handleNativeToken'
+import { BridgeQuoteV2, BridgeRouteV2 } from '../module'
+import { calculateDeadline, TEN_MINUTES } from '../utils/deadlines'
+
+const FULL_BALANCE = MaxUint256
 
 export class SynapseIntentRouterSet {
   static sirInterface = new Interface(synapseIntentRouterAbi)
@@ -30,6 +40,54 @@ export class SynapseIntentRouterSet {
     chains.forEach(({ chainId, provider }) => {
       this.providers[chainId] = provider
     })
+  }
+
+  public async finalizeBridgeRouteV2(
+    originTokenIn: string,
+    originAmountIn: BigintIsh,
+    originRoute: SwapEngineRoute,
+    bridgeRoute: BridgeRouteV2,
+    originDeadline?: number
+  ): Promise<BridgeQuoteV2> {
+    const originChainId = bridgeRoute.bridgeToken.originChainId
+    if (originRoute.steps.length > 0) {
+      const minFinalAmount = getMinFinalAmount(originRoute.steps)
+      if (minFinalAmount.lt(bridgeRoute.minOriginAmount)) {
+        originRoute.steps = setMinFinalAmount(
+          originRoute.steps,
+          bridgeRoute.minOriginAmount
+        )
+      }
+    }
+    const tx = bridgeRoute.zapData
+      ? await this.completeIntentWithBalanceChecks(
+          originChainId,
+          originTokenIn,
+          originAmountIn,
+          originDeadline ?? calculateDeadline(TEN_MINUTES),
+          [
+            ...originRoute.steps,
+            {
+              token: bridgeRoute.bridgeToken.originToken,
+              amount: FULL_BALANCE,
+              msgValue: 0,
+              zapData: bridgeRoute.zapData,
+            },
+          ]
+        )
+      : undefined
+    return {
+      originChainId,
+      destChainId: bridgeRoute.bridgeToken.destChainId,
+      routerAddress: this.getSirAddress(originChainId),
+      maxAmountOut: bridgeRoute.destAmountOut,
+      // These will be filled by the corresponding bridge module
+      id: '',
+      estimatedTime: 0,
+      bridgeModuleName: '',
+      gasDropAmount: Zero,
+      tx,
+    }
   }
 
   public async completeIntent(
