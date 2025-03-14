@@ -40,12 +40,13 @@ export const swapV2Controller = async (req, res) => {
       },
     })
 
-    const callData = address
-      ? {
-          ...tx,
-          value: tx.value.toString(),
-        }
-      : null
+    const callData =
+      address && tx
+        ? {
+            ...tx,
+            value: tx.value.toString(),
+          }
+        : null
 
     const payload = {
       routerAddress,
@@ -65,7 +66,8 @@ export const swapV2Controller = async (req, res) => {
       stack: err.stack,
     })
     res.status(500).json({
-      error: 'An unexpected error occurred in /swapV2. Please try again later.',
+      error:
+        'An unexpected error occurred in /swap/v2. Please try again later.',
     })
   }
 }
