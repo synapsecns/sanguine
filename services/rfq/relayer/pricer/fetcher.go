@@ -288,11 +288,12 @@ func (c *PriceFetcherImpl) GetPrice(ctx context.Context, token string) (price fl
 		return 0, fmt.Errorf("err tokenConfig not found: %s", token)
 	}
 
+	span.SetAttributes(attribute.Bool("used_cached_price", true))
+
 	// Check price cache first before making any new external calls
 	cachedItem := priceCache.Get(token)
 	if cachedItem != nil {
 		cached := cachedItem.Value()
-		span.SetAttributes(attribute.Bool("used_cached_price", true))
 
 		// add "fetchprice" to debugOutput env var for dev/debug output
 		if strings.Contains(strings.ToLower(os.Getenv("debugOutput")), "fetchprice") {
