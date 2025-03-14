@@ -40,12 +40,13 @@ export const swapV2Controller = async (req, res) => {
       },
     })
 
-    const callData = address
-      ? {
-          ...tx,
-          value: tx.value.toString(),
-        }
-      : null
+    const callData =
+      address && tx
+        ? {
+            ...tx,
+            value: tx.value.toString(),
+          }
+        : null
 
     const payload = {
       routerAddress,
