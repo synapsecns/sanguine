@@ -91,6 +91,9 @@ type TokenPriceConfig struct {
 	PriceCacheTTL int
 }
 
+// TODO: more appropriate on pricer config settings along w/ anything else relevant
+const stalePriceSecondsPyth = 5 * 60 // 5 min
+
 // TODO: this would be more appropriate on config YAML
 var tokenConfigs = map[string]TokenPriceConfig{
 	"USDC": {
@@ -331,28 +334,31 @@ func (c *PriceFetcherImpl) getExternalPrice(ctx context.Context, priceSource Pri
 		if err != nil {
 			return 0, fmt.Errorf("getPriceCoinGecko: %w", err)
 		}
-		return price, nil
 
 	case "KuCoin":
 		price, err = c.getPriceKucoin(ctx, priceSource.SourceTokenID)
 		if err != nil {
 			return 0, fmt.Errorf("getPriceKucoin: %w", err)
 		}
-		return price, nil
 
 	case "Pyth":
 		price, err = c.getPricePyth(ctx, priceSource.SourceTokenID)
 		if err != nil {
 			return 0, fmt.Errorf("getPricePyth: %w", err)
 		}
-		return price, nil
 
 	case "USD": // this can be used to force an asset's primary or verification price to be 1-to-1 with the US dollar
-		return 1.0, nil
+		price = 1.0
 
 	default:
 		return 0, fmt.Errorf("err unknown source: %s", priceSource.Source)
 	}
+
+	if price <= 0 {
+		return 0, fmt.Errorf("err invalid price: %f", price)
+	}
+
+	return price, nil
 }
 
 // getPricePyth gets the price of a token from Pyth
@@ -406,7 +412,7 @@ func (c *PriceFetcherImpl) getPricePyth(ctx context.Context, pythTokenId string)
 
 	// do not consider price valid if it is stale by more than X minutes (ie: apparent Pyth failure)
 	currentTime := time.Now().Unix()
-	if currentTime-resp.Parsed[0].Price.PublishTime > 5*60 {
+	if currentTime-resp.Parsed[0].Price.PublishTime > stalePriceSecondsPyth {
 		return 0, fmt.Errorf("err stale price (%d)", resp.Parsed[0].Price.PublishTime)
 	}
 
