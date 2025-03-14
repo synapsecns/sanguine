@@ -21,6 +21,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"golang.org/x/sync/singleflight"
 )
 
 // exported constant used to apply special pricing behavior for USD as opposed to any token asset
@@ -51,9 +52,7 @@ var (
 	// Add a separate RWMutex for tokenIDLookup
 	tokenIDMu sync.RWMutex
 
-	inFlightRequests = make(map[string]*sync.Cond)
-
-	inFlightRequestsMu sync.Mutex
+	singleflightGroup singleflight.Group
 )
 
 // NewPriceFetcher creates a new instance of PriceFetcherImpl.
@@ -61,6 +60,7 @@ func NewPriceFetcher(handler metrics.Handler, timeout time.Duration, relConfig r
 	client := &http.Client{
 		Timeout: timeout,
 	}
+
 	handler.ConfigureHTTPClient(client)
 	client.Transport = httpcapture.NewCaptureTransport(client.Transport, handler)
 
@@ -152,6 +152,9 @@ func init() {
 	for k, v := range tokenConfigs {
 		originalTokenConfig[k] = v
 	}
+
+	go priceCache.Start()
+
 }
 
 // UnsafeGetTokenConfigMap returns a copy of the tokenConfigs map.
@@ -299,37 +302,21 @@ func (c *PriceFetcherImpl) GetPrice(ctx context.Context, token string) (price fl
 		return cached, nil
 	}
 
-	inFlightRequestsMu.Lock()
-	cond, inFlight := inFlightRequests[token]
-
-	// if we are not already in the process of fetching this token's price via some separate call, then initiate a fresh fetch
-	if !inFlight {
-		cond = sync.NewCond(&inFlightRequestsMu)
-		inFlightRequests[token] = cond
-
-		inFlightRequestsMu.Unlock()
-
-		span.SetAttributes(attribute.Bool("used_cached_false", true))
+	// Use singleflight to ensure only one request is made for the same token concurrently
+	result, err, _ := singleflightGroup.Do(token, func() (interface{}, error) {
+		span.SetAttributes(attribute.Bool("used_cached_price", false))
 		price, err := c.fetchPriceExternal(ctx, token, tokenConfig)
-
 		if err != nil {
 			return 0, fmt.Errorf("err fetchPriceExternal: %w", err)
 		}
-
-		inFlightRequestsMu.Lock()
-		delete(inFlightRequests, token)
-		inFlightRequestsMu.Unlock()
-
-		cond.Broadcast()
-
 		return price, nil
-	}
-	// Otherwise, wait until the in-flight price fetch is completed & then we can share the same result via cache
-	cond.Wait()
-	inFlightRequestsMu.Unlock()
+	})
 
-	// recurse, which should now pull from the cache
-	return c.GetPrice(ctx, token)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.(float64), nil
 }
 
 // getExternalPrice gets the price of a token from an external source
