@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.11.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.11.0...@synapsecns/rest-api@1.11.1) (2025-03-14)
+
+
+### Bug Fixes
+
+* **rest-api:** swap v2 errors ([#3594](https://github.com/synapsecns/sanguine/issues/3594)) ([b1b07da](https://github.com/synapsecns/sanguine/commit/b1b07daf9f10670afb161fa25f1fd03209a46885))
+
+
+
+
+
 # [1.11.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.10.1...@synapsecns/rest-api@1.11.0) (2025-03-11)
 
 
