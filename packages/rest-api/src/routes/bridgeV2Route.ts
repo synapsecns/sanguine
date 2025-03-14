@@ -85,11 +85,8 @@ const router: express.Router = express.Router()
  *                     type: string
  *                     description: The address of the router contract
  *                   maxAmountOut:
- *                     $ref: '#/components/schemas/BigNumber'
- *                     description: The maximum amount of tokens that will be received (BigNumber format)
- *                   maxAmountOutStr:
  *                     type: string
- *                     description: String representation of maxAmountOut in native token decimals
+ *                     description: The maximum amount of tokens that will be received (in native token decimals)
  *                   bridgeModule:
  *                     type: string
  *                     description: The name of the bridge module used for this quote
@@ -103,8 +100,8 @@ const router: express.Router = express.Router()
  *                     type: integer
  *                     description: The ID of the destination chain
  *                   gasDropAmount:
- *                     $ref: '#/components/schemas/BigNumber'
- *                     description: Amount of native token airdropped on destination chain (BigNumber format)
+ *                     type: string
+ *                     description: Amount of native token airdropped on destination chain (in native token decimals)
  *                   callData:
  *                     type: object
  *                     nullable: true
@@ -118,23 +115,16 @@ const router: express.Router = express.Router()
  *                         description: Transaction calldata
  *                       value:
  *                         type: string
- *                         description: Amount of native currency to send with transaction
+ *                         description: Amount of native currency to send with transaction (in native token decimals)
  *             example:
  *               - id: "01920c87-7f14-7cdf-90e1-e13b2d4af55f"
  *                 routerAddress: "0x512000a034E154908Efb1eC48579F4ffDb000512"
- *                 maxAmountOut: {
- *                   type: "BigNumber",
- *                   hex: "0xe89bd2cb27"
- *                 }
- *                 maxAmountOutStr: "999046695719"
+ *                 maxAmountOut: "999046695719"
  *                 bridgeModule: "SynapseRFQ"
  *                 estimatedTime: 30
  *                 originChainId: 1
  *                 destChainId: 42161
- *                 gasDropAmount: {
- *                   type: "BigNumber",
- *                   hex: "0x00"
- *                 }
+ *                 gasDropAmount: "0"
  *                 callData: {
  *                   to: "0x512000a034E154908Efb1eC48579F4ffDb000512",
  *                   data: "0x...",

@@ -52,6 +52,7 @@ export const bridgeV2Controller = async (req, res) => {
       },
     })
 
+    // Convert all BigNumber values to strings.
     const payload = allQuotes.map((quote) => {
       const callData =
         destAddress && originUserAddress && quote.tx
@@ -63,7 +64,8 @@ export const bridgeV2Controller = async (req, res) => {
       return {
         ...quote,
         callData,
-        maxAmountOutStr: quote.maxAmountOut.toString(),
+        gasDropAmount: quote.gasDropAmount.toString(),
+        maxAmountOut: quote.maxAmountOut.toString(),
         tx: undefined,
       }
     })
