@@ -65,14 +65,12 @@ type feePricer struct {
 	config relconfig.Config
 	// gasPriceCache maps chainID -> gas price
 	gasPriceCache *ttlcache.Cache[uint32, *big.Int]
-	// tokenPriceCache maps token name -> token price
-	tokenPriceCache *ttlcache.Cache[string, float64]
 	// clientFetcher is used to fetch clients.
 	clientFetcher submitter.ClientFetcher
 	// handler is the metrics handler.
 	handler metrics.Handler
 	// priceFetcher is used to fetch prices from coingecko.
-	priceFetcher CoingeckoPriceFetcher
+	priceFetcher PriceFetcher
 }
 
 // PricedValuePair is a set of equivalently priced values between two disparate assets.
@@ -91,34 +89,27 @@ type PricedValuePair struct {
 }
 
 // NewFeePricer creates a new fee pricer.
-func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher, priceFetcher CoingeckoPriceFetcher, handler metrics.Handler) FeePricer {
+func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher, priceFetcher PriceFetcher, handler metrics.Handler) FeePricer {
 	gasPriceCache := ttlcache.New[uint32, *big.Int](
 		ttlcache.WithTTL[uint32, *big.Int](time.Second*time.Duration(config.GetFeePricer().GasPriceCacheTTLSeconds)),
 		ttlcache.WithDisableTouchOnHit[uint32, *big.Int](),
 	)
-	tokenPriceCache := ttlcache.New[string, float64](
-		ttlcache.WithTTL[string, float64](time.Second*time.Duration(config.GetFeePricer().TokenPriceCacheTTLSeconds)),
-		ttlcache.WithDisableTouchOnHit[string, float64](),
-	)
 	return &feePricer{
-		config:          config,
-		gasPriceCache:   gasPriceCache,
-		tokenPriceCache: tokenPriceCache,
-		clientFetcher:   clientFetcher,
-		handler:         handler,
-		priceFetcher:    priceFetcher,
+		config:        config,
+		gasPriceCache: gasPriceCache,
+		clientFetcher: clientFetcher,
+		handler:       handler,
+		priceFetcher:  priceFetcher,
 	}
 }
 
 func (f *feePricer) Start(ctx context.Context) {
 	// Start the TTL caches.
 	go f.gasPriceCache.Start()
-	go f.tokenPriceCache.Start()
 
 	go func() {
 		<-ctx.Done()
 		f.gasPriceCache.Stop()
-		f.tokenPriceCache.Stop()
 	}()
 }
 
@@ -491,27 +482,13 @@ func (f *feePricer) GetTokenPrice(ctx context.Context, token string) (price floa
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// Attempt to fetch gas price from cache.
-	tokenPriceItem := f.tokenPriceCache.Get(token)
-	//nolint:nestif
-	if tokenPriceItem == nil {
-		// Try to get price from coingecko.
-		price, err = f.priceFetcher.GetPrice(ctx, token)
-
-		if err == nil {
-			f.tokenPriceCache.Set(token, price, 0)
-			span.SetAttributes(attribute.Float64("cg_price", price))
-		} else {
-			span.SetAttributes(
-				attribute.String("cg_error", err.Error()),
-			)
-			// intentionally no longer allow fallback to flat hard-configured token price
-			return 0, fmt.Errorf("err price lookup %s: %v", token, err)
-
-		}
-	} else {
-		price = tokenPriceItem.Value()
-		span.SetAttributes(attribute.Float64("cache_price", price))
+	price, err = f.priceFetcher.GetPrice(ctx, token)
+	if err != nil {
+		span.SetAttributes(
+			attribute.String("getprice_error", err.Error()),
+		)
+		return 0, fmt.Errorf("err GetPrice %s: %v", token, err)
 	}
+
 	return price, nil
 }

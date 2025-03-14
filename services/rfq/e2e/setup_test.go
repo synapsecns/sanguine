@@ -285,7 +285,7 @@ func (i *IntegrationSuite) setupMockCoinGeckoServer() {
 		}
 
 		// Get the current coingeckoIDLookup map
-		idMap, err := pricer.UnsafeGetCoingeckoIDMap()
+		idMap, err := pricer.UnsafeGetTokenConfigMap()
 		if err != nil {
 			http.Error(w, "Error accessing CoinGecko IDs", http.StatusInternalServerError)
 			return
@@ -312,8 +312,8 @@ func (i *IntegrationSuite) setupMockCoinGeckoServer() {
 		}
 
 		// Check if the ID is in our lookup map values
-		for _, id := range idMap {
-			if id == coinID {
+		for _, config := range idMap {
+			if config.PrimaryPrice.SourceTokenID == coinID {
 				found = true
 				break
 			}
@@ -421,8 +421,7 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 			DestGasEstimate:   1000000,
 		},
 		FeePricer: relconfig.FeePricerConfig{
-			GasPriceCacheTTLSeconds:   60,
-			TokenPriceCacheTTLSeconds: 60,
+			GasPriceCacheTTLSeconds: 60,
 		},
 		RebalanceInterval: 0,
 		VolumeLimit:       10_000,

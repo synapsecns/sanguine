@@ -49,8 +49,8 @@ type Config struct {
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
 	// ScreenerAPIUrl is the TRM API url.
 	ScreenerAPIUrl string `yaml:"screener_api_url"`
-	// CoinGeckoApiKey is the CoinGecko API key.
-	CoinGeckoApiKey string `yaml:"coingecko_api_key"`
+	// CoinGeckoAPIKey is the CoinGecko API key.
+	CoinGeckoAPIKey string `yaml:"coingecko_api_key"`
 	// CoinGeckoAPIURL is the base URL for the CoinGecko API (for testing).
 	CoinGeckoAPIURL string `yaml:"coingecko_api_url"`
 	// DBSelectorInterval is the interval for the db selector.
@@ -160,8 +160,6 @@ type DatabaseConfig struct {
 type FeePricerConfig struct {
 	// GasPriceCacheTTLSeconds is the TTL for the gas price cache.
 	GasPriceCacheTTLSeconds int `yaml:"gas_price_cache_ttl"`
-	// TokenPriceCacheTTLSeconds is the TTL for the token price cache.
-	TokenPriceCacheTTLSeconds int `yaml:"token_price_cache_ttl"`
 	// HTTPTimeoutMs is the number of milliseconds to timeout on a HTTP request.
 	HTTPTimeoutMs int `yaml:"http_timeout_ms"`
 }

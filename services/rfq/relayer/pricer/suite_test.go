@@ -37,8 +37,7 @@ func (c *PricerSuite) SetupTest() {
 			DestGasEstimate:   1000000,
 		},
 		FeePricer: relconfig.FeePricerConfig{
-			GasPriceCacheTTLSeconds:   60,
-			TokenPriceCacheTTLSeconds: 60,
+			GasPriceCacheTTLSeconds: 60,
 		},
 		Chains: map[int]relconfig.ChainConfig{
 			int(c.origin): {

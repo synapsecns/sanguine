@@ -2,12 +2,13 @@ package e2e_test
 
 import (
 	"fmt"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"math/big"
 	"net/http/httptest"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -79,11 +80,55 @@ const (
 // 3. Create the omnirpc server: this is used by both the api and the relayer.
 func (i *IntegrationSuite) SetupTest() {
 	i.TestSuite.SetupTest()
-	pricer.UnsafeUpdateCoingeckoMap(map[string]string{
-		"MockMintBurnToken": "usdt",
-		"WETH9":             "ethereum",
-		"USDT":              "usdt",
-		"DAI":               "dai",
+	pricer.UnsafeUpdateTokenConfigMap(map[string]pricer.TokenPriceConfig{
+		"MockMintBurnToken": {
+			PrimaryPrice: pricer.PriceSourceDetail{
+				Source:        "CoinGecko",
+				SourceTokenID: "usdt",
+			},
+			VerificationPrice: pricer.PriceSourceDetail{
+				Source:        "None",
+				SourceTokenID: "na",
+			},
+			DeviationTolerancePct: 5,
+			PriceCacheTTL:         20,
+		},
+		"WETH9": {
+			PrimaryPrice: pricer.PriceSourceDetail{
+				Source:        "CoinGecko",
+				SourceTokenID: "ethereum",
+			},
+			VerificationPrice: pricer.PriceSourceDetail{
+				Source:        "None",
+				SourceTokenID: "na",
+			},
+			DeviationTolerancePct: 5,
+			PriceCacheTTL:         20,
+		},
+		"USDT": {
+			PrimaryPrice: pricer.PriceSourceDetail{
+				Source:        "CoinGecko",
+				SourceTokenID: "usdt",
+			},
+			VerificationPrice: pricer.PriceSourceDetail{
+				Source:        "None",
+				SourceTokenID: "na",
+			},
+			DeviationTolerancePct: 5,
+			PriceCacheTTL:         20,
+		},
+		"DAI": {
+			PrimaryPrice: pricer.PriceSourceDetail{
+				Source:        "CoinGecko",
+				SourceTokenID: "dai",
+			},
+			VerificationPrice: pricer.PriceSourceDetail{
+				Source:        "None",
+				SourceTokenID: "na",
+			},
+			DeviationTolerancePct: 5,
+			PriceCacheTTL:         20,
+		},
 	})
 
 	i.manager = testutil.NewDeployManager(i.T())
@@ -110,7 +155,7 @@ func (i *IntegrationSuite) TearDownTest() {
 		i.mockCoinGeckoServer = nil
 	}
 
-	pricer.UnsafeResetCoingeckoMap()
+	pricer.UnsafeResetTokenConfigMap()
 	i.TestSuite.TearDownTest()
 }
 
