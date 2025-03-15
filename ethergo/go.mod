@@ -2,7 +2,7 @@ module github.com/synapsecns/sanguine/ethergo
 
 go 1.22.1
 
-toolchain go1.22.4
+toolchain go1.24.0
 
 require (
 	cloud.google.com/go/kms v1.17.1
@@ -23,7 +23,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0
 	github.com/dgraph-io/ristretto v0.1.0
-	github.com/ethereum/go-ethereum v1.13.8
+	github.com/ethereum/go-ethereum v1.13.9
 	github.com/goccy/go-json v0.10.3
 	github.com/google/go-cmp v0.6.0
 	github.com/google/uuid v1.6.0
