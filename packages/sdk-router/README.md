@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/%40synapsecns%2Fsdk-router?style=flat-square)](https://www.npmjs.com/package/@synapsecns/sdk-router)
 
-This package contains the Synapse Protocol Cross-Chain Swap and Bridging SDK.
+This package contains the Synapse Protocol Cross-Chain Swap and Bridging SDK
 
 [See the Docs](https://synapse-3.gitbook.io/synapse-protocol/developers/bridge-sdk)
 
