@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.16.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.15.0...@synapsecns/sdk-router@0.16.0) (2025-03-17)
+
+
+### Features
+
+* sdk/api bridgeV2 for SynapseRFQ [SYN-66] ([#3588](https://github.com/synapsecns/sanguine/issues/3588)) ([5f56502](https://github.com/synapsecns/sanguine/commit/5f5650283aa4009d74a31c949f5fcdac086e25fc))
+
+
+
+
+
 # [0.15.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.14.0...@synapsecns/sdk-router@0.15.0) (2025-03-11)
 
 
