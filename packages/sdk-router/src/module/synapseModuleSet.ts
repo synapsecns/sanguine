@@ -16,11 +16,19 @@ import { applyOptionalDeadline } from '../utils'
 import { Query } from './query'
 import { Slippage } from '../swap'
 
+/**
+ * Parameters for `getBridgeTokenCandidates` function.
+ *
+ * @param originChainId - The ID of the origin chain.
+ * @param destChainId - The ID of the destination chain.
+ * @param tokenIn - The input token.
+ * @param tokenOut - The output token, optional.
+ */
 export type GetBridgeTokenCandidatesParameters = {
   fromChainId: number
   toChainId: number
   fromToken: string
-  toToken: string
+  toToken?: string
 }
 
 /**
@@ -129,6 +137,13 @@ export abstract class SynapseModuleSet {
     return module
   }
 
+  /**
+   * Returns the list of bridge token candidates that can facilitate a given intent from `tokenIn` to `tokenOut`.
+   * If `tokenOut` is not provided, all bridge tokens that can facilitate the intent from `tokenIn` to any token will be returned.
+   *
+   * @param params - The parameters for the bridge token candidates.
+   * @returns A promise that resolves to a list of bridge token candidates.
+   */
   abstract getBridgeTokenCandidates(
     params: GetBridgeTokenCandidatesParameters
   ): Promise<BridgeTokenCandidate[]>

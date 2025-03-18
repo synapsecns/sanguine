@@ -388,23 +388,23 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   private async getQuotes(
     originChainId: number,
     destChainId: number,
-    tokenOut: string
+    tokenOut?: string
   ): Promise<FastBridgeQuote[]> {
     const allQuotes = await this.getCachedAllQuotes()
     const originFB = await this.getFastBridgeAddress(originChainId)
     const destFB = await this.getFastBridgeAddress(destChainId)
+    // Apply optional filtering by the final token
     return allQuotes
       .filter(
         (quote) =>
           quote.ticker.originToken.chainId === originChainId &&
           quote.ticker.destToken.chainId === destChainId &&
-          quote.ticker.destToken.token &&
-          quote.ticker.destToken.token.toLowerCase() === tokenOut.toLowerCase()
+          (!tokenOut || isSameAddress(quote.ticker.destToken.token, tokenOut))
       )
       .filter(
         (quote) =>
-          quote.originFastBridge.toLowerCase() === originFB.toLowerCase() &&
-          quote.destFastBridge.toLowerCase() === destFB.toLowerCase()
+          isSameAddress(quote.originFastBridge, originFB) &&
+          isSameAddress(quote.destFastBridge, destFB)
       )
       .filter((quote) => {
         const age = Date.now() - quote.updatedAt
