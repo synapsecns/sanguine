@@ -199,6 +199,12 @@ async function _collectV2Quotes(
             toRecipient: params.toRecipient || params.fromSender,
             slippage: params.slippage,
           })
+          if (
+            !isSameAddress(bridgeRoute.destToken, params.tokenOut) ||
+            bridgeRoute.destAmountOut.isZero()
+          ) {
+            return
+          }
           const bridgeQuoteV2 = await this.sirSet.finalizeBridgeRouteV2(
             params.fromToken,
             params.fromAmount,

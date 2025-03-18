@@ -23,6 +23,18 @@ export type GetBridgeTokenCandidatesParameters = {
   toToken: string
 }
 
+/**
+ * Parameters for `getBridgeRouteV2` function.
+ *
+ * @param originAmountIn - The amount of the bridge token on the origin chain.
+ * @param bridgeToken - The bridge token to be used for the bridge.
+ * @param destTokenOut - The output token on the destination chain that needs to be received.
+ * @param originSender - The address of the user on the origin chain.
+ * @param destRecipient - The address of the user on the destination chain.
+ * @param slippage - The slippage to be used for the swap.
+ * @param allowMultipleTxs - Whether to allow multiple transactions for the bridge, in which case the returned BridgeRouteV2
+ * might have a fallback quote to the `bridgeToken` instead of `destTokenOut`.
+ */
 export type GetBridgeRouteV2Parameters = {
   fromAmount: BigNumberish
   bridgeToken: BridgeTokenCandidate
@@ -30,6 +42,7 @@ export type GetBridgeRouteV2Parameters = {
   fromSender?: string
   toRecipient?: string
   slippage?: Slippage
+  allowMultipleTxs?: boolean
 }
 
 export abstract class SynapseModuleSet {
