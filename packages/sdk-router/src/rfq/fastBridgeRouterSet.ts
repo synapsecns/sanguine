@@ -115,9 +115,10 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     toToken,
     fromSender,
     toRecipient,
-  }: GetBridgeRouteV2Parameters): Promise<BridgeRouteV2> {
-    if (!isSameAddress(bridgeToken.destToken, toToken)) {
-      throw new Error('Swaps on destination are not supported by FastBridge V1')
+    allowMultipleTxs,
+  }: GetBridgeRouteV2Parameters): Promise<BridgeRouteV2 | undefined> {
+    if (!allowMultipleTxs && !isSameAddress(bridgeToken.destToken, toToken)) {
+      return undefined
     }
     const originChainId = bridgeToken.originChainId
     const protocolFeeRate = await this.getFastBridgeRouter(
@@ -143,12 +144,15 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
         getOriginAmount(quote, quote.fixedFee),
       ])
       .reduce((a, b) => (a[0].gt(b[0]) ? a : b), [Zero, Zero])
+    if (expectedToAmount.isZero()) {
+      return undefined
+    }
     // Cap slippage to 5% of the fixed fee
     const maxOriginSlippage = originFee.div(20)
     const route: BridgeRouteV2 = {
       bridgeToken,
       minFromAmount: BigNumber.from(fromAmount).sub(maxOriginSlippage),
-      toToken,
+      toToken: bridgeToken.destToken,
       expectedToAmount,
       // With no swap on destination, the minToAmount is the same as expectedToAmount.
       minToAmount: expectedToAmount,

@@ -148,9 +148,17 @@ export abstract class SynapseModuleSet {
     params: GetBridgeTokenCandidatesParameters
   ): Promise<BridgeTokenCandidate[]>
 
+  /**
+   * Returns the bridge route with a non-zero quote for a given path.
+   * If `allowMultipleTxs` is true, the returned BridgeRouteV2 might have a fallback quote to the `bridgeToken` instead of `destTokenOut`,
+   * should the direct path to `destTokenOut` not be available through this module.
+   *
+   * @param params - The parameters for the bridge route.
+   * @returns A promise that resolves to the bridge route with a non-zero quote, or undefined if no route is found.
+   */
   abstract getBridgeRouteV2(
     params: GetBridgeRouteV2Parameters
-  ): Promise<BridgeRouteV2>
+  ): Promise<BridgeRouteV2 | undefined>
 
   /**
    * This method find all possible routes for a bridge transaction between two chains.

@@ -198,10 +198,11 @@ async function _collectV2Quotes(
             fromSender: params.fromSender,
             toRecipient: params.toRecipient || params.fromSender,
             slippage: params.slippage,
+            allowMultipleTxs: params.allowMultipleTxs,
           })
           if (
-            !isSameAddress(bridgeRoute.destToken, params.tokenOut) ||
-            bridgeRoute.destAmountOut.isZero()
+            !bridgeRoute ||
+            !isSameAddress(bridgeRoute.destToken, params.tokenOut)
           ) {
             return
           }
