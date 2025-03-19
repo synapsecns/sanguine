@@ -1,11 +1,10 @@
 import { Interface } from '@ethersproject/abi'
 import { Provider } from '@ethersproject/abstract-provider'
 import { Zero, MaxUint256 } from '@ethersproject/constants'
-import { BigNumber, Contract, PopulatedTransaction } from 'ethers'
+import { BigNumber, BigNumberish, Contract, PopulatedTransaction } from 'ethers'
 
 import synapseIntentRouterAbi from '../abi/SynapseIntentRouter.json'
 import {
-  BigintIsh,
   SYNAPSE_INTENT_ROUTER_ADDRESS_MAP,
   TOKEN_ZAP_V1_ADDRESS_MAP,
 } from '../constants'
@@ -48,7 +47,7 @@ export class SynapseIntentRouterSet {
 
   public async finalizeBridgeRouteV2(
     originTokenIn: string,
-    originAmountIn: BigintIsh,
+    originAmountIn: BigNumberish,
     originRoute: SwapEngineRoute,
     bridgeRoute: BridgeRouteV2,
     originDeadline?: number
@@ -97,8 +96,8 @@ export class SynapseIntentRouterSet {
   public async completeIntent(
     chainId: number,
     token: string,
-    amount: BigintIsh,
-    deadline: BigintIsh,
+    amount: BigNumberish,
+    deadline: BigNumberish,
     steps: StepParams[]
   ): Promise<PopulatedTransaction> {
     const sir = this.getSir(chainId)
@@ -115,8 +114,8 @@ export class SynapseIntentRouterSet {
   public async completeIntentWithBalanceChecks(
     chainId: number,
     token: string,
-    amount: BigintIsh,
-    deadline: BigintIsh,
+    amount: BigNumberish,
+    deadline: BigNumberish,
     steps: StepParams[]
   ): Promise<PopulatedTransaction> {
     const sir = this.getSir(chainId)
@@ -167,13 +166,13 @@ export class SynapseIntentRouterSet {
   private async _completeIntent(
     chainId: number,
     token: string,
-    amount: BigintIsh,
-    deadline: BigintIsh,
+    amount: BigNumberish,
+    deadline: BigNumberish,
     steps: StepParams[],
     populateTx: (
       zapRecipient: string,
-      amountIn: BigintIsh,
-      deadline: BigintIsh,
+      amountIn: BigNumberish,
+      deadline: BigNumberish,
       steps: StepParams[]
     ) => Promise<PopulatedTransaction>
   ): Promise<PopulatedTransaction> {

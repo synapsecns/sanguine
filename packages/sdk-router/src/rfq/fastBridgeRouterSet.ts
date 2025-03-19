@@ -1,14 +1,11 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
+import { BigNumberish } from 'ethers'
 import NodeCache from 'node-cache'
 import invariant from 'tiny-invariant'
 
-import {
-  BigintIsh,
-  FAST_BRIDGE_ROUTER_ADDRESS_MAP,
-  MEDIAN_TIME_RFQ,
-} from '../constants'
+import { FAST_BRIDGE_ROUTER_ADDRESS_MAP, MEDIAN_TIME_RFQ } from '../constants'
 import {
   BridgeRoute,
   FeeConfig,
@@ -169,7 +166,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     destChainId: number,
     tokenIn: string,
     tokenOut: string,
-    amountIn: BigintIsh,
+    amountIn: BigNumberish,
     originUserAddress?: string
   ): Promise<BridgeRoute[]> {
     // Check that Routers exist on both chains
@@ -339,7 +336,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   private async filterOriginQuotes(
     originChainId: number,
     tokenIn: string,
-    amountIn: BigintIsh,
+    amountIn: BigNumberish,
     allQuotes: FastBridgeQuote[]
   ): Promise<{ quote: FastBridgeQuote; originQuery: Query }[]> {
     // Get queries for swaps on the origin chain into the "RFQ-supported token"

@@ -3,6 +3,7 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { AddressZero } from '@ethersproject/constants'
 import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
+import { BigNumberish } from 'ethers'
 import { solidityKeccak256 } from 'ethers/lib/utils'
 import invariant from 'tiny-invariant'
 
@@ -16,7 +17,6 @@ import {
 } from './types'
 import bridgeAbi from '../abi/SynapseBridge.json'
 import routerAbi from '../abi/SynapseRouter.json'
-import { BigintIsh } from '../constants'
 import {
   BridgeToken,
   FeeConfig,
@@ -121,7 +121,7 @@ export class SynapseRouter extends Router {
   public async getOriginAmountOut(
     tokenIn: string,
     bridgeTokens: string[],
-    amountIn: BigintIsh
+    amountIn: BigNumberish
   ): Promise<Query[]> {
     return this.routerContract
       .getOriginAmountOut(tokenIn, bridgeTokens, amountIn)
@@ -168,7 +168,7 @@ export class SynapseRouter extends Router {
     to: string,
     chainId: number,
     token: string,
-    amount: BigintIsh,
+    amount: BigNumberish,
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {
@@ -263,21 +263,21 @@ export class SynapseRouter extends Router {
 
   public async calculateAddLiquidity(
     poolAddress: string,
-    amounts: BigintIsh[]
+    amounts: BigNumberish[]
   ): Promise<BigNumber> {
     return this.routerContract.calculateAddLiquidity(poolAddress, amounts)
   }
 
   public async calculateRemoveLiquidity(
     poolAddress: string,
-    amount: BigintIsh
+    amount: BigNumberish
   ): Promise<BigNumber[]> {
     return this.routerContract.calculateRemoveLiquidity(poolAddress, amount)
   }
 
   public async calculateWithdrawOneToken(
     poolAddress: string,
-    amount: BigintIsh,
+    amount: BigNumberish,
     tokenIndex: number
   ): Promise<BigNumber> {
     return this.routerContract.calculateWithdrawOneToken(
@@ -290,7 +290,7 @@ export class SynapseRouter extends Router {
   public async getAmountOut(
     tokenIn: string,
     tokenOut: string,
-    amountIn: BigintIsh
+    amountIn: BigNumberish
   ): Promise<Query> {
     return this.routerContract
       .getAmountOut(tokenIn, tokenOut, amountIn)
@@ -300,7 +300,7 @@ export class SynapseRouter extends Router {
   public async swap(
     to: string,
     token: string,
-    amount: BigintIsh,
+    amount: BigNumberish,
     query: Query
   ): Promise<PopulatedTransaction> {
     const populatedTransaction =

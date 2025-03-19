@@ -2,12 +2,12 @@ import { Interface } from '@ethersproject/abi'
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
+import { BigNumberish } from 'ethers'
 import invariant from 'tiny-invariant'
 
 import { Router } from './router'
 import cctpAbi from '../abi/SynapseCCTP.json'
 import cctpRouterAbi from '../abi/SynapseCCTPRouter.json'
-import { BigintIsh } from '../constants'
 import {
   BridgeToken,
   FeeConfig,
@@ -73,7 +73,7 @@ export class SynapseCCTPRouter extends Router {
   public async getOriginAmountOut(
     tokenIn: string,
     bridgeTokens: string[],
-    amountIn: BigintIsh
+    amountIn: BigNumberish
   ): Promise<Query[]> {
     return this.routerContract
       .getOriginAmountOut(tokenIn, bridgeTokens, amountIn)
@@ -126,7 +126,7 @@ export class SynapseCCTPRouter extends Router {
     to: string,
     chainId: number,
     token: string,
-    amount: BigintIsh,
+    amount: BigNumberish,
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {

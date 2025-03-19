@@ -1,7 +1,6 @@
 import { Zero } from '@ethersproject/constants'
-import { BigNumber } from 'ethers'
+import { BigNumber, BigNumberish } from 'ethers'
 
-import { BigintIsh } from '../constants'
 import { getWithTimeout } from '../utils'
 
 const GAS_ZIP_API_URL = 'https://backend.gas.zip/v2'
@@ -81,7 +80,7 @@ export const getChainIds = async (): Promise<number[]> => {
 export const getGasZipQuote = async (
   originChainId: number,
   destChainId: number,
-  amount: BigintIsh,
+  amount: BigNumberish,
   to: string,
   from?: string
 ): Promise<GasZipQuote> => {

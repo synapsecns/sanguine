@@ -2,11 +2,11 @@ import { Interface } from '@ethersproject/abi'
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
+import { BigNumberish } from 'ethers'
 import invariant from 'tiny-invariant'
 
 import fastBridgeAbi from '../abi/FastBridge.json'
 import fastBridgeRouterAbi from '../abi/FastBridgeRouter.json'
-import { BigintIsh } from '../constants'
 import {
   SynapseModule,
   Query,
@@ -80,7 +80,7 @@ export class FastBridgeRouter implements SynapseModule {
     to: string,
     destChainId: number,
     token: string,
-    amount: BigintIsh,
+    amount: BigNumberish,
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {
@@ -151,7 +151,7 @@ export class FastBridgeRouter implements SynapseModule {
   public async getOriginAmountOut(
     tokenIn: string,
     rfqTokens: string[],
-    amountIn: BigintIsh
+    amountIn: BigNumberish
   ): Promise<Query[]> {
     const queries = await this.routerContract.getOriginAmountOut(
       tokenIn,

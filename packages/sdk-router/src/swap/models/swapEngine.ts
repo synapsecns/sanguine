@@ -1,4 +1,5 @@
-import { BigintIsh } from '../../constants'
+import { BigNumberish } from 'ethers'
+
 import { EngineID, Recipient } from '../core'
 import { SwapEngineQuote, SwapEngineRoute } from './route'
 
@@ -8,7 +9,7 @@ import { SwapEngineQuote, SwapEngineRoute } from './route'
  * @property {number} chainId - The chain ID of the route.
  * @property {string} tokenIn - The input token address.
  * @property {string} tokenOut - The output token address.
- * @property {BigintIsh} amountIn - The amount of input token to swap.
+ * @property {BigNumberish} amountIn - The amount of input token to swap.
  * @property {string} msgSender - The address that will invoke the swap.
  * @property {Recipient} finalRecipient - The recipient of the output token.
  * @property {boolean} restrictComplexity - Whether to restrict the complexity of the route (no splitting, less steps).
@@ -17,7 +18,7 @@ export type RouteInput = {
   chainId: number
   tokenIn: string
   tokenOut: string
-  amountIn: BigintIsh
+  amountIn: BigNumberish
   msgSender: string
   finalRecipient: Recipient
   restrictComplexity: boolean

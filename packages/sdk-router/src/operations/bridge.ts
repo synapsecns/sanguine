@@ -1,7 +1,6 @@
-import { BigNumber, PopulatedTransaction, utils } from 'ethers'
+import { BigNumber, BigNumberish, PopulatedTransaction, utils } from 'ethers'
 import invariant from 'tiny-invariant'
 
-import { BigintIsh } from '../constants'
 import {
   BridgeQuote,
   SynapseModuleSet,
@@ -31,7 +30,7 @@ export type BridgeV2Parameters = {
   destChainId: number
   tokenIn: string
   tokenOut: string
-  amountIn: BigintIsh
+  amountIn: BigNumberish
   originSender?: string
   destRecipient?: string
   slippage?: Slippage
@@ -239,7 +238,7 @@ export async function bridge(
   originChainId: number,
   destChainId: number,
   token: string,
-  amount: BigintIsh,
+  amount: BigNumberish,
   originQuery: Query,
   destQuery: Query
 ): Promise<PopulatedTransaction> {
@@ -300,7 +299,7 @@ export async function bridgeQuote(
   destChainId: number,
   tokenIn: string,
   tokenOut: string,
-  amountIn: BigintIsh,
+  amountIn: BigNumberish,
   options: BridgeQuoteOptions = {}
 ): Promise<BridgeQuote> {
   // Get the quotes sorted by maxAmountOut
@@ -347,7 +346,7 @@ export async function allBridgeQuotes(
   destChainId: number,
   tokenIn: string,
   tokenOut: string,
-  amountIn: BigintIsh,
+  amountIn: BigNumberish,
   options: BridgeQuoteOptions = {}
 ): Promise<BridgeQuote[]> {
   invariant(

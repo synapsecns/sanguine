@@ -1,8 +1,8 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { PopulatedTransaction } from '@ethersproject/contracts'
+import { BigNumberish } from 'ethers'
 
-import { BigintIsh } from '../constants'
 import {
   Query,
   SwapQuote,
@@ -38,7 +38,7 @@ export type SwapV2Parameters = {
   chainId: number
   tokenIn: string
   tokenOut: string
-  amountIn: BigintIsh
+  amountIn: BigNumberish
   to?: string
   slippage?: Slippage
   deadline?: number
@@ -115,7 +115,7 @@ export async function swap(
   chainId: number,
   to: string,
   token: string,
-  amount: BigintIsh,
+  amount: BigNumberish,
   query: Query
 ): Promise<PopulatedTransaction> {
   token = handleNativeToken(token)
@@ -140,7 +140,7 @@ export async function swapQuote(
   chainId: number,
   tokenIn: string,
   tokenOut: string,
-  amountIn: BigintIsh,
+  amountIn: BigNumberish,
   deadline?: BigNumber
 ): Promise<SwapQuote> {
   tokenOut = handleNativeToken(tokenOut)
