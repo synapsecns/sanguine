@@ -63,6 +63,8 @@ class SynapseSDK {
     this.swapEngineSet = new SwapEngineSet(chainProviders)
   }
 
+  public intent = operations.intent
+
   // Define Bridge operations
   public bridge = operations.bridge
   public bridgeV2 = operations.bridgeV2

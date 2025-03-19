@@ -10,7 +10,7 @@ import {
 } from '../module'
 import { SynapseSDK } from '../sdk'
 import { RecipientEntity, RouteInput, Slippage, SwapEngineRoute } from '../swap'
-import { handleNativeToken, isSameAddress } from '../utils'
+import { handleNativeToken, isSameAddress, Prettify } from '../utils'
 
 /**
  * Parameters for the `bridgeV2` function.
@@ -37,9 +37,21 @@ export type BridgeV2Parameters = {
   deadline?: number
 }
 
+export type BridgeV2InternalParameters = Prettify<
+  BridgeV2Parameters & { allowMultipleTxs?: boolean }
+>
+
 export async function bridgeV2(
   this: SynapseSDK,
   params: BridgeV2Parameters
+): Promise<BridgeQuoteV2[]> {
+  // Don't allow multiple transactions for exported bridgeV2 function.
+  return _bridgeV2Internal.call(this, { ...params, allowMultipleTxs: false })
+}
+
+export async function _bridgeV2Internal(
+  this: SynapseSDK,
+  params: BridgeV2InternalParameters
 ): Promise<BridgeQuoteV2[]> {
   params.fromToken = handleNativeToken(params.fromToken)
   params.toToken = handleNativeToken(params.toToken)
@@ -133,7 +145,7 @@ async function _collectV1Quotes(
 
 async function _collectV2Quotes(
   this: SynapseSDK,
-  params: BridgeV2Parameters,
+  params: BridgeV2InternalParameters,
   bridgeV2Modules: SynapseModuleSet[]
 ): Promise<BridgeQuoteV2[]> {
   const candidates = await Promise.all(
@@ -142,7 +154,7 @@ async function _collectV2Quotes(
         fromChainId: params.fromChainId,
         toChainId: params.toChainId,
         fromToken: params.fromToken,
-        toToken: params.toToken,
+        toToken: params.allowMultipleTxs ? undefined : params.toToken,
       })
     )
   )
@@ -200,9 +212,14 @@ async function _collectV2Quotes(
             slippage: params.slippage,
             allowMultipleTxs: params.allowMultipleTxs,
           })
+          // Check that a route was found.
+          if (!bridgeRoute) {
+            return
+          }
+          // For single-tx params we need to check that the route matches the destination token.
           if (
-            !bridgeRoute ||
-            !isSameAddress(bridgeRoute.destToken, params.tokenOut)
+            !params.allowMultipleTxs &&
+            !isSameAddress(bridgeRoute.toToken, params.toToken)
           ) {
             return
           }
