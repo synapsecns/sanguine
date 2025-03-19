@@ -7,6 +7,8 @@ import {
 } from '@ethersproject/bytes'
 import { BigNumber } from 'ethers'
 
+import { Prettify } from '../../utils/types'
+
 export const ZAP_DATA_VERSION = 1
 export const AMOUNT_NOT_PRESENT = 0xffff
 
@@ -26,7 +28,9 @@ export type ZapDataV1 = {
   minFinalAmount: BigNumber
 }
 
-export const encodeZapData = (zapData: Partial<ZapDataV1>): string => {
+export type PartialZapDataV1 = Prettify<Partial<ZapDataV1>>
+
+export const encodeZapData = (zapData: PartialZapDataV1): string => {
   if (!zapData.target) {
     return '0x'
   }
@@ -49,7 +53,7 @@ export const encodeZapData = (zapData: Partial<ZapDataV1>): string => {
   ])
 }
 
-export const decodeZapData = (zapData: string): Partial<ZapDataV1> => {
+export const decodeZapData = (zapData: string): PartialZapDataV1 => {
   if (zapData === '0x') {
     return {}
   }
@@ -94,7 +98,7 @@ export const modifyMinFinalAmount = (
   })
 }
 
-export const applyDefaultValues = (zapData: Partial<ZapDataV1>): ZapDataV1 => {
+export const applyDefaultValues = (zapData: PartialZapDataV1): ZapDataV1 => {
   return {
     target: zapData.target || AddressZero,
     payload: zapData.payload || '0x',

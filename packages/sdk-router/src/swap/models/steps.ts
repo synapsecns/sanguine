@@ -2,9 +2,14 @@ import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
 import { hexlify } from '@ethersproject/bytes'
 
-import { decodeZapData, encodeZapData, StepParams, ZapDataV1 } from '../core'
+import {
+  decodeZapData,
+  encodeZapData,
+  StepParams,
+  PartialZapDataV1,
+} from '../core'
 
-export const getLastStepZapData = (steps: StepParams[]): Partial<ZapDataV1> => {
+export const getLastStepZapData = (steps: StepParams[]): PartialZapDataV1 => {
   if (steps.length === 0) {
     throw new Error('No steps provided')
   }
@@ -13,7 +18,7 @@ export const getLastStepZapData = (steps: StepParams[]): Partial<ZapDataV1> => {
 
 export const setLastStepZapData = (
   steps: StepParams[],
-  zapData: Partial<ZapDataV1>
+  zapData: PartialZapDataV1
 ): StepParams[] => {
   if (steps.length === 0) {
     throw new Error('No steps provided')

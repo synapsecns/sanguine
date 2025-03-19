@@ -21,6 +21,7 @@ import {
   SwapEngineQuote,
   SwapEngineRoute,
 } from './models'
+import { Prettify } from '../utils/types'
 
 export enum EngineTimeout {
   Short = 1000,
@@ -32,9 +33,11 @@ type QuoteOptions = {
   timeout?: number
 }
 
-type RouteOptions = QuoteOptions & {
-  slippage?: Slippage
-}
+type RouteOptions = Prettify<
+  QuoteOptions & {
+    slippage?: Slippage
+  }
+>
 
 export class SwapEngineSet {
   private engines: {

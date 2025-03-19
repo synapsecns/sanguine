@@ -7,6 +7,7 @@ import { getWithTimeout, postWithTimeout } from '../../utils/api'
 import { ONE_WEEK } from '../../utils/deadlines'
 import { isNativeToken } from '../../utils/handleNativeToken'
 import { logger, logExecutionTime } from '../../utils/logger'
+import { Prettify } from '../../utils/types'
 import { EngineID, SlippageMax, toBasisPoints } from '../core'
 import {
   getEmptyQuote,
@@ -59,9 +60,11 @@ export type KyberSwapBuildResponse = {
   }
 }
 
-type KyberSwapQuote = SwapEngineQuote & {
-  routeSummary: KyberSwapRouteSummary
-}
+type KyberSwapQuote = Prettify<
+  SwapEngineQuote & {
+    routeSummary: KyberSwapRouteSummary
+  }
+>
 
 const EmptyKyberSwapQuote: KyberSwapQuote = {
   ...getEmptyQuote(EngineID.KyberSwap),

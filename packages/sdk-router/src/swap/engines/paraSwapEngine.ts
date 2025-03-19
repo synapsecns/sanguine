@@ -21,6 +21,7 @@ import {
   SwapEngineRoute,
 } from '../models'
 import { generateAPIRoute, TransactionData } from './response'
+import { Prettify } from '../../utils/types'
 
 const PARASWAP_API_URL = 'https://api.paraswap.io'
 
@@ -61,9 +62,11 @@ export type ParaSwapTransactionsRequest = {
 
 export type ParaSwapTransactionsResponse = TransactionData
 
-type ParaSwapQuote = SwapEngineQuote & {
-  priceRoute: ParaSwapPriceRoute
-}
+type ParaSwapQuote = Prettify<
+  SwapEngineQuote & {
+    priceRoute: ParaSwapPriceRoute
+  }
+>
 
 const EmptyParaSwapQuote: ParaSwapQuote = {
   ...getEmptyQuote(EngineID.ParaSwap),

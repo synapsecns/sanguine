@@ -5,6 +5,7 @@ import { isSameAddress } from '../../utils/addressUtils'
 import { getWithTimeout } from '../../utils/api'
 import { logExecutionTime, logger } from '../../utils/logger'
 import { EngineID, SlippageMax, toFloat } from '../core'
+import { Prettify } from '../../utils/types'
 import {
   getEmptyQuote,
   getEmptyRoute,
@@ -38,9 +39,11 @@ export type LiFiQuoteResponse = {
   transactionRequest: TransactionData
 }
 
-type LiFiQuote = SwapEngineQuote & {
-  tx?: TransactionData
-}
+type LiFiQuote = Prettify<
+  SwapEngineQuote & {
+    tx?: TransactionData
+  }
+>
 
 const EmptyLiFiQuote: LiFiQuote = getEmptyQuote(EngineID.LiFi)
 
