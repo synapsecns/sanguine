@@ -1,11 +1,14 @@
 import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
 
-import { isSameAddress } from '../../utils/addressUtils'
-import { getWithTimeout } from '../../utils/api'
-import { logExecutionTime, logger } from '../../utils/logger'
+import {
+  isSameAddress,
+  getWithTimeout,
+  logExecutionTime,
+  logger,
+  Prettify,
+} from '../../utils'
 import { EngineID, SlippageMax, toFloat } from '../core'
-import { Prettify } from '../../utils/types'
 import {
   getEmptyQuote,
   getEmptyRoute,

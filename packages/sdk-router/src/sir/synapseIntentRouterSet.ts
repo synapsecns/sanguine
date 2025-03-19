@@ -17,9 +17,13 @@ import {
   SwapEngineRoute,
 } from '../swap'
 import { SynapseIntentRouter } from '../typechain/SynapseIntentRouter'
-import { adjustValueIfNative, isNativeToken } from '../utils/handleNativeToken'
+import {
+  adjustValueIfNative,
+  isNativeToken,
+  calculateDeadline,
+  TEN_MINUTES,
+} from '../utils'
 import { BridgeQuoteV2, BridgeRouteV2 } from '../module'
-import { calculateDeadline, TEN_MINUTES } from '../utils/deadlines'
 
 const FULL_BALANCE = MaxUint256
 

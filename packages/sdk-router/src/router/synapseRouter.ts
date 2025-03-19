@@ -31,9 +31,12 @@ import {
   PoolToken,
   reduceToPoolToken,
 } from './types'
-import { adjustValueIfNative } from '../utils/handleNativeToken'
-import { getMatchingTxLog } from '../utils/logs'
-import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
+import {
+  adjustValueIfNative,
+  getMatchingTxLog,
+  CACHE_TIMES,
+  RouterCache,
+} from '../utils'
 
 /**
  * Wraps [tokens, lpToken] returned by the SynapseRouter contract into a PoolInfo object.

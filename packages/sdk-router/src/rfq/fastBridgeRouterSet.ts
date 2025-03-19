@@ -24,11 +24,15 @@ import {
 } from '../module'
 import { FastBridgeRouter } from './fastBridgeRouter'
 import { ChainProvider } from '../router'
-import { calculateDeadline, ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
+import {
+  calculateDeadline,
+  ONE_HOUR,
+  TEN_MINUTES,
+  isSameAddress,
+} from '../utils'
 import { FastBridgeQuote, applyQuote, getOriginAmount } from './quote'
 import { marshallTicker } from './ticker'
 import { getAllQuotes } from './api'
-import { isSameAddress } from '../utils/addressUtils'
 import { encodeZapData, USER_SIMULATED_ADDRESS } from '../swap'
 import { IFastBridge } from '../typechain/FastBridge'
 

@@ -7,7 +7,7 @@ import {
 } from '@ethersproject/bytes'
 import { BigNumber } from 'ethers'
 
-import { Prettify } from '../../utils/types'
+import { Prettify } from '../../utils'
 
 export const ZAP_DATA_VERSION = 1
 export const AMOUNT_NOT_PRESENT = 0xffff

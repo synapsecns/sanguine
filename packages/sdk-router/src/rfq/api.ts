@@ -1,5 +1,4 @@
-import { getWithTimeout } from '../utils/api'
-import { logger } from '../utils/logger'
+import { getWithTimeout, logger } from '../utils'
 import { marshallTicker } from './ticker'
 import {
   FastBridgeQuote,

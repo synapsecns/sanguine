@@ -3,7 +3,7 @@ import { BigNumber, PopulatedTransaction, utils } from 'ethers'
 
 import { BigintIsh } from '../constants'
 import { SynapseSDK } from '../sdk'
-import { handleNativeToken } from '../utils/handleNativeToken'
+import { handleNativeToken, isSameAddress } from '../utils'
 import {
   BridgeQuote,
   SynapseModuleSet,
@@ -12,7 +12,6 @@ import {
   BridgeQuoteV2,
 } from '../module'
 import { RecipientEntity, RouteInput, Slippage, SwapEngineRoute } from '../swap'
-import { isSameAddress } from '../utils/addressUtils'
 
 /**
  * Parameters for the `bridgeV2` function.

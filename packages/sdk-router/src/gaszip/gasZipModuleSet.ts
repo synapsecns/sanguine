@@ -15,7 +15,7 @@ import {
 import { ChainProvider } from '../router'
 import { getChainIds, getGasZipQuote } from './api'
 import { GasZipModule } from './gasZipModule'
-import { isNativeToken } from '../utils/handleNativeToken'
+import { isNativeToken } from '../utils'
 import { BigintIsh } from '../constants'
 
 const MEDIAN_TIME_GAS_ZIP = 30

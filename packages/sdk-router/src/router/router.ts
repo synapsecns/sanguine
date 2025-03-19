@@ -8,7 +8,7 @@ import { BigintIsh } from '../constants'
 import { Query } from '../module/query'
 import { DestRequest } from './types'
 import { BridgeToken, FeeConfig, SynapseModule } from '../module'
-import { logger } from '../utils/logger'
+import { logger } from '../utils'
 
 /**
  * Abstract class for a router contract deployed on a chain.

@@ -10,8 +10,7 @@ import {
 } from '../../constants/addresses'
 import { ChainProvider } from '../../router'
 import { SynapseIntentPreviewer as PreviewerContract } from '../../typechain/SynapseIntentPreviewer'
-import { isSameAddress } from '../../utils/addressUtils'
-import { logger, logExecutionTime } from '../../utils/logger'
+import { isSameAddress, logger, logExecutionTime } from '../../utils'
 import { EngineID, toWei, SlippageMax, getForwardTo } from '../core'
 import {
   RouteInput,

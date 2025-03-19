@@ -11,7 +11,7 @@ import {
 } from './router'
 import { SwapEngineSet } from './swap/swapEngineSet'
 import * as operations from './operations'
-import { ETH_NATIVE_TOKEN_ADDRESS } from './utils/handleNativeToken'
+import { ETH_NATIVE_TOKEN_ADDRESS } from './utils'
 import { SynapseModuleSet, Query } from './module'
 import { SynapseIntentRouterSet } from './sir/synapseIntentRouterSet'
 

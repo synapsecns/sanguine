@@ -16,8 +16,7 @@ import {
   Query,
   hasComplexBridgeAction,
 } from '../module/query'
-import { ONE_WEEK, TEN_MINUTES } from '../utils/deadlines'
-import { logger } from '../utils/logger'
+import { ONE_WEEK, TEN_MINUTES, logger } from '../utils'
 
 export type ChainProvider = {
   chainId: number

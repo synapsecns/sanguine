@@ -2,12 +2,16 @@ import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
 
 import { SupportedChainId } from '../../constants'
-import { isSameAddress } from '../../utils/addressUtils'
-import { getWithTimeout, postWithTimeout } from '../../utils/api'
-import { ONE_WEEK } from '../../utils/deadlines'
-import { isNativeToken } from '../../utils/handleNativeToken'
-import { logger, logExecutionTime } from '../../utils/logger'
-import { Prettify } from '../../utils/types'
+import {
+  isSameAddress,
+  getWithTimeout,
+  postWithTimeout,
+  ONE_WEEK,
+  isNativeToken,
+  logger,
+  logExecutionTime,
+  Prettify,
+} from '../../utils'
 import { EngineID, SlippageMax, toBasisPoints } from '../core'
 import {
   getEmptyQuote,

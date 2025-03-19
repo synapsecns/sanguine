@@ -2,7 +2,7 @@ import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
 
 import { EngineID, StepParams } from '../core'
-import { Prettify } from '../../utils/types'
+import { Prettify } from '../../utils'
 
 export type SwapEngineQuote = {
   engineID: EngineID

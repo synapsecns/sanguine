@@ -21,7 +21,7 @@ import {
   SwapEngineQuote,
   SwapEngineRoute,
 } from './models'
-import { Prettify } from '../utils/types'
+import { Prettify } from '../utils'
 
 export enum EngineTimeout {
   Short = 1000,

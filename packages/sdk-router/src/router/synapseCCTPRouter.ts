@@ -17,11 +17,14 @@ import {
   reduceToQuery,
 } from '../module'
 import cctpAbi from '../abi/SynapseCCTP.json'
-import { adjustValueIfNative } from '../utils/handleNativeToken'
-import { getMatchingTxLog } from '../utils/logs'
+import {
+  adjustValueIfNative,
+  getMatchingTxLog,
+  CACHE_TIMES,
+  RouterCache,
+} from '../utils'
 import { BigintIsh } from '../constants'
 import { DestRequest } from './types'
-import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
 /**
  * Wrapper class for interacting with a SynapseCCTPRouter contract.
  * Abstracts away the contract interaction: the Router users don't need to know about the contract,

@@ -2,7 +2,7 @@ import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
 
 import { BigintIsh } from '../constants'
-import { getWithTimeout } from '../utils/api'
+import { getWithTimeout } from '../utils'
 
 const GAS_ZIP_API_URL = 'https://backend.gas.zip/v2'
 const GAS_ZIP_API_TIMEOUT = 2000

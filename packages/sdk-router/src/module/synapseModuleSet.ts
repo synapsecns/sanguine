@@ -12,7 +12,7 @@ import {
   FeeConfig,
 } from './types'
 import { SynapseModule } from './synapseModule'
-import { applyOptionalDeadline } from '../utils/deadlines'
+import { applyOptionalDeadline } from '../utils'
 import { Query } from './query'
 import { Slippage } from '../swap'
 
