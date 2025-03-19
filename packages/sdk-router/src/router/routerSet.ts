@@ -1,9 +1,10 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
+import { BigNumberish } from 'ethers'
 import invariant from 'tiny-invariant'
 
 import { Router } from './router'
-import { AddressMap, BigintIsh } from '../constants'
+import { AddressMap } from '../constants'
 import { DestRequest } from './types'
 import {
   BridgeRoute,
@@ -16,8 +17,7 @@ import {
   Query,
   hasComplexBridgeAction,
 } from '../module/query'
-import { ONE_WEEK, TEN_MINUTES } from '../utils/deadlines'
-import { logger } from '../utils/logger'
+import { ONE_WEEK, TEN_MINUTES, logger } from '../utils'
 
 export type ChainProvider = {
   chainId: number
@@ -85,7 +85,7 @@ export abstract class RouterSet extends SynapseModuleSet {
     destChainId: number,
     tokenIn: string,
     tokenOut: string,
-    amountIn: BigintIsh
+    amountIn: BigNumberish
   ): Promise<BridgeRoute[]> {
     const originRouter = this.routers[originChainId]
     const destRouter = this.routers[destChainId]

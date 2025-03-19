@@ -1,13 +1,13 @@
-import { Provider } from '@ethersproject/abstract-provider'
-import invariant from 'tiny-invariant'
-import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
+import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
+import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
+import { BigNumberish } from 'ethers'
+import invariant from 'tiny-invariant'
 
-import cctpRouterAbi from '../abi/SynapseCCTPRouter.json'
-import { SynapseCCTP as SynapseCCTPContract } from '../typechain/SynapseCCTP'
-import { SynapseCCTPRouter as SynapseCCTPRouterContract } from '../typechain/SynapseCCTPRouter'
 import { Router } from './router'
+import cctpAbi from '../abi/SynapseCCTP.json'
+import cctpRouterAbi from '../abi/SynapseCCTPRouter.json'
 import {
   BridgeToken,
   FeeConfig,
@@ -16,12 +16,15 @@ import {
   reduceToBridgeToken,
   reduceToQuery,
 } from '../module'
-import cctpAbi from '../abi/SynapseCCTP.json'
-import { adjustValueIfNative } from '../utils/handleNativeToken'
-import { getMatchingTxLog } from '../utils/logs'
-import { BigintIsh } from '../constants'
+import { SynapseCCTP as SynapseCCTPContract } from '../typechain/SynapseCCTP'
+import { SynapseCCTPRouter as SynapseCCTPRouterContract } from '../typechain/SynapseCCTPRouter'
+import {
+  adjustValueIfNative,
+  getMatchingTxLog,
+  CACHE_TIMES,
+  RouterCache,
+} from '../utils'
 import { DestRequest } from './types'
-import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
 /**
  * Wrapper class for interacting with a SynapseCCTPRouter contract.
  * Abstracts away the contract interaction: the Router users don't need to know about the contract,
@@ -70,7 +73,7 @@ export class SynapseCCTPRouter extends Router {
   public async getOriginAmountOut(
     tokenIn: string,
     bridgeTokens: string[],
-    amountIn: BigintIsh
+    amountIn: BigNumberish
   ): Promise<Query[]> {
     return this.routerContract
       .getOriginAmountOut(tokenIn, bridgeTokens, amountIn)
@@ -123,7 +126,7 @@ export class SynapseCCTPRouter extends Router {
     to: string,
     chainId: number,
     token: string,
-    amount: BigintIsh,
+    amount: BigNumberish,
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {

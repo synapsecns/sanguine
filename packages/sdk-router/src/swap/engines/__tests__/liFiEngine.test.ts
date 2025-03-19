@@ -1,5 +1,5 @@
-import { ARB_USDC, ARB_USDT } from '../../../constants/testValues'
 import { SupportedChainId } from '../../../constants'
+import { ARB_USDC, ARB_USDT } from '../../../constants/testValues'
 import { USER_SIMULATED_ADDRESS } from '../../core'
 import { LiFiEngine } from '../liFiEngine'
 

@@ -1,8 +1,8 @@
-import invariant from 'tiny-invariant'
 import { BigNumber } from '@ethersproject/bignumber'
+import invariant from 'tiny-invariant'
 
-import { SynapseCCTPRouter } from './synapseCCTPRouter'
 import { ChainProvider, RouterSet } from './routerSet'
+import { SynapseCCTPRouter } from './synapseCCTPRouter'
 import { CCTP_ROUTER_ADDRESS_MAP, MEDIAN_TIME_CCTP } from '../constants'
 import { BridgeRouteV2, BridgeTokenCandidate } from '../module'
 

@@ -1,15 +1,14 @@
+import { BigNumber } from '@ethersproject/bignumber'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { PopulatedTransaction } from '@ethersproject/contracts'
-import { BigNumber } from '@ethersproject/bignumber'
+import { BigNumberish } from 'ethers'
 
-import { BigintIsh } from '../constants'
 import {
   Query,
   SwapQuote,
   applySlippageToQuery,
   applyDeadlineToQuery,
 } from '../module'
-import { handleNativeToken } from '../utils/handleNativeToken'
 import { SynapseSDK } from '../sdk'
 import {
   RecipientEntity,
@@ -18,10 +17,11 @@ import {
   USER_SIMULATED_ADDRESS,
 } from '../swap'
 import {
+  handleNativeToken,
   TEN_MINUTES,
   applyOptionalDeadline,
   calculateDeadline,
-} from '../utils/deadlines'
+} from '../utils'
 
 export type SwapQuoteV2 = {
   routerAddress: string
@@ -38,7 +38,7 @@ export type SwapV2Parameters = {
   chainId: number
   tokenIn: string
   tokenOut: string
-  amountIn: BigintIsh
+  amountIn: BigNumberish
   to?: string
   slippage?: Slippage
   deadline?: number
@@ -115,7 +115,7 @@ export async function swap(
   chainId: number,
   to: string,
   token: string,
-  amount: BigintIsh,
+  amount: BigNumberish,
   query: Query
 ): Promise<PopulatedTransaction> {
   token = handleNativeToken(token)
@@ -140,7 +140,7 @@ export async function swapQuote(
   chainId: number,
   tokenIn: string,
   tokenOut: string,
-  amountIn: BigintIsh,
+  amountIn: BigNumberish,
   deadline?: BigNumber
 ): Promise<SwapQuote> {
   tokenOut = handleNativeToken(tokenOut)

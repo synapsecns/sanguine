@@ -1,14 +1,11 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
-import invariant from 'tiny-invariant'
 import { Zero } from '@ethersproject/constants'
+import { BigNumberish } from 'ethers'
 import NodeCache from 'node-cache'
+import invariant from 'tiny-invariant'
 
-import {
-  BigintIsh,
-  FAST_BRIDGE_ROUTER_ADDRESS_MAP,
-  MEDIAN_TIME_RFQ,
-} from '../constants'
+import { FAST_BRIDGE_ROUTER_ADDRESS_MAP, MEDIAN_TIME_RFQ } from '../constants'
 import {
   BridgeRoute,
   FeeConfig,
@@ -24,12 +21,16 @@ import {
 } from '../module'
 import { FastBridgeRouter } from './fastBridgeRouter'
 import { ChainProvider } from '../router'
-import { calculateDeadline, ONE_HOUR, TEN_MINUTES } from '../utils/deadlines'
+import { encodeZapData, USER_SIMULATED_ADDRESS } from '../swap'
+import {
+  calculateDeadline,
+  ONE_HOUR,
+  TEN_MINUTES,
+  isSameAddress,
+} from '../utils'
+import { getAllQuotes } from './api'
 import { FastBridgeQuote, applyQuote, getOriginAmount } from './quote'
 import { marshallTicker } from './ticker'
-import { getAllQuotes } from './api'
-import { isSameAddress } from '../utils/addressUtils'
-import { encodeZapData, USER_SIMULATED_ADDRESS } from '../swap'
 import { IFastBridge } from '../typechain/FastBridge'
 
 export class FastBridgeRouterSet extends SynapseModuleSet {
@@ -165,7 +166,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     destChainId: number,
     tokenIn: string,
     tokenOut: string,
-    amountIn: BigintIsh,
+    amountIn: BigNumberish,
     originUserAddress?: string
   ): Promise<BridgeRoute[]> {
     // Check that Routers exist on both chains
@@ -335,7 +336,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   private async filterOriginQuotes(
     originChainId: number,
     tokenIn: string,
-    amountIn: BigintIsh,
+    amountIn: BigNumberish,
     allQuotes: FastBridgeQuote[]
   ): Promise<{ quote: FastBridgeQuote; originQuery: Query }[]> {
     // Get queries for swaps on the origin chain into the "RFQ-supported token"

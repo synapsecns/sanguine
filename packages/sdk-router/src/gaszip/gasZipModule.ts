@@ -1,12 +1,10 @@
 import { Provider } from '@ethersproject/abstract-provider'
-import { BigNumber, PopulatedTransaction } from 'ethers'
+import { BigNumber, BigNumberish, PopulatedTransaction } from 'ethers'
 import invariant from 'tiny-invariant'
 
 import { Query, SynapseModule } from '../module'
-import { BigintIsh } from '../constants'
-import { isNativeToken } from '../utils/handleNativeToken'
+import { isNativeToken, isSameAddress } from '../utils'
 import { getGasZipQuote, getGasZipTxStatus } from './api'
-import { isSameAddress } from '../utils/addressUtils'
 
 export class GasZipModule implements SynapseModule {
   readonly address = '0x391E7C679d29bD940d63be94AD22A25d25b5A604'
@@ -28,7 +26,7 @@ export class GasZipModule implements SynapseModule {
     to: string,
     destChainId: number,
     token: string,
-    amount: BigintIsh,
+    amount: BigNumberish,
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {

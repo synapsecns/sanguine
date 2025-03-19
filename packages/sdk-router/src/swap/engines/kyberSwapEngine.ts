@@ -1,12 +1,17 @@
-import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
+import { BigNumber } from 'ethers'
 
 import { SupportedChainId } from '../../constants'
-import { isSameAddress } from '../../utils/addressUtils'
-import { getWithTimeout, postWithTimeout } from '../../utils/api'
-import { ONE_WEEK } from '../../utils/deadlines'
-import { isNativeToken } from '../../utils/handleNativeToken'
-import { logger, logExecutionTime } from '../../utils/logger'
+import {
+  isSameAddress,
+  getWithTimeout,
+  postWithTimeout,
+  ONE_WEEK,
+  isNativeToken,
+  logger,
+  logExecutionTime,
+  Prettify,
+} from '../../utils'
 import { EngineID, SlippageMax, toBasisPoints } from '../core'
 import {
   getEmptyQuote,
@@ -59,9 +64,11 @@ export type KyberSwapBuildResponse = {
   }
 }
 
-type KyberSwapQuote = SwapEngineQuote & {
-  routeSummary: KyberSwapRouteSummary
-}
+type KyberSwapQuote = Prettify<
+  SwapEngineQuote & {
+    routeSummary: KyberSwapRouteSummary
+  }
+>
 
 const EmptyKyberSwapQuote: KyberSwapQuote = {
   ...getEmptyQuote(EngineID.KyberSwap),

@@ -1,9 +1,13 @@
-import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
+import { BigNumber } from 'ethers'
 
-import { isSameAddress } from '../../utils/addressUtils'
-import { getWithTimeout } from '../../utils/api'
-import { logExecutionTime, logger } from '../../utils/logger'
+import {
+  isSameAddress,
+  getWithTimeout,
+  logExecutionTime,
+  logger,
+  Prettify,
+} from '../../utils'
 import { EngineID, SlippageMax, toFloat } from '../core'
 import {
   getEmptyQuote,
@@ -38,9 +42,11 @@ export type LiFiQuoteResponse = {
   transactionRequest: TransactionData
 }
 
-type LiFiQuote = SwapEngineQuote & {
-  tx?: TransactionData
-}
+type LiFiQuote = Prettify<
+  SwapEngineQuote & {
+    tx?: TransactionData
+  }
+>
 
 const EmptyLiFiQuote: LiFiQuote = getEmptyQuote(EngineID.LiFi)
 

@@ -1,16 +1,22 @@
-import { BigNumber } from 'ethers'
-import { Zero } from '@ethersproject/constants'
 import { Provider } from '@ethersproject/abstract-provider'
+import { Zero } from '@ethersproject/constants'
 import { Contract } from '@ethersproject/contracts'
+import { BigNumber } from 'ethers'
 
+import { generateAPIRoute, TransactionData } from './response'
 import erc20ABI from '../../abi/IERC20Metadata.json'
-import { IERC20Metadata as ERC20 } from '../../typechain/IERC20Metadata'
-import { getWithTimeout, postWithTimeout } from '../../utils/api'
-import { isSameAddress } from '../../utils/addressUtils'
-import { isNativeToken } from '../../utils/handleNativeToken'
-import { logExecutionTime, logger } from '../../utils/logger'
-import { ChainProvider } from '../../router'
 import { marshallChainToken } from '../../rfq/ticker'
+import { ChainProvider } from '../../router'
+import { IERC20Metadata as ERC20 } from '../../typechain/IERC20Metadata'
+import {
+  getWithTimeout,
+  postWithTimeout,
+  isSameAddress,
+  isNativeToken,
+  logExecutionTime,
+  logger,
+  Prettify,
+} from '../../utils'
 import { EngineID, SlippageMax, toBasisPoints } from '../core'
 import {
   getEmptyQuote,
@@ -20,7 +26,6 @@ import {
   SwapEngineQuote,
   SwapEngineRoute,
 } from '../models'
-import { generateAPIRoute, TransactionData } from './response'
 
 const PARASWAP_API_URL = 'https://api.paraswap.io'
 
@@ -61,9 +66,11 @@ export type ParaSwapTransactionsRequest = {
 
 export type ParaSwapTransactionsResponse = TransactionData
 
-type ParaSwapQuote = SwapEngineQuote & {
-  priceRoute: ParaSwapPriceRoute
-}
+type ParaSwapQuote = Prettify<
+  SwapEngineQuote & {
+    priceRoute: ParaSwapPriceRoute
+  }
+>
 
 const EmptyParaSwapQuote: ParaSwapQuote = {
   ...getEmptyQuote(EngineID.ParaSwap),

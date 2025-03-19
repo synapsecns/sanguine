@@ -1,6 +1,7 @@
-import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
+import { BigNumber } from 'ethers'
 
+import { Prettify } from '../../utils'
 import { EngineID, StepParams } from '../core'
 
 export type SwapEngineQuote = {
@@ -14,7 +15,7 @@ export type SwapEngineQuote = {
   steps?: StepParams[]
 }
 
-export type SwapEngineRoute = Required<SwapEngineQuote>
+export type SwapEngineRoute = Prettify<Required<SwapEngineQuote>>
 
 export const getEmptyQuote = (engineID: EngineID): SwapEngineQuote => {
   return {

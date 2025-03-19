@@ -1,5 +1,5 @@
-import { PopulatedTransaction } from 'ethers'
 import { BigNumber } from '@ethersproject/bignumber'
+import { PopulatedTransaction } from 'ethers'
 
 import { Query } from './query'
 

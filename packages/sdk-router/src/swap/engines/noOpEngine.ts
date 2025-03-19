@@ -1,7 +1,6 @@
 import { BigNumber } from 'ethers'
 
-import { isSameAddress } from '../../utils/addressUtils'
-import { logger } from '../../utils/logger'
+import { isSameAddress, logger } from '../../utils'
 import { EngineID } from '../core'
 import {
   getEmptyRoute,

@@ -1,5 +1,5 @@
-import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from '@ethersproject/bignumber'
+import { AddressZero, Zero } from '@ethersproject/constants'
 import { PopulatedTransaction } from '@ethersproject/contracts'
 
 export const ETH_NATIVE_TOKEN_ADDRESS =

@@ -1,7 +1,7 @@
-import { BigNumber } from 'ethers'
 import { AddressZero, Zero } from '@ethersproject/constants'
+import { BigNumber } from 'ethers'
 
-import { isSameAddress } from '../../utils/addressUtils'
+import { isSameAddress } from '../../utils'
 import {
   AMOUNT_NOT_PRESENT,
   applySlippage,

@@ -1,8 +1,9 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { uuidv7 } from 'uuidv7'
+import { BigNumberish } from 'ethers'
 import invariant from 'tiny-invariant'
+import { uuidv7 } from 'uuidv7'
 
-import { BigintIsh } from '../constants'
+import { SynapseModule } from './synapseModule'
 import {
   BridgeQuote,
   BridgeQuoteV2,
@@ -11,8 +12,7 @@ import {
   BridgeTokenCandidate,
   FeeConfig,
 } from './types'
-import { SynapseModule } from './synapseModule'
-import { applyOptionalDeadline } from '../utils/deadlines'
+import { applyOptionalDeadline } from '../utils'
 import { Query } from './query'
 import { Slippage } from '../swap'
 
@@ -24,7 +24,7 @@ export type GetBridgeTokenCandidatesParameters = {
 }
 
 export type GetBridgeRouteV2Parameters = {
-  originAmountIn: BigintIsh
+  originAmountIn: BigNumberish
   bridgeToken: BridgeTokenCandidate
   destTokenOut: string
   originSender?: string
@@ -141,7 +141,7 @@ export abstract class SynapseModuleSet {
     destChainId: number,
     tokenIn: string,
     tokenOut: string,
-    amountIn: BigintIsh,
+    amountIn: BigNumberish,
     originUserAddress?: string
   ): Promise<BridgeRoute[]>
 
