@@ -21,7 +21,7 @@ const getContractNetwork = (chainId: number, contractLabel: string) => {
 
   // if no env vars found, assume this chain+contract is legitimately not applicable & return nothing
   // otherwise, if any vars found, expect all required vars to be present before proceeding
-  if (!startBlock || !contractAddr || !maxBlockRange) {
+  if (!startBlock && !contractAddr && !maxBlockRange) {
     return {};
   }
 
