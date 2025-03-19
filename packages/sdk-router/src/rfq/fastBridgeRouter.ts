@@ -1,23 +1,23 @@
-import { Provider } from '@ethersproject/abstract-provider'
-import invariant from 'tiny-invariant'
-import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
+import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
+import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
+import invariant from 'tiny-invariant'
 
 import fastBridgeAbi from '../abi/FastBridge.json'
 import fastBridgeRouterAbi from '../abi/FastBridgeRouter.json'
-import { FastBridgeRouter as FastBridgeRouterContract } from '../typechain/FastBridgeRouter'
-import {
-  FastBridge as FastBridgeContract,
-  IFastBridge,
-} from '../typechain/FastBridge'
+import { BigintIsh } from '../constants'
 import {
   SynapseModule,
   Query,
   narrowToCCTPRouterQuery,
   reduceToQuery,
 } from '../module'
-import { BigintIsh } from '../constants'
+import {
+  FastBridge as FastBridgeContract,
+  IFastBridge,
+} from '../typechain/FastBridge'
+import { FastBridgeRouter as FastBridgeRouterContract } from '../typechain/FastBridgeRouter'
 import {
   getMatchingTxLog,
   adjustValueIfNative,

@@ -1,18 +1,22 @@
-import { Provider } from '@ethersproject/abstract-provider'
-import invariant from 'tiny-invariant'
-import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
+import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
-import { solidityKeccak256 } from 'ethers/lib/utils'
 import { AddressZero } from '@ethersproject/constants'
+import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
+import { solidityKeccak256 } from 'ethers/lib/utils'
+import invariant from 'tiny-invariant'
 
-import routerAbi from '../abi/SynapseRouter.json'
-import { SynapseBridge as SynapseBridgeContract } from '../typechain/SynapseBridge'
-import {
-  SynapseRouter as SynapseRouterContract,
-  PoolStructOutput,
-} from '../typechain/SynapseRouter'
 import { Router } from './router'
+import {
+  DestRequest,
+  Pool,
+  PoolInfo,
+  PoolToken,
+  reduceToPoolToken,
+} from './types'
+import bridgeAbi from '../abi/SynapseBridge.json'
+import routerAbi from '../abi/SynapseRouter.json'
+import { BigintIsh } from '../constants'
 import {
   BridgeToken,
   FeeConfig,
@@ -22,15 +26,11 @@ import {
   reduceToFeeConfig,
   reduceToQuery,
 } from '../module'
-import bridgeAbi from '../abi/SynapseBridge.json'
-import { BigintIsh } from '../constants'
+import { SynapseBridge as SynapseBridgeContract } from '../typechain/SynapseBridge'
 import {
-  DestRequest,
-  Pool,
-  PoolInfo,
-  PoolToken,
-  reduceToPoolToken,
-} from './types'
+  SynapseRouter as SynapseRouterContract,
+  PoolStructOutput,
+} from '../typechain/SynapseRouter'
 import {
   adjustValueIfNative,
   getMatchingTxLog,

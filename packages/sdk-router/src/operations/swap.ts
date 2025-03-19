@@ -1,6 +1,6 @@
+import { BigNumber } from '@ethersproject/bignumber'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { PopulatedTransaction } from '@ethersproject/contracts'
-import { BigNumber } from '@ethersproject/bignumber'
 
 import { BigintIsh } from '../constants'
 import {
@@ -9,12 +9,6 @@ import {
   applySlippageToQuery,
   applyDeadlineToQuery,
 } from '../module'
-import {
-  handleNativeToken,
-  TEN_MINUTES,
-  applyOptionalDeadline,
-  calculateDeadline,
-} from '../utils'
 import { SynapseSDK } from '../sdk'
 import {
   RecipientEntity,
@@ -22,6 +16,12 @@ import {
   Slippage,
   USER_SIMULATED_ADDRESS,
 } from '../swap'
+import {
+  handleNativeToken,
+  TEN_MINUTES,
+  applyOptionalDeadline,
+  calculateDeadline,
+} from '../utils'
 
 export type SwapQuoteV2 = {
   routerAddress: string

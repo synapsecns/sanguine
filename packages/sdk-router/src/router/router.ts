@@ -1,13 +1,13 @@
-import { PopulatedTransaction } from 'ethers'
-import { BigNumber } from '@ethersproject/bignumber'
 import { Provider } from '@ethersproject/abstract-provider'
-import invariant from 'tiny-invariant'
+import { BigNumber } from '@ethersproject/bignumber'
 import { AddressZero } from '@ethersproject/constants'
+import { PopulatedTransaction } from 'ethers'
+import invariant from 'tiny-invariant'
 
 import { BigintIsh } from '../constants'
-import { Query } from '../module/query'
 import { DestRequest } from './types'
 import { BridgeToken, FeeConfig, SynapseModule } from '../module'
+import { Query } from '../module/query'
 import { logger } from '../utils'
 
 /**

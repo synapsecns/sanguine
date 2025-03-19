@@ -1,10 +1,10 @@
-import { AddressZero, Zero } from '@ethersproject/constants'
 import {
   hexConcat,
   hexDataSlice,
   hexDataLength,
   hexZeroPad,
 } from '@ethersproject/bytes'
+import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from 'ethers'
 
 import { Prettify } from '../../utils'

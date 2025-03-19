@@ -1,7 +1,7 @@
-import { BigNumber, Contract, PopulatedTransaction } from 'ethers'
 import { Interface } from '@ethersproject/abi'
 import { Provider } from '@ethersproject/abstract-provider'
 import { Zero, MaxUint256 } from '@ethersproject/constants'
+import { BigNumber, Contract, PopulatedTransaction } from 'ethers'
 
 import synapseIntentRouterAbi from '../abi/SynapseIntentRouter.json'
 import {
@@ -9,6 +9,7 @@ import {
   SYNAPSE_INTENT_ROUTER_ADDRESS_MAP,
   TOKEN_ZAP_V1_ADDRESS_MAP,
 } from '../constants'
+import { BridgeQuoteV2, BridgeRouteV2 } from '../module'
 import { ChainProvider } from '../router'
 import {
   getMinFinalAmount,
@@ -23,7 +24,6 @@ import {
   calculateDeadline,
   TEN_MINUTES,
 } from '../utils'
-import { BridgeQuoteV2, BridgeRouteV2 } from '../module'
 
 const FULL_BALANCE = MaxUint256
 

@@ -1,13 +1,13 @@
-import { Provider } from '@ethersproject/abstract-provider'
-import invariant from 'tiny-invariant'
-import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
+import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
+import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
+import invariant from 'tiny-invariant'
 
-import cctpRouterAbi from '../abi/SynapseCCTPRouter.json'
-import { SynapseCCTP as SynapseCCTPContract } from '../typechain/SynapseCCTP'
-import { SynapseCCTPRouter as SynapseCCTPRouterContract } from '../typechain/SynapseCCTPRouter'
 import { Router } from './router'
+import cctpAbi from '../abi/SynapseCCTP.json'
+import cctpRouterAbi from '../abi/SynapseCCTPRouter.json'
+import { BigintIsh } from '../constants'
 import {
   BridgeToken,
   FeeConfig,
@@ -16,14 +16,14 @@ import {
   reduceToBridgeToken,
   reduceToQuery,
 } from '../module'
-import cctpAbi from '../abi/SynapseCCTP.json'
+import { SynapseCCTP as SynapseCCTPContract } from '../typechain/SynapseCCTP'
+import { SynapseCCTPRouter as SynapseCCTPRouterContract } from '../typechain/SynapseCCTPRouter'
 import {
   adjustValueIfNative,
   getMatchingTxLog,
   CACHE_TIMES,
   RouterCache,
 } from '../utils'
-import { BigintIsh } from '../constants'
 import { DestRequest } from './types'
 /**
  * Wrapper class for interacting with a SynapseCCTPRouter contract.

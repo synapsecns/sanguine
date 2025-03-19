@@ -1,9 +1,9 @@
-import invariant from 'tiny-invariant'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
+import invariant from 'tiny-invariant'
 
-import { BridgeTokenType, SynapseRouter } from './synapseRouter'
 import { ChainProvider, RouterSet } from './routerSet'
+import { BridgeTokenType, SynapseRouter } from './synapseRouter'
 import { MEDIAN_TIME_BRIDGE, ROUTER_ADDRESS_MAP } from '../constants'
 import { BridgeRouteV2, BridgeTokenCandidate } from '../module'
 

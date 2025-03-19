@@ -1,5 +1,5 @@
-import { ETH_USDC, ETH_USDT } from '../../../constants/testValues'
 import { SupportedChainId } from '../../../constants'
+import { ETH_USDC, ETH_USDT } from '../../../constants/testValues'
 import { USER_SIMULATED_ADDRESS } from '../../core'
 import { ParaSwapEngine, ParaSwapPricesResponse } from '../paraSwapEngine'
 

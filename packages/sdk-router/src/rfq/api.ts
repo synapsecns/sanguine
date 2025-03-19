@@ -1,10 +1,10 @@
 import { getWithTimeout, logger } from '../utils'
-import { marshallTicker } from './ticker'
 import {
   FastBridgeQuote,
   FastBridgeQuoteAPI,
   unmarshallFastBridgeQuote,
 } from './quote'
+import { marshallTicker } from './ticker'
 
 const DEFAULT_API_URL = 'https://rfq-api.omnirpc.io'
 const CUSTOM_API_URL = process.env.RFQ_API_URL

@@ -1,6 +1,6 @@
-import { BigNumber } from 'ethers'
 import { Provider } from '@ethersproject/abstract-provider'
 import { AddressZero, Zero } from '@ethersproject/constants'
+import { BigNumber } from 'ethers'
 
 import {
   BridgeRoute,
@@ -15,8 +15,8 @@ import {
 import { ChainProvider } from '../router'
 import { getChainIds, getGasZipQuote } from './api'
 import { GasZipModule } from './gasZipModule'
-import { isNativeToken } from '../utils'
 import { BigintIsh } from '../constants'
+import { isNativeToken } from '../utils'
 
 const MEDIAN_TIME_GAS_ZIP = 30
 

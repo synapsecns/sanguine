@@ -2,8 +2,8 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber, PopulatedTransaction } from 'ethers'
 import invariant from 'tiny-invariant'
 
-import { Query, SynapseModule } from '../module'
 import { BigintIsh } from '../constants'
+import { Query, SynapseModule } from '../module'
 import { isNativeToken, isSameAddress } from '../utils'
 import { getGasZipQuote, getGasZipTxStatus } from './api'
 

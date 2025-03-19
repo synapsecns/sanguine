@@ -1,6 +1,6 @@
-import { BigNumber } from 'ethers'
-import { Zero } from '@ethersproject/constants'
 import { hexlify } from '@ethersproject/bytes'
+import { Zero } from '@ethersproject/constants'
+import { BigNumber } from 'ethers'
 
 import {
   decodeZapData,

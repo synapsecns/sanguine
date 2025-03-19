@@ -1,9 +1,16 @@
 import { Provider } from '@ethersproject/abstract-provider'
-import { BigNumber, PopulatedTransaction } from 'ethers'
-import { AddressZero, Zero } from '@ethersproject/constants'
 import { parseFixed } from '@ethersproject/bignumber'
+import { AddressZero, Zero } from '@ethersproject/constants'
+import { BigNumber, PopulatedTransaction } from 'ethers'
 
-import { SynapseSDK } from './sdk'
+import {
+  CCTP_ROUTER_ADDRESS_MAP,
+  MEDIAN_TIME_BRIDGE,
+  MEDIAN_TIME_CCTP,
+  ROUTER_ADDRESS_MAP,
+  SupportedChainId,
+} from './constants'
+import { getTestProvider } from './constants/testProviders'
 import {
   ARB_GMX,
   ARB_NETH,
@@ -28,14 +35,6 @@ import {
   ETH_USDT,
   NATIVE_ADDRESS,
 } from './constants/testValues'
-import { getTestProvider } from './constants/testProviders'
-import {
-  CCTP_ROUTER_ADDRESS_MAP,
-  MEDIAN_TIME_BRIDGE,
-  MEDIAN_TIME_CCTP,
-  ROUTER_ADDRESS_MAP,
-  SupportedChainId,
-} from './constants'
 import {
   BridgeQuote,
   FeeConfig,
@@ -45,6 +44,7 @@ import {
   SynapseModuleSet,
 } from './module'
 import * as operations from './operations'
+import { SynapseSDK } from './sdk'
 
 // Override fetch to exclude RFQ from tests
 global.fetch = jest.fn(() =>

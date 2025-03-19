@@ -1,8 +1,9 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { uuidv7 } from 'uuidv7'
 import invariant from 'tiny-invariant'
+import { uuidv7 } from 'uuidv7'
 
 import { BigintIsh } from '../constants'
+import { SynapseModule } from './synapseModule'
 import {
   BridgeQuote,
   BridgeQuoteV2,
@@ -11,7 +12,6 @@ import {
   BridgeTokenCandidate,
   FeeConfig,
 } from './types'
-import { SynapseModule } from './synapseModule'
 import { applyOptionalDeadline } from '../utils'
 import { Query } from './query'
 import { Slippage } from '../swap'

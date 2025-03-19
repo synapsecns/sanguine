@@ -2,7 +2,6 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber, parseFixed } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
 
-import { getTestProvider } from '../constants/testProviders'
 import {
   ROUTER_ADDRESS_MAP,
   CCTP_ROUTER_ADDRESS_MAP,
@@ -11,8 +10,9 @@ import {
   SupportedChainId,
 } from '../constants'
 import { ChainProvider } from './routerSet'
-import { SynapseCCTPRouterSet } from './synapseCCTPRouterSet'
 import { SynapseCCTPRouter } from './synapseCCTPRouter'
+import { SynapseCCTPRouterSet } from './synapseCCTPRouterSet'
+import { getTestProvider } from '../constants/testProviders'
 import { CCTPRouterQuery, Query, SynapseModuleSet } from '../module'
 
 export const createSlippageTests = (

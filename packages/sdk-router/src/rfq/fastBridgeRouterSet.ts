@@ -1,8 +1,8 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
-import invariant from 'tiny-invariant'
 import { Zero } from '@ethersproject/constants'
 import NodeCache from 'node-cache'
+import invariant from 'tiny-invariant'
 
 import {
   BigintIsh,
@@ -24,16 +24,16 @@ import {
 } from '../module'
 import { FastBridgeRouter } from './fastBridgeRouter'
 import { ChainProvider } from '../router'
+import { encodeZapData, USER_SIMULATED_ADDRESS } from '../swap'
 import {
   calculateDeadline,
   ONE_HOUR,
   TEN_MINUTES,
   isSameAddress,
 } from '../utils'
+import { getAllQuotes } from './api'
 import { FastBridgeQuote, applyQuote, getOriginAmount } from './quote'
 import { marshallTicker } from './ticker'
-import { getAllQuotes } from './api'
-import { encodeZapData, USER_SIMULATED_ADDRESS } from '../swap'
 import { IFastBridge } from '../typechain/FastBridge'
 
 export class FastBridgeRouterSet extends SynapseModuleSet {

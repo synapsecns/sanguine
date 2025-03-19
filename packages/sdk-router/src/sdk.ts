@@ -2,6 +2,8 @@ import { Provider } from '@ethersproject/abstract-provider'
 import invariant from 'tiny-invariant'
 
 import { GasZipModuleSet } from './gaszip'
+import { SynapseModuleSet, Query } from './module'
+import * as operations from './operations'
 import { FastBridgeRouterSet } from './rfq'
 import {
   SynapseRouterSet,
@@ -9,11 +11,9 @@ import {
   ChainProvider,
   PoolToken,
 } from './router'
-import { SwapEngineSet } from './swap/swapEngineSet'
-import * as operations from './operations'
-import { ETH_NATIVE_TOKEN_ADDRESS } from './utils'
-import { SynapseModuleSet, Query } from './module'
 import { SynapseIntentRouterSet } from './sir/synapseIntentRouterSet'
+import { SwapEngineSet } from './swap/swapEngineSet'
+import { ETH_NATIVE_TOKEN_ADDRESS } from './utils'
 
 class SynapseSDK {
   public allModuleSets: SynapseModuleSet[]

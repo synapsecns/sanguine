@@ -1,5 +1,5 @@
-import { BigNumber } from 'ethers'
 import { WeiPerEther } from '@ethersproject/constants'
+import { BigNumber } from 'ethers'
 
 export type Slippage = {
   numerator: number

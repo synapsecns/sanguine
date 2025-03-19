@@ -1,9 +1,7 @@
-import invariant from 'tiny-invariant'
 import { BigNumber, PopulatedTransaction, utils } from 'ethers'
+import invariant from 'tiny-invariant'
 
 import { BigintIsh } from '../constants'
-import { SynapseSDK } from '../sdk'
-import { handleNativeToken, isSameAddress } from '../utils'
 import {
   BridgeQuote,
   SynapseModuleSet,
@@ -11,7 +9,9 @@ import {
   applyDeadlineToQuery,
   BridgeQuoteV2,
 } from '../module'
+import { SynapseSDK } from '../sdk'
 import { RecipientEntity, RouteInput, Slippage, SwapEngineRoute } from '../swap'
+import { handleNativeToken, isSameAddress } from '../utils'
 
 /**
  * Parameters for the `bridgeV2` function.
