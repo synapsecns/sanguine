@@ -10,24 +10,27 @@ import { ABI_FastBridgeV2 } from '@/abis/FastBridgeV2'
 dotenv.config()
 
 const getContractNetwork = (chainId: number, contractLabel: string) => {
-  contractLabel = contractLabel.toUpperCase()
-  const startBlockEnvVar = `CONTRACT_${contractLabel}_STARTBLOCK_${chainId}`
-  const addressEnvVar = `CONTRACT_${contractLabel}_ADDRESS_${chainId}`
+  contractLabel = contractLabel.toUpperCase();
+  const startBlockEnvVar = `CONTRACT_${contractLabel}_STARTBLOCK_${chainId}`;
+  const addressEnvVar = `CONTRACT_${contractLabel}_ADDRESS_${chainId}`;
+  const maxBlockRangeEnvVar = `CONTRACT_${contractLabel}_BLOCKRANGE_${chainId}`;
 
-  const startBlock = process.env[startBlockEnvVar]
-  const contractAddr = process.env[addressEnvVar]
+  const startBlock = process.env[startBlockEnvVar];
+  const contractAddr = process.env[addressEnvVar];
+  const maxBlockRange = process.env[maxBlockRangeEnvVar];
 
   // if no env vars found, assume this chain+contract is legitimately not applicable & return nothing
-  if (!startBlock && !contractAddr) {
-    return {}
+  // otherwise, if any vars found, expect all required vars to be present before proceeding
+  if (!startBlock || !contractAddr || !maxBlockRange) {
+    return {};
   }
 
   if (!startBlock) {
-    throw new Error(`Environment variable ${startBlockEnvVar} must be defined`)
+    throw new Error(`Environment variable ${startBlockEnvVar} must be defined`);
   }
 
   if (!contractAddr) {
-    throw new Error(`Environment variable ${addressEnvVar} must be defined`)
+    throw new Error(`Environment variable ${addressEnvVar} must be defined`);
   }
 
   console.log(
@@ -36,14 +39,21 @@ const getContractNetwork = (chainId: number, contractLabel: string) => {
       .padStart(10)}:${contractAddr.slice(0, 6)} blocks ${startBlock
       .toString()
       .padStart(10)} - <CURRENT>`
-  )
+  );
 
-  return {
+  const contractNetwork = {
     [chainId]: {
       contractAddr,
       startBlock: parseInt(startBlock, 10),
     },
+  };
+
+  if (maxBlockRange) {
+    //@ts-ignore
+    contractNetwork[chainId].maxBlockRange = parseInt(maxBlockRange, 10);
   }
+
+  return contractNetwork;
 }
 
 const getConfigNetwork = (chainId: number) => {
