@@ -180,7 +180,7 @@ router.get(
       .custom((value) => isAddress(value))
       .withMessage('Invalid fromToken address'),
     // Don't convert fromAmount to int as it is a BigNumber
-    check('fromAmount').exists().withMessage('amount is required').isInt(),
+    check('fromAmount').exists().withMessage('fromAmount is required').isInt(),
     check('toToken')
       .exists()
       .withMessage('toToken is required')
