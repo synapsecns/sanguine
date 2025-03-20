@@ -126,32 +126,37 @@ router.get(
   normalizeNativeTokenAddress(['fromToken', 'toToken']),
   checksumAddresses(['fromToken', 'toToken']),
   [
-    check('chain')
+    check('chainId')
       .exists()
-      .withMessage('chain is required')
-      .isNumeric()
-      .custom((value) => CHAINS_ARRAY.some((c) => c.id === Number(value)))
+      .withMessage('chainId is required')
+      .isInt()
+      .withMessage('chainId must be an integer')
+      .toInt()
+      .custom((value) => CHAINS_ARRAY.some((c) => c.id === value))
       .withMessage('Unsupported chain')
-      .custom((value) => INTENTS_SUPPORTED_CHAIN_IDS.includes(Number(value)))
+      .custom((value) => INTENTS_SUPPORTED_CHAIN_IDS.includes(value))
       .withMessage('Swap not supported for given chain'),
     check('fromToken')
       .exists()
       .withMessage('fromToken is required')
       .custom((value) => isAddress(value))
       .withMessage('Invalid fromToken address'),
+    // Don't convert fromAmount to int as it is a BigNumber
+    check('fromAmount').exists().withMessage('amount is required').isInt(),
     check('toToken')
       .exists()
       .withMessage('toToken is required')
       .custom((value) => isAddress(value))
       .withMessage('Invalid toToken address'),
-    check('amount').exists().withMessage('amount is required').isInt(),
-    check('address')
+    check('toRecipient')
       .optional()
       .custom((value) => isAddress(value))
-      .withMessage('Invalid address'),
+      .withMessage('Invalid toRecipient address'),
     check('slippage')
       .optional()
       .isNumeric()
+      .withMessage('slippage must be a number')
+      .toFloat()
       .custom((value) => value >= 0 && value <= 100)
       .withMessage('Slippage must be between 0 and 100'),
   ],

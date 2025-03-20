@@ -176,46 +176,53 @@ router.get(
   normalizeNativeTokenAddress(['fromToken', 'toToken']),
   checksumAddresses(['fromToken', 'toToken']),
   [
-    check('fromChain')
+    check('fromChainId')
       .exists()
-      .withMessage('fromChain is required')
-      .isNumeric()
-      .custom((value) => CHAINS_ARRAY.some((c) => c.id === Number(value)))
-      .withMessage('Unsupported fromChain')
-      .custom((value) => INTENTS_SUPPORTED_CHAIN_IDS.includes(Number(value)))
+      .withMessage('fromChainId is required')
+      .isInt()
+      .withMessage('fromChain must be an integer')
+      .toInt()
+      .custom((value) => CHAINS_ARRAY.some((c) => c.id === value))
+      .withMessage('Unsupported fromChainId')
+      .custom((value) => INTENTS_SUPPORTED_CHAIN_IDS.includes(value))
       .withMessage('Intents not supported for given chain'),
-    check('toChain')
-      .exists()
-      .withMessage('toChain is required')
-      .isNumeric()
-      .custom((value) => CHAINS_ARRAY.some((c) => c.id === Number(value)))
-      .withMessage('Unsupported toChain'),
     check('fromToken')
       .exists()
       .withMessage('fromToken is required')
       .custom((value) => isAddress(value))
       .withMessage('Invalid fromToken address'),
+    // Don't convert fromAmount to int as it is a BigNumber
+    check('fromAmount').exists().withMessage('amount is required').isInt(),
+    check('fromSender')
+      .optional()
+      .custom((value) => isAddress(value))
+      .withMessage('Invalid fromSender address'),
+    check('toChainId')
+      .exists()
+      .withMessage('toChainId is required')
+      .isInt()
+      .withMessage('toChainId must be an integer')
+      .toInt()
+      .custom((value) => CHAINS_ARRAY.some((c) => c.id === value))
+      .withMessage('Unsupported toChainId'),
     check('toToken')
       .exists()
       .withMessage('toToken is required')
       .custom((value) => isTokenAddress(value))
       .withMessage('Invalid toToken address')
       .custom((value, { req }) =>
-        isTokenSupportedOnChain(value, req.query.toChain as string)
+        isTokenSupportedOnChain(value, req.query.toChainId as string)
       )
       .withMessage('Token not supported on specified chain'),
-    check('amount').exists().withMessage('amount is required').isInt(),
-    check('originUserAddress')
+    check('toRecipient')
       .optional()
       .custom((value) => isAddress(value))
-      .withMessage('Invalid originUserAddress address'),
-    check('destAddress')
-      .optional()
-      .custom((value) => isAddress(value))
-      .withMessage('Invalid destAddress'),
+      .withMessage('Invalid toRecipient address'),
     check('slippage')
       .optional()
       .isNumeric()
+      .withMessage('slippage must be a number')
+      .toFloat()
       .custom((value) => value >= 0 && value <= 100)
       .withMessage('Slippage must be between 0 and 100'),
   ],
