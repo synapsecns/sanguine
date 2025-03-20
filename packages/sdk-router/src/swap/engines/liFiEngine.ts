@@ -57,18 +57,21 @@ export class LiFiEngine implements SwapEngine {
     input: RouteInput,
     timeout: number
   ): Promise<LiFiQuote> {
-    const { chainId, tokenIn, tokenOut, msgSender, amountIn } = input
-    if (isSameAddress(tokenIn, tokenOut) || BigNumber.from(amountIn).eq(Zero)) {
+    const { chainId, fromToken, toToken, swapper, fromAmount } = input
+    if (
+      isSameAddress(fromToken, toToken) ||
+      BigNumber.from(fromAmount).eq(Zero)
+    ) {
       return EmptyLiFiQuote
     }
     const response = await this.getQuoteResponse(
       {
         fromChain: chainId,
         toChain: chainId,
-        fromToken: tokenIn,
-        toToken: tokenOut,
-        fromAddress: msgSender,
-        fromAmount: amountIn.toString(),
+        fromToken,
+        toToken,
+        fromAddress: swapper,
+        fromAmount: fromAmount.toString(),
         slippage: toFloat(SlippageMax),
         skipSimulation: true,
         // TODO: figure out optimal values
@@ -89,10 +92,10 @@ export class LiFiEngine implements SwapEngine {
       engineID: this.id,
       engineName: EngineID[this.id],
       chainId,
-      tokenIn,
-      tokenOut,
-      amountIn: BigNumber.from(amountIn),
-      expectedAmountOut: BigNumber.from(liFiResponse.estimate.toAmount),
+      fromToken,
+      toToken,
+      fromAmount: BigNumber.from(fromAmount),
+      expectedToAmount: BigNumber.from(liFiResponse.estimate.toAmount),
       tx: liFiResponse.transactionRequest,
     }
   }
@@ -106,7 +109,7 @@ export class LiFiEngine implements SwapEngine {
       return getEmptyRoute(this.id)
     }
     return generateAPIRoute(input, this.id, SlippageMax, {
-      amountOut: quote.expectedAmountOut,
+      expectedToAmount: quote.expectedToAmount,
       transaction: quote.tx,
     })
   }

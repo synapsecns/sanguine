@@ -103,21 +103,24 @@ export class ParaSwapEngine implements SwapEngine {
     input: RouteInput,
     timeout: number
   ): Promise<ParaSwapQuote> {
-    const { chainId, tokenIn, tokenOut, msgSender, amountIn } = input
-    if (isSameAddress(tokenIn, tokenOut) || BigNumber.from(amountIn).eq(Zero)) {
+    const { chainId, fromToken, toToken, swapper, fromAmount } = input
+    if (
+      isSameAddress(fromToken, toToken) ||
+      BigNumber.from(fromAmount).eq(Zero)
+    ) {
       return EmptyParaSwapQuote
     }
     const response = await this.getPricesResponse(
       {
-        srcToken: tokenIn,
-        srcDecimals: await this.getTokenDecimals(chainId, tokenIn),
-        destToken: tokenOut,
-        destDecimals: await this.getTokenDecimals(chainId, tokenOut),
-        amount: amountIn.toString(),
+        srcToken: fromToken,
+        srcDecimals: await this.getTokenDecimals(chainId, fromToken),
+        destToken: toToken,
+        destDecimals: await this.getTokenDecimals(chainId, toToken),
+        amount: fromAmount.toString(),
         side: 'SELL',
         network: chainId,
         excludeRFQ: true,
-        userAddress: msgSender,
+        userAddress: swapper,
         version: '6.2',
       },
       timeout
@@ -133,10 +136,10 @@ export class ParaSwapEngine implements SwapEngine {
       engineID: this.id,
       engineName: EngineID[this.id],
       chainId,
-      tokenIn,
-      tokenOut,
-      amountIn: BigNumber.from(amountIn),
-      expectedAmountOut: BigNumber.from(paraSwapResponse.priceRoute.destAmount),
+      fromToken,
+      toToken,
+      fromAmount: BigNumber.from(fromAmount),
+      expectedToAmount: BigNumber.from(paraSwapResponse.priceRoute.destAmount),
       priceRoute: paraSwapResponse.priceRoute,
     }
   }
@@ -146,7 +149,7 @@ export class ParaSwapEngine implements SwapEngine {
     quote: ParaSwapQuote,
     timeout: number
   ): Promise<SwapEngineRoute> {
-    const { chainId, msgSender } = input
+    const { chainId, swapper } = input
     if (quote.engineID !== this.id || !quote.priceRoute) {
       logger.error({ quote }, 'ParaSwap: unexpected quote')
       return getEmptyRoute(this.id)
@@ -154,14 +157,14 @@ export class ParaSwapEngine implements SwapEngine {
     const response = await this.getTransactionsResponse(
       chainId,
       {
-        srcToken: input.tokenIn,
+        srcToken: input.fromToken,
         srcDecimals: quote.priceRoute.srcDecimals,
-        destToken: input.tokenOut,
+        destToken: input.toToken,
         destDecimals: quote.priceRoute.destDecimals,
-        srcAmount: input.amountIn.toString(),
+        srcAmount: input.fromAmount.toString(),
         priceRoute: quote.priceRoute,
         slippage: toBasisPoints(SlippageMax),
-        userAddress: msgSender,
+        userAddress: swapper,
       },
       timeout
     )
@@ -170,7 +173,7 @@ export class ParaSwapEngine implements SwapEngine {
     }
     const paraSwapResponse: ParaSwapTransactionsResponse = await response.json()
     return generateAPIRoute(input, this.id, SlippageMax, {
-      amountOut: BigNumber.from(quote.priceRoute.destAmount),
+      expectedToAmount: BigNumber.from(quote.priceRoute.destAmount),
       transaction: paraSwapResponse,
     })
   }

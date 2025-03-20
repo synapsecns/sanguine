@@ -24,22 +24,22 @@ import {
 } from '../utils'
 
 export type SwapQuoteV2 = {
+  expectedToAmount: BigNumber
   routerAddress: string
-  maxAmountOut: BigNumber
   tx?: PopulatedTransaction
 }
 
 const EMPTY_QUOTE_V2: SwapQuoteV2 = {
+  expectedToAmount: Zero,
   routerAddress: AddressZero,
-  maxAmountOut: Zero,
 }
 
 export type SwapV2Parameters = {
   chainId: number
-  tokenIn: string
-  tokenOut: string
-  amountIn: BigNumberish
-  to?: string
+  fromToken: string
+  fromAmount: BigNumberish
+  toToken: string
+  toRecipient?: string
   slippage?: Slippage
   deadline?: number
   restrictComplexity?: boolean
@@ -49,24 +49,28 @@ export async function swapV2(
   this: SynapseSDK,
   {
     chainId,
-    tokenIn,
-    tokenOut,
-    amountIn,
-    to,
+    fromToken,
+    fromAmount,
+    toToken,
+    toRecipient,
     slippage,
     deadline,
     restrictComplexity,
   }: SwapV2Parameters
 ): Promise<SwapQuoteV2> {
+  fromToken = handleNativeToken(fromToken)
+  toToken = handleNativeToken(toToken)
   const input: RouteInput = {
     chainId,
-    tokenIn: handleNativeToken(tokenIn),
-    tokenOut: handleNativeToken(tokenOut),
-    amountIn,
-    msgSender: this.swapEngineSet.getTokenZap(chainId),
-    finalRecipient: {
-      entity: to ? RecipientEntity.User : RecipientEntity.UserSimulated,
-      address: to || USER_SIMULATED_ADDRESS,
+    fromToken,
+    fromAmount,
+    swapper: this.swapEngineSet.getTokenZap(chainId),
+    toToken,
+    toRecipient: {
+      entity: toRecipient
+        ? RecipientEntity.User
+        : RecipientEntity.UserSimulated,
+      address: toRecipient || USER_SIMULATED_ADDRESS,
     },
     restrictComplexity: restrictComplexity ?? false,
   }
@@ -83,18 +87,18 @@ export async function swapV2(
   if (!route) {
     return EMPTY_QUOTE_V2
   }
-  const tx = to
+  const tx = toRecipient
     ? await this.sirSet.completeIntentWithBalanceChecks(
         chainId,
-        tokenIn,
-        amountIn,
+        fromToken,
+        fromAmount,
         deadline ?? calculateDeadline(TEN_MINUTES),
         route.steps
       )
     : undefined
   return {
+    expectedToAmount: quote.expectedToAmount,
     routerAddress: this.sirSet.getSirAddress(chainId),
-    maxAmountOut: quote.expectedAmountOut,
     tx,
   }
 }

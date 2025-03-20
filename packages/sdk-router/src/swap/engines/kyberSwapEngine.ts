@@ -102,15 +102,17 @@ export class KyberSwapEngine implements SwapEngine {
     input: RouteInput,
     timeout: number
   ): Promise<KyberSwapQuote> {
-    const { chainId, tokenIn, tokenOut, amountIn } = input
-
-    if (isSameAddress(tokenIn, tokenOut) || BigNumber.from(amountIn).eq(Zero)) {
+    const { chainId, fromToken, toToken, fromAmount } = input
+    if (
+      isSameAddress(fromToken, toToken) ||
+      BigNumber.from(fromAmount).eq(Zero)
+    ) {
       return EmptyKyberSwapQuote
     }
     const request: KyberSwapQuoteRequest = {
-      tokenIn,
-      tokenOut,
-      amountIn: amountIn.toString(),
+      tokenIn: fromToken,
+      tokenOut: toToken,
+      amountIn: fromAmount.toString(),
       gasInclude: true,
       onlySinglePath: input.restrictComplexity,
     }
@@ -129,20 +131,20 @@ export class KyberSwapEngine implements SwapEngine {
     ) {
       return EmptyKyberSwapQuote
     }
-    const expectedAmountOut = BigNumber.from(
+    const expectedToAmount = BigNumber.from(
       kyberSwapQuoteResponse.data.routeSummary.amountOut ?? '0'
     )
-    if (expectedAmountOut.eq(Zero)) {
+    if (expectedToAmount.eq(Zero)) {
       return EmptyKyberSwapQuote
     }
     return {
       engineID: this.id,
       engineName: EngineID[this.id],
       chainId,
-      tokenIn,
-      tokenOut,
-      amountIn: BigNumber.from(amountIn),
-      expectedAmountOut,
+      fromToken,
+      toToken,
+      fromAmount: BigNumber.from(fromAmount),
+      expectedToAmount,
       routeSummary: kyberSwapQuoteResponse.data.routeSummary,
     }
   }
@@ -152,7 +154,7 @@ export class KyberSwapEngine implements SwapEngine {
     quote: KyberSwapQuote,
     timeout: number
   ): Promise<SwapEngineRoute> {
-    const { chainId, msgSender } = input
+    const { chainId, swapper } = input
     if (quote.engineID !== this.id || !quote.routeSummary) {
       logger.error({ quote }, 'KyberSwap: unexpected quote')
       return getEmptyRoute(this.id)
@@ -161,8 +163,8 @@ export class KyberSwapEngine implements SwapEngine {
       chainId,
       {
         routeSummary: quote.routeSummary,
-        sender: msgSender,
-        recipient: msgSender,
+        sender: swapper,
+        recipient: swapper,
         deadline: Math.floor(Date.now() / 1000) + ONE_WEEK,
         slippageTolerance: toBasisPoints(SlippageMax),
         enableGasEstimation: false,
@@ -177,12 +179,14 @@ export class KyberSwapEngine implements SwapEngine {
       return getEmptyRoute(this.id)
     }
     return generateAPIRoute(input, this.id, SlippageMax, {
-      amountOut: quote.expectedAmountOut,
+      expectedToAmount: quote.expectedToAmount,
       transaction: {
         chainId,
-        from: msgSender,
+        from: swapper,
         to: kyberSwapBuildResponse.data.routerAddress,
-        value: isNativeToken(input.tokenIn) ? input.amountIn.toString() : '0',
+        value: isNativeToken(input.fromToken)
+          ? input.fromAmount.toString()
+          : '0',
         data: kyberSwapBuildResponse.data.data,
       },
     })

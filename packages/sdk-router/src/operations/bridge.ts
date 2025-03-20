@@ -15,24 +15,24 @@ import { handleNativeToken, isSameAddress } from '../utils'
 /**
  * Parameters for the `bridgeV2` function.
  *
- * @param originChainId - ID of the origin chain, where funds will be sent from.
- * @param destChainId - ID of the destination chain, where funds will be received.
- * @param tokenIn - Address of the token to be bridged from the origin chain.
- * @param tokenOut - Address of the token to be received on the destination chain.
- * @param amountIn - Amount of input tokens on the origin chain.
- * @param originSender - Optional address of the sender on the origin chain. No calldata is returned if not provided.
- * @param destRecipient - Optional address of the recipient on the destination chain, defaults to `originSender`.
+ * @param fromChainId - ID of the origin chain, where funds will be sent from.
+ * @param toChainId - ID of the destination chain, where funds will be received.
+ * @param fromToken - Address of the token to be bridged from the origin chain.
+ * @param toToken - Address of the token to be received on the destination chain.
+ * @param fromAmount - Amount of input tokens on the origin chain.
+ * @param fromSender - Optional address of the sender on the origin chain. No calldata is returned if not provided.
+ * @param toRecipient - Optional address of the recipient on the destination chain, defaults to `fromSender`.
  * @param slippage - Optional slippage percentage to apply to the proceeds of the bridge operation.
  * @param deadline - Optional deadline for the bridge operation to be performed on the origin chain.
  */
 export type BridgeV2Parameters = {
-  originChainId: number
-  destChainId: number
-  tokenIn: string
-  tokenOut: string
-  amountIn: BigNumberish
-  originSender?: string
-  destRecipient?: string
+  fromChainId: number
+  fromToken: string
+  fromAmount: BigNumberish
+  fromSender?: string
+  toChainId: number
+  toToken: string
+  toRecipient?: string
   slippage?: Slippage
   deadline?: number
 }
@@ -41,8 +41,8 @@ export async function bridgeV2(
   this: SynapseSDK,
   params: BridgeV2Parameters
 ): Promise<BridgeQuoteV2[]> {
-  params.tokenIn = handleNativeToken(params.tokenIn)
-  params.tokenOut = handleNativeToken(params.tokenOut)
+  params.fromToken = handleNativeToken(params.fromToken)
+  params.toToken = handleNativeToken(params.toToken)
   const bridgeV2Modules = this.allModuleSets.filter(
     (set) => set.isBridgeV2Supported
   )
@@ -50,9 +50,9 @@ export async function bridgeV2(
     _collectV1Quotes.call(this, params, bridgeV2Modules),
     _collectV2Quotes.call(this, params, bridgeV2Modules),
   ])
-  // Combine the quotes and sort by maxAmountOut in descending order
+  // Combine the quotes and sort by expectedToAmount in descending order
   return [...bridgeV1Quotes, ...bridgeV2Quotes].sort((a, b) =>
-    a.maxAmountOut.gt(b.maxAmountOut) ? -1 : 1
+    a.expectedToAmount.gt(b.expectedToAmount) ? -1 : 1
   )
 }
 
@@ -66,14 +66,14 @@ async function _collectV1Quotes(
     : undefined
   const bridgeV1Quotes = await allBridgeQuotes.call(
     this,
-    params.originChainId,
-    params.destChainId,
-    params.tokenIn,
-    params.tokenOut,
-    params.amountIn,
+    params.fromChainId,
+    params.toChainId,
+    params.fromToken,
+    params.toToken,
+    params.fromAmount,
     {
       deadline: deadlineBN,
-      originUserAddress: params.originSender,
+      originUserAddress: params.fromSender,
       excludedModules: bridgeV2Modules.map((set) => set.bridgeModuleName),
     }
   )
@@ -98,30 +98,31 @@ async function _collectV1Quotes(
         deadlineBN
       )
       // Generate the transaction calldata
-      const tx = params.originSender
+      const tx = params.fromSender
         ? await bridge.call(
             this,
-            params.destRecipient || params.originSender,
+            params.toRecipient || params.fromSender,
             quote.routerAddress,
-            params.originChainId,
-            params.destChainId,
-            params.tokenIn,
-            params.amountIn,
+            params.fromChainId,
+            params.toChainId,
+            params.fromToken,
+            params.fromAmount,
             originQuery,
             destQuery
           )
         : undefined
-      return {
+      const bridgeQuoteV2: BridgeQuoteV2 = {
         id: quote.id,
-        originChainId: params.originChainId,
-        destChainId: params.destChainId,
+        fromChainId: params.fromChainId,
+        toChainId: params.toChainId,
         routerAddress: quote.routerAddress,
-        maxAmountOut: quote.maxAmountOut,
+        expectedToAmount: quote.maxAmountOut,
         estimatedTime: quote.estimatedTime,
         bridgeModuleName: quote.bridgeModuleName,
         gasDropAmount: quote.gasDropAmount,
         tx,
       }
+      return bridgeQuoteV2
     })
   )
 }
@@ -134,10 +135,10 @@ async function _collectV2Quotes(
   const candidates = await Promise.all(
     bridgeV2Modules.map(async (set) =>
       set.getBridgeTokenCandidates({
-        originChainId: params.originChainId,
-        destChainId: params.destChainId,
-        tokenIn: params.tokenIn,
-        tokenOut: params.tokenOut,
+        fromChainId: params.fromChainId,
+        toChainId: params.toChainId,
+        fromToken: params.fromToken,
+        toToken: params.toToken,
       })
     )
   )
@@ -146,17 +147,17 @@ async function _collectV2Quotes(
     .flat()
     .map((c) => utils.getAddress(c.originToken))
     .filter((c, index, self) => self.indexOf(c) === index)
-  const tokenZap = this.swapEngineSet.getTokenZap(params.originChainId)
+  const tokenZap = this.swapEngineSet.getTokenZap(params.fromChainId)
   const originRoutes = (
     await Promise.all(
-      originCandidates.map(async (originTokenOut) => {
+      originCandidates.map(async (originBridgeToken) => {
         const input: RouteInput = {
-          chainId: params.originChainId,
-          tokenIn: params.tokenIn,
-          tokenOut: originTokenOut,
-          amountIn: params.amountIn,
-          msgSender: tokenZap,
-          finalRecipient: {
+          chainId: params.fromChainId,
+          fromToken: params.fromToken,
+          fromAmount: params.fromAmount,
+          swapper: tokenZap,
+          toToken: originBridgeToken,
+          toRecipient: {
             entity: RecipientEntity.Self,
             address: tokenZap,
           },
@@ -180,24 +181,24 @@ async function _collectV2Quotes(
     bridgeV2Modules.map(async (moduleSet, index) =>
       Promise.all(
         candidates[index].map(async (bridgeToken) => {
-          const originRoute = originRoutes.find((route) =>
-            isSameAddress(bridgeToken.originToken, route.tokenOut)
+          const originSwapRoute = originRoutes.find((swapRoute) =>
+            isSameAddress(bridgeToken.originToken, swapRoute.toToken)
           )
-          if (!originRoute) {
+          if (!originSwapRoute) {
             return
           }
           const bridgeRoute = await moduleSet.getBridgeRouteV2({
-            originAmountIn: originRoute.expectedAmountOut,
+            fromAmount: originSwapRoute.expectedToAmount,
             bridgeToken,
-            destTokenOut: params.tokenOut,
-            originSender: params.originSender,
-            destRecipient: params.destRecipient || params.originSender,
+            toToken: params.toToken,
+            fromSender: params.fromSender,
+            toRecipient: params.toRecipient || params.fromSender,
             slippage: params.slippage,
           })
           const bridgeQuoteV2 = await this.sirSet.finalizeBridgeRouteV2(
-            params.tokenIn,
-            params.amountIn,
-            originRoute,
+            params.fromToken,
+            params.fromAmount,
+            originSwapRoute,
             bridgeRoute,
             params.deadline
           )

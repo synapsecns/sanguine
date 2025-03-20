@@ -46,14 +46,12 @@ export const compareQuotesWithPriority = (
   const priorityB = getEnginePriority(quoteB.engineID, quoteB.chainId)
   // Compare priorities only if both quotes have a non-zero amountOut.
   if (
-    quoteA.expectedAmountOut.gt(Zero) &&
-    quoteB.expectedAmountOut.gt(Zero) &&
+    quoteA.expectedToAmount.gt(Zero) &&
+    quoteB.expectedToAmount.gt(Zero) &&
     priorityA !== priorityB
   ) {
     return priorityA > priorityB ? quoteA : quoteB
   }
-  // Otherwise (same priority or at least one zero quote), compare amountOut.
-  return quoteA.expectedAmountOut.gte(quoteB.expectedAmountOut)
-    ? quoteA
-    : quoteB
+  // Otherwise (same priority or at least one zero quote), compare expectedToAmount.
+  return quoteA.expectedToAmount.gte(quoteB.expectedToAmount) ? quoteA : quoteB
 }

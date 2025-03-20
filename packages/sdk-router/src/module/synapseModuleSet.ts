@@ -17,18 +17,18 @@ import { Query } from './query'
 import { Slippage } from '../swap'
 
 export type GetBridgeTokenCandidatesParameters = {
-  originChainId: number
-  destChainId: number
-  tokenIn: string
-  tokenOut: string
+  fromChainId: number
+  toChainId: number
+  fromToken: string
+  toToken: string
 }
 
 export type GetBridgeRouteV2Parameters = {
-  originAmountIn: BigNumberish
+  fromAmount: BigNumberish
   bridgeToken: BridgeTokenCandidate
-  destTokenOut: string
-  originSender?: string
-  destRecipient?: string
+  toToken: string
+  fromSender?: string
+  toRecipient?: string
   slippage?: Slippage
 }
 
@@ -272,10 +272,10 @@ export abstract class SynapseModuleSet {
     return {
       ...bridgeQuote,
       id: uuidv7(),
-      estimatedTime: this.getEstimatedTime(bridgeQuote.originChainId),
+      estimatedTime: this.getEstimatedTime(bridgeQuote.fromChainId),
       bridgeModuleName: this.bridgeModuleName,
       gasDropAmount: await this.getGasDropAmount(
-        bridgeQuote.destChainId,
+        bridgeQuote.toChainId,
         bridgeToken.destToken
       ),
     }

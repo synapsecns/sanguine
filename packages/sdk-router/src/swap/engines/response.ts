@@ -21,12 +21,12 @@ export type TransactionData = {
 }
 
 export type SwapAPIResponse = {
-  amountOut: BigNumber
+  expectedToAmount: BigNumber
   transaction: TransactionData
 }
 
 export const EMPTY_SWAP_API_RESPONSE: SwapAPIResponse = {
-  amountOut: Zero,
+  expectedToAmount: Zero,
   transaction: {
     chainId: 0,
     from: '',
@@ -42,33 +42,33 @@ export const generateAPIRoute = (
   slippage: Slippage,
   response: SwapAPIResponse
 ): SwapEngineRoute => {
-  if (isSameAddress(input.finalRecipient.address, AddressZero)) {
+  if (isSameAddress(input.toRecipient.address, AddressZero)) {
     throw new Error('Missing recipient address')
   }
-  if (response.amountOut.eq(Zero)) {
+  if (response.expectedToAmount.eq(Zero)) {
     return getEmptyRoute(engineID)
   }
   const zapData = encodeZapData({
     target: response.transaction.to,
     payload: response.transaction.data,
     amountPosition: AMOUNT_NOT_PRESENT,
-    finalToken: input.tokenOut,
-    forwardTo: getForwardTo(input.finalRecipient),
-    minFinalAmount: applySlippage(response.amountOut, slippage),
+    finalToken: input.toToken,
+    forwardTo: getForwardTo(input.toRecipient),
+    minFinalAmount: applySlippage(response.expectedToAmount, slippage),
   })
 
   return {
     engineID,
     engineName: EngineID[engineID],
     chainId: input.chainId,
-    tokenIn: input.tokenIn,
-    tokenOut: input.tokenOut,
-    amountIn: BigNumber.from(input.amountIn),
-    expectedAmountOut: response.amountOut,
+    fromToken: input.fromToken,
+    toToken: input.toToken,
+    fromAmount: BigNumber.from(input.fromAmount),
+    expectedToAmount: response.expectedToAmount,
     steps: [
       {
-        token: input.tokenIn,
-        amount: BigNumber.from(input.amountIn),
+        token: input.fromToken,
+        amount: BigNumber.from(input.fromAmount),
         msgValue: BigNumber.from(response.transaction.value),
         zapData,
       },

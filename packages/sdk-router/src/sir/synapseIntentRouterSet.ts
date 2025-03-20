@@ -46,30 +46,30 @@ export class SynapseIntentRouterSet {
   }
 
   public async finalizeBridgeRouteV2(
-    originTokenIn: string,
-    originAmountIn: BigNumberish,
-    originRoute: SwapEngineRoute,
+    fromToken: string,
+    fromAmount: BigNumberish,
+    originSwapRoute: SwapEngineRoute,
     bridgeRoute: BridgeRouteV2,
     originDeadline?: number
   ): Promise<BridgeQuoteV2> {
-    const originChainId = bridgeRoute.bridgeToken.originChainId
-    if (originRoute.steps.length > 0) {
-      const minFinalAmount = getMinFinalAmount(originRoute.steps)
-      if (minFinalAmount.lt(bridgeRoute.minOriginAmount)) {
-        originRoute.steps = setMinFinalAmount(
-          originRoute.steps,
-          bridgeRoute.minOriginAmount
+    const fromChainId = bridgeRoute.bridgeToken.originChainId
+    if (originSwapRoute.steps.length > 0) {
+      const minSwapFinalAmount = getMinFinalAmount(originSwapRoute.steps)
+      if (minSwapFinalAmount.lt(bridgeRoute.minFromAmount)) {
+        originSwapRoute.steps = setMinFinalAmount(
+          originSwapRoute.steps,
+          bridgeRoute.minFromAmount
         )
       }
     }
     const tx = bridgeRoute.zapData
       ? await this.completeIntentWithBalanceChecks(
-          originChainId,
-          originTokenIn,
-          originAmountIn,
+          fromChainId,
+          fromToken,
+          fromAmount,
           originDeadline ?? calculateDeadline(TEN_MINUTES),
           [
-            ...originRoute.steps,
+            ...originSwapRoute.steps,
             {
               token: bridgeRoute.bridgeToken.originToken,
               amount: FULL_BALANCE,
@@ -79,11 +79,11 @@ export class SynapseIntentRouterSet {
           ]
         )
       : undefined
-    return {
-      originChainId,
-      destChainId: bridgeRoute.bridgeToken.destChainId,
-      routerAddress: this.getSirAddress(originChainId),
-      maxAmountOut: bridgeRoute.destAmountOut,
+    const bridgeQuoteV2: BridgeQuoteV2 = {
+      fromChainId,
+      toChainId: bridgeRoute.bridgeToken.destChainId,
+      routerAddress: this.getSirAddress(fromChainId),
+      expectedToAmount: bridgeRoute.expectedToAmount,
       // These will be filled by the corresponding bridge module
       id: '',
       estimatedTime: 0,
@@ -91,6 +91,7 @@ export class SynapseIntentRouterSet {
       gasDropAmount: Zero,
       tx,
     }
+    return bridgeQuoteV2
   }
 
   public async completeIntent(

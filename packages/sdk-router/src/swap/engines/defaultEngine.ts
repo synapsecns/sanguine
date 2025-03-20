@@ -60,37 +60,37 @@ export class DefaultEngine implements SwapEngine {
   @logExecutionTime('DefaultEngine.getQuote')
   public async getQuote(input: RouteInput): Promise<SwapEngineRoute> {
     // TODO: timeout
-    const { chainId, tokenIn, tokenOut, amountIn, finalRecipient } = input
+    const { chainId, fromToken, toToken, fromAmount, toRecipient } = input
     const { previewer, swapQuoter } = this.contracts[chainId]
     if (
       !previewer ||
       !swapQuoter ||
-      isSameAddress(tokenIn, tokenOut) ||
-      BigNumber.from(amountIn).eq(Zero)
+      isSameAddress(fromToken, toToken) ||
+      BigNumber.from(fromAmount).eq(Zero)
     ) {
       return getEmptyRoute(this.id)
     }
     // Get the quote
-    const forwardTo = getForwardTo(finalRecipient)
+    const forwardTo = getForwardTo(toRecipient)
     // Note: restrictComplexity is not supported by the on-chain previewer
     const { amountOut, steps: stepsOutput } = await previewer.previewIntent(
       swapQuoter,
       forwardTo,
       // slippage settings are applied when generating the zap data as minFinalAmount
       toWei(SlippageMax),
-      tokenIn,
-      tokenOut,
-      amountIn
+      fromToken,
+      toToken,
+      fromAmount
     )
     // Remove extra fields before the encoding
     return {
       engineID: this.id,
       engineName: EngineID[this.id],
       chainId,
-      tokenIn,
-      tokenOut,
-      amountIn: BigNumber.from(amountIn),
-      expectedAmountOut: amountOut,
+      fromToken,
+      toToken,
+      fromAmount: BigNumber.from(fromAmount),
+      expectedToAmount: amountOut,
       steps: stepsOutput.map(({ token, amount, msgValue, zapData }) => ({
         token,
         amount,
