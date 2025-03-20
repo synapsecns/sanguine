@@ -92,7 +92,7 @@ export class SynapseIntentRouterSet {
       routerAddress: this.getSirAddress(fromChainId),
       // These will be filled by the corresponding bridge module
       estimatedTime: 0,
-      bridgeModuleName: '',
+      moduleName: '',
       gasDropAmount: Zero,
       tx,
     }

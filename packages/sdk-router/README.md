@@ -149,7 +149,7 @@ export type BridgeQuote = {
   estimatedTime: number
   // Name of the "bridge module" that will be used to bridge the tokens.
   // Supported values are "SynapseBridge", "SynapseCCTP" and "SynapseRFQ"
-  bridgeModuleName: string
+  moduleName: string
   // Amount of native gas tokens that user will receive on the destination chain
   // on top of the token amount
   gasDropAmount: BigNumber
@@ -170,7 +170,7 @@ Some of the returned quotes may contain information about the optional swaps on 
 ```ts
 const { originQuery, destQuery } = await synapseSDK.applyBridgeSlippage(
   // fields from the BridgeQuote object returned by the allBridgeQuotes method
-  bridgeQuote.bridgeModuleName,
+  bridgeQuote.moduleName,
   bridgeQuote.originQuery,
   bridgeQuote.destQuery,
   // Numerator of the slippage percentage, optional (defaults to 10)
@@ -189,7 +189,7 @@ Bridge quotes returned by the `allBridgeQuotes` method come with the deadlines s
 ```ts
 const { originQuery, destQuery } = synapseSDK.applyBridgeDeadline(
   // fields from the BridgeQuote object returned by the allBridgeQuotes method
-  bridgeQuote.bridgeModuleName,
+  bridgeQuote.moduleName,
   bridgeQuote.originQuery,
   bridgeQuote.destQuery,
   // New deadline for the origin chain (optional, default depends on the bridge module)
@@ -251,7 +251,7 @@ In order to track the status of the bridge transaction, the consumer first needs
 const synapseTxId = await synapseSDK.getSynapseTxId(
   // Chain ID of the ORIGIN chain
   originChainId,
-  bridgeQuote.bridgeModuleName,
+  bridgeQuote.moduleName,
   // Transaction hash of the bridge transaction on the origin chain
   txHash
 )
@@ -265,7 +265,7 @@ The status of the bridge transaction can then be checked using the `getBridgeTxS
 const status: boolean = await synapseSDK.getBridgeTxStatus(
   // Chain ID of the DESTINATION chain
   destChainId,
-  bridgeQuote.bridgeModuleName,
+  bridgeQuote.moduleName,
   synapseTxId
 )
 ```

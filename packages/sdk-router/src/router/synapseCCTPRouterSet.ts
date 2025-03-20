@@ -10,7 +10,7 @@ import { BridgeRouteV2, BridgeTokenCandidate } from '../module'
  * Wrapper class for interacting with a SynapseCCTPRouter contracts deployed on multiple chains.
  */
 export class SynapseCCTPRouterSet extends RouterSet {
-  public readonly bridgeModuleName = 'SynapseCCTP'
+  public readonly moduleName = 'SynapseCCTP'
   public readonly allEvents = [
     'CircleRequestSentEvent',
     'CircleRequestFulfilledEvent',
@@ -52,8 +52,6 @@ export class SynapseCCTPRouterSet extends RouterSet {
   }
 
   public async getBridgeRouteV2(): Promise<BridgeRouteV2> {
-    throw new Error(
-      'BridgeRouteV2 is not supported by ' + this.bridgeModuleName
-    )
+    throw new Error('BridgeRouteV2 is not supported by ' + this.moduleName)
   }
 }

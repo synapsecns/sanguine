@@ -20,7 +20,7 @@ import { isNativeToken } from '../utils'
 const MEDIAN_TIME_GAS_ZIP = 30
 
 export class GasZipModuleSet extends SynapseModuleSet {
-  public readonly bridgeModuleName = 'Gas.zip'
+  public readonly moduleName = 'Gas.zip'
   public readonly allEvents = []
   // Gas.zip does not support swaps on neither origin nor destination chains.
   public readonly isBridgeV2Supported = false
@@ -71,9 +71,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
   }
 
   public async getBridgeRouteV2(): Promise<BridgeRouteV2> {
-    throw new Error(
-      'BridgeRouteV2 is not supported by ' + this.bridgeModuleName
-    )
+    throw new Error('BridgeRouteV2 is not supported by ' + this.moduleName)
   }
 
   /**
@@ -125,7 +123,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
         symbol: 'NATIVE',
         token: tokenIn,
       },
-      bridgeModuleName: this.bridgeModuleName,
+      bridgeModuleName: this.moduleName,
     }
     return [route]
   }

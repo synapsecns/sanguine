@@ -33,7 +33,7 @@ export type GetBridgeRouteV2Parameters = {
 }
 
 export abstract class SynapseModuleSet {
-  abstract readonly bridgeModuleName: string
+  abstract readonly moduleName: string
   abstract readonly allEvents: string[]
   abstract readonly isBridgeV2Supported: boolean
 
@@ -236,7 +236,7 @@ export abstract class SynapseModuleSet {
     const originModule = this.getExistingModule(bridgeRoute.originChainId)
     this.getExistingModule(bridgeRoute.destChainId)
     invariant(
-      bridgeRoute.bridgeModuleName === this.bridgeModuleName,
+      bridgeRoute.bridgeModuleName === this.moduleName,
       'Invalid bridge module name'
     )
     const uuid = uuidv7()
@@ -272,7 +272,7 @@ export abstract class SynapseModuleSet {
     return {
       ...bridgeQuote,
       estimatedTime: this.getEstimatedTime(bridgeQuote.fromChainId),
-      bridgeModuleName: this.bridgeModuleName,
+      moduleName: this.moduleName,
       gasDropAmount: await this.getGasDropAmount(
         bridgeQuote.toChainId,
         bridgeToken.destToken

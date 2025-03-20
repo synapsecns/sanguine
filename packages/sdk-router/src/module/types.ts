@@ -108,7 +108,7 @@ export type BridgeRouteV2 = {
  * @param expectedToAmount - Expected amount of output tokens on the destination chain.
  * @param routerAddress - Address of the router on the origin chain.
  * @param estimatedTime - Estimated time for the bridge operation to complete.
- * @param bridgeModuleName - Name of the module used for the bridge operation.
+ * @param moduleName - Name of the module used for the bridge operation.
  * @param gasDropAmount - Amount of gas to be dropped on the destination chain.
  * @param tx - Optional populated transaction for the bridge operation (returned only if `originSender` is provided)
  */
@@ -123,7 +123,7 @@ export type BridgeQuoteV2 = {
   minToAmount: BigNumber
   routerAddress: string
   estimatedTime: number
-  bridgeModuleName: string
+  moduleName: string
   gasDropAmount: BigNumber
   tx?: PopulatedTransaction
 }

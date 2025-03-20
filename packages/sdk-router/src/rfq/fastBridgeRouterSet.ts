@@ -37,7 +37,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
   static readonly ALL_QUOTES_CACHE_TTL = 10 // 10 seconds cache for getAllQuotes results
 
-  public readonly bridgeModuleName = 'SynapseRFQ'
+  public readonly moduleName = 'SynapseRFQ'
   public readonly allEvents = ['BridgeRequestedEvent', 'BridgeRelayedEvent']
   public readonly isBridgeV2Supported = true
 
@@ -218,7 +218,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
           destAmountOut,
           originUserAddress
         ),
-        bridgeModuleName: this.bridgeModuleName,
+        bridgeModuleName: this.moduleName,
       }))
   }
 

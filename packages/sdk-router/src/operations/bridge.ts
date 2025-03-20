@@ -74,7 +74,7 @@ async function _collectV1Quotes(
     {
       deadline: deadlineBN,
       originUserAddress: params.fromSender,
-      excludedModules: bridgeV2Modules.map((set) => set.bridgeModuleName),
+      excludedModules: bridgeV2Modules.map((set) => set.moduleName),
     }
   )
   return Promise.all(
@@ -122,7 +122,7 @@ async function _collectV1Quotes(
         minToAmount: destQuery.minAmountOut,
         routerAddress: quote.routerAddress,
         estimatedTime: quote.estimatedTime,
-        bridgeModuleName: quote.bridgeModuleName,
+        moduleName: quote.bridgeModuleName,
         gasDropAmount: quote.gasDropAmount,
         tx,
       }
@@ -363,7 +363,7 @@ export async function allBridgeQuotes(
   const allQuotes: BridgeQuote[][] = await Promise.all(
     this.allModuleSets.map(async (moduleSet) => {
       // No-op if the module is explicitly excluded
-      if (options.excludedModules?.includes(moduleSet.bridgeModuleName)) {
+      if (options.excludedModules?.includes(moduleSet.moduleName)) {
         return []
       }
       const routes = await moduleSet.getBridgeRoutes(
@@ -393,7 +393,7 @@ export async function allBridgeQuotes(
 /**
  * Applies the deadlines to the given bridge queries, according to bridge module's default deadline settings.
  *
- * @param bridgeModuleName - The name of the bridge module.
+ * @param moduleName - The name of the bridge module.
  * @param originQueryInitial - The query for the origin chain
  * @param destQueryInitial - The query for the destination chain
  * @param originDeadline - The deadline to use on the origin chain (optional, default depends on the module).
@@ -402,13 +402,13 @@ export async function allBridgeQuotes(
  */
 export function applyBridgeDeadline(
   this: SynapseSDK,
-  bridgeModuleName: string,
+  moduleName: string,
   originQueryInitial: Query,
   destQueryInitial: Query,
   originDeadline?: BigNumber,
   destDeadline?: BigNumber
 ): { originQuery: Query; destQuery: Query } {
-  const moduleSet = getModuleSet.call(this, bridgeModuleName)
+  const moduleSet = getModuleSet.call(this, moduleName)
   const { originModuleDeadline, destModuleDeadline } =
     moduleSet.getModuleDeadlines(originDeadline, destDeadline)
   return {
@@ -421,7 +421,7 @@ export function applyBridgeDeadline(
  * Applies slippage to the given bridge queries, according to bridge module's slippage tolerance.
  * Note: default slippage is 10 bips (0.1%).
  *
- * @param bridgeModuleName - The name of the bridge module.
+ * @param moduleName - The name of the bridge module.
  * @param originQueryInitial - The query for the origin chain, coming from `allBridgeQuotes()`.
  * @param destQueryInitial - The query for the destination chain, coming from `allBridgeQuotes()`.
  * @param slipNumerator - The numerator of the slippage tolerance, defaults to 10.
@@ -430,13 +430,13 @@ export function applyBridgeDeadline(
  */
 export function applyBridgeSlippage(
   this: SynapseSDK,
-  bridgeModuleName: string,
+  moduleName: string,
   originQueryInitial: Query,
   destQueryInitial: Query,
   slipNumerator: number = 10,
   slipDenominator: number = 10000
 ): { originQuery: Query; destQuery: Query } {
-  const moduleSet = getModuleSet.call(this, bridgeModuleName)
+  const moduleSet = getModuleSet.call(this, moduleName)
   return moduleSet.applySlippage(
     originQueryInitial,
     destQueryInitial,
@@ -451,18 +451,18 @@ export function applyBridgeSlippage(
  * This function is meant to abstract away the differences between the two bridge modules.
  *
  * @param originChainId - The ID of the origin chain.
- * @param bridgeModuleName - The name of the bridge module.
+ * @param moduleName - The name of the bridge module.
  * @param txHash - The transaction hash of the bridge operation on the origin chain.
  * @returns A promise that resolves to the unique Synapse txId of the bridge operation.
  */
 export async function getSynapseTxId(
   this: SynapseSDK,
   originChainId: number,
-  bridgeModuleName: string,
+  moduleName: string,
   txHash: string
 ): Promise<string> {
   return getModuleSet
-    .call(this, bridgeModuleName)
+    .call(this, moduleName)
     .getSynapseTxId(originChainId, txHash)
 }
 
@@ -470,18 +470,18 @@ export async function getSynapseTxId(
  * Checks whether a bridge operation has been completed on the destination chain.
  *
  * @param destChainId - The ID of the destination chain.
- * @param bridgeModuleName - The name of the bridge module.
+ * @param moduleName - The name of the bridge module.
  * @param synapseTxId - The unique Synapse txId of the bridge operation.
  * @returns A promise that resolves to a boolean indicating whether the bridge operation has been completed.
  */
 export async function getBridgeTxStatus(
   this: SynapseSDK,
   destChainId: number,
-  bridgeModuleName: string,
+  moduleName: string,
   synapseTxId: string
 ): Promise<boolean> {
   return getModuleSet
-    .call(this, bridgeModuleName)
+    .call(this, moduleName)
     .getBridgeTxStatus(destChainId, synapseTxId)
 }
 
@@ -502,7 +502,7 @@ export function getBridgeModuleName(
   if (!moduleSet) {
     throw new Error('Unknown event')
   }
-  return moduleSet.bridgeModuleName
+  return moduleSet.moduleName
 }
 
 /**
@@ -511,18 +511,16 @@ export function getBridgeModuleName(
  * or the bridge token.
  *
  * @param originChainId - The ID of the origin chain.
- * @param bridgeModuleName - The name of the bridge module.
+ * @param moduleName - The name of the bridge module.
  * @returns - The estimated time for a bridge operation, in seconds.
  * @throws - Will throw an error if the bridge module is unknown for the given chain.
  */
 export function getEstimatedTime(
   this: SynapseSDK,
   originChainId: number,
-  bridgeModuleName: string
+  moduleName: string
 ): number {
-  return getModuleSet
-    .call(this, bridgeModuleName)
-    .getEstimatedTime(originChainId)
+  return getModuleSet.call(this, moduleName).getEstimatedTime(originChainId)
 }
 
 /**
@@ -542,16 +540,16 @@ export async function getBridgeGas(
 /**
  * Extracts the SynapseModuleSet from the SynapseSDK based on the given bridge module name.
  *
- * @param bridgeModuleName - The name of the bridge module, SynapseBridge or SynapseCCTP.
+ * @param moduleName - The name of the bridge module, SynapseBridge or SynapseCCTP.
  * @returns The corresponding SynapseModuleSet.
  * @throws Will throw an error if the bridge module is unknown.
  */
 export function getModuleSet(
   this: SynapseSDK,
-  bridgeModuleName: string
+  moduleName: string
 ): SynapseModuleSet {
   const moduleSet = this.allModuleSets.find(
-    (set) => set.bridgeModuleName === bridgeModuleName
+    (set) => set.moduleName === moduleName
   )
   if (!moduleSet) {
     throw new Error('Unknown bridge module')
