@@ -108,7 +108,7 @@ const router: express.Router = express.Router()
  *                   estimatedTime:
  *                     type: integer
  *                     description: Estimated time for the bridge in seconds
- *                   bridgeModuleName:
+ *                   moduleName:
  *                     type: string
  *                     description: The name of the bridge module used for this quote
  *                   gasDropAmount:
@@ -139,7 +139,7 @@ const router: express.Router = express.Router()
  *                 minToAmount: "994051462240"
  *                 routerAddress: "0x512000a034E154908Efb1eC48579F4ffDb000512"
  *                 estimatedTime: 30
- *                 bridgeModuleName: "SynapseRFQ"
+ *                 moduleName: "SynapseRFQ"
  *                 gasDropAmount: "0"
  *                 callData: {
  *                   to: "0x512000a034E154908Efb1eC48579F4ffDb000512",

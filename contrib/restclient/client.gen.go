@@ -2880,9 +2880,6 @@ type GetBridgeV2Response struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *[]struct {
-		// BridgeModuleName The name of the bridge module used for this quote
-		BridgeModuleName *string `json:"bridgeModuleName,omitempty"`
-
 		// CallData Transaction data object, only provided if fromSender and toRecipient parameters were included
 		CallData *struct {
 			// Data Transaction calldata
@@ -2918,6 +2915,9 @@ type GetBridgeV2Response struct {
 
 		// MinToAmount The minimum amount of tokens that will be received in the token's native decimals (includes slippage)
 		MinToAmount *string `json:"minToAmount,omitempty"`
+
+		// ModuleName The name of the bridge module used for this quote
+		ModuleName *string `json:"moduleName,omitempty"`
 
 		// RouterAddress The address of the router contract
 		RouterAddress *string `json:"routerAddress,omitempty"`
@@ -3808,6 +3808,9 @@ type GetSwapV2Response struct {
 		// MinToAmount The minimum amount of tokens that will be received in the token's native decimals (includes slippage)
 		MinToAmount *string `json:"minToAmount,omitempty"`
 
+		// ModuleName The name of the module used for the swap
+		ModuleName *string `json:"moduleName,omitempty"`
+
 		// RouterAddress The address of the router contract
 		RouterAddress *string `json:"routerAddress,omitempty"`
 
@@ -4473,9 +4476,6 @@ func ParseGetBridgeV2Response(rsp *http.Response) (*GetBridgeV2Response, error) 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest []struct {
-			// BridgeModuleName The name of the bridge module used for this quote
-			BridgeModuleName *string `json:"bridgeModuleName,omitempty"`
-
 			// CallData Transaction data object, only provided if fromSender and toRecipient parameters were included
 			CallData *struct {
 				// Data Transaction calldata
@@ -4511,6 +4511,9 @@ func ParseGetBridgeV2Response(rsp *http.Response) (*GetBridgeV2Response, error) 
 
 			// MinToAmount The minimum amount of tokens that will be received in the token's native decimals (includes slippage)
 			MinToAmount *string `json:"minToAmount,omitempty"`
+
+			// ModuleName The name of the bridge module used for this quote
+			ModuleName *string `json:"moduleName,omitempty"`
 
 			// RouterAddress The address of the router contract
 			RouterAddress *string `json:"routerAddress,omitempty"`
@@ -5655,6 +5658,9 @@ func ParseGetSwapV2Response(rsp *http.Response) (*GetSwapV2Response, error) {
 
 			// MinToAmount The minimum amount of tokens that will be received in the token's native decimals (includes slippage)
 			MinToAmount *string `json:"minToAmount,omitempty"`
+
+			// ModuleName The name of the module used for the swap
+			ModuleName *string `json:"moduleName,omitempty"`
 
 			// RouterAddress The address of the router contract
 			RouterAddress *string `json:"routerAddress,omitempty"`
