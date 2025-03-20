@@ -21,23 +21,35 @@ const router: express.Router = express.Router()
  *     description: Retrieve list of bridge quotes based on origin and destination chains, tokens, and amount. Any origin token can be used, but destination tokens must be supported on the destination chain.
  *     parameters:
  *       - in: query
- *         name: fromChain
+ *         name: fromChainId
  *         required: true
  *         schema:
  *           type: integer
- *         description: The source chain ID (must support intents)
- *       - in: query
- *         name: toChain
- *         required: true
- *         schema:
- *           type: integer
- *         description: The destination chain ID
+ *         description: The origin chain ID (must support intents)
  *       - in: query
  *         name: fromToken
  *         required: true
  *         schema:
  *           type: string
- *         description: The address of the token on the source chain
+ *         description: The address of the token on the origin chain
+ *       - in: query
+ *         name: fromAmount
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The amount of tokens to bridge in the token's native decimals
+ *       - in: query
+ *         name: fromSender
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: The address of the user on the origin chain (required to generate callData)
+ *       - in: query
+ *         name: toChainId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The destination chain ID
  *       - in: query
  *         name: toToken
  *         required: true
@@ -45,19 +57,7 @@ const router: express.Router = express.Router()
  *           type: string
  *         description: The address of the token on the destination chain
  *       - in: query
- *         name: amount
- *         required: true
- *         schema:
- *           type: integer
- *         description: The amount of tokens to bridge in the token's native decimals
- *       - in: query
- *         name: originUserAddress
- *         required: false
- *         schema:
- *           type: string
- *         description: The address of the user on the origin chain (required to generate callData)
- *       - in: query
- *         name: destAddress
+ *         name: toRecipient
  *         required: false
  *         schema:
  *           type: string
@@ -81,31 +81,43 @@ const router: express.Router = express.Router()
  *                   id:
  *                     type: string
  *                     description: Unique identifier for the quote (UUIDv7)
+ *                   fromChainId:
+ *                     type: integer
+ *                     description: The ID of the origin chain
+ *                   fromToken:
+ *                     type: string
+ *                     description: The address of the token on the origin chain
+ *                   fromAmount:
+ *                     type: string
+ *                     description: The amount of tokens to bridge in the token's native decimals
+ *                   toChainId:
+ *                     type: integer
+ *                     description: The ID of the destination chain
+ *                   toToken:
+ *                     type: string
+ *                     description: The address of the token on the destination chain
+ *                   expectedToAmount:
+ *                     type: string
+ *                     description: The expected amount of tokens that will be received in the token's native decimals
+ *                   minToAmount:
+ *                     type: string
+ *                     description: The minimum amount of tokens that will be received in the token's native decimals (includes slippage)
  *                   routerAddress:
  *                     type: string
  *                     description: The address of the router contract
- *                   maxAmountOut:
- *                     type: string
- *                     description: The maximum amount of tokens that will be received (in native token decimals)
- *                   bridgeModule:
- *                     type: string
- *                     description: The name of the bridge module used for this quote
  *                   estimatedTime:
  *                     type: integer
  *                     description: Estimated time for the bridge in seconds
- *                   originChainId:
- *                     type: integer
- *                     description: The ID of the origin chain
- *                   destChainId:
- *                     type: integer
- *                     description: The ID of the destination chain
+ *                   bridgeModuleName:
+ *                     type: string
+ *                     description: The name of the bridge module used for this quote
  *                   gasDropAmount:
  *                     type: string
  *                     description: Amount of native token airdropped on destination chain (in native token decimals)
  *                   callData:
  *                     type: object
  *                     nullable: true
- *                     description: Transaction data object, only provided if addresses were included
+ *                     description: Transaction data object, only provided if fromSender and toRecipient parameters were included
  *                     properties:
  *                       to:
  *                         type: string
@@ -118,12 +130,16 @@ const router: express.Router = express.Router()
  *                         description: Amount of native currency to send with transaction (in native token decimals)
  *             example:
  *               - id: "01920c87-7f14-7cdf-90e1-e13b2d4af55f"
+ *                 fromChainId: 1
+ *                 fromToken: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+ *                 fromAmount: "1000000000000"
+ *                 toChainId: 42161
+ *                 toToken: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8"
+ *                 expectedToAmount: "999046695719"
+ *                 minToAmount: "994051462240"
  *                 routerAddress: "0x512000a034E154908Efb1eC48579F4ffDb000512"
- *                 maxAmountOut: "999046695719"
- *                 bridgeModule: "SynapseRFQ"
  *                 estimatedTime: 30
- *                 originChainId: 1
- *                 destChainId: 42161
+ *                 bridgeModuleName: "SynapseRFQ"
  *                 gasDropAmount: "0"
  *                 callData: {
  *                   to: "0x512000a034E154908Efb1eC48579F4ffDb000512",
@@ -154,8 +170,8 @@ const router: express.Router = express.Router()
  *               errors: [
  *                 {
  *                   value: "111",
- *                   msg: "Unsupported fromChain",
- *                   param: "fromChain",
+ *                   msg: "Unsupported fromChainId",
+ *                   param: "fromChainId",
  *                   location: "query"
  *                 }
  *               ]
