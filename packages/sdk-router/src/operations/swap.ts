@@ -22,6 +22,7 @@ import {
   TEN_MINUTES,
   applyOptionalDeadline,
   calculateDeadline,
+  isSameAddress,
 } from '../utils'
 
 export type SwapQuoteV2 = {
@@ -33,6 +34,7 @@ export type SwapQuoteV2 = {
   expectedToAmount: BigNumber
   minToAmount: BigNumber
   routerAddress: string
+  swapModuleName: string
   tx?: PopulatedTransaction
 }
 
@@ -56,6 +58,7 @@ const getEmptyQuoteV2 = (params: SwapV2Parameters): SwapQuoteV2 => {
     toToken: params.toToken,
     expectedToAmount: Zero,
     minToAmount: Zero,
+    swapModuleName: '',
     routerAddress: AddressZero,
   }
 }
@@ -66,6 +69,9 @@ export async function swapV2(
 ): Promise<SwapQuoteV2> {
   params.fromToken = handleNativeToken(params.fromToken)
   params.toToken = handleNativeToken(params.toToken)
+  if (isSameAddress(params.fromToken, params.toToken)) {
+    return getEmptyQuoteV2(params)
+  }
   const input: RouteInput = {
     chainId: params.chainId,
     fromToken: params.fromToken,
@@ -111,6 +117,7 @@ export async function swapV2(
     expectedToAmount: route.expectedToAmount,
     minToAmount: route.minToAmount ?? route.expectedToAmount,
     routerAddress: this.sirSet.getSirAddress(params.chainId),
+    swapModuleName: route.engineName,
     tx,
   }
 }
