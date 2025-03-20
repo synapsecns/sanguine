@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	. "github.com/stretchr/testify/assert"
@@ -84,6 +85,91 @@ func TestFilePathsAreEqual(t *testing.T) {
 			t.Errorf("filePathsAreEqual(%v, %v) error got %v, want %v", tt.file1, tt.file2, err, tt.err)
 		}
 	}
+}
+
+func TestGetSolcBinary(t *testing.T) {
+	// Skip in CI to avoid unnecessary downloads
+	if os.Getenv("CI") != "" {
+		t.Skip("Skipping in CI environment")
+	}
+
+	// Test accessing the getSolcBinary function through the exported test function
+	solcPath, err := internal.GetSolcBinary("0.8.4")
+	Nil(t, err)
+	NotEmpty(t, solcPath)
+
+	// Verify the file exists
+	info, err := os.Stat(solcPath)
+	Nil(t, err)
+	
+	// Verify it's executable
+	True(t, info.Mode()&0111 != 0, "solc binary should be executable")
+	
+	// Verify it's in the expected location
+	homeDir, err := os.UserHomeDir()
+	Nil(t, err)
+	expectedDir := filepath.Join(homeDir, ".cache", "solc")
+	True(t, filepath.HasPrefix(solcPath, expectedDir), 
+		"expected solc binary to be in %s, but it was in %s", expectedDir, solcPath)
+}
+
+// TestCompileSolidityWithoutDocker tests that our fallback mechanism works end-to-end
+func TestCompileSolidityWithoutDocker(t *testing.T) {
+	// Skip in CI to avoid unnecessary downloads
+	if os.Getenv("CI") != "" {
+		t.Skip("Skipping in CI environment")
+	}
+	
+	// Create a temporary Solidity file
+	content := `
+	// SPDX-License-Identifier: MIT
+	pragma solidity ^0.8.4;
+	
+	contract SimpleStorage {
+		uint256 private value;
+		
+		function setValue(uint256 _value) public {
+			value = _value;
+		}
+		
+		function getValue() public view returns (uint256) {
+			return value;
+		}
+	}
+	`
+	
+	tempDir, err := os.MkdirTemp("", "solc-test-*")
+	Nil(t, err)
+	defer os.RemoveAll(tempDir)
+	
+	tempFile := filepath.Join(tempDir, "SimpleStorage.sol")
+	err = os.WriteFile(tempFile, []byte(content), 0644)
+	Nil(t, err)
+	
+	// Force docker to fail by setting an invalid environment variable
+	originalPath := os.Getenv("PATH")
+	os.Setenv("DOCKER_HOST", "unix:///non-existent-path")
+	defer os.Setenv("PATH", originalPath)
+	
+	// Compile using our fallback mechanism
+	contracts, err := internal.CompileSolidity("0.8.4", tempFile, 200, nil)
+	Nil(t, err)
+	
+	// Verify that we got the contract
+	NotNil(t, contracts)
+	NotEqual(t, 0, len(contracts))
+	
+	// Check that the compiled contract actually exists
+	var found bool
+	for name, contract := range contracts {
+		if strings.Contains(name, "SimpleStorage") {
+			found = true
+			NotEmpty(t, contract.Code)
+			NotNil(t, contract.Info.AbiDefinition)
+		}
+	}
+	
+	True(t, found, "SimpleStorage contract not found in compiled output")
 }
 
 // ContractSettings outed by solc.
