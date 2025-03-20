@@ -36,7 +36,7 @@ export type RouterConstructor = new (
  *
  * The class children should provide the router addresses for each chain, as well as the Router constructor.
  *
- * @property bridgeModuleName The name of the bridge module used by the routers.
+ * @property moduleName The name of the bridge module used by the routers.
  * @property routers Collection of Router instances indexed by chainId.
  * @property providers Collection of Provider instances indexed by chainId.
  */
@@ -133,7 +133,7 @@ export abstract class RouterSet extends SynapseModuleSet {
           originQuery: originRoute.originQuery,
           destQuery: destQueries[index],
           bridgeToken: originRoute.bridgeToken,
-          bridgeModuleName: this.bridgeModuleName,
+          bridgeModuleName: this.moduleName,
         })
       )
       // Return routes with non-zero minAmountOut

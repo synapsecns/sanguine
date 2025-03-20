@@ -2,6 +2,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { PopulatedTransaction } from '@ethersproject/contracts'
 import { BigNumberish } from 'ethers'
+import { uuidv7 } from 'uuidv7'
 
 import {
   Query,
@@ -21,80 +22,102 @@ import {
   TEN_MINUTES,
   applyOptionalDeadline,
   calculateDeadline,
+  isSameAddress,
 } from '../utils'
 
 export type SwapQuoteV2 = {
+  id: string
+  chainId: number
+  fromToken: string
+  fromAmount: BigNumber
+  toToken: string
+  expectedToAmount: BigNumber
+  minToAmount: BigNumber
   routerAddress: string
-  maxAmountOut: BigNumber
+  moduleName: string
   tx?: PopulatedTransaction
-}
-
-const EMPTY_QUOTE_V2: SwapQuoteV2 = {
-  routerAddress: AddressZero,
-  maxAmountOut: Zero,
 }
 
 export type SwapV2Parameters = {
   chainId: number
-  tokenIn: string
-  tokenOut: string
-  amountIn: BigNumberish
-  to?: string
+  fromToken: string
+  fromAmount: BigNumberish
+  toToken: string
+  toRecipient?: string
   slippage?: Slippage
   deadline?: number
   restrictComplexity?: boolean
 }
 
+const getEmptyQuoteV2 = (params: SwapV2Parameters): SwapQuoteV2 => {
+  return {
+    id: '',
+    chainId: params.chainId,
+    fromToken: params.fromToken,
+    fromAmount: BigNumber.from(params.fromAmount),
+    toToken: params.toToken,
+    expectedToAmount: Zero,
+    minToAmount: Zero,
+    moduleName: '',
+    routerAddress: AddressZero,
+  }
+}
+
 export async function swapV2(
   this: SynapseSDK,
-  {
-    chainId,
-    tokenIn,
-    tokenOut,
-    amountIn,
-    to,
-    slippage,
-    deadline,
-    restrictComplexity,
-  }: SwapV2Parameters
+  params: SwapV2Parameters
 ): Promise<SwapQuoteV2> {
+  params.fromToken = handleNativeToken(params.fromToken)
+  params.toToken = handleNativeToken(params.toToken)
+  if (isSameAddress(params.fromToken, params.toToken)) {
+    return getEmptyQuoteV2(params)
+  }
   const input: RouteInput = {
-    chainId,
-    tokenIn: handleNativeToken(tokenIn),
-    tokenOut: handleNativeToken(tokenOut),
-    amountIn,
-    msgSender: this.swapEngineSet.getTokenZap(chainId),
-    finalRecipient: {
-      entity: to ? RecipientEntity.User : RecipientEntity.UserSimulated,
-      address: to || USER_SIMULATED_ADDRESS,
+    chainId: params.chainId,
+    fromToken: params.fromToken,
+    fromAmount: params.fromAmount,
+    swapper: this.swapEngineSet.getTokenZap(params.chainId),
+    toToken: params.toToken,
+    toRecipient: {
+      entity: params.toRecipient
+        ? RecipientEntity.User
+        : RecipientEntity.UserSimulated,
+      address: params.toRecipient || USER_SIMULATED_ADDRESS,
     },
-    restrictComplexity: restrictComplexity ?? false,
+    restrictComplexity: params.restrictComplexity ?? false,
   }
   const quote = await this.swapEngineSet.getBestQuote(input, {
     allowMultiStep: true,
   })
   if (!quote) {
-    return EMPTY_QUOTE_V2
+    return getEmptyQuoteV2(params)
   }
   const route = await this.swapEngineSet.generateRoute(input, quote, {
     allowMultiStep: true,
-    slippage,
+    slippage: params.slippage,
   })
   if (!route) {
-    return EMPTY_QUOTE_V2
+    return getEmptyQuoteV2(params)
   }
-  const tx = to
+  const tx = params.toRecipient
     ? await this.sirSet.completeIntentWithBalanceChecks(
-        chainId,
-        tokenIn,
-        amountIn,
-        deadline ?? calculateDeadline(TEN_MINUTES),
+        params.chainId,
+        params.fromToken,
+        params.fromAmount,
+        params.deadline ?? calculateDeadline(TEN_MINUTES),
         route.steps
       )
     : undefined
   return {
-    routerAddress: this.sirSet.getSirAddress(chainId),
-    maxAmountOut: quote.expectedAmountOut,
+    id: uuidv7(),
+    chainId: params.chainId,
+    fromToken: params.fromToken,
+    fromAmount: BigNumber.from(params.fromAmount),
+    toToken: params.toToken,
+    expectedToAmount: route.expectedToAmount,
+    minToAmount: route.minToAmount ?? route.expectedToAmount,
+    routerAddress: this.sirSet.getSirAddress(params.chainId),
+    moduleName: route.engineName,
     tx,
   }
 }

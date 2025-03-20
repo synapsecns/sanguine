@@ -15,24 +15,24 @@ import { handleNativeToken, isSameAddress } from '../utils'
 /**
  * Parameters for the `bridgeV2` function.
  *
- * @param originChainId - ID of the origin chain, where funds will be sent from.
- * @param destChainId - ID of the destination chain, where funds will be received.
- * @param tokenIn - Address of the token to be bridged from the origin chain.
- * @param tokenOut - Address of the token to be received on the destination chain.
- * @param amountIn - Amount of input tokens on the origin chain.
- * @param originSender - Optional address of the sender on the origin chain. No calldata is returned if not provided.
- * @param destRecipient - Optional address of the recipient on the destination chain, defaults to `originSender`.
+ * @param fromChainId - ID of the origin chain, where funds will be sent from.
+ * @param toChainId - ID of the destination chain, where funds will be received.
+ * @param fromToken - Address of the token to be bridged from the origin chain.
+ * @param toToken - Address of the token to be received on the destination chain.
+ * @param fromAmount - Amount of input tokens on the origin chain.
+ * @param fromSender - Optional address of the sender on the origin chain. No calldata is returned if not provided.
+ * @param toRecipient - Optional address of the recipient on the destination chain, defaults to `fromSender`.
  * @param slippage - Optional slippage percentage to apply to the proceeds of the bridge operation.
  * @param deadline - Optional deadline for the bridge operation to be performed on the origin chain.
  */
 export type BridgeV2Parameters = {
-  originChainId: number
-  destChainId: number
-  tokenIn: string
-  tokenOut: string
-  amountIn: BigNumberish
-  originSender?: string
-  destRecipient?: string
+  fromChainId: number
+  fromToken: string
+  fromAmount: BigNumberish
+  fromSender?: string
+  toChainId: number
+  toToken: string
+  toRecipient?: string
   slippage?: Slippage
   deadline?: number
 }
@@ -41,8 +41,8 @@ export async function bridgeV2(
   this: SynapseSDK,
   params: BridgeV2Parameters
 ): Promise<BridgeQuoteV2[]> {
-  params.tokenIn = handleNativeToken(params.tokenIn)
-  params.tokenOut = handleNativeToken(params.tokenOut)
+  params.fromToken = handleNativeToken(params.fromToken)
+  params.toToken = handleNativeToken(params.toToken)
   const bridgeV2Modules = this.allModuleSets.filter(
     (set) => set.isBridgeV2Supported
   )
@@ -50,9 +50,9 @@ export async function bridgeV2(
     _collectV1Quotes.call(this, params, bridgeV2Modules),
     _collectV2Quotes.call(this, params, bridgeV2Modules),
   ])
-  // Combine the quotes and sort by maxAmountOut in descending order
+  // Combine the quotes and sort by expectedToAmount in descending order
   return [...bridgeV1Quotes, ...bridgeV2Quotes].sort((a, b) =>
-    a.maxAmountOut.gt(b.maxAmountOut) ? -1 : 1
+    a.expectedToAmount.gt(b.expectedToAmount) ? -1 : 1
   )
 }
 
@@ -66,15 +66,15 @@ async function _collectV1Quotes(
     : undefined
   const bridgeV1Quotes = await allBridgeQuotes.call(
     this,
-    params.originChainId,
-    params.destChainId,
-    params.tokenIn,
-    params.tokenOut,
-    params.amountIn,
+    params.fromChainId,
+    params.toChainId,
+    params.fromToken,
+    params.toToken,
+    params.fromAmount,
     {
       deadline: deadlineBN,
-      originUserAddress: params.originSender,
-      excludedModules: bridgeV2Modules.map((set) => set.bridgeModuleName),
+      originUserAddress: params.fromSender,
+      excludedModules: bridgeV2Modules.map((set) => set.moduleName),
     }
   )
   return Promise.all(
@@ -98,30 +98,35 @@ async function _collectV1Quotes(
         deadlineBN
       )
       // Generate the transaction calldata
-      const tx = params.originSender
+      const tx = params.fromSender
         ? await bridge.call(
             this,
-            params.destRecipient || params.originSender,
+            params.toRecipient || params.fromSender,
             quote.routerAddress,
-            params.originChainId,
-            params.destChainId,
-            params.tokenIn,
-            params.amountIn,
+            params.fromChainId,
+            params.toChainId,
+            params.fromToken,
+            params.fromAmount,
             originQuery,
             destQuery
           )
         : undefined
-      return {
+      const bridgeQuoteV2: BridgeQuoteV2 = {
         id: quote.id,
-        originChainId: params.originChainId,
-        destChainId: params.destChainId,
+        fromChainId: params.fromChainId,
+        fromToken: params.fromToken,
+        fromAmount: BigNumber.from(params.fromAmount),
+        toChainId: params.toChainId,
+        toToken: params.toToken,
+        expectedToAmount: quote.maxAmountOut,
+        minToAmount: destQuery.minAmountOut,
         routerAddress: quote.routerAddress,
-        maxAmountOut: quote.maxAmountOut,
         estimatedTime: quote.estimatedTime,
-        bridgeModuleName: quote.bridgeModuleName,
+        moduleName: quote.bridgeModuleName,
         gasDropAmount: quote.gasDropAmount,
         tx,
       }
+      return bridgeQuoteV2
     })
   )
 }
@@ -134,10 +139,10 @@ async function _collectV2Quotes(
   const candidates = await Promise.all(
     bridgeV2Modules.map(async (set) =>
       set.getBridgeTokenCandidates({
-        originChainId: params.originChainId,
-        destChainId: params.destChainId,
-        tokenIn: params.tokenIn,
-        tokenOut: params.tokenOut,
+        fromChainId: params.fromChainId,
+        toChainId: params.toChainId,
+        fromToken: params.fromToken,
+        toToken: params.toToken,
       })
     )
   )
@@ -146,17 +151,17 @@ async function _collectV2Quotes(
     .flat()
     .map((c) => utils.getAddress(c.originToken))
     .filter((c, index, self) => self.indexOf(c) === index)
-  const tokenZap = this.swapEngineSet.getTokenZap(params.originChainId)
+  const tokenZap = this.swapEngineSet.getTokenZap(params.fromChainId)
   const originRoutes = (
     await Promise.all(
-      originCandidates.map(async (originTokenOut) => {
+      originCandidates.map(async (originBridgeToken) => {
         const input: RouteInput = {
-          chainId: params.originChainId,
-          tokenIn: params.tokenIn,
-          tokenOut: originTokenOut,
-          amountIn: params.amountIn,
-          msgSender: tokenZap,
-          finalRecipient: {
+          chainId: params.fromChainId,
+          fromToken: params.fromToken,
+          fromAmount: params.fromAmount,
+          swapper: tokenZap,
+          toToken: originBridgeToken,
+          toRecipient: {
             entity: RecipientEntity.Self,
             address: tokenZap,
           },
@@ -180,24 +185,24 @@ async function _collectV2Quotes(
     bridgeV2Modules.map(async (moduleSet, index) =>
       Promise.all(
         candidates[index].map(async (bridgeToken) => {
-          const originRoute = originRoutes.find((route) =>
-            isSameAddress(bridgeToken.originToken, route.tokenOut)
+          const originSwapRoute = originRoutes.find((swapRoute) =>
+            isSameAddress(bridgeToken.originToken, swapRoute.toToken)
           )
-          if (!originRoute) {
+          if (!originSwapRoute) {
             return
           }
           const bridgeRoute = await moduleSet.getBridgeRouteV2({
-            originAmountIn: originRoute.expectedAmountOut,
+            fromAmount: originSwapRoute.expectedToAmount,
             bridgeToken,
-            destTokenOut: params.tokenOut,
-            originSender: params.originSender,
-            destRecipient: params.destRecipient || params.originSender,
+            toToken: params.toToken,
+            fromSender: params.fromSender,
+            toRecipient: params.toRecipient || params.fromSender,
             slippage: params.slippage,
           })
           const bridgeQuoteV2 = await this.sirSet.finalizeBridgeRouteV2(
-            params.tokenIn,
-            params.amountIn,
-            originRoute,
+            params.fromToken,
+            params.fromAmount,
+            originSwapRoute,
             bridgeRoute,
             params.deadline
           )
@@ -358,7 +363,7 @@ export async function allBridgeQuotes(
   const allQuotes: BridgeQuote[][] = await Promise.all(
     this.allModuleSets.map(async (moduleSet) => {
       // No-op if the module is explicitly excluded
-      if (options.excludedModules?.includes(moduleSet.bridgeModuleName)) {
+      if (options.excludedModules?.includes(moduleSet.moduleName)) {
         return []
       }
       const routes = await moduleSet.getBridgeRoutes(
@@ -388,7 +393,7 @@ export async function allBridgeQuotes(
 /**
  * Applies the deadlines to the given bridge queries, according to bridge module's default deadline settings.
  *
- * @param bridgeModuleName - The name of the bridge module.
+ * @param moduleName - The name of the bridge module.
  * @param originQueryInitial - The query for the origin chain
  * @param destQueryInitial - The query for the destination chain
  * @param originDeadline - The deadline to use on the origin chain (optional, default depends on the module).
@@ -397,13 +402,13 @@ export async function allBridgeQuotes(
  */
 export function applyBridgeDeadline(
   this: SynapseSDK,
-  bridgeModuleName: string,
+  moduleName: string,
   originQueryInitial: Query,
   destQueryInitial: Query,
   originDeadline?: BigNumber,
   destDeadline?: BigNumber
 ): { originQuery: Query; destQuery: Query } {
-  const moduleSet = getModuleSet.call(this, bridgeModuleName)
+  const moduleSet = getModuleSet.call(this, moduleName)
   const { originModuleDeadline, destModuleDeadline } =
     moduleSet.getModuleDeadlines(originDeadline, destDeadline)
   return {
@@ -416,7 +421,7 @@ export function applyBridgeDeadline(
  * Applies slippage to the given bridge queries, according to bridge module's slippage tolerance.
  * Note: default slippage is 10 bips (0.1%).
  *
- * @param bridgeModuleName - The name of the bridge module.
+ * @param moduleName - The name of the bridge module.
  * @param originQueryInitial - The query for the origin chain, coming from `allBridgeQuotes()`.
  * @param destQueryInitial - The query for the destination chain, coming from `allBridgeQuotes()`.
  * @param slipNumerator - The numerator of the slippage tolerance, defaults to 10.
@@ -425,13 +430,13 @@ export function applyBridgeDeadline(
  */
 export function applyBridgeSlippage(
   this: SynapseSDK,
-  bridgeModuleName: string,
+  moduleName: string,
   originQueryInitial: Query,
   destQueryInitial: Query,
   slipNumerator: number = 10,
   slipDenominator: number = 10000
 ): { originQuery: Query; destQuery: Query } {
-  const moduleSet = getModuleSet.call(this, bridgeModuleName)
+  const moduleSet = getModuleSet.call(this, moduleName)
   return moduleSet.applySlippage(
     originQueryInitial,
     destQueryInitial,
@@ -446,18 +451,18 @@ export function applyBridgeSlippage(
  * This function is meant to abstract away the differences between the two bridge modules.
  *
  * @param originChainId - The ID of the origin chain.
- * @param bridgeModuleName - The name of the bridge module.
+ * @param moduleName - The name of the bridge module.
  * @param txHash - The transaction hash of the bridge operation on the origin chain.
  * @returns A promise that resolves to the unique Synapse txId of the bridge operation.
  */
 export async function getSynapseTxId(
   this: SynapseSDK,
   originChainId: number,
-  bridgeModuleName: string,
+  moduleName: string,
   txHash: string
 ): Promise<string> {
   return getModuleSet
-    .call(this, bridgeModuleName)
+    .call(this, moduleName)
     .getSynapseTxId(originChainId, txHash)
 }
 
@@ -465,18 +470,18 @@ export async function getSynapseTxId(
  * Checks whether a bridge operation has been completed on the destination chain.
  *
  * @param destChainId - The ID of the destination chain.
- * @param bridgeModuleName - The name of the bridge module.
+ * @param moduleName - The name of the bridge module.
  * @param synapseTxId - The unique Synapse txId of the bridge operation.
  * @returns A promise that resolves to a boolean indicating whether the bridge operation has been completed.
  */
 export async function getBridgeTxStatus(
   this: SynapseSDK,
   destChainId: number,
-  bridgeModuleName: string,
+  moduleName: string,
   synapseTxId: string
 ): Promise<boolean> {
   return getModuleSet
-    .call(this, bridgeModuleName)
+    .call(this, moduleName)
     .getBridgeTxStatus(destChainId, synapseTxId)
 }
 
@@ -497,7 +502,7 @@ export function getBridgeModuleName(
   if (!moduleSet) {
     throw new Error('Unknown event')
   }
-  return moduleSet.bridgeModuleName
+  return moduleSet.moduleName
 }
 
 /**
@@ -506,18 +511,16 @@ export function getBridgeModuleName(
  * or the bridge token.
  *
  * @param originChainId - The ID of the origin chain.
- * @param bridgeModuleName - The name of the bridge module.
+ * @param moduleName - The name of the bridge module.
  * @returns - The estimated time for a bridge operation, in seconds.
  * @throws - Will throw an error if the bridge module is unknown for the given chain.
  */
 export function getEstimatedTime(
   this: SynapseSDK,
   originChainId: number,
-  bridgeModuleName: string
+  moduleName: string
 ): number {
-  return getModuleSet
-    .call(this, bridgeModuleName)
-    .getEstimatedTime(originChainId)
+  return getModuleSet.call(this, moduleName).getEstimatedTime(originChainId)
 }
 
 /**
@@ -537,16 +540,16 @@ export async function getBridgeGas(
 /**
  * Extracts the SynapseModuleSet from the SynapseSDK based on the given bridge module name.
  *
- * @param bridgeModuleName - The name of the bridge module, SynapseBridge or SynapseCCTP.
+ * @param moduleName - The name of the bridge module, SynapseBridge or SynapseCCTP.
  * @returns The corresponding SynapseModuleSet.
  * @throws Will throw an error if the bridge module is unknown.
  */
 export function getModuleSet(
   this: SynapseSDK,
-  bridgeModuleName: string
+  moduleName: string
 ): SynapseModuleSet {
   const moduleSet = this.allModuleSets.find(
-    (set) => set.bridgeModuleName === bridgeModuleName
+    (set) => set.moduleName === moduleName
   )
   if (!moduleSet) {
     throw new Error('Unknown bridge module')

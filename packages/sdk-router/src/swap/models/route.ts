@@ -8,24 +8,28 @@ export type SwapEngineQuote = {
   engineID: EngineID
   engineName: string
   chainId: number
-  tokenIn: string
-  tokenOut: string
-  amountIn: BigNumber
-  expectedAmountOut: BigNumber
+  fromToken: string
+  fromAmount: BigNumber
+  toToken: string
+  expectedToAmount: BigNumber
   steps?: StepParams[]
 }
 
-export type SwapEngineRoute = Prettify<Required<SwapEngineQuote>>
+export type SwapEngineRoute = Prettify<
+  Required<SwapEngineQuote> & {
+    minToAmount?: BigNumber
+  }
+>
 
 export const getEmptyQuote = (engineID: EngineID): SwapEngineQuote => {
   return {
     engineID,
     engineName: EngineID[engineID],
     chainId: 0,
-    tokenIn: '',
-    tokenOut: '',
-    amountIn: Zero,
-    expectedAmountOut: Zero,
+    fromToken: '',
+    fromAmount: Zero,
+    toToken: '',
+    expectedToAmount: Zero,
   }
 }
 

@@ -6,6 +6,7 @@ import {
   DEFAULT_SWAP_SLIPPAGE_BIPS,
   SLIPPAGE_BIPS_DENOMINATOR,
 } from '../constants'
+import { stringifyTxValue } from '../utils/replaceTxValue'
 
 export const bridgeV2Controller = async (req, res) => {
   const errors = validationResult(req)
@@ -14,38 +15,36 @@ export const bridgeV2Controller = async (req, res) => {
   }
   try {
     const {
-      fromChain,
-      toChain,
-      amount,
+      fromChainId,
       fromToken,
+      fromAmount,
+      fromSender,
+      toChainId,
       toToken,
-      originUserAddress,
-      destAddress,
+      toRecipient,
       slippage,
     } = req.query as {
-      fromChain: string
-      toChain: string
-      amount: string
+      fromChainId: number
       fromToken: string
+      fromAmount: string
+      fromSender: string
+      toChainId: number
       toToken: string
-      originUserAddress?: string
-      destAddress?: string
-      slippage?: string
+      toRecipient: string
+      slippage: number
     }
 
     // Convert percentage slippage to bips
-    const slippageBips = slippage
-      ? Number(slippage) * 100
-      : DEFAULT_SWAP_SLIPPAGE_BIPS
+    const slippageBips = slippage ? slippage * 100 : DEFAULT_SWAP_SLIPPAGE_BIPS
 
     const allQuotes = await Synapse.bridgeV2({
-      originChainId: Number(fromChain),
-      destChainId: Number(toChain),
-      tokenIn: fromToken,
-      tokenOut: toToken,
-      amountIn: amount,
-      originSender: originUserAddress,
-      destRecipient: destAddress,
+      fromChainId,
+      fromToken,
+      fromAmount,
+      fromSender,
+      toChainId,
+      toToken,
+      toRecipient,
       slippage: {
         numerator: slippageBips,
         denominator: SLIPPAGE_BIPS_DENOMINATOR,
@@ -54,18 +53,16 @@ export const bridgeV2Controller = async (req, res) => {
 
     // Convert all BigNumber values to strings.
     const payload = allQuotes.map((quote) => {
-      const callData =
-        destAddress && originUserAddress && quote.tx
-          ? {
-              ...quote.tx,
-              value: quote.tx.value.toString(),
-            }
-          : null
       return {
         ...quote,
-        callData,
+        fromAmount: quote.fromAmount.toString(),
+        expectedToAmount: quote.expectedToAmount.toString(),
+        minToAmount: quote.minToAmount.toString(),
         gasDropAmount: quote.gasDropAmount.toString(),
-        maxAmountOut: quote.maxAmountOut.toString(),
+        callData: stringifyTxValue({
+          tx: quote.tx,
+          preserveTx: !!fromSender && !!toRecipient,
+        }),
         tx: undefined,
       }
     })

@@ -78,7 +78,7 @@ export class SwapEngineSet {
     )
     // Select the best quote.
     const quote = allQuotes.reduce(compareQuotesWithPriority)
-    return quote.expectedAmountOut.gt(Zero) ? quote : undefined
+    return quote.expectedToAmount.gt(Zero) ? quote : undefined
   }
 
   public async getQuote(
@@ -91,7 +91,7 @@ export class SwapEngineSet {
       input,
       options
     )
-    return quote.expectedAmountOut.gt(Zero) ? quote : undefined
+    return quote.expectedToAmount.gt(Zero) ? quote : undefined
   }
 
   public async generateRoute(
@@ -107,12 +107,13 @@ export class SwapEngineSet {
     )
     route = options.allowMultiStep ? route : sanitizeMultiStepRoute(route)
     if (route.steps.length > 0) {
-      route.steps = setMinFinalAmount(
-        route.steps,
-        applySlippage(quote.expectedAmountOut, options.slippage ?? SlippageZero)
+      route.minToAmount = applySlippage(
+        quote.expectedToAmount,
+        options.slippage ?? SlippageZero
       )
+      route.steps = setMinFinalAmount(route.steps, route.minToAmount)
     }
-    return route.expectedAmountOut.gt(Zero) ? route : undefined
+    return route.expectedToAmount.gt(Zero) ? route : undefined
   }
 
   public getTokenZap(chainId: number): string {

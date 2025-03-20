@@ -115,7 +115,7 @@ describe('SynapseCCTPRouterSet', () => {
     })
 
     it('Correct bridge module name', () => {
-      expect(routerSet.bridgeModuleName).toEqual('SynapseCCTP')
+      expect(routerSet.moduleName).toEqual('SynapseCCTP')
     })
   })
 

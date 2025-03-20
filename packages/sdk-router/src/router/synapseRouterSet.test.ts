@@ -54,7 +54,7 @@ describe('SynapseRouterSet', () => {
     })
 
     it('Correct bridge module name', () => {
-      expect(routerSet.bridgeModuleName).toEqual('SynapseBridge')
+      expect(routerSet.moduleName).toEqual('SynapseBridge')
     })
   })
 

@@ -6,6 +6,7 @@ import {
   DEFAULT_SWAP_SLIPPAGE_BIPS,
   SLIPPAGE_BIPS_DENOMINATOR,
 } from '../constants'
+import { stringifyTxValue } from '../utils/replaceTxValue'
 
 export const swapV2Controller = async (req, res) => {
   const errors = validationResult(req)
@@ -13,45 +14,42 @@ export const swapV2Controller = async (req, res) => {
     return res.status(400).json({ errors: errors.array() })
   }
   try {
-    const { chain, amount, fromToken, toToken, address, slippage } =
+    const { chainId, fromToken, toToken, fromAmount, toRecipient, slippage } =
       req.query as {
-        chain: string
-        amount: string
+        chainId: number
         fromToken: string
         toToken: string
-        address?: string
-        slippage?: string
+        fromAmount: string
+        toRecipient?: string
+        slippage?: number
       }
 
     // Convert percentage slippage to bips
-    const slippageBips = slippage
-      ? Number(slippage) * 100
-      : DEFAULT_SWAP_SLIPPAGE_BIPS
+    const slippageBips = slippage ? slippage * 100 : DEFAULT_SWAP_SLIPPAGE_BIPS
 
-    const { routerAddress, maxAmountOut, tx } = await Synapse.swapV2({
-      chainId: Number(chain),
-      tokenIn: fromToken,
-      tokenOut: toToken,
-      amountIn: amount,
-      to: address,
+    const quote = await Synapse.swapV2({
+      chainId,
+      fromToken,
+      toToken,
+      fromAmount,
+      toRecipient,
       slippage: {
         numerator: slippageBips,
         denominator: SLIPPAGE_BIPS_DENOMINATOR,
       },
     })
 
-    const callData =
-      address && tx
-        ? {
-            ...tx,
-            value: tx.value.toString(),
-          }
-        : null
-
+    // Convert all BigNumber values to strings.
     const payload = {
-      routerAddress,
-      maxAmountOut: maxAmountOut.toString(),
-      callData,
+      ...quote,
+      fromAmount: quote.fromAmount.toString(),
+      expectedToAmount: quote.expectedToAmount.toString(),
+      minToAmount: quote.minToAmount.toString(),
+      callData: stringifyTxValue({
+        tx: quote.tx,
+        preserveTx: !!toRecipient,
+      }),
+      tx: undefined,
     }
 
     logger.info(`Successful swapV2Controller response`, {

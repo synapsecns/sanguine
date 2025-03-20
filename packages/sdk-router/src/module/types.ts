@@ -91,8 +91,10 @@ export type BridgeTokenCandidate = {
 
 export type BridgeRouteV2 = {
   bridgeToken: BridgeTokenCandidate
-  minOriginAmount: BigNumber
-  destAmountOut: BigNumber
+  minFromAmount: BigNumber
+  toToken: string
+  expectedToAmount: BigNumber
+  minToAmount: BigNumber
   zapData?: string
 }
 
@@ -101,23 +103,27 @@ export type BridgeRouteV2 = {
  * Returned by SDK to the consumer.
  *
  * @param id - The unique identifier of the bridge quote.
- * @param originChainId - ID of the origin chain, where funds will be sent from.
- * @param destChainId - ID of the destination chain, where funds will be received.
+ * @param fromChainId - ID of the origin chain, where funds will be sent from.
+ * @param toChainId - ID of the destination chain, where funds will be received.
+ * @param expectedToAmount - Expected amount of output tokens on the destination chain.
  * @param routerAddress - Address of the router on the origin chain.
- * @param maxAmountOut - Maximum amount of output tokens on the destination chain.
  * @param estimatedTime - Estimated time for the bridge operation to complete.
- * @param bridgeModuleName - Name of the module used for the bridge operation.
+ * @param moduleName - Name of the module used for the bridge operation.
  * @param gasDropAmount - Amount of gas to be dropped on the destination chain.
  * @param tx - Optional populated transaction for the bridge operation (returned only if `originSender` is provided)
  */
 export type BridgeQuoteV2 = {
   id: string
-  originChainId: number
-  destChainId: number
+  fromChainId: number
+  fromToken: string
+  fromAmount: BigNumber
+  toChainId: number
+  toToken: string
+  expectedToAmount: BigNumber
+  minToAmount: BigNumber
   routerAddress: string
-  maxAmountOut: BigNumber
   estimatedTime: number
-  bridgeModuleName: string
+  moduleName: string
   gasDropAmount: BigNumber
   tx?: PopulatedTransaction
 }

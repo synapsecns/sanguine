@@ -872,14 +872,14 @@ describe('SynapseSDK', () => {
     }
 
     const createApplySlippageTests = (moduleSet: SynapseModuleSet) => {
-      describe(`${moduleSet.bridgeModuleName} module`, () => {
+      describe(`${moduleSet.moduleName} module`, () => {
         beforeEach(() => {
           jest.spyOn(moduleSet, 'applySlippage').mockImplementation(jest.fn())
         })
 
         it('Applies slippage', () => {
           synapse.applyBridgeSlippage(
-            moduleSet.bridgeModuleName,
+            moduleSet.moduleName,
             originQuery,
             destQuery,
             10,
@@ -895,7 +895,7 @@ describe('SynapseSDK', () => {
 
         it('Uses default denominator of 10000', () => {
           synapse.applyBridgeSlippage(
-            moduleSet.bridgeModuleName,
+            moduleSet.moduleName,
             originQuery,
             destQuery,
             10
@@ -910,7 +910,7 @@ describe('SynapseSDK', () => {
 
         it('Uses default slippage of 10 bips', () => {
           synapse.applyBridgeSlippage(
-            moduleSet.bridgeModuleName,
+            moduleSet.moduleName,
             originQuery,
             destQuery
           )

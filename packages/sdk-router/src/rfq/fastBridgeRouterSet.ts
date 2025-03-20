@@ -37,7 +37,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
   static readonly ALL_QUOTES_CACHE_TTL = 10 // 10 seconds cache for getAllQuotes results
 
-  public readonly bridgeModuleName = 'SynapseRFQ'
+  public readonly moduleName = 'SynapseRFQ'
   public readonly allEvents = ['BridgeRequestedEvent', 'BridgeRelayedEvent']
   public readonly isBridgeV2Supported = true
 
@@ -91,40 +91,40 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   }
 
   public async getBridgeTokenCandidates({
-    originChainId,
-    destChainId,
-    tokenOut,
+    fromChainId,
+    toChainId,
+    toToken,
   }: GetBridgeTokenCandidatesParameters): Promise<BridgeTokenCandidate[]> {
-    const quotes = await this.getQuotes(originChainId, destChainId, tokenOut)
+    const quotes = await this.getQuotes(fromChainId, toChainId, toToken)
     // Filter out duplicates of the bridge token
     return Array.from(
       new Map(
         quotes.map((quote) => [marshallTicker(quote.ticker), quote])
       ).values()
     ).map((quote) => ({
-      originChainId,
-      destChainId,
+      originChainId: fromChainId,
+      destChainId: toChainId,
       originToken: quote.ticker.originToken.token,
       destToken: quote.ticker.destToken.token,
     }))
   }
 
   public async getBridgeRouteV2({
-    originAmountIn,
+    fromAmount,
     bridgeToken,
-    destTokenOut,
-    originSender,
-    destRecipient,
+    toToken,
+    fromSender,
+    toRecipient,
   }: GetBridgeRouteV2Parameters): Promise<BridgeRouteV2> {
-    if (!isSameAddress(bridgeToken.destToken, destTokenOut)) {
+    if (!isSameAddress(bridgeToken.destToken, toToken)) {
       throw new Error('Swaps on destination are not supported by FastBridge V1')
     }
     const originChainId = bridgeToken.originChainId
     const protocolFeeRate = await this.getFastBridgeRouter(
       originChainId
     ).getProtocolFeeRate()
-    const amount = this.applyProtocolFeeRate(
-      BigNumber.from(originAmountIn),
+    const bridgedAmount = this.applyProtocolFeeRate(
+      BigNumber.from(fromAmount),
       protocolFeeRate
     )
     const quotes = (
@@ -136,26 +136,30 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     ).filter((quote) =>
       isSameAddress(quote.ticker.originToken.token, bridgeToken.originToken)
     )
-    const [destAmountOut, originFee] = quotes
+    const [expectedToAmount, originFee] = quotes
       .map((quote) => [
-        applyQuote(quote, amount),
+        applyQuote(quote, bridgedAmount),
         // Convert fixed fee from dest token to origin token
         getOriginAmount(quote, quote.fixedFee),
       ])
       .reduce((a, b) => (a[0].gt(b[0]) ? a : b), [Zero, Zero])
     // Cap slippage to 5% of the fixed fee
     const maxOriginSlippage = originFee.div(20)
-    return {
+    const route: BridgeRouteV2 = {
       bridgeToken,
-      minOriginAmount: BigNumber.from(originAmountIn).sub(maxOriginSlippage),
-      destAmountOut,
+      minFromAmount: BigNumber.from(fromAmount).sub(maxOriginSlippage),
+      toToken,
+      expectedToAmount,
+      // With no swap on destination, the minToAmount is the same as expectedToAmount.
+      minToAmount: expectedToAmount,
       zapData: await this.getBridgeZapData(
         bridgeToken,
-        destAmountOut,
-        originSender,
-        destRecipient
+        expectedToAmount,
+        fromSender,
+        toRecipient
       ),
     }
+    return route
   }
 
   /**
@@ -214,7 +218,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
           destAmountOut,
           originUserAddress
         ),
-        bridgeModuleName: this.bridgeModuleName,
+        bridgeModuleName: this.moduleName,
       }))
   }
 
@@ -428,28 +432,28 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
 
   private async getBridgeZapData(
     bridgeToken: BridgeTokenCandidate,
-    destAmountOut: BigNumber,
-    originSender?: string,
-    destRecipient?: string
+    expectedToAmount: BigNumber,
+    fromSender?: string,
+    toRecipient?: string
   ): Promise<string | undefined> {
     if (
-      destAmountOut.isZero() ||
-      !originSender ||
-      !destRecipient ||
-      isSameAddress(originSender, USER_SIMULATED_ADDRESS) ||
-      isSameAddress(destRecipient, USER_SIMULATED_ADDRESS)
+      expectedToAmount.isZero() ||
+      !fromSender ||
+      !toRecipient ||
+      isSameAddress(fromSender, USER_SIMULATED_ADDRESS) ||
+      isSameAddress(toRecipient, USER_SIMULATED_ADDRESS)
     ) {
       return undefined
     }
     const bridgeParams: IFastBridge.BridgeParamsStruct = {
       dstChainId: bridgeToken.destChainId,
-      sender: originSender,
-      to: destRecipient,
+      sender: fromSender,
+      to: toRecipient,
       originToken: bridgeToken.originToken,
       destToken: bridgeToken.destToken,
       // Will be set in encodeZapData below
       originAmount: 0,
-      destAmount: destAmountOut,
+      destAmount: expectedToAmount,
       sendChainGas: false,
       deadline: calculateDeadline(this.getDefaultPeriods().destPeriod),
     }

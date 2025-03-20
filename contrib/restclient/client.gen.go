@@ -173,26 +173,26 @@ type GetBridgeParams struct {
 
 // GetBridgeV2Params defines parameters for GetBridgeV2.
 type GetBridgeV2Params struct {
-	// FromChain The source chain ID (must support intents)
-	FromChain int `form:"fromChain" json:"fromChain"`
+	// FromChainId The origin chain ID (must support intents)
+	FromChainId int `form:"fromChainId" json:"fromChainId"`
 
-	// ToChain The destination chain ID
-	ToChain int `form:"toChain" json:"toChain"`
-
-	// FromToken The address of the token on the source chain
+	// FromToken The address of the token on the origin chain
 	FromToken string `form:"fromToken" json:"fromToken"`
+
+	// FromAmount The amount of tokens to bridge in the token's native decimals
+	FromAmount string `form:"fromAmount" json:"fromAmount"`
+
+	// FromSender The address of the user on the origin chain (required to generate callData)
+	FromSender *string `form:"fromSender,omitempty" json:"fromSender,omitempty"`
+
+	// ToChainId The destination chain ID
+	ToChainId int `form:"toChainId" json:"toChainId"`
 
 	// ToToken The address of the token on the destination chain
 	ToToken string `form:"toToken" json:"toToken"`
 
-	// Amount The amount of tokens to bridge in the token's native decimals
-	Amount int `form:"amount" json:"amount"`
-
-	// OriginUserAddress The address of the user on the origin chain (required to generate callData)
-	OriginUserAddress *string `form:"originUserAddress,omitempty" json:"originUserAddress,omitempty"`
-
-	// DestAddress The destination address for the bridge transaction (required to generate callData)
-	DestAddress *string `form:"destAddress,omitempty" json:"destAddress,omitempty"`
+	// ToRecipient The destination address for the bridge transaction (required to generate callData)
+	ToRecipient *string `form:"toRecipient,omitempty" json:"toRecipient,omitempty"`
 
 	// Slippage Optional. The maximum allowed slippage percentage (0-100). Defaults to 0.5%.
 	Slippage *float32 `form:"slippage,omitempty" json:"slippage,omitempty"`
@@ -308,20 +308,20 @@ type GetSwapParams struct {
 
 // GetSwapV2Params defines parameters for GetSwapV2.
 type GetSwapV2Params struct {
-	// Chain The chain ID where the swap will occur
-	Chain int `form:"chain" json:"chain"`
+	// ChainId The chain ID where the swap will occur
+	ChainId int `form:"chainId" json:"chainId"`
 
 	// FromToken The address of the token to swap from
 	FromToken string `form:"fromToken" json:"fromToken"`
 
+	// FromAmount The amount of tokens to swap in the token's native decimals
+	FromAmount string `form:"fromAmount" json:"fromAmount"`
+
 	// ToToken The address of the token to swap to
 	ToToken string `form:"toToken" json:"toToken"`
 
-	// Amount The amount of tokens to swap in the token's native decimals
-	Amount string `form:"amount" json:"amount"`
-
-	// Address Optional. The address that will perform the swap and receive its proceeds. If provided, returns transaction data.
-	Address *string `form:"address,omitempty" json:"address,omitempty"`
+	// ToRecipient Optional. The address that will receive the swapped tokens. If provided, returns transaction data.
+	ToRecipient *string `form:"toRecipient,omitempty" json:"toRecipient,omitempty"`
 
 	// Slippage Optional. The maximum allowed slippage percentage (0-100). Defaults to 0.5%.
 	Slippage *float32 `form:"slippage,omitempty" json:"slippage,omitempty"`
@@ -1166,19 +1166,7 @@ func NewGetBridgeV2Request(server string, params *GetBridgeV2Params) (*http.Requ
 	if params != nil {
 		queryValues := queryURL.Query()
 
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromChain", runtime.ParamLocationQuery, params.FromChain); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toChain", runtime.ParamLocationQuery, params.ToChain); err != nil {
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromChainId", runtime.ParamLocationQuery, params.FromChainId); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
@@ -1202,7 +1190,7 @@ func NewGetBridgeV2Request(server string, params *GetBridgeV2Params) (*http.Requ
 			}
 		}
 
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toToken", runtime.ParamLocationQuery, params.ToToken); err != nil {
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromAmount", runtime.ParamLocationQuery, params.FromAmount); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
@@ -1214,21 +1202,9 @@ func NewGetBridgeV2Request(server string, params *GetBridgeV2Params) (*http.Requ
 			}
 		}
 
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "amount", runtime.ParamLocationQuery, params.Amount); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
+		if params.FromSender != nil {
 
-		if params.OriginUserAddress != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "originUserAddress", runtime.ParamLocationQuery, *params.OriginUserAddress); err != nil {
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromSender", runtime.ParamLocationQuery, *params.FromSender); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -1242,9 +1218,33 @@ func NewGetBridgeV2Request(server string, params *GetBridgeV2Params) (*http.Requ
 
 		}
 
-		if params.DestAddress != nil {
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toChainId", runtime.ParamLocationQuery, params.ToChainId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
 
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "destAddress", runtime.ParamLocationQuery, *params.DestAddress); err != nil {
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toToken", runtime.ParamLocationQuery, params.ToToken); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if params.ToRecipient != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toRecipient", runtime.ParamLocationQuery, *params.ToRecipient); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -2295,7 +2295,7 @@ func NewGetSwapV2Request(server string, params *GetSwapV2Params) (*http.Request,
 	if params != nil {
 		queryValues := queryURL.Query()
 
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain", runtime.ParamLocationQuery, params.Chain); err != nil {
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chainId", runtime.ParamLocationQuery, params.ChainId); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
@@ -2319,6 +2319,18 @@ func NewGetSwapV2Request(server string, params *GetSwapV2Params) (*http.Request,
 			}
 		}
 
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromAmount", runtime.ParamLocationQuery, params.FromAmount); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toToken", runtime.ParamLocationQuery, params.ToToken); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
@@ -2331,21 +2343,9 @@ func NewGetSwapV2Request(server string, params *GetSwapV2Params) (*http.Request,
 			}
 		}
 
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "amount", runtime.ParamLocationQuery, params.Amount); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
+		if params.ToRecipient != nil {
 
-		if params.Address != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "address", runtime.ParamLocationQuery, *params.Address); err != nil {
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toRecipient", runtime.ParamLocationQuery, *params.ToRecipient); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -2880,10 +2880,7 @@ type GetBridgeV2Response struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *[]struct {
-		// BridgeModule The name of the bridge module used for this quote
-		BridgeModule *string `json:"bridgeModule,omitempty"`
-
-		// CallData Transaction data object, only provided if addresses were included
+		// CallData Transaction data object, only provided if fromSender and toRecipient parameters were included
 		CallData *struct {
 			// Data Transaction calldata
 			Data *string `json:"data,omitempty"`
@@ -2895,11 +2892,20 @@ type GetBridgeV2Response struct {
 			Value *string `json:"value,omitempty"`
 		} `json:"callData"`
 
-		// DestChainId The ID of the destination chain
-		DestChainId *int `json:"destChainId,omitempty"`
-
 		// EstimatedTime Estimated time for the bridge in seconds
 		EstimatedTime *int `json:"estimatedTime,omitempty"`
+
+		// ExpectedToAmount The expected amount of tokens that will be received in the token's native decimals
+		ExpectedToAmount *string `json:"expectedToAmount,omitempty"`
+
+		// FromAmount The amount of tokens to bridge in the token's native decimals
+		FromAmount *string `json:"fromAmount,omitempty"`
+
+		// FromChainId The ID of the origin chain
+		FromChainId *int `json:"fromChainId,omitempty"`
+
+		// FromToken The address of the token on the origin chain
+		FromToken *string `json:"fromToken,omitempty"`
 
 		// GasDropAmount Amount of native token airdropped on destination chain (in native token decimals)
 		GasDropAmount *string `json:"gasDropAmount,omitempty"`
@@ -2907,14 +2913,20 @@ type GetBridgeV2Response struct {
 		// Id Unique identifier for the quote (UUIDv7)
 		Id *string `json:"id,omitempty"`
 
-		// MaxAmountOut The maximum amount of tokens that will be received (in native token decimals)
-		MaxAmountOut *string `json:"maxAmountOut,omitempty"`
+		// MinToAmount The minimum amount of tokens that will be received in the token's native decimals (includes slippage)
+		MinToAmount *string `json:"minToAmount,omitempty"`
 
-		// OriginChainId The ID of the origin chain
-		OriginChainId *int `json:"originChainId,omitempty"`
+		// ModuleName The name of the bridge module used for this quote
+		ModuleName *string `json:"moduleName,omitempty"`
 
 		// RouterAddress The address of the router contract
 		RouterAddress *string `json:"routerAddress,omitempty"`
+
+		// ToChainId The ID of the destination chain
+		ToChainId *int `json:"toChainId,omitempty"`
+
+		// ToToken The address of the token on the destination chain
+		ToToken *string `json:"toToken,omitempty"`
 	}
 	JSON400 *struct {
 		Errors *[]struct {
@@ -3766,14 +3778,44 @@ type GetSwapV2Response struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
-		// CallData Transaction data object, only provided if address parameter was included
-		CallData *map[string]interface{} `json:"callData"`
+		// CallData Transaction data object, only provided if toRecipient parameter was included
+		CallData *struct {
+			// Data Transaction calldata
+			Data *string `json:"data,omitempty"`
 
-		// MaxAmountOut The maximum amount of tokens that will be received in the token's native decimals
-		MaxAmountOut *string `json:"maxAmountOut,omitempty"`
+			// To Contract address to call
+			To *string `json:"to,omitempty"`
+
+			// Value Amount of native currency to send with transaction (in native token decimals)
+			Value *string `json:"value,omitempty"`
+		} `json:"callData"`
+
+		// ChainId The chain ID where the swap occurs
+		ChainId *int `json:"chainId,omitempty"`
+
+		// ExpectedToAmount The expected amount of tokens that will be received in the token's native decimals
+		ExpectedToAmount *string `json:"expectedToAmount,omitempty"`
+
+		// FromAmount The amount of tokens to swap in the token's native decimals
+		FromAmount *string `json:"fromAmount,omitempty"`
+
+		// FromToken The address of the token being swapped from
+		FromToken *string `json:"fromToken,omitempty"`
+
+		// Id Unique identifier for the quote
+		Id *string `json:"id,omitempty"`
+
+		// MinToAmount The minimum amount of tokens that will be received in the token's native decimals (includes slippage)
+		MinToAmount *string `json:"minToAmount,omitempty"`
+
+		// ModuleName The name of the module used for the swap
+		ModuleName *string `json:"moduleName,omitempty"`
 
 		// RouterAddress The address of the router contract
 		RouterAddress *string `json:"routerAddress,omitempty"`
+
+		// ToToken The address of the token being swapped to
+		ToToken *string `json:"toToken,omitempty"`
 	}
 	JSON400 *struct {
 		Errors *[]struct {
@@ -4434,10 +4476,7 @@ func ParseGetBridgeV2Response(rsp *http.Response) (*GetBridgeV2Response, error) 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest []struct {
-			// BridgeModule The name of the bridge module used for this quote
-			BridgeModule *string `json:"bridgeModule,omitempty"`
-
-			// CallData Transaction data object, only provided if addresses were included
+			// CallData Transaction data object, only provided if fromSender and toRecipient parameters were included
 			CallData *struct {
 				// Data Transaction calldata
 				Data *string `json:"data,omitempty"`
@@ -4449,11 +4488,20 @@ func ParseGetBridgeV2Response(rsp *http.Response) (*GetBridgeV2Response, error) 
 				Value *string `json:"value,omitempty"`
 			} `json:"callData"`
 
-			// DestChainId The ID of the destination chain
-			DestChainId *int `json:"destChainId,omitempty"`
-
 			// EstimatedTime Estimated time for the bridge in seconds
 			EstimatedTime *int `json:"estimatedTime,omitempty"`
+
+			// ExpectedToAmount The expected amount of tokens that will be received in the token's native decimals
+			ExpectedToAmount *string `json:"expectedToAmount,omitempty"`
+
+			// FromAmount The amount of tokens to bridge in the token's native decimals
+			FromAmount *string `json:"fromAmount,omitempty"`
+
+			// FromChainId The ID of the origin chain
+			FromChainId *int `json:"fromChainId,omitempty"`
+
+			// FromToken The address of the token on the origin chain
+			FromToken *string `json:"fromToken,omitempty"`
 
 			// GasDropAmount Amount of native token airdropped on destination chain (in native token decimals)
 			GasDropAmount *string `json:"gasDropAmount,omitempty"`
@@ -4461,14 +4509,20 @@ func ParseGetBridgeV2Response(rsp *http.Response) (*GetBridgeV2Response, error) 
 			// Id Unique identifier for the quote (UUIDv7)
 			Id *string `json:"id,omitempty"`
 
-			// MaxAmountOut The maximum amount of tokens that will be received (in native token decimals)
-			MaxAmountOut *string `json:"maxAmountOut,omitempty"`
+			// MinToAmount The minimum amount of tokens that will be received in the token's native decimals (includes slippage)
+			MinToAmount *string `json:"minToAmount,omitempty"`
 
-			// OriginChainId The ID of the origin chain
-			OriginChainId *int `json:"originChainId,omitempty"`
+			// ModuleName The name of the bridge module used for this quote
+			ModuleName *string `json:"moduleName,omitempty"`
 
 			// RouterAddress The address of the router contract
 			RouterAddress *string `json:"routerAddress,omitempty"`
+
+			// ToChainId The ID of the destination chain
+			ToChainId *int `json:"toChainId,omitempty"`
+
+			// ToToken The address of the token on the destination chain
+			ToToken *string `json:"toToken,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -5575,14 +5629,44 @@ func ParseGetSwapV2Response(rsp *http.Response) (*GetSwapV2Response, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			// CallData Transaction data object, only provided if address parameter was included
-			CallData *map[string]interface{} `json:"callData"`
+			// CallData Transaction data object, only provided if toRecipient parameter was included
+			CallData *struct {
+				// Data Transaction calldata
+				Data *string `json:"data,omitempty"`
 
-			// MaxAmountOut The maximum amount of tokens that will be received in the token's native decimals
-			MaxAmountOut *string `json:"maxAmountOut,omitempty"`
+				// To Contract address to call
+				To *string `json:"to,omitempty"`
+
+				// Value Amount of native currency to send with transaction (in native token decimals)
+				Value *string `json:"value,omitempty"`
+			} `json:"callData"`
+
+			// ChainId The chain ID where the swap occurs
+			ChainId *int `json:"chainId,omitempty"`
+
+			// ExpectedToAmount The expected amount of tokens that will be received in the token's native decimals
+			ExpectedToAmount *string `json:"expectedToAmount,omitempty"`
+
+			// FromAmount The amount of tokens to swap in the token's native decimals
+			FromAmount *string `json:"fromAmount,omitempty"`
+
+			// FromToken The address of the token being swapped from
+			FromToken *string `json:"fromToken,omitempty"`
+
+			// Id Unique identifier for the quote
+			Id *string `json:"id,omitempty"`
+
+			// MinToAmount The minimum amount of tokens that will be received in the token's native decimals (includes slippage)
+			MinToAmount *string `json:"minToAmount,omitempty"`
+
+			// ModuleName The name of the module used for the swap
+			ModuleName *string `json:"moduleName,omitempty"`
 
 			// RouterAddress The address of the router contract
 			RouterAddress *string `json:"routerAddress,omitempty"`
+
+			// ToToken The address of the token being swapped to
+			ToToken *string `json:"toToken,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err

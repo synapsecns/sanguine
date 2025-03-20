@@ -17,23 +17,23 @@ import { Query } from './query'
 import { Slippage } from '../swap'
 
 export type GetBridgeTokenCandidatesParameters = {
-  originChainId: number
-  destChainId: number
-  tokenIn: string
-  tokenOut: string
+  fromChainId: number
+  toChainId: number
+  fromToken: string
+  toToken: string
 }
 
 export type GetBridgeRouteV2Parameters = {
-  originAmountIn: BigNumberish
+  fromAmount: BigNumberish
   bridgeToken: BridgeTokenCandidate
-  destTokenOut: string
-  originSender?: string
-  destRecipient?: string
+  toToken: string
+  fromSender?: string
+  toRecipient?: string
   slippage?: Slippage
 }
 
 export abstract class SynapseModuleSet {
-  abstract readonly bridgeModuleName: string
+  abstract readonly moduleName: string
   abstract readonly allEvents: string[]
   abstract readonly isBridgeV2Supported: boolean
 
@@ -236,7 +236,7 @@ export abstract class SynapseModuleSet {
     const originModule = this.getExistingModule(bridgeRoute.originChainId)
     this.getExistingModule(bridgeRoute.destChainId)
     invariant(
-      bridgeRoute.bridgeModuleName === this.bridgeModuleName,
+      bridgeRoute.bridgeModuleName === this.moduleName,
       'Invalid bridge module name'
     )
     const uuid = uuidv7()
@@ -271,11 +271,10 @@ export abstract class SynapseModuleSet {
   ): Promise<BridgeQuoteV2> {
     return {
       ...bridgeQuote,
-      id: uuidv7(),
-      estimatedTime: this.getEstimatedTime(bridgeQuote.originChainId),
-      bridgeModuleName: this.bridgeModuleName,
+      estimatedTime: this.getEstimatedTime(bridgeQuote.fromChainId),
+      moduleName: this.moduleName,
       gasDropAmount: await this.getGasDropAmount(
-        bridgeQuote.destChainId,
+        bridgeQuote.toChainId,
         bridgeToken.destToken
       ),
     }
