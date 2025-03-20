@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.12.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.12.2...@synapsecns/rest-api@1.12.3) (2025-03-20)
+
+
+### Bug Fixes
+
+* **rest-api,sdk-router:** `/bridge/v2` and `swap/v2` endpoint standardisation [SYN-77] ([#3602](https://github.com/synapsecns/sanguine/issues/3602)) ([8cf36d1](https://github.com/synapsecns/sanguine/commit/8cf36d1d1ad54848656cf78af3fe64e0b08e6d9f))
+
+
+
+
+
 ## [1.12.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.12.1...@synapsecns/rest-api@1.12.2) (2025-03-19)
 
 **Note:** Version bump only for package @synapsecns/rest-api
