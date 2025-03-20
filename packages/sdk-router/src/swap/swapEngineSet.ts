@@ -107,10 +107,11 @@ export class SwapEngineSet {
     )
     route = options.allowMultiStep ? route : sanitizeMultiStepRoute(route)
     if (route.steps.length > 0) {
-      route.steps = setMinFinalAmount(
-        route.steps,
-        applySlippage(quote.expectedToAmount, options.slippage ?? SlippageZero)
+      route.minToAmount = applySlippage(
+        quote.expectedToAmount,
+        options.slippage ?? SlippageZero
       )
+      route.steps = setMinFinalAmount(route.steps, route.minToAmount)
     }
     return route.expectedToAmount.gt(Zero) ? route : undefined
   }

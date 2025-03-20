@@ -15,7 +15,11 @@ export type SwapEngineQuote = {
   steps?: StepParams[]
 }
 
-export type SwapEngineRoute = Prettify<Required<SwapEngineQuote>>
+export type SwapEngineRoute = Prettify<
+  Required<SwapEngineQuote> & {
+    minToAmount?: BigNumber
+  }
+>
 
 export const getEmptyQuote = (engineID: EngineID): SwapEngineQuote => {
   return {
