@@ -81,9 +81,13 @@ export class SynapseIntentRouterSet {
       : undefined
     const bridgeQuoteV2: BridgeQuoteV2 = {
       fromChainId,
+      fromToken,
+      fromAmount: BigNumber.from(fromAmount),
       toChainId: bridgeRoute.bridgeToken.destChainId,
-      routerAddress: this.getSirAddress(fromChainId),
+      toToken: bridgeRoute.toToken,
       expectedToAmount: bridgeRoute.expectedToAmount,
+      minToAmount: bridgeRoute.minToAmount,
+      routerAddress: this.getSirAddress(fromChainId),
       // These will be filled by the corresponding bridge module
       id: '',
       estimatedTime: 0,

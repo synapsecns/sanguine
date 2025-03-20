@@ -92,7 +92,9 @@ export type BridgeTokenCandidate = {
 export type BridgeRouteV2 = {
   bridgeToken: BridgeTokenCandidate
   minFromAmount: BigNumber
+  toToken: string
   expectedToAmount: BigNumber
+  minToAmount: BigNumber
   zapData?: string
 }
 
@@ -113,8 +115,12 @@ export type BridgeRouteV2 = {
 export type BridgeQuoteV2 = {
   id: string
   fromChainId: number
+  fromToken: string
+  fromAmount: BigNumber
   toChainId: number
+  toToken: string
   expectedToAmount: BigNumber
+  minToAmount: BigNumber
   routerAddress: string
   estimatedTime: number
   bridgeModuleName: string

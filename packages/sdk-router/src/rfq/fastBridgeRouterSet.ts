@@ -148,7 +148,10 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     const route: BridgeRouteV2 = {
       bridgeToken,
       minFromAmount: BigNumber.from(fromAmount).sub(maxOriginSlippage),
+      toToken,
       expectedToAmount,
+      // With no swap on destination, the minToAmount is the same as expectedToAmount.
+      minToAmount: expectedToAmount,
       zapData: await this.getBridgeZapData(
         bridgeToken,
         expectedToAmount,
