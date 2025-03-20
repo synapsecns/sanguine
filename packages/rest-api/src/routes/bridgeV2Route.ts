@@ -227,7 +227,7 @@ router.get(
       .custom((value) => isTokenAddress(value))
       .withMessage('Invalid toToken address')
       .custom((value, { req }) =>
-        isTokenSupportedOnChain(value, req.query.toChainId as string)
+        isTokenSupportedOnChain(value, req.query.toChainId)
       )
       .withMessage('Token not supported on specified chain'),
     check('toRecipient')
