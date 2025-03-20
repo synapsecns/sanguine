@@ -271,7 +271,6 @@ export abstract class SynapseModuleSet {
   ): Promise<BridgeQuoteV2> {
     return {
       ...bridgeQuote,
-      id: uuidv7(),
       estimatedTime: this.getEstimatedTime(bridgeQuote.fromChainId),
       bridgeModuleName: this.bridgeModuleName,
       gasDropAmount: await this.getGasDropAmount(

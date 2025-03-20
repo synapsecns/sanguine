@@ -2,6 +2,7 @@ import { Interface } from '@ethersproject/abi'
 import { Provider } from '@ethersproject/abstract-provider'
 import { Zero, MaxUint256 } from '@ethersproject/constants'
 import { BigNumber, BigNumberish, Contract, PopulatedTransaction } from 'ethers'
+import { uuidv7 } from 'uuidv7'
 
 import synapseIntentRouterAbi from '../abi/SynapseIntentRouter.json'
 import {
@@ -80,6 +81,7 @@ export class SynapseIntentRouterSet {
         )
       : undefined
     const bridgeQuoteV2: BridgeQuoteV2 = {
+      id: uuidv7(),
       fromChainId,
       fromToken,
       fromAmount: BigNumber.from(fromAmount),
@@ -89,7 +91,6 @@ export class SynapseIntentRouterSet {
       minToAmount: bridgeRoute.minToAmount,
       routerAddress: this.getSirAddress(fromChainId),
       // These will be filled by the corresponding bridge module
-      id: '',
       estimatedTime: 0,
       bridgeModuleName: '',
       gasDropAmount: Zero,
