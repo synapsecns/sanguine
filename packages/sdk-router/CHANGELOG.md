@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.16.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.16.2...@synapsecns/sdk-router@0.16.3) (2025-03-21)
+
+**Note:** Version bump only for package @synapsecns/sdk-router
+
+
+
+
+
 ## [0.16.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.16.1...@synapsecns/sdk-router@0.16.2) (2025-03-20)
 
 
