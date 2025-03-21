@@ -279,7 +279,7 @@ type GetIntentParams struct {
 	FromToken string `form:"fromToken" json:"fromToken"`
 
 	// FromAmount The amount of tokens to transfer in the token's native decimals
-	FromAmount int `form:"fromAmount" json:"fromAmount"`
+	FromAmount string `form:"fromAmount" json:"fromAmount"`
 
 	// FromSender The address of the sender on the origin chain (required to generate callData)
 	FromSender *string `form:"fromSender,omitempty" json:"fromSender,omitempty"`

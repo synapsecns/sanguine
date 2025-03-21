@@ -34,7 +34,7 @@ const router: express.Router = express.Router()
  *         name: fromAmount
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *         description: The amount of tokens to transfer in the token's native decimals
  *       - in: query
  *         name: fromSender
