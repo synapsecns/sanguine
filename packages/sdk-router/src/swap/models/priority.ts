@@ -18,7 +18,7 @@ type PriorityConfig = {
 const ENGINE_PRIORITY: Record<EngineID, PriorityConfig> = {
   [EngineID.Null]: { value: Priority.Null },
   [EngineID.NoOp]: { value: Priority.Normal },
-  [EngineID.Default]: { value: Priority.InefficientQuotes },
+  [EngineID.DefaultPools]: { value: Priority.InefficientQuotes },
   [EngineID.KyberSwap]: { value: Priority.Normal },
   [EngineID.ParaSwap]: { value: Priority.Normal },
   [EngineID.LiFi]: { value: Priority.InefficientQuotes },

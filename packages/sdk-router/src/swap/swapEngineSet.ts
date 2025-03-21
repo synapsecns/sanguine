@@ -5,7 +5,7 @@ import { TOKEN_ZAP_V1_ADDRESS_MAP } from '../constants'
 import { ChainProvider } from '../router'
 import { applySlippage, Slippage, SlippageZero } from './core'
 import {
-  DefaultEngine,
+  DefaultPoolsEngine,
   KyberSwapEngine,
   LiFiEngine,
   NoOpEngine,
@@ -51,7 +51,7 @@ export class SwapEngineSet {
   constructor(chains: ChainProvider[]) {
     this.engines = {}
     this._addEngine(new NoOpEngine())
-    this._addEngine(new DefaultEngine(chains))
+    this._addEngine(new DefaultPoolsEngine(chains))
     this._addEngine(new KyberSwapEngine())
     this._addEngine(new ParaSwapEngine(chains))
     this._addEngine(new LiFiEngine())

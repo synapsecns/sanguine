@@ -117,7 +117,7 @@ async function _collectV1Quotes(
         deadlineBN
       )
       const swapModuleNames = isSwapQuery(originQuery)
-        ? [EngineID[EngineID.Default]]
+        ? [EngineID[EngineID.DefaultPools]]
         : []
       const moduleNames = [...swapModuleNames, quote.bridgeModuleName]
       // Generate the transaction calldata
