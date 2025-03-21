@@ -86,9 +86,11 @@ const router: express.Router = express.Router()
  *                 routerAddress:
  *                   type: string
  *                   description: The address of the router contract
- *                 moduleName:
- *                   type: string
- *                   description: The name of the module used for the swap
+ *                 moduleNames:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: The names of the swap modules used for this quote
  *                 callData:
  *                   type: object
  *                   nullable: true
@@ -112,7 +114,7 @@ const router: express.Router = express.Router()
  *               expectedToAmount: "999746386"
  *               minToAmount: "994747654"
  *               routerAddress: "0x512000a034E154908Efb1eC48579F4ffDb000512"
- *               moduleName: "Default"
+ *               moduleNames: ["DefaultPools"]
  *               callData: {
  *                 to: "0x512000a034E154908Efb1eC48579F4ffDb000512",
  *                 data: "0x...",

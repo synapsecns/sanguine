@@ -144,9 +144,12 @@
                         "type": "integer",
                         "description": "Estimated time for the bridge in seconds"
                       },
-                      "moduleName": {
-                        "type": "string",
-                        "description": "The name of the bridge module used for this quote"
+                      "moduleNames": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "The names of the bridge or swap modules used for this quote"
                       },
                       "gasDropAmount": {
                         "type": "string",
@@ -186,7 +189,7 @@
                     "minToAmount": "994051462240",
                     "routerAddress": "0x512000a034E154908Efb1eC48579F4ffDb000512",
                     "estimatedTime": 30,
-                    "moduleName": "SynapseRFQ",
+                    "moduleNames": ["SynapseRFQ"],
                     "gasDropAmount": "0",
                     "callData": {
                       "to": "0x512000a034E154908Efb1eC48579F4ffDb000512",
@@ -1596,9 +1599,12 @@
                               "type": "integer",
                               "description": "Estimated time for this step in seconds"
                             },
-                            "moduleName": {
-                              "type": "string",
-                              "description": "The name of the module used for this step"
+                            "moduleNames": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "description": "The names of the bridge or swap modules used for this step"
                             },
                             "gasDropAmount": {
                               "type": "string",
@@ -1651,7 +1657,7 @@
                         "minToAmount": "994046695719",
                         "routerAddress": "0x512000a034E154908Efb1eC48579F4ffDb000512",
                         "estimatedTime": 30,
-                        "moduleName": "SynapseRFQ",
+                        "moduleNames": ["SynapseRFQ"],
                         "gasDropAmount": "0",
                         "callData": {
                           "to": "0x512000a034E154908Efb1eC48579F4ffDb000512",
@@ -1997,9 +2003,12 @@
                       "type": "string",
                       "description": "The address of the router contract"
                     },
-                    "moduleName": {
-                      "type": "string",
-                      "description": "The name of the module used for the swap"
+                    "moduleNames": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "The names of the swap modules used for this quote"
                     },
                     "callData": {
                       "type": "object",
@@ -2031,7 +2040,7 @@
                   "expectedToAmount": "999746386",
                   "minToAmount": "994747654",
                   "routerAddress": "0x512000a034E154908Efb1eC48579F4ffDb000512",
-                  "moduleName": "Default",
+                  "moduleNames": ["DefaultPools"],
                   "callData": {
                     "to": "0x512000a034E154908Efb1eC48579F4ffDb000512",
                     "data": "0x...",

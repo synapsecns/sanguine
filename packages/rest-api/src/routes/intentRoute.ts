@@ -142,9 +142,11 @@ const router: express.Router = express.Router()
  *                         estimatedTime:
  *                           type: integer
  *                           description: Estimated time for this step in seconds
- *                         moduleName:
- *                           type: string
- *                           description: The name of the module used for this step
+ *                         moduleNames:
+ *                           type: array
+ *                           items:
+ *                             type: string
+ *                           description: The names of the bridge or swap modules used for this step
  *                         gasDropAmount:
  *                           type: string
  *                           description: Amount of native token airdropped on destination chain (in native token decimals)
@@ -183,7 +185,7 @@ const router: express.Router = express.Router()
  *                     minToAmount: "994046695719"
  *                     routerAddress: "0x512000a034E154908Efb1eC48579F4ffDb000512"
  *                     estimatedTime: 30
- *                     moduleName: "SynapseRFQ"
+ *                     moduleNames: ["SynapseRFQ"]
  *                     gasDropAmount: "0"
  *                     callData: {
  *                       to: "0x512000a034E154908Efb1eC48579F4ffDb000512",
