@@ -95,6 +95,9 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     toChainId,
     toToken,
   }: GetBridgeTokenCandidatesParameters): Promise<BridgeTokenCandidate[]> {
+    if (!this.getModule(fromChainId) || !this.getModule(toChainId)) {
+      return []
+    }
     const quotes = await this.getQuotes(fromChainId, toChainId, toToken)
     // Filter out duplicates of the bridge token
     return Array.from(
@@ -117,6 +120,12 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     toRecipient,
     allowMultipleTxs,
   }: GetBridgeRouteV2Parameters): Promise<BridgeRouteV2 | undefined> {
+    if (
+      !this.getModule(bridgeToken.originChainId) ||
+      !this.getModule(bridgeToken.destChainId)
+    ) {
+      return undefined
+    }
     if (!allowMultipleTxs && !isSameAddress(bridgeToken.destToken, toToken)) {
       return undefined
     }
