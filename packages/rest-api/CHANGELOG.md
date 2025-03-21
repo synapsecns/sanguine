@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.13.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.12.4...@synapsecns/rest-api@1.13.0) (2025-03-21)
+
+
+### Features
+
+* **rest-api,sdk-router:** intent endpoint [SYN-77] ([#3613](https://github.com/synapsecns/sanguine/issues/3613)) ([f2616f1](https://github.com/synapsecns/sanguine/commit/f2616f185af53f22e9cbd3ffc41497641fca4d6c))
+
+
+
+
+
 ## [1.12.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.12.3...@synapsecns/rest-api@1.12.4) (2025-03-21)
 
 **Note:** Version bump only for package @synapsecns/rest-api
