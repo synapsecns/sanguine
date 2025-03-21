@@ -34,7 +34,7 @@ export type SwapQuoteV2 = {
   expectedToAmount: BigNumber
   minToAmount: BigNumber
   routerAddress: string
-  moduleName: string
+  moduleNames: string[]
   tx?: PopulatedTransaction
 }
 
@@ -58,7 +58,7 @@ const getEmptyQuoteV2 = (params: SwapV2Parameters): SwapQuoteV2 => {
     toToken: params.toToken,
     expectedToAmount: Zero,
     minToAmount: Zero,
-    moduleName: '',
+    moduleNames: [],
     routerAddress: AddressZero,
   }
 }
@@ -117,7 +117,7 @@ export async function swapV2(
     expectedToAmount: route.expectedToAmount,
     minToAmount: route.minToAmount ?? route.expectedToAmount,
     routerAddress: this.sirSet.getSirAddress(params.chainId),
-    moduleName: route.engineName,
+    moduleNames: [route.engineName],
     tx,
   }
 }

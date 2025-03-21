@@ -7,9 +7,16 @@ import {
   Query,
   applyDeadlineToQuery,
   BridgeQuoteV2,
+  isSwapQuery,
 } from '../module'
 import { SynapseSDK } from '../sdk'
-import { RecipientEntity, RouteInput, Slippage, SwapEngineRoute } from '../swap'
+import {
+  EngineID,
+  RecipientEntity,
+  RouteInput,
+  Slippage,
+  SwapEngineRoute,
+} from '../swap'
 import { handleNativeToken, isSameAddress, Prettify } from '../utils'
 
 /**
@@ -109,6 +116,10 @@ async function _collectV1Quotes(
         destQuerySlippage,
         deadlineBN
       )
+      const swapModuleNames = isSwapQuery(originQuery)
+        ? [EngineID[EngineID.Default]]
+        : []
+      const moduleNames = [...swapModuleNames, quote.bridgeModuleName]
       // Generate the transaction calldata
       const tx = params.fromSender
         ? await bridge.call(
@@ -134,7 +145,7 @@ async function _collectV1Quotes(
         minToAmount: destQuery.minAmountOut,
         routerAddress: quote.routerAddress,
         estimatedTime: quote.estimatedTime,
-        moduleName: quote.bridgeModuleName,
+        moduleNames,
         gasDropAmount: quote.gasDropAmount,
         tx,
       }

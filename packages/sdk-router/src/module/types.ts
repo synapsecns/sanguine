@@ -108,7 +108,7 @@ export type BridgeRouteV2 = {
  * @param expectedToAmount - Expected amount of output tokens on the destination chain.
  * @param routerAddress - Address of the router on the origin chain.
  * @param estimatedTime - Estimated time for the bridge operation to complete.
- * @param moduleName - Name of the module used for the bridge operation.
+ * @param moduleNames - Names of the modules used for the bridge operation.
  * @param gasDropAmount - Amount of gas to be dropped on the destination chain.
  * @param tx - Optional populated transaction for the bridge operation (returned only if `originSender` is provided)
  */
@@ -123,7 +123,7 @@ export type BridgeQuoteV2 = {
   minToAmount: BigNumber
   routerAddress: string
   estimatedTime: number
-  moduleName: string
+  moduleNames: string[]
   gasDropAmount: BigNumber
   tx?: PopulatedTransaction
 }
@@ -140,7 +140,7 @@ export type BridgeQuoteV2 = {
  * @param minToAmount - Minimum amount of tokens to be received (slippage protected).
  * @param routerAddress - Address of the router that performs the operation.
  * @param estimatedTime - Estimated time for the operation to complete.
- * @param moduleName - Name of the module used for the operation.
+ * @param moduleNames - Names of the modules used for the operation.
  * @param gasDropAmount - Amount of gas to be dropped after the operation alongside `toToken`.
  * @param tx - Optional populated transaction for the operation (returned only if `fromSender` is provided).
  */
@@ -154,7 +154,7 @@ export type IntentStep = {
   minToAmount: BigNumber
   routerAddress: string
   estimatedTime: number
-  moduleName: string
+  moduleNames: string[]
   gasDropAmount: BigNumber
   tx?: PopulatedTransaction
 }

@@ -74,7 +74,7 @@ async function _getSameChainIntentQuotes(
   const swapStep: IntentStep = {
     ...intentCommon,
     routerAddress: swapQuote.routerAddress,
-    moduleName: swapQuote.moduleName,
+    moduleNames: swapQuote.moduleNames,
     gasDropAmount: Zero,
     tx: swapQuote.tx,
   }
@@ -123,7 +123,7 @@ async function _getCrossChainIntentQuotes(
         minToAmount: bridgeQuote.minToAmount,
         routerAddress: bridgeQuote.routerAddress,
         estimatedTime: bridgeQuote.estimatedTime,
-        moduleName: bridgeQuote.moduleName,
+        moduleNames: bridgeQuote.moduleNames,
         gasDropAmount: bridgeQuote.gasDropAmount,
         tx: bridgeQuote.tx,
       }

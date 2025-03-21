@@ -308,7 +308,7 @@ export abstract class SynapseModuleSet {
     return {
       ...bridgeQuote,
       estimatedTime: this.getEstimatedTime(bridgeQuote.fromChainId),
-      moduleName: this.moduleName,
+      moduleNames: [...bridgeQuote.moduleNames, this.moduleName],
       gasDropAmount: await this.getGasDropAmount(
         bridgeQuote.toChainId,
         bridgeToken.destToken
