@@ -79,7 +79,6 @@ export const SYNAPSE_INTENT_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
 
 /**
  * TokenZapV1 contract address for all chains except ones from TOKEN_ZAP_V1_EXCEPTION_MAP.
- * TODO: this is a staging TokenZapV1 deployment, update to the production deployment when ready.
  */
 const TOKEN_ZAP_V1_ADDRESS = '0x2aAaa9b71E479e6e2De7E091b09D61C25D2AAAa9'
 const TOKEN_ZAP_V1_EXCEPTION_MAP: AddressMap = {}

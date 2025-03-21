@@ -1,6 +1,39 @@
 import { SupportedChainId } from './chainIds'
 
 /**
+ * Median time (in seconds) for a chain's block to be produced.
+ * Note: chains are listed in alphabetical order to make it easier to add new chains.
+ */
+export const MEDIAN_TIME_BLOCK: Record<SupportedChainId, number> = {
+  [SupportedChainId.ARBITRUM]: 0.25,
+  [SupportedChainId.AURORA]: 1,
+  [SupportedChainId.AVALANCHE]: 2,
+  [SupportedChainId.BASE]: 2,
+  [SupportedChainId.BERACHAIN]: 2,
+  [SupportedChainId.BLAST]: 2,
+  [SupportedChainId.BOBA]: 2,
+  [SupportedChainId.BSC]: 3,
+  [SupportedChainId.CANTO]: 6,
+  [SupportedChainId.CRONOS]: 6,
+  [SupportedChainId.DFK]: 2,
+  [SupportedChainId.DOGECHAIN]: 2,
+  [SupportedChainId.ETH]: 12,
+  [SupportedChainId.FANTOM]: 2,
+  [SupportedChainId.HARMONY]: 2,
+  [SupportedChainId.HYPEREVM]: 0.2,
+  [SupportedChainId.KLAYTN]: 1,
+  [SupportedChainId.LINEA]: 2,
+  [SupportedChainId.METIS]: 2,
+  [SupportedChainId.MOONBEAM]: 6,
+  [SupportedChainId.MOONRIVER]: 6,
+  [SupportedChainId.OPTIMISM]: 2,
+  [SupportedChainId.POLYGON]: 2,
+  [SupportedChainId.SCROLL]: 3,
+  [SupportedChainId.UNICHAIN]: 1,
+  [SupportedChainId.WORLDCHAIN]: 2,
+}
+
+/**
  * Median time (in seconds) for a SynapseBridge transaction to be completed,
  * when the transaction is sent from a given chain.
  */

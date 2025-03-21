@@ -68,8 +68,7 @@ async function _getSameChainIntentQuotes(
     toToken: params.toToken,
     expectedToAmount: swapQuote.expectedToAmount,
     minToAmount: swapQuote.minToAmount,
-    // TODO: chain block time
-    estimatedTime: 0,
+    estimatedTime: swapQuote.estimatedTime,
   }
   const swapStep: IntentStep = {
     ...intentCommon,

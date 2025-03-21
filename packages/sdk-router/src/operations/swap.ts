@@ -4,6 +4,7 @@ import { PopulatedTransaction } from '@ethersproject/contracts'
 import { BigNumberish } from 'ethers'
 import { uuidv7 } from 'uuidv7'
 
+import { areIntentsSupported, MEDIAN_TIME_BLOCK } from '../constants'
 import {
   Query,
   SwapQuote,
@@ -34,6 +35,7 @@ export type SwapQuoteV2 = {
   expectedToAmount: BigNumber
   minToAmount: BigNumber
   routerAddress: string
+  estimatedTime: number
   moduleNames: string[]
   tx?: PopulatedTransaction
 }
@@ -59,6 +61,7 @@ const getEmptyQuoteV2 = (params: SwapV2Parameters): SwapQuoteV2 => {
     expectedToAmount: Zero,
     minToAmount: Zero,
     moduleNames: [],
+    estimatedTime: 0,
     routerAddress: AddressZero,
   }
 }
@@ -67,6 +70,9 @@ export async function swapV2(
   this: SynapseSDK,
   params: SwapV2Parameters
 ): Promise<SwapQuoteV2> {
+  if (!areIntentsSupported(params.chainId)) {
+    return getEmptyQuoteV2(params)
+  }
   params.fromToken = handleNativeToken(params.fromToken)
   params.toToken = handleNativeToken(params.toToken)
   if (isSameAddress(params.fromToken, params.toToken)) {
@@ -117,6 +123,7 @@ export async function swapV2(
     expectedToAmount: route.expectedToAmount,
     minToAmount: route.minToAmount ?? route.expectedToAmount,
     routerAddress: this.sirSet.getSirAddress(params.chainId),
+    estimatedTime: MEDIAN_TIME_BLOCK[params.chainId],
     moduleNames: [route.engineName],
     tx,
   }

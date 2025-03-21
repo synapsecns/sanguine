@@ -126,3 +126,13 @@ export const HYDRATION_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.BASE,
   SupportedChainId.BSC,
 ]
+
+export const isChainIdSupported = (
+  chainId: number
+): chainId is SupportedChainId =>
+  Object.values(SupportedChainId).includes(chainId) &&
+  !PAUSED_CHAIN_IDS.includes(chainId)
+
+export const areIntentsSupported = (
+  chainId: number
+): chainId is SupportedChainId => INTENTS_SUPPORTED_CHAIN_IDS.includes(chainId)

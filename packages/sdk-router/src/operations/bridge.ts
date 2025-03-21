@@ -1,6 +1,7 @@
 import { BigNumber, BigNumberish, PopulatedTransaction, utils } from 'ethers'
 import invariant from 'tiny-invariant'
 
+import { areIntentsSupported, isChainIdSupported } from '../constants/chainIds'
 import {
   BridgeQuote,
   SynapseModuleSet,
@@ -80,6 +81,12 @@ async function _collectV1Quotes(
   params: BridgeV2Parameters,
   bridgeV2Modules: SynapseModuleSet[]
 ): Promise<BridgeQuoteV2[]> {
+  if (
+    !isChainIdSupported(params.fromChainId) ||
+    !isChainIdSupported(params.toChainId)
+  ) {
+    return []
+  }
   const deadlineBN = params.deadline
     ? BigNumber.from(params.deadline)
     : undefined
@@ -159,6 +166,13 @@ async function _collectV2Quotes(
   params: BridgeV2InternalParameters,
   bridgeV2Modules: SynapseModuleSet[]
 ): Promise<BridgeQuoteV2[]> {
+  // Intents need to be supported on the `from` chain, while `to` chain needs to be supported in general
+  if (
+    !areIntentsSupported(params.fromChainId) ||
+    !isChainIdSupported(params.toChainId)
+  ) {
+    return []
+  }
   const candidates = await Promise.all(
     bridgeV2Modules.map(async (set) =>
       set.getBridgeTokenCandidates({
