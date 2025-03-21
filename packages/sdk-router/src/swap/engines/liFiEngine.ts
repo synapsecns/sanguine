@@ -1,13 +1,7 @@
 import { Zero } from '@ethersproject/constants'
 import { BigNumber } from 'ethers'
 
-import {
-  isSameAddress,
-  getWithTimeout,
-  logExecutionTime,
-  logger,
-  Prettify,
-} from '../../utils'
+import { isSameAddress, getWithTimeout, logger, Prettify } from '../../utils'
 import { EngineID, SlippageMax, toFloat } from '../core'
 import {
   getEmptyQuote,
@@ -114,7 +108,6 @@ export class LiFiEngine implements SwapEngine {
     })
   }
 
-  @logExecutionTime('LiFiEngine.getQuoteResponse')
   public async getQuoteResponse(
     params: LiFiQuoteRequest,
     timeout: number

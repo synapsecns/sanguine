@@ -9,7 +9,6 @@ import {
   ONE_WEEK,
   isNativeToken,
   logger,
-  logExecutionTime,
   Prettify,
 } from '../../utils'
 import { EngineID, SlippageMax, toBasisPoints } from '../core'
@@ -192,7 +191,6 @@ export class KyberSwapEngine implements SwapEngine {
     })
   }
 
-  @logExecutionTime('KyberSwapEngine.getQuoteResponse')
   public async getQuoteResponse(
     chainId: number,
     params: KyberSwapQuoteRequest,
@@ -208,7 +206,6 @@ export class KyberSwapEngine implements SwapEngine {
     })
   }
 
-  @logExecutionTime('KyberSwapEngine.getBuildResponse')
   public async getBuildResponse(
     chainId: number,
     params: KyberSwapBuildRequest,

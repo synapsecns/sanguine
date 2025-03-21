@@ -13,7 +13,6 @@ import {
   postWithTimeout,
   isSameAddress,
   isNativeToken,
-  logExecutionTime,
   logger,
   Prettify,
 } from '../../utils'
@@ -178,7 +177,6 @@ export class ParaSwapEngine implements SwapEngine {
     })
   }
 
-  @logExecutionTime('ParaSwapEngine.getPricesResponse')
   public async getPricesResponse(
     params: ParaSwapPricesRequest,
     timeout: number
@@ -191,7 +189,6 @@ export class ParaSwapEngine implements SwapEngine {
     )
   }
 
-  @logExecutionTime('ParaSwapEngine.getTransactionsResponse')
   public async getTransactionsResponse(
     chainId: number,
     params: ParaSwapTransactionsRequest,
