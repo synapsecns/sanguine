@@ -10,7 +10,7 @@ import {
 } from '../../constants/addresses'
 import { ChainProvider } from '../../router'
 import { SynapseIntentPreviewer as PreviewerContract } from '../../typechain/SynapseIntentPreviewer'
-import { isSameAddress, logger, logExecutionTime } from '../../utils'
+import { isSameAddress, logger } from '../../utils'
 import { EngineID, toWei, SlippageMax, getForwardTo } from '../core'
 import {
   RouteInput,
@@ -57,7 +57,6 @@ export class DefaultEngine implements SwapEngine {
     })
   }
 
-  @logExecutionTime('DefaultEngine.getQuote')
   public async getQuote(input: RouteInput): Promise<SwapEngineRoute> {
     // TODO: timeout
     const { chainId, fromToken, toToken, fromAmount, toRecipient } = input
@@ -100,7 +99,6 @@ export class DefaultEngine implements SwapEngine {
     }
   }
 
-  @logExecutionTime('DefaultEngine.generateRoute')
   public async generateRoute(
     _input: RouteInput,
     quote: SwapEngineRoute
