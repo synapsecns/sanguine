@@ -95,6 +95,9 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     toChainId,
     toToken,
   }: GetBridgeTokenCandidatesParameters): Promise<BridgeTokenCandidate[]> {
+    if (!this.getModule(fromChainId) || !this.getModule(toChainId)) {
+      return []
+    }
     const quotes = await this.getQuotes(fromChainId, toChainId, toToken)
     // Filter out duplicates of the bridge token
     return Array.from(
@@ -115,9 +118,16 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     toToken,
     fromSender,
     toRecipient,
-  }: GetBridgeRouteV2Parameters): Promise<BridgeRouteV2> {
-    if (!isSameAddress(bridgeToken.destToken, toToken)) {
-      throw new Error('Swaps on destination are not supported by FastBridge V1')
+    allowMultipleTxs,
+  }: GetBridgeRouteV2Parameters): Promise<BridgeRouteV2 | undefined> {
+    if (
+      !this.getModule(bridgeToken.originChainId) ||
+      !this.getModule(bridgeToken.destChainId)
+    ) {
+      return undefined
+    }
+    if (!allowMultipleTxs && !isSameAddress(bridgeToken.destToken, toToken)) {
+      return undefined
     }
     const originChainId = bridgeToken.originChainId
     const protocolFeeRate = await this.getFastBridgeRouter(
@@ -143,12 +153,15 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
         getOriginAmount(quote, quote.fixedFee),
       ])
       .reduce((a, b) => (a[0].gt(b[0]) ? a : b), [Zero, Zero])
+    if (expectedToAmount.isZero()) {
+      return undefined
+    }
     // Cap slippage to 5% of the fixed fee
     const maxOriginSlippage = originFee.div(20)
     const route: BridgeRouteV2 = {
       bridgeToken,
       minFromAmount: BigNumber.from(fromAmount).sub(maxOriginSlippage),
-      toToken,
+      toToken: bridgeToken.destToken,
       expectedToAmount,
       // With no swap on destination, the minToAmount is the same as expectedToAmount.
       minToAmount: expectedToAmount,
@@ -388,23 +401,23 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   private async getQuotes(
     originChainId: number,
     destChainId: number,
-    tokenOut: string
+    tokenOut?: string
   ): Promise<FastBridgeQuote[]> {
     const allQuotes = await this.getCachedAllQuotes()
     const originFB = await this.getFastBridgeAddress(originChainId)
     const destFB = await this.getFastBridgeAddress(destChainId)
+    // Apply optional filtering by the final token
     return allQuotes
       .filter(
         (quote) =>
           quote.ticker.originToken.chainId === originChainId &&
           quote.ticker.destToken.chainId === destChainId &&
-          quote.ticker.destToken.token &&
-          quote.ticker.destToken.token.toLowerCase() === tokenOut.toLowerCase()
+          (!tokenOut || isSameAddress(quote.ticker.destToken.token, tokenOut))
       )
       .filter(
         (quote) =>
-          quote.originFastBridge.toLowerCase() === originFB.toLowerCase() &&
-          quote.destFastBridge.toLowerCase() === destFB.toLowerCase()
+          isSameAddress(quote.originFastBridge, originFB) &&
+          isSameAddress(quote.destFastBridge, destFB)
       )
       .filter((quote) => {
         const age = Date.now() - quote.updatedAt

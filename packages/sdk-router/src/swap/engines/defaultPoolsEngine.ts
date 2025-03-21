@@ -19,10 +19,10 @@ import {
   getEmptyRoute,
 } from '../models'
 
-export class DefaultEngine implements SwapEngine {
+export class DefaultPoolsEngine implements SwapEngine {
   static previewerInterface = new Interface(previewerAbi)
 
-  public readonly id = EngineID.Default
+  public readonly id = EngineID.DefaultPools
 
   private contracts: {
     [chainId: number]: {
@@ -32,7 +32,7 @@ export class DefaultEngine implements SwapEngine {
   }
 
   constructor(chains: ChainProvider[]) {
-    invariant(DefaultEngine.previewerInterface, 'INTERFACE_UNDEFINED')
+    invariant(DefaultPoolsEngine.previewerInterface, 'INTERFACE_UNDEFINED')
     this.contracts = {}
     chains.forEach(({ chainId, provider }) => {
       const previewerAddress = SYNAPSE_INTENT_PREVIEWER_ADDRESS_MAP[chainId]
@@ -49,7 +49,7 @@ export class DefaultEngine implements SwapEngine {
       this.contracts[chainId] = {
         previewer: new Contract(
           previewerAddress,
-          DefaultEngine.previewerInterface,
+          DefaultPoolsEngine.previewerInterface,
           provider
         ) as PreviewerContract,
         swapQuoter: swapQuoterAddress,

@@ -16,13 +16,33 @@ import { applyOptionalDeadline } from '../utils'
 import { Query } from './query'
 import { Slippage } from '../swap'
 
+/**
+ * Parameters for `getBridgeTokenCandidates` function.
+ *
+ * @param originChainId - The ID of the origin chain.
+ * @param destChainId - The ID of the destination chain.
+ * @param tokenIn - The input token.
+ * @param tokenOut - The output token, optional.
+ */
 export type GetBridgeTokenCandidatesParameters = {
   fromChainId: number
   toChainId: number
   fromToken: string
-  toToken: string
+  toToken?: string
 }
 
+/**
+ * Parameters for `getBridgeRouteV2` function.
+ *
+ * @param originAmountIn - The amount of the bridge token on the origin chain.
+ * @param bridgeToken - The bridge token to be used for the bridge.
+ * @param destTokenOut - The output token on the destination chain that needs to be received.
+ * @param originSender - The address of the user on the origin chain.
+ * @param destRecipient - The address of the user on the destination chain.
+ * @param slippage - The slippage to be used for the swap.
+ * @param allowMultipleTxs - Whether to allow multiple transactions for the bridge, in which case the returned BridgeRouteV2
+ * might have a fallback quote to the `bridgeToken` instead of `destTokenOut`.
+ */
 export type GetBridgeRouteV2Parameters = {
   fromAmount: BigNumberish
   bridgeToken: BridgeTokenCandidate
@@ -30,6 +50,7 @@ export type GetBridgeRouteV2Parameters = {
   fromSender?: string
   toRecipient?: string
   slippage?: Slippage
+  allowMultipleTxs?: boolean
 }
 
 export abstract class SynapseModuleSet {
@@ -116,13 +137,28 @@ export abstract class SynapseModuleSet {
     return module
   }
 
+  /**
+   * Returns the list of bridge token candidates that can facilitate a given intent from `tokenIn` to `tokenOut`.
+   * If `tokenOut` is not provided, all bridge tokens that can facilitate the intent from `tokenIn` to any token will be returned.
+   *
+   * @param params - The parameters for the bridge token candidates.
+   * @returns A promise that resolves to a list of bridge token candidates.
+   */
   abstract getBridgeTokenCandidates(
     params: GetBridgeTokenCandidatesParameters
   ): Promise<BridgeTokenCandidate[]>
 
+  /**
+   * Returns the bridge route with a non-zero quote for a given path.
+   * If `allowMultipleTxs` is true, the returned BridgeRouteV2 might have a fallback quote to the `bridgeToken` instead of `destTokenOut`,
+   * should the direct path to `destTokenOut` not be available through this module.
+   *
+   * @param params - The parameters for the bridge route.
+   * @returns A promise that resolves to the bridge route with a non-zero quote, or undefined if no route is found.
+   */
   abstract getBridgeRouteV2(
     params: GetBridgeRouteV2Parameters
-  ): Promise<BridgeRouteV2>
+  ): Promise<BridgeRouteV2 | undefined>
 
   /**
    * This method find all possible routes for a bridge transaction between two chains.
@@ -272,7 +308,7 @@ export abstract class SynapseModuleSet {
     return {
       ...bridgeQuote,
       estimatedTime: this.getEstimatedTime(bridgeQuote.fromChainId),
-      moduleName: this.moduleName,
+      moduleNames: [...bridgeQuote.moduleNames, this.moduleName],
       gasDropAmount: await this.getGasDropAmount(
         bridgeQuote.toChainId,
         bridgeToken.destToken

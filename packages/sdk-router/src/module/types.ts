@@ -108,7 +108,7 @@ export type BridgeRouteV2 = {
  * @param expectedToAmount - Expected amount of output tokens on the destination chain.
  * @param routerAddress - Address of the router on the origin chain.
  * @param estimatedTime - Estimated time for the bridge operation to complete.
- * @param moduleName - Name of the module used for the bridge operation.
+ * @param moduleNames - Names of the modules used for the bridge operation.
  * @param gasDropAmount - Amount of gas to be dropped on the destination chain.
  * @param tx - Optional populated transaction for the bridge operation (returned only if `originSender` is provided)
  */
@@ -123,7 +123,38 @@ export type BridgeQuoteV2 = {
   minToAmount: BigNumber
   routerAddress: string
   estimatedTime: number
-  moduleName: string
+  moduleNames: string[]
+  gasDropAmount: BigNumber
+  tx?: PopulatedTransaction
+}
+
+/**
+ * Atomic step of an intent.
+ *
+ * @param fromChainId - ID of the chain, where funds will be sent from.
+ * @param fromToken - Address of the token to be sent.
+ * @param fromAmount - Amount of tokens to be sent.
+ * @param toChainId - ID of the chain, where funds will be received (can be the same as `fromChainId`).
+ * @param toToken - Address of the token to be received.
+ * @param expectedToAmount - Expected amount of tokens to be received.
+ * @param minToAmount - Minimum amount of tokens to be received (slippage protected).
+ * @param routerAddress - Address of the router that performs the operation.
+ * @param estimatedTime - Estimated time for the operation to complete.
+ * @param moduleNames - Names of the modules used for the operation.
+ * @param gasDropAmount - Amount of gas to be dropped after the operation alongside `toToken`.
+ * @param tx - Optional populated transaction for the operation (returned only if `fromSender` is provided).
+ */
+export type IntentStep = {
+  fromChainId: number
+  fromToken: string
+  fromAmount: BigNumber
+  toChainId: number
+  toToken: string
+  expectedToAmount: BigNumber
+  minToAmount: BigNumber
+  routerAddress: string
+  estimatedTime: number
+  moduleNames: string[]
   gasDropAmount: BigNumber
   tx?: PopulatedTransaction
 }

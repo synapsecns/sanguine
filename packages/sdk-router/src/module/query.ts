@@ -167,3 +167,8 @@ export const createNoSwapQuery = (token: string, amount: BigNumber): Query => {
     rawParams: '0x',
   }
 }
+
+export const isSwapQuery = (query: Query): boolean => {
+  const adapterAddress = query.swapAdapter ?? query.routerAdapter
+  return adapterAddress !== AddressZero
+}

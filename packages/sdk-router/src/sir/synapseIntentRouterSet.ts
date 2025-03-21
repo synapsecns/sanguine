@@ -54,6 +54,7 @@ export class SynapseIntentRouterSet {
     originDeadline?: number
   ): Promise<BridgeQuoteV2> {
     const fromChainId = bridgeRoute.bridgeToken.originChainId
+    const moduleNames: string[] = []
     if (originSwapRoute.steps.length > 0) {
       const minSwapFinalAmount = getMinFinalAmount(originSwapRoute.steps)
       if (minSwapFinalAmount.lt(bridgeRoute.minFromAmount)) {
@@ -62,6 +63,7 @@ export class SynapseIntentRouterSet {
           bridgeRoute.minFromAmount
         )
       }
+      moduleNames.push(originSwapRoute.engineName)
     }
     const tx = bridgeRoute.zapData
       ? await this.completeIntentWithBalanceChecks(
@@ -92,7 +94,7 @@ export class SynapseIntentRouterSet {
       routerAddress: this.getSirAddress(fromChainId),
       // These will be filled by the corresponding bridge module
       estimatedTime: 0,
-      moduleName: '',
+      moduleNames,
       gasDropAmount: Zero,
       tx,
     }

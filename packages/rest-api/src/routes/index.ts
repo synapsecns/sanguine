@@ -15,10 +15,12 @@ import destinationTokensRoute from './destinationTokensRoute'
 import bridgeLimitsRoute from './bridgeLimitsRoute'
 import chainIconRoute from './chainIconRoute'
 import addressIconRoute from './addressIconRoute'
+import intentRoute from './intentRoute'
 
 const router: express.Router = express.Router()
 
 router.use('/', indexRoute)
+router.use('/intent', intentRoute)
 router.use('/swap', swapRoute)
 router.use('/swapTxInfo', swapTxInfoRoute)
 router.use('/swap/v2', swapV2Route)

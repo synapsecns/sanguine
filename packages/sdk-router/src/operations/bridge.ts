@@ -1,16 +1,24 @@
 import { BigNumber, BigNumberish, PopulatedTransaction, utils } from 'ethers'
 import invariant from 'tiny-invariant'
 
+import { areIntentsSupported, isChainIdSupported } from '../constants/chainIds'
 import {
   BridgeQuote,
   SynapseModuleSet,
   Query,
   applyDeadlineToQuery,
   BridgeQuoteV2,
+  isSwapQuery,
 } from '../module'
 import { SynapseSDK } from '../sdk'
-import { RecipientEntity, RouteInput, Slippage, SwapEngineRoute } from '../swap'
-import { handleNativeToken, isSameAddress } from '../utils'
+import {
+  EngineID,
+  RecipientEntity,
+  RouteInput,
+  Slippage,
+  SwapEngineRoute,
+} from '../swap'
+import { handleNativeToken, isSameAddress, Prettify } from '../utils'
 
 /**
  * Parameters for the `bridgeV2` function.
@@ -37,9 +45,21 @@ export type BridgeV2Parameters = {
   deadline?: number
 }
 
+export type BridgeV2InternalParameters = Prettify<
+  BridgeV2Parameters & { allowMultipleTxs?: boolean }
+>
+
 export async function bridgeV2(
   this: SynapseSDK,
   params: BridgeV2Parameters
+): Promise<BridgeQuoteV2[]> {
+  // Don't allow multiple transactions for exported bridgeV2 function.
+  return _bridgeV2Internal.call(this, { ...params, allowMultipleTxs: false })
+}
+
+export async function _bridgeV2Internal(
+  this: SynapseSDK,
+  params: BridgeV2InternalParameters
 ): Promise<BridgeQuoteV2[]> {
   params.fromToken = handleNativeToken(params.fromToken)
   params.toToken = handleNativeToken(params.toToken)
@@ -61,6 +81,12 @@ async function _collectV1Quotes(
   params: BridgeV2Parameters,
   bridgeV2Modules: SynapseModuleSet[]
 ): Promise<BridgeQuoteV2[]> {
+  if (
+    !isChainIdSupported(params.fromChainId) ||
+    !isChainIdSupported(params.toChainId)
+  ) {
+    return []
+  }
   const deadlineBN = params.deadline
     ? BigNumber.from(params.deadline)
     : undefined
@@ -97,6 +123,10 @@ async function _collectV1Quotes(
         destQuerySlippage,
         deadlineBN
       )
+      const swapModuleNames = isSwapQuery(originQuery)
+        ? [EngineID[EngineID.DefaultPools]]
+        : []
+      const moduleNames = [...swapModuleNames, quote.bridgeModuleName]
       // Generate the transaction calldata
       const tx = params.fromSender
         ? await bridge.call(
@@ -122,7 +152,7 @@ async function _collectV1Quotes(
         minToAmount: destQuery.minAmountOut,
         routerAddress: quote.routerAddress,
         estimatedTime: quote.estimatedTime,
-        moduleName: quote.bridgeModuleName,
+        moduleNames,
         gasDropAmount: quote.gasDropAmount,
         tx,
       }
@@ -133,16 +163,23 @@ async function _collectV1Quotes(
 
 async function _collectV2Quotes(
   this: SynapseSDK,
-  params: BridgeV2Parameters,
+  params: BridgeV2InternalParameters,
   bridgeV2Modules: SynapseModuleSet[]
 ): Promise<BridgeQuoteV2[]> {
+  // Intents need to be supported on the `from` chain, while `to` chain needs to be supported in general
+  if (
+    !areIntentsSupported(params.fromChainId) ||
+    !isChainIdSupported(params.toChainId)
+  ) {
+    return []
+  }
   const candidates = await Promise.all(
     bridgeV2Modules.map(async (set) =>
       set.getBridgeTokenCandidates({
         fromChainId: params.fromChainId,
         toChainId: params.toChainId,
         fromToken: params.fromToken,
-        toToken: params.toToken,
+        toToken: params.allowMultipleTxs ? undefined : params.toToken,
       })
     )
   )
@@ -198,7 +235,19 @@ async function _collectV2Quotes(
             fromSender: params.fromSender,
             toRecipient: params.toRecipient || params.fromSender,
             slippage: params.slippage,
+            allowMultipleTxs: params.allowMultipleTxs,
           })
+          // Check that a route was found.
+          if (!bridgeRoute) {
+            return
+          }
+          // For single-tx params we need to check that the route matches the destination token.
+          if (
+            !params.allowMultipleTxs &&
+            !isSameAddress(bridgeRoute.toToken, params.toToken)
+          ) {
+            return
+          }
           const bridgeQuoteV2 = await this.sirSet.finalizeBridgeRouteV2(
             params.fromToken,
             params.fromAmount,
