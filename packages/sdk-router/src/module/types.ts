@@ -1,5 +1,4 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { PopulatedTransaction } from 'ethers'
 
 import { Query } from './query'
 
@@ -52,25 +51,6 @@ export type SwapQuote = {
 }
 
 /**
- * Quote for a bridge transaction for SynapseRouter (V1) and SynapseCCTPRouter.
- * Returned by SDK to the consumer.
- */
-export type BridgeQuote = {
-  id: string
-  feeAmount: BigNumber
-  feeConfig: FeeConfig
-  routerAddress: string
-  maxAmountOut: BigNumber
-  originQuery: Query
-  destQuery: Query
-  estimatedTime: number
-  bridgeModuleName: string
-  gasDropAmount: BigNumber
-  originChainId: number
-  destChainId: number
-}
-
-/**
  * Internal representation of a found bridge route for SynapseRouter (V1) and SynapseCCTPRouter.
  */
 export type BridgeRoute = {
@@ -96,34 +76,4 @@ export type BridgeRouteV2 = {
   expectedToAmount: BigNumber
   minToAmount: BigNumber
   zapData?: string
-}
-
-/**
- * Quote for a bridge transaction for the supported bridge modules.
- * Returned by SDK to the consumer.
- *
- * @param id - The unique identifier of the bridge quote.
- * @param fromChainId - ID of the origin chain, where funds will be sent from.
- * @param toChainId - ID of the destination chain, where funds will be received.
- * @param expectedToAmount - Expected amount of output tokens on the destination chain.
- * @param routerAddress - Address of the router on the origin chain.
- * @param estimatedTime - Estimated time for the bridge operation to complete.
- * @param moduleNames - Names of the modules used for the bridge operation.
- * @param gasDropAmount - Amount of gas to be dropped on the destination chain.
- * @param tx - Optional populated transaction for the bridge operation (returned only if `originSender` is provided)
- */
-export type BridgeQuoteV2 = {
-  id: string
-  fromChainId: number
-  fromToken: string
-  fromAmount: BigNumber
-  toChainId: number
-  toToken: string
-  expectedToAmount: BigNumber
-  minToAmount: BigNumber
-  routerAddress: string
-  estimatedTime: number
-  moduleNames: string[]
-  gasDropAmount: BigNumber
-  tx?: PopulatedTransaction
 }

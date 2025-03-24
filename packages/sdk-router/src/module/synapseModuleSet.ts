@@ -5,8 +5,6 @@ import { uuidv7 } from 'uuidv7'
 
 import { SynapseModule } from './synapseModule'
 import {
-  BridgeQuote,
-  BridgeQuoteV2,
   BridgeRoute,
   BridgeRouteV2,
   BridgeTokenCandidate,
@@ -15,6 +13,7 @@ import {
 import { applyOptionalDeadline } from '../utils'
 import { Query } from './query'
 import { Slippage } from '../swap'
+import { BridgeQuote, BridgeQuoteV2 } from '../types'
 
 /**
  * Parameters for `getBridgeTokenCandidates` function.

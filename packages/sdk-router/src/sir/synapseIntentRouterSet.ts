@@ -9,7 +9,7 @@ import {
   SYNAPSE_INTENT_ROUTER_ADDRESS_MAP,
   TOKEN_ZAP_V1_ADDRESS_MAP,
 } from '../constants'
-import { BridgeQuoteV2, BridgeRouteV2 } from '../module'
+import { BridgeRouteV2 } from '../module'
 import { ChainProvider } from '../router'
 import {
   getMinFinalAmount,
@@ -18,6 +18,7 @@ import {
   SwapEngineRoute,
 } from '../swap'
 import { SynapseIntentRouter } from '../typechain/SynapseIntentRouter'
+import { BridgeQuoteV2 } from '../types'
 import {
   adjustValueIfNative,
   isNativeToken,
