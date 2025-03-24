@@ -35,16 +35,10 @@ import {
   ETH_USDT,
   NATIVE_ADDRESS,
 } from './constants/testValues'
-import {
-  BridgeQuote,
-  FeeConfig,
-  Query,
-  RouterQuery,
-  SwapQuote,
-  SynapseModuleSet,
-} from './module'
+import { FeeConfig, Query, RouterQuery, SynapseModuleSet } from './module'
 import * as operations from './operations'
 import { SynapseSDK } from './sdk'
+import { BridgeQuote, SwapQuote } from './types'
 
 // Override fetch to exclude RFQ from tests
 global.fetch = jest.fn(() =>

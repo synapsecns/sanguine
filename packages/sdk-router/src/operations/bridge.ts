@@ -3,49 +3,17 @@ import invariant from 'tiny-invariant'
 
 import { areIntentsSupported, isChainIdSupported } from '../constants/chainIds'
 import {
-  BridgeQuote,
   SynapseModuleSet,
   Query,
   applyDeadlineToQuery,
-  BridgeQuoteV2,
   isSwapQuery,
 } from '../module'
 import { SynapseSDK } from '../sdk'
-import {
-  EngineID,
-  RecipientEntity,
-  RouteInput,
-  Slippage,
-  SwapEngineRoute,
-} from '../swap'
+import { EngineID, RecipientEntity, RouteInput, SwapEngineRoute } from '../swap'
+import { BridgeQuote, BridgeQuoteV2, BridgeV2Parameters } from '../types'
 import { handleNativeToken, isSameAddress, Prettify } from '../utils'
 
-/**
- * Parameters for the `bridgeV2` function.
- *
- * @param fromChainId - ID of the origin chain, where funds will be sent from.
- * @param toChainId - ID of the destination chain, where funds will be received.
- * @param fromToken - Address of the token to be bridged from the origin chain.
- * @param toToken - Address of the token to be received on the destination chain.
- * @param fromAmount - Amount of input tokens on the origin chain.
- * @param fromSender - Optional address of the sender on the origin chain. No calldata is returned if not provided.
- * @param toRecipient - Optional address of the recipient on the destination chain, defaults to `fromSender`.
- * @param slippage - Optional slippage percentage to apply to the proceeds of the bridge operation.
- * @param deadline - Optional deadline for the bridge operation to be performed on the origin chain.
- */
-export type BridgeV2Parameters = {
-  fromChainId: number
-  fromToken: string
-  fromAmount: BigNumberish
-  fromSender?: string
-  toChainId: number
-  toToken: string
-  toRecipient?: string
-  slippage?: Slippage
-  deadline?: number
-}
-
-export type BridgeV2InternalParameters = Prettify<
+type BridgeV2InternalParameters = Prettify<
   BridgeV2Parameters & { allowMultipleTxs?: boolean }
 >
 
