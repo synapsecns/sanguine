@@ -22,5 +22,43 @@
                 "${workspaceFolder}/dist/**/*.js"
             ]
         }
+        ,
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "debugRun-FbV1",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/src/index.ts",
+            "preLaunchTask": "npm: build",
+            "sourceMaps": true,
+            "smartStep": true,
+            "console": "internalConsole",
+            "internalConsoleOptions": "openOnSessionStart",
+            "args": ["--configFile", "config-fbv1.yaml", "--pKeyIndex", "3"],
+            "outFiles": [
+                "${workspaceFolder}/dist/**/*.js"
+            ]
+        }
+        ,
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "debugRun-Hype",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/src/index.ts",
+            "preLaunchTask": "npm: build",
+            "sourceMaps": true,
+            "smartStep": true,
+            "console": "internalConsole",
+            "internalConsoleOptions": "openOnSessionStart",
+            "args": ["--configFile", "config-hype.yaml", "--pKeyIndex", "4"],
+            "outFiles": [
+                "${workspaceFolder}/dist/**/*.js"
+            ]
+        }
     ]
 }

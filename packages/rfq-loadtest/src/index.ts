@@ -1,12 +1,99 @@
 import fs from 'fs/promises'
 
-import * as viemChains from 'viem/chains'
+import * as viemChains_base from 'viem/chains'
+
+const unichain = {
+  id: 130,
+  name: 'Unichain',
+  network: 'unichain',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    default: { http: ['https://mainnet.unichain.org'] },
+    public: { http: ['https://mainnet.unichain.org'] },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Uniscan',
+      url: 'https://uniscan.xyz',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 1,
+    },
+  },
+}
+
+const berachain = {
+  id: 80094,
+  name: 'Berachain',
+  network: 'berachain',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Bera',
+    symbol: 'BERA',
+  },
+  rpcUrls: {
+    default: { http: ['https://rpc.berachain.com'] },
+    public: { http: ['https://rpc.berachain.com'] },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Berascan',
+      url: 'https://berascan.com',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 1,
+    },
+  },
+}
+
+
+const hyperevm = {
+  id: 999,
+  name: 'HyperEVM',
+  network: 'HyperEVM',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Hype',
+    symbol: 'HYPE',
+  },
+  rpcUrls: {
+    default: { http: ['https://rpc.hyperliquid.xyz/evm'] },
+    public: { http: ['https://rpc.hyperliquid.xyz/evm'] },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Hyperscan',
+      url: 'https://hyperliquid.cloud.blockscout.com/',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 1,
+    },
+  },
+}
+
+// note: it is best to load custom chains *first* -- that way, in the rare event of Chain ID conflicts, the custom chain will take precedence.
+const viemChains = { unichain, berachain, hyperevm, ...viemChains_base }
+
 import { privateKeyToAccount } from 'viem/accounts'
 import {
   Address,
   ContractFunctionExecutionError,
   createPublicClient,
   createWalletClient,
+  decodeAbiParameters,
   decodeErrorResult,
   decodeFunctionData,
   formatUnits,
@@ -39,8 +126,7 @@ const argv = await yargs(hideBin(process.argv))
     demandOption: true,
   })
   .help().argv
-
-
+  
 const configFilePath = argv.configFile
 const configFileContent = await fs.readFile(configFilePath, 'utf-8')
 
@@ -135,7 +221,7 @@ Object.entries(config.CHAINS).forEach(
 
 const account_bridger = privateKeyToAccount(privateKey_bridger, { nonceManager: createNonceManager({ source: jsonRpc() })})
 
-const account_relayer = privateKeyToAccount(privateKey_relayer, { nonceManager: createNonceManager({ source: jsonRpc() })})
+const account_relayer = privateKey_relayer ? privateKeyToAccount(privateKey_relayer, { nonceManager: createNonceManager({ source: jsonRpc() })}) : undefined
 
 if(account_relayer) print(`Using Relayer ${account_relayer.address}`)
 
@@ -204,7 +290,7 @@ for (const [fromAsset, fromChains] of Object.entries(config.ASSETS) as [any, any
         }
       }
     }
-    
+
   }
 }
 
@@ -281,8 +367,12 @@ async function checkBals() {
 
                 if(mappedAsset.balanceRaw==undefined) //not initialize = we can perform our single start-up check & set for allowances. will not run on each invoke.
                 {
-                    await erc20_allowance_check_and_set(chain, mappedAsset, config.CHAINS[chainId].FastRouterAddr)
-                    await erc20_allowance_check_and_set(chain, mappedAsset, config.CHAINS[chainId].SinRouterAddr)
+                    if (config.CHAINS[chainId].FastRouterAddr !== undefined) {
+                      await erc20_allowance_check_and_set(chain, mappedAsset, config.CHAINS[chainId].FastRouterAddr);
+                    }
+                    if (config.CHAINS[chainId].SinRouterAddr !== undefined) {
+                      await erc20_allowance_check_and_set(chain, mappedAsset, config.CHAINS[chainId].SinRouterAddr);
+                    }
                 }
               }
               mappedAsset.balanceRaw = balance;
@@ -302,6 +392,9 @@ async function checkBals() {
 
 async function falseProve(printLabel: string, txHash_bridgePromise: Promise<Address>, fromChain: any)
 {
+
+      if(!account_relayer) return
+
       const txHash_bridge = await txHash_bridgePromise
 
       printLabel += ' falseProve'
@@ -340,11 +433,11 @@ async function falseProve(printLabel: string, txHash_bridgePromise: Promise<Addr
         } catch (error: any) {
           print(`${printLabel} Error sending false prove transaction: ${error.message}`)
         }
-        
+
 }
 
 async function loopBridges() {
-  
+
   await delay(2_000)
 
   for (;;) {
@@ -352,14 +445,26 @@ async function loopBridges() {
     await checkBals()
 
     // only consider tests where we actually have sufficient balance of the input token to execute it
-    const validRoutes = testRoutes.filter((route:any) => {
+    const validRoutes = testRoutes.filter((route: any) => {
       const fromAssetBalance = route.fromChain.assets[route.fromAsset.label].balanceUnits;
       const minimumUnits = route.fromChain.assets[route.fromAsset.label].TEST_BRIDGE_AMOUNT_UNITS;
-      return fromAssetBalance > (minimumUnits * 1.01); // require slightly more than the bare minimum
+      const hasSufficientBalance = fromAssetBalance > (minimumUnits * 1.01); // require slightly more than the bare minimum
+
+      const routeLabel = `${route.fromChain.label}.${route.fromAsset.label}>${route.toChain.label}.${route.toAsset.label}`
+
+      if (config.TEST_ROUTE_CHERRYPICK) {
+        return hasSufficientBalance && routeLabel === config.TEST_ROUTE_CHERRYPICK;
+      }
+
+      return hasSufficientBalance;
     });
 
     if (validRoutes.length === 0) {
-      print('No test routes with sufficient balance found. Unable to perform any tests.');
+      if (config.TEST_ROUTE_CHERRYPICK) {
+        print(`CherryPicked route: ${config.TEST_ROUTE_CHERRYPICK} with sufficient balance was not found. Unable to perform any tests.`);
+      } else {
+        print('No test routes with sufficient balance found. Unable to perform any tests.');
+      }
       return;
     }
 
@@ -395,7 +500,7 @@ async function loopBridges() {
           printLabel
         );
       } catch (error: any) {
-        print(`${printLabel} sendBridge failed: 
+        print(`${printLabel} sendBridge failed:
         ${error.message}`);
         continue; // Skip to the next iteration if there's an error
       }
@@ -418,7 +523,7 @@ async function getRequestParams(
   sendAmountUnits: number
 ) {
 
-  const requestURL = 
+  const requestURL =
     `${config.BRIDGE_API_URL}/bridge?` +
     `fromChain=${route.fromChain.id}` +
     `&toChain=${route.toChain.id}` +
@@ -473,7 +578,12 @@ async function sendBridge(
 
   let _responseRFQ;
   try {
-    _responseRFQ = await getRequestParams(route, sendAmountUnits);
+      _responseRFQ = await getRequestParams(route, sendAmountUnits);
+
+    if (!_responseRFQ.callData || !_responseRFQ.callData.data || !_responseRFQ.callData.to) {
+      throw new Error(`_responseRFQ.callData invalid/undefined`);
+    }
+
   } catch (error: any) {
     throw new Error(`getRequestParams fail: ${error.message}`);
   }
@@ -483,6 +593,8 @@ async function sendBridge(
   const bridgeModuleLabel = _responseRFQ.bridgeModuleName.replace('SynapseIntents', 'SIN').replace('SynapseRFQ', 'RFQ')
 
   printLabel = printLabel + ` ${bridgeModuleLabel}`
+
+  await delay(config.QUOTE_AND_SEND_MILLISECONDS_BETWEEN ?? 1_000)
 
   let estGasUnits
 
@@ -496,14 +608,14 @@ async function sendBridge(
 
   try {
     estGasUnits = await route.fromChain.vCliSim.estimateGas(txData)
-      
+
     if (estGasUnits <= 50000n) throw new Error(`Gas units too low ${estGasUnits}. Sim failure?`)
 
   } catch (error: any) {
 
-    var errMsg = error.cause.cause.cause.cause.cause.data ?? error.cause.details ?? error.details ?? error.message
+    var errMsg = error?.cause?.cause?.cause?.cause?.cause?.data ?? error.cause.details ?? error.details ?? error.message
 
-    if(errMsg.slice(0,2)=='0x') 
+    if(errMsg.slice(0,2)=='0x')
       {
         try {
           errMsg = decodeErrorResult({abi: ABI.fastRouterV2, data: errMsg});
