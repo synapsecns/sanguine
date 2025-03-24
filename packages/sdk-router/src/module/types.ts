@@ -41,16 +41,6 @@ export const reduceToFeeConfig = (feeConfig: FeeConfig): FeeConfig => {
 }
 
 /**
- * Quote for a swap transaction for SynapseRouter (V1).
- * Returned by SDK to the consumer.
- */
-export type SwapQuote = {
-  routerAddress: string
-  maxAmountOut: BigNumber
-  query: Query
-}
-
-/**
  * Internal representation of a found bridge route for SynapseRouter (V1) and SynapseCCTPRouter.
  */
 export type BridgeRoute = {

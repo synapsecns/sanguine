@@ -5,19 +5,10 @@ import { BigNumberish } from 'ethers'
 import { uuidv7 } from 'uuidv7'
 
 import { areIntentsSupported, MEDIAN_TIME_BLOCK } from '../constants'
-import {
-  Query,
-  SwapQuote,
-  applySlippageToQuery,
-  applyDeadlineToQuery,
-} from '../module'
+import { Query, applySlippageToQuery, applyDeadlineToQuery } from '../module'
 import { SynapseSDK } from '../sdk'
-import {
-  RecipientEntity,
-  RouteInput,
-  Slippage,
-  USER_SIMULATED_ADDRESS,
-} from '../swap'
+import { RecipientEntity, RouteInput, USER_SIMULATED_ADDRESS } from '../swap'
+import { SwapQuote, SwapQuoteV2, SwapV2Parameters } from '../types'
 import {
   handleNativeToken,
   TEN_MINUTES,
@@ -25,31 +16,6 @@ import {
   calculateDeadline,
   isSameAddress,
 } from '../utils'
-
-export type SwapQuoteV2 = {
-  id: string
-  chainId: number
-  fromToken: string
-  fromAmount: BigNumber
-  toToken: string
-  expectedToAmount: BigNumber
-  minToAmount: BigNumber
-  routerAddress: string
-  estimatedTime: number
-  moduleNames: string[]
-  tx?: PopulatedTransaction
-}
-
-export type SwapV2Parameters = {
-  chainId: number
-  fromToken: string
-  fromAmount: BigNumberish
-  toToken: string
-  toRecipient?: string
-  slippage?: Slippage
-  deadline?: number
-  restrictComplexity?: boolean
-}
 
 const getEmptyQuoteV2 = (params: SwapV2Parameters): SwapQuoteV2 => {
   return {
