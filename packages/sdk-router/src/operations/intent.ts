@@ -1,39 +1,12 @@
 import { Zero } from '@ethersproject/constants'
-import { BigNumber, BigNumberish } from 'ethers'
+import { BigNumber } from 'ethers'
 import { uuidv7 } from 'uuidv7'
 
-import { IntentStep } from '../module'
 import { SynapseSDK } from '../sdk'
-import { Slippage } from '../swap'
 import { _bridgeV2Internal } from './bridge'
 import { swapV2 } from './swap'
+import { IntentParameters, IntentQuote, IntentStep } from '../types'
 import { isSameAddress } from '../utils'
-
-export type IntentParameters = {
-  fromChainId: number
-  fromToken: string
-  fromAmount: BigNumberish
-  fromSender?: string
-  toChainId: number
-  toToken: string
-  toRecipient?: string
-  slippage?: Slippage
-  deadline?: number
-  allowMultipleTxs?: boolean
-}
-
-export type IntentQuote = {
-  id: string
-  fromChainId: number
-  fromToken: string
-  fromAmount: BigNumber
-  toChainId: number
-  toToken: string
-  expectedToAmount: BigNumber
-  minToAmount: BigNumber
-  estimatedTime: number
-  steps: IntentStep[]
-}
 
 export async function intent(
   this: SynapseSDK,
