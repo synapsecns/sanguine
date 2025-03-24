@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.17.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.0...@synapsecns/sdk-router@0.17.1) (2025-03-24)
+
+
+### Bug Fixes
+
+* **sdk-router:** export intent types ([#3620](https://github.com/synapsecns/sanguine/issues/3620)) ([2683105](https://github.com/synapsecns/sanguine/commit/2683105910bd7212f177b0b2b60102cfb43d09c9))
+
+
+
+
+
 # [0.17.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.16.3...@synapsecns/sdk-router@0.17.0) (2025-03-21)
 
 
