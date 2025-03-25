@@ -13,10 +13,10 @@ import { RFQFlow } from '@site/src/components/RFQFlow'
 # Synapse
 
 :::note
-Synapse Protocol lives under the Cortex umbrella, a universal platform that enables on-chain AI agents to interact with blockchain networks. Learn more about Cortex in the [Cortex Docs](https://docs.cortexprotocol.com/docs/StartHere). Eventually, all Synapse Protocol features will fold into Cortex.
+Synapse Protocol lives under the Cortex umbrella, Convert SYN to CX before the end of the migration period. Learn more about Cortex in the [Cortex Docs](https://docs.cortexprotocol.com/docs/StartHere)
 :::
 
-Synapse is an Interchain Programming Interface. Developers read and write interchain data with Synapse, which has settled $50B in transactions between 2M+ users, and generated $30M+ in fees.
+Synapse is an Interchain Programming Interface. Developers read and write interchain data with Synapse, which has settled $50B in transactions between 2M+ users, and generated $30M+ in fees. Eventually, all Synapse Protocol features will fold into Cortex.
 
 
 
