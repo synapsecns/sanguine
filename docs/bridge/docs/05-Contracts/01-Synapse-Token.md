@@ -6,6 +6,8 @@ title: Synapse Token
 
 The canonical list is hosted within the SynapseCNS on [Github](https://github.com/synapsecns/synapse-contracts).
 
+The SYN token is being migrated to the CX token. To learn more about the migration, please see [Token Upgrade FAQ](https://docs.cortexprotocol.com/docs/Misc/TokenUpgradeFAQ).
+
 :::
 
 # Synapse Token
