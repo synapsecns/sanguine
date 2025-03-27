@@ -839,6 +839,17 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 		}
 	}
 
+	// Clip the quoteAmount by the max relay amount on origin.
+	// This is the maximum amount that we are willing to relay from the origin chain.
+	maxRelayAmountOrigin := m.config.GetMaxRelayAmount(input.OriginChainID, input.OriginTokenAddr)
+	if maxRelayAmountOrigin != nil && quoteAmountOrigin.Cmp(maxRelayAmountOrigin) > 0 {
+		span.AddEvent("quote amount greater than max relay amount on origin", trace.WithAttributes(
+			attribute.String("quote_amount_origin", quoteAmountOrigin.String()),
+			attribute.String("max_relay_amount", maxRelayAmountOrigin.String()),
+		))
+		quoteAmountOrigin = maxRelayAmountOrigin
+	}
+
 	// at this point we have a number of adjustments to make to the quote amount that are based on destination denomations.
 	// so in order to do this we need to take our quoteAmountOrigin (which has been potentially modified since it was first calculated above)
 	// and reprice it *back* into destination denomination
@@ -866,7 +877,7 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 	//   IE: If the calculated ceiling at this point exceeds the arbitrary maximum ceiling, set to the maxQuoteAmount setting
 	maxRelayAmountDest := m.config.GetMaxRelayAmount(input.DestChainID, input.DestTokenAddr)
 	if maxRelayAmountDest != nil && quoteAmountDest.Cmp(maxRelayAmountDest) > 0 {
-		span.AddEvent("quote amount greater than max quote amount", trace.WithAttributes(
+		span.AddEvent("quote amount greater than max relay amount on destination", trace.WithAttributes(
 			attribute.String("quote_amount_dest", quoteAmountDest.String()),
 			attribute.String("max_relay_amount", maxRelayAmountDest.String()),
 		))

@@ -162,6 +162,7 @@ func (s *QuoterSuite) TestMinGasReserve() {
 			DestFastBridgeAddress:   common.HexToAddress("0x789").Hex(),
 		},
 	}
+	// TODO: fix the test, the quotes ordering is not deterministic
 	s.Equal(expectedQuotes, quotes)
 
 	// Set MinGasToken and make sure it is accounted for in the DestAmount.
@@ -200,6 +201,7 @@ func (s *QuoterSuite) TestMinGasReserve() {
 			DestFastBridgeAddress:   common.HexToAddress("0x789").Hex(),
 		},
 	}
+	// TODO: fix the test, the quotes ordering is not deterministic
 	s.Equal(expectedQuotes, quotes)
 
 	// Set MinGasToken to an amount that exceeds the balance.
