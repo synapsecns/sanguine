@@ -7,7 +7,12 @@ import { uuidv7 } from 'uuidv7'
 import { areIntentsSupported, MEDIAN_TIME_BLOCK } from '../constants'
 import { Query, applySlippageToQuery, applyDeadlineToQuery } from '../module'
 import { SynapseSDK } from '../sdk'
-import { RecipientEntity, RouteInput, USER_SIMULATED_ADDRESS } from '../swap'
+import {
+  RecipientEntity,
+  RouteInput,
+  slippageFromPercentage,
+  USER_SIMULATED_ADDRESS,
+} from '../swap'
 import { SwapQuote, SwapQuoteV2, SwapV2Parameters } from '../types'
 import {
   handleNativeToken,
@@ -44,6 +49,7 @@ export async function swapV2(
   if (isSameAddress(params.fromToken, params.toToken)) {
     return getEmptyQuoteV2(params)
   }
+  const slippage = slippageFromPercentage(params.slippagePercentage)
   const input: RouteInput = {
     chainId: params.chainId,
     fromToken: params.fromToken,
@@ -66,7 +72,7 @@ export async function swapV2(
   }
   const route = await this.swapEngineSet.generateRoute(input, quote, {
     allowMultiStep: true,
-    slippage: params.slippage,
+    slippage,
   })
   if (!route) {
     return getEmptyQuoteV2(params)

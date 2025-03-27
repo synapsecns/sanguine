@@ -1,7 +1,5 @@
 import { BigNumber, BigNumberish, PopulatedTransaction } from 'ethers'
 
-import { Slippage } from './misc'
-
 /**
  * Parameters required to create an intent.
  *
@@ -12,7 +10,7 @@ import { Slippage } from './misc'
  * @property {number} toChainId - ID of the chain where funds will be received
  * @property {string} toToken - Address of the token to be received
  * @property {string} [toRecipient] - Address of the recipient that will receive the funds (default: `fromSender`)
- * @property {Slippage} [slippage] - Slippage tolerance configuration
+ * @property {number} [slippagePercentage] - Slippage tolerance percentage
  * @property {number} [deadline] - Timestamp after which the transaction will be rejected
  * @property {boolean} [allowMultipleTxs] - Whether multiple transactions are allowed
  */
@@ -24,7 +22,7 @@ export type IntentParameters = {
   toChainId: number
   toToken: string
   toRecipient?: string
-  slippage?: Slippage
+  slippagePercentage?: number
   deadline?: number
   allowMultipleTxs?: boolean
 }

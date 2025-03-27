@@ -18,6 +18,17 @@ export const SlippageMax: Slippage = {
   denominator: 10000,
 }
 
+export const slippageFromPercentage = (
+  percentage?: number
+): Slippage | undefined => {
+  return percentage
+    ? {
+        numerator: Math.round(percentage * 100),
+        denominator: 10000,
+      }
+    : undefined
+}
+
 export const toBasisPoints = (slippage: Slippage): number => {
   return Math.round((slippage.numerator * 10000) / slippage.denominator)
 }
