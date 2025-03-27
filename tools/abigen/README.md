@@ -126,11 +126,26 @@ func init() {
 6. Consider generating a `doc.go` if one doesn't exist documenting the package
 7. Better [vyper](https://vyperlang.org/) support
 
-### Note on macOS and Rosetta
+### Solc Binary Fallback for Apple Silicon and Other Platforms
 
-If you are using a Mac with Apple Silicon, you might encounter issues running AMD64 Docker images due to the Rosetta translation layer. Rosetta is a dynamic binary translator that allows applications compiled for Intel processors to run on Apple Silicon. However, it may not always work seamlessly with Docker images designed for AMD64 architecture.
+The tool now includes a fallback mechanism for platforms where Docker might not work well, such as Apple Silicon Macs. When the Docker-based approach fails, the tool will:
 
-To resolve this issue, you can:
+1. Automatically determine your platform and architecture
+2. Download the appropriate `solc` binary from the official Ethereum solidity releases
+3. Store it in a local cache directory (`~/.cache/solc/`)
+4. Use the binary directly for compilation
+
+This approach has several benefits:
+- Eliminates the need for Rosetta on Apple Silicon
+- Potentially offers faster compilation (no Docker overhead)
+- Provides more reliable cross-platform support
+- Simplifies setup for new developers
+
+The binary is cached, so subsequent compiles with the same version will be faster. The tool verifies the executable permissions before use.
+
+### Legacy: Note on macOS and Rosetta
+
+If you prefer using the Docker-based approach on Apple Silicon, you can still do so with Rosetta:
 
 1. **Install Rosetta**: If not already installed, run the following command in your terminal:
    ```shell
@@ -139,10 +154,6 @@ To resolve this issue, you can:
 
 2. **Update Docker**: Ensure your Docker Desktop is up-to-date by navigating to **Settings** > **Software Update** > **Check for Updates**.
 
-3. **Disable x86_64/amd64 Emulation**: In Docker Desktop, go to **General settings** and disable the x86_64/amd64 emulation using Rosetta.
+3. **Configure Docker for Rosetta**: In Docker Desktop, go to **General settings** and configure the x86_64/amd64 emulation settings appropriately.
 
-For a detailed guide on fixing this issue, refer to [this blog post](https://romanzipp.com/blog/maocs-sequoia-docker-resetta-is-only-intended-to-run-silicon).
-
-### Future Plans
-
-To mitigate these issues, we plan to implement a fallback mechanism that downloads `solc` directly, bypassing the need for Docker-based solutions on incompatible architectures. For more details on this planned improvement, see [issue #3366](https://github.com/synapsecns/sanguine/issues/3366).
+For a detailed guide on configuring Docker with Rosetta, refer to [this blog post](https://romanzipp.com/blog/maocs-sequoia-docker-resetta-is-only-intended-to-run-silicon).
