@@ -2,11 +2,8 @@ import { validationResult } from 'express-validator'
 
 import { Synapse } from '../services/synapseService'
 import { logger } from '../middleware/logger'
-import {
-  DEFAULT_SWAP_SLIPPAGE_BIPS,
-  SLIPPAGE_BIPS_DENOMINATOR,
-} from '../constants'
 import { stringifyTxValue } from '../utils/replaceTxValue'
+import { DEFAULT_SWAP_SLIPPAGE_PERCENTAGE } from '../constants'
 
 export const swapV2Controller = async (req, res) => {
   const errors = validationResult(req)
@@ -24,19 +21,13 @@ export const swapV2Controller = async (req, res) => {
         slippage?: number
       }
 
-    // Convert percentage slippage to bips
-    const slippageBips = slippage ? slippage * 100 : DEFAULT_SWAP_SLIPPAGE_BIPS
-
     const quote = await Synapse.swapV2({
       chainId,
       fromToken,
       toToken,
       fromAmount,
       toRecipient,
-      slippage: {
-        numerator: slippageBips,
-        denominator: SLIPPAGE_BIPS_DENOMINATOR,
-      },
+      slippagePercentage: slippage ?? DEFAULT_SWAP_SLIPPAGE_PERCENTAGE,
     })
 
     // Convert all BigNumber values to strings.
