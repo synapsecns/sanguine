@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.17.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.1...@synapsecns/sdk-router@0.17.2) (2025-03-27)
+
+
+### Bug Fixes
+
+* **sdk-router:** exported slippage type ([#3634](https://github.com/synapsecns/sanguine/issues/3634)) ([d7a2846](https://github.com/synapsecns/sanguine/commit/d7a2846901fce8d9b0587852eddaad522c9c0068))
+
+
+
+
+
 ## [0.17.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.0...@synapsecns/sdk-router@0.17.1) (2025-03-24)
 
 
