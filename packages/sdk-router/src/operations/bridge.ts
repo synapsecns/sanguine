@@ -9,7 +9,13 @@ import {
   isSwapQuery,
 } from '../module'
 import { SynapseSDK } from '../sdk'
-import { EngineID, RecipientEntity, RouteInput, SwapEngineRoute } from '../swap'
+import {
+  EngineID,
+  RecipientEntity,
+  RouteInput,
+  slippageFromPercentage,
+  SwapEngineRoute,
+} from '../swap'
 import { BridgeQuote, BridgeQuoteV2, BridgeV2Parameters } from '../types'
 import { handleNativeToken, isSameAddress, Prettify } from '../utils'
 
@@ -55,6 +61,7 @@ async function _collectV1Quotes(
   ) {
     return []
   }
+  const slippage = slippageFromPercentage(params.slippagePercentage)
   const deadlineBN = params.deadline
     ? BigNumber.from(params.deadline)
     : undefined
@@ -80,8 +87,8 @@ async function _collectV1Quotes(
           quote.bridgeModuleName,
           quote.originQuery,
           quote.destQuery,
-          params.slippage?.numerator,
-          params.slippage?.denominator
+          slippage?.numerator,
+          slippage?.denominator
         )
       // Apply deadline
       const { originQuery, destQuery } = applyBridgeDeadline.call(
@@ -141,6 +148,7 @@ async function _collectV2Quotes(
   ) {
     return []
   }
+  const slippage = slippageFromPercentage(params.slippagePercentage)
   const candidates = await Promise.all(
     bridgeV2Modules.map(async (set) =>
       set.getBridgeTokenCandidates({
@@ -180,7 +188,7 @@ async function _collectV2Quotes(
         }
         const route = await this.swapEngineSet.generateRoute(input, quote, {
           allowMultiStep: true,
-          slippage: params.slippage,
+          slippage,
         })
         return route
       })
@@ -202,7 +210,7 @@ async function _collectV2Quotes(
             toToken: params.toToken,
             fromSender: params.fromSender,
             toRecipient: params.toRecipient || params.fromSender,
-            slippage: params.slippage,
+            slippage,
             allowMultipleTxs: params.allowMultipleTxs,
           })
           // Check that a route was found.

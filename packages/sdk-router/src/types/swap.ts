@@ -1,7 +1,7 @@
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber'
 import { PopulatedTransaction } from 'ethers'
 
-import { Query, Slippage } from './misc'
+import { Query } from './misc'
 
 /**
  * Quote for a swap transaction for SynapseRouter (V1).
@@ -25,7 +25,7 @@ export type SwapQuote = {
  * @property {BigNumberish} fromAmount - Amount of tokens to be swapped (in token decimals)
  * @property {string} toToken - Address of the token to be received
  * @property {string} [toRecipient] - Address of the recipient that will receive the swapped tokens (default: sender)
- * @property {Slippage} [slippage] - Slippage tolerance configuration
+ * @property {number} [slippagePercentage] - Slippage tolerance percentage
  * @property {number} [deadline] - Timestamp after which the transaction will be rejected
  * @property {boolean} [restrictComplexity] - If true, restricts complex routes to improve transaction reliability
  */
@@ -35,7 +35,7 @@ export type SwapV2Parameters = {
   fromAmount: BigNumberish
   toToken: string
   toRecipient?: string
-  slippage?: Slippage
+  slippagePercentage?: number
   deadline?: number
   restrictComplexity?: boolean
 }

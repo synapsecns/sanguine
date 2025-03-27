@@ -2,10 +2,7 @@ import { validationResult } from 'express-validator'
 
 import { Synapse } from '../services/synapseService'
 import { logger } from '../middleware/logger'
-import {
-  DEFAULT_SWAP_SLIPPAGE_BIPS,
-  SLIPPAGE_BIPS_DENOMINATOR,
-} from '../constants'
+import { DEFAULT_SWAP_SLIPPAGE_PERCENTAGE } from '../constants'
 import { stringifyTxValue } from '../utils/replaceTxValue'
 
 export const intentController = async (req, res) => {
@@ -36,9 +33,6 @@ export const intentController = async (req, res) => {
       allowMultipleTxs?: boolean
     }
 
-    // Convert percentage slippage to bips
-    const slippageBips = slippage ? slippage * 100 : DEFAULT_SWAP_SLIPPAGE_BIPS
-
     const intentQuotes = await Synapse.intent({
       fromChainId,
       fromToken,
@@ -47,10 +41,7 @@ export const intentController = async (req, res) => {
       toChainId,
       toToken,
       toRecipient,
-      slippage: {
-        numerator: slippageBips,
-        denominator: SLIPPAGE_BIPS_DENOMINATOR,
-      },
+      slippagePercentage: slippage ?? DEFAULT_SWAP_SLIPPAGE_PERCENTAGE,
       allowMultipleTxs,
     })
 

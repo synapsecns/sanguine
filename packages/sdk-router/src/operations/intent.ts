@@ -27,7 +27,7 @@ async function _getSameChainIntentQuotes(
     toToken: params.toToken,
     fromAmount: params.fromAmount,
     toRecipient: params.toRecipient || params.fromSender,
-    slippage: params.slippage,
+    slippagePercentage: params.slippagePercentage,
     deadline: params.deadline,
   })
   if (!swapQuote || swapQuote.expectedToAmount.isZero()) {
@@ -73,7 +73,7 @@ async function _getCrossChainIntentQuotes(
     fromAmount: params.fromAmount,
     fromSender: params.fromSender,
     toRecipient,
-    slippage: params.slippage,
+    slippagePercentage: params.slippagePercentage,
     deadline: params.deadline,
     allowMultipleTxs: params.allowMultipleTxs,
   })
@@ -121,7 +121,7 @@ async function _getCrossChainIntentQuotes(
         toChainId: params.toChainId,
         toToken: params.toToken,
         toRecipient,
-        slippage: params.slippage,
+        slippagePercentage: params.slippagePercentage,
       })
       return swapQuotes.map((swapQuote) => {
         const intentQuote: IntentQuote = {

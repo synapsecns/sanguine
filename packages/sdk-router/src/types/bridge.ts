@@ -1,6 +1,6 @@
 import { BigNumber, BigNumberish, PopulatedTransaction } from 'ethers'
 
-import { FeeConfig, Query, Slippage } from './misc'
+import { FeeConfig, Query } from './misc'
 
 /**
  * Quote information for a bridge operation.
@@ -43,7 +43,7 @@ export type BridgeQuote = {
  * @property {number} toChainId - ID of the chain where funds will be received
  * @property {string} toToken - Address of the token to be received
  * @property {string} [toRecipient] - Address of the recipient that will receive the funds (default: `fromSender`)
- * @property {Slippage} [slippage] - Slippage tolerance configuration
+ * @property {number} [slippagePercentage] - Slippage tolerance percentage
  * @property {number} [deadline] - Timestamp after which the transaction will be rejected
  */
 export type BridgeV2Parameters = {
@@ -54,7 +54,7 @@ export type BridgeV2Parameters = {
   toChainId: number
   toToken: string
   toRecipient?: string
-  slippage?: Slippage
+  slippagePercentage?: number
   deadline?: number
 }
 
