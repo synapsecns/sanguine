@@ -1,6 +1,6 @@
 import { Interface } from '@ethersproject/abi'
 import { Provider } from '@ethersproject/abstract-provider'
-import { Zero, MaxUint256 } from '@ethersproject/constants'
+import { MaxUint256 } from '@ethersproject/constants'
 import { BigNumber, BigNumberish, Contract, PopulatedTransaction } from 'ethers'
 import { uuidv7 } from 'uuidv7'
 
@@ -24,6 +24,7 @@ import {
   isNativeToken,
   calculateDeadline,
   TEN_MINUTES,
+  stringifyPopulatedTransaction,
 } from '../utils'
 
 const FULL_BALANCE = MaxUint256
@@ -87,17 +88,17 @@ export class SynapseIntentRouterSet {
       id: uuidv7(),
       fromChainId,
       fromToken,
-      fromAmount: BigNumber.from(fromAmount),
+      fromAmount: fromAmount.toString(),
       toChainId: bridgeRoute.bridgeToken.destChainId,
       toToken: bridgeRoute.toToken,
-      expectedToAmount: bridgeRoute.expectedToAmount,
-      minToAmount: bridgeRoute.minToAmount,
+      expectedToAmount: bridgeRoute.expectedToAmount.toString(),
+      minToAmount: bridgeRoute.minToAmount.toString(),
       routerAddress: this.getSirAddress(fromChainId),
       // These will be filled by the corresponding bridge module
       estimatedTime: 0,
       moduleNames,
-      gasDropAmount: Zero,
-      tx,
+      gasDropAmount: '0',
+      tx: stringifyPopulatedTransaction(tx),
     }
     return bridgeQuoteV2
   }

@@ -304,14 +304,15 @@ export abstract class SynapseModuleSet {
     bridgeToken: BridgeTokenCandidate,
     bridgeQuote: BridgeQuoteV2
   ): Promise<BridgeQuoteV2> {
+    const gasDropAmount = await this.getGasDropAmount(
+      bridgeQuote.toChainId,
+      bridgeToken.destToken
+    )
     return {
       ...bridgeQuote,
       estimatedTime: this.getEstimatedTime(bridgeQuote.fromChainId),
       moduleNames: [...bridgeQuote.moduleNames, this.moduleName],
-      gasDropAmount: await this.getGasDropAmount(
-        bridgeQuote.toChainId,
-        bridgeToken.destToken
-      ),
+      gasDropAmount: gasDropAmount.toString(),
     }
   }
 }
