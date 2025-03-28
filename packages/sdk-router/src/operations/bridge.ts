@@ -17,7 +17,12 @@ import {
   SwapEngineRoute,
 } from '../swap'
 import { BridgeQuote, BridgeQuoteV2, BridgeV2Parameters } from '../types'
-import { handleNativeToken, isSameAddress, Prettify } from '../utils'
+import {
+  handleNativeToken,
+  isSameAddress,
+  Prettify,
+  stringifyPopulatedTransaction,
+} from '../utils'
 
 type BridgeV2InternalParameters = Prettify<
   BridgeV2Parameters & { allowMultipleTxs?: boolean }
@@ -46,7 +51,7 @@ export async function _bridgeV2Internal(
   ])
   // Combine the quotes and sort by expectedToAmount in descending order
   return [...bridgeV1Quotes, ...bridgeV2Quotes].sort((a, b) =>
-    a.expectedToAmount.gt(b.expectedToAmount) ? -1 : 1
+    BigNumber.from(a.expectedToAmount).gte(b.expectedToAmount) ? -1 : 1
   )
 }
 
@@ -120,16 +125,16 @@ async function _collectV1Quotes(
         id: quote.id,
         fromChainId: params.fromChainId,
         fromToken: params.fromToken,
-        fromAmount: BigNumber.from(params.fromAmount),
+        fromAmount: params.fromAmount.toString(),
         toChainId: params.toChainId,
         toToken: params.toToken,
-        expectedToAmount: quote.maxAmountOut,
-        minToAmount: destQuery.minAmountOut,
+        expectedToAmount: quote.maxAmountOut.toString(),
+        minToAmount: destQuery.minAmountOut.toString(),
         routerAddress: quote.routerAddress,
         estimatedTime: quote.estimatedTime,
         moduleNames,
-        gasDropAmount: quote.gasDropAmount,
-        tx,
+        gasDropAmount: quote.gasDropAmount.toString(),
+        tx: stringifyPopulatedTransaction(tx),
       }
       return bridgeQuoteV2
     })

@@ -1,4 +1,3 @@
-import { Zero } from '@ethersproject/constants'
 import { BigNumber } from 'ethers'
 import { uuidv7 } from 'uuidv7'
 
@@ -30,13 +29,13 @@ async function _getSameChainIntentQuotes(
     slippagePercentage: params.slippagePercentage,
     deadline: params.deadline,
   })
-  if (!swapQuote || swapQuote.expectedToAmount.isZero()) {
+  if (!swapQuote || swapQuote.expectedToAmount === '0') {
     return []
   }
   const intentCommon = {
     fromChainId: params.fromChainId,
     fromToken: params.fromToken,
-    fromAmount: BigNumber.from(params.fromAmount),
+    fromAmount: params.fromAmount.toString(),
     toChainId: params.toChainId,
     toToken: params.toToken,
     expectedToAmount: swapQuote.expectedToAmount,
@@ -47,7 +46,7 @@ async function _getSameChainIntentQuotes(
     ...intentCommon,
     routerAddress: swapQuote.routerAddress,
     moduleNames: swapQuote.moduleNames,
-    gasDropAmount: Zero,
+    gasDropAmount: '0',
     tx: swapQuote.tx,
   }
   const intentQuote: IntentQuote = {
@@ -85,7 +84,7 @@ async function _getCrossChainIntentQuotes(
       const intentCommon = {
         fromChainId: params.fromChainId,
         fromToken: params.fromToken,
-        fromAmount: BigNumber.from(params.fromAmount),
+        fromAmount: params.fromAmount.toString(),
         toChainId: params.toChainId,
       }
       const bridgeStep: IntentStep = {
@@ -140,5 +139,7 @@ async function _getCrossChainIntentQuotes(
   // Flatten the quotes and sort them by expectedToAmount in descending order
   return intentQuotes
     .flat()
-    .sort((a, b) => (a.expectedToAmount.gte(b.expectedToAmount) ? -1 : 1))
+    .sort((a, b) =>
+      BigNumber.from(a.expectedToAmount).gte(b.expectedToAmount) ? -1 : 1
+    )
 }
