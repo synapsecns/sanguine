@@ -1,5 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { AddressZero, Zero } from '@ethersproject/constants'
+import { AddressZero } from '@ethersproject/constants'
 import { PopulatedTransaction } from '@ethersproject/contracts'
 import { BigNumberish } from 'ethers'
 import { uuidv7 } from 'uuidv7'
@@ -20,6 +20,7 @@ import {
   applyOptionalDeadline,
   calculateDeadline,
   isSameAddress,
+  stringifyPopulatedTransaction,
 } from '../utils'
 
 const getEmptyQuoteV2 = (params: SwapV2Parameters): SwapQuoteV2 => {
@@ -27,10 +28,10 @@ const getEmptyQuoteV2 = (params: SwapV2Parameters): SwapQuoteV2 => {
     id: '',
     chainId: params.chainId,
     fromToken: params.fromToken,
-    fromAmount: BigNumber.from(params.fromAmount),
+    fromAmount: params.fromAmount.toString(),
     toToken: params.toToken,
-    expectedToAmount: Zero,
-    minToAmount: Zero,
+    expectedToAmount: '0',
+    minToAmount: '0',
     moduleNames: [],
     estimatedTime: 0,
     routerAddress: AddressZero,
@@ -86,18 +87,19 @@ export async function swapV2(
         route.steps
       )
     : undefined
+  const expectedToAmount = route.expectedToAmount.toString()
   return {
     id: uuidv7(),
     chainId: params.chainId,
     fromToken: params.fromToken,
-    fromAmount: BigNumber.from(params.fromAmount),
+    fromAmount: params.fromAmount.toString(),
     toToken: params.toToken,
-    expectedToAmount: route.expectedToAmount,
-    minToAmount: route.minToAmount ?? route.expectedToAmount,
+    expectedToAmount,
+    minToAmount: route.minToAmount?.toString() ?? expectedToAmount,
     routerAddress: this.sirSet.getSirAddress(params.chainId),
     estimatedTime: MEDIAN_TIME_BLOCK[params.chainId],
     moduleNames: [route.engineName],
-    tx,
+    tx: stringifyPopulatedTransaction(tx),
   }
 }
 

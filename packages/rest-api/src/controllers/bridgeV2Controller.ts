@@ -3,7 +3,7 @@ import { validationResult } from 'express-validator'
 import { Synapse } from '../services/synapseService'
 import { logger } from '../middleware/logger'
 import { DEFAULT_SWAP_SLIPPAGE_PERCENTAGE } from '../constants'
-import { stringifyTxValue } from '../utils/replaceTxValue'
+import { formatTransactionData } from '../utils/formatTransactionData'
 
 export const bridgeV2Controller = async (req, res) => {
   const errors = validationResult(req)
@@ -42,21 +42,10 @@ export const bridgeV2Controller = async (req, res) => {
       slippagePercentage: slippage ?? DEFAULT_SWAP_SLIPPAGE_PERCENTAGE,
     })
 
-    // Convert all BigNumber values to strings.
-    const payload = allQuotes.map((quote) => {
-      return {
-        ...quote,
-        fromAmount: quote.fromAmount.toString(),
-        expectedToAmount: quote.expectedToAmount.toString(),
-        minToAmount: quote.minToAmount.toString(),
-        gasDropAmount: quote.gasDropAmount.toString(),
-        callData: stringifyTxValue({
-          tx: quote.tx,
-          preserveTx: !!fromSender && !!toRecipient,
-        }),
-        tx: undefined,
-      }
-    })
+    // Include callData only if both fromSender and toRecipient are provided.
+    const payload = allQuotes.map((quote) =>
+      formatTransactionData(quote, !!fromSender && !!toRecipient)
+    )
 
     logger.info(`Successful bridgeV2Controller response`, {
       payload,

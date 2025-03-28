@@ -3,7 +3,7 @@ import { validationResult } from 'express-validator'
 import { Synapse } from '../services/synapseService'
 import { logger } from '../middleware/logger'
 import { DEFAULT_SWAP_SLIPPAGE_PERCENTAGE } from '../constants'
-import { stringifyTxValue } from '../utils/replaceTxValue'
+import { formatTransactionData } from '../utils/formatTransactionData'
 
 export const intentController = async (req, res) => {
   const errors = validationResult(req)
@@ -45,24 +45,12 @@ export const intentController = async (req, res) => {
       allowMultipleTxs,
     })
 
-    // Convert all BigNumber values to strings.
+    // Include callData only if both fromSender and toRecipient are provided.
     const payload = intentQuotes.map((quote) => ({
       ...quote,
-      fromAmount: quote.fromAmount.toString(),
-      expectedToAmount: quote.expectedToAmount.toString(),
-      minToAmount: quote.minToAmount.toString(),
-      steps: quote.steps.map((step) => ({
-        ...step,
-        fromAmount: step.fromAmount.toString(),
-        expectedToAmount: step.expectedToAmount.toString(),
-        minToAmount: step.minToAmount.toString(),
-        gasDropAmount: step.gasDropAmount.toString(),
-        callData: stringifyTxValue({
-          tx: step.tx,
-          preserveTx: !!fromSender && !!toRecipient,
-        }),
-        tx: undefined,
-      })),
+      steps: quote.steps.map((step) =>
+        formatTransactionData(step, !!fromSender && !!toRecipient)
+      ),
     }))
 
     logger.info(`Successful intentController response`, {

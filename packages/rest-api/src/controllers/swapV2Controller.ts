@@ -2,8 +2,8 @@ import { validationResult } from 'express-validator'
 
 import { Synapse } from '../services/synapseService'
 import { logger } from '../middleware/logger'
-import { stringifyTxValue } from '../utils/replaceTxValue'
 import { DEFAULT_SWAP_SLIPPAGE_PERCENTAGE } from '../constants'
+import { formatTransactionData } from '../utils/formatTransactionData'
 
 export const swapV2Controller = async (req, res) => {
   const errors = validationResult(req)
@@ -30,18 +30,8 @@ export const swapV2Controller = async (req, res) => {
       slippagePercentage: slippage ?? DEFAULT_SWAP_SLIPPAGE_PERCENTAGE,
     })
 
-    // Convert all BigNumber values to strings.
-    const payload = {
-      ...quote,
-      fromAmount: quote.fromAmount.toString(),
-      expectedToAmount: quote.expectedToAmount.toString(),
-      minToAmount: quote.minToAmount.toString(),
-      callData: stringifyTxValue({
-        tx: quote.tx,
-        preserveTx: !!toRecipient,
-      }),
-      tx: undefined,
-    }
+    // Include callData only if toRecipient is provided.
+    const payload = formatTransactionData(quote, !!toRecipient)
 
     logger.info(`Successful swapV2Controller response`, {
       query: req.query,
