@@ -689,7 +689,7 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 	}
 	fee, err := m.feePricer.GetTotalFee(ctx, uint32(input.OriginChainID), uint32(input.DestChainID), destToken, true, input.QuoteRequest)
 	if err != nil {
-		logger.Error("Error getting total fee", "error", err)
+		logger.Error("Error getting total fee: ", "error", err)
 		return nil, fmt.Errorf("error getting total fee: %w", err)
 	}
 
