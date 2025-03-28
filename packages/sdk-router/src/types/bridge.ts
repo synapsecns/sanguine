@@ -1,6 +1,6 @@
-import { BigNumber, BigNumberish, PopulatedTransaction } from 'ethers'
+import { BigNumber, BigNumberish } from 'ethers'
 
-import { FeeConfig, Query } from './misc'
+import { FeeConfig, PopulatedTx, Query } from './misc'
 
 /**
  * Quote information for a bridge operation.
@@ -79,14 +79,14 @@ export type BridgeQuoteV2 = {
   id: string
   fromChainId: number
   fromToken: string
-  fromAmount: BigNumber
+  fromAmount: string
   toChainId: number
   toToken: string
-  expectedToAmount: BigNumber
-  minToAmount: BigNumber
+  expectedToAmount: string
+  minToAmount: string
   routerAddress: string
   estimatedTime: number
   moduleNames: string[]
-  gasDropAmount: BigNumber
-  tx?: PopulatedTransaction
+  gasDropAmount: string
+  tx?: PopulatedTx
 }

@@ -1,7 +1,6 @@
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber'
-import { PopulatedTransaction } from 'ethers'
 
-import { Query } from './misc'
+import { PopulatedTx, Query } from './misc'
 
 /**
  * Quote for a swap transaction for SynapseRouter (V1).
@@ -59,12 +58,12 @@ export type SwapQuoteV2 = {
   id: string
   chainId: number
   fromToken: string
-  fromAmount: BigNumber
+  fromAmount: string
   toToken: string
-  expectedToAmount: BigNumber
-  minToAmount: BigNumber
+  expectedToAmount: string
+  minToAmount: string
   routerAddress: string
   estimatedTime: number
   moduleNames: string[]
-  tx?: PopulatedTransaction
+  tx?: PopulatedTx
 }

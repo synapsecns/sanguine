@@ -1,4 +1,6 @@
-import { BigNumber, BigNumberish, PopulatedTransaction } from 'ethers'
+import { BigNumberish } from 'ethers'
+
+import { PopulatedTx } from './misc'
 
 /**
  * Parameters required to create an intent.
@@ -45,11 +47,11 @@ export type IntentQuote = {
   id: string
   fromChainId: number
   fromToken: string
-  fromAmount: BigNumber
+  fromAmount: string
   toChainId: number
   toToken: string
-  expectedToAmount: BigNumber
-  minToAmount: BigNumber
+  expectedToAmount: string
+  minToAmount: string
   estimatedTime: number
   steps: IntentStep[]
 }
@@ -73,14 +75,14 @@ export type IntentQuote = {
 export type IntentStep = {
   fromChainId: number
   fromToken: string
-  fromAmount: BigNumber
+  fromAmount: string
   toChainId: number
   toToken: string
-  expectedToAmount: BigNumber
-  minToAmount: BigNumber
+  expectedToAmount: string
+  minToAmount: string
   routerAddress: string
   estimatedTime: number
   moduleNames: string[]
-  gasDropAmount: BigNumber
-  tx?: PopulatedTransaction
+  gasDropAmount: string
+  tx?: PopulatedTx
 }
