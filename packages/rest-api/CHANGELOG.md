@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.2...@synapsecns/rest-api@1.13.3) (2025-03-28)
+
+
+### Bug Fixes
+
+* **sdk-router, rest-api:** stringify BigNumber in exported V2 types [SYN-77] ([#3636](https://github.com/synapsecns/sanguine/issues/3636)) ([9d4f771](https://github.com/synapsecns/sanguine/commit/9d4f77164267a34aba251269d1aafa520afdf436))
+
+
+
+
+
 ## [1.13.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.1...@synapsecns/rest-api@1.13.2) (2025-03-27)
 
 
