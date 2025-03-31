@@ -52,7 +52,7 @@ export const conflictingProofsController = async (
 
     if (conflictingProofs && conflictingProofs.length > 0) {
       if (format === 'html') {
-        res.send(jsonToHtmlTable(conflictingProofs));
+        res.send(jsonToHtmlTable(conflictingProofs, flags));
       } else {
         res.json(conflictingProofs);
       }

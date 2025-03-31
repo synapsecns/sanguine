@@ -1,7 +1,7 @@
 
 import { scannerLink } from "./enrichResults";
 
-export function jsonToHtmlTable(payload: any): string {
+export function jsonToHtmlTable(payload: any, flags: string | undefined): string {
   try {
     // Ensure payload is an array of objects -- make an array of 1 if not.
     if (!Array.isArray(payload)) {
@@ -173,7 +173,12 @@ const addRowsForItem = (item: any, index: number) => {
           displayValue = scannerLink(chainId, value);
         }
 
-        if (key.toLowerCase() === 'deadline' && item.BridgeRelay == undefined && value !== null && !isNaN(Number(value))) {
+        if (key.toLowerCase() === 'deadline' 
+        && flags?.includes('synapse')
+        && item.BridgeRelay == undefined 
+        && value !== null 
+        && !isNaN(Number(value))
+      ) {
           const deadlineTimestamp = Number(value);
           const now = Math.floor(Date.now() / 1000);
           if (deadlineTimestamp < now) {
@@ -233,14 +238,14 @@ const addRowsForItem = (item: any, index: number) => {
       if (key === 'transactionId') {
         transformations.push((val) => {
           return `${val} 
-            <i class="fas fa-book" style="cursor: pointer; margin-left: 5px;" title="Clipboard OpBot Trace Command" onclick="(function() {
+            ${flags?.includes('synapse') ? `<i class="fas fa-book" style="cursor: pointer; margin-left: 5px;" title="Clipboard OpBot Trace Command" onclick="(function() {
               const logText = '@OpBot trace transaction_id:${value}';
               navigator.clipboard.writeText(logText).then(() => {
                 alert('Log command copied to clipboard');
               }).catch(err => {
                 console.error('Error copying log command:', err);
               });
-            })()"></i>
+            })()"></i>` : ''}
             <i class="fas fa-external-link-alt" style="cursor: pointer;" onclick="(function() {
               const currentUrl = document.location;
               const baseUrl = currentUrl.origin + currentUrl.pathname.split('/').slice(0, -2).join('/');

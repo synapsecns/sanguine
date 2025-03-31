@@ -30,7 +30,7 @@ export const disputesController = async (req: Request, res: Response) => {
 
     if (disputes && disputes.length > 0) {
       if (format === 'html') {
-        res.send(jsonToHtmlTable(disputes));
+        res.send(jsonToHtmlTable(disputes, flags));
       } else {
         res.json(disputes);
       }

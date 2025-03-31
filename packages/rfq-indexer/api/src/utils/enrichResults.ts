@@ -65,6 +65,7 @@ export async function addTokenSymbols(results: any): Promise<void> {
   });
 }
 
+// TODO: add cg api key. free rate limit seems to be OK for now
 export async function addUsdPricesCurrent(results: any): Promise<void> {
   const coingeckoBaseUrl = 'https://api.coingecko.com/api/v3/simple/price';
   const coingeckoIdsToFetch = new Set<string>();

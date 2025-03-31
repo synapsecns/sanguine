@@ -53,7 +53,7 @@ export const recentInvalidRelaysController = async (
 
     if (results && results.length > 0) {
       if (format === 'html') {
-        res.send(jsonToHtmlTable(results));
+        res.send(jsonToHtmlTable(results, flags));
       } else {
         res.json(results);
       }

@@ -53,7 +53,7 @@ export const pendingTransactionsMissingClaimController = async (
 
     if (nestedResults && nestedResults.length > 0) {
       if (format === 'html') {
-        res.send(jsonToHtmlTable(nestedResults));
+        res.send(jsonToHtmlTable(nestedResults, flags));
       } else {
         res.json(nestedResults);
       }
@@ -106,7 +106,7 @@ export const pendingTransactionsMissingProofController = async (
 
     if (nestedResults && nestedResults.length > 0) {
       if (format === 'html') {
-        res.send(jsonToHtmlTable(nestedResults));
+        res.send(jsonToHtmlTable(nestedResults, flags));
       } else {
         res.json(nestedResults);
       }
@@ -165,7 +165,7 @@ export const pendingTransactionsMissingRelayController = async (
 
     if (nestedResults && nestedResults.length > 0) {
       if (format === 'html') {
-        res.send(jsonToHtmlTable(nestedResults));
+        res.send(jsonToHtmlTable(nestedResults, flags));
       } else {
         res.json(nestedResults);
       }
@@ -224,7 +224,7 @@ export const pendingTransactionsMissingRelayExceedDeadlineController = async (
 
     if (nestedResults && nestedResults.length > 0) {
       if (format === 'html') {
-        res.send(jsonToHtmlTable(nestedResults));
+        res.send(jsonToHtmlTable(nestedResults, flags));
       } else {
         res.json(nestedResults);
       }

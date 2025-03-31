@@ -82,7 +82,7 @@ export const getTransactionById = async (req: Request, res: Response) => {
         })
       )
       if (format === 'html') {
-        res.send(jsonToHtmlTable(filteredResult));
+        res.send(jsonToHtmlTable(filteredResult, flags));
       } else {
         res.json(filteredResult);
       }
