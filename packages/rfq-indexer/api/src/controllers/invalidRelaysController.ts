@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 
 import { jsonToHtmlTable } from '../utils/json_formatter'
 import { db } from '../db'
+import { addSenderStatus, addTokenSymbols, addUsdPricesCurrent } from '../utils/enrichResults';
 
 export const recentInvalidRelaysController = async (
   req: Request,
@@ -42,6 +43,13 @@ export const recentInvalidRelaysController = async (
       .where('BridgeRequestEvents.transactionId', 'is', null)
 
     const results = await query.execute()
+
+    await addTokenSymbols(results);
+  
+    if (flags?.includes("synapse")) {
+      await addSenderStatus(results);
+      await addUsdPricesCurrent(results);
+    }
 
     if (results && results.length > 0) {
       if (format === 'html') {

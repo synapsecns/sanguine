@@ -4,6 +4,7 @@ import { jsonToHtmlTable } from '../utils/json_formatter'
 import { db } from '../db'
 import { qDisputes } from '../queries'
 import { nest_results } from '../utils/nestResults'
+import { addSenderStatus, addTokenSymbols, addUsdPricesCurrent } from '../utils/enrichResults'
 
 export const disputesController = async (req: Request, res: Response) => {
   const flags = req.query.flags as string | undefined;
@@ -16,6 +17,15 @@ export const disputesController = async (req: Request, res: Response) => {
       .orderBy('blockTimestamp_dispute', 'desc')
 
     const results = await query.execute()
+
+    await addTokenSymbols(results);
+  
+    if (flags?.includes("synapse")) {
+      await addSenderStatus(results);
+      await addUsdPricesCurrent(results);
+    }
+    
+    
     const disputes = nest_results(results)
 
     if (disputes && disputes.length > 0) {

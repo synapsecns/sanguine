@@ -1,12 +1,12 @@
 import { Request, response, Response } from 'express'
 
 import { jsonToHtmlTable } from '../utils/json_formatter'
+import { addSenderStatus, addTokenSymbols, addUsdPricesCurrent } from '../utils/enrichResults'
 
 import { db } from '../db'
 import { qDeposits, qRelays, qProofs, qClaims, qRefunds } from '../queries'
 import { nest_results } from '../utils/nestResults'
 
-import axios from 'axios'
 
 
 
@@ -40,6 +40,15 @@ export const pendingTransactionsMissingClaimController = async (
       .orderBy('blockTimestamp_proof', 'desc')
 
     const results = await query.execute()
+
+    await addTokenSymbols(results);
+  
+    if (flags?.includes("synapse")) {
+      await addSenderStatus(results);
+      await addUsdPricesCurrent(results);
+    }
+    
+    
     const nestedResults = nest_results(results)
 
     if (nestedResults && nestedResults.length > 0) {
@@ -84,6 +93,15 @@ export const pendingTransactionsMissingProofController = async (
       .orderBy('blockTimestamp_relay', 'desc')
 
     const results = await query.execute()
+
+    await addTokenSymbols(results);
+  
+    if (flags?.includes("synapse")) {
+      await addSenderStatus(results);
+      await addUsdPricesCurrent(results);
+    }
+    
+    
     const nestedResults = nest_results(results)
 
     if (nestedResults && nestedResults.length > 0) {
@@ -136,23 +154,12 @@ export const pendingTransactionsMissingRelayController = async (
 
       const results = await query.execute()
 
-    if (flags?.includes("synapse")) {
-      const axiosRequests = results.map((result: any) => {
-        return axios.get(`https://screener.omnirpc.io/fe/address/${result.sender}`, { timeout: 2500 })
-          .then(response => {
-            const { risk } = response.data;
-            if (typeof risk !== 'undefined') {
-              result.senderStatus = risk ? 'SCREENED' : 'OK';
-            }
-          })
-          .catch(error => {
-            result.senderStatus = 'LOOKUP_FAILED';
-            console.log('Error calling screener:', error.message);
-          });
-      });
-
-      await Promise.all(axiosRequests);
-    }
+      await addTokenSymbols(results);
+    
+      if (flags?.includes("synapse")) {
+        await addSenderStatus(results);
+        await addUsdPricesCurrent(results);
+      }
 
     const nestedResults = nest_results(results)
 
@@ -205,6 +212,14 @@ export const pendingTransactionsMissingRelayExceedDeadlineController = async (
       .where('blockTimestamp_deposit', '<=', sevenDaysAgo)
 
     const results = await query.execute()
+
+    await addTokenSymbols(results);
+  
+    if (flags?.includes("synapse")) {
+      await addSenderStatus(results);
+      await addUsdPricesCurrent(results);
+    }
+
     const nestedResults = nest_results(results)
 
     if (nestedResults && nestedResults.length > 0) {

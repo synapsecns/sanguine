@@ -1,3 +1,6 @@
+
+import { scannerLink } from "./enrichResults";
+
 export function jsonToHtmlTable(payload: any): string {
   try {
     // Ensure payload is an array of objects -- make an array of 1 if not.
@@ -16,9 +19,9 @@ export function jsonToHtmlTable(payload: any): string {
           font-family: 'Consolas', monospace;
           font-size: 12px;
           border-collapse: collapse;
-          width: 70%;
-          background-color: #333;
-          color: #ddd;
+          background-color: #222;
+          color: white;
+          width: 820px;
         }
         th, td {
           border: 1px solid #555;
@@ -34,12 +37,15 @@ export function jsonToHtmlTable(payload: any): string {
         }
         .indent-0 {
           padding-left: 5px;
+          padding-right: 5px;
         }
         .indent-1 {
           padding-left: 20px;
+          padding-right: 5px;
         }
         .indent-2 {
           padding-left: 40px;
+          padding-right: 5px;
         }
         .divider {
           height: 15px;
@@ -49,7 +55,7 @@ export function jsonToHtmlTable(payload: any): string {
         .copy-icon {
           cursor: pointer;
           margin-left: 5px;
-          color: #ddd;
+          color: white;
         }
         .copy-icon:hover {
           color: #fff;
@@ -61,29 +67,118 @@ export function jsonToHtmlTable(payload: any): string {
           width: 1%;
           white-space: nowrap;
         }
+        .valuecell {
+          padding-left: 5px;
+          background-color: #222 !important;
+        }
       </style>
       <table>
         <tbody>
     `;
 
-    // Function to add rows for each item
-    const addRowsForItem = (item: any, index: number) => {
-      const itemId = `item-${index}`;
-      htmlTable += `<tr><td colspan="2" class="indent-0" style="background-color: #444;">
-        <strong>Item #${index}</strong>
-        <i class="fas fa-copy copy-icon" onclick="copyItemToClipboard('${itemId}', this)"></i>
-      </td></tr>`;
-      htmlTable += `<tr id="${itemId}">`;
-      Object.entries(item).forEach(([header, content]) => {
-        htmlTable += `<tr><td colspan="2" class="indent-1" style="background-color: #555;"><strong>${header}</strong></td></tr>`;
-        if (typeof content === 'object' && content !== null) {
-          Object.entries(content).forEach(([key, value]) => {
-            htmlTable += `<tr><td class="indent-2" style="background-color: #666;">${key}</td><td>${formatValue(key, value)}</td></tr>`;
-          });
+
+    
+const addRowsForItem = (item: any, index: number) => {
+  
+  const origChainId = item.Bridge.originChainId;
+  const destChainId = item.Bridge.destChainId;
+
+  const itemId = `item-${index}`;
+  htmlTable += `<tr><td colspan="3" class="indent-0" style="background-color: #292929;">
+    <strong>Item #${index}</strong>
+    <i class="fas fa-copy copy-icon" onclick="copyItemToClipboard('${itemId}', this)"></i>
+  </td></tr>`;
+  htmlTable += `<tr id="${itemId}">`;
+
+  Object.entries(item).forEach(([header, content]: [string, any]) => {
+    htmlTable += `<tr><td colspan="3" class="indent-1" style="background-color: #393939;"><strong>${header}</strong></td></tr>`;
+    if (typeof content === 'object' && content !== null) {
+      const originEntries: [string, any][] = [];
+      const destEntries: [string, any][] = [];
+      const otherEntries: [string, any][] = [];
+      let usdValueDifference = null;
+      let amountFormattedDifference = null;
+      let timeDifference = null;
+
+      Object.entries(content).forEach(([key, value]) => {
+        if (key.startsWith('origin')) {
+          originEntries.push([key, value]);
+        } else if (key.startsWith('dest')) {
+          destEntries.push([key, value]);
+        } else {
+          otherEntries.push([key, value]);
         }
       });
-      htmlTable += `</tr><tr class="divider"><td colspan="2" class='divider'></td></tr>`;
-    };
+
+      if (originEntries.length > 0 || destEntries.length > 0) {
+        htmlTable += `<tr><td class="indent-2" style="text-align:center; background-color: #494949;"></td><td style="padding-right: 10px; text-align:right; background-color: #494949;"><strong>Origin</strong></td><td style="padding-left: 10; text-align:left; background-color: #494949;"><strong>Destination</strong></td></tr>`;
+        const maxLength = Math.max(originEntries.length, destEntries.length);
+        for (let i = 0; i < maxLength; i++) {
+          const originEntry = originEntries[i] || ['', ''];
+          const destEntry = destEntries[i] || ['', ''];
+          const label = originEntry[0].replace(/^origin|dest/, '') || destEntry[0].replace(/^origin|dest/, '');
+          htmlTable += `<tr><td class="indent-2" style="text-align:right; background-color: #494949;">${label}</td>`;
+          htmlTable += `<td class="valuecell" style="text-align:right;">${formatValue(originEntry[0], originEntry[1])}</td>`;
+          htmlTable += `<td class="valuecell" style="text-align:left;">${formatValue(destEntry[0], destEntry[1])}</td></tr>`;
+
+          // Calculate usdvalue differences
+          if (label === 'UsdValue') {
+            const originUsdValue = originEntry[1] !== null ? parseFloat(originEntry[1]) : null;
+            const destUsdValue = destEntry[1] !== null ? parseFloat(destEntry[1]) : null;
+            usdValueDifference = (originUsdValue !== null && destUsdValue !== null) ? (originUsdValue - destUsdValue).toFixed(6) : 'unknown';
+          }
+
+          // Calculate amount differences
+          if (label === 'AmountFormatted') {
+            const originTokenSymbol = content['originTokenSymbol'];
+            const destTokenSymbol = content['destTokenSymbol'];
+            const originAmountFormatted = parseFloat(originEntry[1]) || 0;
+            const destAmountFormatted = parseFloat(destEntry[1]) || 0;
+            amountFormattedDifference = (originTokenSymbol && destTokenSymbol) ? 
+              (originTokenSymbol === destTokenSymbol ? (originAmountFormatted - destAmountFormatted).toFixed(18) : 'n/a') : 'hide';
+          }
+
+        }
+
+        // Add amount differences row
+        if (amountFormattedDifference !== null && amountFormattedDifference!='hide') {
+          htmlTable += `<tr><td class="indent-2" style="text-align:right; background-color: #494949;">Units Diff</td>`;
+          htmlTable += `<td colspan="2" class="valuecell" style="text-align:left;">${amountFormattedDifference}</td></tr>`;
+        }
+        
+        // Add usdvalue differences row
+        if (usdValueDifference !== null) {
+          htmlTable += `<tr><td class="indent-2" style="text-align:right; background-color: #494949;">UsdValue Diff</td>`;
+          htmlTable += `<td colspan="2" class="valuecell" style="text-align:left;">${usdValueDifference}</td></tr>`;
+        }
+      }
+
+
+      // Calculate relay time
+      if (header === 'BridgeRelay') {
+        timeDifference = item.BridgeRelay.blockTimestamp - item.BridgeRequest.blockTimestamp;
+      }
+
+      // relay time
+      if (timeDifference !== null) {
+        htmlTable += `<tr><td class="indent-2" style="text-align:right; background-color: #494949;">Relay Time</td>`;
+        htmlTable += `<td colspan="2" class="valuecell" style="text-align:left;">${timeDifference} seconds</td></tr>`;
+      }
+
+      otherEntries.forEach(([key, value]) => {
+        let displayValue = formatValue(key, value);
+        const chainId = header == 'BridgeRelay' ? destChainId : origChainId;
+
+        if (['transactionHash', 'sender', 'relayer', 'to'].includes(key) && chainId) {
+          displayValue = scannerLink(chainId, value);
+        }
+
+        htmlTable += `<tr><td class="indent-2" style="text-align:right; background-color: #494949;">${key}</td><td colspan="2" class="valuecell">${displayValue}</td></tr>`;
+      });
+    }
+  });
+  htmlTable += `</tr><tr class="divider"><td colspan="3" class='divider'></td></tr>`;
+};
 
     // Function to format value with transformations
     const formatValue = (key: string, value: any) => {
@@ -166,15 +261,12 @@ export function jsonToHtmlTable(payload: any): string {
       return isFuture ? `${timeString} from now` : `${timeString} ago`;
     };
 
-    // Add rows for each item in the payload
     payload.forEach((item:any, index:any) => {
       addRowsForItem(item, index);
     });
 
-    // Close table
     htmlTable += '</tbody></table>';
 
-    // Add script for copy functionality
     htmlTable += `
       <script>
         function copyToClipboard(text, iconElement) {
@@ -203,7 +295,6 @@ export function jsonToHtmlTable(payload: any): string {
       </script>
     `;
 
-    // Attach JSON data to each item for copying
     payload.forEach((item: any, index: number) => {
       const itemId = `item-${index}`;
       const itemJson = JSON.stringify(item);

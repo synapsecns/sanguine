@@ -4,6 +4,7 @@ import { db } from '../db'
 import { qDeposits, qRelays, qRefunds } from '../queries'
 import { nest_results } from '../utils/nestResults'
 import { jsonToHtmlTable } from '../utils/json_formatter'
+import { addSenderStatus, addTokenSymbols, addUsdPricesCurrent } from '../utils/enrichResults'
 
 export const refundedAndRelayedTransactionsController = async (
   req: Request,
@@ -30,6 +31,15 @@ export const refundedAndRelayedTransactionsController = async (
       .orderBy('blockTimestamp_refund', 'desc')
 
     const results = await query.execute()
+
+    await addTokenSymbols(results);
+  
+    if (flags?.includes("synapse")) {
+      await addSenderStatus(results);
+      await addUsdPricesCurrent(results);
+    }
+    
+    
     const nestedResults = nest_results(results)
 
     if (nestedResults && nestedResults.length > 0) {

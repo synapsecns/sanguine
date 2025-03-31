@@ -5,6 +5,7 @@ import { jsonToHtmlTable } from '../utils/json_formatter'
 import { db } from '../db'
 import { qDeposits, qRelays, qProofs } from '../queries'
 import { nest_results } from '../utils/nestResults'
+import { addSenderStatus, addTokenSymbols, addUsdPricesCurrent } from '../utils/enrichResults'
 
 export const conflictingProofsController = async (
   req: Request,
@@ -39,6 +40,14 @@ export const conflictingProofsController = async (
       .orderBy('blockTimestamp_proof', 'desc')
 
     const results = await query.execute()
+
+    await addTokenSymbols(results);
+  
+    if (flags?.includes("synapse")) {
+      await addSenderStatus(results);
+      await addUsdPricesCurrent(results);
+    }
+    
     const conflictingProofs = nest_results(results)
 
     if (conflictingProofs && conflictingProofs.length > 0) {
