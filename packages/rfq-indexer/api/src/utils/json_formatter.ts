@@ -173,10 +173,10 @@ const addRowsForItem = (item: any, index: number) => {
           displayValue = scannerLink(chainId, value);
         }
 
-        if (key.toLowerCase() === 'deadline' && value !== null && !isNaN(Number(value))) {
+        if (key.toLowerCase() === 'deadline' && item.BridgeRelay == undefined && value !== null && !isNaN(Number(value))) {
           const deadlineTimestamp = Number(value);
           const now = Math.floor(Date.now() / 1000);
-          if (deadlineTimestamp > now) {
+          if (deadlineTimestamp < now) {
             const transactionId = item.Bridge.transactionId; // Assuming transactionId is available in the item object
             displayValue += ` <i class="fas fa-undo" title="Clipboard OpBot Cancel Command" style="color: yellow; cursor: pointer;" onclick="copyToClipboard('@OpBot refund ${transactionId}', this)"></i>`;
           }
