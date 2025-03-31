@@ -22,8 +22,8 @@ export const getTransactionById = async (req: Request, res: Response) => {
       .with('deposits', () =>
         qDeposits().where((eb) =>
           eb.or([
-            eb('transactionId', '=', transactionId as string),
-            eb('transactionHash', '=', transactionId as string)
+            eb('transactionId', '=', transactionId?.toLowerCase() as string),
+            eb('transactionHash', '=', transactionId?.toLowerCase() as string)
           ])
         )
       )

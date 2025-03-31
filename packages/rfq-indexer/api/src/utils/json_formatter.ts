@@ -173,6 +173,15 @@ const addRowsForItem = (item: any, index: number) => {
           displayValue = scannerLink(chainId, value);
         }
 
+        if (key.toLowerCase() === 'deadline' && value !== null && !isNaN(Number(value))) {
+          const deadlineTimestamp = Number(value);
+          const now = Math.floor(Date.now() / 1000);
+          if (deadlineTimestamp > now) {
+            const transactionId = item.Bridge.transactionId; // Assuming transactionId is available in the item object
+            displayValue += ` <i class="fas fa-undo" title="Clipboard OpBot Cancel Command" style="color: yellow; cursor: pointer;" onclick="copyToClipboard('@OpBot refund ${transactionId}', this)"></i>`;
+          }
+        }
+
         htmlTable += `<tr><td class="indent-2" style="text-align:right; background-color: #494949;">${key}</td><td colspan="2" class="valuecell">${displayValue}</td></tr>`;
       });
     }
@@ -197,14 +206,15 @@ const addRowsForItem = (item: any, index: number) => {
           <i class="fas fa-copy copy-icon" onclick="copyToClipboard('${value}', this)"></i>
         `);
       }
-
+      
       // Transformation for timestamps
-      if (key.toLowerCase().includes('timestamp') && typeof value === 'number') {
+      if (value !== null && (key.toLowerCase().includes('timestamp') || key.toLowerCase().includes('deadline') || key.toLowerCase().includes('endtime')) && !isNaN(Number(value))) {
         transformations.push((val) => {
-          const date = new Date(val * 1000);
+          const numericValue = Number(val);
+          const date = new Date(numericValue * 1000);
           const formattedDate = date.toISOString().replace('T', ' ').slice(0, 19);
-          const timeAgo = calculateTimeLabel(val);
-          return `${formattedDate} utc (${timeAgo}) Unix: ${val}`;
+          const timeAgo = calculateTimeLabel(numericValue);
+          return `${formattedDate} utc (${timeAgo}) Unix: ${numericValue}`;
         });
       }
 
@@ -222,13 +232,22 @@ const addRowsForItem = (item: any, index: number) => {
       }
       if (key === 'transactionId') {
         transformations.push((val) => {
-          return `${val} <i class="fas fa-external-link-alt" style="cursor: pointer;" onclick="(function() {
-            const currentUrl = document.location;
-            const baseUrl = currentUrl.origin + currentUrl.pathname.split('/').slice(0, -2).join('/');
-            const extraParams = currentUrl.search;
-            const newUrl = baseUrl.concat('/transaction-id/', '${value}', extraParams);
-            window.open(newUrl, '_blank');
-          })()"></i>`;
+          return `${val} 
+            <i class="fas fa-book" style="cursor: pointer; margin-left: 5px;" title="Clipboard OpBot Trace Command" onclick="(function() {
+              const logText = '@OpBot trace transaction_id:${value}';
+              navigator.clipboard.writeText(logText).then(() => {
+                alert('Log command copied to clipboard');
+              }).catch(err => {
+                console.error('Error copying log command:', err);
+              });
+            })()"></i>
+            <i class="fas fa-external-link-alt" style="cursor: pointer;" onclick="(function() {
+              const currentUrl = document.location;
+              const baseUrl = currentUrl.origin + currentUrl.pathname.split('/').slice(0, -2).join('/');
+              const extraParams = currentUrl.search;
+              const newUrl = baseUrl.concat('/transaction-id/', '${value}', extraParams);
+              window.open(newUrl, '_blank');
+            })()"></i>`;
         });
       }
 

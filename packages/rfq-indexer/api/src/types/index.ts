@@ -20,6 +20,11 @@ export interface BridgeRequestEvents {
   destChainId: ColumnType<number>
   destChain: ColumnType<string>
   sendChainGas: ColumnType<boolean>
+  deadline: ColumnType<number>
+  exclusivityRelayer: ColumnType<string>
+  exclusivityEndTime: ColumnType<number>
+  zapNative: ColumnType<bigint>
+  zapData: ColumnType<string>
 }
 
 export interface BridgeRelayedEvents {
