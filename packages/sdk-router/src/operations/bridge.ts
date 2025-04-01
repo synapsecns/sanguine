@@ -125,7 +125,7 @@ async function _collectV1Quotes(
         id: quote.id,
         fromChainId: params.fromChainId,
         fromToken: params.fromToken,
-        fromAmount: params.fromAmount.toString(),
+        fromAmount: params.fromAmount,
         toChainId: params.toChainId,
         toToken: params.toToken,
         expectedToAmount: quote.maxAmountOut.toString(),

@@ -35,7 +35,7 @@ async function _getSameChainIntentQuotes(
   const intentCommon = {
     fromChainId: params.fromChainId,
     fromToken: params.fromToken,
-    fromAmount: params.fromAmount.toString(),
+    fromAmount: params.fromAmount,
     toChainId: params.toChainId,
     toToken: params.toToken,
     expectedToAmount: swapQuote.expectedToAmount,
@@ -84,7 +84,7 @@ async function _getCrossChainIntentQuotes(
       const intentCommon = {
         fromChainId: params.fromChainId,
         fromToken: params.fromToken,
-        fromAmount: params.fromAmount.toString(),
+        fromAmount: params.fromAmount,
         toChainId: params.toChainId,
       }
       const bridgeStep: IntentStep = {
