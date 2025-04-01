@@ -21,7 +21,7 @@ import {
   SwapEngineQuote,
   SwapEngineRoute,
 } from './models'
-import { Prettify } from '../utils'
+import { Prettify, TokenMetadataFetcher } from '../utils'
 
 export enum EngineTimeout {
   Short = 1000,
@@ -48,12 +48,15 @@ export class SwapEngineSet {
     [chainId: number]: string
   }
 
-  constructor(chains: ChainProvider[]) {
+  constructor(
+    chains: ChainProvider[],
+    tokenMetadataFetcher: TokenMetadataFetcher
+  ) {
     this.engines = {}
     this._addEngine(new NoOpEngine())
     this._addEngine(new DefaultPoolsEngine(chains))
     this._addEngine(new KyberSwapEngine())
-    this._addEngine(new ParaSwapEngine(chains))
+    this._addEngine(new ParaSwapEngine(chains, tokenMetadataFetcher))
     this._addEngine(new LiFiEngine())
 
     this.tokenZaps = {}
