@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.17.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.3...@synapsecns/sdk-router@0.17.4) (2025-04-01)
+
+
+### Bug Fixes
+
+* **sdk-router:** restrict `fromAmount` to `string` in the exported intent parameters ([#3645](https://github.com/synapsecns/sanguine/issues/3645)) ([28ef655](https://github.com/synapsecns/sanguine/commit/28ef655e446df599326785f79bc32de05678c346))
+
+
+
+
+
 ## [0.17.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.2...@synapsecns/sdk-router@0.17.3) (2025-03-28)
 
 
