@@ -64,16 +64,16 @@ export type BridgeV2Parameters = {
  * @property {string} id - Unique identifier for the quote
  * @property {number} fromChainId - ID of the chain where funds will be sent from
  * @property {string} fromToken - Address of the token to be sent
- * @property {BigNumber} fromAmount - Amount of tokens to be sent (in token decimals)
+ * @property {string} fromAmount - Amount of tokens to be sent (in token decimals)
  * @property {number} toChainId - ID of the chain where funds will be received
  * @property {string} toToken - Address of the token to be received
- * @property {BigNumber} expectedToAmount - Expected amount of tokens to be received (in token decimals)
- * @property {BigNumber} minToAmount - Minimum amount of tokens to be received (slippage protected) (in token decimals)
+ * @property {string} expectedToAmount - Expected amount of tokens to be received (in token decimals)
+ * @property {string} minToAmount - Minimum amount of tokens to be received (slippage protected) (in token decimals)
  * @property {string} routerAddress - Address of the router that performs the operation
  * @property {number} estimatedTime - Estimated time for the bridge to complete in seconds
  * @property {string[]} moduleNames - Names of the modules used for the operation
- * @property {BigNumber} gasDropAmount - Amount of gas to be dropped after the operation
- * @property {PopulatedTransaction} [tx] - Optional populated transaction for the operation (returned only if `fromSender` is provided)
+ * @property {string} gasDropAmount - Amount of gas to be dropped after the operation
+ * @property {PopulatedTx} [tx] - Optional populated transaction for the operation (returned only if `fromSender` is provided)
  */
 export type BridgeQuoteV2 = {
   id: string

@@ -45,14 +45,14 @@ export type SwapV2Parameters = {
  * @property {string} id - Unique identifier for the quote
  * @property {number} chainId - ID of the chain where the swap will be performed
  * @property {string} fromToken - Address of the token to be swapped
- * @property {BigNumber} fromAmount - Amount of tokens to be swapped (in token decimals)
+ * @property {string} fromAmount - Amount of tokens to be swapped (in token decimals)
  * @property {string} toToken - Address of the token to be received
- * @property {BigNumber} expectedToAmount - Expected amount of tokens to be received (in token decimals)
- * @property {BigNumber} minToAmount - Minimum amount of tokens to be received (slippage protected) (in token decimals)
+ * @property {string} expectedToAmount - Expected amount of tokens to be received (in token decimals)
+ * @property {string} minToAmount - Minimum amount of tokens to be received (slippage protected) (in token decimals)
  * @property {string} routerAddress - Address of the router that performs the operation
  * @property {number} estimatedTime - Estimated time for the swap to complete in seconds
  * @property {string[]} moduleNames - Names of the modules used for the operation
- * @property {PopulatedTransaction} [tx] - Optional populated transaction for the operation (returned only if sender is provided)
+ * @property {PopulatedTx} [tx] - Optional populated transaction for the operation (returned only if sender is provided)
  */
 export type SwapQuoteV2 = {
   id: string
