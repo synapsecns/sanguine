@@ -86,13 +86,14 @@ export class ParaSwapEngine implements SwapEngine {
 
   constructor(
     chains: ChainProvider[],
-    tokenMetadataFetcher: TokenMetadataFetcher
+    tokenMetadataFetcher?: TokenMetadataFetcher
   ) {
     this.providers = {}
     chains.forEach(({ chainId, provider }) => {
       this.providers[chainId] = provider
     })
-    this.tokenMetadataFetcher = tokenMetadataFetcher
+    this.tokenMetadataFetcher =
+      tokenMetadataFetcher ?? new TokenMetadataFetcher(this.providers)
   }
 
   public async getQuote(

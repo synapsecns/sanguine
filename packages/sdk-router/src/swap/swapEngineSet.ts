@@ -50,7 +50,7 @@ export class SwapEngineSet {
 
   constructor(
     chains: ChainProvider[],
-    tokenMetadataFetcher: TokenMetadataFetcher
+    tokenMetadataFetcher?: TokenMetadataFetcher
   ) {
     this.engines = {}
     this._addEngine(new NoOpEngine())
