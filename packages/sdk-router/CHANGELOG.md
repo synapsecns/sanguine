@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.17.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.4...@synapsecns/sdk-router@0.17.5) (2025-04-01)
+
+
+### Bug Fixes
+
+* **sdk-router:** add decimals to intent steps ([#3646](https://github.com/synapsecns/sanguine/issues/3646)) ([6c3287b](https://github.com/synapsecns/sanguine/commit/6c3287b6687c286ad05f534fb8961baee8b99b1f))
+
+
+
+
+
 ## [0.17.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.3...@synapsecns/sdk-router@0.17.4) (2025-04-01)
 
 
