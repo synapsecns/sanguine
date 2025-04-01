@@ -42,13 +42,26 @@ async function _getSameChainIntentQuotes(
     minToAmount: swapQuote.minToAmount,
     estimatedTime: swapQuote.estimatedTime,
   }
+  const [fromTokenDecimals, toTokenDecimals] = await Promise.all([
+    this.tokenMetadataFetcher.getTokenDecimals(
+      params.fromChainId,
+      params.fromToken
+    ),
+    this.tokenMetadataFetcher.getTokenDecimals(
+      params.fromChainId,
+      params.toToken
+    ),
+  ])
   const swapStep: IntentStep = {
     ...intentCommon,
+    fromTokenDecimals,
+    toTokenDecimals,
     routerAddress: swapQuote.routerAddress,
     moduleNames: swapQuote.moduleNames,
     gasDropAmount: '0',
     tx: swapQuote.tx,
   }
+
   const intentQuote: IntentQuote = {
     id: uuidv7(),
     ...intentCommon,
@@ -87,8 +100,22 @@ async function _getCrossChainIntentQuotes(
         fromAmount: params.fromAmount,
         toChainId: params.toChainId,
       }
+      // Fetch token decimals before creating the step
+      const [fromTokenDecimals, toTokenDecimals] = await Promise.all([
+        this.tokenMetadataFetcher.getTokenDecimals(
+          params.fromChainId,
+          params.fromToken
+        ),
+        this.tokenMetadataFetcher.getTokenDecimals(
+          params.toChainId,
+          bridgeQuote.toToken
+        ),
+      ])
+
       const bridgeStep: IntentStep = {
         ...intentCommon,
+        fromTokenDecimals,
+        toTokenDecimals,
         toToken: bridgeQuote.toToken,
         expectedToAmount: bridgeQuote.expectedToAmount,
         minToAmount: bridgeQuote.minToAmount,

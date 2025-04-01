@@ -60,10 +60,12 @@ export type IntentQuote = {
  * @property {number} fromChainId - ID of the chain, where funds will be sent from.
  * @property {string} fromToken - Address of the token to be sent.
  * @property {string} fromAmount - Amount of tokens to be sent (in token decimals).
+ * @property {number} fromTokenDecimals - Decimals of the fromToken. Used for display purposes.
  * @property {number} toChainId - ID of the chain, where funds will be received (can be the same as `fromChainId`).
  * @property {string} toToken - Address of the token to be received.
  * @property {string} expectedToAmount - Expected amount of tokens to be received (in token decimals).
  * @property {string} minToAmount - Minimum amount of tokens to be received (slippage protected) (in token decimals).
+ * @property {number} toTokenDecimals - Decimals of the toToken. Used for display purposes.
  * @property {string} routerAddress - Address of the router that performs the operation.
  * @property {number} estimatedTime - Estimated time for the operation to complete in seconds.
  * @property {string[]} moduleNames - Names of the modules used for the operation.
@@ -74,10 +76,12 @@ export type IntentStep = {
   fromChainId: number
   fromToken: string
   fromAmount: string
+  fromTokenDecimals: number
   toChainId: number
   toToken: string
   expectedToAmount: string
   minToAmount: string
+  toTokenDecimals: number
   routerAddress: string
   estimatedTime: number
   moduleNames: string[]

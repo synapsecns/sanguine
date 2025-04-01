@@ -13,7 +13,7 @@ import {
 } from './router'
 import { SynapseIntentRouterSet } from './sir/synapseIntentRouterSet'
 import { SwapEngineSet } from './swap/swapEngineSet'
-import { ETH_NATIVE_TOKEN_ADDRESS } from './utils'
+import { ETH_NATIVE_TOKEN_ADDRESS, TokenMetadataFetcher } from './utils'
 
 class SynapseSDK {
   public allModuleSets: SynapseModuleSet[]
@@ -24,6 +24,7 @@ class SynapseSDK {
 
   public sirSet: SynapseIntentRouterSet
   public swapEngineSet: SwapEngineSet
+  public tokenMetadataFetcher: TokenMetadataFetcher
   public providers: { [chainId: number]: Provider }
 
   /**
@@ -48,6 +49,9 @@ class SynapseSDK {
     chainProviders.forEach((chainProvider) => {
       this.providers[chainProvider.chainId] = chainProvider.provider
     })
+    // Initialize the utility classes
+    this.tokenMetadataFetcher = new TokenMetadataFetcher(this.providers)
+
     // Initialize the Module Sets
     this.synapseRouterSet = new SynapseRouterSet(chainProviders)
     this.synapseCCTPRouterSet = new SynapseCCTPRouterSet(chainProviders)
@@ -60,7 +64,10 @@ class SynapseSDK {
       this.gasZipModuleSet,
     ]
     this.sirSet = new SynapseIntentRouterSet(chainProviders)
-    this.swapEngineSet = new SwapEngineSet(chainProviders)
+    this.swapEngineSet = new SwapEngineSet(
+      chainProviders,
+      this.tokenMetadataFetcher
+    )
   }
 
   public intent = operations.intent

@@ -1,18 +1,14 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { Zero } from '@ethersproject/constants'
-import { Contract } from '@ethersproject/contracts'
 import { BigNumber } from 'ethers'
 
 import { generateAPIRoute, TransactionData } from './response'
-import erc20ABI from '../../abi/IERC20Metadata.json'
-import { marshallChainToken } from '../../rfq/ticker'
 import { ChainProvider } from '../../router'
-import { IERC20Metadata as ERC20 } from '../../typechain/IERC20Metadata'
 import {
   getWithTimeout,
   postWithTimeout,
   isSameAddress,
-  isNativeToken,
+  TokenMetadataFetcher,
   logger,
   Prettify,
 } from '../../utils'
@@ -86,16 +82,18 @@ export class ParaSwapEngine implements SwapEngine {
   private providers: {
     [chainId: number]: Provider
   }
-  private decimalsCache: {
-    [tokenId: string]: number
-  }
+  private tokenMetadataFetcher: TokenMetadataFetcher
 
-  constructor(chains: ChainProvider[]) {
+  constructor(
+    chains: ChainProvider[],
+    tokenMetadataFetcher?: TokenMetadataFetcher
+  ) {
     this.providers = {}
-    this.decimalsCache = {}
     chains.forEach(({ chainId, provider }) => {
       this.providers[chainId] = provider
     })
+    this.tokenMetadataFetcher =
+      tokenMetadataFetcher ?? new TokenMetadataFetcher(this.providers)
   }
 
   public async getQuote(
@@ -109,12 +107,20 @@ export class ParaSwapEngine implements SwapEngine {
     ) {
       return EmptyParaSwapQuote
     }
+    const srcDecimals = await this.tokenMetadataFetcher.getTokenDecimals(
+      chainId,
+      fromToken
+    )
+    const destDecimals = await this.tokenMetadataFetcher.getTokenDecimals(
+      chainId,
+      toToken
+    )
     const response = await this.getPricesResponse(
       {
         srcToken: fromToken,
-        srcDecimals: await this.getTokenDecimals(chainId, fromToken),
+        srcDecimals,
         destToken: toToken,
-        destDecimals: await this.getTokenDecimals(chainId, toToken),
+        destDecimals,
         amount: fromAmount.toString(),
         side: 'SELL',
         network: chainId,
@@ -200,33 +206,5 @@ export class ParaSwapEngine implements SwapEngine {
       timeout,
       params
     )
-  }
-
-  private async getTokenDecimals(
-    chainId: number,
-    token: string
-  ): Promise<number> {
-    // TODO: move to utils
-    if (isNativeToken(token)) {
-      return 18
-    }
-    const tokenId = marshallChainToken({ chainId, token })
-    if (this.decimalsCache[tokenId]) {
-      return this.decimalsCache[tokenId]
-    }
-    const provider = this.providers[chainId]
-    if (!provider) {
-      logger.error(`No provider found for chainId: ${chainId}`)
-      return 0
-    }
-    const tokenContract = new Contract(token, erc20ABI, provider) as ERC20
-    try {
-      const decimals = await tokenContract.decimals()
-      this.decimalsCache[tokenId] = decimals
-      return decimals
-    } catch (error) {
-      logger.error({ error, chainId, token }, 'Error fetching token decimals')
-      return 0
-    }
   }
 }
