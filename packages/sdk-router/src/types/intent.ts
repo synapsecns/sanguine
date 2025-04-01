@@ -1,5 +1,3 @@
-import { BigNumberish } from 'ethers'
-
 import { PopulatedTx } from './misc'
 
 /**
@@ -7,7 +5,7 @@ import { PopulatedTx } from './misc'
  *
  * @property {number} fromChainId - ID of the chain where funds will be sent from
  * @property {string} fromToken - Address of the token to be sent
- * @property {BigNumberish} fromAmount - Amount of tokens to be sent (in token decimals)
+ * @property {string} fromAmount - Amount of tokens to be sent (in token decimals)
  * @property {string} [fromSender] - Address of the account sending the funds
  * @property {number} toChainId - ID of the chain where funds will be received
  * @property {string} toToken - Address of the token to be received
@@ -19,7 +17,7 @@ import { PopulatedTx } from './misc'
 export type IntentParameters = {
   fromChainId: number
   fromToken: string
-  fromAmount: BigNumberish
+  fromAmount: string
   fromSender?: string
   toChainId: number
   toToken: string

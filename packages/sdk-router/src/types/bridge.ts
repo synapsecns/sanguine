@@ -1,4 +1,4 @@
-import { BigNumber, BigNumberish } from 'ethers'
+import { BigNumber } from 'ethers'
 
 import { FeeConfig, PopulatedTx, Query } from './misc'
 
@@ -38,7 +38,7 @@ export type BridgeQuote = {
  *
  * @property {number} fromChainId - ID of the chain where funds will be sent from
  * @property {string} fromToken - Address of the token to be sent
- * @property {BigNumberish} fromAmount - Amount of tokens to be sent (in token decimals)
+ * @property {string} fromAmount - Amount of tokens to be sent (in token decimals)
  * @property {string} [fromSender] - Address of the account sending the funds
  * @property {number} toChainId - ID of the chain where funds will be received
  * @property {string} toToken - Address of the token to be received
@@ -49,7 +49,7 @@ export type BridgeQuote = {
 export type BridgeV2Parameters = {
   fromChainId: number
   fromToken: string
-  fromAmount: BigNumberish
+  fromAmount: string
   fromSender?: string
   toChainId: number
   toToken: string

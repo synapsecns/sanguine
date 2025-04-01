@@ -1,4 +1,4 @@
-import { BigNumber, BigNumberish } from '@ethersproject/bignumber'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import { PopulatedTx, Query } from './misc'
 
@@ -21,7 +21,7 @@ export type SwapQuote = {
  *
  * @property {number} chainId - ID of the chain where the swap will be performed
  * @property {string} fromToken - Address of the token to be swapped
- * @property {BigNumberish} fromAmount - Amount of tokens to be swapped (in token decimals)
+ * @property {string} fromAmount - Amount of tokens to be swapped (in token decimals)
  * @property {string} toToken - Address of the token to be received
  * @property {string} [toRecipient] - Address of the recipient that will receive the swapped tokens (default: sender)
  * @property {number} [slippagePercentage] - Slippage tolerance percentage
@@ -31,7 +31,7 @@ export type SwapQuote = {
 export type SwapV2Parameters = {
   chainId: number
   fromToken: string
-  fromAmount: BigNumberish
+  fromAmount: string
   toToken: string
   toRecipient?: string
   slippagePercentage?: number
