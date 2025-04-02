@@ -106,6 +106,7 @@ export const INTENTS_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.BLAST,
   SupportedChainId.BSC,
   SupportedChainId.ETH,
+  SupportedChainId.HYPEREVM,
   SupportedChainId.LINEA,
   SupportedChainId.OPTIMISM,
   SupportedChainId.SCROLL,
