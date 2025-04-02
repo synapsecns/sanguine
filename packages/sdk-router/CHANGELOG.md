@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.17.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.5...@synapsecns/sdk-router@0.17.6) (2025-04-02)
+
+
+### Bug Fixes
+
+* **sdk-router:** add `HYPEREVM` to intents supported chains ([9abecbe](https://github.com/synapsecns/sanguine/commit/9abecbef5ff8e07c969832c3eb357ca3cf06d20a))
+
+
+
+
+
 ## [0.17.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.4...@synapsecns/sdk-router@0.17.5) (2025-04-01)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/rest-api",
-  "version": "1.13.5",
+  "version": "1.13.6",
   "private": "true",
   "engines": {
     "node": ">=18.17.0"
@@ -22,7 +22,7 @@
     "@ethersproject/bignumber": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/units": "5.7.0",
-    "@synapsecns/sdk-router": "^0.17.5",
+    "@synapsecns/sdk-router": "^0.17.6",
     "@synapsecns/synapse-constants": "^1.8.9",
     "bignumber": "^1.1.0",
     "cross-fetch": "^4.0.0",
