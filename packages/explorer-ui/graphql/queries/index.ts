@@ -214,6 +214,7 @@ export const DAILY_STATISTICS_BY_CHAIN = gql`
       worldchain
       unichain
       berachain
+      hyperevm
       total
     }
   }
