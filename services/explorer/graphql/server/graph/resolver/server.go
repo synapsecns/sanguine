@@ -118,6 +118,7 @@ type ComplexityRoot struct {
 		Ethereum   func(childComplexity int) int
 		Fantom     func(childComplexity int) int
 		Harmony    func(childComplexity int) int
+		Hyperevm   func(childComplexity int) int
 		Klaytn     func(childComplexity int) int
 		Linea      func(childComplexity int) int
 		Metis      func(childComplexity int) int
@@ -622,6 +623,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DateResultByChain.Harmony(childComplexity), true
+
+	case "DateResultByChain.hyperevm":
+		if e.complexity.DateResultByChain.Hyperevm == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Hyperevm(childComplexity), true
 
 	case "DateResultByChain.klaytn":
 		if e.complexity.DateResultByChain.Klaytn == nil {
@@ -1709,6 +1717,7 @@ type DateResultByChain {
   worldchain: Float
   unichain: Float
   berachain: Float
+  hyperevm: Float
   total:  Float
 }
 
@@ -5082,6 +5091,47 @@ func (ec *executionContext) fieldContext_DateResultByChain_berachain(ctx context
 	return fc, nil
 }
 
+func (ec *executionContext) _DateResultByChain_hyperevm(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_hyperevm(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Hyperevm, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_hyperevm(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _DateResultByChain_total(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_DateResultByChain_total(ctx, field)
 	if err != nil {
@@ -7448,6 +7498,8 @@ func (ec *executionContext) fieldContext_Query_dailyStatisticsByChain(ctx contex
 				return ec.fieldContext_DateResultByChain_unichain(ctx, field)
 			case "berachain":
 				return ec.fieldContext_DateResultByChain_berachain(ctx, field)
+			case "hyperevm":
+				return ec.fieldContext_DateResultByChain_hyperevm(ctx, field)
 			case "total":
 				return ec.fieldContext_DateResultByChain_total(ctx, field)
 			}
@@ -10706,6 +10758,8 @@ func (ec *executionContext) _DateResultByChain(ctx context.Context, sel ast.Sele
 			out.Values[i] = ec._DateResultByChain_unichain(ctx, field, obj)
 		case "berachain":
 			out.Values[i] = ec._DateResultByChain_berachain(ctx, field, obj)
+		case "hyperevm":
+			out.Values[i] = ec._DateResultByChain_hyperevm(ctx, field, obj)
 		case "total":
 			out.Values[i] = ec._DateResultByChain_total(ctx, field, obj)
 		default:

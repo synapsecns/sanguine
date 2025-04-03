@@ -338,6 +338,12 @@ export const OverviewChart: React.FC<OverviewChartProps> = ({
                 stackId="a"
                 fill={loading ? 'rgba(255, 255, 255, 0.1)' : '#8B4513'}
               />
+              <Bar
+                isAnimationActive={false}
+                dataKey="hyperevm"
+                stackId="a"
+                fill={loading ? 'rgba(255, 255, 255, 0.1)' : '#00FF7F'}
+              />
             </>
           )}
         </BarChart>

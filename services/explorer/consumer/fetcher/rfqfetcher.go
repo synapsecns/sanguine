@@ -10,7 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/fastbridge"
 )
 
-// RFQService --output=mocks --case=underscore.
+// RFQService --output=mocks --case=underscore
 type RFQService interface {
 	// GetTokenSymbol gets the token symbol from the rfq ref..
 	GetTokenSymbol(ctx context.Context, tokenAddress common.Address) (*string, error)
