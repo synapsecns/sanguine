@@ -10,10 +10,5 @@ chains=$(./script/utils/get-mainnet-chains.sh)
 chainsPretty="[$(echo "$chains" | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')]"
 echo "Saving deployments on chains: $chainsPretty"
 for chain in $chains; do
-  npx sd "$chain" SynapseIntentPreviewer
-  npx sd "$chain" SynapseIntentRouter
-  npx sd "$chain" TokenZapV1
-  npx fvc "$chain" SynapseIntentPreviewer
-  npx fvc "$chain" SynapseIntentRouter
-  npx fvc "$chain" TokenZapV1
+  ./script/utils/sd-sir.sh "$chain"
 done
