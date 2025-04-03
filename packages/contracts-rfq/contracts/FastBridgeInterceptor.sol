@@ -13,16 +13,16 @@ contract FastBridgeInterceptor is IFastBridgeInterceptor {
 
     /// @notice Maximum allowed difference (1%) from the quoted origin amount.
     uint256 public constant MAX_ORIGIN_AMOUNT_DIFF = 0.01e18;
-    
+
     /// @notice Special address representing the native gas token (ETH).
     address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     /// @dev Base unit for percentage calculations (100% = 1e18).
     uint256 internal constant WEI = 1e18;
-    
+
     /// @dev Minimum allowed percentage (99%) for origin amount comparisons.
     uint256 internal constant MIN_ORIGIN_AMOUNT = WEI - MAX_ORIGIN_AMOUNT_DIFF;
-    
+
     /// @dev Maximum allowed percentage (101%) for origin amount comparisons.
     uint256 internal constant MAX_ORIGIN_AMOUNT = WEI + MAX_ORIGIN_AMOUNT_DIFF;
 
