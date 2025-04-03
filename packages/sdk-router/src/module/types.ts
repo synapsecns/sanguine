@@ -61,7 +61,6 @@ export type BridgeTokenCandidate = {
 
 export type BridgeRouteV2 = {
   bridgeToken: BridgeTokenCandidate
-  minFromAmount: BigNumber
   toToken: string
   expectedToAmount: BigNumber
   minToAmount: BigNumber

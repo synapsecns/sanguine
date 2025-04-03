@@ -210,7 +210,7 @@ async function _collectV2Quotes(
             return
           }
           const bridgeRoute = await moduleSet.getBridgeRouteV2({
-            fromAmount: originSwapRoute.expectedToAmount,
+            originSwapRoute,
             bridgeToken,
             toToken: params.toToken,
             fromSender: params.fromSender,

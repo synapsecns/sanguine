@@ -11,12 +11,7 @@ import {
 } from '../constants'
 import { BridgeRouteV2 } from '../module'
 import { ChainProvider } from '../router'
-import {
-  getMinFinalAmount,
-  setMinFinalAmount,
-  StepParams,
-  SwapEngineRoute,
-} from '../swap'
+import { StepParams, SwapEngineRoute } from '../swap'
 import { SynapseIntentRouter } from '../typechain/SynapseIntentRouter'
 import { BridgeQuoteV2 } from '../types'
 import {
@@ -58,13 +53,6 @@ export class SynapseIntentRouterSet {
     const fromChainId = bridgeRoute.bridgeToken.originChainId
     const moduleNames: string[] = []
     if (originSwapRoute.steps.length > 0) {
-      const minSwapFinalAmount = getMinFinalAmount(originSwapRoute.steps)
-      if (minSwapFinalAmount.lt(bridgeRoute.minFromAmount)) {
-        originSwapRoute.steps = setMinFinalAmount(
-          originSwapRoute.steps,
-          bridgeRoute.minFromAmount
-        )
-      }
       moduleNames.push(originSwapRoute.engineName)
     }
     const tx = bridgeRoute.zapData

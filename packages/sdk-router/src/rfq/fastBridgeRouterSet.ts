@@ -25,7 +25,7 @@ import {
 } from '../module'
 import { FastBridgeRouter } from './fastBridgeRouter'
 import { ChainProvider } from '../router'
-import { encodeZapData, USER_SIMULATED_ADDRESS } from '../swap'
+import { applySlippage, encodeZapData, USER_SIMULATED_ADDRESS } from '../swap'
 import {
   calculateDeadline,
   ONE_HOUR,
@@ -34,7 +34,7 @@ import {
   logger,
 } from '../utils'
 import { getAllQuotes } from './api'
-import { FastBridgeQuote, applyQuote, getOriginAmount } from './quote'
+import { FastBridgeQuote, applyQuote } from './quote'
 import { marshallTicker } from './ticker'
 import {
   IFastBridge,
@@ -127,11 +127,12 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   }
 
   public async getBridgeRouteV2({
-    fromAmount,
+    originSwapRoute,
     bridgeToken,
     toToken,
     fromSender,
     toRecipient,
+    slippage,
     allowMultipleTxs,
   }: GetBridgeRouteV2Parameters): Promise<BridgeRouteV2 | undefined> {
     if (
@@ -148,7 +149,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
       originChainId
     ).getProtocolFeeRate()
     const bridgedAmount = this.applyProtocolFeeRate(
-      BigNumber.from(fromAmount),
+      originSwapRoute.expectedToAmount,
       protocolFeeRate
     )
     const quotes = (
@@ -160,28 +161,26 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     ).filter((quote) =>
       isSameAddress(quote.ticker.originToken.token, bridgeToken.originToken)
     )
-    const [expectedToAmount, originFee] = quotes
-      .map((quote) => [
-        applyQuote(quote, bridgedAmount),
-        // Convert fixed fee from dest token to origin token
-        getOriginAmount(quote, quote.fixedFee),
-      ])
-      .reduce((a, b) => (a[0].gt(b[0]) ? a : b), [Zero, Zero])
+    const expectedToAmount = quotes
+      .map((quote) => applyQuote(quote, bridgedAmount))
+      .reduce((a, b) => (a.gt(b) ? a : b), Zero)
     if (expectedToAmount.isZero()) {
       return undefined
     }
-    // Cap slippage to 5% of the fixed fee
-    const maxOriginSlippage = originFee.div(20)
+    // With no slippage or no swap on origin, the minToAmount is the same as expectedToAmount.
+    const minToAmount =
+      !slippage ||
+      originSwapRoute.expectedToAmount.eq(originSwapRoute.minToAmount)
+        ? expectedToAmount
+        : applySlippage(expectedToAmount, slippage)
     const route: BridgeRouteV2 = {
       bridgeToken,
-      minFromAmount: BigNumber.from(fromAmount).sub(maxOriginSlippage),
       toToken: bridgeToken.destToken,
       expectedToAmount,
-      // With no swap on destination, the minToAmount is the same as expectedToAmount.
-      minToAmount: expectedToAmount,
+      minToAmount,
       zapData: await this.getBridgeZapData(
         bridgeToken,
-        BigNumber.from(fromAmount),
+        originSwapRoute.expectedToAmount,
         expectedToAmount,
         fromSender,
         toRecipient
