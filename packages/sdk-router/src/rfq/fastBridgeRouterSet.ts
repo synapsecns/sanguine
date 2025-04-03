@@ -168,11 +168,13 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
       return undefined
     }
     // With no slippage or no swap on origin, the minToAmount is the same as expectedToAmount.
+    const hasOriginSlippage = !originSwapRoute.expectedToAmount.eq(
+      originSwapRoute.minToAmount
+    )
     const minToAmount =
-      !slippage ||
-      originSwapRoute.expectedToAmount.eq(originSwapRoute.minToAmount)
-        ? expectedToAmount
-        : applySlippage(expectedToAmount, slippage)
+      hasOriginSlippage && slippage
+        ? applySlippage(expectedToAmount, slippage)
+        : expectedToAmount
     const route: BridgeRouteV2 = {
       bridgeToken,
       toToken: bridgeToken.destToken,
@@ -180,8 +182,8 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
       minToAmount,
       zapData: await this.getBridgeZapData(
         bridgeToken,
-        originSwapRoute.expectedToAmount,
         expectedToAmount,
+        hasOriginSlippage ? originSwapRoute.expectedToAmount : undefined,
         fromSender,
         toRecipient
       ),
@@ -459,8 +461,8 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
 
   private async getBridgeZapData(
     bridgeToken: BridgeTokenCandidate,
-    fromAmount: BigNumber,
     expectedToAmount: BigNumber,
+    fromAmount?: BigNumber,
     fromSender?: string,
     toRecipient?: string
   ): Promise<string | undefined> {
@@ -485,31 +487,44 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
       sendChainGas: false,
       deadline: calculateDeadline(this.getDefaultPeriods().destPeriod),
     }
-    const fastBridge = await this.getFastBridgeAddress(
+    const fastBridge = await this.getFastBridgeRouter(
       bridgeToken.originChainId
-    )
-    const fastBridgeInterceptor = this.getFastBridgeRouter(
-      bridgeToken.originChainId
-    ).interceptorContract
-    if (!fastBridgeInterceptor) {
-      logger.error(
-        `FastBridgeInterceptor not found for chainId ${bridgeToken.originChainId}`
-      )
-      return undefined
+    ).getFastBridgeContract()
+    if (fromAmount) {
+      // Quote origin amount was supplied - use Interceptor to adjust the quote in flight
+      const fastBridgeInterceptor = this.getFastBridgeRouter(
+        bridgeToken.originChainId
+      ).interceptorContract
+      if (!fastBridgeInterceptor) {
+        logger.error(
+          `FastBridgeInterceptor not found for chainId ${bridgeToken.originChainId}`
+        )
+        return undefined
+      }
+      const interceptorParams: IFastBridgeInterceptor.InterceptorParamsStruct =
+        {
+          fastBridge: fastBridge.address,
+          quoteOriginAmount: fromAmount,
+        }
+      const fbiCalldata = (
+        await fastBridgeInterceptor.populateTransaction.bridgeWithInterception(
+          bridgeParams,
+          interceptorParams
+        )
+      ).data
+      return encodeZapData({
+        target: fastBridgeInterceptor.address,
+        payload: fbiCalldata,
+        amountPosition: 4 + 32 * 5,
+      })
     }
-    const interceptorParams: IFastBridgeInterceptor.InterceptorParamsStruct = {
-      fastBridge,
-      quoteOriginAmount: fromAmount,
-    }
-    const fbiCalldata = (
-      await fastBridgeInterceptor.populateTransaction.bridgeWithInterception(
-        bridgeParams,
-        interceptorParams
-      )
+    // Quote origin amount was not supplied - use FastBridge to bridge directly
+    const fastBridgeCalldata = (
+      await fastBridge.populateTransaction.bridge(bridgeParams)
     ).data
     return encodeZapData({
-      target: fastBridgeInterceptor.address,
-      payload: fbiCalldata,
+      target: fastBridge.address,
+      payload: fastBridgeCalldata,
       amountPosition: 4 + 32 * 5,
     })
   }
