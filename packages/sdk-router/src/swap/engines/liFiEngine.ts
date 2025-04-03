@@ -25,7 +25,7 @@ export type LiFiQuoteRequest = {
   slippage: number
   skipSimulation: boolean
   swapStepTimingStrategies?: string
-  routeStepTimingStrategies?: string
+  routeTimingStrategies?: string
   name?: string
 }
 
@@ -69,8 +69,7 @@ export class LiFiEngine implements SwapEngine {
         slippage: toFloat(SlippageMax),
         skipSimulation: true,
         // TODO: figure out optimal values
-        swapStepTimingStrategies: 'minWaitTime-0-5-100',
-        routeStepTimingStrategies: 'minWaitTime-0-5-100',
+        routeTimingStrategies: `minWaitTime-600-0-0`,
         name: 'cortex_protocol',
       },
       timeout
