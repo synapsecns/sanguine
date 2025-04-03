@@ -122,14 +122,19 @@ func (p *RFQParser) MatureLogs(ctx context.Context, rfqEvent *model.RFQEvent, iF
 
 	var curCoinGeckoID string
 	tokenAddressStr := common.HexToAddress(rfqEvent.OriginToken).Hex()
-	const ethAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+	const nativeTokenAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 
 	switch {
-	case strings.EqualFold(tokenAddressStr, ethAddress) || strings.EqualFold(tokenAddressStr, "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"):
-		rfqEvent.TokenSymbol = "ETH"
+	case strings.EqualFold(tokenAddressStr, nativeTokenAddress) || strings.EqualFold(tokenAddressStr, "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"):
+		if chainID == 999 {
+			rfqEvent.TokenSymbol = "HYPE"
+			curCoinGeckoID = "hyperliquid"
+		} else {
+			rfqEvent.TokenSymbol = "ETH"
+			curCoinGeckoID = ethCoinGeckoID
+		}
 		rfqEvent.TokenDecimal = new(uint8)
 		*rfqEvent.TokenDecimal = 18
-		curCoinGeckoID = ethCoinGeckoID
 	case strings.EqualFold(tokenAddressStr, "0x2cFc85d8E48F8EAB294be644d9E25C3030863003") || strings.EqualFold(tokenAddressStr, "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1"):
 		rfqEvent.TokenSymbol = "WLD"
 		rfqEvent.TokenDecimal = new(uint8)

@@ -13,7 +13,7 @@ import (
 // RFQService --output=mocks --case=underscore.
 type RFQService interface {
 	// GetTokenSymbol gets the token symbol from the rfq ref..
-	GetTokenSymbol(ctx context.Context, tokenAddress common.Address) (*string, error)
+	GetTokenSymbol(ctx context.Context, tokenAddress common.Address, chainID uint64) (*string, error)
 }
 
 // rfqFetcher is the fetcher for token data from the rfq contract.
@@ -36,7 +36,7 @@ func NewRFQFetcher(rfqAddress common.Address, backend bind.ContractBackend) (RFQ
 // GetTokenSymbol gets the token symbol from the rfq ref.
 //
 //nolint:all // havent removed context because it breaks other things.
-func (p *rfqFetcher) GetTokenSymbol(ctx context.Context, tokenAddress common.Address) (*string, error) {
+func (p *rfqFetcher) GetTokenSymbol(ctx context.Context, tokenAddress common.Address, chainID uint64) (*string, error) {
 	// temporary solution since there are no contract functions we can use.
 	// Convert the common.Address to a string for comparison.
 	addressStr := tokenAddress.Hex()
@@ -52,6 +52,10 @@ func (p *rfqFetcher) GetTokenSymbol(ctx context.Context, tokenAddress common.Add
 		symbol := "WETH"
 		return &symbol, nil
 	} else if strings.EqualFold(addressStr, "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+		if chainID == 999 {
+			symbol := "HYPE"
+			return &symbol, nil
+		}
 		symbol := "ETH"
 		return &symbol, nil
 	}
