@@ -46,6 +46,14 @@ contract FastBridgeInterceptorTest is Test {
         deal(user, 10 ether);
     }
 
+    function getOriginValue(uint256 valueWei) internal pure virtual returns (uint256) {
+        return valueWei;
+    }
+
+    function getDestValue(uint256 valueWei) internal pure virtual returns (uint256) {
+        return valueWei;
+    }
+
     function expectEventBridgeRequested(IFastBridge.BridgeParams memory params, uint256 expectedDestAmount) internal {
         IFastBridge.BridgeTransaction memory expectedTx = IFastBridge.BridgeTransaction({
             originChainId: SRC_CHAIN_ID,
@@ -165,197 +173,209 @@ contract FastBridgeInterceptorTest is Test {
 
     function test_bridge_token_1_1_originAmountSame() public {
         checkHappyPathToken({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 1 ether,
-            originAmount: 1 ether,
-            expectedDestAmount: 1 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(1 ether),
+            originAmount: getOriginValue(1 ether),
+            expectedDestAmount: getDestValue(1 ether)
         });
     }
 
     function test_bridge_token_1_1_originAmountLower() public {
         checkHappyPathToken({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 1 ether,
-            originAmount: 0.995 ether,
-            expectedDestAmount: 0.995 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(1 ether),
+            originAmount: getOriginValue(0.995 ether),
+            expectedDestAmount: getDestValue(0.995 ether)
         });
     }
 
     function test_bridge_token_1_1_originAmountMinAllowed() public {
         checkHappyPathToken({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 1 ether,
-            originAmount: 0.99 ether,
-            expectedDestAmount: 0.99 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(1 ether),
+            originAmount: getOriginValue(0.99 ether),
+            expectedDestAmount: getDestValue(0.99 ether)
         });
     }
 
     function test_bridge_token_1_1_originAmountHigher() public {
         checkHappyPathToken({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 1 ether,
-            originAmount: 1.005 ether,
-            expectedDestAmount: 1.005 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(1 ether),
+            originAmount: getOriginValue(1.005 ether),
+            expectedDestAmount: getDestValue(1.005 ether)
         });
     }
 
     function test_bridge_token_1_1_originAmountMaxAllowed() public {
         checkHappyPathToken({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 1 ether,
-            originAmount: 1.01 ether,
-            expectedDestAmount: 1.01 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(1 ether),
+            originAmount: getOriginValue(1.01 ether),
+            expectedDestAmount: getDestValue(1.01 ether)
         });
     }
 
     function test_bridge_token_1_1_revert_originAmountTooLow() public {
         checkRevertTokenOriginAmountOutOfRange({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 1 ether,
-            originAmount: 0.99 ether - 1 wei
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(1 ether),
+            originAmount: getOriginValue(0.99 ether) - 1 wei
         });
     }
 
     function test_bridge_token_1_1_revert_originAmountTooHigh() public {
         checkRevertTokenOriginAmountOutOfRange({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 1 ether,
-            originAmount: 1.01 ether + 1 wei
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(1 ether),
+            originAmount: getOriginValue(1.01 ether) + 1 wei
         });
     }
 
     function test_bridge_token_1_1_revert_tokenNotContract() public {
-        checkRevertTokenNotContract({quoteOriginAmount: 1 ether, quoteDestAmount: 1 ether, originAmount: 1 ether});
+        checkRevertTokenNotContract({
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(1 ether),
+            originAmount: getOriginValue(1 ether)
+        });
     }
 
     function test_bridge_token_1_2_originAmountSame() public {
         checkHappyPathToken({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 2 ether,
-            originAmount: 1 ether,
-            expectedDestAmount: 2 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(2 ether),
+            originAmount: getOriginValue(1 ether),
+            expectedDestAmount: getDestValue(2 ether)
         });
     }
 
     function test_bridge_token_1_2_originAmountLower() public {
         checkHappyPathToken({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 2 ether,
-            originAmount: 0.995 ether,
-            expectedDestAmount: 1.99 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(2 ether),
+            originAmount: getOriginValue(0.995 ether),
+            expectedDestAmount: getDestValue(1.99 ether)
         });
     }
 
     function test_bridge_token_1_2_originAmountMinAllowed() public {
         checkHappyPathToken({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 2 ether,
-            originAmount: 0.99 ether,
-            expectedDestAmount: 1.98 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(2 ether),
+            originAmount: getOriginValue(0.99 ether),
+            expectedDestAmount: getDestValue(1.98 ether)
         });
     }
 
     function test_bridge_token_1_2_originAmountHigher() public {
         checkHappyPathToken({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 2 ether,
-            originAmount: 1.005 ether,
-            expectedDestAmount: 2.01 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(2 ether),
+            originAmount: getOriginValue(1.005 ether),
+            expectedDestAmount: getDestValue(2.01 ether)
         });
     }
 
     function test_bridge_token_1_2_originAmountMaxAllowed() public {
         checkHappyPathToken({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 2 ether,
-            originAmount: 1.01 ether,
-            expectedDestAmount: 2.02 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(2 ether),
+            originAmount: getOriginValue(1.01 ether),
+            expectedDestAmount: getDestValue(2.02 ether)
         });
     }
 
     function test_bridge_token_1_2_revert_originAmountTooLow() public {
         checkRevertTokenOriginAmountOutOfRange({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 2 ether,
-            originAmount: 0.99 ether - 1 wei
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(2 ether),
+            originAmount: getOriginValue(0.99 ether) - 1 wei
         });
     }
 
     function test_bridge_token_1_2_revert_originAmountTooHigh() public {
         checkRevertTokenOriginAmountOutOfRange({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 2 ether,
-            originAmount: 1.01 ether + 1 wei
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(2 ether),
+            originAmount: getOriginValue(1.01 ether) + 1 wei
         });
     }
 
     function test_bridge_token_1_2_revert_tokenNotContract() public {
-        checkRevertTokenNotContract({quoteOriginAmount: 1 ether, quoteDestAmount: 2 ether, originAmount: 1 ether});
+        checkRevertTokenNotContract({
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(2 ether),
+            originAmount: getOriginValue(1 ether)
+        });
     }
 
     function test_bridge_token_2_1_originAmountSame() public {
         checkHappyPathToken({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 0.5 ether,
-            originAmount: 1 ether,
-            expectedDestAmount: 0.5 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(0.5 ether),
+            originAmount: getOriginValue(1 ether),
+            expectedDestAmount: getDestValue(0.5 ether)
         });
     }
 
     function test_bridge_token_2_1_originAmountLower() public {
         checkHappyPathToken({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 0.5 ether,
-            originAmount: 0.995 ether,
-            expectedDestAmount: 0.4975 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(0.5 ether),
+            originAmount: getOriginValue(0.995 ether),
+            expectedDestAmount: getDestValue(0.4975 ether)
         });
     }
 
     function test_bridge_token_2_1_originAmountMinAllowed() public {
         checkHappyPathToken({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 0.5 ether,
-            originAmount: 0.99 ether,
-            expectedDestAmount: 0.495 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(0.5 ether),
+            originAmount: getOriginValue(0.99 ether),
+            expectedDestAmount: getDestValue(0.495 ether)
         });
     }
 
     function test_bridge_token_2_1_originAmountHigher() public {
         checkHappyPathToken({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 0.5 ether,
-            originAmount: 1.005 ether,
-            expectedDestAmount: 0.5025 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(0.5 ether),
+            originAmount: getOriginValue(1.005 ether),
+            expectedDestAmount: getDestValue(0.5025 ether)
         });
     }
 
     function test_bridge_token_2_1_originAmountMaxAllowed() public {
         checkHappyPathToken({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 0.5 ether,
-            originAmount: 1.01 ether,
-            expectedDestAmount: 0.505 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(0.5 ether),
+            originAmount: getOriginValue(1.01 ether),
+            expectedDestAmount: getDestValue(0.505 ether)
         });
     }
 
     function test_bridge_token_2_1_revert_originAmountTooLow() public {
         checkRevertTokenOriginAmountOutOfRange({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 0.5 ether,
-            originAmount: 0.99 ether - 1 wei
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(0.5 ether),
+            originAmount: getOriginValue(0.99 ether) - 1 wei
         });
     }
 
     function test_bridge_token_2_1_revert_originAmountTooHigh() public {
         checkRevertTokenOriginAmountOutOfRange({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 0.5 ether,
-            originAmount: 1.01 ether + 1 wei
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(0.5 ether),
+            originAmount: getOriginValue(1.01 ether) + 1 wei
         });
     }
 
     function test_bridge_token_2_1_revert_tokenNotContract() public {
-        checkRevertTokenNotContract({quoteOriginAmount: 1 ether, quoteDestAmount: 0.5 ether, originAmount: 1 ether});
+        checkRevertTokenNotContract({
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(0.5 ether),
+            originAmount: getOriginValue(1 ether)
+        });
     }
 
     function checkHappyPathEth(
@@ -389,184 +409,184 @@ contract FastBridgeInterceptorTest is Test {
 
     function test_bridge_eth_1_1_originAmountSame() public {
         checkHappyPathEth({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 1 ether,
-            originAmount: 1 ether,
-            expectedDestAmount: 1 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(1 ether),
+            originAmount: getOriginValue(1 ether),
+            expectedDestAmount: getDestValue(1 ether)
         });
     }
 
     function test_bridge_eth_1_1_originAmountLower() public {
         checkHappyPathEth({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 1 ether,
-            originAmount: 0.995 ether,
-            expectedDestAmount: 0.995 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(1 ether),
+            originAmount: getOriginValue(0.995 ether),
+            expectedDestAmount: getDestValue(0.995 ether)
         });
     }
 
     function test_bridge_eth_1_1_originAmountMinAllowed() public {
         checkHappyPathEth({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 1 ether,
-            originAmount: 0.99 ether,
-            expectedDestAmount: 0.99 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(1 ether),
+            originAmount: getOriginValue(0.99 ether),
+            expectedDestAmount: getDestValue(0.99 ether)
         });
     }
 
     function test_bridge_eth_1_1_originAmountHigher() public {
         checkHappyPathEth({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 1 ether,
-            originAmount: 1.005 ether,
-            expectedDestAmount: 1.005 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(1 ether),
+            originAmount: getOriginValue(1.005 ether),
+            expectedDestAmount: getDestValue(1.005 ether)
         });
     }
 
     function test_bridge_eth_1_1_originAmountMaxAllowed() public {
         checkHappyPathEth({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 1 ether,
-            originAmount: 1.01 ether,
-            expectedDestAmount: 1.01 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(1 ether),
+            originAmount: getOriginValue(1.01 ether),
+            expectedDestAmount: getDestValue(1.01 ether)
         });
     }
 
     function test_bridge_eth_1_1_revert_originAmountTooLow() public {
         checkRevertEthOriginAmountOutOfRange({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 1 ether,
-            originAmount: 0.99 ether - 1 wei
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(1 ether),
+            originAmount: getOriginValue(0.99 ether) - 1 wei
         });
     }
 
     function test_bridge_eth_1_1_revert_originAmountTooHigh() public {
         checkRevertEthOriginAmountOutOfRange({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 1 ether,
-            originAmount: 1.01 ether + 1 wei
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(1 ether),
+            originAmount: getOriginValue(1.01 ether) + 1 wei
         });
     }
 
     function test_bridge_eth_1_2_originAmountSame() public {
         checkHappyPathEth({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 2 ether,
-            originAmount: 1 ether,
-            expectedDestAmount: 2 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(2 ether),
+            originAmount: getOriginValue(1 ether),
+            expectedDestAmount: getDestValue(2 ether)
         });
     }
 
     function test_bridge_eth_1_2_originAmountLower() public {
         checkHappyPathEth({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 2 ether,
-            originAmount: 0.995 ether,
-            expectedDestAmount: 1.99 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(2 ether),
+            originAmount: getOriginValue(0.995 ether),
+            expectedDestAmount: getDestValue(1.99 ether)
         });
     }
 
     function test_bridge_eth_1_2_originAmountMinAllowed() public {
         checkHappyPathEth({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 2 ether,
-            originAmount: 0.99 ether,
-            expectedDestAmount: 1.98 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(2 ether),
+            originAmount: getOriginValue(0.99 ether),
+            expectedDestAmount: getDestValue(1.98 ether)
         });
     }
 
     function test_bridge_eth_1_2_originAmountHigher() public {
         checkHappyPathEth({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 2 ether,
-            originAmount: 1.005 ether,
-            expectedDestAmount: 2.01 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(2 ether),
+            originAmount: getOriginValue(1.005 ether),
+            expectedDestAmount: getDestValue(2.01 ether)
         });
     }
 
     function test_bridge_eth_1_2_originAmountMaxAllowed() public {
         checkHappyPathEth({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 2 ether,
-            originAmount: 1.01 ether,
-            expectedDestAmount: 2.02 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(2 ether),
+            originAmount: getOriginValue(1.01 ether),
+            expectedDestAmount: getDestValue(2.02 ether)
         });
     }
 
     function test_bridge_eth_1_2_revert_originAmountTooLow() public {
         checkRevertEthOriginAmountOutOfRange({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 2 ether,
-            originAmount: 0.99 ether - 1 wei
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(2 ether),
+            originAmount: getOriginValue(0.99 ether) - 1 wei
         });
     }
 
     function test_bridge_eth_1_2_revert_originAmountTooHigh() public {
         checkRevertEthOriginAmountOutOfRange({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 2 ether,
-            originAmount: 1.01 ether + 1 wei
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(2 ether),
+            originAmount: getOriginValue(1.01 ether) + 1 wei
         });
     }
 
     function test_bridge_eth_2_1_originAmountSame() public {
         checkHappyPathEth({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 0.5 ether,
-            originAmount: 1 ether,
-            expectedDestAmount: 0.5 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(0.5 ether),
+            originAmount: getOriginValue(1 ether),
+            expectedDestAmount: getDestValue(0.5 ether)
         });
     }
 
     function test_bridge_eth_2_1_originAmountLower() public {
         checkHappyPathEth({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 0.5 ether,
-            originAmount: 0.995 ether,
-            expectedDestAmount: 0.4975 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(0.5 ether),
+            originAmount: getOriginValue(0.995 ether),
+            expectedDestAmount: getDestValue(0.4975 ether)
         });
     }
 
     function test_bridge_eth_2_1_originAmountMinAllowed() public {
         checkHappyPathEth({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 0.5 ether,
-            originAmount: 0.99 ether,
-            expectedDestAmount: 0.495 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(0.5 ether),
+            originAmount: getOriginValue(0.99 ether),
+            expectedDestAmount: getDestValue(0.495 ether)
         });
     }
 
     function test_bridge_eth_2_1_originAmountHigher() public {
         checkHappyPathEth({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 0.5 ether,
-            originAmount: 1.005 ether,
-            expectedDestAmount: 0.5025 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(0.5 ether),
+            originAmount: getOriginValue(1.005 ether),
+            expectedDestAmount: getDestValue(0.5025 ether)
         });
     }
 
     function test_bridge_eth_2_1_originAmountMaxAllowed() public {
         checkHappyPathEth({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 0.5 ether,
-            originAmount: 1.01 ether,
-            expectedDestAmount: 0.505 ether
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(0.5 ether),
+            originAmount: getOriginValue(1.01 ether),
+            expectedDestAmount: getDestValue(0.505 ether)
         });
     }
 
     function test_bridge_eth_2_1_revert_originAmountTooLow() public {
         checkRevertEthOriginAmountOutOfRange({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 0.5 ether,
-            originAmount: 0.99 ether - 1 wei
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(0.5 ether),
+            originAmount: getOriginValue(0.99 ether) - 1 wei
         });
     }
 
     function test_bridge_eth_2_1_revert_originAmountTooHigh() public {
         checkRevertEthOriginAmountOutOfRange({
-            quoteOriginAmount: 1 ether,
-            quoteDestAmount: 0.5 ether,
-            originAmount: 1.01 ether + 1 wei
+            quoteOriginAmount: getOriginValue(1 ether),
+            quoteDestAmount: getDestValue(0.5 ether),
+            originAmount: getOriginValue(1.01 ether) + 1 wei
         });
     }
 }
