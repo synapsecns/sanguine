@@ -246,6 +246,7 @@
       "Total Liquidity": "总流动性",
       "Total Liquidity USD": "总流动性（美元）",
       "Requesting approval": "请求批准",
+      "Resetting allowance to zero first": "先将授权额度重置为零",
       "Starting your deposit": "开始存款…",
       "Starting your claim": "开始认领…"
     }

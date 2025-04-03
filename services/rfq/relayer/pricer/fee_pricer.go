@@ -222,21 +222,28 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 
 	// Compute the fee.
 	var feeDenom *big.Float
-	feeWei := new(big.Float).Mul(new(big.Float).SetInt(gasPrice), new(big.Float).SetFloat64(float64(gasEstimate)))
+
+	feeNativeWei := new(big.Float).Mul(new(big.Float).SetInt(gasPrice), new(big.Float).SetFloat64(float64(gasEstimate)))
 	if denomToken == nativeToken {
 		// Denomination token is native token, so no need for unit conversion.
-		feeDenom = feeWei
+		feeDenom = feeNativeWei
 	} else {
-		// Convert the fee from ETH to denomToken terms.
-		feeEth := new(big.Float).Quo(feeWei, new(big.Float).SetInt(nativeDecimalsFactor))
-		feeUSD := new(big.Float).Mul(feeEth, new(big.Float).SetFloat64(nativeTokenPrice))
-		feeUSDC := new(big.Float).Mul(feeUSD, new(big.Float).SetFloat64(denomTokenPrice))
-		feeDenom = new(big.Float).Mul(feeUSDC, new(big.Float).SetInt(denomDecimalsFactor))
+
+		// The steps below convert a raw/wei value of our native gas units (feeNativeWei EG: 1234500000000000) into an equivalent amount in the "denom" Token
+
+		// convert native gas fee raw/wei into units
+		feeNativeUnits := new(big.Float).Quo(feeNativeWei, new(big.Float).SetInt(nativeDecimalsFactor))
+		// convert native gas fee units into USD value which can then be utilized as a normalizer between our native input and denominated output.
+		feeUSD := new(big.Float).Mul(feeNativeUnits, new(big.Float).SetFloat64(nativeTokenPrice))
+		// convert USD value into "denomToken" units
+		feeDenomUnits := new(big.Float).Quo(feeUSD, new(big.Float).SetFloat64(denomTokenPrice))
+		// convert denominated units into "denomToken" raw/wei value
+		feeDenom = new(big.Float).Mul(feeDenomUnits, new(big.Float).SetInt(denomDecimalsFactor))
 		span.SetAttributes(
-			attribute.String("fee_wei", feeWei.String()),
-			attribute.String("fee_eth", feeEth.String()),
-			attribute.String("fee_usd", feeUSD.String()),
-			attribute.String("fee_usdc", feeUSDC.String()),
+			attribute.String("fee_native_wei", feeNativeWei.String()),
+			attribute.String("fee_native_units", feeNativeUnits.Text('f', -1)),
+			attribute.String("fee_usd", feeUSD.Text('f', -1)),
+			attribute.String("fee_denom_units", feeDenomUnits.Text('f', -1)),
 		)
 	}
 
@@ -263,8 +270,8 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 		attribute.Float64("denom_token_price", denomTokenPrice),
 		attribute.Float64("multplier", multiplier),
 		attribute.Int("denom_token_decimals", int(denomTokenDecimals)),
-		attribute.String("fee_wei", feeWei.String()),
-		attribute.String("fee_denom", feeDenom.String()),
+		attribute.String("fee_native_wei", feeNativeWei.String()),
+		attribute.String("fee_denom", feeDenom.Text('f', -1)),
 		attribute.String("fee_usdc_decimals_scaled", feeUSDCDecimalsScaled.String()),
 	)
 	return feeUSDCDecimalsScaled, nil
@@ -297,15 +304,29 @@ func (f *feePricer) GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, 
 
 // getTokenPrice returns the price of a token in USD.
 func (f *feePricer) GetTokenPrice(ctx context.Context, token string) (price float64, err error) {
+	ctx, span := f.handler.Tracer().Start(ctx, "GetTokenPrice", trace.WithAttributes(
+		attribute.String("token", token),
+	))
+
+	defer func() {
+		span.SetAttributes(attribute.Float64("price", price))
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	// Attempt to fetch gas price from cache.
 	tokenPriceItem := f.tokenPriceCache.Get(token)
 	//nolint:nestif
 	if tokenPriceItem == nil {
 		// Try to get price from coingecko.
 		price, err = f.priceFetcher.GetPrice(ctx, token)
+
 		if err == nil {
 			f.tokenPriceCache.Set(token, price, 0)
+			span.SetAttributes(attribute.Float64("cg_price", price))
 		} else {
+			span.SetAttributes(
+				attribute.String("cg_error", err.Error()),
+			)
 			// Fallback to configured token price.
 			price, err = f.getTokenPriceFromConfig(token)
 			if err != nil {
@@ -314,6 +335,7 @@ func (f *feePricer) GetTokenPrice(ctx context.Context, token string) (price floa
 		}
 	} else {
 		price = tokenPriceItem.Value()
+		span.SetAttributes(attribute.Float64("cache_price", price))
 	}
 	return price, nil
 }

@@ -294,6 +294,20 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
     }
 
+    function test_bridge_revert_weirdToken_amountHigher() public {
+        tokenParams.originToken = address(weirdToken);
+        weirdToken.setTransferToFastBridgeValue(tokenParams.originAmount + 1);
+        vm.expectRevert(AmountIncorrect.selector);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
+    function test_bridge_revert_weirdToken_amountLower() public {
+        tokenParams.originToken = address(weirdToken);
+        weirdToken.setTransferToFastBridgeValue(tokenParams.originAmount - 1);
+        vm.expectRevert(AmountIncorrect.selector);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
     // ═══════════════════════════════════════════════════ PROVE ═══════════════════════════════════════════════════════
 
     function checkStatusAndProofAfterProve(bytes32 txId, uint16 expectedProverID, address relayer) public view {

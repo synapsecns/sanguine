@@ -1,26 +1,29 @@
-import { Provider } from '@ethersproject/abstract-provider'
-import invariant from 'tiny-invariant'
-import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
+import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
+import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
+import { BigNumberish } from 'ethers'
+import invariant from 'tiny-invariant'
 
 import fastBridgeAbi from '../abi/FastBridge.json'
 import fastBridgeRouterAbi from '../abi/FastBridgeRouter.json'
-import { FastBridgeRouter as FastBridgeRouterContract } from '../typechain/FastBridgeRouter'
-import {
-  FastBridge as FastBridgeContract,
-  IFastBridge,
-} from '../typechain/FastBridge'
 import {
   SynapseModule,
   Query,
   narrowToCCTPRouterQuery,
   reduceToQuery,
 } from '../module'
-import { BigintIsh } from '../constants'
-import { getMatchingTxLog } from '../utils/logs'
-import { adjustValueIfNative } from '../utils/handleNativeToken'
-import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
+import {
+  FastBridge as FastBridgeContract,
+  IFastBridge,
+} from '../typechain/FastBridge'
+import { FastBridgeRouter as FastBridgeRouterContract } from '../typechain/FastBridgeRouter'
+import {
+  getMatchingTxLog,
+  adjustValueIfNative,
+  CACHE_TIMES,
+  RouterCache,
+} from '../utils'
 
 // Define type alias
 export type BridgeParams = IFastBridge.BridgeParamsStruct
@@ -77,7 +80,7 @@ export class FastBridgeRouter implements SynapseModule {
     to: string,
     destChainId: number,
     token: string,
-    amount: BigintIsh,
+    amount: BigNumberish,
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {
@@ -148,7 +151,7 @@ export class FastBridgeRouter implements SynapseModule {
   public async getOriginAmountOut(
     tokenIn: string,
     rfqTokens: string[],
-    amountIn: BigintIsh
+    amountIn: BigNumberish
   ): Promise<Query[]> {
     const queries = await this.routerContract.getOriginAmountOut(
       tokenIn,

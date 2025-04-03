@@ -183,6 +183,8 @@ type DateResultByChain {
   scroll: Float
   linea: Float
   worldchain: Float
+  unichain: Float
+  berachain: Float
   total:  Float
 }
 

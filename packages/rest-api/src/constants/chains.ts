@@ -487,6 +487,69 @@ export const WORLDCHAIN: Chain = {
   },
 }
 
+export const BERACHAIN: Chain = {
+  id: 80094,
+  name: 'Berachain',
+  rpcUrls: {
+    primary: getOmniRpcUrl(80094),
+    fallback: 'https://rpc.berachain.com',
+  },
+  explorerUrl: 'https://berascan.com',
+  explorerName: 'BeraScan',
+  blockTime: 2000,
+  imgUrl:
+    'https://ft-uniberainterfaces.sanguine-fe.pages.dev/_next/static/media/berachain.57304c86.svg',
+  networkName: 'Berachain',
+  networkUrl: 'https://rpc.berachain.com',
+  nativeCurrency: {
+    name: 'Bera',
+    symbol: 'BERA',
+    decimals: 18,
+  },
+}
+
+export const UNICHAIN: Chain = {
+  id: 130,
+  name: 'Unichain',
+  rpcUrls: {
+    primary: getOmniRpcUrl(130),
+    fallback: 'https://unichain-rpc.publicnode.com',
+  },
+  explorerUrl: 'https://uniscan.xyz',
+  explorerName: 'UniScan',
+  imgUrl:
+    'https://ft-uniberainterfaces.sanguine-fe.pages.dev/_next/static/media/unichain.02b81e3e.svg',
+  blockTime: 1000,
+  networkName: 'Unichain',
+  networkUrl: 'https://unichain-rpc.publicnode.com',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+}
+
+export const HYPEREVM: Chain = {
+  id: 999,
+  name: 'HyperEVM',
+  rpcUrls: {
+    primary: 'https://rpc.hyperliquid.xyz/evm',
+    fallback: 'https://rpc.hypurrscan.io',
+  },
+  explorerUrl: 'https://purrsec.com',
+  explorerName: 'PurrSec',
+  imgUrl:
+    'https://45b41e43.sanguine-fe.pages.dev/_next/static/media/hyperliquid.3dafe2fd.svg',
+  blockTime: 2000,
+  networkName: 'HyperEVM',
+  networkUrl: 'https://rpc.hyperliquid.xyz/evm',
+  nativeCurrency: {
+    name: 'HYPE',
+    symbol: 'HYPE',
+    decimals: 18,
+  },
+}
+
 export const CHAINS = {
   ETHEREUM,
   ARBITRUM,
@@ -511,6 +574,9 @@ export const CHAINS = {
   SCROLL,
   LINEA,
   WORLDCHAIN,
+  BERACHAIN,
+  UNICHAIN,
+  HYPEREVM,
 }
 
 export const CHAINS_ARRAY = Object.values(CHAINS)

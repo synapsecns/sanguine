@@ -1,15 +1,250 @@
+import { BigNumber, BigNumberish, PopulatedTransaction, utils } from 'ethers'
 import invariant from 'tiny-invariant'
-import { BigNumber, PopulatedTransaction } from 'ethers'
 
-import { BigintIsh } from '../constants'
-import { SynapseSDK } from '../sdk'
-import { handleNativeToken } from '../utils/handleNativeToken'
+import { areIntentsSupported, isChainIdSupported } from '../constants/chainIds'
 import {
-  BridgeQuote,
   SynapseModuleSet,
   Query,
   applyDeadlineToQuery,
+  isSwapQuery,
 } from '../module'
+import { SynapseSDK } from '../sdk'
+import {
+  EngineID,
+  RecipientEntity,
+  RouteInput,
+  slippageFromPercentage,
+  SwapEngineRoute,
+} from '../swap'
+import { BridgeQuote, BridgeQuoteV2, BridgeV2Parameters } from '../types'
+import {
+  handleNativeToken,
+  isSameAddress,
+  Prettify,
+  stringifyPopulatedTransaction,
+} from '../utils'
+
+type BridgeV2InternalParameters = Prettify<
+  BridgeV2Parameters & { allowMultipleTxs?: boolean }
+>
+
+export async function bridgeV2(
+  this: SynapseSDK,
+  params: BridgeV2Parameters
+): Promise<BridgeQuoteV2[]> {
+  // Don't allow multiple transactions for exported bridgeV2 function.
+  return _bridgeV2Internal.call(this, { ...params, allowMultipleTxs: false })
+}
+
+export async function _bridgeV2Internal(
+  this: SynapseSDK,
+  params: BridgeV2InternalParameters
+): Promise<BridgeQuoteV2[]> {
+  params.fromToken = handleNativeToken(params.fromToken)
+  params.toToken = handleNativeToken(params.toToken)
+  const bridgeV2Modules = this.allModuleSets.filter(
+    (set) => set.isBridgeV2Supported
+  )
+  const [bridgeV1Quotes, bridgeV2Quotes] = await Promise.all([
+    _collectV1Quotes.call(this, params, bridgeV2Modules),
+    _collectV2Quotes.call(this, params, bridgeV2Modules),
+  ])
+  // Combine the quotes and sort by expectedToAmount in descending order
+  return [...bridgeV1Quotes, ...bridgeV2Quotes].sort((a, b) =>
+    BigNumber.from(a.expectedToAmount).gte(b.expectedToAmount) ? -1 : 1
+  )
+}
+
+async function _collectV1Quotes(
+  this: SynapseSDK,
+  params: BridgeV2Parameters,
+  bridgeV2Modules: SynapseModuleSet[]
+): Promise<BridgeQuoteV2[]> {
+  if (
+    !isChainIdSupported(params.fromChainId) ||
+    !isChainIdSupported(params.toChainId)
+  ) {
+    return []
+  }
+  const slippage = slippageFromPercentage(params.slippagePercentage)
+  const deadlineBN = params.deadline
+    ? BigNumber.from(params.deadline)
+    : undefined
+  const bridgeV1Quotes = await allBridgeQuotes.call(
+    this,
+    params.fromChainId,
+    params.toChainId,
+    params.fromToken,
+    params.toToken,
+    params.fromAmount,
+    {
+      deadline: deadlineBN,
+      originUserAddress: params.fromSender,
+      excludedModules: bridgeV2Modules.map((set) => set.moduleName),
+    }
+  )
+  return Promise.all(
+    bridgeV1Quotes.map(async (quote: BridgeQuote) => {
+      // Apply slippage
+      const { originQuery: originQuerySlippage, destQuery: destQuerySlippage } =
+        applyBridgeSlippage.call(
+          this,
+          quote.bridgeModuleName,
+          quote.originQuery,
+          quote.destQuery,
+          slippage?.numerator,
+          slippage?.denominator
+        )
+      // Apply deadline
+      const { originQuery, destQuery } = applyBridgeDeadline.call(
+        this,
+        quote.bridgeModuleName,
+        originQuerySlippage,
+        destQuerySlippage,
+        deadlineBN
+      )
+      const swapModuleNames = isSwapQuery(originQuery)
+        ? [EngineID[EngineID.DefaultPools]]
+        : []
+      const moduleNames = [...swapModuleNames, quote.bridgeModuleName]
+      // Generate the transaction calldata
+      const tx = params.fromSender
+        ? await bridge.call(
+            this,
+            params.toRecipient || params.fromSender,
+            quote.routerAddress,
+            params.fromChainId,
+            params.toChainId,
+            params.fromToken,
+            params.fromAmount,
+            originQuery,
+            destQuery
+          )
+        : undefined
+      const bridgeQuoteV2: BridgeQuoteV2 = {
+        id: quote.id,
+        fromChainId: params.fromChainId,
+        fromToken: params.fromToken,
+        fromAmount: params.fromAmount,
+        toChainId: params.toChainId,
+        toToken: params.toToken,
+        expectedToAmount: quote.maxAmountOut.toString(),
+        minToAmount: destQuery.minAmountOut.toString(),
+        routerAddress: quote.routerAddress,
+        estimatedTime: quote.estimatedTime,
+        moduleNames,
+        gasDropAmount: quote.gasDropAmount.toString(),
+        tx: stringifyPopulatedTransaction(tx),
+      }
+      return bridgeQuoteV2
+    })
+  )
+}
+
+async function _collectV2Quotes(
+  this: SynapseSDK,
+  params: BridgeV2InternalParameters,
+  bridgeV2Modules: SynapseModuleSet[]
+): Promise<BridgeQuoteV2[]> {
+  // Intents need to be supported on the `from` chain, while `to` chain needs to be supported in general
+  if (
+    !areIntentsSupported(params.fromChainId) ||
+    !isChainIdSupported(params.toChainId)
+  ) {
+    return []
+  }
+  const slippage = slippageFromPercentage(params.slippagePercentage)
+  const candidates = await Promise.all(
+    bridgeV2Modules.map(async (set) =>
+      set.getBridgeTokenCandidates({
+        fromChainId: params.fromChainId,
+        toChainId: params.toChainId,
+        fromToken: params.fromToken,
+        toToken: params.allowMultipleTxs ? undefined : params.toToken,
+      })
+    )
+  )
+  // Flatten and remove duplicates
+  const originCandidates = candidates
+    .flat()
+    .map((c) => utils.getAddress(c.originToken))
+    .filter((c, index, self) => self.indexOf(c) === index)
+  const tokenZap = this.swapEngineSet.getTokenZap(params.fromChainId)
+  const originRoutes = (
+    await Promise.all(
+      originCandidates.map(async (originBridgeToken) => {
+        const input: RouteInput = {
+          chainId: params.fromChainId,
+          fromToken: params.fromToken,
+          fromAmount: params.fromAmount,
+          swapper: tokenZap,
+          toToken: originBridgeToken,
+          toRecipient: {
+            entity: RecipientEntity.Self,
+            address: tokenZap,
+          },
+          restrictComplexity: false,
+        }
+        const quote = await this.swapEngineSet.getBestQuote(input, {
+          allowMultiStep: true,
+        })
+        if (!quote) {
+          return
+        }
+        const route = await this.swapEngineSet.generateRoute(input, quote, {
+          allowMultiStep: true,
+          slippage,
+        })
+        return route
+      })
+    )
+  ).filter((route): route is SwapEngineRoute => route !== undefined)
+  const bridgeQuotesV2 = await Promise.all(
+    bridgeV2Modules.map(async (moduleSet, index) =>
+      Promise.all(
+        candidates[index].map(async (bridgeToken) => {
+          const originSwapRoute = originRoutes.find((swapRoute) =>
+            isSameAddress(bridgeToken.originToken, swapRoute.toToken)
+          )
+          if (!originSwapRoute) {
+            return
+          }
+          const bridgeRoute = await moduleSet.getBridgeRouteV2({
+            fromAmount: originSwapRoute.expectedToAmount,
+            bridgeToken,
+            toToken: params.toToken,
+            fromSender: params.fromSender,
+            toRecipient: params.toRecipient || params.fromSender,
+            slippage,
+            allowMultipleTxs: params.allowMultipleTxs,
+          })
+          // Check that a route was found.
+          if (!bridgeRoute) {
+            return
+          }
+          // For single-tx params we need to check that the route matches the destination token.
+          if (
+            !params.allowMultipleTxs &&
+            !isSameAddress(bridgeRoute.toToken, params.toToken)
+          ) {
+            return
+          }
+          const bridgeQuoteV2 = await this.sirSet.finalizeBridgeRouteV2(
+            params.fromToken,
+            params.fromAmount,
+            originSwapRoute,
+            bridgeRoute,
+            params.deadline
+          )
+          return moduleSet.finalizeBridgeQuoteV2(bridgeToken, bridgeQuoteV2)
+        })
+      )
+    )
+  )
+  return bridgeQuotesV2
+    .flat()
+    .filter((quote): quote is BridgeQuoteV2 => quote !== undefined)
+}
 
 /**
  * Creates a populated bridge transaction ready for signing and submission to the origin chain.
@@ -38,7 +273,7 @@ export async function bridge(
   originChainId: number,
   destChainId: number,
   token: string,
-  amount: BigintIsh,
+  amount: BigNumberish,
   originQuery: Query,
   destQuery: Query
 ): Promise<PopulatedTransaction> {
@@ -99,7 +334,7 @@ export async function bridgeQuote(
   destChainId: number,
   tokenIn: string,
   tokenOut: string,
-  amountIn: BigintIsh,
+  amountIn: BigNumberish,
   options: BridgeQuoteOptions = {}
 ): Promise<BridgeQuote> {
   // Get the quotes sorted by maxAmountOut
@@ -146,7 +381,7 @@ export async function allBridgeQuotes(
   destChainId: number,
   tokenIn: string,
   tokenOut: string,
-  amountIn: BigintIsh,
+  amountIn: BigNumberish,
   options: BridgeQuoteOptions = {}
 ): Promise<BridgeQuote[]> {
   invariant(
@@ -158,7 +393,7 @@ export async function allBridgeQuotes(
   const allQuotes: BridgeQuote[][] = await Promise.all(
     this.allModuleSets.map(async (moduleSet) => {
       // No-op if the module is explicitly excluded
-      if (options.excludedModules?.includes(moduleSet.bridgeModuleName)) {
+      if (options.excludedModules?.includes(moduleSet.moduleName)) {
         return []
       }
       const routes = await moduleSet.getBridgeRoutes(
@@ -188,7 +423,7 @@ export async function allBridgeQuotes(
 /**
  * Applies the deadlines to the given bridge queries, according to bridge module's default deadline settings.
  *
- * @param bridgeModuleName - The name of the bridge module.
+ * @param moduleName - The name of the bridge module.
  * @param originQueryInitial - The query for the origin chain
  * @param destQueryInitial - The query for the destination chain
  * @param originDeadline - The deadline to use on the origin chain (optional, default depends on the module).
@@ -197,13 +432,13 @@ export async function allBridgeQuotes(
  */
 export function applyBridgeDeadline(
   this: SynapseSDK,
-  bridgeModuleName: string,
+  moduleName: string,
   originQueryInitial: Query,
   destQueryInitial: Query,
   originDeadline?: BigNumber,
   destDeadline?: BigNumber
 ): { originQuery: Query; destQuery: Query } {
-  const moduleSet = getModuleSet.call(this, bridgeModuleName)
+  const moduleSet = getModuleSet.call(this, moduleName)
   const { originModuleDeadline, destModuleDeadline } =
     moduleSet.getModuleDeadlines(originDeadline, destDeadline)
   return {
@@ -216,7 +451,7 @@ export function applyBridgeDeadline(
  * Applies slippage to the given bridge queries, according to bridge module's slippage tolerance.
  * Note: default slippage is 10 bips (0.1%).
  *
- * @param bridgeModuleName - The name of the bridge module.
+ * @param moduleName - The name of the bridge module.
  * @param originQueryInitial - The query for the origin chain, coming from `allBridgeQuotes()`.
  * @param destQueryInitial - The query for the destination chain, coming from `allBridgeQuotes()`.
  * @param slipNumerator - The numerator of the slippage tolerance, defaults to 10.
@@ -225,13 +460,13 @@ export function applyBridgeDeadline(
  */
 export function applyBridgeSlippage(
   this: SynapseSDK,
-  bridgeModuleName: string,
+  moduleName: string,
   originQueryInitial: Query,
   destQueryInitial: Query,
   slipNumerator: number = 10,
   slipDenominator: number = 10000
 ): { originQuery: Query; destQuery: Query } {
-  const moduleSet = getModuleSet.call(this, bridgeModuleName)
+  const moduleSet = getModuleSet.call(this, moduleName)
   return moduleSet.applySlippage(
     originQueryInitial,
     destQueryInitial,
@@ -246,18 +481,18 @@ export function applyBridgeSlippage(
  * This function is meant to abstract away the differences between the two bridge modules.
  *
  * @param originChainId - The ID of the origin chain.
- * @param bridgeModuleName - The name of the bridge module.
+ * @param moduleName - The name of the bridge module.
  * @param txHash - The transaction hash of the bridge operation on the origin chain.
  * @returns A promise that resolves to the unique Synapse txId of the bridge operation.
  */
 export async function getSynapseTxId(
   this: SynapseSDK,
   originChainId: number,
-  bridgeModuleName: string,
+  moduleName: string,
   txHash: string
 ): Promise<string> {
   return getModuleSet
-    .call(this, bridgeModuleName)
+    .call(this, moduleName)
     .getSynapseTxId(originChainId, txHash)
 }
 
@@ -265,18 +500,18 @@ export async function getSynapseTxId(
  * Checks whether a bridge operation has been completed on the destination chain.
  *
  * @param destChainId - The ID of the destination chain.
- * @param bridgeModuleName - The name of the bridge module.
+ * @param moduleName - The name of the bridge module.
  * @param synapseTxId - The unique Synapse txId of the bridge operation.
  * @returns A promise that resolves to a boolean indicating whether the bridge operation has been completed.
  */
 export async function getBridgeTxStatus(
   this: SynapseSDK,
   destChainId: number,
-  bridgeModuleName: string,
+  moduleName: string,
   synapseTxId: string
 ): Promise<boolean> {
   return getModuleSet
-    .call(this, bridgeModuleName)
+    .call(this, moduleName)
     .getBridgeTxStatus(destChainId, synapseTxId)
 }
 
@@ -297,7 +532,7 @@ export function getBridgeModuleName(
   if (!moduleSet) {
     throw new Error('Unknown event')
   }
-  return moduleSet.bridgeModuleName
+  return moduleSet.moduleName
 }
 
 /**
@@ -306,18 +541,16 @@ export function getBridgeModuleName(
  * or the bridge token.
  *
  * @param originChainId - The ID of the origin chain.
- * @param bridgeModuleName - The name of the bridge module.
+ * @param moduleName - The name of the bridge module.
  * @returns - The estimated time for a bridge operation, in seconds.
  * @throws - Will throw an error if the bridge module is unknown for the given chain.
  */
 export function getEstimatedTime(
   this: SynapseSDK,
   originChainId: number,
-  bridgeModuleName: string
+  moduleName: string
 ): number {
-  return getModuleSet
-    .call(this, bridgeModuleName)
-    .getEstimatedTime(originChainId)
+  return getModuleSet.call(this, moduleName).getEstimatedTime(originChainId)
 }
 
 /**
@@ -337,16 +570,16 @@ export async function getBridgeGas(
 /**
  * Extracts the SynapseModuleSet from the SynapseSDK based on the given bridge module name.
  *
- * @param bridgeModuleName - The name of the bridge module, SynapseBridge or SynapseCCTP.
+ * @param moduleName - The name of the bridge module, SynapseBridge or SynapseCCTP.
  * @returns The corresponding SynapseModuleSet.
  * @throws Will throw an error if the bridge module is unknown.
  */
 export function getModuleSet(
   this: SynapseSDK,
-  bridgeModuleName: string
+  moduleName: string
 ): SynapseModuleSet {
   const moduleSet = this.allModuleSets.find(
-    (set) => set.bridgeModuleName === bridgeModuleName
+    (set) => set.moduleName === moduleName
   )
   if (!moduleSet) {
     throw new Error('Unknown bridge module')

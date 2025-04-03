@@ -1,16 +1,107 @@
-import { PopulatedTransaction } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
+import { AddressZero } from '@ethersproject/constants'
+import { PopulatedTransaction } from '@ethersproject/contracts'
+import { BigNumberish } from 'ethers'
+import { uuidv7 } from 'uuidv7'
 
-import { BigintIsh } from '../constants'
-import {
-  Query,
-  SwapQuote,
-  applySlippageToQuery,
-  applyDeadlineToQuery,
-} from '../module'
-import { handleNativeToken } from '../utils/handleNativeToken'
+import { areIntentsSupported, MEDIAN_TIME_BLOCK } from '../constants'
+import { Query, applySlippageToQuery, applyDeadlineToQuery } from '../module'
 import { SynapseSDK } from '../sdk'
-import { TEN_MINUTES, applyOptionalDeadline } from '../utils/deadlines'
+import {
+  RecipientEntity,
+  RouteInput,
+  slippageFromPercentage,
+  USER_SIMULATED_ADDRESS,
+} from '../swap'
+import { SwapQuote, SwapQuoteV2, SwapV2Parameters } from '../types'
+import {
+  handleNativeToken,
+  TEN_MINUTES,
+  applyOptionalDeadline,
+  calculateDeadline,
+  isSameAddress,
+  stringifyPopulatedTransaction,
+} from '../utils'
+
+const getEmptyQuoteV2 = (params: SwapV2Parameters): SwapQuoteV2 => {
+  return {
+    id: '',
+    chainId: params.chainId,
+    fromToken: params.fromToken,
+    fromAmount: params.fromAmount,
+    toToken: params.toToken,
+    expectedToAmount: '0',
+    minToAmount: '0',
+    moduleNames: [],
+    estimatedTime: 0,
+    routerAddress: AddressZero,
+  }
+}
+
+export async function swapV2(
+  this: SynapseSDK,
+  params: SwapV2Parameters
+): Promise<SwapQuoteV2> {
+  if (!areIntentsSupported(params.chainId)) {
+    return getEmptyQuoteV2(params)
+  }
+  params.fromToken = handleNativeToken(params.fromToken)
+  params.toToken = handleNativeToken(params.toToken)
+  if (isSameAddress(params.fromToken, params.toToken)) {
+    return getEmptyQuoteV2(params)
+  }
+  const slippage = slippageFromPercentage(params.slippagePercentage)
+  const input: RouteInput = {
+    chainId: params.chainId,
+    fromToken: params.fromToken,
+    fromAmount: params.fromAmount,
+    swapper: this.swapEngineSet.getTokenZap(params.chainId),
+    toToken: params.toToken,
+    toRecipient: {
+      entity: params.toRecipient
+        ? RecipientEntity.User
+        : RecipientEntity.UserSimulated,
+      address: params.toRecipient || USER_SIMULATED_ADDRESS,
+    },
+    restrictComplexity: params.restrictComplexity ?? false,
+  }
+  const quote = await this.swapEngineSet.getBestQuote(input, {
+    allowMultiStep: true,
+  })
+  if (!quote) {
+    return getEmptyQuoteV2(params)
+  }
+  const route = await this.swapEngineSet.generateRoute(input, quote, {
+    allowMultiStep: true,
+    slippage,
+  })
+  if (!route) {
+    return getEmptyQuoteV2(params)
+  }
+  const tx = params.toRecipient
+    ? await this.sirSet.completeIntentWithBalanceChecks(
+        params.chainId,
+        params.fromToken,
+        params.fromAmount,
+        params.deadline ?? calculateDeadline(TEN_MINUTES),
+        route.steps
+      )
+    : undefined
+  const expectedToAmount = route.expectedToAmount.toString()
+  return {
+    id: uuidv7(),
+    chainId: params.chainId,
+    fromToken: params.fromToken,
+    fromAmount: params.fromAmount,
+    toToken: params.toToken,
+    expectedToAmount,
+    minToAmount: route.minToAmount?.toString() ?? expectedToAmount,
+    routerAddress: this.sirSet.getSirAddress(params.chainId),
+    estimatedTime: MEDIAN_TIME_BLOCK[params.chainId],
+    moduleNames: [route.engineName],
+    tx: stringifyPopulatedTransaction(tx),
+  }
+}
 
 /**
  * Performs a swap through a Synapse Router.
@@ -28,7 +119,7 @@ export async function swap(
   chainId: number,
   to: string,
   token: string,
-  amount: BigintIsh,
+  amount: BigNumberish,
   query: Query
 ): Promise<PopulatedTransaction> {
   token = handleNativeToken(token)
@@ -53,7 +144,7 @@ export async function swapQuote(
   chainId: number,
   tokenIn: string,
   tokenOut: string,
-  amountIn: BigintIsh,
+  amountIn: BigNumberish,
   deadline?: BigNumber
 ): Promise<SwapQuote> {
   tokenOut = handleNativeToken(tokenOut)

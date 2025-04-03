@@ -41,35 +41,6 @@ export const reduceToFeeConfig = (feeConfig: FeeConfig): FeeConfig => {
 }
 
 /**
- * Quote for a swap transaction for SynapseRouter (V1).
- * Returned by SDK to the consumer.
- */
-export type SwapQuote = {
-  routerAddress: string
-  maxAmountOut: BigNumber
-  query: Query
-}
-
-/**
- * Quote for a bridge transaction for SynapseRouter (V1) and SynapseCCTPRouter.
- * Returned by SDK to the consumer.
- */
-export type BridgeQuote = {
-  id: string
-  feeAmount: BigNumber
-  feeConfig: FeeConfig
-  routerAddress: string
-  maxAmountOut: BigNumber
-  originQuery: Query
-  destQuery: Query
-  estimatedTime: number
-  bridgeModuleName: string
-  gasDropAmount: BigNumber
-  originChainId: number
-  destChainId: number
-}
-
-/**
  * Internal representation of a found bridge route for SynapseRouter (V1) and SynapseCCTPRouter.
  */
 export type BridgeRoute = {
@@ -79,4 +50,20 @@ export type BridgeRoute = {
   destQuery: Query
   bridgeToken: BridgeToken
   bridgeModuleName: string
+}
+
+export type BridgeTokenCandidate = {
+  originChainId: number
+  destChainId: number
+  originToken: string
+  destToken: string
+}
+
+export type BridgeRouteV2 = {
+  bridgeToken: BridgeTokenCandidate
+  minFromAmount: BigNumber
+  toToken: string
+  expectedToAmount: BigNumber
+  minToAmount: BigNumber
+  zapData?: string
 }

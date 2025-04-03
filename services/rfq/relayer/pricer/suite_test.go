@@ -53,6 +53,16 @@ func (c *PricerSuite) SetupTest() {
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
+					"BNB": {
+						Address:  "",
+						PriceUSD: 600,
+						Decimals: 18,
+					},
+					"BTC": {
+						Address:  "",
+						PriceUSD: 95000,
+						Decimals: 8,
+					},
 				},
 				NativeToken: "ETH",
 			},
@@ -67,6 +77,21 @@ func (c *PricerSuite) SetupTest() {
 						Address:  "",
 						PriceUSD: 0.5,
 						Decimals: 18,
+					},
+					"ETH": {
+						Address:  "",
+						PriceUSD: 2000,
+						Decimals: 18,
+					},
+					"BNB": {
+						Address:  "",
+						PriceUSD: 600,
+						Decimals: 18,
+					},
+					"BTC": {
+						Address:  "",
+						PriceUSD: 95000,
+						Decimals: 8,
 					},
 				},
 				NativeToken: "MATIC",

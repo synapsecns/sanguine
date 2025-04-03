@@ -166,6 +166,36 @@ type GetBridgeParams struct {
 
 	// OriginUserAddress The address of the user on the origin chain
 	OriginUserAddress *string `form:"originUserAddress,omitempty" json:"originUserAddress,omitempty"`
+
+	// DestAddress The destination address of the user on the destination chain
+	DestAddress *string `form:"destAddress,omitempty" json:"destAddress,omitempty"`
+}
+
+// GetBridgeV2Params defines parameters for GetBridgeV2.
+type GetBridgeV2Params struct {
+	// FromChainId The origin chain ID (must support intents)
+	FromChainId int `form:"fromChainId" json:"fromChainId"`
+
+	// FromToken The address of the token on the origin chain
+	FromToken string `form:"fromToken" json:"fromToken"`
+
+	// FromAmount The amount of tokens to bridge in the token's native decimals
+	FromAmount string `form:"fromAmount" json:"fromAmount"`
+
+	// FromSender The address of the user on the origin chain (required to generate callData)
+	FromSender *string `form:"fromSender,omitempty" json:"fromSender,omitempty"`
+
+	// ToChainId The destination chain ID
+	ToChainId int `form:"toChainId" json:"toChainId"`
+
+	// ToToken The address of the token on the destination chain
+	ToToken string `form:"toToken" json:"toToken"`
+
+	// ToRecipient The destination address for the bridge transaction (required to generate callData)
+	ToRecipient *string `form:"toRecipient,omitempty" json:"toRecipient,omitempty"`
+
+	// Slippage Optional. The maximum allowed slippage percentage (0-100). Defaults to 0.5%.
+	Slippage *float32 `form:"slippage,omitempty" json:"slippage,omitempty"`
 }
 
 // GetBridgeLimitsParams defines parameters for GetBridgeLimits.
@@ -240,6 +270,36 @@ type GetDestinationTxParams struct {
 	TxHash string `form:"txHash" json:"txHash"`
 }
 
+// GetIntentParams defines parameters for GetIntent.
+type GetIntentParams struct {
+	// FromChainId The origin chain ID (must support intents)
+	FromChainId int `form:"fromChainId" json:"fromChainId"`
+
+	// FromToken The address of the token on the origin chain
+	FromToken string `form:"fromToken" json:"fromToken"`
+
+	// FromAmount The amount of tokens to transfer in the token's native decimals
+	FromAmount string `form:"fromAmount" json:"fromAmount"`
+
+	// FromSender The address of the sender on the origin chain (required to generate callData)
+	FromSender *string `form:"fromSender,omitempty" json:"fromSender,omitempty"`
+
+	// ToChainId The destination chain ID
+	ToChainId int `form:"toChainId" json:"toChainId"`
+
+	// ToToken The address of the token on the destination chain
+	ToToken string `form:"toToken" json:"toToken"`
+
+	// ToRecipient The recipient address on the destination chain (required to generate callData)
+	ToRecipient *string `form:"toRecipient,omitempty" json:"toRecipient,omitempty"`
+
+	// Slippage Optional. The maximum allowed slippage percentage (0-100). Defaults to 0.5%.
+	Slippage *float32 `form:"slippage,omitempty" json:"slippage,omitempty"`
+
+	// AllowMultipleTxs Optional. Whether to allow intent execution across multiple transactions.
+	AllowMultipleTxs *bool `form:"allowMultipleTxs,omitempty" json:"allowMultipleTxs,omitempty"`
+}
+
 // GetQuotesParams defines parameters for GetQuotes.
 type GetQuotesParams struct {
 	// OriginChainID origin chain id to filter quotes by
@@ -271,6 +331,30 @@ type GetSwapParams struct {
 
 	// Amount The amount of tokens to swap
 	Amount float32 `form:"amount" json:"amount"`
+
+	// Address The address of the user
+	Address string `form:"address" json:"address"`
+}
+
+// GetSwapV2Params defines parameters for GetSwapV2.
+type GetSwapV2Params struct {
+	// ChainId The chain ID where the swap will occur
+	ChainId int `form:"chainId" json:"chainId"`
+
+	// FromToken The address of the token to swap from
+	FromToken string `form:"fromToken" json:"fromToken"`
+
+	// FromAmount The amount of tokens to swap in the token's native decimals
+	FromAmount string `form:"fromAmount" json:"fromAmount"`
+
+	// ToToken The address of the token to swap to
+	ToToken string `form:"toToken" json:"toToken"`
+
+	// ToRecipient Optional. The address that will receive the swapped tokens. If provided, returns transaction data.
+	ToRecipient *string `form:"toRecipient,omitempty" json:"toRecipient,omitempty"`
+
+	// Slippage Optional. The maximum allowed slippage percentage (0-100). Defaults to 0.5%.
+	Slippage *float32 `form:"slippage,omitempty" json:"slippage,omitempty"`
 }
 
 // GetSwapTxInfoParams defines parameters for GetSwapTxInfo.
@@ -402,6 +486,9 @@ type ClientInterface interface {
 	// GetBridge request
 	GetBridge(ctx context.Context, params *GetBridgeParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetBridgeV2 request
+	GetBridgeV2(ctx context.Context, params *GetBridgeV2Params, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetBridgeLimits request
 	GetBridgeLimits(ctx context.Context, params *GetBridgeLimitsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -430,6 +517,9 @@ type ClientInterface interface {
 
 	// GetDisputes request
 	GetDisputes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetIntent request
+	GetIntent(ctx context.Context, params *GetIntentParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetInvalidRelays request
 	GetInvalidRelays(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -470,6 +560,9 @@ type ClientInterface interface {
 
 	// GetSwap request
 	GetSwap(ctx context.Context, params *GetSwapParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetSwapV2 request
+	GetSwapV2(ctx context.Context, params *GetSwapV2Params, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSwapTxInfo request
 	GetSwapTxInfo(ctx context.Context, params *GetSwapTxInfoParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -522,6 +615,18 @@ func (c *Client) PutAck(ctx context.Context, body PutAckJSONRequestBody, reqEdit
 
 func (c *Client) GetBridge(ctx context.Context, params *GetBridgeParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetBridgeRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetBridgeV2(ctx context.Context, params *GetBridgeV2Params, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBridgeV2Request(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -642,6 +747,18 @@ func (c *Client) GetDestinationTx(ctx context.Context, params *GetDestinationTxP
 
 func (c *Client) GetDisputes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetDisputesRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetIntent(ctx context.Context, params *GetIntentParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetIntentRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -810,6 +927,18 @@ func (c *Client) GetRfqStream(ctx context.Context, reqEditors ...RequestEditorFn
 
 func (c *Client) GetSwap(ctx context.Context, params *GetSwapParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSwapRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSwapV2(ctx context.Context, params *GetSwapV2Params, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSwapV2Request(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1020,6 +1149,163 @@ func NewGetBridgeRequest(server string, params *GetBridgeParams) (*http.Request,
 		if params.OriginUserAddress != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "originUserAddress", runtime.ParamLocationQuery, *params.OriginUserAddress); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.DestAddress != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "destAddress", runtime.ParamLocationQuery, *params.DestAddress); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetBridgeV2Request generates requests for GetBridgeV2
+func NewGetBridgeV2Request(server string, params *GetBridgeV2Params) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/bridge/v2")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromChainId", runtime.ParamLocationQuery, params.FromChainId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromToken", runtime.ParamLocationQuery, params.FromToken); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromAmount", runtime.ParamLocationQuery, params.FromAmount); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if params.FromSender != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromSender", runtime.ParamLocationQuery, *params.FromSender); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toChainId", runtime.ParamLocationQuery, params.ToChainId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toToken", runtime.ParamLocationQuery, params.ToToken); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if params.ToRecipient != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toRecipient", runtime.ParamLocationQuery, *params.ToRecipient); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Slippage != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "slippage", runtime.ParamLocationQuery, *params.Slippage); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -1550,6 +1836,163 @@ func NewGetDisputesRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewGetIntentRequest generates requests for GetIntent
+func NewGetIntentRequest(server string, params *GetIntentParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/intent")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromChainId", runtime.ParamLocationQuery, params.FromChainId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromToken", runtime.ParamLocationQuery, params.FromToken); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromAmount", runtime.ParamLocationQuery, params.FromAmount); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if params.FromSender != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromSender", runtime.ParamLocationQuery, *params.FromSender); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toChainId", runtime.ParamLocationQuery, params.ToChainId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toToken", runtime.ParamLocationQuery, params.ToToken); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if params.ToRecipient != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toRecipient", runtime.ParamLocationQuery, *params.ToRecipient); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Slippage != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "slippage", runtime.ParamLocationQuery, *params.Slippage); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.AllowMultipleTxs != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "allowMultipleTxs", runtime.ParamLocationQuery, *params.AllowMultipleTxs); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetInvalidRelaysRequest generates requests for GetInvalidRelays
 func NewGetInvalidRelaysRequest(server string) (*http.Request, error) {
 	var err error
@@ -2009,6 +2452,131 @@ func NewGetSwapRequest(server string, params *GetSwapParams) (*http.Request, err
 			}
 		}
 
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "address", runtime.ParamLocationQuery, params.Address); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSwapV2Request generates requests for GetSwapV2
+func NewGetSwapV2Request(server string, params *GetSwapV2Params) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/swap/v2")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chainId", runtime.ParamLocationQuery, params.ChainId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromToken", runtime.ParamLocationQuery, params.FromToken); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "fromAmount", runtime.ParamLocationQuery, params.FromAmount); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toToken", runtime.ParamLocationQuery, params.ToToken); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if params.ToRecipient != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "toRecipient", runtime.ParamLocationQuery, *params.ToRecipient); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Slippage != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "slippage", runtime.ParamLocationQuery, *params.Slippage); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		queryURL.RawQuery = queryValues.Encode()
 	}
 
@@ -2297,6 +2865,9 @@ type ClientWithResponsesInterface interface {
 	// GetBridgeWithResponse request
 	GetBridgeWithResponse(ctx context.Context, params *GetBridgeParams, reqEditors ...RequestEditorFn) (*GetBridgeResponse, error)
 
+	// GetBridgeV2WithResponse request
+	GetBridgeV2WithResponse(ctx context.Context, params *GetBridgeV2Params, reqEditors ...RequestEditorFn) (*GetBridgeV2Response, error)
+
 	// GetBridgeLimitsWithResponse request
 	GetBridgeLimitsWithResponse(ctx context.Context, params *GetBridgeLimitsParams, reqEditors ...RequestEditorFn) (*GetBridgeLimitsResponse, error)
 
@@ -2325,6 +2896,9 @@ type ClientWithResponsesInterface interface {
 
 	// GetDisputesWithResponse request
 	GetDisputesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetDisputesResponse, error)
+
+	// GetIntentWithResponse request
+	GetIntentWithResponse(ctx context.Context, params *GetIntentParams, reqEditors ...RequestEditorFn) (*GetIntentResponse, error)
 
 	// GetInvalidRelaysWithResponse request
 	GetInvalidRelaysWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetInvalidRelaysResponse, error)
@@ -2365,6 +2939,9 @@ type ClientWithResponsesInterface interface {
 
 	// GetSwapWithResponse request
 	GetSwapWithResponse(ctx context.Context, params *GetSwapParams, reqEditors ...RequestEditorFn) (*GetSwapResponse, error)
+
+	// GetSwapV2WithResponse request
+	GetSwapV2WithResponse(ctx context.Context, params *GetSwapV2Params, reqEditors ...RequestEditorFn) (*GetSwapV2Response, error)
 
 	// GetSwapTxInfoWithResponse request
 	GetSwapTxInfoWithResponse(ctx context.Context, params *GetSwapTxInfoParams, reqEditors ...RequestEditorFn) (*GetSwapTxInfoResponse, error)
@@ -2498,6 +3075,87 @@ func (r GetBridgeResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetBridgeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetBridgeV2Response struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]struct {
+		// CallData Transaction data object, only provided if fromSender and toRecipient parameters were included
+		CallData *struct {
+			// Data Transaction calldata
+			Data *string `json:"data,omitempty"`
+
+			// To Contract address to call
+			To *string `json:"to,omitempty"`
+
+			// Value Amount of native currency to send with transaction (in native token decimals)
+			Value *string `json:"value,omitempty"`
+		} `json:"callData"`
+
+		// EstimatedTime Estimated time for the bridge in seconds
+		EstimatedTime *int `json:"estimatedTime,omitempty"`
+
+		// ExpectedToAmount The expected amount of tokens that will be received in the token's native decimals
+		ExpectedToAmount *string `json:"expectedToAmount,omitempty"`
+
+		// FromAmount The amount of tokens to bridge in the token's native decimals
+		FromAmount *string `json:"fromAmount,omitempty"`
+
+		// FromChainId The ID of the origin chain
+		FromChainId *int `json:"fromChainId,omitempty"`
+
+		// FromToken The address of the token on the origin chain
+		FromToken *string `json:"fromToken,omitempty"`
+
+		// GasDropAmount Amount of native token airdropped on destination chain (in native token decimals)
+		GasDropAmount *string `json:"gasDropAmount,omitempty"`
+
+		// Id Unique identifier for the quote (UUIDv7)
+		Id *string `json:"id,omitempty"`
+
+		// MinToAmount The minimum amount of tokens that will be received in the token's native decimals (includes slippage)
+		MinToAmount *string `json:"minToAmount,omitempty"`
+
+		// ModuleNames The names of the bridge or swap modules used for this quote
+		ModuleNames *[]string `json:"moduleNames,omitempty"`
+
+		// RouterAddress The address of the router contract
+		RouterAddress *string `json:"routerAddress,omitempty"`
+
+		// ToChainId The ID of the destination chain
+		ToChainId *int `json:"toChainId,omitempty"`
+
+		// ToToken The address of the token on the destination chain
+		ToToken *string `json:"toToken,omitempty"`
+	}
+	JSON400 *struct {
+		Errors *[]struct {
+			Location *string `json:"location,omitempty"`
+			Msg      *string `json:"msg,omitempty"`
+			Param    *string `json:"param,omitempty"`
+			Value    *string `json:"value,omitempty"`
+		} `json:"errors,omitempty"`
+	}
+	JSON500 *struct {
+		Error *string `json:"error,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetBridgeV2Response) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetBridgeV2Response) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2922,6 +3580,114 @@ func (r GetDisputesResponse) StatusCode() int {
 	return 0
 }
 
+type GetIntentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]struct {
+		// EstimatedTime Estimated time for the intent execution in seconds
+		EstimatedTime *int `json:"estimatedTime,omitempty"`
+
+		// ExpectedToAmount The expected amount of tokens to be received (in native token decimals)
+		ExpectedToAmount *string `json:"expectedToAmount,omitempty"`
+
+		// FromAmount The amount of tokens to transfer (in native token decimals)
+		FromAmount *string `json:"fromAmount,omitempty"`
+
+		// FromChainId The ID of the origin chain
+		FromChainId *int `json:"fromChainId,omitempty"`
+
+		// FromToken The address of the token on the origin chain
+		FromToken *string `json:"fromToken,omitempty"`
+
+		// Id Unique identifier for the quote (UUIDv7)
+		Id *string `json:"id,omitempty"`
+
+		// MinToAmount The minimum amount of tokens that will be received (in native token decimals)
+		MinToAmount *string `json:"minToAmount,omitempty"`
+
+		// Steps The list of steps to execute the intent
+		Steps *[]struct {
+			// CallData Transaction data object, only provided if addresses were included
+			CallData *struct {
+				// Data Transaction calldata
+				Data *string `json:"data,omitempty"`
+
+				// To Contract address to call
+				To *string `json:"to,omitempty"`
+
+				// Value Amount of native currency to send with transaction (in native token decimals)
+				Value *string `json:"value,omitempty"`
+			} `json:"callData"`
+
+			// EstimatedTime Estimated time for this step in seconds
+			EstimatedTime *int `json:"estimatedTime,omitempty"`
+
+			// ExpectedToAmount The expected amount of tokens for this step (in native token decimals)
+			ExpectedToAmount *string `json:"expectedToAmount,omitempty"`
+
+			// FromAmount The amount of tokens for this step (in native token decimals)
+			FromAmount *string `json:"fromAmount,omitempty"`
+
+			// FromChainId The ID of the origin chain for this step
+			FromChainId *int `json:"fromChainId,omitempty"`
+
+			// FromToken The address of the token on the origin chain for this step
+			FromToken *string `json:"fromToken,omitempty"`
+
+			// GasDropAmount Amount of native token airdropped on destination chain (in native token decimals)
+			GasDropAmount *string `json:"gasDropAmount,omitempty"`
+
+			// MinToAmount The minimum amount of tokens for this step (in native token decimals)
+			MinToAmount *string `json:"minToAmount,omitempty"`
+
+			// ModuleNames The names of the bridge or swap modules used for this step
+			ModuleNames *[]string `json:"moduleNames,omitempty"`
+
+			// RouterAddress The address of the router contract for this step
+			RouterAddress *string `json:"routerAddress,omitempty"`
+
+			// ToChainId The ID of the destination chain for this step
+			ToChainId *int `json:"toChainId,omitempty"`
+
+			// ToToken The address of the token on the destination chain for this step
+			ToToken *string `json:"toToken,omitempty"`
+		} `json:"steps,omitempty"`
+
+		// ToChainId The ID of the destination chain
+		ToChainId *int `json:"toChainId,omitempty"`
+
+		// ToToken The address of the token on the destination chain
+		ToToken *string `json:"toToken,omitempty"`
+	}
+	JSON400 *struct {
+		Errors *[]struct {
+			Location *string `json:"location,omitempty"`
+			Msg      *string `json:"msg,omitempty"`
+			Param    *string `json:"param,omitempty"`
+			Value    *string `json:"value,omitempty"`
+		} `json:"errors,omitempty"`
+	}
+	JSON500 *struct {
+		Error *string `json:"error,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetIntentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetIntentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetInvalidRelaysResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -3321,6 +4087,78 @@ func (r GetSwapResponse) StatusCode() int {
 	return 0
 }
 
+type GetSwapV2Response struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// CallData Transaction data object, only provided if toRecipient parameter was included
+		CallData *struct {
+			// Data Transaction calldata
+			Data *string `json:"data,omitempty"`
+
+			// To Contract address to call
+			To *string `json:"to,omitempty"`
+
+			// Value Amount of native currency to send with transaction (in native token decimals)
+			Value *string `json:"value,omitempty"`
+		} `json:"callData"`
+
+		// ChainId The chain ID where the swap occurs
+		ChainId *int `json:"chainId,omitempty"`
+
+		// ExpectedToAmount The expected amount of tokens that will be received in the token's native decimals
+		ExpectedToAmount *string `json:"expectedToAmount,omitempty"`
+
+		// FromAmount The amount of tokens to swap in the token's native decimals
+		FromAmount *string `json:"fromAmount,omitempty"`
+
+		// FromToken The address of the token being swapped from
+		FromToken *string `json:"fromToken,omitempty"`
+
+		// Id Unique identifier for the quote
+		Id *string `json:"id,omitempty"`
+
+		// MinToAmount The minimum amount of tokens that will be received in the token's native decimals (includes slippage)
+		MinToAmount *string `json:"minToAmount,omitempty"`
+
+		// ModuleNames The names of the swap modules used for this quote
+		ModuleNames *[]string `json:"moduleNames,omitempty"`
+
+		// RouterAddress The address of the router contract
+		RouterAddress *string `json:"routerAddress,omitempty"`
+
+		// ToToken The address of the token being swapped to
+		ToToken *string `json:"toToken,omitempty"`
+	}
+	JSON400 *struct {
+		Errors *[]struct {
+			Location *string `json:"location,omitempty"`
+			Msg      *string `json:"msg,omitempty"`
+			Param    *string `json:"param,omitempty"`
+			Value    *string `json:"value,omitempty"`
+		} `json:"errors,omitempty"`
+	}
+	JSON500 *struct {
+		Error *string `json:"error,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSwapV2Response) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSwapV2Response) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetSwapTxInfoResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -3522,6 +4360,15 @@ func (c *ClientWithResponses) GetBridgeWithResponse(ctx context.Context, params 
 	return ParseGetBridgeResponse(rsp)
 }
 
+// GetBridgeV2WithResponse request returning *GetBridgeV2Response
+func (c *ClientWithResponses) GetBridgeV2WithResponse(ctx context.Context, params *GetBridgeV2Params, reqEditors ...RequestEditorFn) (*GetBridgeV2Response, error) {
+	rsp, err := c.GetBridgeV2(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetBridgeV2Response(rsp)
+}
+
 // GetBridgeLimitsWithResponse request returning *GetBridgeLimitsResponse
 func (c *ClientWithResponses) GetBridgeLimitsWithResponse(ctx context.Context, params *GetBridgeLimitsParams, reqEditors ...RequestEditorFn) (*GetBridgeLimitsResponse, error) {
 	rsp, err := c.GetBridgeLimits(ctx, params, reqEditors...)
@@ -3609,6 +4456,15 @@ func (c *ClientWithResponses) GetDisputesWithResponse(ctx context.Context, reqEd
 		return nil, err
 	}
 	return ParseGetDisputesResponse(rsp)
+}
+
+// GetIntentWithResponse request returning *GetIntentResponse
+func (c *ClientWithResponses) GetIntentWithResponse(ctx context.Context, params *GetIntentParams, reqEditors ...RequestEditorFn) (*GetIntentResponse, error) {
+	rsp, err := c.GetIntent(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetIntentResponse(rsp)
 }
 
 // GetInvalidRelaysWithResponse request returning *GetInvalidRelaysResponse
@@ -3733,6 +4589,15 @@ func (c *ClientWithResponses) GetSwapWithResponse(ctx context.Context, params *G
 		return nil, err
 	}
 	return ParseGetSwapResponse(rsp)
+}
+
+// GetSwapV2WithResponse request returning *GetSwapV2Response
+func (c *ClientWithResponses) GetSwapV2WithResponse(ctx context.Context, params *GetSwapV2Params, reqEditors ...RequestEditorFn) (*GetSwapV2Response, error) {
+	rsp, err := c.GetSwapV2(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSwapV2Response(rsp)
 }
 
 // GetSwapTxInfoWithResponse request returning *GetSwapTxInfoResponse
@@ -3897,6 +4762,103 @@ func ParseGetBridgeResponse(rsp *http.Response) (*GetBridgeResponse, error) {
 				Message  *string `json:"message,omitempty"`
 				Value    *string `json:"value,omitempty"`
 			} `json:"error,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest struct {
+			Error *string `json:"error,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetBridgeV2Response parses an HTTP response from a GetBridgeV2WithResponse call
+func ParseGetBridgeV2Response(rsp *http.Response) (*GetBridgeV2Response, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetBridgeV2Response{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []struct {
+			// CallData Transaction data object, only provided if fromSender and toRecipient parameters were included
+			CallData *struct {
+				// Data Transaction calldata
+				Data *string `json:"data,omitempty"`
+
+				// To Contract address to call
+				To *string `json:"to,omitempty"`
+
+				// Value Amount of native currency to send with transaction (in native token decimals)
+				Value *string `json:"value,omitempty"`
+			} `json:"callData"`
+
+			// EstimatedTime Estimated time for the bridge in seconds
+			EstimatedTime *int `json:"estimatedTime,omitempty"`
+
+			// ExpectedToAmount The expected amount of tokens that will be received in the token's native decimals
+			ExpectedToAmount *string `json:"expectedToAmount,omitempty"`
+
+			// FromAmount The amount of tokens to bridge in the token's native decimals
+			FromAmount *string `json:"fromAmount,omitempty"`
+
+			// FromChainId The ID of the origin chain
+			FromChainId *int `json:"fromChainId,omitempty"`
+
+			// FromToken The address of the token on the origin chain
+			FromToken *string `json:"fromToken,omitempty"`
+
+			// GasDropAmount Amount of native token airdropped on destination chain (in native token decimals)
+			GasDropAmount *string `json:"gasDropAmount,omitempty"`
+
+			// Id Unique identifier for the quote (UUIDv7)
+			Id *string `json:"id,omitempty"`
+
+			// MinToAmount The minimum amount of tokens that will be received in the token's native decimals (includes slippage)
+			MinToAmount *string `json:"minToAmount,omitempty"`
+
+			// ModuleNames The names of the bridge or swap modules used for this quote
+			ModuleNames *[]string `json:"moduleNames,omitempty"`
+
+			// RouterAddress The address of the router contract
+			RouterAddress *string `json:"routerAddress,omitempty"`
+
+			// ToChainId The ID of the destination chain
+			ToChainId *int `json:"toChainId,omitempty"`
+
+			// ToToken The address of the token on the destination chain
+			ToToken *string `json:"toToken,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			Errors *[]struct {
+				Location *string `json:"location,omitempty"`
+				Msg      *string `json:"msg,omitempty"`
+				Param    *string `json:"param,omitempty"`
+				Value    *string `json:"value,omitempty"`
+			} `json:"errors,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -4451,6 +5413,130 @@ func ParseGetDisputesResponse(rsp *http.Response) (*GetDisputesResponse, error) 
 	return response, nil
 }
 
+// ParseGetIntentResponse parses an HTTP response from a GetIntentWithResponse call
+func ParseGetIntentResponse(rsp *http.Response) (*GetIntentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetIntentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []struct {
+			// EstimatedTime Estimated time for the intent execution in seconds
+			EstimatedTime *int `json:"estimatedTime,omitempty"`
+
+			// ExpectedToAmount The expected amount of tokens to be received (in native token decimals)
+			ExpectedToAmount *string `json:"expectedToAmount,omitempty"`
+
+			// FromAmount The amount of tokens to transfer (in native token decimals)
+			FromAmount *string `json:"fromAmount,omitempty"`
+
+			// FromChainId The ID of the origin chain
+			FromChainId *int `json:"fromChainId,omitempty"`
+
+			// FromToken The address of the token on the origin chain
+			FromToken *string `json:"fromToken,omitempty"`
+
+			// Id Unique identifier for the quote (UUIDv7)
+			Id *string `json:"id,omitempty"`
+
+			// MinToAmount The minimum amount of tokens that will be received (in native token decimals)
+			MinToAmount *string `json:"minToAmount,omitempty"`
+
+			// Steps The list of steps to execute the intent
+			Steps *[]struct {
+				// CallData Transaction data object, only provided if addresses were included
+				CallData *struct {
+					// Data Transaction calldata
+					Data *string `json:"data,omitempty"`
+
+					// To Contract address to call
+					To *string `json:"to,omitempty"`
+
+					// Value Amount of native currency to send with transaction (in native token decimals)
+					Value *string `json:"value,omitempty"`
+				} `json:"callData"`
+
+				// EstimatedTime Estimated time for this step in seconds
+				EstimatedTime *int `json:"estimatedTime,omitempty"`
+
+				// ExpectedToAmount The expected amount of tokens for this step (in native token decimals)
+				ExpectedToAmount *string `json:"expectedToAmount,omitempty"`
+
+				// FromAmount The amount of tokens for this step (in native token decimals)
+				FromAmount *string `json:"fromAmount,omitempty"`
+
+				// FromChainId The ID of the origin chain for this step
+				FromChainId *int `json:"fromChainId,omitempty"`
+
+				// FromToken The address of the token on the origin chain for this step
+				FromToken *string `json:"fromToken,omitempty"`
+
+				// GasDropAmount Amount of native token airdropped on destination chain (in native token decimals)
+				GasDropAmount *string `json:"gasDropAmount,omitempty"`
+
+				// MinToAmount The minimum amount of tokens for this step (in native token decimals)
+				MinToAmount *string `json:"minToAmount,omitempty"`
+
+				// ModuleNames The names of the bridge or swap modules used for this step
+				ModuleNames *[]string `json:"moduleNames,omitempty"`
+
+				// RouterAddress The address of the router contract for this step
+				RouterAddress *string `json:"routerAddress,omitempty"`
+
+				// ToChainId The ID of the destination chain for this step
+				ToChainId *int `json:"toChainId,omitempty"`
+
+				// ToToken The address of the token on the destination chain for this step
+				ToToken *string `json:"toToken,omitempty"`
+			} `json:"steps,omitempty"`
+
+			// ToChainId The ID of the destination chain
+			ToChainId *int `json:"toChainId,omitempty"`
+
+			// ToToken The address of the token on the destination chain
+			ToToken *string `json:"toToken,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			Errors *[]struct {
+				Location *string `json:"location,omitempty"`
+				Msg      *string `json:"msg,omitempty"`
+				Param    *string `json:"param,omitempty"`
+				Value    *string `json:"value,omitempty"`
+			} `json:"errors,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest struct {
+			Error *string `json:"error,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetInvalidRelaysResponse parses an HTTP response from a GetInvalidRelaysWithResponse call
 func ParseGetInvalidRelaysResponse(rsp *http.Response) (*GetInvalidRelaysResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -4953,6 +6039,94 @@ func ParseGetSwapResponse(rsp *http.Response) (*GetSwapResponse, error) {
 				Message  *string `json:"message,omitempty"`
 				Value    *string `json:"value,omitempty"`
 			} `json:"error,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest struct {
+			Error *string `json:"error,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSwapV2Response parses an HTTP response from a GetSwapV2WithResponse call
+func ParseGetSwapV2Response(rsp *http.Response) (*GetSwapV2Response, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSwapV2Response{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// CallData Transaction data object, only provided if toRecipient parameter was included
+			CallData *struct {
+				// Data Transaction calldata
+				Data *string `json:"data,omitempty"`
+
+				// To Contract address to call
+				To *string `json:"to,omitempty"`
+
+				// Value Amount of native currency to send with transaction (in native token decimals)
+				Value *string `json:"value,omitempty"`
+			} `json:"callData"`
+
+			// ChainId The chain ID where the swap occurs
+			ChainId *int `json:"chainId,omitempty"`
+
+			// ExpectedToAmount The expected amount of tokens that will be received in the token's native decimals
+			ExpectedToAmount *string `json:"expectedToAmount,omitempty"`
+
+			// FromAmount The amount of tokens to swap in the token's native decimals
+			FromAmount *string `json:"fromAmount,omitempty"`
+
+			// FromToken The address of the token being swapped from
+			FromToken *string `json:"fromToken,omitempty"`
+
+			// Id Unique identifier for the quote
+			Id *string `json:"id,omitempty"`
+
+			// MinToAmount The minimum amount of tokens that will be received in the token's native decimals (includes slippage)
+			MinToAmount *string `json:"minToAmount,omitempty"`
+
+			// ModuleNames The names of the swap modules used for this quote
+			ModuleNames *[]string `json:"moduleNames,omitempty"`
+
+			// RouterAddress The address of the router contract
+			RouterAddress *string `json:"routerAddress,omitempty"`
+
+			// ToToken The address of the token being swapped to
+			ToToken *string `json:"toToken,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			Errors *[]struct {
+				Location *string `json:"location,omitempty"`
+				Msg      *string `json:"msg,omitempty"`
+				Param    *string `json:"param,omitempty"`
+				Value    *string `json:"value,omitempty"`
+			} `json:"errors,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err

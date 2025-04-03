@@ -8,6 +8,9 @@ export const chainIdToName: { [key: number]: string } = {
   59144: 'linea',
   56: 'bnb',
   480: 'worldchain',
+  130: 'unichain',
+  80094: 'berachain',
+  999: 'hyperevm'
 }
 
 export const getChainName = (chainId: number): string => {

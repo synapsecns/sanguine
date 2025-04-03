@@ -22,6 +22,8 @@ import polygonImg from '@assets/chains/polygon.svg'
 import scrollImg from '@assets/chains/scroll.svg'
 import lineaImg from '@assets/chains/linea.svg'
 import worldchainImg from '@assets/chains/worldchain.svg'
+import unichainImg from '@assets/chains/unichain.svg'
+import berachainImg from '@assets/chains/berachain.svg'
 
 import ethExplorerImg from '@assets/explorer/etherscan.svg'
 import arbitrumExplorerImg from '@assets/explorer/arbiscan.svg'
@@ -642,5 +644,83 @@ export const HYPERLIQUID: Chain = {
   explorerName: 'Arbiscan',
   explorerImg: arbitrumExplorerImg,
   color: 'gray',
+}
+
+export const UNICHAIN: Chain = {
+  priorityRank: 99,
+  id: 130,
+  chainSymbol: 'UNICHAIN',
+  name: 'Unichain',
+  chainImg: unichainImg,
+  layer: 2,
+  rpcUrls: {
+    primary: 'https://mainnet.unichain.org',
+    fallback: 'https://mainnet.unichain.org',
+  },
+  explorerUrl: 'https://uniscan.xyz',
+  explorerName: 'Uniscan',
+  explorerImg: unichainImg,
+  blockTime: 1000,
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+    address: zeroAddress,
+    icon: ethImg,
+  },
+  color: 'purple',
+  isNew: true,
+}
+
+export const BERACHAIN: Chain = {
+  priorityRank: 99,
+  id: 80094,
+  chainSymbol: 'BERACHAIN',
+  name: 'Berachain',
+  chainImg: berachainImg,
+  layer: 2,
+  rpcUrls: {
+    primary: 'https://rpc.berachain.com',
+    fallback: 'https://rpc.berachain.com',
+  },
+  explorerUrl: 'https://berascan.com',
+  explorerName: 'Berascan',
+  explorerImg: berachainImg,
+  blockTime: 2000,
+  nativeCurrency: {
+    name: 'Bera',
+    symbol: 'BERA',
+    decimals: 18,
+    address: zeroAddress,
+    icon: berachainImg,
+  },
+  color: 'brown',
+  isNew: true,
+}
+
+export const HYPEREVM: Chain = {
+  priorityRank: 99,
+  id: 999,
+  chainSymbol: 'HYPEREVM',
+  name: 'HyperEVM',
+  // TODO: different icon?
+  chainImg: hyperliquidImg,
+  layer: 2,
+  rpcUrls: {
+    primary: 'https://rpc.hyperliquid.xyz/evm',
+    fallback: 'https://rpc.hyperliquid.xyz/evm',
+  },
+  explorerUrl: 'https://purrsec.com',
+  explorerName: 'Purrsec',
+  explorerImg: hyperliquidImg,
+  blockTime: 2000,
+  nativeCurrency: {
+    name: 'HYPE',
+    symbol: 'HYPE',
+    decimals: 18,
+    address: zeroAddress,
+    icon: hyperliquidImg,
+  },
+  color: 'green',
   isNew: true,
 }

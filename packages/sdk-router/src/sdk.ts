@@ -1,6 +1,9 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import invariant from 'tiny-invariant'
 
+import { GasZipModuleSet } from './gaszip'
+import { SynapseModuleSet, Query } from './module'
+import * as operations from './operations'
 import { FastBridgeRouterSet } from './rfq'
 import {
   SynapseRouterSet,
@@ -8,15 +11,20 @@ import {
   ChainProvider,
   PoolToken,
 } from './router'
-import * as operations from './operations'
-import { ETH_NATIVE_TOKEN_ADDRESS } from './utils/handleNativeToken'
-import { SynapseModuleSet, Query } from './module'
+import { SynapseIntentRouterSet } from './sir/synapseIntentRouterSet'
+import { SwapEngineSet } from './swap/swapEngineSet'
+import { ETH_NATIVE_TOKEN_ADDRESS, TokenMetadataFetcher } from './utils'
 
 class SynapseSDK {
   public allModuleSets: SynapseModuleSet[]
   public synapseRouterSet: SynapseRouterSet
   public synapseCCTPRouterSet: SynapseCCTPRouterSet
   public fastBridgeRouterSet: FastBridgeRouterSet
+  public gasZipModuleSet: GasZipModuleSet
+
+  public sirSet: SynapseIntentRouterSet
+  public swapEngineSet: SwapEngineSet
+  public tokenMetadataFetcher: TokenMetadataFetcher
   public providers: { [chainId: number]: Provider }
 
   /**
@@ -41,19 +49,32 @@ class SynapseSDK {
     chainProviders.forEach((chainProvider) => {
       this.providers[chainProvider.chainId] = chainProvider.provider
     })
+    // Initialize the utility classes
+    this.tokenMetadataFetcher = new TokenMetadataFetcher(this.providers)
+
     // Initialize the Module Sets
     this.synapseRouterSet = new SynapseRouterSet(chainProviders)
     this.synapseCCTPRouterSet = new SynapseCCTPRouterSet(chainProviders)
     this.fastBridgeRouterSet = new FastBridgeRouterSet(chainProviders)
+    this.gasZipModuleSet = new GasZipModuleSet(chainProviders)
     this.allModuleSets = [
       this.synapseRouterSet,
       this.synapseCCTPRouterSet,
       this.fastBridgeRouterSet,
+      this.gasZipModuleSet,
     ]
+    this.sirSet = new SynapseIntentRouterSet(chainProviders)
+    this.swapEngineSet = new SwapEngineSet(
+      chainProviders,
+      this.tokenMetadataFetcher
+    )
   }
+
+  public intent = operations.intent
 
   // Define Bridge operations
   public bridge = operations.bridge
+  public bridgeV2 = operations.bridgeV2
   public bridgeQuote = operations.bridgeQuote
   public allBridgeQuotes = operations.allBridgeQuotes
   public getBridgeModuleName = operations.getBridgeModuleName
@@ -75,6 +96,7 @@ class SynapseSDK {
   // Define Swap operations
   public swap = operations.swap
   public swapQuote = operations.swapQuote
+  public swapV2 = operations.swapV2
 
   // Define Query operations
   public applyBridgeDeadline = operations.applyBridgeDeadline

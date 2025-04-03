@@ -3,10 +3,12 @@ export enum SupportedChainId {
   OPTIMISM = 10,
   CRONOS = 25,
   BSC = 56,
+  UNICHAIN = 130,
   POLYGON = 137,
   FANTOM = 250,
   BOBA = 288,
   WORLDCHAIN = 480,
+  HYPEREVM = 999,
   METIS = 1088,
   MOONBEAM = 1284,
   MOONRIVER = 1285,
@@ -18,6 +20,7 @@ export enum SupportedChainId {
   AVALANCHE = 43114,
   DFK = 53935,
   LINEA = 59144,
+  BERACHAIN = 80094,
   BLAST = 81457,
   SCROLL = 534352,
   AURORA = 1313161554,
@@ -31,12 +34,22 @@ const UNSUPPORTED_BRIDGE_CHAIN_IDS: number[] = [
   SupportedChainId.LINEA,
   SupportedChainId.SCROLL,
   SupportedChainId.WORLDCHAIN,
+  SupportedChainId.UNICHAIN,
+  SupportedChainId.BERACHAIN,
+  SupportedChainId.HYPEREVM,
 ]
 
 /**
  * List of paused chain IDs
  */
-export const PAUSED_CHAIN_IDS: SupportedChainId[] = [SupportedChainId.BOBA]
+export const PAUSED_CHAIN_IDS: SupportedChainId[] = [
+  SupportedChainId.BOBA,
+  SupportedChainId.HARMONY,
+  SupportedChainId.MOONBEAM,
+  SupportedChainId.MOONRIVER,
+  SupportedChainId.AURORA,
+  SupportedChainId.CRONOS,
+]
 
 /**
  * List of supported chain ids, where SynapseBridge is deployed.
@@ -76,6 +89,29 @@ export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.LINEA,
   SupportedChainId.BLAST,
   SupportedChainId.SCROLL,
+  SupportedChainId.UNICHAIN,
+  SupportedChainId.BERACHAIN,
+  SupportedChainId.HYPEREVM,
+].filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
+
+/**
+ * List of chain ids where SynapseIntentRouter is deployed, ordered lexicographically.
+ * Note: this is currently serving as an entry point for swaps between arbitrary tokens,
+ * but will also support bridge modules in the future.
+ */
+export const INTENTS_SUPPORTED_CHAIN_IDS: number[] = [
+  SupportedChainId.ARBITRUM,
+  SupportedChainId.BASE,
+  SupportedChainId.BERACHAIN,
+  SupportedChainId.BLAST,
+  SupportedChainId.BSC,
+  SupportedChainId.ETH,
+  SupportedChainId.HYPEREVM,
+  SupportedChainId.LINEA,
+  SupportedChainId.OPTIMISM,
+  SupportedChainId.SCROLL,
+  SupportedChainId.UNICHAIN,
+  SupportedChainId.WORLDCHAIN,
 ].filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
 
 /**
@@ -91,3 +127,13 @@ export const HYDRATION_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.BASE,
   SupportedChainId.BSC,
 ]
+
+export const isChainIdSupported = (
+  chainId: number
+): chainId is SupportedChainId =>
+  Object.values(SupportedChainId).includes(chainId) &&
+  !PAUSED_CHAIN_IDS.includes(chainId)
+
+export const areIntentsSupported = (
+  chainId: number
+): chainId is SupportedChainId => INTENTS_SUPPORTED_CHAIN_IDS.includes(chainId)

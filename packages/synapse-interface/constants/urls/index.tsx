@@ -33,12 +33,12 @@ export const PRIVACY_POLICY_PATH =
   'https://explorer.synapseprotocol.com/privacy'
 export const SYNAPSE_PFP_PATH = '/returntomonke'
 export const JOBS_URL = 'https://jobs.ashbyhq.com/Synapse%20Labs'
-export const STAKE_SYN_FOR_CX_URL = 'https://cortexprotocol.com/stake'
+export const STAKE_SYN_FOR_CX_URL = 'https://cortexprotocol.com/agents/convert'
 
 /** Synapse Social Links */
 export const DISCORD_URL = 'https://discord.gg/synapseprotocol'
 export const TELEGRAM_URL = 'https://t.me/synapseprotocol'
-export const FORUM_URL = 'https://forum.synapseprotocol.com/'
+export const FORUM_URL = 'https://common.xyz/cortex-dao'
 export const TWITTER_URL = 'https://twitter.com/SynapseProtocol'
 export const GITHUB_URL = 'https://github.com/synapsecns'
 export const MEDIUM_URL = 'https://synapseprotocol.medium.com/'
