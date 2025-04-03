@@ -127,6 +127,7 @@ export class ParaSwapEngine implements SwapEngine {
         excludeRFQ: true,
         userAddress: swapper,
         version: '6.2',
+        partner: 'cortex_protocol',
       },
       timeout
     )

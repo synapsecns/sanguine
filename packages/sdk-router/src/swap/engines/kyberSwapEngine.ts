@@ -29,6 +29,7 @@ type KyberSwapQuoteRequest = {
   tokenOut: string
   amountIn: string
   gasInclude: boolean
+  excludeRFQSources?: boolean
   onlySinglePath?: boolean
 }
 
@@ -113,6 +114,7 @@ export class KyberSwapEngine implements SwapEngine {
       tokenOut: toToken,
       amountIn: fromAmount.toString(),
       gasInclude: true,
+      excludeRFQSources: true,
       onlySinglePath: input.restrictComplexity,
     }
     const response = await this.getQuoteResponse(

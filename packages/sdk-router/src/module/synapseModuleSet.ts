@@ -12,7 +12,7 @@ import {
 } from './types'
 import { applyOptionalDeadline } from '../utils'
 import { Query } from './query'
-import { Slippage } from '../swap'
+import { Slippage, SwapEngineRoute } from '../swap'
 import { BridgeQuote, BridgeQuoteV2 } from '../types'
 
 /**
@@ -43,7 +43,7 @@ export type GetBridgeTokenCandidatesParameters = {
  * might have a fallback quote to the `bridgeToken` instead of `destTokenOut`.
  */
 export type GetBridgeRouteV2Parameters = {
-  fromAmount: BigNumberish
+  originSwapRoute: SwapEngineRoute
   bridgeToken: BridgeTokenCandidate
   toToken: string
   fromSender?: string

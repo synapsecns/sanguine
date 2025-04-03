@@ -48,13 +48,14 @@ export const generateAPIRoute = (
   if (response.expectedToAmount.eq(Zero)) {
     return getEmptyRoute(engineID)
   }
+  const minToAmount = applySlippage(response.expectedToAmount, slippage)
   const zapData = encodeZapData({
     target: response.transaction.to,
     payload: response.transaction.data,
     amountPosition: AMOUNT_NOT_PRESENT,
     finalToken: input.toToken,
     forwardTo: getForwardTo(input.toRecipient),
-    minFinalAmount: applySlippage(response.expectedToAmount, slippage),
+    minFinalAmount: minToAmount,
   })
 
   return {
@@ -65,6 +66,7 @@ export const generateAPIRoute = (
     toToken: input.toToken,
     fromAmount: BigNumber.from(input.fromAmount),
     expectedToAmount: response.expectedToAmount,
+    minToAmount,
     steps: [
       {
         token: input.fromToken,

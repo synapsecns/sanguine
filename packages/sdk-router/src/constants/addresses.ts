@@ -67,6 +67,14 @@ export const FAST_BRIDGE_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
 )
 
 /**
+ * FastBridgeInterceptor contract address for all chains except ones from FBI_EXCEPTION_MAP.
+ */
+const FBI_ADDRESS = '0xFb1fb1060C550A9b274C64f70dadF16f2aD34fB1'
+const FBI_EXCEPTION_MAP: AddressMap = {}
+export const FAST_BRIDGE_INTERCEPTOR_ADDRESS_MAP: AddressMap =
+  generateAddressMap(RFQ_SUPPORTED_CHAIN_IDS, FBI_ADDRESS, FBI_EXCEPTION_MAP)
+
+/**
  * SynapseIntentRouter contract address for all chains except ones from SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP.
  */
 const SIR_ADDRESS = '0x512000a034E154908Efb1eC48579F4ffDb000512'
