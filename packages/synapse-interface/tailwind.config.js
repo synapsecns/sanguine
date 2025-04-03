@@ -193,14 +193,35 @@ module.exports = {
         ...makeShadow('indigo', '87, 81, 230'),
         ...makeShadow('purple', '125, 59, 236'),
         ...makeShadow('pink', '213, 34, 105'),
+        'cortex-glow': '0 0 8px rgba(180, 95, 255, 0.4)',
       },
       animation: {
         sheenit: 'sheen 0.42s forwards',
         'slide-down': 'slide-down .4s cubic-bezier(0, .5, .2, 1)',
         'slide-up': 'slide-up .4s cubic-bezier(0, .5, .2, 1)',
         tooltip: 'tooltip .4s cubic-bezier(0, .5, .2, 1)',
+        'fadeIn': 'fadeIn 0.5s ease-in-out',
+        'pulse-purple': 'pulse-purple 2s infinite',
       },
       keyframes: {
+        'pulse-purple': {
+          '0%, 100%': {
+            boxShadow: '0 0 0 0 rgba(180, 95, 255, 0.4)',
+          },
+          '50%': {
+            boxShadow: '0 0 0 6px rgba(180, 95, 255, 0)',
+          },
+        },
+        fadeIn: {
+          '0%': {
+            opacity: '0',
+            transform: 'translateY(10px)',
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'translateY(0)',
+          },
+        },
         sheen: {
           '100%': {
             transform: 'rotateZ(60deg) translate(1em, -30em)',
