@@ -11,7 +11,13 @@ import {
 import { ChainProvider } from '../../router'
 import { SynapseIntentPreviewer as PreviewerContract } from '../../typechain/SynapseIntentPreviewer'
 import { isSameAddress, logger } from '../../utils'
-import { EngineID, toWei, SlippageMax, getForwardTo } from '../core'
+import {
+  EngineID,
+  toWei,
+  SlippageMax,
+  getForwardTo,
+  applySlippage,
+} from '../core'
 import {
   RouteInput,
   SwapEngine,
@@ -90,6 +96,7 @@ export class DefaultPoolsEngine implements SwapEngine {
       toToken,
       fromAmount: BigNumber.from(fromAmount),
       expectedToAmount: amountOut,
+      minToAmount: applySlippage(amountOut, SlippageMax),
       steps: stepsOutput.map(({ token, amount, msgValue, zapData }) => ({
         token,
         amount,

@@ -25,6 +25,7 @@ export class NoOpEngine implements SwapEngine {
       toToken,
       fromAmount: BigNumber.from(fromAmount),
       expectedToAmount: BigNumber.from(fromAmount),
+      minToAmount: BigNumber.from(fromAmount),
       steps: [],
     }
   }

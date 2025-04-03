@@ -17,7 +17,7 @@ export type SwapEngineQuote = {
 
 export type SwapEngineRoute = Prettify<
   Required<SwapEngineQuote> & {
-    minToAmount?: BigNumber
+    minToAmount: BigNumber
   }
 >
 
@@ -37,6 +37,7 @@ export const getEmptyRoute = (engineID: EngineID): SwapEngineRoute => {
   return {
     ...getEmptyQuote(engineID),
     steps: [],
+    minToAmount: Zero,
   }
 }
 
