@@ -192,4 +192,4 @@ export const BRIDGESYN_ANALYTICS_API = 'https://explorer.omnirpc.io/graphql'
 export const DOCS_CX_URL = 'https://cortexprotocol.com'
 
 /** AI Bridge Parser API */
-export const BRIDGE_PARSER_API_URL = 'https://branch-feature-gemini-bridge-parser-nest-preview.fly.dev/api/parse-bridge-request'
+export const BRIDGE_PARSER_API_URL = 'https://api-node-nest-prod.fly.dev/api/parse-bridge-request'
