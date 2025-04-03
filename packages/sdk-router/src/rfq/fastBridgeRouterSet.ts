@@ -5,7 +5,11 @@ import { BigNumberish } from 'ethers'
 import NodeCache from 'node-cache'
 import invariant from 'tiny-invariant'
 
-import { FAST_BRIDGE_ROUTER_ADDRESS_MAP, MEDIAN_TIME_RFQ } from '../constants'
+import {
+  FAST_BRIDGE_INTERCEPTOR_ADDRESS_MAP,
+  FAST_BRIDGE_ROUTER_ADDRESS_MAP,
+  MEDIAN_TIME_RFQ,
+} from '../constants'
 import {
   BridgeRoute,
   FeeConfig,
@@ -27,11 +31,15 @@ import {
   ONE_HOUR,
   TEN_MINUTES,
   isSameAddress,
+  logger,
 } from '../utils'
 import { getAllQuotes } from './api'
 import { FastBridgeQuote, applyQuote, getOriginAmount } from './quote'
 import { marshallTicker } from './ticker'
-import { IFastBridge } from '../typechain/FastBridge'
+import {
+  IFastBridge,
+  IFastBridgeInterceptor,
+} from '../typechain/FastBridgeInterceptor'
 
 export class FastBridgeRouterSet extends SynapseModuleSet {
   static readonly MAX_QUOTE_AGE_MILLISECONDS = 5 * 60 * 1000 // 5 minutes
@@ -59,9 +67,15 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     })
     chains.forEach(({ chainId, provider }) => {
       const address = FAST_BRIDGE_ROUTER_ADDRESS_MAP[chainId]
+      const interceptor = FAST_BRIDGE_INTERCEPTOR_ADDRESS_MAP[chainId]
       // Skip chains without a FastBridgeRouter address
       if (address) {
-        this.routers[chainId] = new FastBridgeRouter(chainId, provider, address)
+        this.routers[chainId] = new FastBridgeRouter(
+          chainId,
+          provider,
+          address,
+          interceptor
+        )
         this.providers[chainId] = provider
       }
     })
@@ -167,6 +181,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
       minToAmount: expectedToAmount,
       zapData: await this.getBridgeZapData(
         bridgeToken,
+        BigNumber.from(fromAmount),
         expectedToAmount,
         fromSender,
         toRecipient
@@ -445,6 +460,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
 
   private async getBridgeZapData(
     bridgeToken: BridgeTokenCandidate,
+    fromAmount: BigNumber,
     expectedToAmount: BigNumber,
     fromSender?: string,
     toRecipient?: string
@@ -470,15 +486,31 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
       sendChainGas: false,
       deadline: calculateDeadline(this.getDefaultPeriods().destPeriod),
     }
-    const fastBridge = await this.getFastBridgeRouter(
+    const fastBridge = await this.getFastBridgeAddress(
       bridgeToken.originChainId
-    ).getFastBridgeContract()
-    const fastBridgeCalldata = (
-      await fastBridge.populateTransaction.bridge(bridgeParams)
+    )
+    const fastBridgeInterceptor = this.getFastBridgeRouter(
+      bridgeToken.originChainId
+    ).interceptorContract
+    if (!fastBridgeInterceptor) {
+      logger.error(
+        `FastBridgeInterceptor not found for chainId ${bridgeToken.originChainId}`
+      )
+      return undefined
+    }
+    const interceptorParams: IFastBridgeInterceptor.InterceptorParamsStruct = {
+      fastBridge,
+      quoteOriginAmount: fromAmount,
+    }
+    const fbiCalldata = (
+      await fastBridgeInterceptor.populateTransaction.bridgeWithInterception(
+        bridgeParams,
+        interceptorParams
+      )
     ).data
     return encodeZapData({
-      target: fastBridge.address,
-      payload: fastBridgeCalldata,
+      target: fastBridgeInterceptor.address,
+      payload: fbiCalldata,
       amountPosition: 4 + 32 * 5,
     })
   }
