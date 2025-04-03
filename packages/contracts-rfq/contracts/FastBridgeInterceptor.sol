@@ -3,7 +3,18 @@ pragma solidity 0.8.24;
 
 import {IFastBridge, IFastBridgeInterceptor} from "./interfaces/IFastBridgeInterceptor.sol";
 
+import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
 contract FastBridgeInterceptor is IFastBridgeInterceptor {
+    using SafeERC20 for IERC20;
+
+    uint256 public constant MAX_ORIGIN_AMOUNT_DIFF = 0.01e18;
+    address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
+    uint256 internal constant WEI = 1e18;
+    uint256 internal constant MIN_ORIGIN_AMOUNT = WEI - MAX_ORIGIN_AMOUNT_DIFF;
+    uint256 internal constant MAX_ORIGIN_AMOUNT = WEI + MAX_ORIGIN_AMOUNT_DIFF;
+
     /// @inheritdoc IFastBridgeInterceptor
     function bridgeWithInterception(
         IFastBridge.BridgeParams memory params,
@@ -12,6 +23,32 @@ contract FastBridgeInterceptor is IFastBridgeInterceptor {
         external
         payable
     {
-        // TODO: implement
+        // Cache amounts from memory.
+        uint256 originAmount = params.originAmount;
+        uint256 quoteOriginAmount = interceptorParams.quoteOriginAmount;
+        // Check if origin amount is within 1% of the initial quote origin amount.
+        uint256 minOriginAmount = quoteOriginAmount * MIN_ORIGIN_AMOUNT / WEI;
+        uint256 maxOriginAmount = quoteOriginAmount * MAX_ORIGIN_AMOUNT / WEI;
+        if (originAmount < minOriginAmount || originAmount > maxOriginAmount) {
+            revert FBI__OriginAmountOutOfRange(originAmount, quoteOriginAmount);
+        }
+        // Adjust the destination amount using the initial quote rate.
+        if (originAmount != quoteOriginAmount) {
+            uint256 quoteDestAmount = params.destAmount;
+            params.destAmount = (originAmount * quoteDestAmount) / quoteOriginAmount;
+        }
+        // Collect the token from msg.sender and approve the FastBridge contract, if needed.
+        address token = params.originToken;
+        address fastBridge = interceptorParams.fastBridge;
+        if (token != NATIVE_GAS_TOKEN) {
+            if (token.code.length == 0) revert FBI__TokenNotContract(token);
+            IERC20(token).safeTransferFrom(msg.sender, address(this), originAmount);
+            // Infinite approval as this contract is stateless and doesn't custody tokens.
+            if (IERC20(token).allowance(address(this), fastBridge) < originAmount) {
+                IERC20(token).forceApprove(fastBridge, type(uint256).max);
+            }
+        }
+        // Bridge the token, forwarding the original msg.value.
+        IFastBridge(fastBridge).bridge{value: msg.value}(params);
     }
 }
