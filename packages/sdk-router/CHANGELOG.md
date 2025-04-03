@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.17.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.6...@synapsecns/sdk-router@0.17.7) (2025-04-03)
+
+
+### Bug Fixes
+
+* **sdk-router:** swap engine improvements, remove cap on RFQ origin slippage ([#3652](https://github.com/synapsecns/sanguine/issues/3652)) ([a37e593](https://github.com/synapsecns/sanguine/commit/a37e593fcd15d7c8b0b4214ae1ec1de4f87e832d))
+
+
+
+
+
 ## [0.17.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.5...@synapsecns/sdk-router@0.17.6) (2025-04-02)
 
 
