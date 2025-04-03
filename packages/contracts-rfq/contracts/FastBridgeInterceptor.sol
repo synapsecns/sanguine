@@ -11,8 +11,8 @@ import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 contract FastBridgeInterceptor is IFastBridgeInterceptor {
     using SafeERC20 for IERC20;
 
-    /// @notice Maximum allowed difference (1%) from the quoted origin amount.
-    uint256 public constant MAX_ORIGIN_AMOUNT_DIFF = 0.01e18;
+    /// @notice Maximum allowed percentage difference (1%) from the quoted origin amount.
+    uint256 public constant MAX_ORIGIN_PCT_DIFF = 0.01e18;
 
     /// @notice Special address representing the native gas token (ETH).
     address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
@@ -21,10 +21,10 @@ contract FastBridgeInterceptor is IFastBridgeInterceptor {
     uint256 internal constant WEI = 1e18;
 
     /// @dev Minimum allowed percentage (99%) for origin amount comparisons.
-    uint256 internal constant MIN_ORIGIN_AMOUNT = WEI - MAX_ORIGIN_AMOUNT_DIFF;
+    uint256 internal constant MIN_ORIGIN_PCT = WEI - MAX_ORIGIN_PCT_DIFF;
 
     /// @dev Maximum allowed percentage (101%) for origin amount comparisons.
-    uint256 internal constant MAX_ORIGIN_AMOUNT = WEI + MAX_ORIGIN_AMOUNT_DIFF;
+    uint256 internal constant MAX_ORIGIN_PCT = WEI + MAX_ORIGIN_PCT_DIFF;
 
     /// @inheritdoc IFastBridgeInterceptor
     function bridgeWithInterception(
@@ -38,8 +38,8 @@ contract FastBridgeInterceptor is IFastBridgeInterceptor {
         uint256 originAmount = params.originAmount;
         uint256 quoteOriginAmount = interceptorParams.quoteOriginAmount;
         // Check if origin amount is within 1% of the initial quote origin amount.
-        uint256 minOriginAmount = quoteOriginAmount * MIN_ORIGIN_AMOUNT / WEI;
-        uint256 maxOriginAmount = quoteOriginAmount * MAX_ORIGIN_AMOUNT / WEI;
+        uint256 minOriginAmount = quoteOriginAmount * MIN_ORIGIN_PCT / WEI;
+        uint256 maxOriginAmount = quoteOriginAmount * MAX_ORIGIN_PCT / WEI;
         if (originAmount < minOriginAmount || originAmount > maxOriginAmount) {
             revert FBI__OriginAmountOutOfRange(originAmount, quoteOriginAmount);
         }
