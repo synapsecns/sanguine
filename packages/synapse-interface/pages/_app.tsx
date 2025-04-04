@@ -18,6 +18,7 @@ import { SegmentAnalyticsProvider } from '@/contexts/SegmentAnalyticsProvider'
 import { UserProvider } from '@/contexts/UserProvider'
 import { BackgroundListenerProvider } from '@/contexts/BackgroundListenerProvider'
 import CustomToaster from '@/components/toast'
+import CortexPromoPopup from '@/components/CortexPromoPopup'
 import { SynapseProvider } from '@/utils/providers/SynapseProvider'
 import { wagmiConfig } from '@/wagmiConfig'
 import { supportedChains } from '@/constants/chains/supportedChains'
@@ -69,6 +70,7 @@ function App({ Component, pageProps }: AppProps) {
                           <Component {...pageProps} />
                         </BackgroundListenerProvider>
                         <CustomToaster />
+                        <CortexPromoPopup />
                       </UserProvider>
                     </SegmentAnalyticsProvider>
                   </PersistGate>
