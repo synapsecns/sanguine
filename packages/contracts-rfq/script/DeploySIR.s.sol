@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
+import {FastBridgeInterceptor} from "../contracts/FastBridgeInterceptor.sol";
 import {SynapseIntentPreviewer} from "../contracts/router/SynapseIntentPreviewer.sol";
 import {SynapseIntentRouter} from "../contracts/router/SynapseIntentRouter.sol";
 import {TokenZapV1} from "../contracts/zaps/TokenZapV1.sol";
@@ -15,6 +16,8 @@ contract DeploySIR is SynapseScript {
     string public constant LATEST_SIP = "SynapseIntentPreviewer";
     string public constant LATEST_ZAP = "TokenZapV1";
 
+    string public constant LATEST_FBI = "FastBridgeInterceptor";
+
     /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
     function testDeploySIR() external {}
 
@@ -22,10 +25,12 @@ contract DeploySIR is SynapseScript {
         address sir = deployAndSaveWithSalt(LATEST_SIR, type(SynapseIntentRouter).creationCode, "");
         address sip = deployAndSaveWithSalt(LATEST_SIP, type(SynapseIntentPreviewer).creationCode, "");
         address zap = deployAndSaveWithSalt(LATEST_ZAP, type(TokenZapV1).creationCode, "");
+        address fbi = deployAndSaveWithSalt(LATEST_FBI, type(FastBridgeInterceptor).creationCode, "");
         printLog("Checking deployments");
         checkDeployment(LATEST_SIR, sir, type(SynapseIntentRouter).runtimeCode);
         checkDeployment(LATEST_SIP, sip, type(SynapseIntentPreviewer).runtimeCode);
         checkDeployment(LATEST_ZAP, zap, type(TokenZapV1).runtimeCode);
+        checkDeployment(LATEST_FBI, fbi, type(FastBridgeInterceptor).runtimeCode);
     }
 
     // TODO: upstream to solidity-devops

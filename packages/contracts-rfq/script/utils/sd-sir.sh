@@ -13,6 +13,9 @@ fi
 npx sd "$chain" SynapseIntentPreviewer
 npx sd "$chain" SynapseIntentRouter
 npx sd "$chain" TokenZapV1
+npx sd "$chain" FastBridgeInterceptor
+
 npx fvc "$chain" SynapseIntentPreviewer
 npx fvc "$chain" SynapseIntentRouter
 npx fvc "$chain" TokenZapV1
+npx fvc "$chain" FastBridgeInterceptor
