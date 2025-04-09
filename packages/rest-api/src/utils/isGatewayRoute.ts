@@ -3,7 +3,7 @@ import { createProxyMiddleware } from 'http-proxy-middleware'
 // Environment variables for RFQ API and Indexer URLs
 const RFQ_API_URL = process.env.RFQ_API_URL || 'https://rfq-api.omnirpc.io'
 const RFQ_INDEXER_URL =
-  process.env.RFQ_INDEXER_URL || 'https://rfq-indexer.synapseprotocol.com/api'
+  process.env.RFQ_INDEXER_URL || 'rfq-indexer-dev.up.railway.app'
 
 export const isRFQIndexerRequest = (route: string): boolean => {
   return (
