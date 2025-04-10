@@ -5,7 +5,7 @@ go 1.22.4
 require (
 	github.com/badoux/checkmail v1.2.4
 	github.com/charmbracelet/huh v0.4.2
-	github.com/charmbracelet/huh/spinner v0.0.0-20240821193529-5fd70815c13f
+	github.com/charmbracelet/huh/spinner 76d1f8226680
 	github.com/davidmytton/url-verifier v1.0.1
 	github.com/dubonzi/otelresty v1.3.0
 	github.com/dustin/go-humanize v1.0.1
