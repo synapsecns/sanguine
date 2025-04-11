@@ -877,14 +877,14 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "builder",
-          "expr": "avg by(chain_name) (dfk_pending_heroes)",
+          "expr": "",
           "instant": false,
-          "legendFormat": "{{label_name}}",
+          "legendFormat": "",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Pending Heroes",
+      "title": "",
       "type": "timeseries"
     },
     {
@@ -1051,7 +1051,7 @@
           },
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "gas_balance{eoa_address=\"0xAA920f7b9039e556d2442113f1fd339e4927Dd9A\"}",
+          "expr": "gas_balance",
           "instant": false,
           "interval": "",
           "legendFormat": "{{chain_id}}",

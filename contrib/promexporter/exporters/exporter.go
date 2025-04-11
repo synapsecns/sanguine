@@ -138,14 +138,6 @@ func (e *exporter) collectMetrics(parentCtx context.Context) (err error) {
 		span.AddEvent("could not get token balances")
 	}
 
-	// TODO: parallelize
-	for _, pending := range e.cfg.DFKPending {
-		if err := e.stuckHeroCountStats(ctx, common.HexToAddress(pending.Owner), pending.ChainName); err != nil {
-			errs = append(errs, fmt.Errorf("could not get stuck hero count: %w", err))
-			span.AddEvent("could not get stuck hero count")
-		}
-	}
-
 	for _, gasCheck := range e.cfg.SubmitterChecks {
 		for _, chainID := range gasCheck.ChainIDs {
 			if err := e.submitterStats(common.HexToAddress(gasCheck.Address), chainID, gasCheck.Name); err != nil {
