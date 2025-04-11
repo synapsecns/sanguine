@@ -1,4 +1,5 @@
 import { Provider } from '@ethersproject/abstract-provider'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import invariant from 'tiny-invariant'
 
 import { GasZipModuleSet } from './gaszip'
@@ -27,17 +28,20 @@ class SynapseSDK {
    * It sets up the SynapseRouters and SynapseCCTPRouters for the specified chain IDs and providers.
    *
    * @param {number[]} chainIds - The IDs of the chains to initialize routers for.
-   * @param {Provider[]} providers - The Ethereum providers for the respective chains.
+   * @param {(Provider | string)[]} providersOrUrls - The Ethereum providers for the respective chains or URLs for providers.
    */
-  constructor(chainIds: number[], providers: Provider[]) {
+  constructor(chainIds: number[], providersOrUrls: (Provider | string)[]) {
     invariant(
-      chainIds.length === providers.length,
+      chainIds.length === providersOrUrls.length,
       `Amount of chains and providers does not equal`
     )
     // Zip chainIds and providers into a single object
     const chainProviders: ChainProvider[] = chainIds.map((chainId, index) => ({
       chainId,
-      provider: providers[index],
+      provider:
+        typeof providersOrUrls[index] === 'string'
+          ? new JsonRpcProvider(providersOrUrls[index])
+          : providersOrUrls[index],
     }))
     // Save chainId => provider mapping
     this.providers = {}
