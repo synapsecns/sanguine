@@ -1,7 +1,7 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { Contract } from '@ethersproject/contracts'
 
-import { isNativeToken } from './handleNativeToken'
+import { isNativeToken } from './addressUtils'
 import { logger } from './logger'
 import erc20ABI from '../abi/IERC20Metadata.json'
 import { marshallChainToken } from '../rfq/ticker'
