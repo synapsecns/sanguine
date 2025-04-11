@@ -21,3 +21,16 @@ export const isNativeToken = (tokenAddr?: string): boolean => {
     isSameAddress(tokenAddr, ETH_NATIVE_TOKEN_ADDRESS)
   )
 }
+
+interface TokenParams {
+  fromToken: string
+  toToken: string
+}
+
+export const handleParams = <T extends TokenParams>(params: T): T => {
+  return {
+    ...params,
+    fromToken: handleNativeToken(params.fromToken),
+    toToken: handleNativeToken(params.toToken),
+  }
+}

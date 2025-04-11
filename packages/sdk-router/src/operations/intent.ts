@@ -5,12 +5,13 @@ import { SynapseSDK } from '../sdk'
 import { _bridgeV2Internal } from './bridge'
 import { swapV2 } from './swap'
 import { IntentParameters, IntentQuote, IntentStep } from '../types'
-import { isSameAddress } from '../utils'
+import { handleParams, isSameAddress } from '../utils'
 
 export async function intent(
   this: SynapseSDK,
   params: IntentParameters
 ): Promise<IntentQuote[]> {
+  params = handleParams(params)
   return params.fromChainId === params.toChainId
     ? _getSameChainIntentQuotes.call(this, params)
     : _getCrossChainIntentQuotes.call(this, params)
