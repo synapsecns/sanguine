@@ -40,8 +40,8 @@ class SynapseSDK {
       chainId,
       provider:
         typeof providersOrUrls[index] === 'string'
-          ? new JsonRpcProvider(providersOrUrls[index])
-          : providersOrUrls[index],
+          ? new JsonRpcProvider(providersOrUrls[index] as string)
+          : (providersOrUrls[index] as Provider),
     }))
     // Save chainId => provider mapping
     this.providers = {}
