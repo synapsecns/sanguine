@@ -76,6 +76,27 @@ export const CCTP_SUPPORTED_CHAIN_IDS: number[] = [
 ].filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
 
 /**
+ * List of chain ids where gas.zip is deployed, ordered lexicographically
+ */
+export const GASZIP_SUPPORTED_CHAIN_IDS: number[] = [
+  SupportedChainId.AVALANCHE,
+  SupportedChainId.ARBITRUM,
+  SupportedChainId.BASE,
+  SupportedChainId.BERACHAIN,
+  SupportedChainId.BLAST,
+  SupportedChainId.BSC,
+  SupportedChainId.ETH,
+  SupportedChainId.FANTOM,
+  SupportedChainId.HYPEREVM,
+  SupportedChainId.LINEA,
+  SupportedChainId.OPTIMISM,
+  SupportedChainId.POLYGON,
+  SupportedChainId.SCROLL,
+  SupportedChainId.UNICHAIN,
+  SupportedChainId.WORLDCHAIN,
+].filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
+
+/**
  * List of chain ids where FastBridge (RFQ) is deployed, ordered by chain id
  *
  */

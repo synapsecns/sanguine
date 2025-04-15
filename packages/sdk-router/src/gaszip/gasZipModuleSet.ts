@@ -1,7 +1,8 @@
 import { Provider } from '@ethersproject/abstract-provider'
-import { AddressZero, Zero } from '@ethersproject/constants'
+import { Zero } from '@ethersproject/constants'
 import { BigNumber, BigNumberish } from 'ethers'
 
+import { GASZIP_ADDRESS_MAP } from '../constants'
 import {
   BridgeRoute,
   BridgeRouteV2,
@@ -13,7 +14,7 @@ import {
   SynapseModuleSet,
 } from '../module'
 import { ChainProvider } from '../router'
-import { getChainIds, getGasZipQuote } from './api'
+import { Chains, getChains, getGasZipQuote } from './api'
 import { GasZipModule } from './gasZipModule'
 import { isNativeToken } from '../utils'
 
@@ -32,15 +33,20 @@ export class GasZipModuleSet extends SynapseModuleSet {
     [chainId: number]: Provider
   }
 
-  private cachedChainIds: number[]
+  private cachedChains: Chains
 
   constructor(chains: ChainProvider[]) {
     super()
     this.modules = {}
     this.providers = {}
-    this.cachedChainIds = []
+    this.cachedChains = {}
     chains.forEach(({ chainId, provider }) => {
-      this.modules[chainId] = new GasZipModule(chainId, provider)
+      const address = GASZIP_ADDRESS_MAP[chainId]
+      // Skip chains without a GasZip address
+      if (!address) {
+        return
+      }
+      this.modules[chainId] = new GasZipModule(chainId, provider, address)
       this.providers[chainId] = provider
     })
   }
@@ -82,11 +88,10 @@ export class GasZipModuleSet extends SynapseModuleSet {
     destChainId: number,
     tokenIn: string,
     tokenOut: string,
-    amountIn: BigNumberish,
-    originUserAddress?: string
+    amountIn: BigNumberish
   ): Promise<BridgeRoute[]> {
     // Check that both chains are supported by gas.zip
-    const supportedChainIds = await this.getChainIds()
+    const supportedChainIds = await this.getAllChainIds()
     if (
       !supportedChainIds.includes(originChainId) ||
       !supportedChainIds.includes(destChainId)
@@ -97,23 +102,19 @@ export class GasZipModuleSet extends SynapseModuleSet {
     if (!isNativeToken(tokenIn) || !isNativeToken(tokenOut)) {
       return []
     }
-    const user = originUserAddress ?? AddressZero
-    const quote = await getGasZipQuote(
-      originChainId,
-      destChainId,
-      amountIn,
-      user,
-      user
-    )
+    const destGasZipChain = await this.getGasZipId(destChainId)
+    if (!destGasZipChain) {
+      return []
+    }
+    const quote = await getGasZipQuote(originChainId, destChainId, amountIn)
     // Check that non-zero amount is returned
     if (quote.amountOut.eq(Zero)) {
       return []
     }
-    // Save user address in the origin query raw params
+    // Save destination gas.zip chain id in the destination query raw params
     const originQuery = createNoSwapQuery(tokenIn, BigNumber.from(amountIn))
-    originQuery.rawParams = quote.calldata
     const destQuery = createNoSwapQuery(tokenOut, quote.amountOut)
-    destQuery.rawParams = user
+    destQuery.rawParams = '0x' + destGasZipChain.toString(16)
     const route: BridgeRoute = {
       originChainId,
       destChainId,
@@ -174,10 +175,20 @@ export class GasZipModuleSet extends SynapseModuleSet {
     }
   }
 
-  private async getChainIds(): Promise<number[]> {
-    if (this.cachedChainIds.length === 0) {
-      this.cachedChainIds = await getChainIds()
+  private async getAllChainIds(): Promise<number[]> {
+    const chains = await this.getChains()
+    return chains.chains?.map((chain) => chain.chain) ?? []
+  }
+
+  private async getGasZipId(chainId: number): Promise<number | undefined> {
+    const chains = await this.getChains()
+    return chains.chains?.find((chain) => chain.chain === chainId)?.short
+  }
+
+  private async getChains(): Promise<Chains> {
+    if (!this.cachedChains.chains) {
+      this.cachedChains = await getChains()
     }
-    return this.cachedChainIds
+    return this.cachedChains
   }
 }
