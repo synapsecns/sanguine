@@ -57,7 +57,7 @@ export class GasZipModule implements SynapseModule {
     return getGasZipTxStatus(synapseTxId)
   }
 
-  private populateGasZipTransaction(
+  public populateGasZipTransaction(
     to: string,
     destGasZipChain: number,
     amount: BigNumberish

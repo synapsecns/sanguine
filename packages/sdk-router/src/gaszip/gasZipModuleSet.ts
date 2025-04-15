@@ -9,6 +9,8 @@ import {
   BridgeTokenCandidate,
   createNoSwapQuery,
   FeeConfig,
+  GetBridgeRouteV2Parameters,
+  GetBridgeTokenCandidatesParameters,
   Query,
   SynapseModule,
   SynapseModuleSet,
@@ -16,15 +18,19 @@ import {
 import { ChainProvider } from '../router'
 import { Chains, getChains, getGasZipQuote } from './api'
 import { GasZipModule } from './gasZipModule'
-import { isNativeToken } from '../utils'
+import { applySlippage, encodeZapData } from '../swap'
+import {
+  ETH_NATIVE_TOKEN_ADDRESS,
+  isNativeToken,
+  isSameAddress,
+} from '../utils'
 
 const MEDIAN_TIME_GAS_ZIP = 30
 
 export class GasZipModuleSet extends SynapseModuleSet {
   public readonly moduleName = 'Gas.zip'
   public readonly allEvents = []
-  // Gas.zip does not support swaps on neither origin nor destination chains.
-  public readonly isBridgeV2Supported = false
+  public readonly isBridgeV2Supported = true
 
   public modules: {
     [chainId: number]: GasZipModule
@@ -72,12 +78,80 @@ export class GasZipModuleSet extends SynapseModuleSet {
     return Zero
   }
 
-  public async getBridgeTokenCandidates(): Promise<BridgeTokenCandidate[]> {
-    return []
+  public async getBridgeTokenCandidates({
+    fromChainId,
+    toChainId,
+    toToken,
+  }: GetBridgeTokenCandidatesParameters): Promise<BridgeTokenCandidate[]> {
+    // Check that both chains are supported by gas.zip
+    const supportedChainIds = await this.getAllChainIds()
+    if (
+      !supportedChainIds.includes(fromChainId) ||
+      !supportedChainIds.includes(toChainId)
+    ) {
+      return []
+    }
+    // Check that output token is native (if provided)
+    if (toToken && !isNativeToken(toToken)) {
+      return []
+    }
+    return [
+      {
+        originChainId: fromChainId,
+        destChainId: toChainId,
+        originToken: ETH_NATIVE_TOKEN_ADDRESS,
+        destToken: ETH_NATIVE_TOKEN_ADDRESS,
+      },
+    ]
   }
 
-  public async getBridgeRouteV2(): Promise<BridgeRouteV2> {
-    throw new Error('BridgeRouteV2 is not supported by ' + this.moduleName)
+  public async getBridgeRouteV2({
+    originSwapRoute,
+    bridgeToken,
+    toToken,
+    toRecipient,
+    slippage,
+    allowMultipleTxs,
+  }: GetBridgeRouteV2Parameters): Promise<BridgeRouteV2 | undefined> {
+    if (
+      !this.getModule(bridgeToken.originChainId) ||
+      !this.getModule(bridgeToken.destChainId)
+    ) {
+      return undefined
+    }
+    if (!allowMultipleTxs && !isSameAddress(bridgeToken.destToken, toToken)) {
+      return undefined
+    }
+    const quote = await getGasZipQuote(
+      bridgeToken.originChainId,
+      bridgeToken.destChainId,
+      originSwapRoute.expectedToAmount
+    )
+    const expectedToAmount = quote.amountOut
+    if (expectedToAmount.isZero()) {
+      return undefined
+    }
+    // With no slippage or no swap on origin, the minToAmount is the same as expectedToAmount.
+    const hasOriginSlippage = !originSwapRoute.expectedToAmount.eq(
+      originSwapRoute.minToAmount
+    )
+    const minToAmount =
+      hasOriginSlippage && slippage
+        ? applySlippage(expectedToAmount, slippage)
+        : expectedToAmount
+    const route: BridgeRouteV2 = {
+      bridgeToken,
+      toToken: bridgeToken.destToken,
+      expectedToAmount,
+      minToAmount,
+      zapData: await this.getGasZipZapData(
+        bridgeToken.originChainId,
+        originSwapRoute.expectedToAmount,
+        bridgeToken.destChainId,
+        toRecipient
+      ),
+    }
+    return route
   }
 
   /**
@@ -190,5 +264,29 @@ export class GasZipModuleSet extends SynapseModuleSet {
       this.cachedChains = await getChains()
     }
     return this.cachedChains
+  }
+
+  private async getGasZipZapData(
+    fromChainId: number,
+    fromAmount: BigNumberish,
+    toChainId: number,
+    toRecipient?: string
+  ): Promise<string | undefined> {
+    const module = this.modules[fromChainId]
+    if (!module || !toRecipient) {
+      return undefined
+    }
+    const gasZipId = await this.getGasZipId(toChainId)
+    if (!gasZipId) {
+      return undefined
+    }
+    return encodeZapData({
+      target: module.address,
+      payload: module.populateGasZipTransaction(
+        toRecipient,
+        gasZipId,
+        fromAmount
+      ).data,
+    })
   }
 }
