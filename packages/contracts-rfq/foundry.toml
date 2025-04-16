@@ -21,6 +21,7 @@ number_underscore = 'thousands'
 sort_imports = true
 
 [rpc_endpoints]
+avalanche = "${AVALANCHE_RPC}"
 arbitrum = "${ARBITRUM_RPC}"
 base = "${BASE_RPC}"
 berachain = "${BERACHAIN_RPC}"
@@ -30,6 +31,7 @@ ethereum = "${ETHEREUM_RPC}"
 hyperevm = "${HYPEREVM_RPC}"
 linea = "${LINEA_RPC}"
 optimism = "${OPTIMISM_RPC}"
+polygon = "${POLYGON_RPC}"
 scroll = "${SCROLL_RPC}"
 unichain = "${UNICHAIN_RPC}"
 worldchain = "${WORLDCHAIN_RPC}"
@@ -44,6 +46,7 @@ scroll_sepolia = "${SCROLL_SEPOLIA_RPC}"
 
 
 [etherscan]
+avalanche = { key = "${AVALANCHE_VERIFIER_KEY}", url = "${AVALANCHE_VERIFIER_URL}", chain = 43114 }
 arbitrum = { key = "${ARBITRUM_VERIFIER_KEY}", url = "${ARBITRUM_VERIFIER_URL}", chain = 42161 }
 base = { key = "${BASE_VERIFIER_KEY}", url = "${BASE_VERIFIER_URL}", chain = 8453 }
 berachain = { key = "${BERACHAIN_VERIFIER_KEY}", url = "${BERACHAIN_VERIFIER_URL}", chain = 80094 }
@@ -53,6 +56,7 @@ ethereum = { key = "${ETHEREUM_VERIFIER_KEY}", url = "${ETHEREUM_VERIFIER_URL}",
 hyperevm = { key = "${HYPEREVM_VERIFIER_KEY}", url = "${HYPEREVM_VERIFIER_URL}", chain = 999 }
 linea = { key = "${LINEA_VERIFIER_KEY}", url = "${LINEA_VERIFIER_URL}", chain = 59144 }
 optimism = { key = "${OPTIMISM_VERIFIER_KEY}", url = "${OPTIMISM_VERIFIER_URL}", chain = 10 }
+polygon = { key = "${POLYGON_VERIFIER_KEY}", url = "${POLYGON_VERIFIER_URL}", chain = 137 }
 scroll = { key = "${SCROLL_VERIFIER_KEY}", url = "${SCROLL_VERIFIER_URL}", chain = 534352 }
 unichain = { key = "${UNICHAIN_VERIFIER_KEY}", url = "${UNICHAIN_VERIFIER_URL}", chain = 130 }
 worldchain = { key = "${WORLDCHAIN_VERIFIER_KEY}", url = "${WORLDCHAIN_VERIFIER_URL}", chain = 480 }
