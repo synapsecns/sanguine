@@ -36,12 +36,9 @@ class SynapseSDK {
       `Amount of chains and providers does not equal`
     )
     // Zip chainIds and providers into a single object
-    const chainProviders: ChainProvider[] = chainIds.map((chainId, index) => ({
-      chainId,
-      provider:
-        typeof providersOrUrls[index] === 'string'
-          ? new JsonRpcProvider(providersOrUrls[index] as string)
-          : (providersOrUrls[index] as Provider),
+    const chainProviders: ChainProvider[] = providersOrUrls.map((p, i) => ({
+      chainId: chainIds[i],
+      provider: typeof p === 'string' ? new JsonRpcProvider(p) : p,
     }))
     // Save chainId => provider mapping
     this.providers = {}
