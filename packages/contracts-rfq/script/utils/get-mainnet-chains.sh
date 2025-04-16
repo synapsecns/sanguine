@@ -4,8 +4,11 @@
 # Trap SIGINT (Ctrl+C) and exit the script
 trap "echo 'Script terminated by user'; exit" INT
 
-# Mainnet chains are defined in foundry.toml
-# Everything between [rpc_endpoints] and '# Testnets' headers is mainnet
-# Every non-empty line is structured as <chainName> = "<rpcUrl>"
-# We extract the chain names
-awk '/^\[rpc_endpoints\]/,/# Testnets/ { if ($0 ~ /^\S+ = /) print $1 }' foundry.toml | cut -d'=' -f1
+# Extract mainnet chain names from foundry.toml
+# Steps:
+# 1. Find section between [rpc_endpoints] and '# Testnets' markers
+# 2. Filter lines containing '=' (each represents a chain)
+# 3. Remove the equals sign and everything after it to get clean chain names
+sed -n '/\[rpc_endpoints\]/,/# Testnets/p' foundry.toml |
+  grep '=' |
+  sed 's/[ \t]*=.*$//'

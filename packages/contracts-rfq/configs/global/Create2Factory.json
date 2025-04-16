@@ -1,5 +1,10 @@
 {
   "salts": {
+    "FastBridgeInterceptor": {
+      "creationCodeHash": "0xd337d1805be8ea2a427271000d1efbbb4ac59a18da9ca18f1334a70554a64324",
+      "predictedAddress": "0xfb1fb1060c550a9b274c64f70dadf16f2ad34fb1",
+      "salt": "0x821ea8c2da0b4461ae18726f668b1b57f753c7c35c72b280b9cf07c280b6db46"
+    },
     "SynapseIntentPreviewer": {
       "creationCodeHash": "0x12fb48b8675a75c315e52c7cf1e0ef77c56afb352f9fcd4a39cb2e5a40879a2e",
       "predictedAddress": "0x519519a57a6ea930f87e3436b6ea113a990ff519",
