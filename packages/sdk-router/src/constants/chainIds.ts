@@ -86,7 +86,6 @@ export const GASZIP_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.BLAST,
   SupportedChainId.BSC,
   SupportedChainId.ETH,
-  SupportedChainId.FANTOM,
   SupportedChainId.HYPEREVM,
   SupportedChainId.LINEA,
   SupportedChainId.OPTIMISM,
@@ -121,6 +120,7 @@ export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
  * but will also support bridge modules in the future.
  */
 export const INTENTS_SUPPORTED_CHAIN_IDS: number[] = [
+  SupportedChainId.AVALANCHE,
   SupportedChainId.ARBITRUM,
   SupportedChainId.BASE,
   SupportedChainId.BERACHAIN,
@@ -130,6 +130,7 @@ export const INTENTS_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.HYPEREVM,
   SupportedChainId.LINEA,
   SupportedChainId.OPTIMISM,
+  SupportedChainId.POLYGON,
   SupportedChainId.SCROLL,
   SupportedChainId.UNICHAIN,
   SupportedChainId.WORLDCHAIN,
