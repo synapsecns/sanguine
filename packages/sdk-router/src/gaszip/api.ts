@@ -45,6 +45,9 @@ export type GasZipQuote = {
   usd: number
 }
 
+const QUOTE_MIN_USD = 0.1
+const QUOTE_MAX_USD = 200
+
 const EMPTY_GAS_ZIP_QUOTE: GasZipQuote = {
   amountOut: Zero,
   speed: 0,
@@ -99,9 +102,13 @@ export const getGasZipQuote = async (
   if (data.quotes.length === 0 || !data.quotes[0].expected) {
     return EMPTY_GAS_ZIP_QUOTE
   }
+  const quote = data.quotes[0]
+  if (quote.usd < QUOTE_MIN_USD || quote.usd > QUOTE_MAX_USD) {
+    return EMPTY_GAS_ZIP_QUOTE
+  }
   return {
-    amountOut: BigNumber.from(data.quotes[0].expected.toString()),
-    speed: data.quotes[0].speed,
-    usd: data.quotes[0].usd,
+    amountOut: BigNumber.from(quote.expected.toString()),
+    speed: quote.speed,
+    usd: quote.usd,
   }
 }
