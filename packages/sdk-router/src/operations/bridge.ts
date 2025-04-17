@@ -19,6 +19,7 @@ import {
 import { BridgeQuote, BridgeQuoteV2, BridgeV2Parameters } from '../types'
 import {
   handleNativeToken,
+  handleParams,
   isSameAddress,
   Prettify,
   stringifyPopulatedTransaction,
@@ -32,6 +33,7 @@ export async function bridgeV2(
   this: SynapseSDK,
   params: BridgeV2Parameters
 ): Promise<BridgeQuoteV2[]> {
+  params = handleParams(params)
   // Don't allow multiple transactions for exported bridgeV2 function.
   return _bridgeV2Internal.call(this, { ...params, allowMultipleTxs: false })
 }
@@ -40,8 +42,6 @@ export async function _bridgeV2Internal(
   this: SynapseSDK,
   params: BridgeV2InternalParameters
 ): Promise<BridgeQuoteV2[]> {
-  params.fromToken = handleNativeToken(params.fromToken)
-  params.toToken = handleNativeToken(params.toToken)
   const bridgeV2Modules = this.allModuleSets.filter(
     (set) => set.isBridgeV2Supported
   )

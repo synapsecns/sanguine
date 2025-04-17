@@ -21,6 +21,7 @@ import {
   calculateDeadline,
   isSameAddress,
   stringifyPopulatedTransaction,
+  handleParams,
 } from '../utils'
 
 const getEmptyQuoteV2 = (params: SwapV2Parameters): SwapQuoteV2 => {
@@ -42,11 +43,10 @@ export async function swapV2(
   this: SynapseSDK,
   params: SwapV2Parameters
 ): Promise<SwapQuoteV2> {
+  params = handleParams(params)
   if (!areIntentsSupported(params.chainId)) {
     return getEmptyQuoteV2(params)
   }
-  params.fromToken = handleNativeToken(params.fromToken)
-  params.toToken = handleNativeToken(params.toToken)
   if (isSameAddress(params.fromToken, params.toToken)) {
     return getEmptyQuoteV2(params)
   }

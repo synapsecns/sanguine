@@ -1,19 +1,15 @@
 import { Provider } from '@ethersproject/abstract-provider'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import invariant from 'tiny-invariant'
 
 import { GasZipModuleSet } from './gaszip'
-import { SynapseModuleSet, Query } from './module'
+import { SynapseModuleSet } from './module'
 import * as operations from './operations'
 import { FastBridgeRouterSet } from './rfq'
-import {
-  SynapseRouterSet,
-  SynapseCCTPRouterSet,
-  ChainProvider,
-  PoolToken,
-} from './router'
+import { SynapseRouterSet, SynapseCCTPRouterSet, ChainProvider } from './router'
 import { SynapseIntentRouterSet } from './sir/synapseIntentRouterSet'
 import { SwapEngineSet } from './swap/swapEngineSet'
-import { ETH_NATIVE_TOKEN_ADDRESS, TokenMetadataFetcher } from './utils'
+import { TokenMetadataFetcher } from './utils'
 
 class SynapseSDK {
   public allModuleSets: SynapseModuleSet[]
@@ -32,17 +28,17 @@ class SynapseSDK {
    * It sets up the SynapseRouters and SynapseCCTPRouters for the specified chain IDs and providers.
    *
    * @param {number[]} chainIds - The IDs of the chains to initialize routers for.
-   * @param {Provider[]} providers - The Ethereum providers for the respective chains.
+   * @param {(Provider | string)[]} providersOrUrls - The Ethereum providers for the respective chains or URLs for providers.
    */
-  constructor(chainIds: number[], providers: Provider[]) {
+  constructor(chainIds: number[], providersOrUrls: (Provider | string)[]) {
     invariant(
-      chainIds.length === providers.length,
+      chainIds.length === providersOrUrls.length,
       `Amount of chains and providers does not equal`
     )
     // Zip chainIds and providers into a single object
-    const chainProviders: ChainProvider[] = chainIds.map((chainId, index) => ({
-      chainId,
-      provider: providers[index],
+    const chainProviders: ChainProvider[] = providersOrUrls.map((p, i) => ({
+      chainId: chainIds[i],
+      provider: typeof p === 'string' ? new JsonRpcProvider(p) : p,
     }))
     // Save chainId => provider mapping
     this.providers = {}
@@ -105,4 +101,4 @@ class SynapseSDK {
   public applySwapSlippage = operations.applySwapSlippage
 }
 
-export { SynapseSDK, ETH_NATIVE_TOKEN_ADDRESS, Query, PoolToken }
+export { SynapseSDK }

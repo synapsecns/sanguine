@@ -57,6 +57,7 @@ export type ParaSwapTransactionsRequest = {
   priceRoute: ParaSwapPriceRoute
   slippage: number
   userAddress: string
+  isSurplusToUser?: boolean
 }
 
 export type ParaSwapTransactionsResponse = TransactionData
@@ -171,6 +172,7 @@ export class ParaSwapEngine implements SwapEngine {
         priceRoute: quote.priceRoute,
         slippage: toBasisPoints(SlippageMax),
         userAddress: swapper,
+        isSurplusToUser: true,
       },
       timeout
     )

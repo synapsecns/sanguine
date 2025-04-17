@@ -1,4 +1,5 @@
 export { FeeConfig, Query } from '../module'
+export { PoolToken } from '../router'
 export { Slippage } from '../swap'
 
 /**

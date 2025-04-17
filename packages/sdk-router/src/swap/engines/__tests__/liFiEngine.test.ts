@@ -1,5 +1,6 @@
 import { SupportedChainId } from '../../../constants'
-import { ARB_USDC, ARB_USDT } from '../../../constants/testValues'
+import { ARB_USDC } from '../../../constants/testValues'
+import { ETH_NATIVE_TOKEN_ADDRESS } from '../../../utils'
 import { USER_SIMULATED_ADDRESS } from '../../core'
 import { LiFiEngine } from '../liFiEngine'
 
@@ -9,14 +10,14 @@ const TEST_TIMEOUT = 5000
 
 // Unskip to check if integration is working
 describe.skip('Integration test: LiFiEngine', () => {
-  it('Arbitrum USDC -> USDT /quote', async () => {
+  it('Arbitrum USDC -> ETH /quote', async () => {
     const liFiEngine = new LiFiEngine()
     const response = await liFiEngine.getQuoteResponse(
       {
         fromChain: SupportedChainId.ARBITRUM,
         toChain: SupportedChainId.ARBITRUM,
         fromToken: ARB_USDC,
-        toToken: ARB_USDT,
+        toToken: ETH_NATIVE_TOKEN_ADDRESS,
         fromAddress: USER_SIMULATED_ADDRESS,
         fromAmount: '1000000',
         slippage: 0.01,
@@ -31,7 +32,7 @@ describe.skip('Integration test: LiFiEngine', () => {
     if (!response) {
       return
     }
-    // const quoteResponse = await response.json()
-    // console.log(JSON.stringify(quoteResponse, null, 2))
+    const quoteResponse = await response.json()
+    console.log(JSON.stringify(quoteResponse, null, 2))
   })
 })

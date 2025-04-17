@@ -1,18 +1,20 @@
-import { BigNumber } from '@ethersproject/bignumber'
-import { AddressZero, Zero } from '@ethersproject/constants'
-import { PopulatedTransaction } from '@ethersproject/contracts'
+import { Zero } from '@ethersproject/constants'
+import { BigNumber, PopulatedTransaction } from 'ethers'
 
-export const ETH_NATIVE_TOKEN_ADDRESS =
-  '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+import { PopulatedTx } from '../types'
+import { isNativeToken } from './addressUtils'
 
-export const handleNativeToken = (tokenAddr: string) => {
-  return tokenAddr === '' || tokenAddr === AddressZero
-    ? ETH_NATIVE_TOKEN_ADDRESS
-    : tokenAddr
-}
-
-export const isNativeToken = (tokenAddr: string): boolean => {
-  return tokenAddr.toLowerCase() === ETH_NATIVE_TOKEN_ADDRESS.toLowerCase()
+export const stringifyPopulatedTransaction = (
+  tx?: PopulatedTransaction
+): PopulatedTx | undefined => {
+  if (!tx || !tx.to) {
+    return undefined
+  }
+  return {
+    to: tx.to,
+    data: tx.data ?? '',
+    value: tx.value?.toString() ?? '0',
+  }
 }
 
 /**
