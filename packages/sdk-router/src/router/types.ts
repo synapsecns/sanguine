@@ -1,13 +1,12 @@
 import { BigNumber } from '@ethersproject/bignumber'
-
-import { BigintIsh } from '../constants'
+import { BigNumberish } from 'ethers'
 
 /**
  * Matches DestRequest passed to SynapseRouter (V1) and SynapseCCTPRouter.
  */
 export type DestRequest = {
   symbol: string
-  amountIn: BigintIsh
+  amountIn: BigNumberish
 }
 
 export type PoolToken = { isWeth: boolean; token: string }

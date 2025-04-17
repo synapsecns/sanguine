@@ -46,10 +46,6 @@ type otelRecorder struct {
 	feeBalanceGauge    metric.Float64ObservableGauge
 	totalSupplyGauge   metric.Float64ObservableGauge
 
-	// dfk stats
-	stuckHeroes      *hashmap.Map[string, int64]
-	stuckHeroesGauge metric.Int64ObservableGauge
-
 	// submitter stats
 	submitters   *hashmap.Map[int, []submitterMetadata]
 	balanceGauge metric.Float64ObservableGauge
@@ -67,7 +63,6 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 	otr := otelRecorder{
 		metrics:        meterHandler,
 		meter:          meterHandler.Meter(meterName),
-		stuckHeroes:    hashmap.New[string, int64](),
 		vPrice:         hashmap.New[int, float64](),
 		gasBalance:     hashmap.New[int, float64](),
 		td:             hashmap.New[int, []tokenData](),
@@ -104,10 +99,6 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		log.Warnf("failed to create nonce gauge: %v", err)
 	}
 
-	if otr.stuckHeroesGauge, err = otr.meter.Int64ObservableGauge("dfk_pending_heroes"); err != nil {
-		log.Warnf("failed to create stuckHeroes gauge: %v", err)
-	}
-
 	if otr.relayerBalanceGauge, err = otr.meter.Float64ObservableGauge("relayer_balance"); err != nil {
 		log.Warnf("failed to create relayerBalance gauge: %v", err)
 	}
@@ -119,11 +110,6 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 	// Register VPrice callback
 	if _, err = otr.meter.RegisterCallback(otr.recordVpriceGauge, otr.vpriceGauge); err != nil {
 		log.Warnf("failed to register callback for vprice metrics: %v", err)
-	}
-
-	// Register DFK Stuck Heroes Callback
-	if _, err = otr.meter.RegisterCallback(otr.recordStuckHeroCount, otr.stuckHeroesGauge); err != nil {
-		log.Warnf("failed to register callback for dfk stuck heroes metrics: %v", err)
 	}
 
 	// Register Token Balance Callback
@@ -263,35 +249,6 @@ func (o *otelRecorder) recordTokenBalance(
 
 		return true
 	})
-
-	return nil
-}
-
-// DFK Metrics.
-func (o *otelRecorder) RecordStuckHeroCount(stuckHeroes int64, chainname string) {
-	o.stuckHeroes.Set(chainname, stuckHeroes)
-}
-
-func (o *otelRecorder) recordStuckHeroCount(
-	_ context.Context,
-	observer metric.Observer,
-) (err error) {
-	if o.metrics == nil || o.stuckHeroesGauge == nil {
-		return nil
-	}
-
-	o.stuckHeroes.Range(
-		func(chainName string, stuckHeroes int64) bool {
-			observer.ObserveInt64(
-				o.stuckHeroesGauge,
-				stuckHeroes,
-				metric.WithAttributes(
-					attribute.String("chain_name", chainName),
-				),
-			)
-
-			return true
-		})
 
 	return nil
 }

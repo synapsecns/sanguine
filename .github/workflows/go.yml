@@ -53,29 +53,31 @@ jobs:
 
       - name: Check For Solidity Changes
         id: filter_solidity
-        uses: tj-actions/changed-files@v26.1
+        uses: dorny/paths-filter@v2
         with:
-          files: |
-            **/*.sol
+          filters: |
+            sol:
+              - '**/*.sol'
 
       - name: Check For GolangCI Changes
         id: golangci_changed
-        uses: tj-actions/changed-files@v26.1
+        uses: dorny/paths-filter@v2
         with:
           # note: without building a yaml tree of our workflow, we won't be able to tell if golangci version changed so any ci change triggers full lint.
-          files: |
-           .golangci.yml
-           .golangci-version
-           .github/workflows/go.yml
+          filters: |
+            config:
+              - '.golangci.yml'
+              - '.golangci-version'
+              - '.github/workflows/go.yml'
 
 
       - name: Run step if any of the listed files above change
-        if: steps.filter_solidity.outputs.any_changed == 'true'
+        if: steps.filter_solidity.outputs.sol == 'true'
         run: |
           echo "One or more files listed above has changed."
 
       - name: Golangci changed
-        if: steps.golangci_changed.outputs.any_changed == 'true'
+        if: steps.golangci_changed.outputs.config == 'true'
         run: |
           echo "Golangci has changed."
 
@@ -458,28 +460,29 @@ jobs:
           GOMEMLIMIT: 6GiB
           GOGC: -1
 
-      - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v11.1
-        id: verify-changed-files
+      - name: Filter Changed files
+        uses: dorny/paths-filter@v2
+        id: filter-changed-files
         with:
-          files: |
-            *.go
+          filters: |
+            go:
+              - '*.go'
 
-      - name: List all changed files tracked and untracked files
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
+      - name: List changed files
+        if: steps.filter-changed-files.outputs.go == 'true'
         run: |
-          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          echo "Go files have been changed"
 
         # Fail if files need regeneration
         # TODO: this can run into a bit of a race condition if any other label is removed/added while this is run, look into fixing this by dispatching another workflow
       - name: Add Label
-        if: ${{ !contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.verify-changed-files.outputs.files_changed == 'true' }}
+        if: ${{ !contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.filter-changed-files.outputs.go == 'true' }}
         uses: ./.github/actions/add-label
         with:
           label: 'needs-go-generate-${{matrix.package}}'
 
       - name: Remove Label
-        if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.verify-changed-files.outputs.files_changed != 'true' }}
+        if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.filter-changed-files.outputs.go != 'true' }}
         uses: ./.github/actions/remove-label
         with:
           label: 'needs-go-generate-${{matrix.package}}'
@@ -613,28 +616,29 @@ jobs:
           GOMEMLIMIT: 6GiB
           GOGC: -1
 
-      - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v11
-        id: verify-changed-files
+      - name: Filter Changed files
+        uses: dorny/paths-filter@v2
+        id: filter-changed-files
         with:
-          files: |
-            *.go
+          filters: |
+            go:
+              - '*.go'
 
-      - name: List all changed files tracked and untracked files
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
+      - name: List changed files
+        if: steps.filter-changed-files.outputs.go == 'true'
         run: |
-          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          echo "Go files have been changed"
 
         # Fail if files need regeneration
         # TODO: this can run into a bit of a race condition if any other label is removed/added while this is run, look into fixing this by dispatching another workflow
       - name: Add Label
-        if: ${{ !contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.verify-changed-files.outputs.files_changed == 'true' }}
+        if: ${{ !contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.filter-changed-files.outputs.go == 'true' }}
         uses: ./.github/actions/add-label
         with:
           label: 'needs-go-generate-${{matrix.package}}'
 
       - name: Remove Label
-        if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.verify-changed-files.outputs.files_changed != 'true' }}
+        if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) && steps.filter-changed-files.outputs.go != 'true' }}
         uses: ./.github/actions/remove-label
         with:
           label: 'needs-go-generate-${{matrix.package}}'

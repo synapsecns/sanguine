@@ -574,3 +574,25 @@ export const UNICHAIN: Chain = {
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   color: 'pink',
 }
+
+export const HYPEREVM: Chain = {
+  priorityRank: 99,
+  id: 999,
+  chainSymbol: 'HYPEREVM',
+  name: 'HyperEVM',
+  codeName: 'hypevm',
+  chainImg:
+    'https://synapseprotocol.com/_next/static/media/hyperliquid.3dafe2fd.svg',
+  layer: 2,
+  rpcUrls: {
+    primary: 'https://rpc.hyperliquid.xyz/evm',
+    fallback: 'https://rpc.hyperliquid.xyz/evm',
+  },
+  explorerUrl: 'https://purrsec.com',
+  explorerName: 'PurrSec',
+  explorerImg:
+    'https://synapseprotocol.com/_next/static/media/hyperliquid.3dafe2fd.svg',
+  blockTime: 3000,
+  nativeCurrency: { name: 'Hyperliquid', symbol: 'HYPE', decimals: 18 },
+  color: 'green',
+}

@@ -109,6 +109,7 @@ type DateResultByChain struct {
 	Worldchain *float64 `json:"worldchain,omitempty"`
 	Unichain   *float64 `json:"unichain,omitempty"`
 	Berachain  *float64 `json:"berachain,omitempty"`
+	Hyperevm   *float64 `json:"hyperevm,omitempty"`
 	Total      *float64 `json:"total,omitempty"`
 }
 

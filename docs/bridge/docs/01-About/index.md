@@ -10,9 +10,15 @@ import { RFQFlow } from '@site/src/components/RFQFlow'
 
 <AnimatedLogo />
 
-# Use Synapse
+# Synapse
 
-Synapse is an Interchain Programming Interface. Developers read and write interchain data with Synapse, which has settled $50B in transactions between 2M+ users, and generated $30M+ in fees.
+:::note
+Synapse Protocol lives under the Cortex umbrella, Convert SYN to CX before the end of the migration period. Learn more about Cortex in the [Cortex Docs](https://docs.cortexprotocol.com/docs/StartHere)
+:::
+
+Synapse is an Interchain Programming Interface. Developers read and write interchain data with Synapse, which has settled $50B in transactions between 2M+ users, and generated $30M+ in fees. Eventually, all Synapse Protocol features will fold into Cortex.
+
+
 
 Source: [Synapse Explorer analytics](https://explorer.synapseprotocol.com).
 
@@ -65,7 +71,7 @@ Connect with other developers and the Synapse team
 * **[Discord](https://discord.gg/synapseprotocol)**
 * **[Twitter](https://twitter.com/SynapseProtocol)**
 * **[Telegram](https://t.me/synapseprotocol)**
-* **[Forum](https://forum.synapseprotocol.com/)**
+* **[Forum](https://common.xyz/cortex-dao)**
 
 ## Additional Links
 

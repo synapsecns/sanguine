@@ -113,8 +113,8 @@ const config: Config = {
         },
         { to: '/blog', label: 'Blog', position: 'left' },
         {
-          href: 'https://github.com/synapsecns/sanguine',
-          label: 'GitHub',
+          href: 'https://cortexprotocol.com/convert',
+          label: 'Convert SYN to CX',
           position: 'right',
         },
       ],

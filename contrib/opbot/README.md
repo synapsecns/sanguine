@@ -6,14 +6,14 @@
 ![icon.png](icon.png)
 <!-- apoligies, this one was all chatgpt.-->
 
-OpBot is a Slack bot written in Go that interacts with the Signoz trace API to provide various functionalities, including searching for transactions based on user-provided tags. This bot is designed to help teams monitor and manage their operations more effectively by integrating with Slack and Signoz.
+OpBot is a Slack bot written in Go that provides various functionalities to help teams monitor and manage their operations more effectively by integrating with Slack.
 
 ## Features
 
 - **Slack Integration**: Interact with the bot directly from Slack.
-- **Signoz Integration**: Search for transactions and traces using the Signoz API.
 - **Configuration Management**: Easily manage configuration through YAML files.
 - **Metrics Handling**: Integrated with metrics handling for better monitoring.
+- **RFQ Integration**: Look up and manage RFQ transactions.
 
 ## Installation
 
@@ -43,9 +43,8 @@ OpBot uses a YAML configuration file to manage its settings. The configuration f
 ```yaml
 slack_bot_token: "your-slack-bot-token"
 slack_app_token: "your-slack-app-token"
-signoz_email: "your-signoz-email"
-signoz_password: "your-signoz-password"
-signoz_base_url: "https://signoz.example.com"
+rfq_api_url: "https://rfq-api.example.com"
+omnirpc_url: "https://omnirpc.example.com"
 ```
 
 Tokens can be obtained [here](https://api.slack.com/tutorials/tracks/getting-a-token). When creating an app, you can copy and paste the [manifest](manifest.json) file to configure the app automatically.
@@ -54,9 +53,8 @@ Tokens can be obtained [here](https://api.slack.com/tutorials/tracks/getting-a-t
 
 - `slack_bot_token`: The [bot token](https://api.slack.com/concepts/token-types#bot) for your Slack bot.
 - `slack_app_token`: The [app token](https://api.slack.com/concepts/token-types#app-level) for your Slack app.
-- `signoz_email`: The email address used to log in to [Signoz](https://signoz.io/docs/userguide/authentication/).
-- `signoz_password`: The password used to log in to Signoz.
-- `signoz_base_url`: The base URL for the Signoz API instance (example: http://mysignoz )
+- `rfq_api_url`: The URL for the RFQ API.
+- `omnirpc_url`: The URL for the Omni RPC service.
 
 ## Usage
 
@@ -66,8 +64,8 @@ Tokens can be obtained [here](https://api.slack.com/tutorials/tracks/getting-a-t
     ```
 
 2. **Interact with the bot in Slack**:
-  - Use commands to search for transactions in Signoz.
-  - Example command: `/opbot search --tag key:value`
+  - Use commands to look up and manage RFQ transactions.
+  - Example command: `/opbot rfq 0x1234`
 
 ## Development
 
@@ -77,7 +75,7 @@ Tokens can be obtained [here](https://api.slack.com/tutorials/tracks/getting-a-t
 - **`config`**: Provides functionality to read and write configuration files.
 - **`botmd`**: Contains the main bot server implementation.
 - **`metadata`**: Provides metadata services for the bot.
-- **`signoz`**: Contains the Signoz client for interacting with the Signoz API.
+- **`internal`**: Contains internal utilities and clients.
 
 Feel free to reach out if you have any questions or need further assistance!
 
@@ -105,7 +103,6 @@ Certainly! I'll provide a step-by-step guide on how to add a new command to OpBo
 
    ```go
    bot.addCommands(
-       bot.traceCommand(),
        bot.rfqLookupCommand(),
        bot.rfqRefund(),
        bot.newCommand(), // Add your new command here
@@ -113,7 +110,7 @@ Certainly! I'll provide a step-by-step guide on how to add a new command to OpBo
    ```
 
 3. **Implement command logic**
-   In the `Handler` function of your command, implement the logic for your command. You can access bot resources like `b.signozClient`, `b.rpcClient`, etc., to interact with different services.
+   In the `Handler` function of your command, implement the logic for your command. You can access bot resources like `b.rpcClient`, `b.rfqClient`, etc., to interact with different services.
 
 4. **Add any necessary configuration**
    If your command requires additional configuration, add the necessary fields to the `config.Config` struct in the `config/config.go` file.

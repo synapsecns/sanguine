@@ -9,8 +9,6 @@ type iOtelRecorder interface {
 	// Token Balance Metrics.
 	RecordBridgeGasBalance(chainid int, gasBalance float64)
 	RecordTokenBalance(chainID int, tokenData tokenData)
-	// DFK Metrics.
-	RecordStuckHeroCount(stuckHeroes int64, chainname string)
 	// Submitter stats.
 	RecordSubmitterStats(chainid int, metadata submitterMetadata)
 	// RELAYER CODE.

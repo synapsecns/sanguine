@@ -1,0 +1,139 @@
+{
+  "address": "0x519519a57a6Ea930f87e3436b6ea113A990fF519",
+  "constructorArgs": "0x",
+  "receipt": {
+    "hash": "0x702b5fa5b873df516b9a5bb4f4b748801b20501e799a55363eccc21d2f0700bf",
+    "blockNumber": 27236118
+  },
+  "abi": [
+    {
+      "type": "function",
+      "name": "NATIVE_GAS_TOKEN",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "previewIntent",
+      "inputs": [
+        {
+          "name": "swapQuoter",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "forwardTo",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "slippageWei",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "tokenIn",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "tokenOut",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amountIn",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "amountOut",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "steps",
+          "type": "tuple[]",
+          "internalType": "struct ISynapseIntentRouter.StepParams[]",
+          "components": [
+            {
+              "name": "token",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "amount",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "msgValue",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "zapData",
+              "type": "bytes",
+              "internalType": "bytes"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "error",
+      "name": "SIP__NoOpForwardNotSupported",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "SIP__PoolTokenMismatch",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "SIP__PoolZeroAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "SIP__RawParamsEmpty",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "SIP__TokenNotNative",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ZapDataV1__FinalTokenNotSpecified",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ZapDataV1__InvalidEncoding",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ZapDataV1__PayloadLengthAboveMax",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ZapDataV1__TargetZeroAddress",
+      "inputs": []
+    }
+  ]
+}

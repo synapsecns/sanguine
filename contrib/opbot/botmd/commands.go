@@ -8,7 +8,6 @@ import (
 	"log"
 	"math/big"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 
@@ -16,10 +15,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/hako/durafmt"
 	"github.com/slack-go/slack"
 	"github.com/slack-io/slacker"
-	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/chaindata"
@@ -27,130 +24,6 @@ import (
 	rfqClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 )
-
-func (b *Bot) requiresSignoz(definition *slacker.CommandDefinition) *slacker.CommandDefinition {
-	if b.signozEnabled {
-		return definition
-	}
-	return &slacker.CommandDefinition{
-		Command:     definition.Command,
-		Description: fmt.Sprintf("normally this would \"%s\", but signoz is not configured", definition.Description),
-		Examples:    definition.Examples,
-		Handler: func(ctx *slacker.CommandContext) {
-			_, err := ctx.Response().Reply("cannot run command: signoz is not configured")
-			if err != nil {
-				log.Println(err)
-			}
-		},
-	}
-}
-
-// nolint: traceCommand, gocognit
-// TODO: add trace middleware.
-func (b *Bot) traceCommand() *slacker.CommandDefinition {
-	return b.requiresSignoz(&slacker.CommandDefinition{
-		Command:     "trace {tags} {order}",
-		Description: "find a transaction in signoz",
-		Examples: []string{
-			"trace transaction_id:0x1234@serviceName:rfq",
-			"trace transaction_id:0x1234@serviceName:rfq a",
-			"trace transaction_id:0x1234@serviceName:rfq asc",
-		},
-		Handler: func(ctx *slacker.CommandContext) {
-			tags := stripLinks(ctx.Request().Param("tags"))
-			splitTags := strings.Split(tags, "@")
-			if len(splitTags) == 0 {
-				_, err := ctx.Response().Reply("please provide tags in a key:value format")
-				if err != nil {
-					log.Println(err)
-				}
-				return
-			}
-
-			searchMap := make(map[string]string)
-			for _, combinedTag := range splitTags {
-				tag := strings.Split(combinedTag, ":")
-				if len(tag) != 2 {
-					_, err := ctx.Response().Reply("please provide tags in a key:value format")
-					if err != nil {
-						log.Println(err)
-					}
-					return
-				}
-				searchMap[tag[0]] = tag[1]
-			}
-
-			// search for the transaction
-			res, err := b.signozClient.SearchTraces(ctx.Context(), signoz.Last3Hr, searchMap)
-			if err != nil {
-				b.logger.Errorf(ctx.Context(), "error searching for the transaction: %v", err)
-				_, err := ctx.Response().Reply("error searching for the transaction")
-				if err != nil {
-					log.Println(err)
-				}
-				return
-			}
-
-			if res.Status != "success" || res.Data.ContextTimeout || len(res.Data.Result) != 1 {
-				_, err := ctx.Response().Reply(fmt.Sprintf("error searching for the transaction %s", res.Data.ContextTimeoutMessage))
-				if err != nil {
-					log.Println(err)
-				}
-				return
-			}
-
-			traceList := res.Data.Result[0].List
-			if len(traceList) == 0 {
-				_, err := ctx.Response().Reply("no transaction found")
-				if err != nil {
-					log.Println(err)
-				}
-				return
-			}
-
-			order := strings.ToLower(ctx.Request().Param("order"))
-			isAscending := order == "a" || order == "asc"
-			if isAscending {
-				sort.Slice(traceList, func(i, j int) bool {
-					return traceList[i].Timestamp.Before(traceList[j].Timestamp)
-				})
-			}
-
-			slackBlocks := []slack.Block{slack.NewHeaderBlock(slack.NewTextBlockObject(slack.PlainTextType, fmt.Sprintf("Traces for %s", tags), false, false))}
-
-			for _, results := range traceList {
-				trace := results.Data["traceID"].(string)
-				spanID := results.Data["spanID"].(string)
-				serviceName := results.Data["serviceName"].(string)
-
-				url := fmt.Sprintf("%s/trace/%s?spanId=%s", b.cfg.SignozBaseURL, trace, spanID)
-				traceName := fmt.Sprintf("<%s|%s>", url, results.Data["name"].(string))
-
-				relativeTime := durafmt.Parse(time.Since(results.Timestamp)).LimitFirstN(1).String()
-
-				slackBlocks = append(slackBlocks, slack.NewSectionBlock(nil, []*slack.TextBlockObject{
-					{
-						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*Name*: %s", traceName),
-					},
-					{
-						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*Service*: %s", serviceName),
-					},
-					{
-						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*When*: %s", fmt.Sprintf("%s ago", relativeTime)),
-					},
-				}, nil))
-			}
-
-			_, err = ctx.Response().ReplyBlocks(slackBlocks, slacker.WithUnfurlLinks(false))
-			if err != nil {
-				log.Println(err)
-			}
-		},
-	})
-}
 
 // nolint: gocognit
 func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {

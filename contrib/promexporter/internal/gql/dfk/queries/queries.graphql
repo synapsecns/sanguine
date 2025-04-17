@@ -1,5 +1,0 @@
-query StuckHeroes($skip: Int, $owner: String) {
-  heroes(skip: $skip, where:{owner: $owner}) {
-    id
-  }
-}

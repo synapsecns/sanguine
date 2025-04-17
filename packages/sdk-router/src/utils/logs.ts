@@ -1,6 +1,6 @@
+import { Interface } from '@ethersproject/abi'
 import { Log, Provider } from '@ethersproject/abstract-provider'
 import { Contract } from '@ethersproject/contracts'
-import { Interface } from '@ethersproject/abi'
 
 /**
  * Extracts the first log from a transaction receipt that matches

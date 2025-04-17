@@ -1,0 +1,178 @@
+{
+  "address": "0xFb1fb1060C550A9b274C64f70dadF16f2aD34fB1",
+  "constructorArgs": "0x",
+  "receipt": {
+    "hash": "0xefdc81e53048ae79bf85bfa2d556ed8390f63f86f67723a99018ebb4a408a215",
+    "blockNumber": 17680272
+  },
+  "abi": [
+    {
+      "type": "function",
+      "name": "MAX_ORIGIN_PCT_DIFF",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "NATIVE_GAS_TOKEN",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "bridgeWithInterception",
+      "inputs": [
+        {
+          "name": "params",
+          "type": "tuple",
+          "internalType": "struct IFastBridge.BridgeParams",
+          "components": [
+            {
+              "name": "dstChainId",
+              "type": "uint32",
+              "internalType": "uint32"
+            },
+            {
+              "name": "sender",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "to",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "originToken",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "destToken",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "originAmount",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "destAmount",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "sendChainGas",
+              "type": "bool",
+              "internalType": "bool"
+            },
+            {
+              "name": "deadline",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        },
+        {
+          "name": "interceptorParams",
+          "type": "tuple",
+          "internalType": "struct IFastBridgeInterceptor.InterceptorParams",
+          "components": [
+            {
+              "name": "fastBridge",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "quoteOriginAmount",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "error",
+      "name": "AddressEmptyCode",
+      "inputs": [
+        {
+          "name": "target",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "AddressInsufficientBalance",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "FBI__OriginAmountOutOfRange",
+      "inputs": [
+        {
+          "name": "originAmount",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "quoteOriginAmount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "FBI__TokenNotContract",
+      "inputs": [
+        {
+          "name": "token",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "FailedInnerCall",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "SafeERC20FailedOperation",
+      "inputs": [
+        {
+          "name": "token",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    }
+  ]
+}

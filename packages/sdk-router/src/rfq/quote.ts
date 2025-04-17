@@ -1,5 +1,5 @@
-import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
+import { BigNumber } from 'ethers'
 
 import { Ticker } from './ticker'
 
@@ -78,12 +78,24 @@ export const applyQuote = (
     return Zero
   }
   // After these checks: 0 < originAmount <= quote.maxOriginAmount
-  const destAmount = originAmount
-    .mul(quote.destAmount)
-    .div(quote.maxOriginAmount)
+  const destAmount = getDestAmount(quote, originAmount)
   // Check that the destination amount is greater than the fixed fee
   if (destAmount.lt(quote.fixedFee)) {
     return Zero
   }
   return destAmount.sub(quote.fixedFee)
+}
+
+export const getDestAmount = (
+  quote: FastBridgeQuote,
+  originAmount: BigNumber
+): BigNumber => {
+  return originAmount.mul(quote.destAmount).div(quote.maxOriginAmount)
+}
+
+export const getOriginAmount = (
+  quote: FastBridgeQuote,
+  destAmount: BigNumber
+): BigNumber => {
+  return destAmount.mul(quote.maxOriginAmount).div(quote.destAmount)
 }

@@ -15,10 +15,6 @@ import (
 type Config struct {
 	// Port is the port of the config
 	Port int `yaml:"port"`
-	// DFKApiUrl is the url of the DFK API
-	DFKUrl string `default:"https://defi-kingdoms-community-api-gateway-co06z8vi.uc.gateway.dev/graphql" yaml:"dfk_url"`
-	// DFKPending is the list of pending heroes
-	DFKPending []DFKPending `yaml:"dfk_pending"`
 	// SubmitterChecks is the list of gas checks
 	SubmitterChecks []SubmitterChecks `yaml:"gas_checks"`
 	// OmniRpcURL is the url of the omnirpc
@@ -39,14 +35,6 @@ type Config struct {
 type BridgeConfig struct {
 	ChainID int    `yaml:"chain_id"`
 	Address string `yaml:"address"`
-}
-
-// DFKPending contains the config for the DFK pending metric.
-type DFKPending struct {
-	// Owner is the owner of the pending heroes
-	Owner string `yaml:"owner"`
-	// ChainName is the name of the chain
-	ChainName string `yaml:"chain_name"`
 }
 
 // SubmitterChecks contains the config for the gas checks.
@@ -75,16 +63,6 @@ func DecodeConfig(filePath string) (_ Config, err error) {
 	cfg.Port = 9000
 
 	// set some other defaults that can't be set w/ default
-	cfg.DFKPending = []DFKPending{
-		{
-			Owner:     "0x739B1666c2956f601f095298132773074c3E184b",
-			ChainName: "dfk",
-		},
-		{
-			Owner:     "0xEE258eF5F4338B37E9BA9dE6a56382AdB32056E2",
-			ChainName: "klatyn",
-		},
-	}
 
 	// note: when you want to add bridges, you can use the router to look up bridge addresses
 	// and get the gas limit from there
@@ -95,11 +73,6 @@ func DecodeConfig(filePath string) (_ Config, err error) {
 				types.METIS, types.MOONBEAM, types.MOONRIVER, types.DOGECHAIN, types.CANTO, types.KLAYTN,
 				types.BASE, types.ARBITRUM, types.AVALANCHE, types.DFK, types.AURORA, types.HARMONY, types.BLAST),
 			Name: "validators",
-		},
-		{
-			Address:  "0xaa920f7b9039e556d2442113f1fd339e4927dd9a",
-			ChainIDs: types.ToInts(types.DFK, types.KLAYTN, types.HARMONY),
-			Name:     "messenger",
 		},
 		{
 			Address:  "0x49357ba0ef3a8dac25903472eee45c41221d4f9a",
