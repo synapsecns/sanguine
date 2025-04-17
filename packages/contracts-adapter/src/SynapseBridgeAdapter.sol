@@ -7,7 +7,20 @@ import {ISynapseBridgeAdapterErrors} from "./interfaces/ISynapseBridgeAdapterErr
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract SynapseBridgeAdapter is Ownable, ISynapseBridgeAdapter, ISynapseBridgeAdapterErrors {
+    struct TokenAddress {
+        TokenType tokenType;
+        address token;
+    }
+
+    struct TokenSymbol {
+        TokenType tokenType;
+        bytes31 symbol;
+    }
+
     address public bridge;
+
+    mapping(address => TokenSymbol) internal _symbolByAddress;
+    mapping(bytes31 => TokenAddress) internal _addressBySymbol;
 
     event BridgeSet(address bridge);
     event TokenAdded(address token, TokenType tokenType, bytes31 symbol);
@@ -18,7 +31,16 @@ contract SynapseBridgeAdapter is Ownable, ISynapseBridgeAdapter, ISynapseBridgeA
 
     /// @inheritdoc ISynapseBridgeAdapter
     function addToken(address token, TokenType tokenType, bytes31 symbol) external onlyOwner {
-        // TODO: implement
+        // Check: new parameters
+        if (token == address(0)) revert SBA__ZeroAddress();
+        if (symbol == bytes31(0)) revert SBA__ZeroSymbol();
+        // Check: existing state
+        if (_symbolByAddress[token].symbol != bytes31(0)) revert SBA__TokenAlreadyAdded(token);
+        if (_addressBySymbol[symbol].token != address(0)) revert SBA__SymbolAlreadyAdded(symbol);
+        // Store
+        _symbolByAddress[token] = TokenSymbol(tokenType, symbol);
+        _addressBySymbol[symbol] = TokenAddress(tokenType, token);
+        emit TokenAdded(token, tokenType, symbol);
     }
 
     /// @inheritdoc ISynapseBridgeAdapter
@@ -47,12 +69,16 @@ contract SynapseBridgeAdapter is Ownable, ISynapseBridgeAdapter, ISynapseBridgeA
     }
 
     /// @inheritdoc ISynapseBridgeAdapter
-    function getSymbolByAddress(address token) external view returns (TokenType tokenType, bytes31 symbol) {
-        // TODO: implement
+    function getSymbolByAddress(address token) public view returns (TokenType tokenType, bytes31 symbol) {
+        tokenType = _symbolByAddress[token].tokenType;
+        symbol = _symbolByAddress[token].symbol;
+        if (symbol == bytes31(0)) revert SBA__TokenUnknown(token);
     }
 
     /// @inheritdoc ISynapseBridgeAdapter
-    function getAddressBySymbol(bytes31 symbol) external view returns (TokenType tokenType, address token) {
-        // TODO: implement
+    function getAddressBySymbol(bytes31 symbol) public view returns (TokenType tokenType, address token) {
+        tokenType = _addressBySymbol[symbol].tokenType;
+        token = _addressBySymbol[symbol].token;
+        if (token == address(0)) revert SBA__SymbolUnknown(symbol);
     }
 }
