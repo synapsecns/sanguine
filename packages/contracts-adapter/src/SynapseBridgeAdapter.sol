@@ -6,6 +6,13 @@ import {ISynapseBridgeAdapter} from "./interfaces/ISynapseBridgeAdapter.sol";
 contract SynapseBridgeAdapter is ISynapseBridgeAdapter {
     address public bridge;
 
+    event BridgeSet(address bridge);
+    event TokenAdded(address token, TokenType tokenType, bytes31 symbol);
+
+    constructor(address owner) {
+        // TODO: implement
+    }
+
     // ════════════════════════════════════════════════ MANAGEMENT ═════════════════════════════════════════════════════
 
     /// @inheritdoc ISynapseBridgeAdapter

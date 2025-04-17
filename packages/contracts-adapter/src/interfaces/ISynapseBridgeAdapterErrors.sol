@@ -2,7 +2,6 @@
 pragma solidity ^0.8.4;
 
 interface ISynapseBridgeAdapterErrors {
-    error SBA__AmountZero();
     error SBA__BridgeAlreadySet();
     error SBA__BridgeNotSet();
     error SBA__GasLimitBelowMinimum();
@@ -11,4 +10,7 @@ interface ISynapseBridgeAdapterErrors {
     error SBA__SymbolUnknown(bytes31 symbol);
     error SBA__TokenAlreadyAdded(address token);
     error SBA__TokenUnknown(address token);
+    error SBA__ZeroAddress();
+    error SBA__ZeroAmount();
+    error SBA__ZeroSymbol();
 }
