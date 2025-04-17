@@ -2,27 +2,34 @@
 pragma solidity 0.8.24;
 
 import {ISynapseBridgeAdapter} from "./interfaces/ISynapseBridgeAdapter.sol";
+import {ISynapseBridgeAdapterErrors} from "./interfaces/ISynapseBridgeAdapterErrors.sol";
 
-contract SynapseBridgeAdapter is ISynapseBridgeAdapter {
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+
+contract SynapseBridgeAdapter is Ownable, ISynapseBridgeAdapter, ISynapseBridgeAdapterErrors {
     address public bridge;
 
     event BridgeSet(address bridge);
     event TokenAdded(address token, TokenType tokenType, bytes31 symbol);
 
-    constructor(address owner) {
-        // TODO: implement
-    }
+    constructor(address owner) Ownable(owner) {}
 
     // ════════════════════════════════════════════════ MANAGEMENT ═════════════════════════════════════════════════════
 
     /// @inheritdoc ISynapseBridgeAdapter
-    function addToken(address token, TokenType tokenType, bytes31 symbol) external {
+    function addToken(address token, TokenType tokenType, bytes31 symbol) external onlyOwner {
         // TODO: implement
     }
 
     /// @inheritdoc ISynapseBridgeAdapter
-    function setBridge(address newBridge) external {
-        // TODO: implement
+    function setBridge(address newBridge) external onlyOwner {
+        // Check: new parameters
+        if (newBridge == address(0)) revert SBA__ZeroAddress();
+        // Check: existing state
+        if (bridge != address(0)) revert SBA__BridgeAlreadySet();
+        // Store
+        bridge = newBridge;
+        emit BridgeSet(newBridge);
     }
 
     // ════════════════════════════════════════════════ USER FACING ════════════════════════════════════════════════════
