@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.17.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.7...@synapsecns/sdk-router@0.17.8) (2025-04-17)
+
+
+### Bug Fixes
+
+* **sdk-router:** address utils, URLs in constructor, ParaSwap surplus ([#3660](https://github.com/synapsecns/sanguine/issues/3660)) ([7240c3d](https://github.com/synapsecns/sanguine/commit/7240c3d5eb568e91330cecb694805a70b1f76ad8))
+
+
+
+
+
 ## [0.17.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.6...@synapsecns/sdk-router@0.17.7) (2025-04-03)
 
 
