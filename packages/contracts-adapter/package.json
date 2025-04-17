@@ -1,0 +1,29 @@
+{
+  "name": "@synapsecns/contracts-adapter",
+  "license": "MIT",
+  "version": "1.0.0",
+  "description": "SynapseBridge Adapter contracts",
+  "private": true,
+  "files": [
+    "src/**/*.sol"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@synapsecns/solidity-devops": "^0.4.8",
+    "solhint": "5.0.3"
+  },
+  "scripts": {
+    "build": " ",
+    "build:contracts": "forge build",
+    "build:slither": "forge build --out=out --build-info --force",
+    "test:coverage": "echo 'Please use foundry'",
+    "test": "forge test",
+    "gas:bench": "forge test --mc GasBenchmark --gas-report",
+    "lint": "forge fmt && npm run solhint",
+    "lint:check": "forge fmt --check && npm run solhint:check",
+    "ci:lint": "npm run lint:check",
+    "build:go": " ",
+    "solhint": "solhint '{src,script,test}/**/*.sol' --fix --noPrompt --max-warnings 3",
+    "solhint:check": "solhint '{src,script,test}/**/*.sol' --max-warnings 3"
+  }
+}
