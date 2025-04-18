@@ -79,6 +79,7 @@ import { USDC } from '@/constants/tokens/bridgeable'
 import { CheckCircleIcon } from '@heroicons/react/outline'
 import Image from 'next/image'
 import { HyperliquidDepositInfo } from '@/components/HyperliquidDepositInfo'
+import { ChatInputBox } from '@/components/StateManagedBridge/ChatInputBox'
 
 const StateManagedBridge = () => {
   const dispatch = useAppDispatch()
@@ -478,6 +479,11 @@ const StateManagedBridge = () => {
 
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
+      {/* AI Bridge Card - Separate card positioned at the very top */}
+      <div className="bg-zinc-100 dark:bg-bgBase p-3 rounded-[.75rem] mb-5 border border-zinc-200 dark:border-zinc-700">
+        <ChatInputBox />
+      </div>
+      
       <div className="flex flex-col">
         <div className="flex items-center justify-between">
           <PageHeader
@@ -494,6 +500,8 @@ const StateManagedBridge = () => {
             <SettingsToggle showSettingsToggle={!showSettingsSlideOver} />
           </Button>
         </div>
+
+        {/* Regular Bridge Interface Card */}
         <BridgeCard bridgeRef={bridgeDisplayRef}>
           <BridgeMaintenanceProgressBar />
 
