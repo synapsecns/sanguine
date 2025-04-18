@@ -55,4 +55,20 @@ interface ISynapseBridgeAdapter {
     /// @dev Will revert in the following cases:
     /// - `symbol` has not been added to the adapter
     function getAddressBySymbol(bytes31 symbol) external view returns (TokenType tokenType, address token);
+
+    /// @notice Returns the token type and human-readable symbol for a given token address.
+    /// @dev Will revert in the following cases:
+    /// - `token` has not been added to the adapter
+    function getReadableSymbolByAddress(address token)
+        external
+        view
+        returns (TokenType tokenType, string memory symbol);
+
+    /// @notice Returns the token type and address for a given human-readable symbol.
+    /// @dev Will revert in the following cases:
+    /// - `symbol` has not been added to the adapter
+    function getAddressByReadableSymbol(string memory symbol)
+        external
+        view
+        returns (TokenType tokenType, address token);
 }

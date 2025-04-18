@@ -12,6 +12,7 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
     address internal anotherToken = makeAddr("AnotherToken");
     bytes31 internal symbol = "SYMBOL";
     bytes31 internal anotherSymbol = "ANOTHERSYMBOL";
+    string internal readableSymbol = "SYMBOL";
 
     function deployAdapter() internal virtual override returns (SynapseBridgeAdapter) {
         return new SynapseBridgeAdapter(owner);
@@ -20,7 +21,8 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
     function checkTokenAdded(
         address token_,
         ISynapseBridgeAdapter.TokenType tokenType_,
-        bytes31 symbol_
+        bytes31 symbol_,
+        string memory readableSymbol_
     )
         internal
         view
@@ -28,12 +30,21 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
         ISynapseBridgeAdapter.TokenType adapterTokenType;
         bytes31 adapterSymbol;
         address adapterToken;
-        // Check token by address
+        string memory adapterReadableSymbol;
+        // Check symbol by address
         (adapterTokenType, adapterSymbol) = adapter.getSymbolByAddress(token_);
         assertEq(uint8(adapterTokenType), uint8(tokenType_));
         assertEq(symbol_, symbol);
-        // Check token by symbol
+        // Check address by symbol
         (adapterTokenType, adapterToken) = adapter.getAddressBySymbol(symbol_);
+        assertEq(uint8(adapterTokenType), uint8(tokenType_));
+        assertEq(adapterToken, token_);
+        // Check readable symbol by address
+        (adapterTokenType, adapterReadableSymbol) = adapter.getReadableSymbolByAddress(token_);
+        assertEq(uint8(adapterTokenType), uint8(tokenType_));
+        assertEq(readableSymbol_, readableSymbol);
+        // Check address by readable symbol
+        (adapterTokenType, adapterToken) = adapter.getAddressByReadableSymbol(readableSymbol_);
         assertEq(uint8(adapterTokenType), uint8(tokenType_));
         assertEq(adapterToken, token_);
     }
@@ -48,13 +59,13 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
     function test_addToken_mintBurn() public {
         expectEventTokenAdded(token, ISynapseBridgeAdapter.TokenType.MintBurn, symbol);
         addToken(token, ISynapseBridgeAdapter.TokenType.MintBurn, symbol);
-        checkTokenAdded(token, ISynapseBridgeAdapter.TokenType.MintBurn, symbol);
+        checkTokenAdded(token, ISynapseBridgeAdapter.TokenType.MintBurn, symbol, readableSymbol);
     }
 
     function test_addToken_withdrawDeposit() public {
         expectEventTokenAdded(token, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, symbol);
         addToken(token, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, symbol);
-        checkTokenAdded(token, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, symbol);
+        checkTokenAdded(token, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, symbol, readableSymbol);
     }
 
     function test_addToken_revert_tokenSymbolAlreadyAdded() public {
@@ -112,6 +123,16 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
     function test_getAddressBySymbol_revert_symbolUnknown() public {
         expectRevertSymbolUnknown(symbol);
         adapter.getAddressBySymbol(symbol);
+    }
+
+    function test_getReadableSymbolByAddress_revert_tokenUnknown() public {
+        expectRevertTokenUnknown(token);
+        adapter.getReadableSymbolByAddress(token);
+    }
+
+    function test_getAddressByReadableSymbol_revert_symbolUnknown() public {
+        expectRevertSymbolUnknown(symbol);
+        adapter.getAddressByReadableSymbol(readableSymbol);
     }
 
     // ════════════════════════════════════════════════ SET BRIDGE ═════════════════════════════════════════════════════

@@ -3,6 +3,7 @@ pragma solidity 0.8.24;
 
 import {ISynapseBridgeAdapter} from "./interfaces/ISynapseBridgeAdapter.sol";
 import {ISynapseBridgeAdapterErrors} from "./interfaces/ISynapseBridgeAdapterErrors.sol";
+import {ReadableSymbol} from "./libs/ReadableSymbol.sol";
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -66,6 +67,27 @@ contract SynapseBridgeAdapter is Ownable, ISynapseBridgeAdapter, ISynapseBridgeA
     /// @inheritdoc ISynapseBridgeAdapter
     function getNativeFee(uint32 dstEid, uint64 gasLimit) external view returns (uint256 nativeFee) {
         // TODO: implement
+    }
+
+    /// @inheritdoc ISynapseBridgeAdapter
+    function getReadableSymbolByAddress(address token)
+        external
+        view
+        returns (TokenType tokenType, string memory readableSymbol)
+    {
+        bytes31 symbol;
+        (tokenType, symbol) = getSymbolByAddress(token);
+        readableSymbol = ReadableSymbol.toString(symbol);
+    }
+
+    /// @inheritdoc ISynapseBridgeAdapter
+    function getAddressByReadableSymbol(string memory readableSymbol)
+        external
+        view
+        returns (TokenType tokenType, address token)
+    {
+        bytes31 symbol = ReadableSymbol.toBytes31(readableSymbol);
+        return getAddressBySymbol(symbol);
     }
 
     /// @inheritdoc ISynapseBridgeAdapter
