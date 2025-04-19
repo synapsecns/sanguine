@@ -160,6 +160,9 @@ func (c *clientImpl) PutBulkQuotes(ctx context.Context, q *model.PutBulkQuotesRe
 
 	// TODO: Figure out if there's anything to do with the response, right now it's result: Status Code 200 OK
 	_ = res
+	if err != nil {
+		return fmt.Errorf("error from server: %s %w", getStatus(res), err)
+	}
 
 	// this will panic. typically indicates no authorization to quote
 	if res.RawResponse.StatusCode == 400 {
