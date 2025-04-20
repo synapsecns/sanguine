@@ -122,19 +122,33 @@ func (p *RFQParser) MatureLogs(ctx context.Context, rfqEvent *model.RFQEvent, iF
 
 	var curCoinGeckoID string
 	tokenAddressStr := common.HexToAddress(rfqEvent.OriginToken).Hex()
-	const ethAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+	const nativeTokenAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 
 	switch {
-	case strings.EqualFold(tokenAddressStr, ethAddress) || strings.EqualFold(tokenAddressStr, "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"):
-		rfqEvent.TokenSymbol = "ETH"
-		rfqEvent.TokenDecimal = new(uint8)
-		*rfqEvent.TokenDecimal = 18
-		curCoinGeckoID = ethCoinGeckoID
+	// Chain native addresses
+	case strings.EqualFold(tokenAddressStr, nativeTokenAddress):
+		if chainID == 999 {
+			rfqEvent.TokenSymbol = "HYPE"
+			curCoinGeckoID = "hyperliquid"
+			rfqEvent.TokenDecimal = new(uint8)
+			*rfqEvent.TokenDecimal = 18
+		} else {
+			rfqEvent.TokenSymbol = "ETH"
+			curCoinGeckoID = ethCoinGeckoID
+			rfqEvent.TokenDecimal = new(uint8)
+			*rfqEvent.TokenDecimal = 18
+		}
 	case strings.EqualFold(tokenAddressStr, "0x2cFc85d8E48F8EAB294be644d9E25C3030863003") || strings.EqualFold(tokenAddressStr, "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1"):
 		rfqEvent.TokenSymbol = "WLD"
 		rfqEvent.TokenDecimal = new(uint8)
 		*rfqEvent.TokenDecimal = 18
 		curCoinGeckoID = "worldcoin-wld"
+	// WETH on Berachain and BNB
+	case strings.EqualFold(tokenAddressStr, "0x2f6f07cdcf3588944bf4c42ac74ff24bf56e7590") || strings.EqualFold(tokenAddressStr, "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"):
+		rfqEvent.TokenSymbol = "WETH"
+		rfqEvent.TokenDecimal = new(uint8)
+		*rfqEvent.TokenDecimal = 18
+		curCoinGeckoID = "weth"
 	default:
 		rfqEvent.TokenSymbol = "USDC"
 		rfqEvent.TokenDecimal = new(uint8)

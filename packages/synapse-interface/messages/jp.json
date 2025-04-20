@@ -246,6 +246,7 @@
       "Total Liquidity": "総流動性",
       "Total Liquidity USD": "総流動性（USD）",
       "Requesting approval": "承認をリクエスト中",
+      "Resetting allowance to zero first": "最初に許可量をゼロにリセットしています",
       "Starting your deposit": "デポジットを開始中...",
       "Starting your claim": "請求を開始中..."
     }

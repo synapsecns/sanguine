@@ -1,13 +1,13 @@
-import { PopulatedTransaction } from 'ethers'
-import { BigNumber } from '@ethersproject/bignumber'
 import { Provider } from '@ethersproject/abstract-provider'
-import invariant from 'tiny-invariant'
+import { BigNumber } from '@ethersproject/bignumber'
 import { AddressZero } from '@ethersproject/constants'
+import { BigNumberish, PopulatedTransaction } from 'ethers'
+import invariant from 'tiny-invariant'
 
-import { BigintIsh } from '../constants'
-import { Query } from '../module/query'
 import { DestRequest } from './types'
 import { BridgeToken, FeeConfig, SynapseModule } from '../module'
+import { Query } from '../module/query'
+import { logger } from '../utils'
 
 /**
  * Abstract class for a router contract deployed on a chain.
@@ -37,7 +37,7 @@ export abstract class Router implements SynapseModule {
   abstract getOriginAmountOut(
     tokenIn: string,
     bridgeTokens: string[],
-    amountIn: BigintIsh
+    amountIn: BigNumberish
   ): Promise<Query[]>
 
   abstract getDestinationAmountOut(
@@ -60,7 +60,7 @@ export abstract class Router implements SynapseModule {
     to: string,
     chainId: number,
     token: string,
-    amount: BigintIsh,
+    amount: BigNumberish,
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction>
@@ -111,15 +111,15 @@ export abstract class Router implements SynapseModule {
   public async getOriginQueries(
     tokenIn: string,
     tokenSymbols: string[],
-    amountIn: BigintIsh
+    amountIn: BigNumberish
   ): Promise<Query[]> {
     try {
       // Don't filter anything, as the amount of returned queries should match the amount of symbols
       return this.getOriginAmountOut(tokenIn, tokenSymbols, amountIn)
     } catch (error) {
-      console.error(
-        '[SynapseSDK: Router] Failed to fetch origin queries',
-        error
+      logger.error(
+        { tokenIn, tokenSymbols, amountIn, error },
+        '[SynapseSDK: Router] Failed to fetch origin queries'
       )
       throw error
     }
@@ -141,9 +141,9 @@ export abstract class Router implements SynapseModule {
       // Don't filter anything, as the amount of returned queries should match the amount of requests
       return this.getDestinationAmountOut(requests, tokenOut)
     } catch (error) {
-      console.error(
-        '[SynapseSDK: Router] Failed to fetch destination queries',
-        error
+      logger.error(
+        { requests, tokenOut, error },
+        '[SynapseSDK: Router] Failed to fetch destination queries'
       )
       throw error
     }

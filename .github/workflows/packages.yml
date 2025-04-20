@@ -47,6 +47,7 @@ jobs:
   test:
       runs-on: ubuntu-latest
       env:
+        OMNIRPC_BASE_URL: ${{ secrets.OMNIRPC_BASE_URL }}
         SDK_RPC_URL: ${{ secrets.SDK_RPC_URL }}
 
       steps:
@@ -65,29 +66,30 @@ jobs:
           with:
             version: nightly
 
-        - name: Verify Changed files
-          uses: tj-actions/verify-changed-files@v11.1
-          id: verify-yarn-lock
+        - name: Filter changed files
+          uses: dorny/paths-filter@v2
+          id: filter-yarn-lock
           with:
-            files: |
-              yarn.lock
+            filters: |
+              yarn:
+                - 'yarn.lock'
 
         - name: Add Label
-          if: ${{ steps.verify-yarn-lock.outputs.files_changed == 'true' && github.event_name != 'push' }}
+          if: ${{ steps.filter-yarn-lock.outputs.yarn == 'true' && github.event_name != 'push' }}
           uses: ./.github/actions/add-label
           with:
             label: 'needs-yarn-install'
 
         - name: Remove Label
-          if: ${{ steps.verify-yarn-lock.outputs.files_changed != 'true' && github.event_name != 'push' }}
+          if: ${{ steps.filter-yarn-lock.outputs.yarn != 'true' && github.event_name != 'push' }}
           uses: ./.github/actions/remove-label
           with:
             label: 'needs-yarn-install'
 
-        - name: List all changed files tracked and untracked files
-          if: steps.verify-changed-files.outputs.files_changed == 'true'
+        - name: List changed files
+          if: steps.filter-yarn-lock.outputs.yarn == 'true'
           run: |
-            echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+            echo "Changed files: yarn.lock"
 
         - name: Run tests # Run tests of all packages
           run: yarn test:coverage

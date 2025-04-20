@@ -5,7 +5,10 @@ run:
 linters-settings:
   gofmt:
     simplify: true
-  govet: {}
+  govet:
+    # Using proper analyzer name for shadow checking
+    enable:
+      - shadow
   misspell:
     locale: US
   gocritic:
@@ -50,8 +53,8 @@ linters:
     - godox
     # skip new line return until autofix works for it
     - nlreturn
-    # renamed from goerr113
-    - err113
+    # go 1.13 error
+    - err113 # renamed from goerr113
     # disable gci
     - gci
     # disable gofumpt
@@ -60,7 +63,7 @@ linters:
     - mnd
     # allow println
     - forbidigo
-    # allow nolint
+    # Allow nolint
     - nolintlint
     # we use external json tags
     - tagliatelle
@@ -85,15 +88,19 @@ linters:
     - goconst
     # replacing deprecated tenv
     - usetesting
+    # removed deprecated linters (added execinquery and exportloopref)
+    - execinquery
+    - exportloopref
   fast: false
 
 issues:
-  exclude-dirs-use-default: false
+  # Moved from run section as per deprecation warnings
   exclude-dirs:
     - grpc/client/rest/*
     - bundle/*
     - generated/*
     - otelginmetrics/*
+  exclude-dirs-use-default: false
   exclude-files:
     - '.*\\.abigen\\.go$'
     - '.*\\.metadata\\.go$'
@@ -139,4 +146,4 @@ issues:
         - staticcheck
         - wrapcheck
   exclude-use-default: false
-  new-from-rev: aff078e7f6c66880eaada67245e35581f80cb6af
+  new-from-rev: 531916ba79df25bf4d2d0bb654124f8693a74f85

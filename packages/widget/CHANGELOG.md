@@ -3,6 +3,182 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.33](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.32...@synapsecns/widget@0.9.33) (2025-04-17)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.32](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.31...@synapsecns/widget@0.9.32) (2025-04-03)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.31](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.30...@synapsecns/widget@0.9.31) (2025-04-02)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.30](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.29...@synapsecns/widget@0.9.30) (2025-04-01)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.29](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.28...@synapsecns/widget@0.9.29) (2025-04-01)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.28](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.27...@synapsecns/widget@0.9.28) (2025-03-28)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.27](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.26...@synapsecns/widget@0.9.27) (2025-03-27)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.26](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.25...@synapsecns/widget@0.9.26) (2025-03-25)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.25](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.24...@synapsecns/widget@0.9.25) (2025-03-24)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.24](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.23...@synapsecns/widget@0.9.24) (2025-03-21)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.23](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.22...@synapsecns/widget@0.9.23) (2025-03-21)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.22](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.21...@synapsecns/widget@0.9.22) (2025-03-20)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.21](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.20...@synapsecns/widget@0.9.21) (2025-03-19)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.20](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.19...@synapsecns/widget@0.9.20) (2025-03-17)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.19](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.18...@synapsecns/widget@0.9.19) (2025-03-11)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.18](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.17...@synapsecns/widget@0.9.18) (2025-03-10)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.17](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.16...@synapsecns/widget@0.9.17) (2025-03-07)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.16](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.15...@synapsecns/widget@0.9.16) (2025-03-01)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.15](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.14...@synapsecns/widget@0.9.15) (2025-03-01)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.14](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.13...@synapsecns/widget@0.9.14) (2025-02-28)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.13](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.12...@synapsecns/widget@0.9.13) (2025-02-27)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.12](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.11...@synapsecns/widget@0.9.12) (2025-02-25)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
 ## [0.9.11](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.10...@synapsecns/widget@0.9.11) (2025-02-21)
 
 **Note:** Version bump only for package @synapsecns/widget

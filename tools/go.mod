@@ -18,8 +18,8 @@ require (
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/thoas/go-funk v0.9.0
 	github.com/urfave/cli/v2 v2.27.2
-	golang.org/x/mod v0.20.0
-	golang.org/x/tools v0.24.0
+	golang.org/x/mod v0.23.0
+	golang.org/x/tools v0.30.0
 )
 
 require (
@@ -94,12 +94,12 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.3 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.26.0 // indirect
+	golang.org/x/crypto v0.33.0 // indirect
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948 // indirect
-	golang.org/x/net v0.28.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.24.0 // indirect
-	golang.org/x/text v0.18.0 // indirect
+	golang.org/x/net v0.35.0 // indirect
+	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apimachinery v0.29.3 // indirect

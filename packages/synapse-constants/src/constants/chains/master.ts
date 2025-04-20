@@ -538,7 +538,7 @@ export const BERACHAIN: Chain = {
   name: 'Berachain',
   codeName: 'berachain',
   chainImg:
-    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/berachain.549943e0.svg',
+    'https://e8ff9599.sanguine-fe.pages.dev/_next/static/media/berachain.57304c86.svg',
   layer: 1,
   rpcUrls: {
     primary: 'https://berachain.blockpi.network/v1/rpc/public',
@@ -547,7 +547,7 @@ export const BERACHAIN: Chain = {
   explorerUrl: 'https://berascan.com',
   explorerName: 'Berascan',
   explorerImg:
-    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/berachain.549943e0.svg',
+    'https://e8ff9599.sanguine-fe.pages.dev/_next/static/media/berachain.57304c86.svg',
   blockTime: 3000,
   nativeCurrency: { name: 'Berachain', symbol: 'BERA', decimals: 18 },
   color: 'brown',
@@ -560,7 +560,7 @@ export const UNICHAIN: Chain = {
   name: 'Unichain',
   codeName: 'unichain',
   chainImg:
-    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/unichain.549943e0.svg',
+    'https://e8ff9599.sanguine-fe.pages.dev/_next/static/media/unichain.02b81e3e.svg',
   layer: 2,
   rpcUrls: {
     primary: 'https://unichain-rpc.publicnode.com',
@@ -569,8 +569,30 @@ export const UNICHAIN: Chain = {
   explorerUrl: 'https://uniscan.xyz',
   explorerName: 'Uniscan',
   explorerImg:
-    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/unichain.549943e0.svg',
+    'https://e8ff9599.sanguine-fe.pages.dev/_next/static/media/unichain.02b81e3e.svg',
   blockTime: 3000,
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   color: 'pink',
+}
+
+export const HYPEREVM: Chain = {
+  priorityRank: 99,
+  id: 999,
+  chainSymbol: 'HYPEREVM',
+  name: 'HyperEVM',
+  codeName: 'hypevm',
+  chainImg:
+    'https://synapseprotocol.com/_next/static/media/hyperliquid.3dafe2fd.svg',
+  layer: 2,
+  rpcUrls: {
+    primary: 'https://rpc.hyperliquid.xyz/evm',
+    fallback: 'https://rpc.hyperliquid.xyz/evm',
+  },
+  explorerUrl: 'https://purrsec.com',
+  explorerName: 'PurrSec',
+  explorerImg:
+    'https://synapseprotocol.com/_next/static/media/hyperliquid.3dafe2fd.svg',
+  blockTime: 3000,
+  nativeCurrency: { name: 'Hyperliquid', symbol: 'HYPE', decimals: 18 },
+  color: 'green',
 }

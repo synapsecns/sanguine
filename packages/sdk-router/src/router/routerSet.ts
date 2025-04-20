@@ -1,9 +1,10 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
+import { BigNumberish } from 'ethers'
 import invariant from 'tiny-invariant'
 
 import { Router } from './router'
-import { AddressMap, BigintIsh } from '../constants'
+import { AddressMap } from '../constants'
 import { DestRequest } from './types'
 import {
   BridgeRoute,
@@ -16,7 +17,7 @@ import {
   Query,
   hasComplexBridgeAction,
 } from '../module/query'
-import { ONE_WEEK, TEN_MINUTES } from '../utils/deadlines'
+import { ONE_WEEK, TEN_MINUTES, logger } from '../utils'
 
 export type ChainProvider = {
   chainId: number
@@ -35,7 +36,7 @@ export type RouterConstructor = new (
  *
  * The class children should provide the router addresses for each chain, as well as the Router constructor.
  *
- * @property bridgeModuleName The name of the bridge module used by the routers.
+ * @property moduleName The name of the bridge module used by the routers.
  * @property routers Collection of Router instances indexed by chainId.
  * @property providers Collection of Provider instances indexed by chainId.
  */
@@ -84,7 +85,7 @@ export abstract class RouterSet extends SynapseModuleSet {
     destChainId: number,
     tokenIn: string,
     tokenOut: string,
-    amountIn: BigintIsh
+    amountIn: BigNumberish
   ): Promise<BridgeRoute[]> {
     const originRouter = this.routers[originChainId]
     const destRouter = this.routers[destChainId]
@@ -132,7 +133,7 @@ export abstract class RouterSet extends SynapseModuleSet {
           originQuery: originRoute.originQuery,
           destQuery: destQueries[index],
           bridgeToken: originRoute.bridgeToken,
-          bridgeModuleName: this.bridgeModuleName,
+          bridgeModuleName: this.moduleName,
         })
       )
       // Return routes with non-zero minAmountOut
@@ -140,9 +141,17 @@ export abstract class RouterSet extends SynapseModuleSet {
         bridgeRoute.destQuery.minAmountOut.gt(0)
       )
     } catch (error) {
-      console.error(
-        `[SynapseSDK: RouterSet] Error when trying to calculate the best quote with bridge tokens: ${bridgeTokens} `,
-        error
+      logger.error(
+        {
+          originChainId,
+          destChainId,
+          tokenIn,
+          tokenOut,
+          amountIn,
+          bridgeTokens,
+          error,
+        },
+        '[SynapseSDK: RouterSet] Error when trying to calculate the best quote'
       )
       return []
     }

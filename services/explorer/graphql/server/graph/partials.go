@@ -404,6 +404,7 @@ const dailyVolumeBridgeMvPt1 = `
 	   results[480]                 AS worldchain,
 	   results[130]         		AS unichain,
 	   results[80094]               AS berachain,
+       results[999]                 AS hyperEVM,
        arraySum(mapValues(results)) AS total
          FROM (SELECT date, maxMap(map(chain_id, total)) AS results
       FROM (SELECT coalesce(toString(b.date), toString(s.date))   AS date,
@@ -451,6 +452,7 @@ const dailyVolumeBridge = `
 	   results[480]                 AS worldchain,
 	   results[130]         		AS unichain,
 	   results[80094]               AS berachain,
+	   results[999]                 AS hyperEVM,
        arraySum(mapValues(results)) AS total
          FROM (SELECT date, maxMap(map(chain_id, total)) AS results
       FROM (SELECT coalesce(toString(b.date), toString(s.date))   AS date,
@@ -655,6 +657,7 @@ SELECT date,
 	   results[480]                 AS worldchain,
 	   results[130]         		AS unichain,
 	   results[80094]               AS berachain,
+	   results[999]                 AS hyperEVM,
        arraySum(mapValues(results)) AS total
 FROM (
          SELECT date,
@@ -689,6 +692,7 @@ SELECT date,
 	   results[480]                 AS worldchain,
 	   results[130]         		AS unichain,
 	   results[80094]               AS berachain,
+	   results[999]                 AS hyperEVM,
        arraySum(mapValues(results)) AS total
 FROM (
          SELECT date,
@@ -724,6 +728,7 @@ SELECT date,
 	   results[480]                 AS worldchain,
 	   results[130]         		AS unichain,
 	   results[80094]               AS berachain,
+	   results[999]                 AS hyperEVM,
        arraySum(mapValues(results)) AS total
 FROM (
          SELECT date,

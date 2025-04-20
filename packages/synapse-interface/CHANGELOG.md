@@ -3,6 +3,221 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.43.15](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.14...@synapsecns/synapse-interface@0.43.15) (2025-04-17)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.14](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.13...@synapsecns/synapse-interface@0.43.14) (2025-04-03)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.13](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.12...@synapsecns/synapse-interface@0.43.13) (2025-04-02)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.12](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.11...@synapsecns/synapse-interface@0.43.12) (2025-04-01)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.11](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.10...@synapsecns/synapse-interface@0.43.11) (2025-04-01)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.9...@synapsecns/synapse-interface@0.43.10) (2025-03-28)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.8...@synapsecns/synapse-interface@0.43.9) (2025-03-27)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.7...@synapsecns/synapse-interface@0.43.8) (2025-03-25)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.6...@synapsecns/synapse-interface@0.43.7) (2025-03-24)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.5...@synapsecns/synapse-interface@0.43.6) (2025-03-21)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.4...@synapsecns/synapse-interface@0.43.5) (2025-03-21)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.3...@synapsecns/synapse-interface@0.43.4) (2025-03-20)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.2...@synapsecns/synapse-interface@0.43.3) (2025-03-19)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.1...@synapsecns/synapse-interface@0.43.2) (2025-03-17)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.0...@synapsecns/synapse-interface@0.43.1) (2025-03-11)
+
+
+### Bug Fixes
+
+* hide slippage between different type of assets for now [SYN-39] ([#3590](https://github.com/synapsecns/sanguine/issues/3590)) ([d91e424](https://github.com/synapsecns/sanguine/commit/d91e4242de605ba2217f6c33513a12ec59a6c7e3))
+
+
+
+
+
+# [0.43.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.42.7...@synapsecns/synapse-interface@0.43.0) (2025-03-11)
+
+
+### Features
+
+* SDK new chains [SYN-45] ([#3535](https://github.com/synapsecns/sanguine/issues/3535)) ([6e956a3](https://github.com/synapsecns/sanguine/commit/6e956a335981235aa12bd6512b524f22ccee7ca0)), closes [#3537](https://github.com/synapsecns/sanguine/issues/3537)
+
+
+
+
+
+## [0.42.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.42.6...@synapsecns/synapse-interface@0.42.7) (2025-03-10)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.42.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.42.5...@synapsecns/synapse-interface@0.42.6) (2025-03-07)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.42.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.42.4...@synapsecns/synapse-interface@0.42.5) (2025-03-05)
+
+
+### Bug Fixes
+
+* **synapse-interface:** two step approvals [SYN-62] ([#3562](https://github.com/synapsecns/sanguine/issues/3562)) ([2f7ccb2](https://github.com/synapsecns/sanguine/commit/2f7ccb28fe83020ece156340f3f68a954e83fa30))
+
+
+
+
+
+## [0.42.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.42.3...@synapsecns/synapse-interface@0.42.4) (2025-03-02)
+
+
+### Bug Fixes
+
+* **synapse-interface:** unpause Klaytn chain ([#3550](https://github.com/synapsecns/sanguine/issues/3550)) ([ea18e3f](https://github.com/synapsecns/sanguine/commit/ea18e3f26dd85f7226a7ccd36f1de7b3ef89e442))
+
+
+
+
+
+## [0.42.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.42.2...@synapsecns/synapse-interface@0.42.3) (2025-03-01)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.42.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.42.1...@synapsecns/synapse-interface@0.42.2) (2025-03-01)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.42.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.42.0...@synapsecns/synapse-interface@0.42.1) (2025-02-28)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.42.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.41.9...@synapsecns/synapse-interface@0.42.0) (2025-02-27)
+
+
+### Features
+
+* **sdk-router:** Gas.zip module [SYN-37] ([#3528](https://github.com/synapsecns/sanguine/issues/3528)) ([34db356](https://github.com/synapsecns/sanguine/commit/34db35698e6a8c4b2693a3b23de31e46d3b37116))
+
+
+
+
+
+## [0.41.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.41.8...@synapsecns/synapse-interface@0.41.9) (2025-02-25)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.41.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.41.7...@synapsecns/synapse-interface@0.41.8) (2025-02-21)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface

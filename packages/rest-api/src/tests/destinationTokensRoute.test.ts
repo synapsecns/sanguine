@@ -4,6 +4,7 @@ import express from 'express'
 import destinationTokensRoute from '../routes/destinationTokensRoute'
 import { NativeGasAddress, ZeroAddress } from '../constants'
 import { ONEETH, USDC, USDT } from '../constants/bridgeable'
+import { UNSUPPORTED_CHAIN } from './testConstants'
 
 const app = express()
 app.use('/destinationTokens', destinationTokensRoute)
@@ -61,7 +62,7 @@ describe('destinatonTokens Route', () => {
 
     expect(response.status).toBe(200)
     expect(Array.isArray(response.body)).toBe(true)
-    expect(response.body.length).toBe(6)
+    expect(response.body.length).toBe(9)
     expect(response.body[0]).toHaveProperty('symbol')
     expect(response.body[0]).toHaveProperty('address')
     expect(response.body[0]).toHaveProperty('chainId')
@@ -94,7 +95,7 @@ describe('destinatonTokens Route', () => {
 
   it('should return 400 for unsupported fromChain', async () => {
     const response = await request(app).get('/destinationTokens').query({
-      fromChain: '999',
+      fromChain: UNSUPPORTED_CHAIN,
       fromToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
     })
 
