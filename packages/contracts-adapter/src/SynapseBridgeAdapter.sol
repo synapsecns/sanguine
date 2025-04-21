@@ -5,9 +5,10 @@ import {ISynapseBridgeAdapter} from "./interfaces/ISynapseBridgeAdapter.sol";
 import {ISynapseBridgeAdapterErrors} from "./interfaces/ISynapseBridgeAdapterErrors.sol";
 import {ReadableSymbol} from "./libs/ReadableSymbol.sol";
 
+import {OApp, Origin} from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract SynapseBridgeAdapter is Ownable, ISynapseBridgeAdapter, ISynapseBridgeAdapterErrors {
+contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdapterErrors {
     struct TokenAddress {
         TokenType tokenType;
         address token;
@@ -26,7 +27,7 @@ contract SynapseBridgeAdapter is Ownable, ISynapseBridgeAdapter, ISynapseBridgeA
     event BridgeSet(address bridge);
     event TokenAdded(address token, TokenType tokenType, bytes31 symbol);
 
-    constructor(address owner) Ownable(owner) {}
+    constructor(address endpoint_, address owner_) OApp(endpoint_, owner_) Ownable(owner_) {}
 
     // ════════════════════════════════════════════════ MANAGEMENT ═════════════════════════════════════════════════════
 
@@ -102,5 +103,22 @@ contract SynapseBridgeAdapter is Ownable, ISynapseBridgeAdapter, ISynapseBridgeA
         tokenType = _addressBySymbol[symbol].tokenType;
         token = _addressBySymbol[symbol].token;
         if (token == address(0)) revert SBA__SymbolUnknown(symbol);
+    }
+
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
+
+    /// @dev Handles the received message from origin's Adapter counterpart.
+    /// All validation checks for integrity of the message have been performed at this point.
+    function _lzReceive(
+        Origin calldata _origin,
+        bytes32 _guid,
+        bytes calldata _message,
+        address _executor,
+        bytes calldata _extraData
+    )
+        internal
+        override
+    {
+        // TODO: implement
     }
 }

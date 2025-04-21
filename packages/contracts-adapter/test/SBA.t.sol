@@ -5,23 +5,31 @@ import {SynapseBridgeAdapter} from "../src/SynapseBridgeAdapter.sol";
 import {ISynapseBridgeAdapter} from "../src/interfaces/ISynapseBridgeAdapter.sol";
 import {ISynapseBridgeAdapterErrors} from "../src/interfaces/ISynapseBridgeAdapterErrors.sol";
 
+import {EndpointMock} from "./mocks/EndpointMock.sol";
+
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Test} from "forge-std/Test.sol";
 
 // solhint-disable no-empty-blocks
 abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors {
     SynapseBridgeAdapter internal adapter;
+    address internal endpoint;
 
     event BridgeSet(address bridge);
     event TokenAdded(address token, ISynapseBridgeAdapter.TokenType tokenType, bytes31 symbol);
 
     function setUp() public virtual {
+        endpoint = deployEndpoint();
         adapter = deployAdapter();
         configureAdapter();
     }
 
     function deployAdapter() internal virtual returns (SynapseBridgeAdapter);
     function configureAdapter() internal virtual {}
+
+    function deployEndpoint() internal virtual returns (address) {
+        return address(new EndpointMock());
+    }
 
     function expectEventBridgeSet(address bridge) internal {
         vm.expectEmit(address(adapter));

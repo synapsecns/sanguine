@@ -15,7 +15,7 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
     string internal readableSymbol = "SYMBOL";
 
     function deployAdapter() internal virtual override returns (SynapseBridgeAdapter) {
-        return new SynapseBridgeAdapter(owner);
+        return new SynapseBridgeAdapter(endpoint, owner);
     }
 
     function checkTokenAdded(
@@ -47,6 +47,11 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
         (adapterTokenType, adapterToken) = adapter.getAddressByReadableSymbol(readableSymbol_);
         assertEq(uint8(adapterTokenType), uint8(tokenType_));
         assertEq(adapterToken, token_);
+    }
+
+    function test_constructor() public view {
+        assertEq(address(adapter.endpoint()), endpoint);
+        assertEq(adapter.owner(), owner);
     }
 
     // ═════════════════════════════════════════════════ ADD TOKEN ═════════════════════════════════════════════════════

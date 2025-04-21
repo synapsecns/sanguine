@@ -8,7 +8,11 @@
     "src/**/*.sol"
   ],
   "dependencies": {
-    "@openzeppelin/contracts": "5.0.1"
+    "@layerzerolabs/lz-evm-messagelib-v2": "3.0.88",
+    "@layerzerolabs/lz-evm-protocol-v2": "3.0.88",
+    "@layerzerolabs/oapp-evm": "0.3.2",
+    "@openzeppelin/contracts": "5.0.1",
+    "solidity-bytes-utils": "0.8.3"
   },
   "devDependencies": {
     "@synapsecns/solidity-devops": "^0.4.8",
