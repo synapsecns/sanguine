@@ -257,4 +257,38 @@ contract SynapseBridgeAdapterOriginTest is SynapseBridgeAdapterTest {
         vm.prank({msgSender: user, txOrigin: user});
         adapter.bridgeERC20{value: nativeFee}(DST_EID, recipient, address(token), amount, MIN_GAS_LIMIT - 1);
     }
+
+    // ══════════════════════════════════════════════ GET NATIVE FEE ═══════════════════════════════════════════════════
+
+    function test_getNativeFee() public {
+        bytes memory mockMessage = bridgeMessageLib.encodeBridgeMessage(address(0), 0, 0);
+        vm.mockCall({
+            callee: endpoint,
+            data: abi.encodeCall(
+                ILayerZeroEndpointV2.quote,
+                (
+                    MessagingParams({
+                        dstEid: DST_EID,
+                        receiver: DEST_ADAPTER,
+                        message: mockMessage,
+                        options: expectedOptions,
+                        payInLzToken: false
+                    }),
+                    address(adapter)
+                )
+            ),
+            returnData: abi.encode(MessagingFee({nativeFee: nativeFee, lzTokenFee: 0}))
+        });
+        assertEq(adapter.getNativeFee(DST_EID, gasLimit), nativeFee);
+    }
+
+    function test_getNativeFee_revert_eidUnknown() public {
+        vm.expectRevert();
+        adapter.getNativeFee(UNKNOWN_EID, gasLimit);
+    }
+
+    function test_getNativeFee_revert_gasLimitBelowMinimum() public {
+        vm.expectRevert();
+        adapter.getNativeFee(DST_EID, MIN_GAS_LIMIT - 1);
+    }
 }

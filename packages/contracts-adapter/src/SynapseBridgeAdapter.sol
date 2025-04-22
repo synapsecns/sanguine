@@ -101,7 +101,15 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
 
     /// @inheritdoc ISynapseBridgeAdapter
     function getNativeFee(uint32 dstEid, uint64 gasLimit) external view returns (uint256 nativeFee) {
-        // TODO: implement
+        if (gasLimit < MIN_GAS_LIMIT) revert SBA__GasLimitBelowMinimum();
+        // Since all the messages have the same length, we can use arbitrary data for fee estimation
+        bytes memory message = BridgeMessage.encodeBridgeMessage(address(0), 0, 0);
+        return _quote({
+            _dstEid: dstEid,
+            _message: message,
+            _options: OptionsBuilder.newOptions().addExecutorLzReceiveOption({_gas: gasLimit, _value: 0}),
+            _payInLzToken: false
+        }).nativeFee;
     }
 
     /// @inheritdoc ISynapseBridgeAdapter
