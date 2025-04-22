@@ -1,14 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
+import {IBurnableToken} from "./interfaces/IBurnableToken.sol";
 import {ISynapseBridgeAdapter} from "./interfaces/ISynapseBridgeAdapter.sol";
 import {ISynapseBridgeAdapterErrors} from "./interfaces/ISynapseBridgeAdapterErrors.sol";
+import {BridgeMessage} from "./libs/BridgeMessage.sol";
 import {ReadableSymbol} from "./libs/ReadableSymbol.sol";
 
-import {OApp, Origin} from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
+import {MessagingFee, OApp, Origin} from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
+import {OptionsBuilder} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdapterErrors {
+    using OptionsBuilder for bytes;
+    using SafeERC20 for IERC20;
+
     struct TokenAddress {
         TokenType tokenType;
         address token;
@@ -18,6 +25,8 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
         TokenType tokenType;
         bytes31 symbol;
     }
+
+    uint64 public constant MIN_GAS_LIMIT = 100_000;
 
     address public bridge;
 
@@ -60,7 +69,30 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
 
     /// @inheritdoc ISynapseBridgeAdapter
     function bridgeERC20(uint32 dstEid, address to, address token, uint256 amount, uint64 gasLimit) external payable {
-        // TODO: implement
+        // Verify the parameters
+        if (to == address(0)) revert SBA__ZeroAddress();
+        if (amount == 0) revert SBA__ZeroAmount();
+        if (gasLimit < MIN_GAS_LIMIT) revert SBA__GasLimitBelowMinimum();
+        // Cache bridge address
+        address cachedBridge = bridge;
+        if (cachedBridge == address(0)) revert SBA__BridgeNotSet();
+        // Cache token type and symbol
+        (TokenType tokenType, bytes31 symbol) = getSymbolByAddress(token);
+        // Burn tokens from sender or deposit them into the bridge as prerequisite
+        if (tokenType == TokenType.MintBurn) {
+            IBurnableToken(token).burnFrom(msg.sender, amount);
+        } else {
+            IERC20(token).transferFrom(msg.sender, cachedBridge, amount);
+        }
+        // Send the bridge message
+        _lzSend({
+            _dstEid: dstEid,
+            _message: BridgeMessage.encodeBridgeMessage(to, symbol, amount),
+            _options: OptionsBuilder.newOptions().addExecutorLzReceiveOption({_gas: gasLimit, _value: 0}),
+            _fee: MessagingFee({nativeFee: msg.value, lzTokenFee: 0}),
+            _refundAddress: msg.sender
+        });
+        // TODO: emit event with details
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
