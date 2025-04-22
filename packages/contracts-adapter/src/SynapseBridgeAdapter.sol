@@ -35,6 +35,8 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
 
     event BridgeSet(address bridge);
     event TokenAdded(address token, TokenType tokenType, bytes31 symbol);
+    event TokenSent(uint32 indexed dstEid, address indexed to, address indexed token, uint256 amount, bytes32 guid);
+    event TokenReceived(uint32 indexed srcEid, address indexed to, address indexed token, uint256 amount, bytes32 guid);
 
     constructor(address endpoint_, address owner_) OApp(endpoint_, owner_) Ownable(owner_) {}
 
@@ -85,14 +87,14 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
             IERC20(token).transferFrom(msg.sender, cachedBridge, amount);
         }
         // Send the bridge message
-        _lzSend({
+        bytes32 guid = _lzSend({
             _dstEid: dstEid,
             _message: BridgeMessage.encodeBridgeMessage(to, symbol, amount),
             _options: OptionsBuilder.newOptions().addExecutorLzReceiveOption({_gas: gasLimit, _value: 0}),
             _fee: MessagingFee({nativeFee: msg.value, lzTokenFee: 0}),
             _refundAddress: msg.sender
-        });
-        // TODO: emit event with details
+        }).guid;
+        emit TokenSent(dstEid, to, token, amount, guid);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════

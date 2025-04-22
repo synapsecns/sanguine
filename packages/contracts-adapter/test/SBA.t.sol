@@ -17,6 +17,7 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
     uint32 internal constant DST_EID = 2;
     uint32 internal constant UNKNOWN_EID = 3;
     bytes32 internal constant DEST_ADAPTER = keccak256("Dest Adapter");
+    bytes32 internal constant MOCK_GUID = keccak256("mockGuid");
 
     SynapseBridgeAdapter internal adapter;
     address internal endpoint;
@@ -25,6 +26,8 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
 
     event BridgeSet(address bridge);
     event TokenAdded(address token, ISynapseBridgeAdapter.TokenType tokenType, bytes31 symbol);
+    event TokenSent(uint32 indexed dstEid, address indexed to, address indexed token, uint256 amount, bytes32 guid);
+    event TokenReceived(uint32 indexed srcEid, address indexed to, address indexed token, uint256 amount, bytes32 guid);
 
     function setUp() public virtual {
         endpoint = deployEndpoint();
@@ -48,6 +51,24 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
     function expectEventTokenAdded(address token, ISynapseBridgeAdapter.TokenType tokenType, bytes31 symbol) internal {
         vm.expectEmit(address(adapter));
         emit TokenAdded(token, tokenType, symbol);
+    }
+
+    function expectEventTokenSent(uint32 dstEid, address to, address token, uint256 amount, bytes32 guid) internal {
+        vm.expectEmit(address(adapter));
+        emit TokenSent(dstEid, to, token, amount, guid);
+    }
+
+    function expectEventTokenReceived(
+        uint32 srcEid,
+        address to,
+        address token,
+        uint256 amount,
+        bytes32 guid
+    )
+        internal
+    {
+        vm.expectEmit(address(adapter));
+        emit TokenReceived(srcEid, to, token, amount, guid);
     }
 
     function expectRevertCallerNotOwner(address caller) internal {

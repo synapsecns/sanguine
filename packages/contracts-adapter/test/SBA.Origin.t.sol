@@ -8,7 +8,9 @@ import {ERC20, TestToken} from "./mocks/TestToken.sol";
 
 import {
     ILayerZeroEndpointV2,
-    MessagingParams
+    MessagingFee,
+    MessagingParams,
+    MessagingReceipt
 } from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
 
 // solhint-disable check-send-result, func-name-mixedcase, ordering
@@ -58,6 +60,8 @@ contract SynapseBridgeAdapterOriginTest is SynapseBridgeAdapterTest {
         token.approve(address(adapter), type(uint256).max);
 
         expectedBridgeMessage = bridgeMessageLib.encodeBridgeMessage(recipient, symbol, amount);
+
+        mockSendReceipt();
     }
 
     function deployAdapter() internal virtual override returns (SynapseBridgeAdapter) {
@@ -67,6 +71,16 @@ contract SynapseBridgeAdapterOriginTest is SynapseBridgeAdapterTest {
     function userBridgesToken() internal {
         vm.prank({msgSender: user, txOrigin: user});
         adapter.bridgeERC20{value: nativeFee}(DST_EID, recipient, address(token), amount, gasLimit);
+    }
+
+    function mockSendReceipt() internal {
+        vm.mockCall({
+            callee: endpoint,
+            data: abi.encodeWithSelector(ILayerZeroEndpointV2.send.selector),
+            returnData: abi.encode(
+                MessagingReceipt({guid: MOCK_GUID, nonce: 1, fee: MessagingFee({nativeFee: nativeFee, lzTokenFee: 0})})
+            )
+        });
     }
 
     // ═══════════════════════════════════════════ TEST: MINT-BURN TOKEN ═══════════════════════════════════════════════
@@ -93,6 +107,8 @@ contract SynapseBridgeAdapterOriginTest is SynapseBridgeAdapterTest {
                 )
             )
         });
+        // Expected event
+        expectEventTokenSent(DST_EID, recipient, address(token), amount, MOCK_GUID);
         userBridgesToken();
         // Check token balances
         assertEq(token.balanceOf(address(user)), initialBalance - amount);
@@ -180,6 +196,8 @@ contract SynapseBridgeAdapterOriginTest is SynapseBridgeAdapterTest {
                 )
             )
         });
+        // Expected event
+        expectEventTokenSent(DST_EID, recipient, address(token), amount, MOCK_GUID);
         userBridgesToken();
         // Check token balances
         assertEq(token.balanceOf(address(user)), initialBalance - amount);
