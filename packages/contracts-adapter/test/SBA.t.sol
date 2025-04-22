@@ -5,6 +5,7 @@ import {SynapseBridgeAdapter} from "../src/SynapseBridgeAdapter.sol";
 import {ISynapseBridgeAdapter} from "../src/interfaces/ISynapseBridgeAdapter.sol";
 import {ISynapseBridgeAdapterErrors} from "../src/interfaces/ISynapseBridgeAdapterErrors.sol";
 
+import {BridgeMessageHarness} from "./harnesses/BridgeMessageHarness.sol";
 import {EndpointMock} from "./mocks/EndpointMock.sol";
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -12,8 +13,15 @@ import {Test} from "forge-std/Test.sol";
 
 // solhint-disable no-empty-blocks
 abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors {
+    uint32 internal constant ORIGIN_EID = 1;
+    uint32 internal constant DST_EID = 2;
+    uint32 internal constant UNKNOWN_EID = 3;
+    bytes32 internal constant DEST_ADAPTER = keccak256("Dest Adapter");
+
     SynapseBridgeAdapter internal adapter;
     address internal endpoint;
+
+    BridgeMessageHarness internal bridgeMessageLib;
 
     event BridgeSet(address bridge);
     event TokenAdded(address token, ISynapseBridgeAdapter.TokenType tokenType, bytes31 symbol);
@@ -21,11 +29,12 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
     function setUp() public virtual {
         endpoint = deployEndpoint();
         adapter = deployAdapter();
-        configureAdapter();
+        bridgeMessageLib = new BridgeMessageHarness();
+        afterAdapterDeployed();
     }
 
     function deployAdapter() internal virtual returns (SynapseBridgeAdapter);
-    function configureAdapter() internal virtual {}
+    function afterAdapterDeployed() internal virtual {}
 
     function deployEndpoint() internal virtual returns (address) {
         return address(new EndpointMock());
@@ -51,6 +60,10 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
 
     function expectRevertBridgeNotSet() internal {
         vm.expectRevert(SBA__BridgeNotSet.selector);
+    }
+
+    function expectRevertGasLimitBelowMinimum() internal {
+        vm.expectRevert(SBA__GasLimitBelowMinimum.selector);
     }
 
     function expectRevertRecipientZeroAddress() internal {
