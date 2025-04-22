@@ -2,6 +2,7 @@
   "extends": "solhint:recommended",
   "rules": {
     "code-complexity": ["error"],
+    "compiler-version": "off",
     "func-name-mixedcase": "error",
     "func-visibility": ["error", { "ignoreConstructors": true }],
     "gas-custom-errors": "off",
