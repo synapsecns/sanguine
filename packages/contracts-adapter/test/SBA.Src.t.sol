@@ -15,8 +15,6 @@ import {
 
 // solhint-disable check-send-result, func-name-mixedcase, ordering
 contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
-    uint64 internal constant MIN_GAS_LIMIT = 200_000;
-
     address internal bridge;
     TestToken internal token;
 
@@ -27,6 +25,7 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     uint256 internal amount = 0.123456 ether;
     uint64 internal gasLimit = 234_567;
     uint256 internal nativeFee = 123_456_789 wei;
+    uint64 internal minGasLimit;
 
     // Based on https://docs.layerzero.network/v2/developers/evm/oapp/overview#message-execution-options
     // Replacing 60_000 with 234_567
@@ -51,6 +50,7 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
 
     function afterAdapterDeployed() internal virtual override {
         adapter.setPeer(DST_EID, REMOTE_ADAPTER);
+        minGasLimit = adapter.MIN_GAS_LIMIT();
 
         bridge = address(new SynapseBridgeMock());
         token = new TestToken();
@@ -166,7 +166,7 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     function test_bridge_mintBurn_revert_gasLimitBelowMinimum() public withBridgeSet withMintTokenAdded {
         expectRevertGasLimitBelowMinimum();
         vm.prank({msgSender: user, txOrigin: user});
-        adapter.bridgeERC20{value: nativeFee}(DST_EID, recipient, address(token), amount, MIN_GAS_LIMIT - 1);
+        adapter.bridgeERC20{value: nativeFee}(DST_EID, recipient, address(token), amount, minGasLimit - 1);
     }
 
     // ═══════════════════════════════════════ TEST: WITHDRAW-DEPOSIT TOKEN ════════════════════════════════════════════
@@ -255,7 +255,7 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     function test_bridge_withdrawDeposit_revert_gasLimitBelowMinimum() public withBridgeSet withWithdrawTokenAdded {
         expectRevertGasLimitBelowMinimum();
         vm.prank({msgSender: user, txOrigin: user});
-        adapter.bridgeERC20{value: nativeFee}(DST_EID, recipient, address(token), amount, MIN_GAS_LIMIT - 1);
+        adapter.bridgeERC20{value: nativeFee}(DST_EID, recipient, address(token), amount, minGasLimit - 1);
     }
 
     // ══════════════════════════════════════════════ GET NATIVE FEE ═══════════════════════════════════════════════════
@@ -289,6 +289,6 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
 
     function test_getNativeFee_revert_gasLimitBelowMinimum() public {
         vm.expectRevert();
-        adapter.getNativeFee(DST_EID, MIN_GAS_LIMIT - 1);
+        adapter.getNativeFee(DST_EID, minGasLimit - 1);
     }
 }

@@ -34,7 +34,7 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
         // Check symbol by address
         (adapterTokenType, adapterSymbol) = adapter.getSymbolByAddress(token_);
         assertEq(uint8(adapterTokenType), uint8(tokenType_));
-        assertEq(symbol_, symbol);
+        assertEq(adapterSymbol, symbol_);
         // Check address by symbol
         (adapterTokenType, adapterToken) = adapter.getAddressBySymbol(symbol_);
         assertEq(uint8(adapterTokenType), uint8(tokenType_));
@@ -42,7 +42,7 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
         // Check readable symbol by address
         (adapterTokenType, adapterReadableSymbol) = adapter.getReadableSymbolByAddress(token_);
         assertEq(uint8(adapterTokenType), uint8(tokenType_));
-        assertEq(readableSymbol_, readableSymbol);
+        assertEq(adapterReadableSymbol, readableSymbol_);
         // Check address by readable symbol
         (adapterTokenType, adapterToken) = adapter.getAddressByReadableSymbol(readableSymbol_);
         assertEq(uint8(adapterTokenType), uint8(tokenType_));
@@ -52,6 +52,8 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
     function test_constructor() public view {
         assertEq(address(adapter.endpoint()), endpoint);
         assertEq(adapter.owner(), owner);
+        assertEq(adapter.bridge(), address(0));
+        assertEq(adapter.MIN_GAS_LIMIT(), 200_000);
     }
 
     // ═════════════════════════════════════════════════ ADD TOKEN ═════════════════════════════════════════════════════
