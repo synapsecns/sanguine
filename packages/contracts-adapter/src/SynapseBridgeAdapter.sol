@@ -85,7 +85,7 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
         if (tokenType == TokenType.MintBurn) {
             IBurnableToken(token).burnFrom(msg.sender, amount);
         } else {
-            IERC20(token).transferFrom(msg.sender, cachedBridge, amount);
+            IERC20(token).safeTransferFrom(msg.sender, cachedBridge, amount);
         }
         // Send the bridge message
         bytes32 guid = _lzSend({
