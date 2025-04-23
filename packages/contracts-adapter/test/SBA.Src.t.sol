@@ -130,6 +130,7 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     function test_bridge_mintBurn_revert_tokenNotApproved() public withBridgeSet withMintTokenAdded {
         vm.prank(user);
         token.approve(address(adapter), 0);
+        // Note: we expect a revert from the token contract, so 
         vm.expectRevert();
         userBridgesToken();
     }
@@ -308,7 +309,7 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     }
 
     function test_getNativeFee_revert_gasLimitBelowMinimum() public {
-        vm.expectRevert();
+        expectRevertGasLimitBelowMinimum();
         adapter.getNativeFee(DST_EID, minGasLimit - 1);
     }
 }
