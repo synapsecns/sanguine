@@ -4,15 +4,9 @@ pragma solidity 0.8.24;
 import {ISynapseBridgeAdapter, SynapseBridgeAdapter, SynapseBridgeAdapterTest} from "./SBA.t.sol";
 
 import {SynapseBridgeMock} from "./mocks/SynapseBridgeMock.sol";
-import {ERC20, TestToken} from "./mocks/TestToken.sol";
+import {TestToken} from "./mocks/TestToken.sol";
 
-import {
-    ILayerZeroEndpointV2,
-    MessagingFee,
-    MessagingParams,
-    MessagingReceipt,
-    Origin
-} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
+import {Origin} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
 
 // solhint-disable func-name-mixedcase, ordering
 contract SynapseBridgeAdapterDstTest is SynapseBridgeAdapterTest {
