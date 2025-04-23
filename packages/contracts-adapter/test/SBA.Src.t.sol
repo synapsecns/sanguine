@@ -117,7 +117,17 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
         assertEq(token.totalSupply(), initialBalance - amount);
     }
 
-    function test_bridge_mintBurn_tokenNotApproved() public withBridgeSet withMintTokenAdded {
+    function test_bridge_mintBurn_gasLimitExactlyMinimum() public withBridgeSet withMintTokenAdded {
+        gasLimit = minGasLimit;
+        userBridgesToken();
+        // Check token balances
+        assertEq(token.balanceOf(address(user)), initialBalance - amount);
+        assertEq(token.balanceOf(address(adapter)), 0);
+        assertEq(token.balanceOf(address(bridge)), 0);
+        assertEq(token.totalSupply(), initialBalance - amount);
+    }
+
+    function test_bridge_mintBurn_revert_tokenNotApproved() public withBridgeSet withMintTokenAdded {
         vm.prank(user);
         token.approve(address(adapter), 0);
         vm.expectRevert();
@@ -206,7 +216,17 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
         assertEq(token.totalSupply(), initialBalance);
     }
 
-    function test_bridge_withdrawDeposit_tokenNotApproved() public withBridgeSet withWithdrawTokenAdded {
+    function test_bridge_withdrawDeposit_gasLimitExactlyMinimum() public withBridgeSet withWithdrawTokenAdded {
+        gasLimit = minGasLimit;
+        userBridgesToken();
+        // Check token balances
+        assertEq(token.balanceOf(address(user)), initialBalance - amount);
+        assertEq(token.balanceOf(address(adapter)), 0);
+        assertEq(token.balanceOf(address(bridge)), amount);
+        assertEq(token.totalSupply(), initialBalance);
+    }
+
+    function test_bridge_withdrawDeposit_revert_tokenNotApproved() public withBridgeSet withWithdrawTokenAdded {
         vm.prank(user);
         token.approve(address(adapter), 0);
         vm.expectRevert();
