@@ -27,7 +27,7 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
         bytes31 symbol;
     }
 
-    uint64 public constant MIN_GAS_LIMIT = 100_000;
+    uint64 public constant MIN_GAS_LIMIT = 200_000;
 
     address public bridge;
 

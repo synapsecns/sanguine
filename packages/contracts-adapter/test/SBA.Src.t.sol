@@ -15,7 +15,7 @@ import {
 
 // solhint-disable check-send-result, func-name-mixedcase, ordering
 contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
-    uint64 internal constant MIN_GAS_LIMIT = 100_000;
+    uint64 internal constant MIN_GAS_LIMIT = 200_000;
 
     address internal bridge;
     TestToken internal token;
@@ -25,12 +25,12 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     bytes31 internal symbol = "SYMBOL";
     uint256 internal initialBalance = 1 ether;
     uint256 internal amount = 0.123456 ether;
-    uint64 internal gasLimit = 123_321;
+    uint64 internal gasLimit = 234_567;
     uint256 internal nativeFee = 123_456_789 wei;
 
     // Based on https://docs.layerzero.network/v2/developers/evm/oapp/overview#message-execution-options
-    // Replacing 60_000 with 123_321
-    bytes internal expectedOptions = hex"0003010011010000000000000000000000000001e1b9";
+    // Replacing 60_000 with 234_567
+    bytes internal expectedOptions = hex"00030100110100000000000000000000000000039447";
 
     bytes internal expectedBridgeMessage;
 
