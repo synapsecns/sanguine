@@ -14,7 +14,7 @@ import {
 } from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
 
 // solhint-disable check-send-result, func-name-mixedcase, ordering
-contract SynapseBridgeAdapterOriginTest is SynapseBridgeAdapterTest {
+contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     uint64 internal constant MIN_GAS_LIMIT = 100_000;
 
     address internal bridge;
@@ -50,7 +50,7 @@ contract SynapseBridgeAdapterOriginTest is SynapseBridgeAdapterTest {
     }
 
     function afterAdapterDeployed() internal virtual override {
-        adapter.setPeer(DST_EID, DEST_ADAPTER);
+        adapter.setPeer(DST_EID, REMOTE_ADAPTER);
 
         bridge = address(new SynapseBridgeMock());
         token = new TestToken();
@@ -97,7 +97,7 @@ contract SynapseBridgeAdapterOriginTest is SynapseBridgeAdapterTest {
                 (
                     MessagingParams({
                         dstEid: DST_EID,
-                        receiver: DEST_ADAPTER,
+                        receiver: REMOTE_ADAPTER,
                         message: expectedBridgeMessage,
                         options: expectedOptions,
                         payInLzToken: false
@@ -186,7 +186,7 @@ contract SynapseBridgeAdapterOriginTest is SynapseBridgeAdapterTest {
                 (
                     MessagingParams({
                         dstEid: DST_EID,
-                        receiver: DEST_ADAPTER,
+                        receiver: REMOTE_ADAPTER,
                         message: expectedBridgeMessage,
                         options: expectedOptions,
                         payInLzToken: false
@@ -269,7 +269,7 @@ contract SynapseBridgeAdapterOriginTest is SynapseBridgeAdapterTest {
                 (
                     MessagingParams({
                         dstEid: DST_EID,
-                        receiver: DEST_ADAPTER,
+                        receiver: REMOTE_ADAPTER,
                         message: mockMessage,
                         options: expectedOptions,
                         payInLzToken: false

@@ -13,10 +13,10 @@ import {Test} from "forge-std/Test.sol";
 
 // solhint-disable no-empty-blocks
 abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors {
-    uint32 internal constant ORIGIN_EID = 1;
+    uint32 internal constant SRC_EID = 1;
     uint32 internal constant DST_EID = 2;
     uint32 internal constant UNKNOWN_EID = 3;
-    bytes32 internal constant DEST_ADAPTER = keccak256("Dest Adapter");
+    bytes32 internal constant REMOTE_ADAPTER = keccak256("Dest Adapter");
     bytes32 internal constant MOCK_GUID = keccak256("mockGuid");
 
     SynapseBridgeAdapter internal adapter;
