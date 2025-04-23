@@ -32,6 +32,7 @@ import {
   TEN_MINUTES,
   isSameAddress,
   logger,
+  logExecutionTime,
 } from '../utils'
 import { getAllQuotes } from './api'
 import { FastBridgeQuote, applyQuote } from './quote'
@@ -104,6 +105,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     return Zero
   }
 
+  @logExecutionTime()
   public async getBridgeTokenCandidates({
     fromChainId,
     toChainId,
@@ -126,6 +128,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     }))
   }
 
+  @logExecutionTime()
   public async getBridgeRouteV2({
     originSwapRoute,
     bridgeToken,
@@ -194,6 +197,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   /**
    * @inheritdoc SynapseModuleSet.getBridgeRoutes
    */
+  @logExecutionTime()
   public async getBridgeRoutes(
     originChainId: number,
     destChainId: number,

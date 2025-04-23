@@ -10,7 +10,7 @@ import {
   BridgeTokenCandidate,
   FeeConfig,
 } from './types'
-import { applyOptionalDeadline } from '../utils'
+import { applyOptionalDeadline, logExecutionTime } from '../utils'
 import { Query } from './query'
 import { Slippage, SwapEngineRoute } from '../swap'
 import { BridgeQuote, BridgeQuoteV2 } from '../types'
@@ -300,6 +300,7 @@ export abstract class SynapseModuleSet {
     }
   }
 
+  @logExecutionTime()
   async finalizeBridgeQuoteV2(
     bridgeToken: BridgeTokenCandidate,
     bridgeQuote: BridgeQuoteV2

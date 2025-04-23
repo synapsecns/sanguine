@@ -21,7 +21,7 @@ import {
   SwapEngineQuote,
   SwapEngineRoute,
 } from './models'
-import { Prettify, TokenMetadataFetcher } from '../utils'
+import { logExecutionTime, Prettify, TokenMetadataFetcher } from '../utils'
 
 export enum EngineTimeout {
   Short = 1000,
@@ -69,6 +69,7 @@ export class SwapEngineSet {
     })
   }
 
+  @logExecutionTime()
   public async getBestQuote(
     input: RouteInput,
     options: QuoteOptions
@@ -97,6 +98,7 @@ export class SwapEngineSet {
     return quote.expectedToAmount.gt(Zero) ? quote : undefined
   }
 
+  @logExecutionTime()
   public async generateRoute(
     input: RouteInput,
     quote: SwapEngineQuote,

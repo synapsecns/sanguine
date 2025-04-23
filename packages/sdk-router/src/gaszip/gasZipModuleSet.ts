@@ -23,6 +23,7 @@ import {
   ETH_NATIVE_TOKEN_ADDRESS,
   isNativeToken,
   isSameAddress,
+  logExecutionTime,
 } from '../utils'
 
 const MEDIAN_TIME_GAS_ZIP = 30
@@ -78,6 +79,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
     return Zero
   }
 
+  @logExecutionTime()
   public async getBridgeTokenCandidates({
     fromChainId,
     toChainId,
@@ -105,6 +107,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
     ]
   }
 
+  @logExecutionTime()
   public async getBridgeRouteV2({
     originSwapRoute,
     bridgeToken,
@@ -157,6 +160,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
   /**
    * @inheritdoc SynapseModuleSet.getBridgeRoutes
    */
+  @logExecutionTime()
   public async getBridgeRoutes(
     originChainId: number,
     destChainId: number,
