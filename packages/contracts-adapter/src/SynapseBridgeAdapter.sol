@@ -2,6 +2,7 @@
 pragma solidity 0.8.24;
 
 import {IBurnableToken} from "./interfaces/IBurnableToken.sol";
+import {ISynapseBridge} from "./interfaces/ISynapseBridge.sol";
 import {ISynapseBridgeAdapter} from "./interfaces/ISynapseBridgeAdapter.sol";
 import {ISynapseBridgeAdapterErrors} from "./interfaces/ISynapseBridgeAdapterErrors.sol";
 import {BridgeMessage} from "./libs/BridgeMessage.sol";
@@ -78,7 +79,7 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
         // Cache bridge address
         address cachedBridge = bridge;
         if (cachedBridge == address(0)) revert SBA__BridgeNotSet();
-        // Cache token type and symbol
+        // Cache token type and symbol (note: this reverts if token is unknown)
         (TokenType tokenType, bytes31 symbol) = getSymbolByAddress(token);
         // Burn tokens from sender or deposit them into the bridge as prerequisite
         if (tokenType == TokenType.MintBurn) {
@@ -155,12 +156,29 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
         Origin calldata _origin,
         bytes32 _guid,
         bytes calldata _message,
-        address _executor,
-        bytes calldata _extraData
+        address, // _executor,
+        bytes calldata // _extraData
     )
         internal
         override
     {
-        // TODO: implement
+        (address to, bytes31 symbol, uint256 amount) = BridgeMessage.decodeBridgeMessage(_message);
+        // Cache guid to avoid stack too deep error
+        bytes32 guid = _guid;
+        // Cache bridge address
+        address cachedBridge = bridge;
+        if (cachedBridge == address(0)) revert SBA__BridgeNotSet();
+        // Cache token type and address (note: this reverts if symbol is unknown)
+        (TokenType tokenType, address token) = getAddressBySymbol(symbol);
+        // Mint or withdraw tokens from the bridge as the result of the message
+        // Note: the fees are set to 0 to enable 1:1 bridging
+        // Note: guid is used as "kappa" (which is SynapseBridge's own global unique identifier),
+        // clashes between two different systems are not possible due to being different keccak256 hashes.
+        if (tokenType == TokenType.MintBurn) {
+            ISynapseBridge(cachedBridge).mint(to, token, amount, 0, guid);
+        } else {
+            ISynapseBridge(cachedBridge).withdraw(to, token, amount, 0, guid);
+        }
+        emit TokenReceived(_origin.srcEid, to, token, amount, guid);
     }
 }
