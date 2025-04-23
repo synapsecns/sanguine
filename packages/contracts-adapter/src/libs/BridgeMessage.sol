@@ -11,7 +11,7 @@ library BridgeMessage {
         bytes31 symbol,
         uint256 amount
     )
-        public
+        internal
         pure
         returns (bytes memory)
     {
@@ -19,7 +19,7 @@ library BridgeMessage {
     }
 
     function decodeBridgeMessage(bytes calldata payload)
-        public
+        internal
         pure
         returns (address recipient, bytes31 symbol, uint256 amount)
     {
