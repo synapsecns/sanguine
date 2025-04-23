@@ -87,10 +87,6 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
         vm.expectRevert(SBA__GasLimitBelowMinimum.selector);
     }
 
-    function expectRevertRecipientZeroAddress() internal {
-        vm.expectRevert(SBA__RecipientZeroAddress.selector);
-    }
-
     function expectRevertSymbolAlreadyAdded(bytes31 symbol) internal {
         vm.expectRevert(abi.encodeWithSelector(SBA__SymbolAlreadyAdded.selector, symbol));
     }
