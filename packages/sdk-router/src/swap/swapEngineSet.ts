@@ -76,22 +76,6 @@ export class SwapEngineSet {
     input: RouteInput,
     options: QuoteOptions
   ): Promise<SwapEngineQuote | undefined> {
-    // Find the quote for each engine.
-    const allQuotes = await Promise.all(
-      Object.values(this.engines).map(async (engine) =>
-        this._getQuote(engine, input, options)
-      )
-    )
-    // Select the best quote.
-    const quote = allQuotes.reduce(compareQuotesWithPriority)
-    return quote.expectedToAmount.gt(Zero) ? quote : undefined
-  }
-
-  @logExecutionTime()
-  public async getFastestQuote(
-    input: RouteInput,
-    options: QuoteOptions
-  ): Promise<SwapEngineQuote | undefined> {
     const enginePromises = Object.values(this.engines).map((engine) => ({
       engine,
       quotePromise: this._getQuote(engine, input, options),
