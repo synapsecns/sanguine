@@ -117,7 +117,6 @@ export class SwapEngineSet {
     quote: SwapEngineQuote,
     options: RouteOptions
   ): Promise<SwapEngineRoute | undefined> {
-    // Use longer timeout for route generation by default.
     let route = await this._getEngine(quote.engineID).generateRoute(
       input,
       quote,
@@ -160,7 +159,6 @@ export class SwapEngineSet {
     input: RouteInput,
     options: QuoteOptions
   ): Promise<SwapEngineQuote> {
-    // Use shorter timeout for quote fetching by default.
     const quote = await engine.getQuote(
       input,
       options.timeout ?? ENGINE_TIMEOUT
@@ -170,7 +168,7 @@ export class SwapEngineSet {
 
   /**
    * Applies the engine filter to the engine promises and returns the first non-Zero quote.
-   * Returns a promise that never resolves if there is no non-Zero quote.
+   * Returns undefined if no non-Zero quote is found.
    */
   private async _getFastestQuote(
     quotePromises: Promise<SwapEngineQuote>[]
