@@ -13,6 +13,8 @@ import {
 } from './engines'
 import {
   compareQuotesWithPriority,
+  getEnginePriority,
+  Priority,
   RouteInput,
   sanitizeMultiStepQuote,
   sanitizeMultiStepRoute,
@@ -85,6 +87,35 @@ export class SwapEngineSet {
     return quote.expectedToAmount.gt(Zero) ? quote : undefined
   }
 
+  @logExecutionTime()
+  public async getFastestQuote(
+    input: RouteInput,
+    options: QuoteOptions
+  ): Promise<SwapEngineQuote | undefined> {
+    const enginePromises = Object.values(this.engines).map((engine) => ({
+      engine,
+      quotePromise: this._getQuote(engine, input, options),
+    }))
+    // Wait for the first non-Zero quote to resolve from engines with the highest priority (Normal).
+    const fastQuotePromise = await this._getFastestQuote(
+      enginePromises
+        .filter(
+          ({ engine }) =>
+            getEnginePriority(engine.id, input.chainId) === Priority.Normal
+        )
+        .map(({ quotePromise }) => quotePromise)
+    )
+    if (fastQuotePromise) {
+      return fastQuotePromise
+    }
+    // Use the best quote from all the engines as a fallback.
+    const allQuotes = await Promise.all(
+      enginePromises.map(({ quotePromise }) => quotePromise)
+    )
+    const quote = allQuotes.reduce(compareQuotesWithPriority)
+    return quote.expectedToAmount.gt(Zero) ? quote : undefined
+  }
+
   public async getQuote(
     engineID: number,
     input: RouteInput,
@@ -153,5 +184,28 @@ export class SwapEngineSet {
       options.timeout ?? EngineTimeout.Short
     )
     return options.allowMultiStep ? quote : sanitizeMultiStepQuote(quote)
+  }
+
+  /**
+   * Applies the engine filter to the engine promises and returns the first non-Zero quote.
+   * Returns a promise that never resolves if there is no non-Zero quote.
+   */
+  private async _getFastestQuote(
+    quotePromises: Promise<SwapEngineQuote>[]
+  ): Promise<SwapEngineQuote | undefined> {
+    try {
+      return Promise.any(
+        quotePromises.map(async (quotePromise) => {
+          const quote = await quotePromise
+          if (quote.expectedToAmount.gt(Zero)) {
+            return quote
+          }
+          throw new Error('Zero Quote')
+        })
+      )
+    } catch (e) {
+      // Promise.any throws when all promises reject, so none of the quotes are non-Zero.
+      return undefined
+    }
   }
 }
