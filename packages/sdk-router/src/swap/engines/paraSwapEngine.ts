@@ -12,7 +12,12 @@ import {
   logger,
   Prettify,
 } from '../../utils'
-import { EngineID, SlippageMax, toBasisPoints } from '../core'
+import {
+  EngineID,
+  SlippageMax,
+  toBasisPoints,
+  USER_SIMULATED_ADDRESS,
+} from '../core'
 import {
   getEmptyQuote,
   getEmptyRoute,
@@ -58,6 +63,8 @@ export type ParaSwapTransactionsRequest = {
   slippage: number
   userAddress: string
   isSurplusToUser?: boolean
+  takeSurplus?: boolean
+  partnerAddress?: string
 }
 
 export type ParaSwapTransactionsResponse = TransactionData
@@ -173,6 +180,9 @@ export class ParaSwapEngine implements SwapEngine {
         slippage: toBasisPoints(SlippageMax),
         userAddress: swapper,
         isSurplusToUser: true,
+        takeSurplus: true,
+        // Temporary fix: remove once partner can be used
+        partnerAddress: USER_SIMULATED_ADDRESS,
       },
       timeout
     )

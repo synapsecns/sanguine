@@ -46,6 +46,9 @@ describe.skip('Integration test: ParaSwapEngine', () => {
         userAddress: USER_SIMULATED_ADDRESS,
         slippage: 100,
         priceRoute: pricesResponse.priceRoute,
+        isSurplusToUser: true,
+        takeSurplus: true,
+        partnerAddress: USER_SIMULATED_ADDRESS,
       },
       TEST_TIMEOUT
     )
