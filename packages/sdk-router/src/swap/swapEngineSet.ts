@@ -25,10 +25,8 @@ import {
 } from './models'
 import { logExecutionTime, Prettify, TokenMetadataFetcher } from '../utils'
 
-export enum EngineTimeout {
-  Short = 1000,
-  Long = 3000,
-}
+// We don't wait for all quotes to be resolved, so we use a longer common timeout.
+const ENGINE_TIMEOUT = 2000
 
 type QuoteOptions = {
   allowMultiStep: boolean
@@ -123,7 +121,7 @@ export class SwapEngineSet {
     let route = await this._getEngine(quote.engineID).generateRoute(
       input,
       quote,
-      options.timeout ?? EngineTimeout.Long
+      options.timeout ?? ENGINE_TIMEOUT
     )
     route = options.allowMultiStep ? route : sanitizeMultiStepRoute(route)
     if (route.steps.length > 0) {
@@ -165,7 +163,7 @@ export class SwapEngineSet {
     // Use shorter timeout for quote fetching by default.
     const quote = await engine.getQuote(
       input,
-      options.timeout ?? EngineTimeout.Short
+      options.timeout ?? ENGINE_TIMEOUT
     )
     return options.allowMultiStep ? quote : sanitizeMultiStepQuote(quote)
   }

@@ -44,6 +44,9 @@ type LiFiQuote = Prettify<
 
 const EmptyLiFiQuote: LiFiQuote = getEmptyQuote(EngineID.LiFi)
 
+// TODO: figure out optimal values
+export const LI_FI_STRATEGY = `minWaitTime-0-3-300`
+
 export class LiFiEngine implements SwapEngine {
   readonly id: EngineID = EngineID.LiFi
 
@@ -68,8 +71,7 @@ export class LiFiEngine implements SwapEngine {
         fromAmount: fromAmount.toString(),
         slippage: toFloat(SlippageMax),
         skipSimulation: true,
-        // TODO: figure out optimal values
-        routeTimingStrategies: `minWaitTime-600-0-0`,
+        routeTimingStrategies: LI_FI_STRATEGY,
         name: 'cortex_protocol',
       },
       timeout
