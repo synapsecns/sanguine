@@ -424,12 +424,12 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     const allQuotes = await getAllQuotes()
     // Update both long and short caches
     this.quotesCache.set(
-      'all_quotes_long',
+      `all_quotes_${CacheDuration.Long}`,
       allQuotes,
       FastBridgeRouterSet.QUOTES_TTL.long
     )
     this.quotesCache.set(
-      'all_quotes_short',
+      `all_quotes_${CacheDuration.Short}`,
       allQuotes,
       FastBridgeRouterSet.QUOTES_TTL.short
     )
