@@ -169,12 +169,16 @@ export class SwapEngineSet {
   /**
    * Applies the engine filter to the engine promises and returns the first non-Zero quote.
    * Returns undefined if no non-Zero quote is found.
+   * Ensures all promises are handled to prevent unhandled rejections.
    */
   private async _getFastestQuote(
     quotePromises: Promise<SwapEngineQuote>[]
   ): Promise<SwapEngineQuote | undefined> {
+    // Start background handling of all promises to prevent unhandled rejections
+    const allSettledPromise = Promise.allSettled(quotePromises)
+    // Race for the fastest non-zero quote
     try {
-      return Promise.any(
+      const quote = await Promise.any(
         quotePromises.map(async (quotePromise) => {
           const quote = await quotePromise
           if (quote.expectedToAmount.gt(Zero)) {
@@ -183,9 +187,14 @@ export class SwapEngineSet {
           throw new Error('Zero Quote')
         })
       )
+      return quote
     } catch (e) {
-      // Promise.any throws when all promises reject, so none of the quotes are non-Zero.
+      // No valid quotes found
       return undefined
+    } finally {
+      // Ensure the background promise handling completes
+      // Using void to explicitly indicate we're ignoring the result
+      void allSettledPromise
     }
   }
 }
