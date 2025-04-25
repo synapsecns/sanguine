@@ -44,7 +44,7 @@ export class SynapseIntentRouterSet {
     })
   }
 
-  @logExecutionTime()
+  @logExecutionTime('SynapseIntentRouterSet.finalizeBridgeRouteV2')
   public async finalizeBridgeRouteV2(
     fromToken: string,
     fromAmount: BigNumberish,

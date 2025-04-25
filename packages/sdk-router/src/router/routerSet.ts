@@ -17,7 +17,7 @@ import {
   Query,
   hasComplexBridgeAction,
 } from '../module/query'
-import { ONE_WEEK, TEN_MINUTES, logExecutionTime, logger } from '../utils'
+import { ONE_WEEK, TEN_MINUTES, logger } from '../utils'
 
 export type ChainProvider = {
   chainId: number
@@ -80,7 +80,6 @@ export abstract class RouterSet extends SynapseModuleSet {
   /**
    * @inheritdoc SynapseModuleSet.getBridgeRoutes
    */
-  @logExecutionTime()
   public async getBridgeRoutes(
     originChainId: number,
     destChainId: number,

@@ -111,7 +111,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     return Zero
   }
 
-  @logExecutionTime()
+  @logExecutionTime('FastBridgeRouterSet.getBridgeTokenCandidates')
   public async getBridgeTokenCandidates({
     fromChainId,
     toChainId,
@@ -140,7 +140,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     }))
   }
 
-  @logExecutionTime()
+  @logExecutionTime('FastBridgeRouterSet.getBridgeRouteV2')
   public async getBridgeRouteV2({
     originSwapRoute,
     bridgeToken,
@@ -210,7 +210,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   /**
    * @inheritdoc SynapseModuleSet.getBridgeRoutes
    */
-  @logExecutionTime()
+  @logExecutionTime('FastBridgeRouterSet.getBridgeRoutes')
   public async getBridgeRoutes(
     originChainId: number,
     destChainId: number,

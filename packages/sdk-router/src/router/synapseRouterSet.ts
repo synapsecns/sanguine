@@ -6,6 +6,7 @@ import { ChainProvider, RouterSet } from './routerSet'
 import { BridgeTokenType, SynapseRouter } from './synapseRouter'
 import { MEDIAN_TIME_BRIDGE, ROUTER_ADDRESS_MAP } from '../constants'
 import { BridgeRouteV2, BridgeTokenCandidate } from '../module'
+import { logExecutionTime } from '../utils'
 
 /**
  * Wrapper class for interacting with a SynapseRouter contracts deployed on multiple chains.
@@ -54,6 +55,13 @@ export class SynapseRouterSet extends RouterSet {
       return Zero
     }
     return router.chainGasAmount()
+  }
+
+  @logExecutionTime('SynapseRouterSet.getBridgeRoutes')
+  public async getBridgeRoutes(
+    ...args: Parameters<RouterSet['getBridgeRoutes']>
+  ): ReturnType<RouterSet['getBridgeRoutes']> {
+    return super.getBridgeRoutes(...args)
   }
 
   /**

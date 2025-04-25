@@ -69,7 +69,7 @@ export class SwapEngineSet {
     })
   }
 
-  @logExecutionTime()
+  @logExecutionTime('SwapEngineSet.getBestQuote')
   public async getBestQuote(
     input: RouteInput,
     options: QuoteOptions
@@ -111,7 +111,7 @@ export class SwapEngineSet {
     return quote.expectedToAmount.gt(Zero) ? quote : undefined
   }
 
-  @logExecutionTime()
+  @logExecutionTime('SwapEngineSet.generateRoute')
   public async generateRoute(
     input: RouteInput,
     quote: SwapEngineQuote,

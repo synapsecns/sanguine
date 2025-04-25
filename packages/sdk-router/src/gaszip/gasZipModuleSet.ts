@@ -79,7 +79,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
     return Zero
   }
 
-  @logExecutionTime()
+  @logExecutionTime('GasZipModuleSet.getBridgeTokenCandidates')
   public async getBridgeTokenCandidates({
     fromChainId,
     toChainId,
@@ -107,7 +107,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
     ]
   }
 
-  @logExecutionTime()
+  @logExecutionTime('GasZipModuleSet.getBridgeRouteV2')
   public async getBridgeRouteV2({
     originSwapRoute,
     bridgeToken,
@@ -160,7 +160,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
   /**
    * @inheritdoc SynapseModuleSet.getBridgeRoutes
    */
-  @logExecutionTime()
+  @logExecutionTime('GasZipModuleSet.getBridgeRoutes')
   public async getBridgeRoutes(
     originChainId: number,
     destChainId: number,
