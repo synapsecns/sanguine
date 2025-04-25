@@ -13,6 +13,8 @@ import {
 } from './engines'
 import {
   compareQuotesWithPriority,
+  getEnginePriority,
+  Priority,
   RouteInput,
   sanitizeMultiStepQuote,
   sanitizeMultiStepRoute,
@@ -21,12 +23,10 @@ import {
   SwapEngineQuote,
   SwapEngineRoute,
 } from './models'
-import { Prettify, TokenMetadataFetcher } from '../utils'
+import { logExecutionTime, Prettify, TokenMetadataFetcher } from '../utils'
 
-export enum EngineTimeout {
-  Short = 1000,
-  Long = 3000,
-}
+// We don't wait for all quotes to be resolved, so we use a longer common timeout.
+const ENGINE_TIMEOUT = 2000
 
 type QuoteOptions = {
   allowMultiStep: boolean
@@ -69,17 +69,31 @@ export class SwapEngineSet {
     })
   }
 
+  @logExecutionTime('SwapEngineSet.getBestQuote')
   public async getBestQuote(
     input: RouteInput,
     options: QuoteOptions
   ): Promise<SwapEngineQuote | undefined> {
-    // Find the quote for each engine.
-    const allQuotes = await Promise.all(
-      Object.values(this.engines).map(async (engine) =>
-        this._getQuote(engine, input, options)
-      )
+    const enginePromises = Object.values(this.engines).map((engine) => ({
+      engine,
+      quotePromise: this._getQuote(engine, input, options),
+    }))
+    // Wait for the first non-Zero quote to resolve from engines with the highest priority (Normal).
+    const fastQuotePromise = await this._getFastestQuote(
+      enginePromises
+        .filter(
+          ({ engine }) =>
+            getEnginePriority(engine.id, input.chainId) === Priority.Normal
+        )
+        .map(({ quotePromise }) => quotePromise)
     )
-    // Select the best quote.
+    if (fastQuotePromise) {
+      return fastQuotePromise
+    }
+    // Use the best quote from all the engines as a fallback.
+    const allQuotes = await Promise.all(
+      enginePromises.map(({ quotePromise }) => quotePromise)
+    )
     const quote = allQuotes.reduce(compareQuotesWithPriority)
     return quote.expectedToAmount.gt(Zero) ? quote : undefined
   }
@@ -97,16 +111,16 @@ export class SwapEngineSet {
     return quote.expectedToAmount.gt(Zero) ? quote : undefined
   }
 
+  @logExecutionTime('SwapEngineSet.generateRoute')
   public async generateRoute(
     input: RouteInput,
     quote: SwapEngineQuote,
     options: RouteOptions
   ): Promise<SwapEngineRoute | undefined> {
-    // Use longer timeout for route generation by default.
     let route = await this._getEngine(quote.engineID).generateRoute(
       input,
       quote,
-      options.timeout ?? EngineTimeout.Long
+      options.timeout ?? ENGINE_TIMEOUT
     )
     route = options.allowMultiStep ? route : sanitizeMultiStepRoute(route)
     if (route.steps.length > 0) {
@@ -145,11 +159,41 @@ export class SwapEngineSet {
     input: RouteInput,
     options: QuoteOptions
   ): Promise<SwapEngineQuote> {
-    // Use shorter timeout for quote fetching by default.
     const quote = await engine.getQuote(
       input,
-      options.timeout ?? EngineTimeout.Short
+      options.timeout ?? ENGINE_TIMEOUT
     )
     return options.allowMultiStep ? quote : sanitizeMultiStepQuote(quote)
+  }
+
+  /**
+   * Applies the engine filter to the engine promises and returns the first non-Zero quote.
+   * Returns undefined if no non-Zero quote is found.
+   * Ensures all promises are handled to prevent unhandled rejections.
+   */
+  private async _getFastestQuote(
+    quotePromises: Promise<SwapEngineQuote>[]
+  ): Promise<SwapEngineQuote | undefined> {
+    // Start background handling of all promises to prevent unhandled rejections
+    const allSettledPromise = Promise.allSettled(quotePromises)
+    // Race for the fastest non-zero quote
+    try {
+      return await Promise.any(
+        quotePromises.map(async (quotePromise) => {
+          const quote = await quotePromise
+          if (quote.expectedToAmount.gt(Zero)) {
+            return quote
+          }
+          throw new Error('Zero Quote')
+        })
+      )
+    } catch (e) {
+      // No valid quotes found
+      return undefined
+    } finally {
+      // Ensure the background promise handling completes
+      // Using void to explicitly indicate we're ignoring the result
+      void allSettledPromise
+    }
   }
 }

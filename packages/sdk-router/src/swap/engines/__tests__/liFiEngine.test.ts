@@ -2,7 +2,7 @@ import { SupportedChainId } from '../../../constants'
 import { ARB_USDC } from '../../../constants/testValues'
 import { ETH_NATIVE_TOKEN_ADDRESS } from '../../../utils'
 import { USER_SIMULATED_ADDRESS } from '../../core'
-import { LiFiEngine } from '../liFiEngine'
+import { LI_FI_STRATEGY, LiFiEngine } from '../liFiEngine'
 
 global.fetch = require('node-fetch')
 
@@ -22,8 +22,7 @@ describe.skip('Integration test: LiFiEngine', () => {
         fromAmount: '1000000',
         slippage: 0.01,
         skipSimulation: true,
-        // swapStepTimingStrategies: 'minWaitTime-300-1-100',
-        // routeStepTimingStrategies: 'minWaitTime-100-0-0',
+        routeTimingStrategies: LI_FI_STRATEGY,
         name: 'cortex_protocol',
       },
       TEST_TIMEOUT

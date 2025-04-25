@@ -18,6 +18,7 @@ import {
   adjustValueIfNative,
   isNativeToken,
   calculateDeadline,
+  logExecutionTime,
   TEN_MINUTES,
   stringifyPopulatedTransaction,
 } from '../utils'
@@ -43,6 +44,7 @@ export class SynapseIntentRouterSet {
     })
   }
 
+  @logExecutionTime('SynapseIntentRouterSet.finalizeBridgeRouteV2')
   public async finalizeBridgeRouteV2(
     fromToken: string,
     fromAmount: BigNumberish,
