@@ -68,7 +68,7 @@ contract SynapseIntentPreviewerTest is Test {
 
         vm.mockCall({
             callee: defaultPoolMock,
-            data: abi.encodeCall(DefaultPoolMock.swapStorage, ()),
+            data: DefaultPoolMock.swapStorage.selector,
             returnData: abi.encode(0, 0, 0, 0, 0, 0, lpToken)
         });
     }
