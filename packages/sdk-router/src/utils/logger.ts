@@ -8,14 +8,14 @@ export const logExecutionTime =
 
     descriptor.value = async function (...args: any[]) {
       const startTime = Date.now()
-      const result = await originalMethod.apply(this, args)
-      const elapsedTime = Date.now() - startTime
-
-      const functionName =
-        explicitName ?? `${this.constructor.name}.${propertyKey}`
-
-      logger.info(`⌛ ${functionName}: ${elapsedTime}ms`)
-      return result
+      try {
+        return await originalMethod.apply(this, args)
+      } finally {
+        const elapsedTime = Date.now() - startTime
+        const functionName =
+          explicitName ?? `${this.constructor.name}.${propertyKey}`
+        logger.info(`⌛ ${functionName}: ${elapsedTime}ms`)
+      }
     }
 
     return descriptor
