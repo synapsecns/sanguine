@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.17.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.8...@synapsecns/sdk-router@0.17.9) (2025-04-25)
+
+
+### Bug Fixes
+
+* **sdk-router:** faster intent quotes, time logging, Paraswap surplus [SYN-97] ([#3672](https://github.com/synapsecns/sanguine/issues/3672)) ([dd9f0a3](https://github.com/synapsecns/sanguine/commit/dd9f0a3d4f68c9e3a45fa78eb21477985e6ac174))
+
+
+
+
+
 ## [0.17.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.7...@synapsecns/sdk-router@0.17.8) (2025-04-17)
 
 
