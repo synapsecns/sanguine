@@ -178,7 +178,7 @@ export class SwapEngineSet {
     const allSettledPromise = Promise.allSettled(quotePromises)
     // Race for the fastest non-zero quote
     try {
-      const quote = await Promise.any(
+      return await Promise.any(
         quotePromises.map(async (quotePromise) => {
           const quote = await quotePromise
           if (quote.expectedToAmount.gt(Zero)) {
@@ -187,7 +187,6 @@ export class SwapEngineSet {
           throw new Error('Zero Quote')
         })
       )
-      return quote
     } catch (e) {
       // No valid quotes found
       return undefined
