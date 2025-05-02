@@ -96,8 +96,16 @@ export const getGasZipBlockHeightMap = async (): Promise<
   if (!response) {
     return new Map()
   }
-  const data: { chain: number; head: number }[] = await response.json()
-  return new Map(data.map((chain) => [chain.chain, chain.head]))
+  const data: { chain: any; head: any }[] = await response.json()
+  return new Map(
+    data
+      .filter((item) => {
+        const chainNum = Number(item.chain)
+        const headNum = Number(item.head)
+        return Number.isInteger(chainNum) && Number.isInteger(headNum)
+      })
+      .map((item) => [Number(item.chain), Number(item.head)])
+  )
 }
 
 export const getGasZipQuote = async (
