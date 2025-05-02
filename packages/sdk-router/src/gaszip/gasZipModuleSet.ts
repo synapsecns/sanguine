@@ -348,7 +348,21 @@ export class GasZipModuleSet extends SynapseModuleSet {
       logger.info(`Provider not found for chain ${chainId}`)
       return false
     }
-    const block = await provider.getBlock(blockHeight)
+    let block
+    try {
+      block = await provider.getBlock(blockHeight)
+    } catch (error) {
+      logger.error(
+        `Block height ${blockHeight} for chain ${chainId} not found: ${error}`
+      )
+      return false
+    }
+    if (!block) {
+      logger.error(
+        `Null block for chain ${chainId} at block height ${blockHeight}`
+      )
+      return false
+    }
     const blockAge = Date.now() - block.timestamp * 1000
     const result = 0 <= blockAge && blockAge <= GAS_ZIP_MAX_BLOCK_AGE_MS
     if (!result) {
