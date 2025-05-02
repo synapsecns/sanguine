@@ -85,6 +85,21 @@ export const getChains = async (): Promise<Chains> => {
   }
 }
 
+export const getGasZipBlockHeightMap = async (): Promise<
+  Map<number, number>
+> => {
+  const response = await getWithTimeout(
+    'Gas.Zip API',
+    `${GAS_ZIP_API_URL}/admin/indexer`,
+    GAS_ZIP_API_TIMEOUT
+  )
+  if (!response) {
+    return new Map()
+  }
+  const data: { chain: number; head: number }[] = await response.json()
+  return new Map(data.map((chain) => [chain.chain, chain.head]))
+}
+
 export const getGasZipQuote = async (
   originChainId: number,
   destChainId: number,
