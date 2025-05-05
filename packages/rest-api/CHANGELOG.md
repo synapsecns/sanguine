@@ -3,6 +3,198 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.11](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.10...@synapsecns/rest-api@1.13.11) (2025-05-02)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.13.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.9...@synapsecns/rest-api@1.13.10) (2025-04-25)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.13.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.8...@synapsecns/rest-api@1.13.9) (2025-04-17)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.13.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.7...@synapsecns/rest-api@1.13.8) (2025-04-10)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.13.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.6...@synapsecns/rest-api@1.13.7) (2025-04-03)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.13.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.5...@synapsecns/rest-api@1.13.6) (2025-04-02)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.13.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.4...@synapsecns/rest-api@1.13.5) (2025-04-01)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.13.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.3...@synapsecns/rest-api@1.13.4) (2025-04-01)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.13.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.2...@synapsecns/rest-api@1.13.3) (2025-03-28)
+
+
+### Bug Fixes
+
+* **sdk-router, rest-api:** stringify BigNumber in exported V2 types [SYN-77] ([#3636](https://github.com/synapsecns/sanguine/issues/3636)) ([9d4f771](https://github.com/synapsecns/sanguine/commit/9d4f77164267a34aba251269d1aafa520afdf436))
+
+
+
+
+
+## [1.13.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.1...@synapsecns/rest-api@1.13.2) (2025-03-27)
+
+
+### Bug Fixes
+
+* **sdk-router:** exported slippage type ([#3634](https://github.com/synapsecns/sanguine/issues/3634)) ([d7a2846](https://github.com/synapsecns/sanguine/commit/d7a2846901fce8d9b0587852eddaad522c9c0068))
+
+
+
+
+
+## [1.13.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.0...@synapsecns/rest-api@1.13.1) (2025-03-24)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+# [1.13.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.12.4...@synapsecns/rest-api@1.13.0) (2025-03-21)
+
+
+### Features
+
+* **rest-api,sdk-router:** intent endpoint [SYN-77] ([#3613](https://github.com/synapsecns/sanguine/issues/3613)) ([f2616f1](https://github.com/synapsecns/sanguine/commit/f2616f185af53f22e9cbd3ffc41497641fca4d6c))
+
+
+
+
+
+## [1.12.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.12.3...@synapsecns/rest-api@1.12.4) (2025-03-21)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.12.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.12.2...@synapsecns/rest-api@1.12.3) (2025-03-20)
+
+
+### Bug Fixes
+
+* **rest-api,sdk-router:** `/bridge/v2` and `swap/v2` endpoint standardisation [SYN-77] ([#3602](https://github.com/synapsecns/sanguine/issues/3602)) ([8cf36d1](https://github.com/synapsecns/sanguine/commit/8cf36d1d1ad54848656cf78af3fe64e0b08e6d9f))
+
+
+
+
+
+## [1.12.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.12.1...@synapsecns/rest-api@1.12.2) (2025-03-19)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.12.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.12.0...@synapsecns/rest-api@1.12.1) (2025-03-17)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+# [1.12.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.11.1...@synapsecns/rest-api@1.12.0) (2025-03-17)
+
+
+### Features
+
+* sdk/api bridgeV2 for SynapseRFQ [SYN-66] ([#3588](https://github.com/synapsecns/sanguine/issues/3588)) ([5f56502](https://github.com/synapsecns/sanguine/commit/5f5650283aa4009d74a31c949f5fcdac086e25fc))
+
+
+
+
+
+## [1.11.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.11.0...@synapsecns/rest-api@1.11.1) (2025-03-14)
+
+
+### Bug Fixes
+
+* **rest-api:** swap v2 errors ([#3594](https://github.com/synapsecns/sanguine/issues/3594)) ([b1b07da](https://github.com/synapsecns/sanguine/commit/b1b07daf9f10670afb161fa25f1fd03209a46885))
+
+
+
+
+
+# [1.11.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.10.1...@synapsecns/rest-api@1.11.0) (2025-03-11)
+
+
+### Features
+
+* SDK new chains [SYN-45] ([#3535](https://github.com/synapsecns/sanguine/issues/3535)) ([6e956a3](https://github.com/synapsecns/sanguine/commit/6e956a335981235aa12bd6512b524f22ccee7ca0)), closes [#3537](https://github.com/synapsecns/sanguine/issues/3537)
+
+
+
+
+
+## [1.10.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.10.0...@synapsecns/rest-api@1.10.1) (2025-03-10)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+# [1.10.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.9.4...@synapsecns/rest-api@1.10.0) (2025-03-07)
+
+
+### Features
+
+* Swap Engines [SYN-29] [SYN-35] ([#3563](https://github.com/synapsecns/sanguine/issues/3563)) ([537520e](https://github.com/synapsecns/sanguine/commit/537520e9b84431a4a2705d9616c9e2ebb514ac57))
+
+
+
+
+
 ## [1.9.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.9.3...@synapsecns/rest-api@1.9.4) (2025-03-04)
 
 **Note:** Version bump only for package @synapsecns/rest-api

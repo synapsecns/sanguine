@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-constants@1.8.9...@synapsecns/synapse-constants@1.8.10) (2025-04-10)
+
+**Note:** Version bump only for package @synapsecns/synapse-constants
+
+
+
+
+
 ## [1.8.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-constants@1.8.8...@synapsecns/synapse-constants@1.8.9) (2025-03-01)
 
 

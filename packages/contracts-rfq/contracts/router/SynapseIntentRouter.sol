@@ -97,7 +97,7 @@ contract SynapseIntentRouter is ISynapseIntentRouter, ISynapseIntentRouterErrors
             }
         }
 
-        // Verify amountIn used for the last step, and that we fully spent `msg.value`.
+        // Verify that we fully spent `msg.value`.
         if (totalUsedMsgValue < msg.value) revert SIR__MsgValueIncorrect();
     }
 

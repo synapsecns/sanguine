@@ -3,6 +3,50 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.19.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.18.0...@synapsecns/contracts-rfq@0.19.0) (2025-04-16)
+
+
+### Features
+
+* **contracts-rfq:** sir new deployments ([#3662](https://github.com/synapsecns/sanguine/issues/3662)) ([0fb98c7](https://github.com/synapsecns/sanguine/commit/0fb98c7c034a690cadc105e5304d085e45988dfc))
+
+
+
+
+
+# [0.18.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.17.0...@synapsecns/contracts-rfq@0.18.0) (2025-04-16)
+
+
+### Features
+
+* **contracts-rfq:** fast bridge interceptor [SYN-84] ([#3649](https://github.com/synapsecns/sanguine/issues/3649)) ([68f8aaf](https://github.com/synapsecns/sanguine/commit/68f8aaf02d0ba0e0e2d79adacbeda34d4b8d9065))
+
+
+
+
+
+# [0.17.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.16.2...@synapsecns/contracts-rfq@0.17.0) (2025-03-10)
+
+
+### Features
+
+* **contracts-rfq:** deploy SIR [SYN-29] ([#3573](https://github.com/synapsecns/sanguine/issues/3573)) ([46b1018](https://github.com/synapsecns/sanguine/commit/46b1018dd7057acf479bb5caddbc4b7b5a377213)), closes [#3467](https://github.com/synapsecns/sanguine/issues/3467)
+
+
+
+
+
+## [0.16.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.16.1...@synapsecns/contracts-rfq@0.16.2) (2025-03-07)
+
+
+### Bug Fixes
+
+* mockCallRevert internal revert ([#3575](https://github.com/synapsecns/sanguine/issues/3575)) ([3f9cd1b](https://github.com/synapsecns/sanguine/commit/3f9cd1bcf29c1d5af6b766ca0318d50f5e42a57c))
+
+
+
+
+
 ## [0.16.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.16.0...@synapsecns/contracts-rfq@0.16.1) (2025-02-19)
 
 **Note:** Version bump only for package @synapsecns/contracts-rfq
