@@ -8,6 +8,7 @@ import {
   DefaultPoolsEngine,
   KyberSwapEngine,
   LiFiEngine,
+  LiquidSwapEngine,
   NoOpEngine,
   ParaSwapEngine,
 } from './engines'
@@ -58,6 +59,7 @@ export class SwapEngineSet {
     this._addEngine(new KyberSwapEngine())
     this._addEngine(new ParaSwapEngine(chains, tokenMetadataFetcher))
     this._addEngine(new LiFiEngine())
+    this._addEngine(new LiquidSwapEngine())
 
     this.tokenZaps = {}
     chains.forEach(({ chainId }) => {
