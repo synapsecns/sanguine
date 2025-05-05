@@ -1,6 +1,6 @@
-import { Log, TransactionReceipt } from '@ethersproject/abstract-provider'
-import { BigNumber, providers } from 'ethers'
 import { mock } from 'jest-mock-extended'
+import { BigNumber, providers } from 'ethers'
+import { Log, TransactionReceipt } from '@ethersproject/abstract-provider'
 
 import { FastBridgeRouter } from './fastBridgeRouter'
 import { FAST_BRIDGE_ROUTER_ADDRESS_MAP, SupportedChainId } from '../constants'

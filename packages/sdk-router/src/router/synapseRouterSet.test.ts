@@ -2,6 +2,7 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber, parseFixed } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
 
+import { getTestProvider } from '../constants/testProviders'
 import {
   ROUTER_ADDRESS_MAP,
   CCTP_ROUTER_ADDRESS_MAP,
@@ -10,11 +11,10 @@ import {
   SupportedChainId,
 } from '../constants'
 import { ChainProvider } from './routerSet'
-import { SynapseRouter } from './synapseRouter'
 import { SynapseRouterSet } from './synapseRouterSet'
+import { SynapseRouter } from './synapseRouter'
 import { RouterQuery } from '../module'
 import { createSlippageTests } from './synapseCCTPRouterSet.test'
-import { getTestProvider } from '../constants/testProviders'
 
 describe('SynapseRouterSet', () => {
   const ethProvider: Provider = getTestProvider(SupportedChainId.ETH)
@@ -54,7 +54,7 @@ describe('SynapseRouterSet', () => {
     })
 
     it('Correct bridge module name', () => {
-      expect(routerSet.moduleName).toEqual('SynapseBridge')
+      expect(routerSet.bridgeModuleName).toEqual('SynapseBridge')
     })
   })
 

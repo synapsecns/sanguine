@@ -159,9 +159,7 @@ jobs:
 
       - name: Get branch name
         id: branch-name
-        run: |
-          echo "is_default=$([ "$GITHUB_REF" == "refs/heads/${{ github.event.repository.default_branch }}" ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
-          echo "current_branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        uses: tj-actions/branch-names@v6
 
       - name: Bump version and push tag
         id: tag_version

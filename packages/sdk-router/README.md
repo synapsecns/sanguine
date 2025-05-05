@@ -6,14 +6,6 @@ This package contains the Synapse Protocol Cross-Chain Swap and Bridging SDK.
 
 [See the Docs](https://synapse-3.gitbook.io/synapse-protocol/developers/bridge-sdk)
 
-## Environment Variables
-
-The SDK Router supports the following environment variables:
-
-| Variable    | Description         | Default Value              |
-| ----------- | ------------------- | -------------------------- |
-| RFQ_API_URL | URL for the RFQ API | https://rfq-api.omnirpc.io |
-
 # Synapse SDK
 
 The Synapse SDK allows you to interact with [Synapse Protocol](https://synapseprotocol.com/) router contracts deployed on 19 chains. It handles:
@@ -149,7 +141,7 @@ export type BridgeQuote = {
   estimatedTime: number
   // Name of the "bridge module" that will be used to bridge the tokens.
   // Supported values are "SynapseBridge", "SynapseCCTP" and "SynapseRFQ"
-  moduleName: string
+  bridgeModuleName: string
   // Amount of native gas tokens that user will receive on the destination chain
   // on top of the token amount
   gasDropAmount: BigNumber
@@ -170,7 +162,7 @@ Some of the returned quotes may contain information about the optional swaps on 
 ```ts
 const { originQuery, destQuery } = await synapseSDK.applyBridgeSlippage(
   // fields from the BridgeQuote object returned by the allBridgeQuotes method
-  bridgeQuote.moduleName,
+  bridgeQuote.bridgeModuleName,
   bridgeQuote.originQuery,
   bridgeQuote.destQuery,
   // Numerator of the slippage percentage, optional (defaults to 10)
@@ -189,7 +181,7 @@ Bridge quotes returned by the `allBridgeQuotes` method come with the deadlines s
 ```ts
 const { originQuery, destQuery } = synapseSDK.applyBridgeDeadline(
   // fields from the BridgeQuote object returned by the allBridgeQuotes method
-  bridgeQuote.moduleName,
+  bridgeQuote.bridgeModuleName,
   bridgeQuote.originQuery,
   bridgeQuote.destQuery,
   // New deadline for the origin chain (optional, default depends on the bridge module)
@@ -251,7 +243,7 @@ In order to track the status of the bridge transaction, the consumer first needs
 const synapseTxId = await synapseSDK.getSynapseTxId(
   // Chain ID of the ORIGIN chain
   originChainId,
-  bridgeQuote.moduleName,
+  bridgeQuote.bridgeModuleName,
   // Transaction hash of the bridge transaction on the origin chain
   txHash
 )
@@ -265,7 +257,7 @@ The status of the bridge transaction can then be checked using the `getBridgeTxS
 const status: boolean = await synapseSDK.getBridgeTxStatus(
   // Chain ID of the DESTINATION chain
   destChainId,
-  bridgeQuote.moduleName,
+  bridgeQuote.bridgeModuleName,
   synapseTxId
 )
 ```

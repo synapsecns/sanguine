@@ -85,6 +85,10 @@ flags:
       - packages/sdk-router/
       - packages/widget/
     carryforward: true
+  restclient:
+    paths:
+      - contrib/restclient/
+    carryforward: true
 
 ignore:
   - '**/*_generated.go'

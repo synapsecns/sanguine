@@ -1,11 +1,4 @@
-import { utils } from 'ethers'
-
-import {
-  handleNativeToken,
-  handleParams,
-  isNativeToken,
-  isSameAddress,
-} from './addressUtils'
+import { isSameAddress } from './addressUtils'
 
 describe('isSameAddress', () => {
   const lowerCaseAlice = '0x0123456789abcdef0123456789abcdef01234567'
@@ -102,6 +95,10 @@ describe('isSameAddress', () => {
       expect(isSameAddress('', lowerCaseAlice)).toBe(false)
       expect(isSameAddress(lowerCaseAlice, '')).toBe(false)
     })
+
+    it('both empty', () => {
+      expect(isSameAddress('', '')).toBe(false)
+    })
   })
 
   describe('False when one of the addresses is null', () => {
@@ -112,130 +109,6 @@ describe('isSameAddress', () => {
 
     it('both null', () => {
       expect(isSameAddress(null as any, null as any)).toBe(false)
-    })
-  })
-})
-
-describe('Native token address utils', () => {
-  const empty = ''
-  const zero = '0x0000000000000000000000000000000000000000'
-  const eth = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
-  const ethCheckSummed = utils.getAddress(eth)
-
-  const random = '0x0000000000000000000000000000000000000001'
-  const nonEth = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeef'
-
-  describe('handleNativeToken', () => {
-    it('Empty address: ETH', () => {
-      expect(handleNativeToken(empty)).toEqual(ethCheckSummed)
-    })
-
-    it('Random address: preserved', () => {
-      expect(handleNativeToken(random)).toEqual(random)
-    })
-
-    it('Non-ETH address: preserved', () => {
-      expect(handleNativeToken(nonEth)).toEqual(nonEth)
-    })
-
-    it('Zero address: ETH', () => {
-      expect(handleNativeToken(zero)).toEqual(ethCheckSummed)
-    })
-
-    it('ETH lowercase: ETH', () => {
-      expect(handleNativeToken(eth)).toEqual(ethCheckSummed)
-    })
-
-    it('ETH uppercase: ETH', () => {
-      expect(handleNativeToken(eth.toUpperCase())).toEqual(ethCheckSummed)
-    })
-  })
-
-  describe('isNativeToken', () => {
-    it('Empty address: true', () => {
-      expect(isNativeToken(empty)).toBe(true)
-    })
-
-    it('Random address: false', () => {
-      expect(isNativeToken(random)).toBe(false)
-    })
-
-    it('Non-ETH address: false', () => {
-      expect(isNativeToken(nonEth)).toBe(false)
-    })
-
-    it('Zero address: true', () => {
-      expect(isNativeToken(zero)).toBe(true)
-    })
-
-    it('ETH lowercase: true', () => {
-      expect(isNativeToken(eth)).toBe(true)
-    })
-
-    it('ETH uppercase: true', () => {
-      expect(isNativeToken(eth.toUpperCase())).toBe(true)
-    })
-
-    it('undefined: false', () => {
-      expect(isNativeToken(undefined)).toBe(false)
-    })
-  })
-
-  describe('handleParams', () => {
-    const restParams = {
-      abc: 'def',
-      def: 1234,
-    }
-
-    const ethLike = [empty, zero, eth, ethCheckSummed]
-    const nonEthLike = [random, nonEth]
-
-    it('ETH & ETH', () => {
-      ethLike.forEach((fromToken) => {
-        ethLike.forEach((toToken) => {
-          expect(handleParams({ ...restParams, fromToken, toToken })).toEqual({
-            ...restParams,
-            fromToken: ethCheckSummed,
-            toToken: ethCheckSummed,
-          })
-        })
-      })
-    })
-
-    it('ETH & non-ETH', () => {
-      ethLike.forEach((fromToken) => {
-        nonEthLike.forEach((toToken) => {
-          expect(handleParams({ ...restParams, fromToken, toToken })).toEqual({
-            ...restParams,
-            fromToken: ethCheckSummed,
-            toToken,
-          })
-        })
-      })
-    })
-
-    it('non-ETH & ETH', () => {
-      nonEthLike.forEach((fromToken) => {
-        ethLike.forEach((toToken) => {
-          expect(handleParams({ ...restParams, fromToken, toToken })).toEqual({
-            ...restParams,
-            fromToken,
-            toToken: ethCheckSummed,
-          })
-        })
-      })
-    })
-
-    it('non-ETH & non-ETH', () => {
-      nonEthLike.forEach((fromToken) => {
-        nonEthLike.forEach((toToken) => {
-          expect(handleParams({ ...restParams, fromToken, toToken })).toEqual({
-            ...restParams,
-            fromToken,
-            toToken,
-          })
-        })
-      })
     })
   })
 })

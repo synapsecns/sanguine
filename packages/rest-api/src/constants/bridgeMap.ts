@@ -943,8 +943,8 @@ export const BRIDGE_MAP = {
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
       decimals: 18,
       symbol: 'HYPE',
-      origin: ['Gas.zip', 'RFQ.ETH', 'RFQ.USDC'],
-      destination: ['Gas.zip', 'RFQ.ETH', 'RFQ.USDC'],
+      origin: ['Gas.zip'],
+      destination: ['Gas.zip'],
       swappable: [],
     },
   },

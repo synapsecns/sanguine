@@ -7,6 +7,7 @@ import (
 	"github.com/slack-io/slacker"
 	"github.com/synapsecns/sanguine/contrib/opbot/config"
 	"github.com/synapsecns/sanguine/contrib/opbot/internal"
+	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
 	screenerClient "github.com/synapsecns/sanguine/contrib/screener-api/client"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -23,15 +24,17 @@ import (
 
 // Bot represents the bot server.
 type Bot struct {
-	handler   metrics.Handler
-	server    *slacker.Slacker
-	cfg       config.Config
-	rpcClient omnirpcClient.RPCClient
-	rfqClient internal.RFQClient
-	signer    signer.Signer
-	submitter submitter.TransactionSubmitter
-	screener  screenerClient.ScreenerClient
-	logger    experimentalLogger.ExperimentalLogger
+	handler       metrics.Handler
+	server        *slacker.Slacker
+	cfg           config.Config
+	signozClient  *signoz.Client
+	signozEnabled bool
+	rpcClient     omnirpcClient.RPCClient
+	rfqClient     internal.RFQClient
+	signer        signer.Signer
+	submitter     submitter.TransactionSubmitter
+	screener      screenerClient.ScreenerClient
+	logger        experimentalLogger.ExperimentalLogger
 }
 
 // NewBot creates a new bot server.
@@ -48,10 +51,16 @@ func NewBot(handler metrics.Handler, cfg config.Config) *Bot {
 		rfqClient: internal.NewRFQClient(handler, cfg.RFQIndexerAPIURL),
 	}
 
+	// you should be able to run opbot even without signoz.
+	if cfg.SignozPassword != "" && cfg.SignozEmail != "" && cfg.SignozBaseURL != "" {
+		bot.signozClient = signoz.NewClientFromUser(handler, cfg.SignozBaseURL, cfg.SignozEmail, cfg.SignozPassword)
+		bot.signozEnabled = true
+	}
+
 	bot.rpcClient = omnirpcClient.NewOmnirpcClient(cfg.OmniRPCURL, handler, omnirpcClient.WithCaptureReqRes())
 
 	bot.addMiddleware(slackertrace.TracingMiddleware(handler), slackertrace.MetricsMiddleware())
-	bot.addCommands(bot.rfqLookupCommand(), bot.rfqRefund())
+	bot.addCommands(bot.traceCommand(), bot.rfqLookupCommand(), bot.rfqRefund())
 
 	return &bot
 }

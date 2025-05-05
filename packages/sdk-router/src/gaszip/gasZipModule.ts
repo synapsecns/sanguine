@@ -1,27 +1,24 @@
-import { Interface } from '@ethersproject/abi'
 import { Provider } from '@ethersproject/abstract-provider'
-import { BigNumber, BigNumberish, PopulatedTransaction } from 'ethers'
+import { BigNumber, PopulatedTransaction } from 'ethers'
 import invariant from 'tiny-invariant'
 
-import gasZipAbi from '../abi/GasZipV2.json'
 import { Query, SynapseModule } from '../module'
-import { isNativeToken } from '../utils'
-import { getGasZipTxStatus } from './api'
+import { BigintIsh } from '../constants'
+import { isNativeToken } from '../utils/handleNativeToken'
+import { getGasZipQuote, getGasZipTxStatus } from './api'
+import { isSameAddress } from '../utils/addressUtils'
 
 export class GasZipModule implements SynapseModule {
-  static gasZipInterface = new Interface(gasZipAbi)
+  readonly address = '0x391E7C679d29bD940d63be94AD22A25d25b5A604'
 
   public readonly chainId: number
   public readonly provider: Provider
-  public readonly address: string
 
-  constructor(chainId: number, provider: Provider, address: string) {
-    invariant(GasZipModule.gasZipInterface, 'INTERFACE_UNDEFINED')
+  constructor(chainId: number, provider: Provider) {
     invariant(chainId, 'CHAIN_ID_UNDEFINED')
     invariant(provider, 'PROVIDER_UNDEFINED')
     this.chainId = chainId
     this.provider = provider
-    this.address = address
   }
 
   /**
@@ -29,18 +26,31 @@ export class GasZipModule implements SynapseModule {
    */
   public async bridge(
     to: string,
-    _destChainId: number,
+    destChainId: number,
     token: string,
-    amount: BigNumberish,
-    _originQuery: Query,
+    amount: BigintIsh,
+    originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {
     if (!isNativeToken(token)) {
       throw new Error('Non-native token not supported by gas.zip')
     }
-    // Decode destQuery.rawParams to get GasZip's "short" chain ID
-    const destGasZipChain = parseInt(destQuery.rawParams, 16)
-    return this.populateGasZipTransaction(to, destGasZipChain, amount)
+    if (isSameAddress(to, destQuery.rawParams)) {
+      return {
+        to: this.address,
+        value: BigNumber.from(amount),
+        data: originQuery.rawParams,
+      }
+    }
+    const quote = await getGasZipQuote(this.chainId, destChainId, amount, to)
+    if (quote.amountOut.lt(destQuery.minAmountOut)) {
+      throw new Error('Insufficient amount out')
+    }
+    return {
+      to: this.address,
+      value: BigNumber.from(amount),
+      data: quote.calldata,
+    }
   }
 
   /**
@@ -55,21 +65,5 @@ export class GasZipModule implements SynapseModule {
    */
   public async getBridgeTxStatus(synapseTxId: string): Promise<boolean> {
     return getGasZipTxStatus(synapseTxId)
-  }
-
-  public populateGasZipTransaction(
-    to: string,
-    destGasZipChain: number,
-    amount: BigNumberish
-  ): PopulatedTransaction {
-    const data = GasZipModule.gasZipInterface.encodeFunctionData('deposit', [
-      destGasZipChain,
-      to,
-    ])
-    return {
-      to: this.address,
-      value: BigNumber.from(amount),
-      data,
-    }
   }
 }

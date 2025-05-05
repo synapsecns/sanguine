@@ -22,7 +22,7 @@ export const getBridgeStatus = async (
       providerCache.set(rpcUrl, provider)
     }
 
-    const routerAddress = FAST_BRIDGE_ROUTER_ADDRESS_MAP[Number(originChainId)]
+    const routerAddress = FAST_BRIDGE_ROUTER_ADDRESS_MAP[originChainId]
 
     const fastBridgeRouterContract = new ethers.Contract(
       routerAddress,

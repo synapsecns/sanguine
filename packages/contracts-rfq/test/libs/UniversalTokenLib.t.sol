@@ -29,7 +29,6 @@ contract UniversalTokenLibraryTest is Test {
         assertEq(token.balanceOf(address(recipient)), amount);
     }
 
-    /// forge-config: default.allow_internal_expect_revert = true
     function testUniversalTransferTokenNoopWhenSameRecipient() public {
         uint256 amount = 12_345;
         token.mint(address(libHarness), amount);

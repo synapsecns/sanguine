@@ -159,7 +159,6 @@ query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $durat
     worldchain
     unichain
     berachain
-    hyperevm
     total
   }
 }

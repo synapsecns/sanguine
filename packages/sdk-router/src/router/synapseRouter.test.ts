@@ -1,13 +1,13 @@
 import { Provider } from '@ethersproject/abstract-provider'
-import { AddressZero } from '@ethersproject/constants'
 import { BigNumber } from 'ethers'
+import { AddressZero } from '@ethersproject/constants'
 
+import { ETH_NUSD, ETH_USDC, ETH_SYN } from '../constants/testValues'
+import { getTestProvider } from '../constants/testProviders'
 import { ROUTER_ADDRESS_MAP, SupportedChainId } from '../constants'
 import { BridgeTokenType, SynapseRouter } from './synapseRouter'
 import { BridgeToken, RouterQuery } from '../module'
 import { DestRequest } from './types'
-import { getTestProvider } from '../constants/testProviders'
-import { ETH_NUSD, ETH_USDC, ETH_SYN } from '../constants/testValues'
 
 describe('SynapseRouter', () => {
   const ethAddress = ROUTER_ADDRESS_MAP[SupportedChainId.ETH]

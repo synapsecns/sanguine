@@ -1,13 +1,14 @@
-import { Provider } from '@ethersproject/abstract-provider'
+import { PopulatedTransaction } from 'ethers'
 import { BigNumber } from '@ethersproject/bignumber'
-import { AddressZero } from '@ethersproject/constants'
-import { BigNumberish, PopulatedTransaction } from 'ethers'
+import { Provider } from '@ethersproject/abstract-provider'
 import invariant from 'tiny-invariant'
+import { AddressZero } from '@ethersproject/constants'
 
+import { BigintIsh } from '../constants'
+import { Query } from '../module/query'
 import { DestRequest } from './types'
 import { BridgeToken, FeeConfig, SynapseModule } from '../module'
-import { Query } from '../module/query'
-import { logger } from '../utils'
+import { logger } from '../utils/logger'
 
 /**
  * Abstract class for a router contract deployed on a chain.
@@ -37,7 +38,7 @@ export abstract class Router implements SynapseModule {
   abstract getOriginAmountOut(
     tokenIn: string,
     bridgeTokens: string[],
-    amountIn: BigNumberish
+    amountIn: BigintIsh
   ): Promise<Query[]>
 
   abstract getDestinationAmountOut(
@@ -60,7 +61,7 @@ export abstract class Router implements SynapseModule {
     to: string,
     chainId: number,
     token: string,
-    amount: BigNumberish,
+    amount: BigintIsh,
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction>
@@ -111,7 +112,7 @@ export abstract class Router implements SynapseModule {
   public async getOriginQueries(
     tokenIn: string,
     tokenSymbols: string[],
-    amountIn: BigNumberish
+    amountIn: BigintIsh
   ): Promise<Query[]> {
     try {
       // Don't filter anything, as the amount of returned queries should match the amount of symbols

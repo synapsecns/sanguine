@@ -2,10 +2,10 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber, parseFixed } from '@ethersproject/bignumber'
 
 import { SupportedChainId } from '../constants'
-import { FastBridgeRouterSet } from './fastBridgeRouterSet'
 import { getTestProvider } from '../constants/testProviders'
-import { CCTPRouterQuery } from '../module'
+import { FastBridgeRouterSet } from './fastBridgeRouterSet'
 import { ChainProvider } from '../router'
+import { CCTPRouterQuery } from '../module'
 import { createSlippageTests } from '../router/synapseCCTPRouterSet.test'
 
 describe('FastBridgeRouterSet', () => {

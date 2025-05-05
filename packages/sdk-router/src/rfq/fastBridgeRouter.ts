@@ -1,46 +1,37 @@
-import { Interface } from '@ethersproject/abi'
 import { Provider } from '@ethersproject/abstract-provider'
-import { BigNumber } from '@ethersproject/bignumber'
-import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
-import { BigNumberish } from 'ethers'
 import invariant from 'tiny-invariant'
+import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
+import { Interface } from '@ethersproject/abi'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import fastBridgeAbi from '../abi/FastBridge.json'
-import fastBridgeInterceptorAbi from '../abi/FastBridgeInterceptor.json'
 import fastBridgeRouterAbi from '../abi/FastBridgeRouter.json'
+import { FastBridgeRouter as FastBridgeRouterContract } from '../typechain/FastBridgeRouter'
+import {
+  FastBridge as FastBridgeContract,
+  IFastBridge,
+} from '../typechain/FastBridge'
 import {
   SynapseModule,
   Query,
   narrowToCCTPRouterQuery,
   reduceToQuery,
 } from '../module'
-import {
-  FastBridge as FastBridgeContract,
-  IFastBridge,
-} from '../typechain/FastBridge'
-import { FastBridgeInterceptor as FastBridgeInterceptorContract } from '../typechain/FastBridgeInterceptor'
-import { FastBridgeRouter as FastBridgeRouterContract } from '../typechain/FastBridgeRouter'
-import {
-  getMatchingTxLog,
-  adjustValueIfNative,
-  CACHE_TIMES,
-  RouterCache,
-} from '../utils'
+import { BigintIsh } from '../constants'
+import { getMatchingTxLog } from '../utils/logs'
+import { adjustValueIfNative } from '../utils/handleNativeToken'
+import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
 
 // Define type alias
 export type BridgeParams = IFastBridge.BridgeParamsStruct
 
 export class FastBridgeRouter implements SynapseModule {
   static fastBridgeInterface = new Interface(fastBridgeAbi)
-  static fastBridgeInterceptorInterface = new Interface(
-    fastBridgeInterceptorAbi
-  )
   static fastBridgeRouterInterface = new Interface(fastBridgeRouterAbi)
 
   public readonly address: string
   public readonly chainId: number
   public readonly provider: Provider
-  public readonly interceptorContract: FastBridgeInterceptorContract | undefined
 
   private readonly routerContract: FastBridgeRouterContract
   private fastBridgeContractCache: FastBridgeContract | undefined
@@ -48,21 +39,12 @@ export class FastBridgeRouter implements SynapseModule {
   // All possible events emitted by the FastBridge contract in the origin transaction (in alphabetical order)
   private readonly originEvents = ['BridgeRequested']
 
-  constructor(
-    chainId: number,
-    provider: Provider,
-    address: string,
-    interceptor?: string
-  ) {
+  constructor(chainId: number, provider: Provider, address: string) {
     invariant(chainId, 'CHAIN_ID_UNDEFINED')
     invariant(provider, 'PROVIDER_UNDEFINED')
     invariant(address, 'ADDRESS_UNDEFINED')
     invariant(FastBridgeRouter.fastBridgeRouterInterface, 'INTERFACE_UNDEFINED')
     invariant(FastBridgeRouter.fastBridgeInterface, 'INTERFACE_UNDEFINED')
-    invariant(
-      FastBridgeRouter.fastBridgeInterceptorInterface,
-      'INTERFACE_UNDEFINED'
-    )
     this.chainId = chainId
     this.provider = provider
     this.address = address
@@ -71,13 +53,6 @@ export class FastBridgeRouter implements SynapseModule {
       FastBridgeRouter.fastBridgeRouterInterface,
       provider
     ) as FastBridgeRouterContract
-    if (interceptor) {
-      this.interceptorContract = new Contract(
-        interceptor,
-        FastBridgeRouter.fastBridgeInterceptorInterface,
-        provider
-      ) as FastBridgeInterceptorContract
-    }
     // TODO: figure out why this breaks the tests
     // this.hydrateCache()
   }
@@ -102,7 +77,7 @@ export class FastBridgeRouter implements SynapseModule {
     to: string,
     destChainId: number,
     token: string,
-    amount: BigNumberish,
+    amount: BigintIsh,
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {
@@ -173,7 +148,7 @@ export class FastBridgeRouter implements SynapseModule {
   public async getOriginAmountOut(
     tokenIn: string,
     rfqTokens: string[],
-    amountIn: BigNumberish
+    amountIn: BigintIsh
   ): Promise<Query[]> {
     const queries = await this.routerContract.getOriginAmountOut(
       tokenIn,

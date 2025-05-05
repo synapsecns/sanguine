@@ -4,8 +4,8 @@ import {
   FallbackProviderConfig,
 } from '@ethersproject/providers'
 
-import { SupportedChainId } from './chainIds'
 import { getTestProviderUrl } from './testValues'
+import { SupportedChainId } from './chainIds'
 
 const PUBLIC_PROVIDER_URLS: Partial<Record<SupportedChainId, string[]>> = {
   [SupportedChainId.ETH]: [

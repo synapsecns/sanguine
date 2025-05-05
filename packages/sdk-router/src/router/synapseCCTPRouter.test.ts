@@ -1,13 +1,13 @@
 import { Provider } from '@ethersproject/abstract-provider'
-import { AddressZero } from '@ethersproject/constants'
 import { BigNumber } from 'ethers'
+import { AddressZero } from '@ethersproject/constants'
 
+import { ETH_USDC } from '../constants/testValues'
+import { getTestProvider } from '../constants/testProviders'
 import { CCTP_ROUTER_ADDRESS_MAP, SupportedChainId } from '../constants'
 import { SynapseCCTPRouter } from './synapseCCTPRouter'
 import { BridgeToken, CCTPRouterQuery } from '../module'
 import { DestRequest } from './types'
-import { getTestProvider } from '../constants/testProviders'
-import { ETH_USDC } from '../constants/testValues'
 
 describe('SynapseCCTPRouter', () => {
   const ethAddress = CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ETH]

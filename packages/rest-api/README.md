@@ -1,19 +1,11 @@
 # Synapse REST API
 To make requests, use https://api.synapseprotocol.com/
 
+
 To run locally:
 ```bash
 yarn dev
 ```
-
-## Environment Variables
-
-The REST API supports the following environment variables:
-
-| Variable | Description | Default Value |
-|----------|-------------|---------------|
-| RFQ_API_URL | URL for the RFQ API | https://rfq-api.omnirpc.io |
-| RFQ_INDEXER_URL | URL for the RFQ Indexer API | https://rfq-indexer.synapseprotocol.com/api |
 
 # Documentation
 [Swagger Documentation](https://api.synapseprotocol.com/api-docs/)

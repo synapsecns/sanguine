@@ -5,7 +5,7 @@ Connect with other developers and the Synapse team
 * **[Discord](https://discord.gg/synapseprotocol)**
 * **[Twitter](https://twitter.com/SynapseProtocol)**
 * **[Telegram](https://t.me/synapseprotocol)**
-* **[Forum](https://common.xyz/cortex-dao)**
+* **[Forum](https://forum.synapseprotocol.com/)**
 
 ## Frequently Asked Questions
 

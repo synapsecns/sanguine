@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"github.com/synapsecns/sanguine/contrib/opbot/sql/mysql"
 	"github.com/synapsecns/sanguine/contrib/opbot/sql/sqlite"
 	"github.com/synapsecns/sanguine/core/dbcommon"

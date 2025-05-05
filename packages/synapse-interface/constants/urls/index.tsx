@@ -38,7 +38,7 @@ export const STAKE_SYN_FOR_CX_URL = 'https://cortexprotocol.com/agents/convert'
 /** Synapse Social Links */
 export const DISCORD_URL = 'https://discord.gg/synapseprotocol'
 export const TELEGRAM_URL = 'https://t.me/synapseprotocol'
-export const FORUM_URL = 'https://common.xyz/cortex-dao'
+export const FORUM_URL = 'https://forum.synapseprotocol.com/'
 export const TWITTER_URL = 'https://twitter.com/SynapseProtocol'
 export const GITHUB_URL = 'https://github.com/synapsecns'
 export const MEDIUM_URL = 'https://synapseprotocol.medium.com/'

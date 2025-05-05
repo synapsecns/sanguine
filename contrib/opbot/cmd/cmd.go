@@ -3,7 +3,6 @@ package cmd
 
 import (
 	"fmt"
-
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/metrics"

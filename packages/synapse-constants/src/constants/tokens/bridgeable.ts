@@ -1301,17 +1301,3 @@ export const SPECTRAL = new Token({
   color: 'blue',
   routeSymbol: 'SPEC',
 })
-
-export const HYPE = new Token({
-  priorityRank: 6,
-  addresses: {
-    [CHAINS.HYPEREVM.id]: zeroAddress,
-  },
-  decimals: 18,
-  symbol: 'HYPE',
-  name: 'Hyperliquid',
-  logo: 'https://synapseprotocol.com/_next/static/media/hyperliquid.3dafe2fd.svg',
-  swapableType: 'HYPE',
-  color: 'green',
-  routeSymbol: 'HYPE',
-})

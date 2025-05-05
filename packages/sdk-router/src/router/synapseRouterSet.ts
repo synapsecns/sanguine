@@ -1,18 +1,17 @@
+import invariant from 'tiny-invariant'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
-import invariant from 'tiny-invariant'
 
-import { ChainProvider, RouterSet } from './routerSet'
 import { BridgeTokenType, SynapseRouter } from './synapseRouter'
+import { ChainProvider, RouterSet } from './routerSet'
 import { MEDIAN_TIME_BRIDGE, ROUTER_ADDRESS_MAP } from '../constants'
-import { BridgeRouteV2, BridgeTokenCandidate } from '../module'
-import { logExecutionTime } from '../utils'
+import { BridgeRoute } from '../module'
 
 /**
  * Wrapper class for interacting with a SynapseRouter contracts deployed on multiple chains.
  */
 export class SynapseRouterSet extends RouterSet {
-  public readonly moduleName = 'SynapseBridge'
+  public readonly bridgeModuleName = 'SynapseBridge'
   public readonly allEvents = [
     'DepositEvent',
     'RedeemEvent',
@@ -25,7 +24,6 @@ export class SynapseRouterSet extends RouterSet {
     'WithdrawAndRemoveEvent',
     'RedeemV2Event',
   ]
-  public readonly isBridgeV2Supported = false
 
   constructor(chains: ChainProvider[]) {
     super(chains, ROUTER_ADDRESS_MAP, SynapseRouter)
@@ -44,24 +42,16 @@ export class SynapseRouterSet extends RouterSet {
   /**
    * @inheritdoc SynapseModuleSet.getGasDropAmount
    */
-  public async getGasDropAmount(
-    destChainId: number,
-    destBridgeToken: string
-  ): Promise<BigNumber> {
-    const router = this.getSynapseRouter(destChainId)
+  public async getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber> {
+    const router = this.getSynapseRouter(bridgeRoute.destChainId)
     // Gas airdrop exists only for minted tokens
-    const tokenType = await router.getBridgeTokenType(destBridgeToken)
+    const tokenType = await router.getBridgeTokenType(
+      bridgeRoute.bridgeToken.token
+    )
     if (tokenType !== BridgeTokenType.Redeem) {
       return Zero
     }
-    return router.chainGasAmount()
-  }
-
-  @logExecutionTime('SynapseRouterSet.getBridgeRoutes')
-  public async getBridgeRoutes(
-    ...args: Parameters<RouterSet['getBridgeRoutes']>
-  ): ReturnType<RouterSet['getBridgeRoutes']> {
-    return super.getBridgeRoutes(...args)
+    return this.getSynapseRouter(bridgeRoute.destChainId).chainGasAmount()
   }
 
   /**
@@ -71,13 +61,5 @@ export class SynapseRouterSet extends RouterSet {
    */
   public getSynapseRouter(chainId: number): SynapseRouter {
     return this.getExistingModule(chainId) as SynapseRouter
-  }
-
-  public async getBridgeTokenCandidates(): Promise<BridgeTokenCandidate[]> {
-    return []
-  }
-
-  public async getBridgeRouteV2(): Promise<BridgeRouteV2> {
-    throw new Error('BridgeRouteV2 is not supported by ' + this.moduleName)
   }
 }

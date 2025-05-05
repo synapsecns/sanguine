@@ -185,7 +185,6 @@ type DateResultByChain {
   worldchain: Float
   unichain: Float
   berachain: Float
-  hyperevm: Float
   total:  Float
 }
 

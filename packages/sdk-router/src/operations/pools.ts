@@ -1,5 +1,5 @@
-import { BigNumber } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import { Pool, PoolInfo, PoolToken } from '../router'
 import { SynapseSDK } from '../sdk'

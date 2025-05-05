@@ -4,17 +4,7 @@ title: $SYN Token
 
 # $SYN Token
 
-:::note the SYN token is being migrated to the CX token. Learn more about the migration [here](https://docs.cortexprotocol.com/docs/Misc/TokenUpgradeFAQ).
-:::
-
-$SYN is the legacy governance token for the Synapse Protocol. As per [SIP - 43](https://snapshot.box/#/s:synapseprotocol.eth/proposal/0x274e0c14be2a62c2a293a0cade4560481ab8da183e66d250ed9c8cdd9bbd5b4e), all SYN tokens will be converted to CX. To learn more about the conversion, please see https://docs.cortexprotocol.com/docs/Misc/TokenUpgradeFAQ.
-
-
- There are no unlocks, all future $SYN emissions are governed by the [DAO](/docs/About/DAO).
-
- # CX Token
-
- The $CX token serves to decentralise the Cortex Protocol, and is used to govern Synapse and Cortex Protocol. More information about Cortex can be found in the [Cortex Docs](https://docs.cortexprotocol.com/docs/StartHere)
+$SYN is the governance token for the Synapse Protocol. There are no unlocks, all future $SYN emissions are goverened by the [DAO](/docs/About/DAO).
 
 Liquidity for the [$SYN](https://coinmarketcap.com/currencies/synapse-2/) token can be found here:
 

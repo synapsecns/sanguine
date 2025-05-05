@@ -1,5 +1,5 @@
 require('dotenv').config()
-// TODO: handle HYPE-ETH, HYPE-USDC pairs from the RFQ API
+
 const { ethers } = require('ethers')
 
 const { prettyPrintTS } = require('./utils/prettyPrintTs')

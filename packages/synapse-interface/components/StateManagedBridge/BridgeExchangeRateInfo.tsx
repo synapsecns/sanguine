@@ -65,17 +65,15 @@ const Slippage = () => {
   const t = useTranslations('Bridge')
   // TODO: handle slippage between different types of assets
   const {
-    bridgeQuote: { exchangeRate, originTokenForQuote, destTokenForQuote },
+    bridgeQuote: { exchangeRate, bridgeModuleName },
   } = useBridgeQuoteState()
-  const areSameAssets =
-    originTokenForQuote?.swapableType === destTokenForQuote?.swapableType
 
   const { formattedPercentSlippage, safeFromAmount, underFee, textColor } =
     useExchangeRateInfo(debouncedFromValue, exchangeRate)
   return (
     <div className="flex justify-between">
       <span className="text-zinc-500 dark:text-zinc-400">{t('Slippage')}</span>
-      {safeFromAmount !== '0' && !underFee && areSameAssets ? (
+      {safeFromAmount !== '0' && !underFee && bridgeModuleName !== 'Gas.zip' ? (
         <span className={textColor}>{formattedPercentSlippage}</span>
       ) : (
         <span className="">−</span>

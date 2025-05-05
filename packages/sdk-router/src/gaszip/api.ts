@@ -1,8 +1,8 @@
+import { BigNumber } from 'ethers'
 import { Zero } from '@ethersproject/constants'
-import { BigNumber, BigNumberish } from 'ethers'
 
-import { GASZIP_SUPPORTED_CHAIN_IDS } from '../constants'
-import { getWithTimeout } from '../utils'
+import { BigintIsh } from '../constants'
+import { getWithTimeout } from '../utils/api'
 
 const GAS_ZIP_API_URL = 'https://backend.gas.zip/v2'
 const GAS_ZIP_API_TIMEOUT = 2000
@@ -15,21 +15,24 @@ interface TransactionStatusData {
   txs: Transaction[]
 }
 
-export interface Chains {
-  chains?: {
-    name: string
-    chain: number // native chain id
-    short: number // unique Gas.zip id
-    gas: string // gas usage of a simple transfer
-    gwei: string // current gas price
-    bal: string // balance of the Gas.zip reloader
-    rpcs: string[]
-    symbol: string
-    price: number
-  }[]
+interface Chains {
+  chains?: [
+    {
+      name: string
+      chain: number // native chain id
+      short: number // unique Gas.zip id
+      gas: string // gas usage of a simple transfer
+      gwei: string // current gas price
+      bal: string // balance of the Gas.zip reloader
+      rpcs: string[]
+      symbol: string
+      price: number
+    }
+  ]
 }
 
-interface QuoteResponse {
+interface CalldataQuoteResponse {
+  calldata: string
   quotes: {
     chain: number
     expected: string
@@ -41,17 +44,12 @@ interface QuoteResponse {
 
 export type GasZipQuote = {
   amountOut: BigNumber
-  speed: number
-  usd: number
+  calldata: string
 }
-
-const QUOTE_MIN_USD = 0.1
-const QUOTE_MAX_USD = 200
 
 const EMPTY_GAS_ZIP_QUOTE: GasZipQuote = {
   amountOut: Zero,
-  speed: 0,
-  usd: 0,
+  calldata: '0x',
 }
 
 export const getGasZipTxStatus = async (txHash: string): Promise<boolean> => {
@@ -67,71 +65,44 @@ export const getGasZipTxStatus = async (txHash: string): Promise<boolean> => {
   return data.txs.length > 0 && data.txs[0].status === 'CONFIRMED'
 }
 
-export const getChains = async (): Promise<Chains> => {
+export const getChainIds = async (): Promise<number[]> => {
   const response = await getWithTimeout(
     'Gas.Zip API',
     `${GAS_ZIP_API_URL}/chains`,
     GAS_ZIP_API_TIMEOUT
   )
   if (!response) {
-    return {}
+    return []
   }
   const data: Chains = await response.json()
-  // Filter out unsupported chains
-  return {
-    chains: data.chains?.filter((chain) =>
-      GASZIP_SUPPORTED_CHAIN_IDS.includes(chain.chain)
-    ),
-  }
-}
-
-export const getGasZipBlockHeightMap = async (): Promise<
-  Map<number, number>
-> => {
-  const response = await getWithTimeout(
-    'Gas.Zip API',
-    `${GAS_ZIP_API_URL}/admin/indexer`,
-    GAS_ZIP_API_TIMEOUT
-  )
-  if (!response) {
-    return new Map()
-  }
-  const data: { chain: any; head: any }[] = await response.json()
-  return new Map(
-    data
-      .filter((item) => {
-        const chainNum = Number(item.chain)
-        const headNum = Number(item.head)
-        return Number.isInteger(chainNum) && Number.isInteger(headNum)
-      })
-      .map((item) => [Number(item.chain), Number(item.head)])
-  )
+  return data.chains?.map((chain) => chain.chain) ?? []
 }
 
 export const getGasZipQuote = async (
   originChainId: number,
   destChainId: number,
-  amount: BigNumberish
+  amount: BigintIsh,
+  to: string,
+  from?: string
 ): Promise<GasZipQuote> => {
   const response = await getWithTimeout(
     'Gas.Zip API',
     `${GAS_ZIP_API_URL}/quotes/${originChainId}/${amount}/${destChainId}`,
-    GAS_ZIP_API_TIMEOUT
+    GAS_ZIP_API_TIMEOUT,
+    {
+      from,
+      to,
+    }
   )
   if (!response) {
     return EMPTY_GAS_ZIP_QUOTE
   }
-  const data: QuoteResponse = await response.json()
+  const data: CalldataQuoteResponse = await response.json()
   if (data.quotes.length === 0 || !data.quotes[0].expected) {
     return EMPTY_GAS_ZIP_QUOTE
   }
-  const quote = data.quotes[0]
-  if (quote.usd < QUOTE_MIN_USD || quote.usd > QUOTE_MAX_USD) {
-    return EMPTY_GAS_ZIP_QUOTE
-  }
   return {
-    amountOut: BigNumber.from(quote.expected.toString()),
-    speed: quote.speed,
-    usd: quote.usd,
+    amountOut: BigNumber.from(data.quotes[0].expected.toString()),
+    calldata: data.calldata,
   }
 }

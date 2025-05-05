@@ -1,61 +1,16 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { BigNumberish } from 'ethers'
-import invariant from 'tiny-invariant'
 import { uuidv7 } from 'uuidv7'
+import invariant from 'tiny-invariant'
 
+import { BigintIsh } from '../constants'
+import { BridgeQuote, BridgeRoute, FeeConfig } from './types'
 import { SynapseModule } from './synapseModule'
-import {
-  BridgeRoute,
-  BridgeRouteV2,
-  BridgeTokenCandidate,
-  FeeConfig,
-} from './types'
-import { applyOptionalDeadline } from '../utils'
+import { applyOptionalDeadline } from '../utils/deadlines'
 import { Query } from './query'
-import { Slippage, SwapEngineRoute } from '../swap'
-import { BridgeQuote, BridgeQuoteV2 } from '../types'
-
-/**
- * Parameters for `getBridgeTokenCandidates` function.
- *
- * @param originChainId - The ID of the origin chain.
- * @param destChainId - The ID of the destination chain.
- * @param tokenIn - The input token.
- * @param tokenOut - The output token, optional.
- */
-export type GetBridgeTokenCandidatesParameters = {
-  fromChainId: number
-  toChainId: number
-  fromToken: string
-  toToken?: string
-}
-
-/**
- * Parameters for `getBridgeRouteV2` function.
- *
- * @param originAmountIn - The amount of the bridge token on the origin chain.
- * @param bridgeToken - The bridge token to be used for the bridge.
- * @param destTokenOut - The output token on the destination chain that needs to be received.
- * @param originSender - The address of the user on the origin chain.
- * @param destRecipient - The address of the user on the destination chain.
- * @param slippage - The slippage to be used for the swap.
- * @param allowMultipleTxs - Whether to allow multiple transactions for the bridge, in which case the returned BridgeRouteV2
- * might have a fallback quote to the `bridgeToken` instead of `destTokenOut`.
- */
-export type GetBridgeRouteV2Parameters = {
-  originSwapRoute: SwapEngineRoute
-  bridgeToken: BridgeTokenCandidate
-  toToken: string
-  fromSender?: string
-  toRecipient?: string
-  slippage?: Slippage
-  allowMultipleTxs?: boolean
-}
 
 export abstract class SynapseModuleSet {
-  abstract readonly moduleName: string
+  abstract readonly bridgeModuleName: string
   abstract readonly allEvents: string[]
-  abstract readonly isBridgeV2Supported: boolean
 
   /**
    * Returns the estimated time for a bridge transaction to be completed,
@@ -137,29 +92,6 @@ export abstract class SynapseModuleSet {
   }
 
   /**
-   * Returns the list of bridge token candidates that can facilitate a given intent from `tokenIn` to `tokenOut`.
-   * If `tokenOut` is not provided, all bridge tokens that can facilitate the intent from `tokenIn` to any token will be returned.
-   *
-   * @param params - The parameters for the bridge token candidates.
-   * @returns A promise that resolves to a list of bridge token candidates.
-   */
-  abstract getBridgeTokenCandidates(
-    params: GetBridgeTokenCandidatesParameters
-  ): Promise<BridgeTokenCandidate[]>
-
-  /**
-   * Returns the bridge route with a non-zero quote for a given path.
-   * If `allowMultipleTxs` is true, the returned BridgeRouteV2 might have a fallback quote to the `bridgeToken` instead of `destTokenOut`,
-   * should the direct path to `destTokenOut` not be available through this module.
-   *
-   * @param params - The parameters for the bridge route.
-   * @returns A promise that resolves to the bridge route with a non-zero quote, or undefined if no route is found.
-   */
-  abstract getBridgeRouteV2(
-    params: GetBridgeRouteV2Parameters
-  ): Promise<BridgeRouteV2 | undefined>
-
-  /**
    * This method find all possible routes for a bridge transaction between two chains.
    *
    * @param originChainId - The ID of the original chain.
@@ -176,7 +108,7 @@ export abstract class SynapseModuleSet {
     destChainId: number,
     tokenIn: string,
     tokenOut: string,
-    amountIn: BigNumberish,
+    amountIn: BigintIsh,
     originUserAddress?: string
   ): Promise<BridgeRoute[]>
 
@@ -196,14 +128,10 @@ export abstract class SynapseModuleSet {
    * User will receive this amount of gas tokens on the destination chain,
    * when the module transaction is completed.
    *
-   * @param destChainId - The ID of the destination chain.
-   * @param destBridgeToken - The destination bridge token.
+   * @param bridgeRoute - The bridge route to get gas drop amount for.
    * @returns A promise that resolves to the gas drop amount.
    */
-  abstract getGasDropAmount(
-    destChainId: number,
-    destBridgeToken: string
-  ): Promise<BigNumber>
+  abstract getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber>
 
   /**
    * Returns the default deadline periods for this bridge module.
@@ -271,7 +199,7 @@ export abstract class SynapseModuleSet {
     const originModule = this.getExistingModule(bridgeRoute.originChainId)
     this.getExistingModule(bridgeRoute.destChainId)
     invariant(
-      bridgeRoute.bridgeModuleName === this.moduleName,
+      bridgeRoute.bridgeModuleName === this.bridgeModuleName,
       'Invalid bridge module name'
     )
     const uuid = uuidv7()
@@ -291,28 +219,9 @@ export abstract class SynapseModuleSet {
       destQuery,
       estimatedTime: this.getEstimatedTime(bridgeRoute.originChainId),
       bridgeModuleName: bridgeRoute.bridgeModuleName,
-      gasDropAmount: await this.getGasDropAmount(
-        bridgeRoute.destChainId,
-        bridgeRoute.bridgeToken.token
-      ),
+      gasDropAmount: await this.getGasDropAmount(bridgeRoute),
       originChainId: bridgeRoute.originChainId,
       destChainId: bridgeRoute.destChainId,
-    }
-  }
-
-  async finalizeBridgeQuoteV2(
-    bridgeToken: BridgeTokenCandidate,
-    bridgeQuote: BridgeQuoteV2
-  ): Promise<BridgeQuoteV2> {
-    const gasDropAmount = await this.getGasDropAmount(
-      bridgeQuote.toChainId,
-      bridgeToken.destToken
-    )
-    return {
-      ...bridgeQuote,
-      estimatedTime: this.getEstimatedTime(bridgeQuote.fromChainId),
-      moduleNames: [...bridgeQuote.moduleNames, this.moduleName],
-      gasDropAmount: gasDropAmount.toString(),
     }
   }
 }

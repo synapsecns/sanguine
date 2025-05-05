@@ -3,13 +3,13 @@ package mysql
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/contrib/opbot/sql/base"
+	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"time"
 
 	"github.com/ipfs/go-log"
-	"github.com/synapsecns/sanguine/contrib/opbot/sql/base"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
-	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"

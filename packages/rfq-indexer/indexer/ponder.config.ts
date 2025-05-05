@@ -16,7 +16,6 @@ const bnbChainId = 56
 const worldchainChainId = 480
 const unichainChainId = 130
 const berachainChainId = 80094
-const hyperevmChainId = 999
 
 const configByChainId = {
   [1]: {
@@ -90,12 +89,6 @@ const configByChainId = {
     chainName: 'berachain',
     FastBridgeV2Address: '0x63c3211257CcE0c12c7c7A6DBb75960fEaBF45Be',
     FastBridgeV2StartBlock: 953594, // first block and new block
-  },
-  [999]: {
-    transport: http(process.env.HYPEREVM_MAINNET_RPC),
-    chainName: 'hyperevm',
-    FastBridgeV2Address: '0x63c3211257CcE0c12c7c7A6DBb75960fEaBF45Be',
-    FastBridgeV2StartBlock: 698460, // first activity
   },
   disableCache: true,
 }
@@ -189,15 +182,6 @@ export const networkDetails = {
       startBlock: configByChainId[berachainChainId].FastBridgeV2StartBlock,
     },
   },
-  [hyperevmChainId]: {
-    name: configByChainId[hyperevmChainId].chainName,
-    FastBridgeV2: {
-      address: configByChainId[hyperevmChainId].FastBridgeV2Address,
-      abi: FastBridgeV2Abi,
-      startBlock: configByChainId[hyperevmChainId].FastBridgeV2StartBlock,
-      maxBlockRange: 50,
-    },
-  },
 } as Record<number, AddressConfig>
 
 const config = createConfig({
@@ -257,11 +241,6 @@ const config = createConfig({
       transport: configByChainId[berachainChainId].transport,
       //   disableCache: configByChainId.disableCache,
     },
-    [configByChainId[hyperevmChainId].chainName]: {
-      chainId: hyperevmChainId,
-      transport: configByChainId[hyperevmChainId].transport,
-      //   disableCache: configByChainId.disableCache,
-    },
   },
   contracts: {
     FastBridgeV2: {
@@ -310,12 +289,6 @@ const config = createConfig({
         [configByChainId[berachainChainId].chainName]: {
           address: networkDetails[berachainChainId]?.FastBridgeV2.address,
           startBlock: networkDetails[berachainChainId]?.FastBridgeV2.startBlock,
-        },
-        [configByChainId[hyperevmChainId].chainName]: {
-          address: networkDetails[hyperevmChainId]?.FastBridgeV2.address,
-          startBlock: networkDetails[hyperevmChainId]?.FastBridgeV2.startBlock,
-          maxBlockRange:
-            networkDetails[hyperevmChainId]?.FastBridgeV2.maxBlockRange,
         },
       },
       abi: FastBridgeV2Abi,

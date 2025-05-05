@@ -67,7 +67,7 @@ export function Footer() {
                 url: 'https://discord.com/invite/synapseprotocol',
               },
               { label: 'Twitter', url: 'https://twitter.com/SynapseProtocol' },
-              { label: 'Forum', url: 'https://common.xyz/cortex-dao' },
+              { label: 'Forum', url: 'https://forum.synapseprotocol.com/' },
               { label: 'Telegram', url: 'https://t.me/synapseprotocol' },
             ]}
           />
