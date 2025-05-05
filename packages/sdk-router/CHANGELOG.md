@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.17.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.9...@synapsecns/sdk-router@0.17.10) (2025-05-02)
+
+
+### Bug Fixes
+
+* **sdk-router:** gas.zip block height ([#3675](https://github.com/synapsecns/sanguine/issues/3675)) ([48d7cc6](https://github.com/synapsecns/sanguine/commit/48d7cc6d11798ed3ed6490fbf82d1924e9e5f0e3))
+
+
+
+
+
 ## [0.17.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.8...@synapsecns/sdk-router@0.17.9) (2025-04-25)
 
 
