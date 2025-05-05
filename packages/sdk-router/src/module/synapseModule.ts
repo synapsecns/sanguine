@@ -1,7 +1,7 @@
 import { PopulatedTransaction } from '@ethersproject/contracts'
+import { BigNumberish } from 'ethers'
 
 import { Query } from './query'
-import { BigintIsh } from '../constants'
 
 export interface SynapseModule {
   readonly address: string
@@ -21,7 +21,7 @@ export interface SynapseModule {
     to: string,
     destChainId: number,
     token: string,
-    amount: BigintIsh,
+    amount: BigNumberish,
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction>

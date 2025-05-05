@@ -61,6 +61,7 @@ func TestHandleJSONDailyStat(t *testing.T) {
 			Worldchain *float64 "json:\"worldchain\" graphql:\"worldchain\""
 			Unichain   *float64 "json:\"unichain\" graphql:\"unichain\""
 			Berachain  *float64 "json:\"berachain\" graphql:\"berachain\""
+			Hyperevm   *float64 "json:\"hyperevm\" graphql:\"hyperevm\""
 			Total      *float64 "json:\"total\" graphql:\"total\""
 		}{
 			{

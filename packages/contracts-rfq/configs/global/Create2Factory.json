@@ -1,0 +1,24 @@
+{
+  "salts": {
+    "FastBridgeInterceptor": {
+      "creationCodeHash": "0xd337d1805be8ea2a427271000d1efbbb4ac59a18da9ca18f1334a70554a64324",
+      "predictedAddress": "0xfb1fb1060c550a9b274c64f70dadf16f2ad34fb1",
+      "salt": "0x821ea8c2da0b4461ae18726f668b1b57f753c7c35c72b280b9cf07c280b6db46"
+    },
+    "SynapseIntentPreviewer": {
+      "creationCodeHash": "0x12fb48b8675a75c315e52c7cf1e0ef77c56afb352f9fcd4a39cb2e5a40879a2e",
+      "predictedAddress": "0x519519a57a6ea930f87e3436b6ea113a990ff519",
+      "salt": "0xf514d06efe11ada58f892070164058aa17abab39c5d6bf691c3a4151dd21754e"
+    },
+    "SynapseIntentRouter": {
+      "creationCodeHash": "0x3253ae5ea1c0785cc555234b9f3c300b553e4d45ea3ffd1631751d4ac0d20e4c",
+      "predictedAddress": "0x512000a034e154908efb1ec48579f4ffdb000512",
+      "salt": "0xe67e83df7f4922760120db0f05ed58be3aa01375eb907a315cdbc8702beb6ea1"
+    },
+    "TokenZapV1": {
+      "creationCodeHash": "0x0579f3dfa5b06fcb2a8d5b22b48129653b0cae60101cdb136f8a20a38457015a",
+      "predictedAddress": "0x2aaaa9b71e479e6e2de7e091b09d61c25d2aaaa9",
+      "salt": "0x566ca17f3b6420f0dfdfd5f71caa05c961914ac9e989143fb1c3f7c0f2fe343d"
+    }
+  }
+}

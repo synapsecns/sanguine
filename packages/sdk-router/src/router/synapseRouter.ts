@@ -1,18 +1,22 @@
-import { Provider } from '@ethersproject/abstract-provider'
-import invariant from 'tiny-invariant'
-import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
+import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
-import { solidityKeccak256 } from 'ethers/lib/utils'
 import { AddressZero } from '@ethersproject/constants'
+import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
+import { BigNumberish } from 'ethers'
+import { solidityKeccak256 } from 'ethers/lib/utils'
+import invariant from 'tiny-invariant'
 
-import routerAbi from '../abi/SynapseRouter.json'
-import { SynapseBridge as SynapseBridgeContract } from '../typechain/SynapseBridge'
-import {
-  SynapseRouter as SynapseRouterContract,
-  PoolStructOutput,
-} from '../typechain/SynapseRouter'
 import { Router } from './router'
+import {
+  DestRequest,
+  Pool,
+  PoolInfo,
+  PoolToken,
+  reduceToPoolToken,
+} from './types'
+import bridgeAbi from '../abi/SynapseBridge.json'
+import routerAbi from '../abi/SynapseRouter.json'
 import {
   BridgeToken,
   FeeConfig,
@@ -22,18 +26,17 @@ import {
   reduceToFeeConfig,
   reduceToQuery,
 } from '../module'
-import bridgeAbi from '../abi/SynapseBridge.json'
-import { BigintIsh } from '../constants'
+import { SynapseBridge as SynapseBridgeContract } from '../typechain/SynapseBridge'
 import {
-  DestRequest,
-  Pool,
-  PoolInfo,
-  PoolToken,
-  reduceToPoolToken,
-} from './types'
-import { adjustValueIfNative } from '../utils/handleNativeToken'
-import { getMatchingTxLog } from '../utils/logs'
-import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
+  SynapseRouter as SynapseRouterContract,
+  PoolStructOutput,
+} from '../typechain/SynapseRouter'
+import {
+  adjustValueIfNative,
+  getMatchingTxLog,
+  CACHE_TIMES,
+  RouterCache,
+} from '../utils'
 
 /**
  * Wraps [tokens, lpToken] returned by the SynapseRouter contract into a PoolInfo object.
@@ -118,7 +121,7 @@ export class SynapseRouter extends Router {
   public async getOriginAmountOut(
     tokenIn: string,
     bridgeTokens: string[],
-    amountIn: BigintIsh
+    amountIn: BigNumberish
   ): Promise<Query[]> {
     return this.routerContract
       .getOriginAmountOut(tokenIn, bridgeTokens, amountIn)
@@ -165,7 +168,7 @@ export class SynapseRouter extends Router {
     to: string,
     chainId: number,
     token: string,
-    amount: BigintIsh,
+    amount: BigNumberish,
     originQuery: Query,
     destQuery: Query
   ): Promise<PopulatedTransaction> {
@@ -260,21 +263,21 @@ export class SynapseRouter extends Router {
 
   public async calculateAddLiquidity(
     poolAddress: string,
-    amounts: BigintIsh[]
+    amounts: BigNumberish[]
   ): Promise<BigNumber> {
     return this.routerContract.calculateAddLiquidity(poolAddress, amounts)
   }
 
   public async calculateRemoveLiquidity(
     poolAddress: string,
-    amount: BigintIsh
+    amount: BigNumberish
   ): Promise<BigNumber[]> {
     return this.routerContract.calculateRemoveLiquidity(poolAddress, amount)
   }
 
   public async calculateWithdrawOneToken(
     poolAddress: string,
-    amount: BigintIsh,
+    amount: BigNumberish,
     tokenIndex: number
   ): Promise<BigNumber> {
     return this.routerContract.calculateWithdrawOneToken(
@@ -287,7 +290,7 @@ export class SynapseRouter extends Router {
   public async getAmountOut(
     tokenIn: string,
     tokenOut: string,
-    amountIn: BigintIsh
+    amountIn: BigNumberish
   ): Promise<Query> {
     return this.routerContract
       .getAmountOut(tokenIn, tokenOut, amountIn)
@@ -297,7 +300,7 @@ export class SynapseRouter extends Router {
   public async swap(
     to: string,
     token: string,
-    amount: BigintIsh,
+    amount: BigNumberish,
     query: Query
   ): Promise<PopulatedTransaction> {
     const populatedTransaction =

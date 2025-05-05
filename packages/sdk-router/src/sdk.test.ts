@@ -1,9 +1,16 @@
 import { Provider } from '@ethersproject/abstract-provider'
-import { BigNumber, PopulatedTransaction } from 'ethers'
-import { AddressZero, Zero } from '@ethersproject/constants'
 import { parseFixed } from '@ethersproject/bignumber'
+import { AddressZero, Zero } from '@ethersproject/constants'
+import { BigNumber, PopulatedTransaction } from 'ethers'
 
-import { SynapseSDK } from './sdk'
+import {
+  CCTP_ROUTER_ADDRESS_MAP,
+  MEDIAN_TIME_BRIDGE,
+  MEDIAN_TIME_CCTP,
+  ROUTER_ADDRESS_MAP,
+  SupportedChainId,
+} from './constants'
+import { getTestProvider } from './constants/testProviders'
 import {
   ARB_GMX,
   ARB_NETH,
@@ -28,23 +35,10 @@ import {
   ETH_USDT,
   NATIVE_ADDRESS,
 } from './constants/testValues'
-import { getTestProvider } from './constants/testProviders'
-import {
-  CCTP_ROUTER_ADDRESS_MAP,
-  MEDIAN_TIME_BRIDGE,
-  MEDIAN_TIME_CCTP,
-  ROUTER_ADDRESS_MAP,
-  SupportedChainId,
-} from './constants'
-import {
-  BridgeQuote,
-  FeeConfig,
-  Query,
-  RouterQuery,
-  SwapQuote,
-  SynapseModuleSet,
-} from './module'
+import { FeeConfig, Query, RouterQuery, SynapseModuleSet } from './module'
 import * as operations from './operations'
+import { SynapseSDK } from './sdk'
+import { BridgeQuote, SwapQuote } from './types'
 
 // Override fetch to exclude RFQ from tests
 global.fetch = jest.fn(() =>
@@ -872,14 +866,14 @@ describe('SynapseSDK', () => {
     }
 
     const createApplySlippageTests = (moduleSet: SynapseModuleSet) => {
-      describe(`${moduleSet.bridgeModuleName} module`, () => {
+      describe(`${moduleSet.moduleName} module`, () => {
         beforeEach(() => {
           jest.spyOn(moduleSet, 'applySlippage').mockImplementation(jest.fn())
         })
 
         it('Applies slippage', () => {
           synapse.applyBridgeSlippage(
-            moduleSet.bridgeModuleName,
+            moduleSet.moduleName,
             originQuery,
             destQuery,
             10,
@@ -895,7 +889,7 @@ describe('SynapseSDK', () => {
 
         it('Uses default denominator of 10000', () => {
           synapse.applyBridgeSlippage(
-            moduleSet.bridgeModuleName,
+            moduleSet.moduleName,
             originQuery,
             destQuery,
             10
@@ -910,7 +904,7 @@ describe('SynapseSDK', () => {
 
         it('Uses default slippage of 10 bips', () => {
           synapse.applyBridgeSlippage(
-            moduleSet.bridgeModuleName,
+            moduleSet.moduleName,
             originQuery,
             destQuery
           )

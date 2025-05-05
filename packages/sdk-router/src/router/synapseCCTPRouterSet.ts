@@ -1,20 +1,22 @@
-import invariant from 'tiny-invariant'
 import { BigNumber } from '@ethersproject/bignumber'
+import invariant from 'tiny-invariant'
 
-import { SynapseCCTPRouter } from './synapseCCTPRouter'
 import { ChainProvider, RouterSet } from './routerSet'
+import { SynapseCCTPRouter } from './synapseCCTPRouter'
 import { CCTP_ROUTER_ADDRESS_MAP, MEDIAN_TIME_CCTP } from '../constants'
-import { BridgeRoute } from '../module'
+import { BridgeRouteV2, BridgeTokenCandidate } from '../module'
+import { logExecutionTime } from '../utils'
 
 /**
  * Wrapper class for interacting with a SynapseCCTPRouter contracts deployed on multiple chains.
  */
 export class SynapseCCTPRouterSet extends RouterSet {
-  public readonly bridgeModuleName = 'SynapseCCTP'
+  public readonly moduleName = 'SynapseCCTP'
   public readonly allEvents = [
     'CircleRequestSentEvent',
     'CircleRequestFulfilledEvent',
   ]
+  public readonly isBridgeV2Supported = false
 
   constructor(chains: ChainProvider[]) {
     super(chains, CCTP_ROUTER_ADDRESS_MAP, SynapseCCTPRouter)
@@ -33,8 +35,15 @@ export class SynapseCCTPRouterSet extends RouterSet {
   /**
    * @inheritdoc SynapseModuleSet.getGasDropAmount
    */
-  public async getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber> {
-    return this.getSynapseCCTPRouter(bridgeRoute.destChainId).chainGasAmount()
+  public async getGasDropAmount(destChainId: number): Promise<BigNumber> {
+    return this.getSynapseCCTPRouter(destChainId).chainGasAmount()
+  }
+
+  @logExecutionTime('SynapseCCTPRouterSet.getBridgeRoutes')
+  public async getBridgeRoutes(
+    ...args: Parameters<RouterSet['getBridgeRoutes']>
+  ): ReturnType<RouterSet['getBridgeRoutes']> {
+    return super.getBridgeRoutes(...args)
   }
 
   /**
@@ -44,5 +53,13 @@ export class SynapseCCTPRouterSet extends RouterSet {
    */
   public getSynapseCCTPRouter(chainId: number): SynapseCCTPRouter {
     return this.getExistingModule(chainId) as SynapseCCTPRouter
+  }
+
+  public async getBridgeTokenCandidates(): Promise<BridgeTokenCandidate[]> {
+    return []
+  }
+
+  public async getBridgeRouteV2(): Promise<BridgeRouteV2> {
+    throw new Error('BridgeRouteV2 is not supported by ' + this.moduleName)
   }
 }
