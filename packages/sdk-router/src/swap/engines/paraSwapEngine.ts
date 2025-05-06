@@ -24,8 +24,18 @@ import {
   SwapEngineQuote,
   SwapEngineRoute,
 } from '../models'
+import { SupportedChainId } from '../../constants'
 
 const PARASWAP_API_URL = 'https://api.paraswap.io'
+const PARASWAP_SUPPORTED_CHAINS = [
+  SupportedChainId.AVALANCHE,
+  SupportedChainId.ARBITRUM,
+  SupportedChainId.BASE,
+  SupportedChainId.BSC,
+  SupportedChainId.ETH,
+  SupportedChainId.OPTIMISM,
+  SupportedChainId.POLYGON,
+]
 
 export type ParaSwapPricesRequest = {
   srcToken: string
@@ -97,6 +107,7 @@ export class ParaSwapEngine implements SwapEngine {
   ): Promise<ParaSwapQuote> {
     const { chainId, fromToken, toToken, swapper, fromAmount } = input
     if (
+      !PARASWAP_SUPPORTED_CHAINS.includes(chainId) ||
       isSameAddress(fromToken, toToken) ||
       BigNumber.from(fromAmount).eq(Zero)
     ) {
