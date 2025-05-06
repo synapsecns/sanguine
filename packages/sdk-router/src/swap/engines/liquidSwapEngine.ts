@@ -6,6 +6,7 @@ import {
   getWithTimeout,
   isNativeToken,
   isSameAddress,
+  logExecutionTime,
   logger,
   Prettify,
   TokenMetadataFetcher,
@@ -23,6 +24,9 @@ import { SupportedChainId } from '../../constants'
 import { generateAPIRoute } from './response'
 
 const LIQUID_SWAP_API_URL = 'https://api.liqd.ag'
+// TODO: remove custom timeout
+const LIQUID_SWAP_API_TIMEOUT = 3000
+
 const WHYPE = '0x5555555555555555555555555555555555555555'
 const HYPE = '0x000000000000000000000000000000000000dEaD'
 const LIQUID_SWAP_ROUTER = '0x744489Ee3d540777A66f2cf297479745e0852f7A'
@@ -113,10 +117,8 @@ export class LiquidSwapEngine implements SwapEngine {
     this.tokenMetadataFetcher = tokenMetadataFetcher
   }
 
-  public async getQuote(
-    input: RouteInput,
-    timeout: number
-  ): Promise<LiquidSwapQuote> {
+  @logExecutionTime('LiquidSwapEngine.getQuote')
+  public async getQuote(input: RouteInput): Promise<LiquidSwapQuote> {
     const { chainId, fromToken, toToken, fromAmount } = input
     if (
       chainId !== SupportedChainId.HYPEREVM ||
@@ -137,7 +139,10 @@ export class LiquidSwapEngine implements SwapEngine {
       amountIn: Number(utils.formatUnits(fromAmount, fromTokenDecimals)),
       multiHop: true,
     }
-    const response = await this.getRouteResponse(request, timeout)
+    const response = await this.getRouteResponse(
+      request,
+      LIQUID_SWAP_API_TIMEOUT
+    )
     if (!response) {
       return getEmptyQuote(this.id)
     }
