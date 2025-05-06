@@ -275,7 +275,7 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 
 		// it's possible that this transaction is impersonated. If thats the case, eth_getTransactionByHash will return an error
 		// since the signature is not valid. In this case, we need to use the transaction hash to get the receipt instead, as this will
-		// return the sender from the rpc rather than tryng to derive it ourselves.
+		// return the sender from the rpc rather than trying to derive it ourselves.
 		if err != nil && !errors.Is(err, ethereum.NotFound) {
 			receipt, receiptErr := client.TransactionReceipt(ctx, transaction.Hash())
 			if err != nil {
