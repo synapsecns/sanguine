@@ -40,8 +40,8 @@ type LiquidSwapRouteRequest = {
   tokenA: string
   tokenB: string
   // Human-readable amounts (e.g., 1.5)
-  amountIn?: number
-  amountOut?: number
+  amountIn?: string
+  amountOut?: string
   multiHop?: boolean
   excludeDexes?: string
 }
@@ -136,7 +136,7 @@ export class LiquidSwapEngine implements SwapEngine {
     const request: LiquidSwapRouteRequest = {
       tokenA: this.transformNativeToken(fromToken),
       tokenB: this.transformNativeToken(toToken),
-      amountIn: Number(utils.formatUnits(fromAmount, fromTokenDecimals)),
+      amountIn: utils.formatUnits(fromAmount, fromTokenDecimals),
       multiHop: true,
     }
     const response = await this.getRouteResponse(
