@@ -183,7 +183,6 @@ export class KyberSwapEngine implements SwapEngine {
       expectedToAmount: quote.expectedToAmount,
       transaction: {
         chainId,
-        from: swapper,
         to: kyberSwapBuildResponse.data.routerAddress,
         value: isNativeToken(input.fromToken)
           ? input.fromAmount.toString()
