@@ -1,4 +1,5 @@
 import { BigNumber, utils } from 'ethers'
+import { Interface } from '@ethersproject/abi'
 import { Zero } from '@ethersproject/constants'
 
 import {
@@ -9,7 +10,7 @@ import {
   Prettify,
   TokenMetadataFetcher,
 } from '../../utils'
-import { EngineID } from '../core'
+import { applySlippage, EngineID, SlippageMax } from '../core'
 import {
   getEmptyQuote,
   getEmptyRoute,
@@ -19,9 +20,17 @@ import {
   SwapEngineRoute,
 } from '../models'
 import { SupportedChainId } from '../../constants'
+import { generateAPIRoute } from './response'
 
 const LIQUID_SWAP_API_URL = 'https://api.liqd.ag'
 const WHYPE = '0x5555555555555555555555555555555555555555'
+const HYPE = '0x000000000000000000000000000000000000dEaD'
+const LIQUID_SWAP_ROUTER = '0x744489Ee3d540777A66f2cf297479745e0852f7A'
+
+// MultiHopRouter ABI (just the executeMultiHopSwap function)
+const ROUTER_ABI = [
+  'function executeMultiHopSwap(address[] calldata tokens, uint256 amountIn, uint256 minAmountOut, tuple(address tokenIn, address tokenOut, uint8 routerIndex, uint24 fee, uint256 amountIn, bool stable)[][] calldata hopSwaps) external payable returns (uint256 totalAmountOut)',
+]
 
 type LiquidSwapRouteRequest = {
   tokenA: string
@@ -84,8 +93,19 @@ type LiquidSwapQuote = Prettify<
   }
 >
 
+type HopSwap = {
+  tokenIn: string
+  tokenOut: string
+  routerIndex: number
+  fee: number
+  amountIn: string
+  stable: boolean
+}
+
 export class LiquidSwapEngine implements SwapEngine {
   public readonly id: EngineID = EngineID.LiquidSwap
+
+  static routerInterface = new Interface(ROUTER_ABI)
 
   private tokenMetadataFetcher: TokenMetadataFetcher
 
@@ -155,8 +175,68 @@ export class LiquidSwapEngine implements SwapEngine {
       logger.error({ quote }, 'LiquidSwapEngine: unexpected quote')
       return getEmptyRoute(this.id)
     }
-    // TODO: implement route generation logic
-    return getEmptyRoute(this.id)
+    let tokens: string[] = []
+    let hopSwaps: HopSwap[][] = []
+    const { amountIn, ...rest } = quote.data.tokenInfo
+    const tokenInfoList = Object.values(rest)
+    for (const hopData of quote.data.bestPath.hop) {
+      // Fill the tokens array with the tokenOut of each hop
+      // Also add the tokenIn of the first hop to the tokens array
+      if (tokens.length === 0) {
+        tokens.push(hopData.tokenIn)
+      }
+      tokens.push(hopData.tokenOut)
+      const tokenInInfo = tokenInfoList.find((tokenInfo) =>
+        isSameAddress(tokenInfo.address, hopData.tokenIn)
+      )
+      if (!tokenInInfo) {
+        logger.error(
+          { data: quote.data, token: hopData.tokenIn },
+          'LiquidSwapEngine: unexpected token'
+        )
+        return getEmptyRoute(this.id)
+      }
+      hopSwaps.push(
+        hopData.allocations.map((allocation) => ({
+          tokenIn: tokenInInfo.address,
+          tokenOut: hopData.tokenOut,
+          routerIndex: allocation.routerIndex,
+          fee: allocation.fee,
+          amountIn: allocation.amountIn,
+          stable: allocation.stable,
+        }))
+      )
+    }
+    if (tokens.length === 0 || hopSwaps.length === 0) {
+      logger.error({ data: quote.data }, 'LiquidSwapEngine: no hops found')
+      return getEmptyRoute(this.id)
+    }
+    // Change fromToken and toToken to HYPE if needed
+    if (isNativeToken(input.fromToken)) {
+      tokens[0] = HYPE
+    }
+    if (isNativeToken(input.toToken)) {
+      tokens[tokens.length - 1] = HYPE
+    }
+    return generateAPIRoute(input, this.id, SlippageMax, {
+      expectedToAmount: quote.expectedToAmount,
+      transaction: {
+        chainId: SupportedChainId.HYPEREVM,
+        to: LIQUID_SWAP_ROUTER,
+        value: isNativeToken(input.fromToken)
+          ? input.fromAmount.toString()
+          : '0',
+        data: LiquidSwapEngine.routerInterface.encodeFunctionData(
+          'executeMultiHopSwap',
+          [
+            tokens,
+            input.fromAmount,
+            applySlippage(quote.expectedToAmount, SlippageMax),
+            hopSwaps,
+          ]
+        ),
+      },
+    })
   }
 
   public async getRouteResponse(
