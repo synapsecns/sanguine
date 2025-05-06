@@ -346,7 +346,7 @@ func (f *Backend) FundAccount(ctx context.Context, address common.Address, amoun
 	}
 }
 
-// GetFundedAccount returns an account with the requested balance. (Note: if genesis acount has an insufficient
+// GetFundedAccount returns an account with the requested balance. (Note: if genesis account has an insufficient
 // balance, blocks may be mined here).
 func (f *Backend) GetFundedAccount(ctx context.Context, requestBalance *big.Int) *keystore.Key {
 	key := f.MockAccount()
