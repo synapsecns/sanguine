@@ -1,7 +1,8 @@
-import { BigNumber, utils } from 'ethers'
 import { Interface } from '@ethersproject/abi'
 import { Zero } from '@ethersproject/constants'
+import { BigNumber, utils } from 'ethers'
 
+import { SupportedChainId } from '../../constants'
 import {
   getWithTimeout,
   isNativeToken,
@@ -20,7 +21,6 @@ import {
   SwapEngineQuote,
   SwapEngineRoute,
 } from '../models'
-import { SupportedChainId } from '../../constants'
 import { generateAPIRoute } from './response'
 
 const LIQUID_SWAP_API_URL = 'https://api.liqd.ag'
@@ -180,10 +180,11 @@ export class LiquidSwapEngine implements SwapEngine {
       logger.error({ quote }, 'LiquidSwapEngine: unexpected quote')
       return getEmptyRoute(this.id)
     }
-    let tokens: string[] = []
-    let hopSwaps: HopSwap[][] = []
-    const { amountIn, ...rest } = quote.data.tokenInfo
-    const tokenInfoList = Object.values(rest)
+    const tokens: string[] = []
+    const hopSwaps: HopSwap[][] = []
+    const tokenInfoList = Object.values(quote.data.tokenInfo).filter(
+      (tokenInfo) => typeof tokenInfo !== 'string'
+    )
     for (const hopData of quote.data.bestPath.hop) {
       // Fill the tokens array with the tokenOut of each hop
       // Also add the tokenIn of the first hop to the tokens array

@@ -2,6 +2,7 @@ import { Zero } from '@ethersproject/constants'
 import { BigNumber } from 'ethers'
 
 import { generateAPIRoute, TransactionData } from './response'
+import { SupportedChainId } from '../../constants'
 import {
   getWithTimeout,
   postWithTimeout,
@@ -24,7 +25,6 @@ import {
   SwapEngineQuote,
   SwapEngineRoute,
 } from '../models'
-import { SupportedChainId } from '../../constants'
 
 const PARASWAP_API_URL = 'https://api.paraswap.io'
 const PARASWAP_SUPPORTED_CHAINS = [
