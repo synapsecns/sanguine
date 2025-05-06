@@ -202,7 +202,9 @@ export class LiquidSwapEngine implements SwapEngine {
           tokenOut: hopData.tokenOut,
           routerIndex: allocation.routerIndex,
           fee: allocation.fee,
-          amountIn: allocation.amountIn,
+          amountIn: utils
+            .parseUnits(allocation.amountIn, tokenInInfo.decimals)
+            .toString(),
           stable: allocation.stable,
         }))
       )
