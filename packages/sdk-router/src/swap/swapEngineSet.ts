@@ -1,3 +1,4 @@
+import { Provider } from '@ethersproject/abstract-provider'
 import { Zero } from '@ethersproject/constants'
 import invariant from 'tiny-invariant'
 
@@ -48,16 +49,26 @@ export class SwapEngineSet {
   private tokenZaps: {
     [chainId: number]: string
   }
+  private providers: {
+    [chainId: number]: Provider
+  }
+  private tokenMetadataFetcher: TokenMetadataFetcher
 
   constructor(
     chains: ChainProvider[],
     tokenMetadataFetcher?: TokenMetadataFetcher
   ) {
+    this.providers = {}
+    chains.forEach(({ chainId, provider }) => {
+      this.providers[chainId] = provider
+    })
+    this.tokenMetadataFetcher =
+      tokenMetadataFetcher ?? new TokenMetadataFetcher(this.providers)
     this.engines = {}
     this._addEngine(new NoOpEngine())
     this._addEngine(new DefaultPoolsEngine(chains))
     this._addEngine(new KyberSwapEngine())
-    this._addEngine(new ParaSwapEngine(chains, tokenMetadataFetcher))
+    this._addEngine(new ParaSwapEngine(this.tokenMetadataFetcher))
     this._addEngine(new LiFiEngine())
     this._addEngine(new LiquidSwapEngine())
 
