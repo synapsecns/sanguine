@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.18.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.10...@synapsecns/sdk-router@0.18.0) (2025-05-07)
+
+
+### Features
+
+* **sdk-router:** hyper evm swaps [COR-850] ([#3679](https://github.com/synapsecns/sanguine/issues/3679)) ([758406e](https://github.com/synapsecns/sanguine/commit/758406ed4c0e2ce0eb6940dc6fa182f84ac5b2d1))
+
+
+
+
+
 ## [0.17.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.9...@synapsecns/sdk-router@0.17.10) (2025-05-02)
 
 
