@@ -5,6 +5,7 @@ export enum EngineID {
   KyberSwap,
   ParaSwap,
   LiFi,
+  LiquidSwap,
 }
 
 export const validateEngineID = (engineID: number): engineID is EngineID => {
