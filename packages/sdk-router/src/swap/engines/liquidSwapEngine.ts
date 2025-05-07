@@ -53,7 +53,17 @@ type LiquidSwapTokenInfo = {
   decimals: number
 }
 
-type LiquidSwapData = {
+type Allocation = {
+  poolAddress: string
+  routerIndex: number
+  routerName: string
+  fee: number
+  stable: boolean
+  percentage: number
+  amountIn: string
+}
+
+type LiquidQuoteData = {
   status: string
   tokenInfo: {
     [key: string]: LiquidSwapTokenInfo
@@ -62,25 +72,12 @@ type LiquidSwapData = {
   }
   bestPath: {
     amountOut: string
+    allocations?: Allocation[]
     hop: [
       {
-        hopAmountIn: string
-        hopAmountOut: string
         tokenIn: string
         tokenOut: string
-        allocations: [
-          {
-            poolAddress: string
-            routerIndex: number
-            routerName: string
-            fee: number
-            stable: boolean
-            percentage: number
-            amountIn: string
-            tokenIn: string
-            tokenOut: string
-          }
-        ]
+        allocations: Allocation[]
       }
     ]
   }
@@ -88,12 +85,12 @@ type LiquidSwapData = {
 
 type LiquidSwapRouteResponse = {
   success: boolean
-  data?: LiquidSwapData
+  data?: LiquidQuoteData
 }
 
 type LiquidSwapQuote = Prettify<
   SwapEngineQuote & {
-    data?: LiquidSwapData
+    data?: LiquidQuoteData
   }
 >
 
@@ -137,38 +134,35 @@ export class LiquidSwapEngine implements SwapEngine {
       tokenA: this.transformNativeToken(fromToken),
       tokenB: this.transformNativeToken(toToken),
       amountIn: utils.formatUnits(fromAmount, fromTokenDecimals),
-      multiHop: true,
     }
-    const response = await this.getRouteResponse(
-      request,
-      LIQUID_SWAP_API_TIMEOUT
-    )
-    if (!response) {
+    // Do both multiHop and singleHop requests in parallel.
+    // We will return the data from the fastest successful request.
+    const quotePromises = [
+      this.getSingleHopQuoteData(request, LIQUID_SWAP_API_TIMEOUT),
+      this.getMultiHopQuoteData(request, LIQUID_SWAP_API_TIMEOUT),
+    ]
+    const allSettledPromise = Promise.allSettled(quotePromises)
+    try {
+      const fastestQuote = await Promise.any(quotePromises)
+      return {
+        engineID: this.id,
+        engineName: EngineID[this.id],
+        chainId,
+        fromToken,
+        toToken,
+        fromAmount: BigNumber.from(fromAmount),
+        expectedToAmount: utils.parseUnits(
+          fastestQuote.bestPath.amountOut,
+          toTokenDecimals
+        ),
+        data: fastestQuote,
+      }
+    } catch {
       return getEmptyQuote(this.id)
-    }
-    const liquidSwapResponse: LiquidSwapRouteResponse = await response.json()
-    const data = liquidSwapResponse.data
-    if (
-      !liquidSwapResponse.success ||
-      !data ||
-      data.status !== 'success' ||
-      !data.tokenInfo ||
-      !data.bestPath
-    ) {
-      return getEmptyQuote(this.id)
-    }
-    return {
-      engineID: this.id,
-      engineName: EngineID[this.id],
-      chainId,
-      fromToken,
-      toToken,
-      fromAmount: BigNumber.from(fromAmount),
-      expectedToAmount: utils.parseUnits(
-        data.bestPath.amountOut,
-        toTokenDecimals
-      ),
-      data,
+    } finally {
+      // Ensure the background promise handling completes
+      // Using void to explicitly indicate we're ignoring the result
+      void allSettledPromise
     }
   }
 
@@ -204,7 +198,7 @@ export class LiquidSwapEngine implements SwapEngine {
       }
       hopSwaps.push(
         hopData.allocations.map((allocation) => ({
-          tokenIn: tokenInInfo.address,
+          tokenIn: hopData.tokenIn,
           tokenOut: hopData.tokenOut,
           routerIndex: allocation.routerIndex,
           fee: allocation.fee,
@@ -247,12 +241,61 @@ export class LiquidSwapEngine implements SwapEngine {
     })
   }
 
-  public async getRouteResponse(
+  @logExecutionTime('LiquidSwapEngine.getSingleHopQuoteData')
+  public async getSingleHopQuoteData(
     params: LiquidSwapRouteRequest,
     timeout: number
-  ): Promise<Response | null> {
+  ): Promise<LiquidQuoteData> {
+    return this.getQuoteData({ ...params, multiHop: false }, timeout)
+  }
+
+  @logExecutionTime('LiquidSwapEngine.getMultiHopQuoteData')
+  public async getMultiHopQuoteData(
+    params: LiquidSwapRouteRequest,
+    timeout: number
+  ): Promise<LiquidQuoteData> {
+    return this.getQuoteData({ ...params, multiHop: true }, timeout)
+  }
+
+  public async getQuoteData(
+    params: LiquidSwapRouteRequest,
+    timeout: number
+  ): Promise<LiquidQuoteData> {
     const url = `${LIQUID_SWAP_API_URL}/route`
-    return getWithTimeout('LiquidSwap', url, timeout, params)
+    const response = await getWithTimeout('LiquidSwap', url, timeout, params)
+    if (!response) {
+      throw new Error('LiquidSwap: no response from API')
+    }
+    const liquidSwapResponse: LiquidSwapRouteResponse = await response.json()
+    const data = liquidSwapResponse.data
+    if (
+      !liquidSwapResponse.success ||
+      !data ||
+      data.status !== 'success' ||
+      !data.tokenInfo ||
+      !data.bestPath
+    ) {
+      throw new Error('LiquidSwap: API response not successful')
+    }
+    // Transform singleHop response to multiHop response
+    if (data.bestPath.allocations) {
+      const tokenIn = data.tokenInfo['tokenIn']
+      const tokenOut = data.tokenInfo['tokenOut']
+      if (!tokenIn || !tokenOut) {
+        throw new Error('LiquidSwap: missing token info')
+      }
+      data.bestPath = {
+        amountOut: data.bestPath.amountOut,
+        hop: [
+          {
+            tokenIn: tokenIn.address,
+            tokenOut: tokenOut.address,
+            allocations: data.bestPath.allocations,
+          },
+        ],
+      }
+    }
+    return data
   }
 
   private transformNativeToken(address: string): string {
