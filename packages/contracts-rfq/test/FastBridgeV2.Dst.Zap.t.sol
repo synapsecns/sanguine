@@ -331,7 +331,7 @@ contract FastBridgeV2DstZapTest is FastBridgeV2DstExclusivityTest {
 
     function test_relay_eth_noZapData_revert_recipientReverts() public {
         setEthTestZapData("");
-        vm.mockCallRevert({callee: userB, data: "", revertData: bytes(REVERT_MSG)});
+        vm.mockCallRevert({callee: userB, data: bytes(""), revertData: bytes(REVERT_MSG)});
         // Note: OZ library doesn't bubble the revert message for just sending ETH
         // (as opposed to doing an external hook call). Therefore we expect a generic library revert.
         vm.expectRevert(Address.FailedInnerCall.selector);
@@ -340,7 +340,7 @@ contract FastBridgeV2DstZapTest is FastBridgeV2DstExclusivityTest {
 
     function test_relay_eth_withRelayerAddress_noZapData_revert_recipientReverts() public {
         setEthTestZapData("");
-        vm.mockCallRevert({callee: userB, data: "", revertData: bytes(REVERT_MSG)});
+        vm.mockCallRevert({callee: userB, data: bytes(""), revertData: bytes(REVERT_MSG)});
         // Note: OZ library doesn't bubble the revert message for just sending ETH
         // (as opposed to doing an external hook call). Therefore we expect a generic library revert.
         vm.expectRevert(Address.FailedInnerCall.selector);

@@ -52,7 +52,7 @@ abstract contract FastBridgeV2ParityTest is FastBridgeTest, IFastBridgeV2Errors 
         vm.prank(relayer);
         fastBridge.prove(request, bytes32("0x04"));
 
-        vm.expectRevert(abi.encodeWithSelector(SenderIncorrect.selector));
+        vm.expectRevert(SenderIncorrect.selector);
         vm.prank(anotherRelayer);
         fastBridge.claim(request, relayer);
     }
