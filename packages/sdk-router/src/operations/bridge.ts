@@ -134,6 +134,7 @@ async function _collectV1Quotes(
         estimatedTime: quote.estimatedTime,
         moduleNames,
         gasDropAmount: quote.gasDropAmount.toString(),
+        nativeFee: '0',
         tx: stringifyPopulatedTransaction(tx),
       }
       return bridgeQuoteV2
