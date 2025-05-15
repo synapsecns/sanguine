@@ -27,7 +27,6 @@ import { applySlippage, encodeZapData } from '../swap'
 import {
   ETH_NATIVE_TOKEN_ADDRESS,
   isNativeToken,
-  isSameAddress,
   logExecutionTime,
   logger,
 } from '../utils'
@@ -115,23 +114,13 @@ export class GasZipModuleSet extends SynapseModuleSet {
   }
 
   @logExecutionTime('GasZipModuleSet.getBridgeRouteV2')
-  public async getBridgeRouteV2({
-    originSwapRoute,
-    bridgeToken,
-    toToken,
-    toRecipient,
-    slippage,
-    allowMultipleTxs,
-  }: GetBridgeRouteV2Parameters): Promise<BridgeRouteV2 | undefined> {
-    if (
-      !this.getModule(bridgeToken.originChainId) ||
-      !this.getModule(bridgeToken.destChainId)
-    ) {
+  public async getBridgeRouteV2(
+    params: GetBridgeRouteV2Parameters
+  ): Promise<BridgeRouteV2 | undefined> {
+    if (!this.validateBridgeRouteV2Params(params)) {
       return undefined
     }
-    if (!allowMultipleTxs && !isSameAddress(bridgeToken.destToken, toToken)) {
-      return undefined
-    }
+    const { originSwapRoute, bridgeToken, toRecipient, slippage } = params
     const syncedPromise = this.checkBlockHeights(
       bridgeToken.originChainId,
       bridgeToken.destChainId

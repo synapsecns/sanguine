@@ -10,7 +10,7 @@ import {
   BridgeTokenCandidate,
   FeeConfig,
 } from './types'
-import { applyOptionalDeadline } from '../utils'
+import { applyOptionalDeadline, isSameAddress } from '../utils'
 import { Query } from './query'
 import { Slippage, SwapEngineRoute } from '../swap'
 import { BridgeQuote, BridgeQuoteV2 } from '../types'
@@ -158,6 +158,34 @@ export abstract class SynapseModuleSet {
   abstract getBridgeRouteV2(
     params: GetBridgeRouteV2Parameters
   ): Promise<BridgeRouteV2 | undefined>
+
+  /**
+   * Common validation for getBridgeRouteV2.
+   * Modules are supposed to use this method before processing getBridgeRouteV2.
+   */
+  protected validateBridgeRouteV2Params({
+    bridgeToken,
+    originSwapRoute,
+    toToken,
+    allowMultipleTxs,
+  }: GetBridgeRouteV2Parameters): boolean {
+    // Check if the module exists on both chains
+    if (
+      !this.getModule(bridgeToken.originChainId) ||
+      !this.getModule(bridgeToken.destChainId)
+    ) {
+      return false
+    }
+    // Check if the output of the origin swap route matches the bridged token on the origin chain
+    if (!isSameAddress(bridgeToken.originToken, originSwapRoute.toToken)) {
+      return false
+    }
+    // Check if the destination token matches the bridged token on the destination chain (for single transaction)
+    if (!allowMultipleTxs && !isSameAddress(bridgeToken.destToken, toToken)) {
+      return false
+    }
+    return true
+  }
 
   /**
    * This method find all possible routes for a bridge transaction between two chains.
