@@ -63,6 +63,13 @@ export class UsdtModule implements SynapseModule {
     return false
   }
 
+  public async getDestinationQuote(params: OftSendParams): Promise<BigNumber> {
+    const [, , [, amountReceivedLD]] = await this.oftContract.quoteOFT(
+      this.getSendParamTuple(params)
+    )
+    return amountReceivedLD
+  }
+
   public async getNativeFee(params: OftSendParams): Promise<BigNumber> {
     const [nativeFee] = await this.oftContract.quoteSend(
       this.getSendParamTuple(params),

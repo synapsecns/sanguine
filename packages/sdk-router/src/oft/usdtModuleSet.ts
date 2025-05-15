@@ -103,8 +103,15 @@ export class UsdtModuleSet extends SynapseModuleSet {
     }
     const { originSwapRoute, bridgeToken, fromSender, toRecipient, slippage } =
       params
-    // TODO: hit OFT adapter to get the actual expectedToAmount
-    const expectedToAmount = originSwapRoute.expectedToAmount
+    const quote = await this.getUsdtSendQuote(
+      bridgeToken.originChainId,
+      originSwapRoute.expectedToAmount,
+      bridgeToken.destChainId
+    )
+    if (!quote) {
+      return undefined
+    }
+    const { expectedToAmount, nativeFee } = quote
     if (expectedToAmount.isZero()) {
       return undefined
     }
@@ -116,14 +123,6 @@ export class UsdtModuleSet extends SynapseModuleSet {
       hasOriginSlippage && slippage
         ? applySlippage(expectedToAmount, slippage)
         : expectedToAmount
-    const nativeFee = await this.getUsdtSendNativeFee(
-      bridgeToken.originChainId,
-      originSwapRoute.expectedToAmount,
-      bridgeToken.destChainId
-    )
-    if (!nativeFee) {
-      return undefined
-    }
     return {
       bridgeToken,
       toToken: bridgeToken.destToken,
@@ -182,22 +181,29 @@ export class UsdtModuleSet extends SynapseModuleSet {
     }
   }
 
-  private async getUsdtSendNativeFee(
+  private async getUsdtSendQuote(
     fromChainId: number,
     fromAmount: BigNumberish,
     toChainId: number
-  ): Promise<BigNumber | undefined> {
+  ): Promise<
+    { expectedToAmount: BigNumber; nativeFee: BigNumber } | undefined
+  > {
     const module = this.modules[fromChainId]
     const toEid = LZ_EID_MAP[toChainId]
     if (!module || !toEid) {
       return undefined
     }
-    return module.getNativeFee({
+    const params = {
       toEid,
       toRecipient: USER_SIMULATED_ADDRESS,
       amount: fromAmount,
       fromSender: USER_SIMULATED_ADDRESS,
-    })
+    }
+    const [expectedToAmount, nativeFee] = await Promise.all([
+      module.getDestinationQuote(params),
+      module.getNativeFee(params),
+    ])
+    return { expectedToAmount, nativeFee }
   }
 
   private getUsdtSendZapData(

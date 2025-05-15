@@ -184,6 +184,10 @@ export abstract class SynapseModuleSet {
     if (!allowMultipleTxs && !isSameAddress(bridgeToken.destToken, toToken)) {
       return false
     }
+    // Check if the origin swap route has a non-zero expectedToAmount
+    if (originSwapRoute.expectedToAmount.isZero()) {
+      return false
+    }
     return true
   }
 
