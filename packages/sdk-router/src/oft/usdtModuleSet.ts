@@ -1,19 +1,20 @@
 import { Zero } from '@ethersproject/constants'
 import { BigNumber } from 'ethers'
 
-import { USDT_OFT_ADDRESS_MAP } from '../constants'
+import { USDT0_ADDRESS_MAP, USDT_OFT_ADDRESS_MAP } from '../constants'
 import {
   BridgeRoute,
   BridgeRouteV2,
   BridgeTokenCandidate,
   FeeConfig,
+  GetBridgeTokenCandidatesParameters,
   Query,
   SynapseModule,
   SynapseModuleSet,
 } from '../module'
 import { UsdtModule } from './usdtModule'
 import { ChainProvider } from '../router'
-import { logExecutionTime } from '../utils'
+import { isSameAddress, logExecutionTime } from '../utils'
 
 // TODO: use actual estimates
 const MEDIAN_TIME_USDT = 90
@@ -52,9 +53,29 @@ export class UsdtModuleSet extends SynapseModuleSet {
     return Zero
   }
 
-  public async getBridgeTokenCandidates(): Promise<BridgeTokenCandidate[]> {
-    // TODO: implement
-    return []
+  public async getBridgeTokenCandidates({
+    fromChainId,
+    toChainId,
+    toToken,
+  }: GetBridgeTokenCandidatesParameters): Promise<BridgeTokenCandidate[]> {
+    const originToken = USDT0_ADDRESS_MAP[fromChainId]
+    const destToken = USDT0_ADDRESS_MAP[toChainId]
+    // Skip chains without a USDT0 address
+    if (!originToken || !destToken) {
+      return []
+    }
+    // Check that output token is USDT0 (if provided)
+    if (toToken && !isSameAddress(toToken, destToken)) {
+      return []
+    }
+    return [
+      {
+        originChainId: fromChainId,
+        destChainId: toChainId,
+        originToken,
+        destToken,
+      },
+    ]
   }
 
   @logExecutionTime('UsdtModuleSet.getBridgeRouteV2')
