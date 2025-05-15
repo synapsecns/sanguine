@@ -115,6 +115,15 @@ export const USDT_OFT_ADDRESS_MAP: AddressMap = {
   [SupportedChainId.UNICHAIN]: '0xc07bE8994D035631c36fb4a89C918CeFB2f03EC3',
 }
 
+export const LZ_EID_MAP: Record<number, number> = {
+  [SupportedChainId.ARBITRUM]: 30110,
+  [SupportedChainId.BERACHAIN]: 30362,
+  [SupportedChainId.ETH]: 30101,
+  [SupportedChainId.HYPEREVM]: 30367,
+  [SupportedChainId.OPTIMISM]: 30111,
+  [SupportedChainId.UNICHAIN]: 30320,
+}
+
 /**
  * SynapseIntentRouter contract address for all chains except ones from SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP.
  */

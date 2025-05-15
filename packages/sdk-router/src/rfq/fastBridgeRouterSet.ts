@@ -186,6 +186,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
       toToken: bridgeToken.destToken,
       expectedToAmount,
       minToAmount,
+      nativeFee: Zero,
       zapData: await this.getBridgeZapData(
         bridgeToken,
         expectedToAmount,
