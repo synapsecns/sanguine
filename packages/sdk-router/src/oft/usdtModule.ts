@@ -11,12 +11,25 @@ import {
 } from 'ethers'
 
 import { SynapseModule } from '../module'
+import { getWithTimeout } from '../utils'
 
 const OFT_ABI = [
   'function quoteOFT(tuple(uint32,bytes32,uint256,uint256,bytes,bytes,bytes)) view returns (tuple(uint256,uint256), tuple(int256,string)[], tuple(uint256,uint256))',
   'function quoteSend(tuple(uint32,bytes32,uint256,uint256,bytes,bytes,bytes), bool) view returns (tuple(uint256,uint256))',
   'function send(tuple(uint32,bytes32,uint256,uint256,bytes,bytes,bytes), tuple(uint256,uint256), address) payable returns (tuple(bytes32,uint64,tuple(uint256,uint256)), tuple(uint256,uint256))',
 ]
+
+const LZ_API_URL = 'https://scan.layerzero-api.com/v1'
+const LZ_API_TIMEOUT = 5000
+const LZ_COMPLETED_STATUSES = ['CONFIRMING', 'DELIVERED']
+
+interface LZTxResponse {
+  data?: {
+    status?: {
+      name?: string
+    }
+  }[]
+}
 
 export type OftSendParams = {
   toEid: number
@@ -58,9 +71,20 @@ export class UsdtModule implements SynapseModule {
     return txHash
   }
 
-  public async getBridgeTxStatus(): Promise<boolean> {
-    // TODO: implement
-    return false
+  public async getBridgeTxStatus(synapseTxId: string): Promise<boolean> {
+    const response = await getWithTimeout(
+      'LZ API',
+      `${LZ_API_URL}/messages/tx/${synapseTxId}`,
+      LZ_API_TIMEOUT
+    )
+    if (!response) {
+      return false
+    }
+    const txResponse: LZTxResponse = await response.json()
+    const statusName = txResponse.data?.[0]?.status?.name
+    return (
+      !!statusName && LZ_COMPLETED_STATUSES.includes(statusName.toUpperCase())
+    )
   }
 
   public async getDestinationQuote(params: OftSendParams): Promise<BigNumber> {
