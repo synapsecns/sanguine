@@ -4,6 +4,7 @@ import invariant from 'tiny-invariant'
 
 import { GasZipModuleSet } from './gaszip'
 import { SynapseModuleSet } from './module'
+import { UsdtModuleSet } from './oft'
 import * as operations from './operations'
 import { FastBridgeRouterSet } from './rfq'
 import { SynapseRouterSet, SynapseCCTPRouterSet, ChainProvider } from './router'
@@ -17,6 +18,7 @@ class SynapseSDK {
   public synapseCCTPRouterSet: SynapseCCTPRouterSet
   public fastBridgeRouterSet: FastBridgeRouterSet
   public gasZipModuleSet: GasZipModuleSet
+  public usdtModuleSet: UsdtModuleSet
 
   public sirSet: SynapseIntentRouterSet
   public swapEngineSet: SwapEngineSet
@@ -53,11 +55,13 @@ class SynapseSDK {
     this.synapseCCTPRouterSet = new SynapseCCTPRouterSet(chainProviders)
     this.fastBridgeRouterSet = new FastBridgeRouterSet(chainProviders)
     this.gasZipModuleSet = new GasZipModuleSet(chainProviders)
+    this.usdtModuleSet = new UsdtModuleSet(chainProviders)
     this.allModuleSets = [
       this.synapseRouterSet,
       this.synapseCCTPRouterSet,
       this.fastBridgeRouterSet,
       this.gasZipModuleSet,
+      this.usdtModuleSet,
     ]
     this.sirSet = new SynapseIntentRouterSet(chainProviders)
     this.swapEngineSet = new SwapEngineSet(

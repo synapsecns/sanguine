@@ -73,6 +73,7 @@ export type BridgeV2Parameters = {
  * @property {number} estimatedTime - Estimated time for the bridge to complete in seconds
  * @property {string[]} moduleNames - Names of the modules used for the operation
  * @property {string} gasDropAmount - Amount of gas to be dropped after the operation
+ * @property {string} nativeFee - Native fee to be paid for the bridge operation (if any)
  * @property {PopulatedTx} [tx] - Optional populated transaction for the operation (returned only if `fromSender` is provided)
  */
 export type BridgeQuoteV2 = {
@@ -88,5 +89,6 @@ export type BridgeQuoteV2 = {
   estimatedTime: number
   moduleNames: string[]
   gasDropAmount: string
+  nativeFee: string
   tx?: PopulatedTx
 }
