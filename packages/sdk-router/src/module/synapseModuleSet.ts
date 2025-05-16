@@ -59,13 +59,14 @@ export abstract class SynapseModuleSet {
 
   /**
    * Returns the estimated time for a bridge transaction to be completed,
-   * when the transaction is sent from the given chain.
+   * when the transaction is sent from the given origin chain to the given destination chain.
    *
    * @param originChainId - The ID of the origin chain.
+   * @param destChainId - The ID of the destination chain.
    * @returns The estimated time in seconds.
    * @throws Will throw an error if the chain ID is not supported.
    */
-  abstract getEstimatedTime(originChainId: number): number
+  abstract getEstimatedTime(originChainId: number, destChainId?: number): number
 
   /**
    * Returns the Synapse transaction ID for a given transaction hash on a given chain.
@@ -321,7 +322,10 @@ export abstract class SynapseModuleSet {
       maxAmountOut: destQuery.minAmountOut,
       originQuery,
       destQuery,
-      estimatedTime: this.getEstimatedTime(bridgeRoute.originChainId),
+      estimatedTime: this.getEstimatedTime(
+        bridgeRoute.originChainId,
+        bridgeRoute.destChainId
+      ),
       bridgeModuleName: bridgeRoute.bridgeModuleName,
       gasDropAmount: await this.getGasDropAmount(
         bridgeRoute.destChainId,
@@ -342,7 +346,10 @@ export abstract class SynapseModuleSet {
     )
     return {
       ...bridgeQuote,
-      estimatedTime: this.getEstimatedTime(bridgeQuote.fromChainId),
+      estimatedTime: this.getEstimatedTime(
+        bridgeQuote.fromChainId,
+        bridgeQuote.toChainId
+      ),
       moduleNames: [...bridgeQuote.moduleNames, this.moduleName],
       gasDropAmount: gasDropAmount.toString(),
     }

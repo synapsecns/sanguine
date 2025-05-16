@@ -10,6 +10,12 @@ import {
   utils,
 } from 'ethers'
 
+import {
+  isChainIdSupported,
+  LZ_EID_MAP,
+  MEDIAN_TIME_BLOCK,
+  USDT_OFT_ADDRESS_MAP,
+} from '../constants'
 import { SynapseModule } from '../module'
 import { getWithTimeout } from '../utils'
 
@@ -23,8 +29,15 @@ const LZ_API_URL = 'https://scan.layerzero-api.com/v1'
 const LZ_API_TIMEOUT = 5000
 const LZ_COMPLETED_STATUSES = ['CONFIRMING', 'DELIVERED']
 
-interface LZTxResponse {
+const AVG_DST_BLOCK_TARGET = 3
+
+interface LZResponse {
   data?: {
+    config?: {
+      outboundConfig?: {
+        confirmations?: number
+      }
+    }
     status?: {
       name?: string
     }
@@ -54,11 +67,13 @@ export class UsdtModule implements SynapseModule {
   static oftInterface = new Interface(OFT_ABI)
 
   readonly address: string
+  readonly chainId: number
   readonly oftContract: Contract
 
   private amountPositionCache: number | undefined
 
-  constructor(provider: Provider, address: string) {
+  constructor(chainId: number, provider: Provider, address: string) {
+    this.chainId = chainId
     this.address = address
     this.oftContract = new Contract(address, UsdtModule.oftInterface, provider)
   }
@@ -80,10 +95,53 @@ export class UsdtModule implements SynapseModule {
     if (!response) {
       return false
     }
-    const txResponse: LZTxResponse = await response.json()
+    const txResponse: LZResponse = await response.json()
     const statusName = txResponse.data?.[0]?.status?.name
     return (
       !!statusName && LZ_COMPLETED_STATUSES.includes(statusName.toUpperCase())
+    )
+  }
+
+  public async getEstimatedTime(
+    toChainId: number
+  ): Promise<number | undefined> {
+    if (!isChainIdSupported(this.chainId) || !isChainIdSupported(toChainId)) {
+      return undefined
+    }
+    if (toChainId === this.chainId) {
+      return undefined
+    }
+    const [[fromEid, fromOft], [toEid, toOft]] = [this.chainId, toChainId].map(
+      (chainId) => [LZ_EID_MAP[chainId], USDT_OFT_ADDRESS_MAP[chainId]]
+    )
+    if (!fromEid || !toEid || !fromOft || !toOft) {
+      return undefined
+    }
+    // Get confirmations count using the latest message sent on the pathway
+    const pathwayId = `${fromEid}-${toEid}-${fromOft.toLowerCase()}-${toOft.toLowerCase()}`
+    const response = await getWithTimeout(
+      'LZ API',
+      `${LZ_API_URL}/messages/pathway/${pathwayId}`,
+      LZ_API_TIMEOUT,
+      {
+        limit: 1,
+      }
+    )
+    if (!response) {
+      return undefined
+    }
+    const pathwayResponse: LZResponse = await response.json()
+    const confirmations =
+      pathwayResponse.data?.[0]?.config?.outboundConfig?.confirmations
+    if (!confirmations) {
+      return undefined
+    }
+    console.log(
+      `Confirmations: ${confirmations}, fromChainId: ${this.chainId}, toChainId: ${toChainId}`
+    )
+    return (
+      confirmations * MEDIAN_TIME_BLOCK[this.chainId] +
+      AVG_DST_BLOCK_TARGET * MEDIAN_TIME_BLOCK[toChainId]
     )
   }
 

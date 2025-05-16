@@ -1,5 +1,6 @@
 import { Zero } from '@ethersproject/constants'
 import { BigNumber, BigNumberish } from 'ethers'
+import NodeCache from 'node-cache'
 
 import {
   LZ_EID_MAP,
@@ -35,6 +36,8 @@ const MEDIAN_TIME_MAP: Record<number, number> = {
   [SupportedChainId.UNICHAIN]: 8 * 60,
 }
 
+const BLOCK_CONFIRMATIONS_CACHE_TTL = 60 * 60
+
 export class UsdtModuleSet extends SynapseModuleSet {
   public readonly moduleName = 'USDT0'
   public readonly allEvents = []
@@ -44,16 +47,21 @@ export class UsdtModuleSet extends SynapseModuleSet {
     [chainId: number]: UsdtModule
   }
 
+  private estimatedTimeCache: NodeCache
+
   constructor(chains: ChainProvider[]) {
     super()
     this.modules = {}
+    this.estimatedTimeCache = new NodeCache({
+      stdTTL: BLOCK_CONFIRMATIONS_CACHE_TTL,
+    })
     chains.forEach(({ chainId, provider }) => {
       const address = USDT_OFT_ADDRESS_MAP[chainId]
       // Skip chains without a USDT OFT address
       if (!address) {
         return
       }
-      this.modules[chainId] = new UsdtModule(provider, address)
+      this.modules[chainId] = new UsdtModule(chainId, provider, address)
     })
   }
 
@@ -61,8 +69,13 @@ export class UsdtModuleSet extends SynapseModuleSet {
     return this.modules[chainId]
   }
 
-  public getEstimatedTime(originChainId: number): number {
-    return MEDIAN_TIME_MAP[originChainId] ?? MEDIAN_TIME_USDT
+  public getEstimatedTime(fromChainId: number, toChainId?: number): number {
+    const cachedValue =
+      toChainId &&
+      this.estimatedTimeCache.get<number>(
+        this.getCacheKey(fromChainId, toChainId)
+      )
+    return cachedValue ?? MEDIAN_TIME_MAP[fromChainId] ?? MEDIAN_TIME_USDT
   }
 
   public async getGasDropAmount(): Promise<BigNumber> {
@@ -103,6 +116,15 @@ export class UsdtModuleSet extends SynapseModuleSet {
     }
     const { originSwapRoute, bridgeToken, fromSender, toRecipient, slippage } =
       params
+    const cacheKey = this.getCacheKey(
+      bridgeToken.originChainId,
+      bridgeToken.destChainId
+    )
+    const estimatedTimePromise = this.estimatedTimeCache.has(cacheKey)
+      ? Promise.resolve(undefined)
+      : this.modules[bridgeToken.originChainId].getEstimatedTime(
+          bridgeToken.destChainId
+        )
     const quote = await this.getUsdtSendQuote(
       bridgeToken.originChainId,
       originSwapRoute.expectedToAmount,
@@ -123,6 +145,10 @@ export class UsdtModuleSet extends SynapseModuleSet {
       hasOriginSlippage && slippage
         ? applySlippage(expectedToAmount, slippage)
         : expectedToAmount
+    const estimatedTime = await estimatedTimePromise
+    if (estimatedTime) {
+      this.estimatedTimeCache.set(cacheKey, estimatedTime)
+    }
     return {
       bridgeToken,
       toToken: bridgeToken.destToken,
@@ -230,5 +256,9 @@ export class UsdtModuleSet extends SynapseModuleSet {
       payload: module.populateOftSend(sendParams, nativeFee).data,
       amountPosition: module.getAmountPosition(),
     })
+  }
+
+  private getCacheKey(fromChainId: number, toChainId: number): string {
+    return `${fromChainId}-${toChainId}`
   }
 }
