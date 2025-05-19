@@ -136,9 +136,6 @@ export class UsdtModule implements SynapseModule {
     if (!confirmations) {
       return undefined
     }
-    console.log(
-      `Confirmations: ${confirmations}, fromChainId: ${this.chainId}, toChainId: ${toChainId}`
-    )
     return (
       confirmations * MEDIAN_TIME_BLOCK[this.chainId] +
       AVG_DST_BLOCK_TARGET * MEDIAN_TIME_BLOCK[toChainId]
