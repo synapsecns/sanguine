@@ -177,7 +177,8 @@ export class LiquidSwapEngine implements SwapEngine {
     const tokens: string[] = []
     const hopSwaps: HopSwap[][] = []
     const tokenInfoList = Object.values(quote.data.tokenInfo).filter(
-      (tokenInfo) => typeof tokenInfo !== 'string'
+      (tokenInfo): tokenInfo is LiquidSwapTokenInfo =>
+        typeof tokenInfo !== 'string'
     )
     for (const hopData of quote.data.bestPath.hop) {
       // Fill the tokens array with the tokenOut of each hop
