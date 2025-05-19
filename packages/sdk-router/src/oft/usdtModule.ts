@@ -1,6 +1,6 @@
 import { Interface } from '@ethersproject/abi'
 import { Provider } from '@ethersproject/abstract-provider'
-import { hexDataSlice } from '@ethersproject/bytes'
+import { hexDataLength, hexDataSlice } from '@ethersproject/bytes'
 import { AddressZero } from '@ethersproject/constants'
 import {
   BigNumber,
@@ -203,13 +203,14 @@ export class UsdtModule implements SynapseModule {
       4
     )
     // Sanity check: both mock amounts should have the same length
-    if (dataAA.length !== dataBB.length) {
+    const length = hexDataLength(dataAA)
+    if (length !== hexDataLength(dataBB)) {
       throw new Error(
         `Unable to find amount position: ${dataAA} and ${dataBB} are of different lengths`
       )
     }
     // Try offsets from 0 to data.length / 32
-    for (let i = 0; i < dataAA.length / 32; i++) {
+    for (let i = 0; i < length / 32; i++) {
       const offset = i * 32
       // If data at offset matches both mock amounts, we found the amount position
       if (
