@@ -22,7 +22,7 @@ import {
 import { OftSendParams, UsdtModule } from './usdtModule'
 import { ChainProvider } from '../router'
 import { applySlippage, encodeZapData, USER_SIMULATED_ADDRESS } from '../swap'
-import { isSameAddress, logExecutionTime } from '../utils'
+import { isSameAddress, logExecutionTime, logger } from '../utils'
 
 // TODO: on-chain calls to get amount of block confirmations
 const MEDIAN_TIME_USDT = 60
@@ -225,11 +225,18 @@ export class UsdtModuleSet extends SynapseModuleSet {
       amount: fromAmount,
       fromSender: USER_SIMULATED_ADDRESS,
     }
-    const [expectedToAmount, nativeFee] = await Promise.all([
-      module.getDestinationQuote(params),
-      module.getNativeFee(params),
-    ])
-    return { expectedToAmount, nativeFee }
+    try {
+      const [expectedToAmount, nativeFee] = await Promise.all([
+        module.getDestinationQuote(params),
+        module.getNativeFee(params),
+      ])
+      return { expectedToAmount, nativeFee }
+    } catch (error) {
+      logger.error(
+        `Failed to get USDT quote for ${fromChainId} -> ${toChainId}: ${error}`
+      )
+      return undefined
+    }
   }
 
   private getUsdtSendZapData(
