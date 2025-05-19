@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.19.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.18.0...@synapsecns/sdk-router@0.19.0) (2025-05-19)
+
+
+### Features
+
+* **sdk-router:** usdt0 module ([#3688](https://github.com/synapsecns/sanguine/issues/3688)) ([d316c1a](https://github.com/synapsecns/sanguine/commit/d316c1aa3212b472f2e80b334dbeaab1516917bb))
+
+
+
+
+
 # [0.18.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.10...@synapsecns/sdk-router@0.18.0) (2025-05-07)
 
 
