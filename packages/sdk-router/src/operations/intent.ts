@@ -60,6 +60,7 @@ async function _getSameChainIntentQuotes(
     routerAddress: swapQuote.routerAddress,
     moduleNames: swapQuote.moduleNames,
     gasDropAmount: '0',
+    nativeFee: '0',
     tx: swapQuote.tx,
   }
 
@@ -124,6 +125,7 @@ async function _getCrossChainIntentQuotes(
         estimatedTime: bridgeQuote.estimatedTime,
         moduleNames: bridgeQuote.moduleNames,
         gasDropAmount: bridgeQuote.gasDropAmount,
+        nativeFee: bridgeQuote.nativeFee,
         tx: bridgeQuote.tx,
       }
       // Check if the token out is the same as the requested token out.
