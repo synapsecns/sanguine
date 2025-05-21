@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.19.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.19.0...@synapsecns/sdk-router@0.19.1) (2025-05-21)
+
+
+### Bug Fixes
+
+* **sdk-router:** add nativeFee to IntentStep ([#3691](https://github.com/synapsecns/sanguine/issues/3691)) ([dd416a6](https://github.com/synapsecns/sanguine/commit/dd416a63f5d41fb871294f7a1c3e862bc0d8481e))
+
+
+
+
+
 # [0.19.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.18.0...@synapsecns/sdk-router@0.19.0) (2025-05-19)
 
 
