@@ -70,6 +70,7 @@ export type IntentQuote = {
  * @property {number} estimatedTime - Estimated time for the operation to complete in seconds.
  * @property {string[]} moduleNames - Names of the modules used for the operation.
  * @property {string} gasDropAmount - Amount of gas to be dropped after the operation alongside `toToken`.
+ * @property {string} nativeFee - Native fee to be paid for the operation (if any).
  * @property {PopulatedTx} [tx] - Optional populated transaction for the operation (returned only if `fromSender` is provided).
  */
 export type IntentStep = {
@@ -86,5 +87,6 @@ export type IntentStep = {
   estimatedTime: number
   moduleNames: string[]
   gasDropAmount: string
+  nativeFee: string
   tx?: PopulatedTx
 }
