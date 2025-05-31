@@ -31,11 +31,16 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
 
     address public bridge;
 
+    mapping(uint32 eid => mapping(address remoteAddr => address localAddr)) public getLocalAddress;
+    mapping(uint32 eid => mapping(address localAddr => address remoteAddr)) public getRemoteAddress;
+    mapping(address localAddr => TokenType tokenType) public getTokenType;
+
     mapping(address => TokenSymbol) internal _symbolByAddress;
     mapping(bytes31 => TokenAddress) internal _addressBySymbol;
 
     event BridgeSet(address bridge);
     event TokenAdded(address token, TokenType tokenType, bytes31 symbol);
+    event TokenAdded(address token, TokenType tokenType, RemoteToken[] remoteTokens);
     event TokenSent(uint32 indexed dstEid, address indexed to, address indexed token, uint256 amount, bytes32 guid);
     event TokenReceived(uint32 indexed srcEid, address indexed to, address indexed token, uint256 amount, bytes32 guid);
 
@@ -55,6 +60,12 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
         _symbolByAddress[token] = TokenSymbol(tokenType, symbol);
         _addressBySymbol[symbol] = TokenAddress(tokenType, token);
         emit TokenAdded(token, tokenType, symbol);
+    }
+
+    /// @inheritdoc ISynapseBridgeAdapter
+    function addToken(address token, TokenType tokenType, RemoteToken[] memory remoteTokens) external onlyOwner {
+        // TODO: implement
+        emit TokenAdded(token, tokenType, remoteTokens);
     }
 
     /// @inheritdoc ISynapseBridgeAdapter
