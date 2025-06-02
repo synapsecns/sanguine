@@ -7,6 +7,7 @@ interface ISynapseBridgeAdapterErrors {
     error SBA__GasLimitBelowMinimum();
     error SBA__RemoteTokenAlreadyAssigned(uint32 eid, address localAddr);
     error SBA__RemoteTokenAlreadyUsed(uint32 eid, address remoteAddr);
+    error SBA__RemoteTokenNotAssigned(uint32 eid, address localAddr);
     error SBA__RemoteTokenUnknown(uint32 eid, address remoteAddr);
     error SBA__SymbolAlreadyAdded(bytes31 symbol);
     error SBA__SymbolUnknown(bytes31 symbol);

@@ -20,6 +20,8 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
     bytes32 internal constant REMOTE_ADAPTER = keccak256("Dest Adapter");
     bytes32 internal constant MOCK_GUID = keccak256("mockGuid");
 
+    address internal remoteToken = makeAddr("Remote Token");
+
     SynapseBridgeAdapter internal adapter;
     address internal endpoint;
 
@@ -108,6 +110,10 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
 
     function expectRevertRemoteTokenAlreadyUsed(uint32 eid, address remoteAddr) internal {
         vm.expectRevert(abi.encodeWithSelector(SBA__RemoteTokenAlreadyUsed.selector, eid, remoteAddr));
+    }
+
+    function expectRevertRemoteTokenNotAssigned(uint32 eid, address localAddr) internal {
+        vm.expectRevert(abi.encodeWithSelector(SBA__RemoteTokenNotAssigned.selector, eid, localAddr));
     }
 
     function expectRevertRemoteTokenUnknown(uint32 eid, address remoteAddr) internal {
