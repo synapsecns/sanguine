@@ -64,7 +64,21 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
 
     /// @inheritdoc ISynapseBridgeAdapter
     function addToken(address token, TokenType tokenType, RemoteToken[] memory remoteTokens) external onlyOwner {
-        // TODO: implement
+        // Check token and its type, store if it's the first addition
+        _checkAndSaveToken(token, tokenType);
+        uint256 length = remoteTokens.length;
+        for (uint256 i = 0; i < length; ++i) {
+            // Check that a remote token has not been assigned for the given eid
+            uint32 eid = remoteTokens[i].eid;
+            if (getRemoteAddress[eid][token] != address(0)) revert SBA__RemoteTokenAlreadyAssigned(eid, token);
+            // Check that a remote address is not zero and have not been used for any other local token
+            address remoteAddr = remoteTokens[i].addr;
+            if (remoteAddr == address(0)) revert SBA__ZeroAddress();
+            if (getLocalAddress[eid][remoteAddr] != address(0)) revert SBA__RemoteTokenAlreadyUsed(eid, remoteAddr);
+            // Store remote <> local address mappings
+            getRemoteAddress[eid][token] = remoteAddr;
+            getLocalAddress[eid][remoteAddr] = token;
+        }
         emit TokenAdded(token, tokenType, remoteTokens);
     }
 
@@ -191,5 +205,19 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
             ISynapseBridge(cachedBridge).withdraw(to, token, amount, 0, guid);
         }
         emit TokenReceived(_origin.srcEid, to, token, amount, guid);
+    }
+
+    /// @dev Checks that the token is not already added with a different token type, stores if not added already.
+    function _checkAndSaveToken(address token, TokenType tokenType) internal {
+        if (token == address(0)) revert SBA__ZeroAddress();
+        if (tokenType == TokenType.Unknown) revert SBA__TokenTypeUnknown();
+        TokenType existingTokenType = getTokenType[token];
+        if (existingTokenType == TokenType.Unknown) {
+            // Save token type on the first addition
+            getTokenType[token] = tokenType;
+        } else if (existingTokenType != tokenType) {
+            // Validate that the token type is the same on later additions
+            revert SBA__TokenAlreadyAdded(token);
+        }
     }
 }
