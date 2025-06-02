@@ -104,18 +104,20 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
         // Cache bridge address
         address cachedBridge = bridge;
         if (cachedBridge == address(0)) revert SBA__BridgeNotSet();
-        // Cache token type and symbol (note: this reverts if token is unknown)
-        (TokenType tokenType, bytes31 symbol) = getSymbolByAddress(token);
+        // Check token's type (note: this reverts if token is unknown)
+        TokenType tokenType = _checkAndGetTokenType(token);
+        // Check that a remote token has been assigned for the given eid
+        if (getRemoteAddress[dstEid][token] == address(0)) revert SBA__RemoteTokenNotAssigned(dstEid, token);
         // Burn tokens from sender or deposit them into the bridge as prerequisite
         if (tokenType == TokenType.MintBurn) {
             IBurnableToken(token).burnFrom(msg.sender, amount);
         } else {
             IERC20(token).safeTransferFrom(msg.sender, cachedBridge, amount);
         }
-        // Send the bridge message
+        // Send the bridge message (note: we use the source token address for the message)
         bytes32 guid = _lzSend({
             _dstEid: dstEid,
-            _message: BridgeMessage.encodeBridgeMessage(to, symbol, amount),
+            _message: BridgeMessage.encodeBridgeMessage(to, token, amount),
             _options: OptionsBuilder.newOptions().addExecutorLzReceiveOption({_gas: gasLimit, _value: 0}),
             _fee: MessagingFee({nativeFee: msg.value, lzTokenFee: 0}),
             _refundAddress: msg.sender
@@ -129,7 +131,7 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
     function getNativeFee(uint32 dstEid, uint64 gasLimit) external view returns (uint256 nativeFee) {
         if (gasLimit < MIN_GAS_LIMIT) revert SBA__GasLimitBelowMinimum();
         // Since all the messages have the same length, we can use arbitrary data for fee estimation
-        bytes memory message = BridgeMessage.encodeBridgeMessage(address(0), 0, 0);
+        bytes memory message = BridgeMessage.encodeBridgeMessage(address(0), address(0), 0);
         return _quote({
             _dstEid: dstEid,
             _message: message,
@@ -187,14 +189,15 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
         internal
         override
     {
-        (address to, bytes31 symbol, uint256 amount) = BridgeMessage.decodeBridgeMessage(_message);
+        (address to, address srcToken, uint256 amount) = BridgeMessage.decodeBridgeMessage(_message);
         // Cache guid to avoid stack too deep error
         bytes32 guid = _guid;
         // Cache bridge address
         address cachedBridge = bridge;
         if (cachedBridge == address(0)) revert SBA__BridgeNotSet();
-        // Cache token type and address (note: this reverts if symbol is unknown)
-        (TokenType tokenType, address token) = getAddressBySymbol(symbol);
+        // Cache token type and address (note: this reverts if either source or local token is unknown)
+        address token = _checkAndGetLocalAddress(_origin.srcEid, srcToken);
+        TokenType tokenType = _checkAndGetTokenType(token);
         // Mint or withdraw tokens from the bridge as the result of the message
         // Note: the fees are set to 0 to enable 1:1 bridging
         // Note: guid is used as "kappa" (which is SynapseBridge's own global unique identifier),
@@ -219,5 +222,17 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
             // Validate that the token type is the same on later additions
             revert SBA__TokenAlreadyAdded(token);
         }
+    }
+
+    /// @dev Checks that the token is added and returns its type.
+    function _checkAndGetTokenType(address token) internal view returns (TokenType tokenType) {
+        tokenType = getTokenType[token];
+        if (tokenType == TokenType.Unknown) revert SBA__TokenUnknown(token);
+    }
+
+    /// @dev Checks that the local address exists for a given remoteEid:remoteAddr pair and returns it.
+    function _checkAndGetLocalAddress(uint32 remoteEid, address remoteAddr) internal view returns (address localAddr) {
+        localAddr = getLocalAddress[remoteEid][remoteAddr];
+        if (localAddr == address(0)) revert SBA__RemoteTokenUnknown(remoteEid, remoteAddr);
     }
 }
