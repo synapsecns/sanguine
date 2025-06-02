@@ -28,7 +28,6 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
     BridgeMessageHarness internal bridgeMessageLib;
 
     event BridgeSet(address bridge);
-    event TokenAdded(address token, ISynapseBridgeAdapter.TokenType tokenType, bytes31 symbol);
     event TokenAdded(
         address token, ISynapseBridgeAdapter.TokenType tokenType, ISynapseBridgeAdapter.RemoteToken[] remoteTokens
     );
@@ -52,11 +51,6 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
     function expectEventBridgeSet(address bridge) internal {
         vm.expectEmit(address(adapter));
         emit BridgeSet(bridge);
-    }
-
-    function expectEventTokenAdded(address token, ISynapseBridgeAdapter.TokenType tokenType, bytes31 symbol) internal {
-        vm.expectEmit(address(adapter));
-        emit TokenAdded(token, tokenType, symbol);
     }
 
     function expectEventTokenAdded(
@@ -120,14 +114,6 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
         vm.expectRevert(abi.encodeWithSelector(SBA__RemoteTokenUnknown.selector, eid, remoteAddr));
     }
 
-    function expectRevertSymbolAlreadyAdded(bytes31 symbol) internal {
-        vm.expectRevert(abi.encodeWithSelector(SBA__SymbolAlreadyAdded.selector, symbol));
-    }
-
-    function expectRevertSymbolUnknown(bytes31 symbol) internal {
-        vm.expectRevert(abi.encodeWithSelector(SBA__SymbolUnknown.selector, symbol));
-    }
-
     function expectRevertTokenAlreadyAdded(address token) internal {
         vm.expectRevert(abi.encodeWithSelector(SBA__TokenAlreadyAdded.selector, token));
     }
@@ -146,10 +132,6 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
 
     function expectRevertZeroAmount() internal {
         vm.expectRevert(SBA__ZeroAmount.selector);
-    }
-
-    function expectRevertZeroSymbol() internal {
-        vm.expectRevert(SBA__ZeroSymbol.selector);
     }
 
     function toArray(ISynapseBridgeAdapter.RemoteToken memory a)

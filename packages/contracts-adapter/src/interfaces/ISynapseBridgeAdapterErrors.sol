@@ -9,12 +9,9 @@ interface ISynapseBridgeAdapterErrors {
     error SBA__RemoteTokenAlreadyUsed(uint32 eid, address remoteAddr);
     error SBA__RemoteTokenNotAssigned(uint32 eid, address localAddr);
     error SBA__RemoteTokenUnknown(uint32 eid, address remoteAddr);
-    error SBA__SymbolAlreadyAdded(bytes31 symbol);
-    error SBA__SymbolUnknown(bytes31 symbol);
     error SBA__TokenAlreadyAdded(address token);
     error SBA__TokenTypeUnknown();
     error SBA__TokenUnknown(address token);
     error SBA__ZeroAddress();
     error SBA__ZeroAmount();
-    error SBA__ZeroSymbol();
 }

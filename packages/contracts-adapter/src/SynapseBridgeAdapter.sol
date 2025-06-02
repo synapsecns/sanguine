@@ -6,7 +6,6 @@ import {ISynapseBridge} from "./interfaces/ISynapseBridge.sol";
 import {ISynapseBridgeAdapter} from "./interfaces/ISynapseBridgeAdapter.sol";
 import {ISynapseBridgeAdapterErrors} from "./interfaces/ISynapseBridgeAdapterErrors.sol";
 import {BridgeMessage} from "./libs/BridgeMessage.sol";
-import {ReadableSymbol} from "./libs/ReadableSymbol.sol";
 
 import {MessagingFee, OApp, Origin} from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
 import {OptionsBuilder} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
@@ -17,16 +16,6 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
     using OptionsBuilder for bytes;
     using SafeERC20 for IERC20;
 
-    struct TokenAddress {
-        TokenType tokenType;
-        address token;
-    }
-
-    struct TokenSymbol {
-        TokenType tokenType;
-        bytes31 symbol;
-    }
-
     uint64 public constant MIN_GAS_LIMIT = 200_000;
 
     address public bridge;
@@ -35,11 +24,7 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
     mapping(uint32 eid => mapping(address localAddr => address remoteAddr)) public getRemoteAddress;
     mapping(address localAddr => TokenType tokenType) public getTokenType;
 
-    mapping(address => TokenSymbol) internal _symbolByAddress;
-    mapping(bytes31 => TokenAddress) internal _addressBySymbol;
-
     event BridgeSet(address bridge);
-    event TokenAdded(address token, TokenType tokenType, bytes31 symbol);
     event TokenAdded(address token, TokenType tokenType, RemoteToken[] remoteTokens);
     event TokenSent(uint32 indexed dstEid, address indexed to, address indexed token, uint256 amount, bytes32 guid);
     event TokenReceived(uint32 indexed srcEid, address indexed to, address indexed token, uint256 amount, bytes32 guid);
@@ -47,20 +32,6 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
     constructor(address endpoint_, address owner_) OApp(endpoint_, owner_) Ownable(owner_) {}
 
     // ════════════════════════════════════════════════ MANAGEMENT ═════════════════════════════════════════════════════
-
-    /// @inheritdoc ISynapseBridgeAdapter
-    function addToken(address token, TokenType tokenType, bytes31 symbol) external onlyOwner {
-        // Check: new parameters
-        if (token == address(0)) revert SBA__ZeroAddress();
-        if (symbol == bytes31(0)) revert SBA__ZeroSymbol();
-        // Check: existing state
-        if (_symbolByAddress[token].symbol != bytes31(0)) revert SBA__TokenAlreadyAdded(token);
-        if (_addressBySymbol[symbol].token != address(0)) revert SBA__SymbolAlreadyAdded(symbol);
-        // Store
-        _symbolByAddress[token] = TokenSymbol(tokenType, symbol);
-        _addressBySymbol[symbol] = TokenAddress(tokenType, token);
-        emit TokenAdded(token, tokenType, symbol);
-    }
 
     /// @inheritdoc ISynapseBridgeAdapter
     function addToken(address token, TokenType tokenType, RemoteToken[] memory remoteTokens) external onlyOwner {
@@ -138,41 +109,6 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
             _options: OptionsBuilder.newOptions().addExecutorLzReceiveOption({_gas: gasLimit, _value: 0}),
             _payInLzToken: false
         }).nativeFee;
-    }
-
-    /// @inheritdoc ISynapseBridgeAdapter
-    function getReadableSymbolByAddress(address token)
-        external
-        view
-        returns (TokenType tokenType, string memory readableSymbol)
-    {
-        bytes31 symbol;
-        (tokenType, symbol) = getSymbolByAddress(token);
-        readableSymbol = ReadableSymbol.toString(symbol);
-    }
-
-    /// @inheritdoc ISynapseBridgeAdapter
-    function getAddressByReadableSymbol(string memory readableSymbol)
-        external
-        view
-        returns (TokenType tokenType, address token)
-    {
-        bytes31 symbol = ReadableSymbol.toBytes31(readableSymbol);
-        return getAddressBySymbol(symbol);
-    }
-
-    /// @inheritdoc ISynapseBridgeAdapter
-    function getSymbolByAddress(address token) public view returns (TokenType tokenType, bytes31 symbol) {
-        tokenType = _symbolByAddress[token].tokenType;
-        symbol = _symbolByAddress[token].symbol;
-        if (symbol == bytes31(0)) revert SBA__TokenUnknown(token);
-    }
-
-    /// @inheritdoc ISynapseBridgeAdapter
-    function getAddressBySymbol(bytes31 symbol) public view returns (TokenType tokenType, address token) {
-        tokenType = _addressBySymbol[symbol].tokenType;
-        token = _addressBySymbol[symbol].token;
-        if (token == address(0)) revert SBA__SymbolUnknown(symbol);
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
