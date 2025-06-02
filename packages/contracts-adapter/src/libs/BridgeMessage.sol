@@ -8,22 +8,22 @@ library BridgeMessage {
 
     function encodeBridgeMessage(
         address recipient,
-        bytes31 symbol,
+        address srcToken,
         uint256 amount
     )
         internal
         pure
         returns (bytes memory)
     {
-        return abi.encode(recipient, symbol, amount);
+        return abi.encode(recipient, srcToken, amount);
     }
 
     function decodeBridgeMessage(bytes calldata payload)
         internal
         pure
-        returns (address recipient, bytes31 symbol, uint256 amount)
+        returns (address recipient, address srcToken, uint256 amount)
     {
         if (payload.length != BRIDGE_MESSAGE_LENGTH) revert BridgeMessage__InvalidPayload();
-        return abi.decode(payload, (address, bytes31, uint256));
+        return abi.decode(payload, (address, address, uint256));
     }
 }

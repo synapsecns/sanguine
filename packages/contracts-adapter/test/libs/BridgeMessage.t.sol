@@ -13,22 +13,24 @@ contract BridgeMessageTest is Test {
         harness = new BridgeMessageHarness();
     }
 
-    function test_roundTrip(address recipient, bytes31 symbol, uint256 amount) public view {
-        bytes memory payload = harness.encodeBridgeMessage(recipient, symbol, amount);
-        (address decodedRecipient, bytes31 decodedSymbol, uint256 decodedAmount) = harness.decodeBridgeMessage(payload);
+    function test_roundTrip(address recipient, address srcToken, uint256 amount) public view {
+        bytes memory payload = harness.encodeBridgeMessage(recipient, srcToken, amount);
+        (address decodedRecipient, address decodedSrcToken, uint256 decodedAmount) =
+            harness.decodeBridgeMessage(payload);
         assertEq(decodedRecipient, recipient);
-        assertEq(decodedSymbol, symbol);
+        assertEq(decodedSrcToken, srcToken);
         assertEq(decodedAmount, amount);
     }
 
     function test_roundTrip_randomData() public {
         address recipient = makeAddr("Random Address");
-        bytes31 symbol = bytes31(keccak256("Random Symbol"));
+        address srcToken = makeAddr("Random Token");
         uint256 amount = uint256(keccak256("Random Amount"));
-        bytes memory payload = harness.encodeBridgeMessage(recipient, symbol, amount);
-        (address decodedRecipient, bytes31 decodedSymbol, uint256 decodedAmount) = harness.decodeBridgeMessage(payload);
+        bytes memory payload = harness.encodeBridgeMessage(recipient, srcToken, amount);
+        (address decodedRecipient, address decodedSrcToken, uint256 decodedAmount) =
+            harness.decodeBridgeMessage(payload);
         assertEq(decodedRecipient, recipient);
-        assertEq(decodedSymbol, symbol);
+        assertEq(decodedSrcToken, srcToken);
         assertEq(decodedAmount, amount);
     }
 
