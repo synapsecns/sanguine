@@ -344,7 +344,7 @@ jobs:
         run: echo "version=v$(cat .golangci-version)" >> $GITHUB_OUTPUT
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v8
         with:
           working-directory: ${{matrix.package}}/
           version: ${{ steps.golangci_version.outputs.version }}
