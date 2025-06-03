@@ -97,37 +97,37 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
         addToken(token, ISynapseBridgeAdapter.TokenType.MintBurn, secondRemoteToken);
     }
 
-    function test_addToken_mintBurn_revert_remoteTokenAlreadyAssigned_sameRemoteAddress() public {
+    function test_addToken_mintBurn_revert_remotePairAlreadySet_sameRemoteAddress() public {
         addToken(token, ISynapseBridgeAdapter.TokenType.MintBurn, secondRemoteToken);
         // Add as single entry
-        expectRevertRemoteTokenAlreadyAssigned(secondRemoteToken[0].eid, token);
+        expectRevertRemotePairAlreadySet(secondRemoteToken[0].eid, token);
         addToken(token, ISynapseBridgeAdapter.TokenType.MintBurn, secondRemoteToken);
         // Add as a batch
-        expectRevertRemoteTokenAlreadyAssigned(secondRemoteToken[0].eid, token);
+        expectRevertRemotePairAlreadySet(secondRemoteToken[0].eid, token);
         addToken(token, ISynapseBridgeAdapter.TokenType.MintBurn, allRemoteTokens);
     }
 
-    function test_addToken_mintBurn_revert_remoteTokenAlreadyAssigned_diffRemoteAddress() public {
+    function test_addToken_mintBurn_revert_remotePairAlreadySet_diffRemoteAddress() public {
         addToken(
             token,
             ISynapseBridgeAdapter.TokenType.MintBurn,
             toArray(ISynapseBridgeAdapter.RemoteToken(secondRemoteToken[0].eid, anotherToken))
         );
         // Add as single entry
-        expectRevertRemoteTokenAlreadyAssigned(secondRemoteToken[0].eid, token);
+        expectRevertRemotePairAlreadySet(secondRemoteToken[0].eid, token);
         addToken(token, ISynapseBridgeAdapter.TokenType.MintBurn, secondRemoteToken);
         // Add as a batch
-        expectRevertRemoteTokenAlreadyAssigned(secondRemoteToken[0].eid, token);
+        expectRevertRemotePairAlreadySet(secondRemoteToken[0].eid, token);
         addToken(token, ISynapseBridgeAdapter.TokenType.MintBurn, allRemoteTokens);
     }
 
-    function test_addToken_mintBurn_revert_remoteTokenAlreadyUsed() public {
+    function test_addToken_mintBurn_revert_localPairAlreadyExists() public {
         addToken(token, ISynapseBridgeAdapter.TokenType.MintBurn, secondRemoteToken);
         // Add as single entry
-        expectRevertRemoteTokenAlreadyUsed(secondRemoteToken[0].eid, secondRemoteToken[0].addr);
+        expectRevertLocalPairAlreadyExists(secondRemoteToken[0].eid, secondRemoteToken[0].addr);
         addToken(anotherToken, ISynapseBridgeAdapter.TokenType.MintBurn, secondRemoteToken);
         // Add as a batch
-        expectRevertRemoteTokenAlreadyUsed(secondRemoteToken[0].eid, secondRemoteToken[0].addr);
+        expectRevertLocalPairAlreadyExists(secondRemoteToken[0].eid, secondRemoteToken[0].addr);
         addToken(anotherToken, ISynapseBridgeAdapter.TokenType.MintBurn, allRemoteTokens);
     }
 
@@ -190,37 +190,37 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
         addToken(token, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, secondRemoteToken);
     }
 
-    function test_addToken_withdrawDeposit_revert_remoteTokenAlreadyAssigned_sameRemoteAddress() public {
+    function test_addToken_withdrawDeposit_revert_remotePairAlreadySet_sameRemoteAddress() public {
         addToken(token, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, secondRemoteToken);
         // Add as single entry
-        expectRevertRemoteTokenAlreadyAssigned(secondRemoteToken[0].eid, token);
+        expectRevertRemotePairAlreadySet(secondRemoteToken[0].eid, token);
         addToken(token, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, secondRemoteToken);
         // Add as a batch
-        expectRevertRemoteTokenAlreadyAssigned(secondRemoteToken[0].eid, token);
+        expectRevertRemotePairAlreadySet(secondRemoteToken[0].eid, token);
         addToken(token, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, allRemoteTokens);
     }
 
-    function test_addToken_withdrawDeposit_revert_remoteTokenAlreadyAssigned_diffRemoteAddress() public {
+    function test_addToken_withdrawDeposit_revert_remotePairAlreadySet_diffRemoteAddress() public {
         addToken(
             token,
             ISynapseBridgeAdapter.TokenType.WithdrawDeposit,
             toArray(ISynapseBridgeAdapter.RemoteToken(secondRemoteToken[0].eid, anotherToken))
         );
         // Add as single entry
-        expectRevertRemoteTokenAlreadyAssigned(secondRemoteToken[0].eid, token);
+        expectRevertRemotePairAlreadySet(secondRemoteToken[0].eid, token);
         addToken(token, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, secondRemoteToken);
         // Add as a batch
-        expectRevertRemoteTokenAlreadyAssigned(secondRemoteToken[0].eid, token);
+        expectRevertRemotePairAlreadySet(secondRemoteToken[0].eid, token);
         addToken(token, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, allRemoteTokens);
     }
 
-    function test_addToken_withdrawDeposit_revert_remoteTokenAlreadyUsed() public {
+    function test_addToken_withdrawDeposit_revert_localPairAlreadyExists() public {
         addToken(token, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, secondRemoteToken);
         // Add as single entry
-        expectRevertRemoteTokenAlreadyUsed(secondRemoteToken[0].eid, secondRemoteToken[0].addr);
+        expectRevertLocalPairAlreadyExists(secondRemoteToken[0].eid, secondRemoteToken[0].addr);
         addToken(anotherToken, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, secondRemoteToken);
         // Add as a batch
-        expectRevertRemoteTokenAlreadyUsed(secondRemoteToken[0].eid, secondRemoteToken[0].addr);
+        expectRevertLocalPairAlreadyExists(secondRemoteToken[0].eid, secondRemoteToken[0].addr);
         addToken(anotherToken, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, allRemoteTokens);
     }
 

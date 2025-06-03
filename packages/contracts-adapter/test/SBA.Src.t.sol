@@ -158,14 +158,14 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     }
 
     function test_bridge_mintBurn_revert_eidUnknown() public withBridgeSet withMintTokenAdded {
-        expectRevertRemoteTokenNotAssigned(UNKNOWN_EID, address(token));
+        expectRevertRemotePairNotSet(UNKNOWN_EID, address(token));
         vm.prank({msgSender: user, txOrigin: user});
         adapter.bridgeERC20{value: nativeFee}(UNKNOWN_EID, recipient, address(token), amount, gasLimit);
     }
 
     function test_bridge_mintBurn_revert_eidUnknown_withPeerAdded() public withBridgeSet withMintTokenAdded {
         adapter.setPeer(UNKNOWN_EID, REMOTE_ADAPTER);
-        expectRevertRemoteTokenNotAssigned(UNKNOWN_EID, address(token));
+        expectRevertRemotePairNotSet(UNKNOWN_EID, address(token));
         vm.prank({msgSender: user, txOrigin: user});
         adapter.bridgeERC20{value: nativeFee}(UNKNOWN_EID, recipient, address(token), amount, gasLimit);
     }
@@ -264,7 +264,7 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     }
 
     function test_bridge_withdrawDeposit_revert_eidUnknown() public withBridgeSet withWithdrawTokenAdded {
-        expectRevertRemoteTokenNotAssigned(UNKNOWN_EID, address(token));
+        expectRevertRemotePairNotSet(UNKNOWN_EID, address(token));
         vm.prank({msgSender: user, txOrigin: user});
         adapter.bridgeERC20{value: nativeFee}(UNKNOWN_EID, recipient, address(token), amount, gasLimit);
     }
@@ -275,7 +275,7 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
         withWithdrawTokenAdded
     {
         adapter.setPeer(UNKNOWN_EID, REMOTE_ADAPTER);
-        expectRevertRemoteTokenNotAssigned(UNKNOWN_EID, address(token));
+        expectRevertRemotePairNotSet(UNKNOWN_EID, address(token));
         vm.prank({msgSender: user, txOrigin: user});
         adapter.bridgeERC20{value: nativeFee}(UNKNOWN_EID, recipient, address(token), amount, gasLimit);
     }

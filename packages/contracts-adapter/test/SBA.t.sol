@@ -98,20 +98,20 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
         vm.expectRevert(SBA__GasLimitBelowMinimum.selector);
     }
 
-    function expectRevertRemoteTokenAlreadyAssigned(uint32 eid, address localAddr) internal {
-        vm.expectRevert(abi.encodeWithSelector(SBA__RemoteTokenAlreadyAssigned.selector, eid, localAddr));
+    function expectRevertLocalPairAlreadyExists(uint32 eid, address remoteAddr) internal {
+        vm.expectRevert(abi.encodeWithSelector(SBA__LocalPairAlreadyExists.selector, eid, remoteAddr));
     }
 
-    function expectRevertRemoteTokenAlreadyUsed(uint32 eid, address remoteAddr) internal {
-        vm.expectRevert(abi.encodeWithSelector(SBA__RemoteTokenAlreadyUsed.selector, eid, remoteAddr));
+    function expectRevertLocalPairNotFound(uint32 eid, address remoteAddr) internal {
+        vm.expectRevert(abi.encodeWithSelector(SBA__LocalPairNotFound.selector, eid, remoteAddr));
     }
 
-    function expectRevertRemoteTokenNotAssigned(uint32 eid, address localAddr) internal {
-        vm.expectRevert(abi.encodeWithSelector(SBA__RemoteTokenNotAssigned.selector, eid, localAddr));
+    function expectRevertRemotePairAlreadySet(uint32 eid, address localAddr) internal {
+        vm.expectRevert(abi.encodeWithSelector(SBA__RemotePairAlreadySet.selector, eid, localAddr));
     }
 
-    function expectRevertRemoteTokenUnknown(uint32 eid, address remoteAddr) internal {
-        vm.expectRevert(abi.encodeWithSelector(SBA__RemoteTokenUnknown.selector, eid, remoteAddr));
+    function expectRevertRemotePairNotSet(uint32 eid, address localAddr) internal {
+        vm.expectRevert(abi.encodeWithSelector(SBA__RemotePairNotSet.selector, eid, localAddr));
     }
 
     function expectRevertTokenAlreadyAdded(address token) internal {

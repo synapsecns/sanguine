@@ -89,7 +89,7 @@ contract SynapseBridgeAdapterDstTest is SynapseBridgeAdapterTest {
     }
 
     function test_receive_mintBurn_revert_tokenNotAdded() public withBridgeSet {
-        expectRevertRemoteTokenUnknown(SRC_EID, remoteToken);
+        expectRevertLocalPairNotFound(SRC_EID, remoteToken);
         endpointCallsLzReceive();
     }
 
@@ -105,7 +105,7 @@ contract SynapseBridgeAdapterDstTest is SynapseBridgeAdapterTest {
 
     function test_receive_mintBurn_revert_eidUnknown_withPeerAdded() public withBridgeSet withMintTokenAdded {
         adapter.setPeer(UNKNOWN_EID, REMOTE_ADAPTER);
-        expectRevertRemoteTokenUnknown(UNKNOWN_EID, remoteToken);
+        expectRevertLocalPairNotFound(UNKNOWN_EID, remoteToken);
         endpointCallsLzReceive(UNKNOWN_EID, REMOTE_ADAPTER);
     }
 
@@ -133,7 +133,7 @@ contract SynapseBridgeAdapterDstTest is SynapseBridgeAdapterTest {
     }
 
     function test_receive_withdrawDeposit_revert_tokenNotAdded() public withBridgeSet {
-        expectRevertRemoteTokenUnknown(SRC_EID, remoteToken);
+        expectRevertLocalPairNotFound(SRC_EID, remoteToken);
         endpointCallsLzReceive();
     }
 
@@ -153,7 +153,7 @@ contract SynapseBridgeAdapterDstTest is SynapseBridgeAdapterTest {
         withWithdrawTokenAdded
     {
         adapter.setPeer(UNKNOWN_EID, REMOTE_ADAPTER);
-        expectRevertRemoteTokenUnknown(UNKNOWN_EID, remoteToken);
+        expectRevertLocalPairNotFound(UNKNOWN_EID, remoteToken);
         endpointCallsLzReceive(UNKNOWN_EID, REMOTE_ADAPTER);
     }
 

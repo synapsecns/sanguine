@@ -35,17 +35,17 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
 
     /// @inheritdoc ISynapseBridgeAdapter
     function addToken(address token, TokenType tokenType, RemoteToken[] memory remoteTokens) external onlyOwner {
-        // Check token and its type, store if it's the first addition
+        // Check local token and its type, store if it's the first addition
         _checkAndSaveToken(token, tokenType);
         uint256 length = remoteTokens.length;
         for (uint256 i = 0; i < length; ++i) {
-            // Check that a remote token has not been assigned for the given eid
+            // Check that a remote token pair has not been set for the local token and eid
             uint32 eid = remoteTokens[i].eid;
-            if (getRemoteAddress[eid][token] != address(0)) revert SBA__RemoteTokenAlreadyAssigned(eid, token);
-            // Check that a remote address is not zero and have not been used for any other local token
+            if (getRemoteAddress[eid][token] != address(0)) revert SBA__RemotePairAlreadySet(eid, token);
+            // Check that a remote address is not zero and have not been used for any other local token and given eid
             address remoteAddr = remoteTokens[i].addr;
             if (remoteAddr == address(0)) revert SBA__ZeroAddress();
-            if (getLocalAddress[eid][remoteAddr] != address(0)) revert SBA__RemoteTokenAlreadyUsed(eid, remoteAddr);
+            if (getLocalAddress[eid][remoteAddr] != address(0)) revert SBA__LocalPairAlreadyExists(eid, remoteAddr);
             // Store remote <> local address mappings
             getRemoteAddress[eid][token] = remoteAddr;
             getLocalAddress[eid][remoteAddr] = token;
@@ -77,8 +77,8 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
         if (cachedBridge == address(0)) revert SBA__BridgeNotSet();
         // Check token's type (note: this reverts if token is unknown)
         TokenType tokenType = _checkAndGetTokenType(token);
-        // Check that a remote token has been assigned for the given eid
-        if (getRemoteAddress[dstEid][token] == address(0)) revert SBA__RemoteTokenNotAssigned(dstEid, token);
+        // Check that a remote token pair exists for the given local token and eid
+        if (getRemoteAddress[dstEid][token] == address(0)) revert SBA__RemotePairNotSet(dstEid, token);
         // Burn tokens from sender or deposit them into the bridge as prerequisite
         if (tokenType == TokenType.MintBurn) {
             IBurnableToken(token).burnFrom(msg.sender, amount);
@@ -160,15 +160,15 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
         }
     }
 
-    /// @dev Checks that the token is added and returns its type.
+    /// @dev Checks that the local token has been added and returns its type.
     function _checkAndGetTokenType(address token) internal view returns (TokenType tokenType) {
         tokenType = getTokenType[token];
         if (tokenType == TokenType.Unknown) revert SBA__TokenUnknown(token);
     }
 
-    /// @dev Checks that the local address exists for a given remoteEid:remoteAddr pair and returns it.
+    /// @dev Checks that the local address pair exists for a given remoteEid:remoteAddr and returns it.
     function _checkAndGetLocalAddress(uint32 remoteEid, address remoteAddr) internal view returns (address localAddr) {
         localAddr = getLocalAddress[remoteEid][remoteAddr];
-        if (localAddr == address(0)) revert SBA__RemoteTokenUnknown(remoteEid, remoteAddr);
+        if (localAddr == address(0)) revert SBA__LocalPairNotFound(remoteEid, remoteAddr);
     }
 }
