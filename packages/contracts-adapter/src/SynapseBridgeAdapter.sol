@@ -38,6 +38,7 @@ contract SynapseBridgeAdapter is OApp, ISynapseBridgeAdapter, ISynapseBridgeAdap
         // Check local token and its type, store if it's the first addition
         _checkAndSaveToken(token, tokenType);
         uint256 length = remoteTokens.length;
+        if (length == 0) revert SBA__ZeroAmount();
         for (uint256 i = 0; i < length; ++i) {
             // Check that a remote token pair has not been set for the local token and eid
             uint32 eid = remoteTokens[i].eid;
