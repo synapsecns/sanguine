@@ -50,7 +50,7 @@
     "@types/web3": "^1.2.2",
     "@visx/chord": "^3.0.0",
     "@visx/shape": "^3.0.0",
-    "@wagmi/connectors": "^5.1.11",
+    "@wagmi/connectors": "^5.7.9",
     "@wagmi/core": "^2.13.5",
     "babel-plugin-transform-bigint": "^1.0.32",
     "deepmerge": "^4.3.1",
