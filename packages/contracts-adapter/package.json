@@ -24,7 +24,6 @@
     "build:slither": "forge build --out=out --build-info --force",
     "test:coverage": "echo 'Please use foundry'",
     "test": "forge test",
-    "gas:bench": "forge test --mc GasBenchmark --gas-report",
     "lint": "forge fmt && npm run solhint",
     "lint:check": "forge fmt --check && npm run solhint:check",
     "ci:lint": "npm run lint:check",
