@@ -167,6 +167,17 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
         );
     }
 
+    function test_addToken_mintBurn_revert_existingTokenEmptyArray() public {
+        addToken(token, ISynapseBridgeAdapter.TokenType.MintBurn, firstRemoteToken);
+        expectRevertZeroAmount();
+        addToken(token, ISynapseBridgeAdapter.TokenType.MintBurn, new ISynapseBridgeAdapter.RemoteToken[](0));
+    }
+
+    function test_addToken_mintBurn_revert_newTokenEmptyArray() public {
+        expectRevertZeroAmount();
+        addToken(token, ISynapseBridgeAdapter.TokenType.MintBurn, new ISynapseBridgeAdapter.RemoteToken[](0));
+    }
+
     function test_addToken_withdrawDeposit_oneByOne() public {
         // Add first token
         expectEventTokenAdded(token, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, firstRemoteToken);
@@ -258,6 +269,17 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
             ISynapseBridgeAdapter.TokenType.WithdrawDeposit,
             toArray(firstRemoteToken[0], ISynapseBridgeAdapter.RemoteToken(secondRemoteToken[0].eid, address(0)))
         );
+    }
+
+    function test_addToken_withdrawDeposit_revert_existingTokenEmptyArray() public {
+        addToken(token, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, firstRemoteToken);
+        expectRevertZeroAmount();
+        addToken(token, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, new ISynapseBridgeAdapter.RemoteToken[](0));
+    }
+
+    function test_addToken_withdrawDeposit_revert_newTokenEmptyArray() public {
+        expectRevertZeroAmount();
+        addToken(token, ISynapseBridgeAdapter.TokenType.WithdrawDeposit, new ISynapseBridgeAdapter.RemoteToken[](0));
     }
 
     function test_addToken_revert_tokenTypeUnknown() public {
