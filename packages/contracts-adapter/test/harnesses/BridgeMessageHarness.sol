@@ -10,20 +10,20 @@ contract BridgeMessageHarness {
 
     function encodeBridgeMessage(
         address recipient,
-        bytes31 symbol,
+        address srcToken,
         uint256 amount
     )
         public
         pure
         returns (bytes memory)
     {
-        return BridgeMessage.encodeBridgeMessage(recipient, symbol, amount);
+        return BridgeMessage.encodeBridgeMessage(recipient, srcToken, amount);
     }
 
     function decodeBridgeMessage(bytes calldata payload)
         public
         pure
-        returns (address recipient, bytes31 symbol, uint256 amount)
+        returns (address recipient, address srcToken, uint256 amount)
     {
         return BridgeMessage.decodeBridgeMessage(payload);
     }

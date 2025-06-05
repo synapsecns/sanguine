@@ -3,17 +3,27 @@ pragma solidity ^0.8.4;
 
 interface ISynapseBridgeAdapter {
     enum TokenType {
+        Unknown,
         MintBurn,
         WithdrawDeposit
     }
 
+    struct RemoteToken {
+        uint32 eid;
+        address addr;
+    }
+
     // ════════════════════════════════════════════════ MANAGEMENT ═════════════════════════════════════════════════════
 
-    /// @notice Allows the contract owner to add a new token to the adapter.
+    /// @notice Allows the contract owner to add a new token to the adapter,
+    /// or add new remote tokens to an existing token.
     /// @dev Will revert in the following cases:
-    /// - `token` has already been added, or is a zero address
-    /// - `symbol` has already been added, or is a zero bytes31
-    function addToken(address token, TokenType tokenType, bytes31 symbol) external;
+    /// - `token` or any of the `remoteTokens.addr` is a zero address
+    /// - `tokenType` is `TokenType.Unknown`
+    /// - `token` has already been added with a different `tokenType`.
+    /// - `token` has already a remote token assigned for any of the `eid`.
+    /// - Any of the remote tokens has already been used for its `eid` with any of the local tokens.
+    function addToken(address token, TokenType tokenType, RemoteToken[] memory remoteTokens) external;
 
     /// @notice Allows the contract owner to set the SynapseBridge address.
     /// @dev Will revert in the following cases:
@@ -46,29 +56,15 @@ interface ISynapseBridgeAdapter {
     /// - `gasLimit` is below the required minimum
     function getNativeFee(uint32 dstEid, uint64 gasLimit) external view returns (uint256 nativeFee);
 
-    /// @notice Returns the token type and symbol for a given token address.
-    /// @dev Will revert in the following cases:
-    /// - `token` has not been added to the adapter
-    function getSymbolByAddress(address token) external view returns (TokenType tokenType, bytes31 symbol);
+    /// @notice Returns the local address for a given eid and remote address.
+    /// @dev Will return `address(0)` if the remote address has not been added for the given eid.
+    function getLocalAddress(uint32 eid, address remoteAddr) external view returns (address localAddr);
 
-    /// @notice Returns the token type and address for a given symbol.
-    /// @dev Will revert in the following cases:
-    /// - `symbol` has not been added to the adapter
-    function getAddressBySymbol(bytes31 symbol) external view returns (TokenType tokenType, address token);
+    /// @notice Returns the remote address for a given local token and eid.
+    /// @dev Will return `address(0)` if the token has not been added for the given eid.
+    function getRemoteAddress(uint32 eid, address localAddr) external view returns (address remoteAddr);
 
-    /// @notice Returns the token type and human-readable symbol for a given token address.
-    /// @dev Will revert in the following cases:
-    /// - `token` has not been added to the adapter
-    function getReadableSymbolByAddress(address token)
-        external
-        view
-        returns (TokenType tokenType, string memory symbol);
-
-    /// @notice Returns the token type and address for a given human-readable symbol.
-    /// @dev Will revert in the following cases:
-    /// - `symbol` has not been added to the adapter
-    function getAddressByReadableSymbol(string memory symbol)
-        external
-        view
-        returns (TokenType tokenType, address token);
+    /// @notice Returns the token type for a given local address.
+    /// @dev Will return `TokenType.Unknown` if the token has not been added.
+    function getTokenType(address localAddr) external view returns (TokenType tokenType);
 }

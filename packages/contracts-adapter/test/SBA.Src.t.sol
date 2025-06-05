@@ -20,7 +20,6 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
 
     address internal user = makeAddr("User");
     address internal recipient = makeAddr("Recipient");
-    bytes31 internal symbol = "SYMBOL";
     uint256 internal initialBalance = 1 ether;
     uint256 internal amount = 0.123456 ether;
     uint64 internal gasLimit = 234_567;
@@ -39,12 +38,20 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     }
 
     modifier withMintTokenAdded() {
-        adapter.addToken(address(token), ISynapseBridgeAdapter.TokenType.MintBurn, symbol);
+        adapter.addToken(
+            address(token),
+            ISynapseBridgeAdapter.TokenType.MintBurn,
+            toArray(ISynapseBridgeAdapter.RemoteToken(DST_EID, remoteToken))
+        );
         _;
     }
 
     modifier withWithdrawTokenAdded() {
-        adapter.addToken(address(token), ISynapseBridgeAdapter.TokenType.WithdrawDeposit, symbol);
+        adapter.addToken(
+            address(token),
+            ISynapseBridgeAdapter.TokenType.WithdrawDeposit,
+            toArray(ISynapseBridgeAdapter.RemoteToken(DST_EID, remoteToken))
+        );
         _;
     }
 
@@ -59,7 +66,7 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
         vm.prank(user);
         token.approve(address(adapter), type(uint256).max);
 
-        expectedBridgeMessage = bridgeMessageLib.encodeBridgeMessage(recipient, symbol, amount);
+        expectedBridgeMessage = bridgeMessageLib.encodeBridgeMessage(recipient, address(token), amount);
 
         mockSendReceipt();
     }
@@ -130,7 +137,7 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     function test_bridge_mintBurn_revert_tokenNotApproved() public withBridgeSet withMintTokenAdded {
         vm.prank(user);
         token.approve(address(adapter), 0);
-        // Note: we expect a revert from the token contract, so 
+        // Note: we expect a revert from the token contract, so
         vm.expectRevert();
         userBridgesToken();
     }
@@ -151,7 +158,14 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     }
 
     function test_bridge_mintBurn_revert_eidUnknown() public withBridgeSet withMintTokenAdded {
-        vm.expectRevert();
+        expectRevertRemotePairNotSet(UNKNOWN_EID, address(token));
+        vm.prank({msgSender: user, txOrigin: user});
+        adapter.bridgeERC20{value: nativeFee}(UNKNOWN_EID, recipient, address(token), amount, gasLimit);
+    }
+
+    function test_bridge_mintBurn_revert_eidUnknown_withPeerAdded() public withBridgeSet withMintTokenAdded {
+        adapter.setPeer(UNKNOWN_EID, REMOTE_ADAPTER);
+        expectRevertRemotePairNotSet(UNKNOWN_EID, address(token));
         vm.prank({msgSender: user, txOrigin: user});
         adapter.bridgeERC20{value: nativeFee}(UNKNOWN_EID, recipient, address(token), amount, gasLimit);
     }
@@ -250,7 +264,18 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     }
 
     function test_bridge_withdrawDeposit_revert_eidUnknown() public withBridgeSet withWithdrawTokenAdded {
-        vm.expectRevert();
+        expectRevertRemotePairNotSet(UNKNOWN_EID, address(token));
+        vm.prank({msgSender: user, txOrigin: user});
+        adapter.bridgeERC20{value: nativeFee}(UNKNOWN_EID, recipient, address(token), amount, gasLimit);
+    }
+
+    function test_bridge_withdrawDeposit_revert_eidUnknown_withPeerAdded()
+        public
+        withBridgeSet
+        withWithdrawTokenAdded
+    {
+        adapter.setPeer(UNKNOWN_EID, REMOTE_ADAPTER);
+        expectRevertRemotePairNotSet(UNKNOWN_EID, address(token));
         vm.prank({msgSender: user, txOrigin: user});
         adapter.bridgeERC20{value: nativeFee}(UNKNOWN_EID, recipient, address(token), amount, gasLimit);
     }
@@ -282,7 +307,7 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     // ══════════════════════════════════════════════ GET NATIVE FEE ═══════════════════════════════════════════════════
 
     function test_getNativeFee() public {
-        bytes memory mockMessage = bridgeMessageLib.encodeBridgeMessage(address(0), 0, 0);
+        bytes memory mockMessage = bridgeMessageLib.encodeBridgeMessage(address(0), address(0), 0);
         vm.mockCall({
             callee: endpoint,
             data: abi.encodeCall(

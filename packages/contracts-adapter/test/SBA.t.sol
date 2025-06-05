@@ -15,9 +15,12 @@ import {Test} from "forge-std/Test.sol";
 abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors {
     uint32 internal constant SRC_EID = 1;
     uint32 internal constant DST_EID = 2;
-    uint32 internal constant UNKNOWN_EID = 3;
+    uint32 internal constant OTHER_DST_EID = 3;
+    uint32 internal constant UNKNOWN_EID = 1337;
     bytes32 internal constant REMOTE_ADAPTER = keccak256("Dest Adapter");
     bytes32 internal constant MOCK_GUID = keccak256("mockGuid");
+
+    address internal remoteToken = makeAddr("Remote Token");
 
     SynapseBridgeAdapter internal adapter;
     address internal endpoint;
@@ -25,7 +28,9 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
     BridgeMessageHarness internal bridgeMessageLib;
 
     event BridgeSet(address bridge);
-    event TokenAdded(address token, ISynapseBridgeAdapter.TokenType tokenType, bytes31 symbol);
+    event TokenAdded(
+        address token, ISynapseBridgeAdapter.TokenType tokenType, ISynapseBridgeAdapter.RemoteToken[] remoteTokens
+    );
     event TokenSent(uint32 indexed dstEid, address indexed to, address indexed token, uint256 amount, bytes32 guid);
     event TokenReceived(uint32 indexed srcEid, address indexed to, address indexed token, uint256 amount, bytes32 guid);
 
@@ -48,9 +53,15 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
         emit BridgeSet(bridge);
     }
 
-    function expectEventTokenAdded(address token, ISynapseBridgeAdapter.TokenType tokenType, bytes31 symbol) internal {
+    function expectEventTokenAdded(
+        address token,
+        ISynapseBridgeAdapter.TokenType tokenType,
+        ISynapseBridgeAdapter.RemoteToken[] memory remoteTokens
+    )
+        internal
+    {
         vm.expectEmit(address(adapter));
-        emit TokenAdded(token, tokenType, symbol);
+        emit TokenAdded(token, tokenType, remoteTokens);
     }
 
     function expectEventTokenSent(uint32 dstEid, address to, address token, uint256 amount, bytes32 guid) internal {
@@ -87,16 +98,28 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
         vm.expectRevert(SBA__GasLimitBelowMinimum.selector);
     }
 
-    function expectRevertSymbolAlreadyAdded(bytes31 symbol) internal {
-        vm.expectRevert(abi.encodeWithSelector(SBA__SymbolAlreadyAdded.selector, symbol));
+    function expectRevertLocalPairAlreadyExists(uint32 eid, address remoteAddr) internal {
+        vm.expectRevert(abi.encodeWithSelector(SBA__LocalPairAlreadyExists.selector, eid, remoteAddr));
     }
 
-    function expectRevertSymbolUnknown(bytes31 symbol) internal {
-        vm.expectRevert(abi.encodeWithSelector(SBA__SymbolUnknown.selector, symbol));
+    function expectRevertLocalPairNotFound(uint32 eid, address remoteAddr) internal {
+        vm.expectRevert(abi.encodeWithSelector(SBA__LocalPairNotFound.selector, eid, remoteAddr));
+    }
+
+    function expectRevertRemotePairAlreadySet(uint32 eid, address localAddr) internal {
+        vm.expectRevert(abi.encodeWithSelector(SBA__RemotePairAlreadySet.selector, eid, localAddr));
+    }
+
+    function expectRevertRemotePairNotSet(uint32 eid, address localAddr) internal {
+        vm.expectRevert(abi.encodeWithSelector(SBA__RemotePairNotSet.selector, eid, localAddr));
     }
 
     function expectRevertTokenAlreadyAdded(address token) internal {
         vm.expectRevert(abi.encodeWithSelector(SBA__TokenAlreadyAdded.selector, token));
+    }
+
+    function expectRevertTokenTypeUnknown() internal {
+        vm.expectRevert(SBA__TokenTypeUnknown.selector);
     }
 
     function expectRevertTokenUnknown(address token) internal {
@@ -111,7 +134,25 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
         vm.expectRevert(SBA__ZeroAmount.selector);
     }
 
-    function expectRevertZeroSymbol() internal {
-        vm.expectRevert(SBA__ZeroSymbol.selector);
+    function toArray(ISynapseBridgeAdapter.RemoteToken memory a)
+        internal
+        pure
+        returns (ISynapseBridgeAdapter.RemoteToken[] memory arr)
+    {
+        arr = new ISynapseBridgeAdapter.RemoteToken[](1);
+        arr[0] = a;
+    }
+
+    function toArray(
+        ISynapseBridgeAdapter.RemoteToken memory a,
+        ISynapseBridgeAdapter.RemoteToken memory b
+    )
+        internal
+        pure
+        returns (ISynapseBridgeAdapter.RemoteToken[] memory arr)
+    {
+        arr = new ISynapseBridgeAdapter.RemoteToken[](2);
+        arr[0] = a;
+        arr[1] = b;
     }
 }
