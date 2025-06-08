@@ -90,6 +90,41 @@ export const GASZIP_ADDRESS_MAP: AddressMap = generateAddressMap(
 )
 
 /**
+ * USDT0 contract address for supported chains.
+ * Note: for Ethereum this is actually native USDT.
+ */
+export const USDT0_ADDRESS_MAP: AddressMap = {
+  [SupportedChainId.ARBITRUM]: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
+  [SupportedChainId.BERACHAIN]: '0x779Ded0c9e1022225f8E0630b35a9b54bE713736',
+  [SupportedChainId.ETH]: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+  [SupportedChainId.HYPEREVM]: '0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb',
+  [SupportedChainId.OPTIMISM]: '0x01bFF41798a0BcF287b996046Ca68b395DbC1071',
+  [SupportedChainId.UNICHAIN]: '0x9151434b16b9763660705744891fA906F660EcC5',
+}
+
+/**
+ * USDT OFT contract address for supported chains.
+ * This is the point of entry for USDT bridge on supported chains, including Ethereum.
+ */
+export const USDT_OFT_ADDRESS_MAP: AddressMap = {
+  [SupportedChainId.ARBITRUM]: '0x14E4A1B13bf7F943c8ff7C51fb60FA964A298D92',
+  [SupportedChainId.BERACHAIN]: '0x3Dc96399109df5ceb2C226664A086140bD0379cB',
+  [SupportedChainId.ETH]: '0x6C96dE32CEa08842dcc4058c14d3aaAD7Fa41dee',
+  [SupportedChainId.HYPEREVM]: '0x904861a24F30EC96ea7CFC3bE9EA4B476d237e98',
+  [SupportedChainId.OPTIMISM]: '0xF03b4d9AC1D5d1E7c4cEf54C2A313b9fe051A0aD',
+  [SupportedChainId.UNICHAIN]: '0xc07bE8994D035631c36fb4a89C918CeFB2f03EC3',
+}
+
+export const LZ_EID_MAP: Record<number, number> = {
+  [SupportedChainId.ARBITRUM]: 30110,
+  [SupportedChainId.BERACHAIN]: 30362,
+  [SupportedChainId.ETH]: 30101,
+  [SupportedChainId.HYPEREVM]: 30367,
+  [SupportedChainId.OPTIMISM]: 30111,
+  [SupportedChainId.UNICHAIN]: 30320,
+}
+
+/**
  * SynapseIntentRouter contract address for all chains except ones from SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP.
  */
 const SIR_ADDRESS = '0x512000a034E154908Efb1eC48579F4ffDb000512'
@@ -124,19 +159,22 @@ export const SYNAPSE_INTENT_PREVIEWER_ADDRESS_MAP: AddressMap =
   )
 
 /**
- * SwapQuoterV2 contract address on Ethereum. Addresses for other chains are defined in the
- * SWAP_QUOTER_V2_EXCEPTION_MAP.
+ * Empty address is used to avoid filling the address map with incorrect addresses.
  * TODO: unified deployments
  */
-const SWAP_QUOTER_V2_ADDRESS = '0x5682dC851C33adb48F6958a963A5d3Aa31F6f184'
+const SWAP_QUOTER_V2_ADDRESS = ''
 const SWAP_QUOTER_V2_EXCEPTION_MAP: AddressMap = {
+  [SupportedChainId.AVALANCHE]: '0x40d9dDE17D776bF057083E156578d2443685851C',
   [SupportedChainId.ARBITRUM]: '0xE402cC7826dD835FCe5E3cFb61D56703fEbc2642',
   [SupportedChainId.BASE]: '0x9FBFf54b967654B0c76b174D2B95614060Dd6B07',
   [SupportedChainId.BERACHAIN]: '0xc5269d5143B37877A1041DfaF2C21a76E709AF27',
   [SupportedChainId.BLAST]: '0xbAD189BDF6a05FDaFA33CA917d094A64954093c4',
   [SupportedChainId.BSC]: '0x1Db5a1d5D80fDEfc098635d3869Fa94d6fA44F5a',
+  [SupportedChainId.ETH]: '0x5682dC851C33adb48F6958a963A5d3Aa31F6f184',
+  [SupportedChainId.HYPEREVM]: '0xc5269d5143B37877A1041DfaF2C21a76E709AF27',
   [SupportedChainId.LINEA]: '0x55DEc55aDbd9a2102438339A294CB921A5248285',
   [SupportedChainId.OPTIMISM]: '0xd6Bdb96b356F4F51bf491297DF03F25DCd0cBf6D',
+  [SupportedChainId.POLYGON]: '0x7443C01542f4913f276AED4D617117f3E8FAD21e',
   [SupportedChainId.SCROLL]: '0x55DEc55aDbd9a2102438339A294CB921A5248285',
   [SupportedChainId.UNICHAIN]: '0x55DEc55aDbd9a2102438339A294CB921A5248285',
   [SupportedChainId.WORLDCHAIN]: '0xc5269d5143B37877A1041DfaF2C21a76E709AF27',

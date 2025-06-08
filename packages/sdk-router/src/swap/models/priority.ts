@@ -4,7 +4,7 @@ import { SupportedChainId } from '../../constants'
 import { EngineID } from '../core'
 import { SwapEngineQuote } from './route'
 
-enum Priority {
+export enum Priority {
   Null,
   InefficientQuotes,
   Normal,
@@ -22,9 +22,10 @@ const ENGINE_PRIORITY: Record<EngineID, PriorityConfig> = {
   [EngineID.KyberSwap]: { value: Priority.Normal },
   [EngineID.ParaSwap]: { value: Priority.Normal },
   [EngineID.LiFi]: { value: Priority.InefficientQuotes },
+  [EngineID.LiquidSwap]: { value: Priority.Normal },
 }
 
-const getEnginePriority = (
+export const getEnginePriority = (
   engineID: EngineID,
   chainId: SupportedChainId
 ): Priority => {

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.19.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.19.0...@synapsecns/contracts-rfq@0.19.1) (2025-05-14)
+
+
+### Bug Fixes
+
+* **solidity-devops,contracts-rfq:** bump forge-std ([#3671](https://github.com/synapsecns/sanguine/issues/3671)) ([98d8060](https://github.com/synapsecns/sanguine/commit/98d80609bc83c124b9e81c773ff398d23fdc7a69))
+
+
+
+
+
 # [0.19.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.18.0...@synapsecns/contracts-rfq@0.19.0) (2025-04-16)
 
 

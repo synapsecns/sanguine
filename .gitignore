@@ -133,3 +133,5 @@ main
 
 # golang-ci-lint binary
 contrib/golang-ci-lint/golang-ci-lint
+
+**/.claude/settings.local.json

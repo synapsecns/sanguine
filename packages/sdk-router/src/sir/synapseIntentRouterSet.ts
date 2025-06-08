@@ -1,7 +1,7 @@
 import { Interface } from '@ethersproject/abi'
 import { Provider } from '@ethersproject/abstract-provider'
-import { MaxUint256 } from '@ethersproject/constants'
-import { BigNumber, BigNumberish, Contract, PopulatedTransaction } from 'ethers'
+import { MaxUint256, Zero } from '@ethersproject/constants'
+import { BigNumberish, Contract, PopulatedTransaction } from 'ethers'
 import { uuidv7 } from 'uuidv7'
 
 import synapseIntentRouterAbi from '../abi/SynapseIntentRouter.json'
@@ -15,9 +15,9 @@ import { StepParams, SwapEngineRoute } from '../swap'
 import { SynapseIntentRouter } from '../typechain/SynapseIntentRouter'
 import { BridgeQuoteV2 } from '../types'
 import {
-  adjustValueIfNative,
   isNativeToken,
   calculateDeadline,
+  logExecutionTime,
   TEN_MINUTES,
   stringifyPopulatedTransaction,
 } from '../utils'
@@ -43,6 +43,7 @@ export class SynapseIntentRouterSet {
     })
   }
 
+  @logExecutionTime('SynapseIntentRouterSet.finalizeBridgeRouteV2')
   public async finalizeBridgeRouteV2(
     fromToken: string,
     fromAmount: BigNumberish,
@@ -66,7 +67,7 @@ export class SynapseIntentRouterSet {
             {
               token: bridgeRoute.bridgeToken.originToken,
               amount: FULL_BALANCE,
-              msgValue: 0,
+              msgValue: bridgeRoute.nativeFee,
               zapData: bridgeRoute.zapData,
             },
           ]
@@ -86,6 +87,7 @@ export class SynapseIntentRouterSet {
       estimatedTime: 0,
       moduleNames,
       gasDropAmount: '0',
+      nativeFee: bridgeRoute.nativeFee.toString(),
       tx: stringifyPopulatedTransaction(tx),
     }
     return bridgeQuoteV2
@@ -179,10 +181,18 @@ export class SynapseIntentRouterSet {
       throw new Error('No steps found')
     }
     if (isNativeToken(token)) {
+      // TODO: msgValue might be always set at this point
       steps[0].msgValue = amount
     }
+    // Use the total msgValue of all steps as the tx value
+    const txValue = steps.reduce((acc, step) => acc.add(step.msgValue), Zero)
+    if (isNativeToken(token)) {
+      // Adjust the native token amount to match the tx value, but keep the amount for the first step
+      steps[0].amount = amount
+      amount = txValue
+    }
     const populatedTx = await populateTx(tokenZap, amount, deadline, steps)
-    // Adjust the tx.value if the initial token is native
-    return adjustValueIfNative(populatedTx, token, BigNumber.from(amount))
+    populatedTx.value = txValue
+    return populatedTx
   }
 }

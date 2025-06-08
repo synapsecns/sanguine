@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import {StringUtils} from "../libs/StringUtils.sol";
 
-import {console2} from "forge-std/Script.sol";
+import {console} from "forge-std/Script.sol";
 
 abstract contract Logger {
     using StringUtils for *;
@@ -39,7 +39,7 @@ abstract contract Logger {
 
     /// @notice Prints the log message with the current indent level.
     function printLog(string memory logString) internal view {
-        console2.log("%s%s", currentIndent(), logString);
+        console.log("%s%s", currentIndent(), logString);
     }
 
     /// @notice Prints the informational log message with the current indent level.

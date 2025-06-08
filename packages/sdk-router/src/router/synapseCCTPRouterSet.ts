@@ -5,6 +5,7 @@ import { ChainProvider, RouterSet } from './routerSet'
 import { SynapseCCTPRouter } from './synapseCCTPRouter'
 import { CCTP_ROUTER_ADDRESS_MAP, MEDIAN_TIME_CCTP } from '../constants'
 import { BridgeRouteV2, BridgeTokenCandidate } from '../module'
+import { logExecutionTime } from '../utils'
 
 /**
  * Wrapper class for interacting with a SynapseCCTPRouter contracts deployed on multiple chains.
@@ -36,6 +37,13 @@ export class SynapseCCTPRouterSet extends RouterSet {
    */
   public async getGasDropAmount(destChainId: number): Promise<BigNumber> {
     return this.getSynapseCCTPRouter(destChainId).chainGasAmount()
+  }
+
+  @logExecutionTime('SynapseCCTPRouterSet.getBridgeRoutes')
+  public async getBridgeRoutes(
+    ...args: Parameters<RouterSet['getBridgeRoutes']>
+  ): ReturnType<RouterSet['getBridgeRoutes']> {
+    return super.getBridgeRoutes(...args)
   }
 
   /**

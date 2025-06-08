@@ -14,7 +14,6 @@ import { getEmptyRoute, RouteInput, SwapEngineRoute } from '../models'
 
 export type TransactionData = {
   chainId: number
-  from: string
   to: string
   value: string
   data: string
@@ -29,7 +28,6 @@ export const EMPTY_SWAP_API_RESPONSE: SwapAPIResponse = {
   expectedToAmount: Zero,
   transaction: {
     chainId: 0,
-    from: '',
     to: '',
     value: '',
     data: '',

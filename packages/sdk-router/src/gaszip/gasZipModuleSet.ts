@@ -16,16 +16,23 @@ import {
   SynapseModuleSet,
 } from '../module'
 import { ChainProvider } from '../router'
-import { Chains, getChains, getGasZipQuote } from './api'
+import {
+  Chains,
+  getChains,
+  getGasZipBlockHeightMap,
+  getGasZipQuote,
+} from './api'
 import { GasZipModule } from './gasZipModule'
 import { applySlippage, encodeZapData } from '../swap'
 import {
   ETH_NATIVE_TOKEN_ADDRESS,
   isNativeToken,
-  isSameAddress,
+  logExecutionTime,
+  logger,
 } from '../utils'
 
 const MEDIAN_TIME_GAS_ZIP = 30
+const GAS_ZIP_MAX_BLOCK_AGE_MS = 5 * 60 * 1000
 
 export class GasZipModuleSet extends SynapseModuleSet {
   public readonly moduleName = 'Gas.zip'
@@ -78,6 +85,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
     return Zero
   }
 
+  @logExecutionTime('GasZipModuleSet.getBridgeTokenCandidates')
   public async getBridgeTokenCandidates({
     fromChainId,
     toChainId,
@@ -105,23 +113,18 @@ export class GasZipModuleSet extends SynapseModuleSet {
     ]
   }
 
-  public async getBridgeRouteV2({
-    originSwapRoute,
-    bridgeToken,
-    toToken,
-    toRecipient,
-    slippage,
-    allowMultipleTxs,
-  }: GetBridgeRouteV2Parameters): Promise<BridgeRouteV2 | undefined> {
-    if (
-      !this.getModule(bridgeToken.originChainId) ||
-      !this.getModule(bridgeToken.destChainId)
-    ) {
+  @logExecutionTime('GasZipModuleSet.getBridgeRouteV2')
+  public async getBridgeRouteV2(
+    params: GetBridgeRouteV2Parameters
+  ): Promise<BridgeRouteV2 | undefined> {
+    if (!this.validateBridgeRouteV2Params(params)) {
       return undefined
     }
-    if (!allowMultipleTxs && !isSameAddress(bridgeToken.destToken, toToken)) {
-      return undefined
-    }
+    const { originSwapRoute, bridgeToken, toRecipient, slippage } = params
+    const syncedPromise = this.checkBlockHeights(
+      bridgeToken.originChainId,
+      bridgeToken.destChainId
+    )
     const quote = await getGasZipQuote(
       bridgeToken.originChainId,
       bridgeToken.destChainId,
@@ -144,6 +147,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
       toToken: bridgeToken.destToken,
       expectedToAmount,
       minToAmount,
+      nativeFee: Zero,
       zapData: await this.getGasZipZapData(
         bridgeToken.originChainId,
         originSwapRoute.expectedToAmount,
@@ -151,12 +155,18 @@ export class GasZipModuleSet extends SynapseModuleSet {
         toRecipient
       ),
     }
+    // Verify that both chains are up to date before returning the route
+    const synced = await syncedPromise
+    if (!synced) {
+      return undefined
+    }
     return route
   }
 
   /**
    * @inheritdoc SynapseModuleSet.getBridgeRoutes
    */
+  @logExecutionTime('GasZipModuleSet.getBridgeRoutes')
   public async getBridgeRoutes(
     originChainId: number,
     destChainId: number,
@@ -164,6 +174,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
     tokenOut: string,
     amountIn: BigNumberish
   ): Promise<BridgeRoute[]> {
+    const syncedPromise = this.checkBlockHeights(originChainId, destChainId)
     // Check that both chains are supported by gas.zip
     const supportedChainIds = await this.getAllChainIds()
     if (
@@ -199,6 +210,11 @@ export class GasZipModuleSet extends SynapseModuleSet {
         token: tokenIn,
       },
       bridgeModuleName: this.moduleName,
+    }
+    // Verify that both chains are up to date before returning the route
+    const synced = await syncedPromise
+    if (!synced) {
+      return []
     }
     return [route]
   }
@@ -288,5 +304,62 @@ export class GasZipModuleSet extends SynapseModuleSet {
         fromAmount
       ).data,
     })
+  }
+
+  /**
+   * Checks if the latest block heights reported by gas.zip are within the maximum age.
+   * Both chains must be up to date to enable the bridge.
+   */
+  private async checkBlockHeights(
+    originChainId: number,
+    destChainId: number
+  ): Promise<boolean> {
+    const blockHeightMap = await getGasZipBlockHeightMap()
+    const [originSynced, destSynced] = await Promise.all([
+      this.checkBlockHeight(originChainId, blockHeightMap.get(originChainId)),
+      this.checkBlockHeight(destChainId, blockHeightMap.get(destChainId)),
+    ])
+    return originSynced && destSynced
+  }
+
+  /**
+   * Checks if the block height is within the maximum age for a chain.
+   */
+  private async checkBlockHeight(
+    chainId: number,
+    blockHeight?: number
+  ): Promise<boolean> {
+    if (!blockHeight) {
+      logger.info(`Gas.zip block height not found for chain ${chainId}`)
+      return false
+    }
+    const provider = this.providers[chainId]
+    if (!provider) {
+      logger.info(`Provider not found for chain ${chainId}`)
+      return false
+    }
+    let block
+    try {
+      block = await provider.getBlock(blockHeight)
+    } catch (error) {
+      logger.error(
+        `Block height ${blockHeight} for chain ${chainId} not found: ${error}`
+      )
+      return false
+    }
+    if (!block) {
+      logger.error(
+        `Null block for chain ${chainId} at block height ${blockHeight}`
+      )
+      return false
+    }
+    const blockAge = Date.now() - block.timestamp * 1000
+    const result = 0 <= blockAge && blockAge <= GAS_ZIP_MAX_BLOCK_AGE_MS
+    if (!result) {
+      logger.info(
+        `Block height ${blockHeight} for chain ${chainId} is too old: ${blockAge} ms (allowed: 0 .. ${GAS_ZIP_MAX_BLOCK_AGE_MS} ms)`
+      )
+    }
+    return result
   }
 }

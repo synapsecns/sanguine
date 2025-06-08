@@ -1,6 +1,6 @@
 import { SupportedChainId } from '../../../constants'
 import { ETH_USDC } from '../../../constants/testValues'
-import { ETH_NATIVE_TOKEN_ADDRESS } from '../../../utils'
+import { ETH_NATIVE_TOKEN_ADDRESS, TokenMetadataFetcher } from '../../../utils'
 import { USER_SIMULATED_ADDRESS } from '../../core'
 import { ParaSwapEngine, ParaSwapPricesResponse } from '../paraSwapEngine'
 
@@ -11,7 +11,7 @@ const TEST_TIMEOUT = 5000
 // Unskip to check if integration is working
 describe.skip('Integration test: ParaSwapEngine', () => {
   it('Ethereum USDC -> ETH', async () => {
-    const paraSwapEngine = new ParaSwapEngine([])
+    const paraSwapEngine = new ParaSwapEngine(new TokenMetadataFetcher([]))
     const amount = '1234567890'
     let response = await paraSwapEngine.getPricesResponse(
       {
@@ -46,6 +46,9 @@ describe.skip('Integration test: ParaSwapEngine', () => {
         userAddress: USER_SIMULATED_ADDRESS,
         slippage: 100,
         priceRoute: pricesResponse.priceRoute,
+        isSurplusToUser: true,
+        takeSurplus: true,
+        partnerAddress: USER_SIMULATED_ADDRESS,
       },
       TEST_TIMEOUT
     )
