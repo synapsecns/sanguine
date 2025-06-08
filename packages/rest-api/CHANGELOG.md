@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.15](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.14...@synapsecns/rest-api@1.13.15) (2025-06-08)
+
+
+### Bug Fixes
+
+* **sdk-router:** fix test ([#3707](https://github.com/synapsecns/sanguine/issues/3707)) ([ddf4b36](https://github.com/synapsecns/sanguine/commit/ddf4b3656c67331f520ef3127a17b072f224ce02))
+
+
+
+
+
 ## [1.13.14](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.13...@synapsecns/rest-api@1.13.14) (2025-05-21)
 
 **Note:** Version bump only for package @synapsecns/rest-api

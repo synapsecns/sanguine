@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.19.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.19.1...@synapsecns/sdk-router@0.19.2) (2025-06-08)
+
+
+### Bug Fixes
+
+* **sdk-router:** fix test ([#3707](https://github.com/synapsecns/sanguine/issues/3707)) ([ddf4b36](https://github.com/synapsecns/sanguine/commit/ddf4b3656c67331f520ef3127a17b072f224ce02))
+
+
+
+
+
 ## [0.19.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.19.0...@synapsecns/sdk-router@0.19.1) (2025-05-21)
 
 
