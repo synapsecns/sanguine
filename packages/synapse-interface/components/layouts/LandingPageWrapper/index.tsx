@@ -21,7 +21,7 @@ import {
   LANDING_PATH,
   TELEGRAM_URL,
   TWITTER_URL,
-  STAKE_SYN_FOR_CX_URL,
+  CONVERT_SYN_TO_CX,
 } from '@/constants/urls'
 import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
@@ -57,7 +57,7 @@ const StakingBannerContent = () => {
     <div>
       Convert your SYN to receive CX (Cortex Protocol) tokens{' '}
       <a
-        href={STAKE_SYN_FOR_CX_URL}
+        href={CONVERT_SYN_TO_CX}
         target="blank"
         className="underline hover:cursor hover:text-white/65"
       >

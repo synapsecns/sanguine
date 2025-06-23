@@ -8,7 +8,7 @@ import {
   BRIDGE_PATH,
   SOLANA_BRIDGE_LINK,
   SYN_TOKEN_LINK,
-  STAKE_SYN_FOR_CX_URL,
+  CONVERT_SYN_TO_CX,
 } from './urls'
 
 export interface RouteObject {
@@ -65,7 +65,7 @@ export const NAVIGATION: RouteObject = {
     match: null,
   },
   Cortex: {
-    path: STAKE_SYN_FOR_CX_URL,
+    path: CONVERT_SYN_TO_CX,
     text: 'Stake SYN for CX',
     match: null,
   },
