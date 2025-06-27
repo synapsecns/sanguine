@@ -3,6 +3,7 @@ name: Solidity
 on:
   pull_request:
     paths:
+      - 'packages/contracts-adapter/**'
       - 'packages/contracts-core/**'
       - 'packages/contracts-rfq/**'
       - '.github/workflows/solidity.yml'
@@ -12,6 +13,7 @@ on:
       - 'fe-release'
   push:
     paths:
+      - 'packages/contracts-adapter/**'
       - 'packages/contracts-core/**'
       - 'packages/contracts-rfq/**'
       - 'packages/solidity-devops/**'
@@ -37,6 +39,7 @@ jobs:
           #  make sure to update run-goreleaser when adding a new package here
           # also add to the get-project-id step
           filters: |
+            contracts-adapter: 'packages/contracts-adapter/**'
             contracts-core: 'packages/contracts-core/**'
             contracts-rfq: 'packages/contracts-rfq/**'
             solidity-devops: 'packages/solidity-devops/**'
@@ -81,6 +84,7 @@ jobs:
         run: |
           PROJECT_IDS=$(cat <<END
           {
+            "contracts-adapter": "${{ secrets.VERCEL_CONTRACT_ADAPTER_DOCS_PROJECT_ID}}",
             "contracts-core": "${{ secrets.VERCEL_CONTRACT_DOCS_PROJECT_ID}}",
             "contracts-rfq": "${{ secrets.VERCEL_CONTRACT_RFQ_DOCS_PROJECT_ID }}",
             "solidity-devops": "${{ secrets.VERCEL_DEVOPS_DOCS_PROJECT_ID }}"

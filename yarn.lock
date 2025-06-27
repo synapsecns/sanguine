@@ -5239,6 +5239,23 @@
   resolved "https://registry.yarnpkg.com/@kamilkisiela/fast-url-parser/-/fast-url-parser-1.1.4.tgz#9d68877a489107411b953c54ea65d0658b515809"
   integrity sha512-gbkePEBupNydxCelHCESvFSFM8XPh1Zs/OAVRW/rKpEqPAl5PbOM90Si8mv9bvnR53uPD2s/FiRxdvSejpRJew==
 
+"@layerzerolabs/lz-evm-messagelib-v2@3.0.88":
+  version "3.0.88"
+  resolved "https://registry.yarnpkg.com/@layerzerolabs/lz-evm-messagelib-v2/-/lz-evm-messagelib-v2-3.0.88.tgz#b850de5e5e1ee76f393ff5c7a67787371720cd15"
+  integrity sha512-4Rt0U7wFUdixX4+VqtfWZ4TMh7xBsKG/4DhfxiHpmr7cMn9S6PuBqJUtL0BS7bbVOIVQrcXpns8vEBkCkXW58Q==
+
+"@layerzerolabs/lz-evm-protocol-v2@3.0.88":
+  version "3.0.88"
+  resolved "https://registry.yarnpkg.com/@layerzerolabs/lz-evm-protocol-v2/-/lz-evm-protocol-v2-3.0.88.tgz#ae547efd6f03d5d0ce4b50ed3d8451d78b2b81c2"
+  integrity sha512-qM3wTQQup/X62uuW96az2HYuQpWqQp3WLgx7pl6930QaH+C0ane8aPRfryjPObti84apbDRjf3q1g966JOTqBA==
+
+"@layerzerolabs/oapp-evm@0.3.2":
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/@layerzerolabs/oapp-evm/-/oapp-evm-0.3.2.tgz#ff2b84253af290891efe72e3a695a3365b6b7dd4"
+  integrity sha512-QqazLEl9KEPsipU/3m5eFDhyse+sG4bO2FWUEf/Kuee4JW6P3iIBI9wg0QfalUqLj0HL0ChFHL3yRTZVqzxrww==
+  dependencies:
+    ethers "^5.7.2"
+
 "@leichtgewicht/ip-codec@^2.0.1":
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/@leichtgewicht/ip-codec/-/ip-codec-2.0.5.tgz#4fc56c15c580b9adb7dc3c333a134e540b44bfb1"
@@ -32846,6 +32863,11 @@ solhint@5.0.3:
     text-table "^0.2.0"
   optionalDependencies:
     prettier "^2.8.3"
+
+solidity-bytes-utils@0.8.3:
+  version "0.8.3"
+  resolved "https://registry.yarnpkg.com/solidity-bytes-utils/-/solidity-bytes-utils-0.8.3.tgz#e509fc41d9a6200395afaae2efd1525bd4cb2d7f"
+  integrity sha512-sbOHjKF9miqASaqYYC1vvxNnBrzA/wuFPQlOle7rZOSkDiFmCd5x8wQfx2vN95tNGfy8Cf1e5QumW8ZwcByBuQ==
 
 solidity-coverage@0.7.21:
   version "0.7.21"
