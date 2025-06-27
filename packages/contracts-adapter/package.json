@@ -1,7 +1,7 @@
 {
   "name": "@synapsecns/contracts-adapter",
   "license": "MIT",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "SynapseBridge Adapter contracts",
   "private": true,
   "files": [
@@ -15,7 +15,7 @@
     "solidity-bytes-utils": "0.8.3"
   },
   "devDependencies": {
-    "@synapsecns/solidity-devops": "^0.4.8",
+    "@synapsecns/solidity-devops": "^0.4.10",
     "solhint": "5.0.3"
   },
   "scripts": {

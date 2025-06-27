@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.9...@synapsecns/solidity-devops@0.4.10) (2025-06-27)
+
+
+### Bug Fixes
+
+* **solidity-devops:** bump forge-std to 1.9.7 ([#3727](https://github.com/synapsecns/sanguine/issues/3727)) ([474067f](https://github.com/synapsecns/sanguine/commit/474067fb483c658ff0abd769cfdc91d05cc094d8))
+
+
+
+
+
 ## [0.4.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.8...@synapsecns/solidity-devops@0.4.9) (2025-05-14)
 
 
