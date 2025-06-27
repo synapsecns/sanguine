@@ -30,7 +30,7 @@
   "dependencies": {
     "chalk": "^4.1.2",
     "dotenv": "^16.4.5",
-    "forge-std": "github:foundry-rs/forge-std#v1.9.6"
+    "forge-std": "github:foundry-rs/forge-std#v1.9.7"
   },
   "bin": {
     "fsr": "js/forgeScriptRun.js",
