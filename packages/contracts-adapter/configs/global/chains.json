@@ -1,0 +1,74 @@
+{
+  "arbitrum": {
+    "eid": 30110,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "aurora": {
+    "eid": 30211,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "avalanche": {
+    "eid": 30106,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "base": {
+    "eid": 30184,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "blast": {
+    "eid": 30243,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "bnb": {
+    "eid": 30102,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "canto": {
+    "eid": 30159,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "cronos": {
+    "eid": 30359,
+    "endpointV2": "0x3A73033C0b1407574C76BdBAc67f126f6b4a9AA9"
+  },
+  "dfk": {
+    "eid": 30115,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "ethereum": {
+    "eid": 30101,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "fantom": {
+    "eid": 30112,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "harmony": {
+    "eid": 30116,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "kaia": {
+    "eid": 30150,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "metis": {
+    "eid": 30151,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "moonbeam": {
+    "eid": 30126,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "moonriver": {
+    "eid": 30167,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "optimism": {
+    "eid": 30111,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "polygon": {
+    "eid": 30109,
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+  }
+}
