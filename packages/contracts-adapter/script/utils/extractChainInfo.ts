@@ -23,6 +23,7 @@ interface MetadataResponse {
 interface ChainInfo {
   eid: number
   endpointV2: string
+  synapseBridge: string
 }
 
 interface ChainsConfig {
@@ -34,13 +35,46 @@ function isMetadataResponse(data: unknown): data is MetadataResponse {
   return typeof data === 'object' && data !== null
 }
 
+// Fetch SynapseBridge address from GitHub
+async function fetchSynapseBridgeAddress(
+  chainName: string
+): Promise<string | null> {
+  try {
+    // Chain name mappings for synapse-contracts repo (only non-equal names)
+    const synapseNameMap: Record<string, string> = {
+      ethereum: 'mainnet',
+      bnb: 'bsc',
+      kaia: 'klatyn',
+    }
+
+    // Use mapped name if exists, otherwise use the chain name as-is
+    const synapseChainName = synapseNameMap[chainName] || chainName
+
+    const url = `https://raw.githubusercontent.com/synapsecns/synapse-contracts/master/deployments/${synapseChainName}/SynapseBridge.json`
+    const response = await fetch(url)
+
+    if (!response.ok) {
+      console.log(
+        `Failed to fetch SynapseBridge for ${chainName} (${synapseChainName}): ${response.status}`
+      )
+      return null
+    }
+
+    const data = (await response.json()) as { address: string }
+    return data.address || null
+  } catch (error) {
+    console.log(`Error fetching SynapseBridge for ${chainName}: ${error}`)
+    return null
+  }
+}
+
 async function extractChainInfo(): Promise<void> {
   const parentDir = path.join(__dirname, '../..')
   const deploymentsDir = path.join(parentDir, 'deployments')
   const outputPath = path.join(parentDir, 'configs', 'global', 'chains.json')
 
-  // Folder name mappings
-  const nameMap: Record<string, string> = {
+  // Folder name mappings for LayerZero
+  const lzNameMap: Record<string, string> = {
     kaia: 'klaytn',
     cronos: 'cronosevm',
     bnb: 'bsc',
@@ -64,19 +98,22 @@ async function extractChainInfo(): Promise<void> {
   const chains: ChainsConfig = {}
   const failed: string[] = []
 
-  allChains.forEach((chain) => {
-    const key = `${nameMap[chain] || chain}-mainnet`
+  // Process chains with LayerZero data and SynapseBridge addresses
+  for (const chain of allChains) {
+    const key = `${lzNameMap[chain] || chain}-mainnet`
     const v2 = metadata[key]?.deployments?.find((d) => d.version === 2)
+    const bridgeAddress = await fetchSynapseBridgeAddress(chain)
 
-    if (v2?.eid && v2?.endpointV2?.address) {
+    if (v2?.eid && v2?.endpointV2?.address && bridgeAddress) {
       chains[chain] = {
         eid: parseInt(v2.eid),
         endpointV2: v2.endpointV2.address,
+        synapseBridge: bridgeAddress,
       }
     } else {
       failed.push(chain)
     }
-  })
+  }
 
   // Save result
   fs.mkdirSync(path.dirname(outputPath), { recursive: true })

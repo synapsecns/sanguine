@@ -1,74 +1,92 @@
 {
   "arbitrum": {
     "eid": 30110,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9"
   },
   "aurora": {
     "eid": 30211,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0xaeD5b25BE1c3163c907a471082640450F928DDFE"
   },
   "avalanche": {
     "eid": 30106,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE"
   },
   "base": {
     "eid": 30184,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0xf07d1C752fAb503E47FEF309bf14fbDD3E867089"
   },
   "blast": {
     "eid": 30243,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0x55769bAF6ec39B3bf4aAE948eB890eA33307Ef3C"
   },
   "bnb": {
     "eid": 30102,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0xd123f70AE324d34A9E76b67a27bf77593bA8749f"
   },
   "canto": {
     "eid": 30159,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0xDde5BEC4815E1CeCf336fb973Ca578e8D83606E0"
   },
   "cronos": {
     "eid": 30359,
-    "endpointV2": "0x3A73033C0b1407574C76BdBAc67f126f6b4a9AA9"
+    "endpointV2": "0x3A73033C0b1407574C76BdBAc67f126f6b4a9AA9",
+    "synapseBridge": "0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9"
   },
   "dfk": {
     "eid": 30115,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0xE05c976d3f045D0E6E7A6f61083d98A15603cF6A"
   },
   "ethereum": {
     "eid": 30101,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0x2796317b0fF8538F253012862c06787Adfb8cEb6"
   },
   "fantom": {
     "eid": 30112,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b"
   },
   "harmony": {
     "eid": 30116,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b"
   },
   "kaia": {
     "eid": 30150,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b"
   },
   "metis": {
     "eid": 30151,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0x06Fea8513FF03a0d3f61324da709D4cf06F42A5c"
   },
   "moonbeam": {
     "eid": 30126,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0x84A420459cd31C3c34583F67E0f0fB191067D32f"
   },
   "moonriver": {
     "eid": 30167,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0xaeD5b25BE1c3163c907a471082640450F928DDFE"
   },
   "optimism": {
     "eid": 30111,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b"
   },
   "polygon": {
     "eid": 30109,
-    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c"
+    "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
+    "synapseBridge": "0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280"
   }
 }
