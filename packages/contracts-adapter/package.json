@@ -16,7 +16,11 @@
   },
   "devDependencies": {
     "@synapsecns/solidity-devops": "^0.4.10",
-    "solhint": "5.0.3"
+    "@types/node": "^24.0.7",
+    "solhint": "5.0.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "viem": "^2.31.4"
   },
   "scripts": {
     "build": " ",
@@ -29,6 +33,8 @@
     "ci:lint": "npm run lint:check",
     "build:go": " ",
     "solhint": "solhint '{src,script,test}/**/*.sol' --fix --noPrompt --max-warnings 3",
-    "solhint:check": "solhint '{src,script,test}/**/*.sol' --max-warnings 3"
+    "solhint:check": "solhint '{src,script,test}/**/*.sol' --max-warnings 3",
+    "extract-chain-info": "ts-node script/utils/extractChainInfo.ts",
+    "fetch-tokens": "ts-node script/utils/fetchBridgeTokens.ts"
   }
 }

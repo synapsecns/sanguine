@@ -1,26 +1,68 @@
-const fs = require('fs')
-const path = require('path')
+import * as fs from 'fs'
+import * as path from 'path'
 
-async function extractChainInfo() {
-  const parentDir = path.join(__dirname, '..')
+// Type definitions for LayerZero metadata
+interface EndpointV2 {
+  address: string
+}
+
+interface Deployment {
+  version: number
+  eid?: string
+  endpointV2?: EndpointV2
+}
+
+interface ChainMetadata {
+  deployments?: Deployment[]
+}
+
+interface MetadataResponse {
+  [key: string]: ChainMetadata
+}
+
+interface ChainInfo {
+  eid: number
+  endpointV2: string
+}
+
+interface ChainsConfig {
+  [chain: string]: ChainInfo
+}
+
+// Type guard to validate metadata structure
+function isMetadataResponse(data: unknown): data is MetadataResponse {
+  return typeof data === 'object' && data !== null
+}
+
+async function extractChainInfo(): Promise<void> {
+  const parentDir = path.join(__dirname, '../..')
   const deploymentsDir = path.join(parentDir, 'deployments')
   const outputPath = path.join(parentDir, 'configs', 'global', 'chains.json')
 
   // Folder name mappings
-  const nameMap = { kaia: 'klaytn', cronos: 'cronosevm', bnb: 'bsc' }
+  const nameMap: Record<string, string> = {
+    kaia: 'klaytn',
+    cronos: 'cronosevm',
+    bnb: 'bsc',
+  }
 
   // Fetch metadata
-  const metadata = await fetch(
+  const response = await fetch(
     'https://metadata.layerzero-api.com/v1/metadata/deployments'
-  ).then((r) => r.json())
+  )
+  const metadata = await response.json()
+
+  if (!isMetadataResponse(metadata)) {
+    throw new Error('Invalid metadata response format')
+  }
 
   // Process chains
   const allChains = fs
     .readdirSync(deploymentsDir)
     .filter((f) => fs.statSync(path.join(deploymentsDir, f)).isDirectory())
 
-  const chains = {}
-  const failed = []
+  const chains: ChainsConfig = {}
+  const failed: string[] = []
 
   allChains.forEach((chain) => {
     const key = `${nameMap[chain] || chain}-mainnet`
