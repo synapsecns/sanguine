@@ -10,6 +10,8 @@ interface Deployment {
   version: number
   eid?: string
   endpointV2?: EndpointV2
+  sendUln302?: { address: string }
+  receiveUln302?: { address: string }
 }
 
 interface ChainMetadata {
@@ -23,6 +25,8 @@ interface MetadataResponse {
 interface ChainInfo {
   eid: number
   endpointV2: string
+  receiveUln302: string
+  sendUln302: string
   synapseBridge: string
 }
 
@@ -104,10 +108,18 @@ async function extractChainInfo(): Promise<void> {
     const v2 = metadata[key]?.deployments?.find((d) => d.version === 2)
     const bridgeAddress = await fetchSynapseBridgeAddress(chain)
 
-    if (v2?.eid && v2?.endpointV2?.address && bridgeAddress) {
+    if (
+      v2?.eid &&
+      v2?.endpointV2?.address &&
+      v2?.receiveUln302?.address &&
+      v2?.sendUln302?.address &&
+      bridgeAddress
+    ) {
       chains[chain] = {
         eid: parseInt(v2.eid),
         endpointV2: v2.endpointV2.address,
+        receiveUln302: v2.receiveUln302.address,
+        sendUln302: v2.sendUln302.address,
         synapseBridge: bridgeAddress,
       }
     } else {
