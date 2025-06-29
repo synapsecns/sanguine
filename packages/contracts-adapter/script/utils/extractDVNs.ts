@@ -85,7 +85,8 @@ async function extractDVNs(): Promise<void> {
       if (dvnInfo.deprecated) continue
 
       // Use canonicalName as the DVN identifier
-      const dvnName = dvnInfo.canonicalName
+      // Imagine putting spaces in JSON keys
+      const dvnName = dvnInfo.canonicalName.replace(/ /g, '_')
 
       if (!dvnCoverage.has(dvnName)) {
         dvnCoverage.set(dvnName, new Map())
