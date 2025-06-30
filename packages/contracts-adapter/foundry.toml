@@ -20,35 +20,44 @@ number_underscore = 'thousands'
 sort_imports = true
 
 [rpc_endpoints]
-avalanche = "${AVALANCHE_RPC}"
 arbitrum = "${ARBITRUM_RPC}"
+aurora = "${AURORA_RPC}"
+avalanche = "${AVALANCHE_RPC}"
 base = "${BASE_RPC}"
-berachain = "${BERACHAIN_RPC}"
 blast = "${BLAST_RPC}"
 bnb = "${BNB_RPC}"
+canto = "${CANTO_RPC}"
+cronos = "${CRONOS_RPC}"
+dfk = "${DFK_RPC}"
 ethereum = "${ETHEREUM_RPC}"
-hyperevm = "${HYPEREVM_RPC}"
-linea = "${LINEA_RPC}"
+fantom = "${FANTOM_RPC}"
+harmony = "${HARMONY_RPC}"
+kaia = "${KAIA_RPC}"
+metis = "${METIS_RPC}"
+moonbeam = "${MOONBEAM_RPC}"
+moonriver = "${MOONRIVER_RPC}"
 optimism = "${OPTIMISM_RPC}"
 polygon = "${POLYGON_RPC}"
-scroll = "${SCROLL_RPC}"
-unichain = "${UNICHAIN_RPC}"
-worldchain = "${WORLDCHAIN_RPC}"
 
 [etherscan]
-avalanche = { key = "${AVALANCHE_VERIFIER_KEY}", url = "${AVALANCHE_VERIFIER_URL}", chain = 43114 }
+# Chains that are not currently using etherscan are commented out
 arbitrum = { key = "${ARBITRUM_VERIFIER_KEY}", url = "${ARBITRUM_VERIFIER_URL}", chain = 42161 }
+# aurora = { key = "${AURORA_VERIFIER_KEY}", url = "${AURORA_VERIFIER_URL}", chain = 1313161555 }
+avalanche = { key = "${AVALANCHE_VERIFIER_KEY}", url = "${AVALANCHE_VERIFIER_URL}", chain = 43114 }
 base = { key = "${BASE_VERIFIER_KEY}", url = "${BASE_VERIFIER_URL}", chain = 8453 }
-berachain = { key = "${BERACHAIN_VERIFIER_KEY}", url = "${BERACHAIN_VERIFIER_URL}", chain = 80094 }
 blast = { key = "${BLAST_VERIFIER_KEY}", url = "${BLAST_VERIFIER_URL}", chain = 81457 }
 bnb = { key = "${BNB_VERIFIER_KEY}", url = "${BNB_VERIFIER_URL}", chain = 56 }
+# canto = { key = "${CANTO_VERIFIER_KEY}", url = "${CANTO_VERIFIER_URL}", chain = 7700 }
+cronos = { key = "${CRONOS_VERIFIER_KEY}", url = "${CRONOS_VERIFIER_URL}", chain = 25 }
+# dfk = { key = "${DFK_VERIFIER_KEY}", url = "${DFK_VERIFIER_URL}", chain = 53935 }
 ethereum = { key = "${ETHEREUM_VERIFIER_KEY}", url = "${ETHEREUM_VERIFIER_URL}", chain = 1 }
-hyperevm = { key = "${HYPEREVM_VERIFIER_KEY}", url = "${HYPEREVM_VERIFIER_URL}", chain = 999 }
-linea = { key = "${LINEA_VERIFIER_KEY}", url = "${LINEA_VERIFIER_URL}", chain = 59144 }
+# fantom = { key = "${FANTOM_VERIFIER_KEY}", url = "${FANTOM_VERIFIER_URL}", chain = 250 }
+# harmony = { key = "${HARMONY_VERIFIER_KEY}", url = "${HARMONY_VERIFIER_URL}", chain = 1666600000 }
+# kaia = { key = "${KAIA_VERIFIER_KEY}", url = "${KAIA_VERIFIER_URL}", chain = 8217 }
+# metis = { key = "${METIS_VERIFIER_KEY}", url = "${METIS_VERIFIER_URL}", chain = 1088 }
+moonbeam = { key = "${MOONBEAM_VERIFIER_KEY}", url = "${MOONBEAM_VERIFIER_URL}", chain = 1284 }
+moonriver = { key = "${MOONRIVER_VERIFIER_KEY}", url = "${MOONRIVER_VERIFIER_URL}", chain = 1285 }
 optimism = { key = "${OPTIMISM_VERIFIER_KEY}", url = "${OPTIMISM_VERIFIER_URL}", chain = 10 }
 polygon = { key = "${POLYGON_VERIFIER_KEY}", url = "${POLYGON_VERIFIER_URL}", chain = 137 }
-scroll = { key = "${SCROLL_VERIFIER_KEY}", url = "${SCROLL_VERIFIER_URL}", chain = 534352 }
-unichain = { key = "${UNICHAIN_VERIFIER_KEY}", url = "${UNICHAIN_VERIFIER_URL}", chain = 130 }
-worldchain = { key = "${WORLDCHAIN_VERIFIER_KEY}", url = "${WORLDCHAIN_VERIFIER_URL}", chain = 480 }
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
