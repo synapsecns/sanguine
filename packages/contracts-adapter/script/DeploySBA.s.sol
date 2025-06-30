@@ -18,6 +18,7 @@ contract DeploySBA is SynapseScript {
     uint256 internal longestChainName;
 
     string internal tokensConfig;
+    string[] internal unsupportedTokenIDs;
 
     mapping(string => ISynapseBridgeAdapter.RemoteToken[]) internal remoteTokens;
 
@@ -33,6 +34,9 @@ contract DeploySBA is SynapseScript {
     }
 
     function loadConfigs() internal {
+        // GMX will have its own independent migration process
+        unsupportedTokenIDs.push("GMX");
+
         chainsConfig = readGlobalDeployProdConfig("chains", true);
         tokensConfig = readGlobalDeployProdConfig("tokens", true);
 
@@ -106,6 +110,10 @@ contract DeploySBA is SynapseScript {
         }
         if (chains.length < 2) {
             printSkipWithIndent("not deployed on multiple chains");
+            return;
+        }
+        if (contains(unsupportedTokenIDs, tokenID)) {
+            printSkipWithIndent("will not be supported by SBA");
             return;
         }
         address localToken = tokensConfig.readAddress(string.concat(".", tokenID, ".", activeChain, ".tokenAddress"));
