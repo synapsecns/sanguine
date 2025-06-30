@@ -13,12 +13,12 @@ fi
 # Get the rest of the options
 shift 1
 
-chains=$(cat devops.json | jq -r '.chains | keys[]')
+chains=$(jq -r '.chains | keys[]' devops.json)
 # Print the comma separated list of chain names
-echo Will be wiring chains: $(echo $chains | tr ' ' ',')
+echo Will be wiring chains: "$(echo "$chains" | tr ' ' ',')"
 
 for chain in $chains; do
-  echo Wiring chain: $chain
+  echo Wiring chain: "$chain"
   # Pass the rest of the options to forge-script-run utility
   npx fsr ./script/WireSBA.s.sol "$chain" "$walletName" "$@"
 done
