@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { createPublicClient, http } from 'viem'
+import { type Address, createPublicClient, getAddress, http } from 'viem'
 import * as dotenv from 'dotenv'
 
 // Load environment variables
@@ -30,10 +30,10 @@ interface MetadataResponse {
 interface ChainInfo {
   blockTime: number
   eid: number
-  endpointV2: string
-  receiveUln302: string
-  sendUln302: string
-  synapseBridge: string
+  endpointV2: Address
+  receiveUln302: Address
+  sendUln302: Address
+  synapseBridge: Address
 }
 
 interface ChainsConfig {
@@ -200,10 +200,10 @@ async function extractChainInfo(): Promise<void> {
       chains[chain] = {
         blockTime: blockTime,
         eid: parseInt(v2.eid),
-        endpointV2: v2.endpointV2.address,
-        receiveUln302: v2.receiveUln302.address,
-        sendUln302: v2.sendUln302.address,
-        synapseBridge: bridgeAddress,
+        endpointV2: getAddress(v2.endpointV2.address),
+        receiveUln302: getAddress(v2.receiveUln302.address),
+        sendUln302: getAddress(v2.sendUln302.address),
+        synapseBridge: getAddress(bridgeAddress),
       }
     } else {
       failed.push(chain)

@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import { getAddress, type Address } from 'viem'
 
 // Type definitions for DVN metadata
 interface DVNInfo {
@@ -26,7 +27,7 @@ interface DVNMetadataResponse {
 
 interface DVNConfig {
   [chain: string]: {
-    [dvnName: string]: string
+    [dvnName: string]: Address
   }
 }
 
@@ -111,7 +112,7 @@ async function extractDVNs(): Promise<void> {
       universalDVNs.push(dvnName)
 
       for (const chain of allChains) {
-        dvnsByChain[chain][dvnName] = chainMap.get(chain)!
+        dvnsByChain[chain][dvnName] = getAddress(chainMap.get(chain)!)
       }
     }
   }

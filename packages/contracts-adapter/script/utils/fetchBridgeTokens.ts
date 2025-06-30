@@ -53,7 +53,7 @@ const bridgeConfigABI = [
 type BridgeTokenData = {
   [tokenID: string]: {
     [chain: string]: {
-      tokenAddress: string
+      tokenAddress: Address
       isUnderlying: boolean
     }
   }
@@ -215,12 +215,9 @@ async function main() {
 
       // Parse the token address and checksum it
       try {
-        // Use toAddress to validate and normalize the address
-        const checksummedAddress = getAddress(token.tokenAddress)
-
         bridgeTokens[tokenID][validChains[c]] = {
           isUnderlying: token.isUnderlying,
-          tokenAddress: checksummedAddress,
+          tokenAddress: getAddress(token.tokenAddress),
         }
       } catch (error) {
         console.error(

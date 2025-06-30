@@ -1,110 +1,110 @@
 {
   "arbitrum": {
-    "LayerZero_Labs": "0x1308151a7ebac14f435d3ad5ff95c34160d539a5",
-    "Horizen": "0x5cff49d69d79d677dd3e5b38e048a0dcb6d86aaf",
-    "Canary": "0xf2e380c90e6c09721297526dbc74f870e114dfcb",
-    "Nethermind": "0xa7b5189bca84cd304d8553977c7c614329750d99"
+    "LayerZero_Labs": "0x1308151a7ebaC14f435d3Ad5fF95c34160D539A5",
+    "Horizen": "0x5cfF49d69D79d677Dd3E5B38E048A0DCB6d86aaf",
+    "Canary": "0xf2E380c90e6c09721297526dbC74f870e114dfCb",
+    "Nethermind": "0xa7b5189bcA84Cd304D8553977c7C614329750d99"
   },
   "aurora": {
-    "LayerZero_Labs": "0xd4a903930f2c9085586cda0b11d9681eecb20d2f",
-    "Horizen": "0xdd7b5e1db4aafd5c8ec3b764efb8ed265aa5445b",
-    "Canary": "0xb4caa217dd195b3b40eee24b82c8093c2ea659cd",
-    "Nethermind": "0x34730f2570e6cff8b1c91faabf37d0dd917c4367"
+    "LayerZero_Labs": "0xD4a903930f2c9085586cda0b11D9681EECb20D2f",
+    "Horizen": "0xDd7B5E1dB4AaFd5C8EC3b764eFB8ed265Aa5445B",
+    "Canary": "0xb4CaA217dD195B3B40eEe24b82c8093c2ea659cd",
+    "Nethermind": "0x34730f2570E6cff8B1C91FaaBF37D0DD917c4367"
   },
   "avalanche": {
-    "LayerZero_Labs": "0x962f502a63f5fbeb44dc9ab932122648e8352959",
-    "Horizen": "0x07c05eab7716acb6f83ebf6268f8eecda8892ba1",
-    "Canary": "0xcc49e6fca014c77e1eb604351cc1e08c84511760",
-    "Nethermind": "0x1308151a7ebac14f435d3ad5ff95c34160d539a5"
+    "LayerZero_Labs": "0x962F502A63F5FBeB44DC9ab932122648E8352959",
+    "Horizen": "0x07C05EaB7716AcB6f83ebF6268F8EECDA8892Ba1",
+    "Canary": "0xcC49E6fca014c77E1Eb604351cc1E08C84511760",
+    "Nethermind": "0x1308151a7ebaC14f435d3Ad5fF95c34160D539A5"
   },
   "base": {
-    "LayerZero_Labs": "0x9e059a54699a285714207b43b055483e78faac25",
-    "Horizen": "0xa7b5189bca84cd304d8553977c7c614329750d99",
-    "Canary": "0x554833698ae0fb22ecc90b01222903fd62ca4b47",
-    "Nethermind": "0x658947bc7956aea0067a62cf87ab02ae199ef3f3"
+    "LayerZero_Labs": "0x9e059a54699a285714207b43B055483E78FAac25",
+    "Horizen": "0xa7b5189bcA84Cd304D8553977c7C614329750d99",
+    "Canary": "0x554833698Ae0FB22ECC90B01222903fD62CA4B47",
+    "Nethermind": "0x658947BC7956aea0067a62Cf87ab02ae199Ef3f3"
   },
   "blast": {
-    "LayerZero_Labs": "0xc097ab8cd7b053326dfe9fb3e3a31a0cce3b526f",
-    "Horizen": "0x70bf42c69173d6e33b834f59630dac592c70b369",
-    "Canary": "0x6398e91001cc1682bba103e6b2489fa5675a5a64",
-    "Nethermind": "0xdd7b5e1db4aafd5c8ec3b764efb8ed265aa5445b"
+    "LayerZero_Labs": "0xc097ab8CD7b053326DFe9fB3E3a31a0CCe3B526f",
+    "Horizen": "0x70BF42C69173d6e33b834f59630DAC592C70b369",
+    "Canary": "0x6398E91001Cc1682bBA103E6B2489Fa5675a5a64",
+    "Nethermind": "0xDd7B5E1dB4AaFd5C8EC3b764eFB8ed265Aa5445B"
   },
   "bnb": {
-    "LayerZero_Labs": "0xfd6865c841c2d64565562fcc7e05e619a30615f0",
-    "Horizen": "0x247624e2143504730aec22912ed41f092498bef2",
-    "Canary": "0xfa9ba83c102283958b997adc8b44ed3a3cdb5dda",
-    "Nethermind": "0x0321a1b9e48ccdc5a8a32c524b858e10072ef798"
+    "LayerZero_Labs": "0xfD6865c841c2d64565562fCc7e05e619A30615f0",
+    "Horizen": "0x247624e2143504730aeC22912ed41F092498bEf2",
+    "Canary": "0xfA9bA83C102283958B997Adc8B44ED3A3CdB5dDa",
+    "Nethermind": "0x0321A1B9e48cCdc5a8A32C524b858E10072ef798"
   },
   "canto": {
-    "LayerZero_Labs": "0x1bacc2205312534375c8d1801c27d28370656cff",
-    "Horizen": "0xdd7b5e1db4aafd5c8ec3b764efb8ed265aa5445b",
-    "Canary": "0x73ddc92e39aeda95feb8d3e0008016d9f1268c76",
-    "Nethermind": "0x809cde2afcf8627312e87a6a7bbffab3f8f347c7"
+    "LayerZero_Labs": "0x1BAcC2205312534375c8d1801C27D28370656cFf",
+    "Horizen": "0xDd7B5E1dB4AaFd5C8EC3b764eFB8ed265Aa5445B",
+    "Canary": "0x73DDc92E39aEdA95FEb8D3E0008016d9F1268c76",
+    "Nethermind": "0x809CDE2AfcF8627312E87a6a7bbFFaB3F8F347c7"
   },
   "cronos": {
-    "LayerZero_Labs": "0xce8358bc28dd8296ce8caf1cd2b44787abd65887",
-    "Horizen": "0xe33de1a8cf9bcdc6b509c44eef66f47c65da6d47",
-    "Canary": "0xf1042bba248634583d0678d53fb33bc885e09f11",
-    "Nethermind": "0xdd7b5e1db4aafd5c8ec3b764efb8ed265aa5445b"
+    "LayerZero_Labs": "0xce8358bc28dd8296Ce8cAF1CD2b44787abd65887",
+    "Horizen": "0xE33de1A8cf9bcdC6b509C44EEF66f47c65dA6d47",
+    "Canary": "0xF1042Bba248634583d0678d53FB33Bc885E09F11",
+    "Nethermind": "0xDd7B5E1dB4AaFd5C8EC3b764eFB8ed265Aa5445B"
   },
   "dfk": {
-    "LayerZero_Labs": "0x1f7e674143031e74bc48a0c570c174a07aa9c5d0",
-    "Horizen": "0xa9ff468ad000a4d5729826459197a0db843f433e",
-    "Canary": "0xab6d3d37d8dc309e7d8086b2e85a953b84ee5fa9",
-    "Nethermind": "0x7fe673201724925b5c477d4e1a4bd3e954688cf5"
+    "LayerZero_Labs": "0x1F7E674143031e74bc48a0c570c174A07aA9C5d0",
+    "Horizen": "0xa9Ff468ad000A4D5729826459197a0dB843F433E",
+    "Canary": "0xAb6d3d37D8Dc309e7d8086B2e85a953b84Ee5fA9",
+    "Nethermind": "0x7fe673201724925B5c477d4E1A4Bd3E954688cF5"
   },
   "ethereum": {
-    "LayerZero_Labs": "0xdb979d0a36af0525afa60fc265b1525505c55d79",
-    "Horizen": "0x380275805876ff19055ea900cdb2b46a94ecf20d",
-    "Canary": "0xa4fe5a5b9a846458a70cd0748228aed3bf65c2cd",
-    "Nethermind": "0xa59ba433ac34d2927232918ef5b2eaafcf130ba5"
+    "LayerZero_Labs": "0xDb979D0A36aF0525AFa60Fc265B1525505c55D79",
+    "Horizen": "0x380275805876Ff19055EA900CDb2B46a94ecF20D",
+    "Canary": "0xa4fE5A5B9A846458a70Cd0748228aED3bF65c2cd",
+    "Nethermind": "0xa59BA433ac34D2927232918Ef5B2eaAfcF130BA5"
   },
   "fantom": {
-    "LayerZero_Labs": "0xe60a3959ca23a92bf5aaf992ef837ca7f828628a",
-    "Horizen": "0x25e0e650a78e6304a3983fc4b7ffc6544b1beea6",
-    "Canary": "0xe5bffd46776251b70895517d4ab635a640da61e9",
-    "Nethermind": "0x31f748a368a893bdb5abb67ec95f232507601a73"
+    "LayerZero_Labs": "0xE60A3959Ca23a92BF5aAf992EF837cA7F828628a",
+    "Horizen": "0x25e0e650a78e6304A3983Fc4b7Ffc6544b1bEea6",
+    "Canary": "0xE5BFfd46776251b70895517D4AB635a640dA61E9",
+    "Nethermind": "0x31F748a368a893Bdb5aBB67ec95F232507601A73"
   },
   "harmony": {
-    "LayerZero_Labs": "0x8363302080e711e0cab978c081b9e69308d49808",
-    "Horizen": "0x462a63dbe8ca43a57d379c88a382c02862b9a2ce",
-    "Canary": "0xa6f5ddbf0bd4d03334523465439d301080574742",
-    "Nethermind": "0xd24972c11f91c1bb9eaee97ec96bb9c33cf7af24"
+    "LayerZero_Labs": "0x8363302080e711E0CAb978C081b9e69308d49808",
+    "Horizen": "0x462A63dBE8Ca43a57D379c88a382C02862B9A2cE",
+    "Canary": "0xa6F5DDBF0Bd4D03334523465439D301080574742",
+    "Nethermind": "0xD24972c11F91c1bB9eaEe97ec96bB9c33cF7af24"
   },
   "kaia": {
-    "LayerZero_Labs": "0xc80233ad8251e668becbc3b0415707fc7075501e",
-    "Horizen": "0xacde1f22eeab249d3ca6ba8805c8fee9f52a16e7",
-    "Canary": "0x1154d04d07aee26ff2c200bd373eb76a7e5694d6",
-    "Nethermind": "0x6a4c9096f162f0ab3c0517b0a40dc1ce44785e16"
+    "LayerZero_Labs": "0xc80233AD8251E668BecbC3B0415707fC7075501e",
+    "Horizen": "0xaCDe1f22EEAb249d3ca6Ba8805C8fEe9f52a16e7",
+    "Canary": "0x1154d04d07AEe26ff2C200Bd373eb76a7e5694d6",
+    "Nethermind": "0x6a4C9096F162f0ab3C0517B0a40dc1CE44785e16"
   },
   "metis": {
-    "LayerZero_Labs": "0x32d4f92437454829b3fe7bebfece5d0523deb475",
-    "Horizen": "0x7fe673201724925b5c477d4e1a4bd3e954688cf5",
-    "Canary": "0xaf75bfd402f3d4ee84978179a6c87d16c4bd1724",
-    "Nethermind": "0x6abdb569dc985504cccb541ade8445e5266e7388"
+    "LayerZero_Labs": "0x32d4F92437454829b3Fe7BEBfeCE5D0523DEb475",
+    "Horizen": "0x7fe673201724925B5c477d4E1A4Bd3E954688cF5",
+    "Canary": "0xAf75bfD402f3d4EE84978179a6c87D16c4Bd1724",
+    "Nethermind": "0x6ABdb569Dc985504cCcB541ADE8445E5266e7388"
   },
   "moonbeam": {
-    "LayerZero_Labs": "0x8b9b67b22ab2ed6ee324c2fd43734dbd2dddd045",
-    "Horizen": "0x34730f2570e6cff8b1c91faabf37d0dd917c4367",
-    "Canary": "0x33e5fcc13d7439cc62d54c41aa966197145b3cd7",
-    "Nethermind": "0x790d7b1e97a086eb0012393b65a5b32ce58a04dc"
+    "LayerZero_Labs": "0x8B9b67b22ab2ed6Ee324C2fd43734dBd2dDDD045",
+    "Horizen": "0x34730f2570E6cff8B1C91FaaBF37D0DD917c4367",
+    "Canary": "0x33E5fcC13D7439cC62d54c41AA966197145b3Cd7",
+    "Nethermind": "0x790d7B1E97a086eb0012393b65a5B32cE58a04Dc"
   },
   "moonriver": {
-    "LayerZero_Labs": "0x2b3ebe6662ad402317ee7ef4e6b25c79a0f91015",
-    "Horizen": "0x7fe673201724925b5c477d4e1a4bd3e954688cf5",
-    "Canary": "0x8fa9eef18c2a1459024f0b44714e5acc1ce7f5e8",
-    "Nethermind": "0xfe1cd27827e16b07e61a4ac96b521bdb35e00328"
+    "LayerZero_Labs": "0x2b3eBE6662Ad402317EE7Ef4e6B25c79a0f91015",
+    "Horizen": "0x7fe673201724925B5c477d4E1A4Bd3E954688cF5",
+    "Canary": "0x8fa9eEf18c2A1459024f0B44714e5aCc1Ce7f5e8",
+    "Nethermind": "0xfE1cD27827E16b07E61A4AC96b521bDB35e00328"
   },
   "optimism": {
-    "LayerZero_Labs": "0xd4925b81f62457caca368412315d230535b9a48a",
-    "Horizen": "0xeb64c44109ede90cc6e34953ab122a1f09460a44",
-    "Canary": "0x5b6735c66d97479ccd18294fc96b3084ecb2fa3f",
-    "Nethermind": "0xa7b5189bca84cd304d8553977c7c614329750d99"
+    "LayerZero_Labs": "0xD4925B81f62457caCA368412315D230535b9a48a",
+    "Horizen": "0xeb64C44109eDE90CC6E34953AB122A1F09460a44",
+    "Canary": "0x5b6735c66d97479cCD18294fc96B3084EcB2fa3f",
+    "Nethermind": "0xa7b5189bcA84Cd304D8553977c7C614329750d99"
   },
   "polygon": {
-    "LayerZero_Labs": "0xa70c51c38d5a9990f3113a403d74eba01fce4ccb",
-    "Horizen": "0x25e0e650a78e6304a3983fc4b7ffc6544b1beea6",
-    "Canary": "0x13feb7234ff60a97af04477d6421415766753ba3",
-    "Nethermind": "0xbcefdadb8d24b1d36c26b522235012cd4cf162f6"
+    "LayerZero_Labs": "0xA70C51C38D5A9990F3113a403D74EBa01fce4CCb",
+    "Horizen": "0x25e0e650a78e6304A3983Fc4b7Ffc6544b1bEea6",
+    "Canary": "0x13feb7234Ff60A97af04477d6421415766753Ba3",
+    "Nethermind": "0xbCefdAdB8d24b1d36c26B522235012Cd4cf162f6"
   }
 }
