@@ -8025,6 +8025,11 @@
   resolved "https://registry.yarnpkg.com/@solidity-parser/parser/-/parser-0.18.0.tgz#8e77a02a09ecce957255a2f48c9a7178ec191908"
   integrity sha512-yfORGUIPgLck41qyN7nbwJRAx17/jAIXCTanHOJZhB6PJ1iAk/84b/xlsVKFSyNyLXIj0dhppoE0+CRws7wlzA==
 
+"@solidity-parser/parser@^0.20.1":
+  version "0.20.1"
+  resolved "https://registry.yarnpkg.com/@solidity-parser/parser/-/parser-0.20.1.tgz#88efee3e0946a4856ed10355017692db9c259ff4"
+  integrity sha512-58I2sRpzaQUN+jJmWbHfbWf9AKfzqCI8JAdFB0vbyY+u8tBRcuTt9LxzasvR0LGQpcRv97eyV7l61FQ3Ib7zVw==
+
 "@stablelib/aead@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@stablelib/aead/-/aead-1.0.1.tgz#c4b1106df9c23d1b867eb9b276d8f42d5fc4c0c3"
@@ -29702,12 +29707,12 @@ prettier-linter-helpers@^1.0.0:
     fast-diff "^1.1.2"
 
 prettier-plugin-solidity@^1.0.0-beta.13:
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/prettier-plugin-solidity/-/prettier-plugin-solidity-1.4.1.tgz#8060baf18853a9e34d2e09e47e87b4f19e15afe9"
-  integrity sha512-Mq8EtfacVZ/0+uDKTtHZGW3Aa7vEbX/BNx63hmVg6YTiTXSiuKP0amj0G6pGwjmLaOfymWh3QgXEZkjQbU8QRg==
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/prettier-plugin-solidity/-/prettier-plugin-solidity-1.4.3.tgz#73f8adeb0214fb3db1c2d59023b39e079be69019"
+  integrity sha512-Mrr/iiR9f9IaeGRMZY2ApumXcn/C5Gs3S7B7hWB3gigBFML06C0yEyW86oLp0eqiA0qg+46FaChgLPJCj/pIlg==
   dependencies:
-    "@solidity-parser/parser" "^0.18.0"
-    semver "^7.5.4"
+    "@solidity-parser/parser" "^0.20.1"
+    semver "^7.7.1"
 
 "prettier@>=2.2.1 <=2.3.0":
   version "2.3.0"
@@ -32279,10 +32284,15 @@ semver@7.3.5:
   dependencies:
     lru-cache "^6.0.0"
 
-semver@7.6.3, semver@^7.1.1, semver@^7.1.3, semver@^7.3.2, semver@^7.3.4, semver@^7.3.5, semver@^7.3.7, semver@^7.3.8, semver@^7.5.2, semver@^7.5.3, semver@^7.5.4, semver@^7.6.3:
+semver@7.6.3, semver@^7.1.1, semver@^7.1.3, semver@^7.3.2, semver@^7.3.4, semver@^7.3.5, semver@^7.3.7, semver@^7.3.8, semver@^7.5.2, semver@^7.5.3, semver@^7.6.3:
   version "7.6.3"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.6.3.tgz#980f7b5550bc175fb4dc09403085627f9eb33143"
   integrity sha512-oVekP1cKtI+CTDvHWYFUcMtsK/00wmAEfyqKfNdARm8u1wNVhSgaX7A8d4UuIlUI5e84iEwOhs7ZPYRmzU9U6A==
+
+semver@^7.5.4, semver@^7.7.1:
+  version "7.7.2"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-7.7.2.tgz#67d99fdcd35cec21e6f8b87a7fd515a33f982b58"
+  integrity sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==
 
 send@0.19.0:
   version "0.19.0"
