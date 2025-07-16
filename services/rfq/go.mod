@@ -8,7 +8,7 @@ require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/alecthomas/assert v1.0.0
 	github.com/brianvoe/gofakeit/v6 v6.27.0
-	github.com/charmbracelet/huh/spinner v0.0.0-20240821193529-5fd70815c13f
+	github.com/charmbracelet/huh/spinner 40d2b68703eb
 	github.com/cornelk/hashmap v1.0.8
 	github.com/dubonzi/otelresty v1.3.0
 	github.com/ethereum/go-ethereum v1.13.8
