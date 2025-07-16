@@ -28,13 +28,14 @@ import {
 
 const PARASWAP_API_URL = 'https://api.paraswap.io'
 const PARASWAP_SUPPORTED_CHAINS = [
-  SupportedChainId.AVALANCHE,
   SupportedChainId.ARBITRUM,
+  SupportedChainId.AVALANCHE,
   SupportedChainId.BASE,
   SupportedChainId.BSC,
   SupportedChainId.ETH,
   SupportedChainId.OPTIMISM,
   SupportedChainId.POLYGON,
+  SupportedChainId.UNICHAIN,
 ]
 
 export type ParaSwapPricesRequest = {
