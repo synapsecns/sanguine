@@ -89,6 +89,7 @@ const KyberSwapChainMap: Record<number, string> = {
   [SupportedChainId.BSC]: 'bsc',
   [SupportedChainId.ETH]: 'ethereum',
   [SupportedChainId.FANTOM]: 'fantom',
+  [SupportedChainId.HYPEREVM]: 'hyperevm',
   [SupportedChainId.LINEA]: 'linea',
   [SupportedChainId.OPTIMISM]: 'optimism',
   [SupportedChainId.POLYGON]: 'polygon',
