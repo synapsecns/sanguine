@@ -79,8 +79,8 @@ export const CCTP_SUPPORTED_CHAIN_IDS: number[] = [
  * List of chain ids where gas.zip is deployed, ordered lexicographically
  */
 export const GASZIP_SUPPORTED_CHAIN_IDS: number[] = [
-  SupportedChainId.AVALANCHE,
   SupportedChainId.ARBITRUM,
+  SupportedChainId.AVALANCHE,
   SupportedChainId.BASE,
   SupportedChainId.BERACHAIN,
   SupportedChainId.BLAST,
@@ -120,8 +120,8 @@ export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
  * but will also support bridge modules in the future.
  */
 export const INTENTS_SUPPORTED_CHAIN_IDS: number[] = [
-  SupportedChainId.AVALANCHE,
   SupportedChainId.ARBITRUM,
+  SupportedChainId.AVALANCHE,
   SupportedChainId.BASE,
   SupportedChainId.BERACHAIN,
   SupportedChainId.BLAST,
