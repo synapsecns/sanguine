@@ -1,5 +1,5 @@
 import { AddressZero } from '@ethersproject/constants'
-import { isNativeToken, postWithTimeout } from '../utils'
+import { getWithTimeout, isNativeToken, postWithTimeout } from '../utils'
 
 const API_URL = 'https://api.relay.link'
 // TODO: revisit timeout
@@ -81,6 +81,31 @@ export interface QuoteResponse {
   }
 }
 
+export enum Status {
+  Refund = 'refund',
+  Delayed = 'delayed',
+  Waiting = 'waiting',
+  Failure = 'failure',
+  Pending = 'pending',
+  Success = 'success',
+}
+
+interface RequestsRequest {
+  hash: string
+}
+
+export interface RequestsResponse {
+  requests: {
+    id: string
+    status: Status
+    data: {
+      inTxs: {
+        hash: string
+      }[]
+    }
+  }[]
+}
+
 export const isStepActionable = (step: QuoteStep): boolean => {
   // Note: Approval is done by TokenZap automatically, so this step doesn't require an action
   return [StepId.Deposit, StepId.Send, StepId.Swap].includes(step.id)
@@ -103,5 +128,21 @@ export const getQuote = async (
     return null
   }
   const data: QuoteResponse = await response.json()
+  return data
+}
+
+export const getRequests = async (
+  requestsRequest: RequestsRequest
+): Promise<RequestsResponse | null> => {
+  const response = await getWithTimeout(
+    'Relay API',
+    `${API_URL}/requests/v2`,
+    API_TIMEOUT,
+    requestsRequest
+  )
+  if (!response) {
+    return null
+  }
+  const data: RequestsResponse = await response.json()
   return data
 }

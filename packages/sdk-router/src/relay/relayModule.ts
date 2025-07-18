@@ -1,6 +1,7 @@
 import { PopulatedTransaction } from 'ethers'
 
 import { SynapseModule } from '../module'
+import { getRequests, Status } from './api'
 
 export class RelayModule implements SynapseModule {
   readonly address: string
@@ -19,8 +20,14 @@ export class RelayModule implements SynapseModule {
     return txHash
   }
 
-  public async getBridgeTxStatus(): Promise<boolean> {
-    // TODO: implement
-    return false
+  public async getBridgeTxStatus(synapseTxId: string): Promise<boolean> {
+    const requests = await getRequests({ hash: synapseTxId })
+    if (!requests) {
+      return false
+    }
+    const request = requests.requests.find(
+      (r) => !!r.data.inTxs.find((tx) => tx.hash === synapseTxId)
+    )
+    return request?.status === Status.Success
   }
 }
