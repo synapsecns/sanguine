@@ -65,5 +65,6 @@ export type BridgeRouteV2 = {
   expectedToAmount: BigNumber
   minToAmount: BigNumber
   nativeFee: BigNumber
+  estimatedTime?: number
   zapData?: string
 }

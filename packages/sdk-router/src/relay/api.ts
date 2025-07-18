@@ -1,4 +1,5 @@
 import { AddressZero } from '@ethersproject/constants'
+
 import { getWithTimeout, isNativeToken, postWithTimeout } from '../utils'
 
 const API_URL = 'https://api.relay.link'
@@ -78,6 +79,7 @@ export interface QuoteResponse {
   details: {
     currencyIn: Currency
     currencyOut: Currency
+    timeEstimate: number
   }
 }
 

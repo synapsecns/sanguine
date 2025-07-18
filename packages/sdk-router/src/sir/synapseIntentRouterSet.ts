@@ -83,8 +83,7 @@ export class SynapseIntentRouterSet {
       expectedToAmount: bridgeRoute.expectedToAmount.toString(),
       minToAmount: bridgeRoute.minToAmount.toString(),
       routerAddress: this.getSirAddress(fromChainId),
-      // These will be filled by the corresponding bridge module
-      estimatedTime: 0,
+      estimatedTime: bridgeRoute.estimatedTime ?? 0,
       moduleNames,
       gasDropAmount: '0',
       nativeFee: bridgeRoute.nativeFee.toString(),

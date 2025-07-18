@@ -140,6 +140,7 @@ export class RelayModuleSet extends SynapseModuleSet {
       expectedToAmount,
       minToAmount: BigNumber.from(quote.details.currencyOut.minimumAmount),
       nativeFee: txValue.sub(ethAmountIn),
+      estimatedTime: quote.details.timeEstimate,
       zapData: this.getZapData(params, relayData),
     }
   }
