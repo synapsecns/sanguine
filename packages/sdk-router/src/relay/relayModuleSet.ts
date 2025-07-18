@@ -18,7 +18,6 @@ import { ChainProvider } from '../router'
 import {
   ETH_NATIVE_TOKEN_ADDRESS,
   isNativeToken,
-  isSameAddress,
   logExecutionTime,
 } from '../utils'
 import {
@@ -115,22 +114,12 @@ export class RelayModuleSet extends SynapseModuleSet {
     if (!quote) {
       return undefined
     }
-    console.log(`quote: ${JSON.stringify(quote)}`)
     const relaySteps = quote.steps.filter(isStepActionable)
     // Only a single step is expected
     if (relaySteps.length !== 1 || relaySteps[0].items.length !== 1) {
       return undefined
     }
     const relayData = relaySteps[0].items[0].data
-    // Check that the to address matches the relay module address
-    if (
-      !isSameAddress(
-        relayData.to,
-        this.getModule(params.bridgeToken.originChainId)?.address
-      )
-    ) {
-      return undefined
-    }
     const ethAmountIn = isNativeToken(params.originSwapRoute.toToken)
       ? BigNumber.from(params.originSwapRoute.expectedToAmount)
       : Zero
