@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.20.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.19.3...@synapsecns/sdk-router@0.20.0) (2025-07-18)
+
+
+### Features
+
+* **sdk-router:** relay support ([#3746](https://github.com/synapsecns/sanguine/issues/3746)) ([911a5d1](https://github.com/synapsecns/sanguine/commit/911a5d197c53116e8eee4fc39e5b1f43f0d1e74e))
+
+
+
+
+
 ## [0.19.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.19.2...@synapsecns/sdk-router@0.19.3) (2025-07-17)
 
 
