@@ -346,10 +346,9 @@ export abstract class SynapseModuleSet {
     )
     return {
       ...bridgeQuote,
-      estimatedTime: this.getEstimatedTime(
-        bridgeQuote.fromChainId,
-        bridgeQuote.toChainId
-      ),
+      estimatedTime:
+        bridgeQuote.estimatedTime ||
+        this.getEstimatedTime(bridgeQuote.fromChainId, bridgeQuote.toChainId),
       moduleNames: [...bridgeQuote.moduleNames, this.moduleName],
       gasDropAmount: gasDropAmount.toString(),
     }

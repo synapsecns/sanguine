@@ -6,6 +6,7 @@ import { GasZipModuleSet } from './gaszip'
 import { SynapseModuleSet } from './module'
 import { UsdtModuleSet } from './oft'
 import * as operations from './operations'
+import { RelayModuleSet } from './relay'
 import { FastBridgeRouterSet } from './rfq'
 import { SynapseRouterSet, SynapseCCTPRouterSet, ChainProvider } from './router'
 import { SynapseIntentRouterSet } from './sir/synapseIntentRouterSet'
@@ -18,6 +19,7 @@ class SynapseSDK {
   public synapseCCTPRouterSet: SynapseCCTPRouterSet
   public fastBridgeRouterSet: FastBridgeRouterSet
   public gasZipModuleSet: GasZipModuleSet
+  public relayModuleSet: RelayModuleSet
   public usdtModuleSet: UsdtModuleSet
 
   public sirSet: SynapseIntentRouterSet
@@ -55,12 +57,14 @@ class SynapseSDK {
     this.synapseCCTPRouterSet = new SynapseCCTPRouterSet(chainProviders)
     this.fastBridgeRouterSet = new FastBridgeRouterSet(chainProviders)
     this.gasZipModuleSet = new GasZipModuleSet(chainProviders)
+    this.relayModuleSet = new RelayModuleSet(chainProviders)
     this.usdtModuleSet = new UsdtModuleSet(chainProviders)
     this.allModuleSets = [
       this.synapseRouterSet,
       this.synapseCCTPRouterSet,
       this.fastBridgeRouterSet,
       this.gasZipModuleSet,
+      this.relayModuleSet,
       this.usdtModuleSet,
     ]
     this.sirSet = new SynapseIntentRouterSet(chainProviders)

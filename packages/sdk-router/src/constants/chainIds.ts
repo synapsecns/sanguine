@@ -76,26 +76,6 @@ export const CCTP_SUPPORTED_CHAIN_IDS: number[] = [
 ].filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
 
 /**
- * List of chain ids where gas.zip is deployed, ordered lexicographically
- */
-export const GASZIP_SUPPORTED_CHAIN_IDS: number[] = [
-  SupportedChainId.AVALANCHE,
-  SupportedChainId.ARBITRUM,
-  SupportedChainId.BASE,
-  SupportedChainId.BERACHAIN,
-  SupportedChainId.BLAST,
-  SupportedChainId.BSC,
-  SupportedChainId.ETH,
-  SupportedChainId.HYPEREVM,
-  SupportedChainId.LINEA,
-  SupportedChainId.OPTIMISM,
-  SupportedChainId.POLYGON,
-  SupportedChainId.SCROLL,
-  SupportedChainId.UNICHAIN,
-  SupportedChainId.WORLDCHAIN,
-].filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
-
-/**
  * List of chain ids where FastBridge (RFQ) is deployed, ordered by chain id
  *
  */
@@ -120,8 +100,8 @@ export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
  * but will also support bridge modules in the future.
  */
 export const INTENTS_SUPPORTED_CHAIN_IDS: number[] = [
-  SupportedChainId.AVALANCHE,
   SupportedChainId.ARBITRUM,
+  SupportedChainId.AVALANCHE,
   SupportedChainId.BASE,
   SupportedChainId.BERACHAIN,
   SupportedChainId.BLAST,
@@ -135,6 +115,18 @@ export const INTENTS_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.UNICHAIN,
   SupportedChainId.WORLDCHAIN,
 ].filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
+
+/**
+ * List of chain ids where both Intents and GasZip are deployed.
+ * Note: make sure to exclude any chain ids where Intents are deployed, but GasZip is not.
+ */
+export const GASZIP_SUPPORTED_CHAIN_IDS = INTENTS_SUPPORTED_CHAIN_IDS
+
+/**
+ * List of chain ids where both Intents and Relay are deployed.
+ * Note: make sure to exclude any chain ids where Intents are deployed, but Relay is not.
+ */
+export const RELAY_SUPPORTED_CHAIN_IDS = INTENTS_SUPPORTED_CHAIN_IDS
 
 /**
  * List of chain ids where hydrating on constructor is supported , ordered by monke
