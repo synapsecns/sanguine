@@ -1,14 +1,14 @@
 {
   "name": "@synapsecns/contracts-rfq",
   "license": "MIT",
-  "version": "0.19.2",
+  "version": "0.20.0",
   "description": "FastBridge contracts.",
   "private": true,
   "files": [
     "contracts/**/*.sol"
   ],
   "dependencies": {
-    "@openzeppelin/contracts": "5.0.1",
+    "@openzeppelin/contracts": "5.4.0",
     "@openzeppelin/contracts-4.5.0": "npm:@openzeppelin/contracts@4.5.0"
   },
   "devDependencies": {
