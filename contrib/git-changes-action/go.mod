@@ -24,7 +24,7 @@ require (
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/vishalkuo/bimap v0.0.0-20230830142743-a9fb9b52066c
 	github.com/xlab/treeprint v1.2.0
-	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
+	golang.org/x/exp 645b1fa84792
 	golang.org/x/mod v0.23.0
 	golang.org/x/oauth2 v0.21.0
 )
