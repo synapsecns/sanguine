@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.20.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.0...@synapsecns/sdk-router@0.20.1) (2025-07-22)
+
+
+### Bug Fixes
+
+* **sdk-router:** GasZip time estimation ([#3754](https://github.com/synapsecns/sanguine/issues/3754)) ([b0e4069](https://github.com/synapsecns/sanguine/commit/b0e4069be4f3378823d9cc1b98a78085038656f2))
+
+
+
+
+
 # [0.20.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.19.3...@synapsecns/sdk-router@0.20.0) (2025-07-18)
 
 
