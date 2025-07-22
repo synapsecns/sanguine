@@ -148,6 +148,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
       expectedToAmount,
       minToAmount,
       nativeFee: Zero,
+      estimatedTime: quote.speed,
       zapData: await this.getGasZipZapData(
         bridgeToken.originChainId,
         originSwapRoute.expectedToAmount,
