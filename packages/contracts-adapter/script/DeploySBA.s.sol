@@ -5,12 +5,18 @@ import {ISynapseBridgeAdapter, SynapseBridgeAdapter} from "../src/SynapseBridgeA
 
 import {StringUtils, SynapseScript, stdJson} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
 
+interface IBridge {
+    function bridgeVersion() external view returns (uint256);
+}
+
 // solhint-disable code-complexity, no-empty-blocks
 /// @notice This script deploys a SynapseBridgeAdapter contract and performs its initial configuration.
 /// The LayerZero-specific configuration is done in a separate script, as it requires SBA to be deployed on all chains.
 contract DeploySBA is SynapseScript {
     using stdJson for string;
     using StringUtils for string;
+
+    bytes32 internal constant SALT = 0xcabb90224154e99298f486ccf31bda85ac9727771f7f19dbd8e19644c6491fc5;
 
     SynapseBridgeAdapter internal sba;
 
@@ -30,7 +36,7 @@ contract DeploySBA is SynapseScript {
         // Every action below will be skipped if already done
         sba = SynapseBridgeAdapter(deployAdapter());
         setBridge();
-        addTokens();
+        // addTokens();
     }
 
     function loadConfigs() internal {
@@ -59,6 +65,7 @@ contract DeploySBA is SynapseScript {
         printInfo(string.concat("EndpointV2:    ", vm.toString(endpointV2)));
         printInfo(string.concat("Initial Owner: ", vm.toString(msg.sender)));
         // Note: this will skip the deployment if it already exists
+        setNextDeploymentSalt(SALT);
         deployment = deployAndSave({
             contractName: "SynapseBridgeAdapter",
             constructorArgs: constructorArgs,
@@ -69,6 +76,11 @@ contract DeploySBA is SynapseScript {
     function setBridge() internal {
         printLog("Setting bridge...");
         address bridge = chainsConfig.readAddress(string.concat(".", activeChain, ".synapseBridge"));
+        printInfo(bridge, "Bridge");
+        address implementation = address(
+            uint160(uint256(vm.load(bridge, 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc)))
+        );
+        printInfo(implementation, "Implementation");
         address curBridge = sba.bridge();
         if (curBridge == address(0)) {
             sba.setBridge(bridge);
@@ -85,6 +97,19 @@ contract DeploySBA is SynapseScript {
             )
         );
         assert(false);
+    }
+
+    function printInfo(address addr, string memory name) internal {
+        increaseIndent();
+        printLog(string.concat(name, ": ", vm.toString(addr)));
+        if (addr.code.length == 0) {
+            printFailWithIndent("Not a contract");
+            assert(false);
+        }
+        printLogWithIndent(string.concat("Version: ", vm.toString(IBridge(addr).bridgeVersion())));
+        printLogWithIndent(string.concat("Code length: ", vm.toString(addr.code.length)));
+        printLogWithIndent(string.concat("Code hash: ", vm.toString(keccak256(addr.code))));
+        decreaseIndent();
     }
 
     function addTokens() internal {

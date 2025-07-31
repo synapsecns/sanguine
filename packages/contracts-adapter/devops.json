@@ -12,7 +12,7 @@
     "ethereum": "--slow",
     "fantom": "",
     "harmony": "--legacy --slow",
-    "kaia": "--skip-simulation",
+    "kaia": "--skip-simulation --slow",
     "metis": "--legacy",
     "moonbeam": "--skip-simulation --slow",
     "moonriver": "--skip-simulation --slow",
