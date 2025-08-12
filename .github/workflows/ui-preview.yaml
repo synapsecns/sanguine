@@ -17,7 +17,7 @@ jobs:
       packages: ${{ steps.filter_ui.outputs.changes }}
       package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           # if any of these packages use submodules in the future, please uncomment this line
@@ -56,7 +56,7 @@ jobs:
       VERCEL_ORG_ID: '${{ secrets.VERCEL_ORG_ID }}'
       NODE_ENV: 'production'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
         with:

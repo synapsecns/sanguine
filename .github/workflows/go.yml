@@ -40,7 +40,7 @@ jobs:
       golangci_changed: ${{ steps.golangci_changed.outputs.any_changed }}
       all_packages: ${{ steps.filter_go.outputs.all_modules }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -125,7 +125,7 @@ jobs:
       run:
         working-directory: ${{ matrix.package }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 2
           submodules: 'recursive'
@@ -285,7 +285,7 @@ jobs:
         go-version:
           - 1.22.x
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 2
       - name: Install Go
@@ -331,7 +331,7 @@ jobs:
         with:
           go-version: 1.23.x
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -404,7 +404,7 @@ jobs:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ['agents', 'services/rfq']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 2
           submodules: 'recursive'
@@ -499,7 +499,7 @@ jobs:
         package: ${{ fromJSON(needs.changes.outputs.unchanged_deps) }}
     steps:
       # needed for remove label action
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) }}
         with:
           fetch-depth: 2
@@ -522,7 +522,7 @@ jobs:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 2
           submodules: 'recursive'

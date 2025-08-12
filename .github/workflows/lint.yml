@@ -9,7 +9,7 @@ jobs:
   general-linters:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: mszostok/codeowners-validator@v0.7.4
         with:
           checks: 'files,duppatterns,syntax'

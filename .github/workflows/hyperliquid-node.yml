@@ -21,10 +21,10 @@ jobs:
       contents: read
     steps:
       - name: Git Checkout (Sanguine)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Git Checkout (Hyperliquid)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: 'hyperliquid-dex/node'
           ref: 'main'
@@ -71,10 +71,10 @@ jobs:
       contents: read
     steps:
       - name: Git Checkout (Sanguine)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Git Checkout (Hyperliquid)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: 'hyperliquid-dex/node'
           ref: 'main'
