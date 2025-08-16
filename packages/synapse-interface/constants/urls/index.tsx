@@ -36,7 +36,7 @@ export const JOBS_URL = 'https://jobs.ashbyhq.com/Synapse%20Labs'
 export const STAKE_SYN_FOR_CX_URL = 'https://cortexprotocol.com/agents/convert'
 
 /** Synapse Social Links */
-export const DISCORD_URL = 'https://discord.gg/synapseprotocol'
+export const DISCORD_URL = 'https://discord.gg/4rMzuEnKqe'
 export const TELEGRAM_URL = 'https://t.me/synapseprotocol'
 export const FORUM_URL = 'https://common.xyz/cortex-dao'
 export const TWITTER_URL = 'https://twitter.com/SynapseProtocol'
