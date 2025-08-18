@@ -200,7 +200,7 @@ export const _Transaction = ({
               )}
             <MenuItem
               text={t('Contact Support (Discord)')}
-              link="https://discord.gg/synapseprotocol"
+              link="https://discord.gg/4rMzuEnKqe"
             />
             {status !== 'pending' && (
               <MenuItem

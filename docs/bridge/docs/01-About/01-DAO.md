@@ -19,4 +19,4 @@ In order to be adopted by the DAO, a proposal must gather at least `50% + 1` of 
 
 * **[Forum](https://common.xyz/cortex-dao)**: A Platform to post proposals for discussion before an official vote
 * **[Snapshot](https://snapshot.box/#/s:cortex-protocol.ethh)**: A decentralized governance platform for conducting official votes.
-* **[Discord](https://discord.gg/synapseprotocol)**: Discussion channel for general Synapse matters
+* **[Discord](https://discord.gg/4rMzuEnKqe)**: Discussion channel for general Synapse matters
