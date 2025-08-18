@@ -22,6 +22,7 @@ const ENGINE_PRIORITY: Record<EngineID, PriorityConfig> = {
   [EngineID.KyberSwap]: { value: Priority.Normal },
   [EngineID.ParaSwap]: { value: Priority.Normal },
   [EngineID.LiFi]: { value: Priority.InefficientQuotes },
+  [EngineID.LiquidSwap]: { value: Priority.Normal },
 }
 
 export const getEnginePriority = (

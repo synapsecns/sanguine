@@ -10,7 +10,7 @@ import {
   BridgeTokenCandidate,
   FeeConfig,
 } from './types'
-import { applyOptionalDeadline } from '../utils'
+import { applyOptionalDeadline, isSameAddress } from '../utils'
 import { Query } from './query'
 import { Slippage, SwapEngineRoute } from '../swap'
 import { BridgeQuote, BridgeQuoteV2 } from '../types'
@@ -59,13 +59,14 @@ export abstract class SynapseModuleSet {
 
   /**
    * Returns the estimated time for a bridge transaction to be completed,
-   * when the transaction is sent from the given chain.
+   * when the transaction is sent from the given origin chain to the given destination chain.
    *
    * @param originChainId - The ID of the origin chain.
+   * @param destChainId - The ID of the destination chain.
    * @returns The estimated time in seconds.
    * @throws Will throw an error if the chain ID is not supported.
    */
-  abstract getEstimatedTime(originChainId: number): number
+  abstract getEstimatedTime(originChainId: number, destChainId?: number): number
 
   /**
    * Returns the Synapse transaction ID for a given transaction hash on a given chain.
@@ -158,6 +159,38 @@ export abstract class SynapseModuleSet {
   abstract getBridgeRouteV2(
     params: GetBridgeRouteV2Parameters
   ): Promise<BridgeRouteV2 | undefined>
+
+  /**
+   * Common validation for getBridgeRouteV2.
+   * Modules are supposed to use this method before processing getBridgeRouteV2.
+   */
+  protected validateBridgeRouteV2Params({
+    bridgeToken,
+    originSwapRoute,
+    toToken,
+    allowMultipleTxs,
+  }: GetBridgeRouteV2Parameters): boolean {
+    // Check if the module exists on both chains
+    if (
+      !this.getModule(bridgeToken.originChainId) ||
+      !this.getModule(bridgeToken.destChainId)
+    ) {
+      return false
+    }
+    // Check if the output of the origin swap route matches the bridged token on the origin chain
+    if (!isSameAddress(bridgeToken.originToken, originSwapRoute.toToken)) {
+      return false
+    }
+    // Check if the destination token matches the bridged token on the destination chain (for single transaction)
+    if (!allowMultipleTxs && !isSameAddress(bridgeToken.destToken, toToken)) {
+      return false
+    }
+    // Check if the origin swap route has a non-zero expectedToAmount
+    if (originSwapRoute.expectedToAmount.isZero()) {
+      return false
+    }
+    return true
+  }
 
   /**
    * This method find all possible routes for a bridge transaction between two chains.
@@ -289,7 +322,10 @@ export abstract class SynapseModuleSet {
       maxAmountOut: destQuery.minAmountOut,
       originQuery,
       destQuery,
-      estimatedTime: this.getEstimatedTime(bridgeRoute.originChainId),
+      estimatedTime: this.getEstimatedTime(
+        bridgeRoute.originChainId,
+        bridgeRoute.destChainId
+      ),
       bridgeModuleName: bridgeRoute.bridgeModuleName,
       gasDropAmount: await this.getGasDropAmount(
         bridgeRoute.destChainId,
@@ -310,7 +346,9 @@ export abstract class SynapseModuleSet {
     )
     return {
       ...bridgeQuote,
-      estimatedTime: this.getEstimatedTime(bridgeQuote.fromChainId),
+      estimatedTime:
+        bridgeQuote.estimatedTime ||
+        this.getEstimatedTime(bridgeQuote.fromChainId, bridgeQuote.toChainId),
       moduleNames: [...bridgeQuote.moduleNames, this.moduleName],
       gasDropAmount: gasDropAmount.toString(),
     }

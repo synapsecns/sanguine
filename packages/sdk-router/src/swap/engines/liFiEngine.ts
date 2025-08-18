@@ -1,5 +1,6 @@
 import { Zero } from '@ethersproject/constants'
 import { BigNumber } from 'ethers'
+import NodeCache from 'node-cache'
 
 import { isSameAddress, getWithTimeout, logger, Prettify } from '../../utils'
 import { EngineID, SlippageMax, toFloat } from '../core'
@@ -14,6 +15,9 @@ import {
 import { generateAPIRoute, TransactionData } from './response'
 
 const LIFI_API_URL = 'https://li.quest/v1'
+const LIFI_SUPPORTED_CHAINS_TIMEOUT = 3000
+const LIFI_CHAINS_CACHE_KEY = 'liFiSupportedChains'
+const LIFI_CHAINS_CACHE_TTL = 60 * 60 // 1 hour
 
 export type LiFiQuoteRequest = {
   fromChain: number
@@ -36,6 +40,12 @@ export type LiFiQuoteResponse = {
   transactionRequest: TransactionData
 }
 
+type LiFiChainsResponse = {
+  chains: {
+    id: number
+  }[]
+}
+
 type LiFiQuote = Prettify<
   SwapEngineQuote & {
     tx?: TransactionData
@@ -50,12 +60,20 @@ export const LI_FI_STRATEGY = `minWaitTime-0-3-300`
 export class LiFiEngine implements SwapEngine {
   readonly id: EngineID = EngineID.LiFi
 
+  private cache: NodeCache
+
+  constructor() {
+    this.cache = new NodeCache()
+  }
+
   public async getQuote(
     input: RouteInput,
     timeout: number
   ): Promise<LiFiQuote> {
+    const chains = await this.getSupportedChains()
     const { chainId, fromToken, toToken, swapper, fromAmount } = input
     if (
+      !chains.includes(chainId) ||
       isSameAddress(fromToken, toToken) ||
       BigNumber.from(fromAmount).eq(Zero)
     ) {
@@ -123,5 +141,24 @@ export class LiFiEngine implements SwapEngine {
       params,
       headers
     )
+  }
+
+  public async getSupportedChains(): Promise<number[]> {
+    const cached = this.cache.get<number[]>(LIFI_CHAINS_CACHE_KEY)
+    if (cached) {
+      return cached
+    }
+    const response = await getWithTimeout(
+      'LiFi',
+      `${LIFI_API_URL}/chains`,
+      LIFI_SUPPORTED_CHAINS_TIMEOUT
+    )
+    if (!response) {
+      return []
+    }
+    const chainsResponse: LiFiChainsResponse = await response.json()
+    const chains = chainsResponse.chains.map((chain) => chain.id)
+    this.cache.set(LIFI_CHAINS_CACHE_KEY, chains, LIFI_CHAINS_CACHE_TTL)
+    return chains
   }
 }

@@ -3,6 +3,83 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.20.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.0...@synapsecns/sdk-router@0.20.1) (2025-07-22)
+
+
+### Bug Fixes
+
+* **sdk-router:** GasZip time estimation ([#3754](https://github.com/synapsecns/sanguine/issues/3754)) ([b0e4069](https://github.com/synapsecns/sanguine/commit/b0e4069be4f3378823d9cc1b98a78085038656f2))
+
+
+
+
+
+# [0.20.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.19.3...@synapsecns/sdk-router@0.20.0) (2025-07-18)
+
+
+### Features
+
+* **sdk-router:** relay support ([#3746](https://github.com/synapsecns/sanguine/issues/3746)) ([911a5d1](https://github.com/synapsecns/sanguine/commit/911a5d197c53116e8eee4fc39e5b1f43f0d1e74e))
+
+
+
+
+
+## [0.19.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.19.2...@synapsecns/sdk-router@0.19.3) (2025-07-17)
+
+
+### Bug Fixes
+
+* **sdk-router:** small updates (GasZip, KyberSwap, ParaSwap) ([#3737](https://github.com/synapsecns/sanguine/issues/3737)) ([17e91d7](https://github.com/synapsecns/sanguine/commit/17e91d75e28033a0b060a53bbc74176c5429bfe0))
+
+
+
+
+
+## [0.19.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.19.1...@synapsecns/sdk-router@0.19.2) (2025-06-08)
+
+
+### Bug Fixes
+
+* **sdk-router:** fix test ([#3707](https://github.com/synapsecns/sanguine/issues/3707)) ([ddf4b36](https://github.com/synapsecns/sanguine/commit/ddf4b3656c67331f520ef3127a17b072f224ce02))
+
+
+
+
+
+## [0.19.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.19.0...@synapsecns/sdk-router@0.19.1) (2025-05-21)
+
+
+### Bug Fixes
+
+* **sdk-router:** add nativeFee to IntentStep ([#3691](https://github.com/synapsecns/sanguine/issues/3691)) ([dd416a6](https://github.com/synapsecns/sanguine/commit/dd416a63f5d41fb871294f7a1c3e862bc0d8481e))
+
+
+
+
+
+# [0.19.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.18.0...@synapsecns/sdk-router@0.19.0) (2025-05-19)
+
+
+### Features
+
+* **sdk-router:** usdt0 module ([#3688](https://github.com/synapsecns/sanguine/issues/3688)) ([d316c1a](https://github.com/synapsecns/sanguine/commit/d316c1aa3212b472f2e80b334dbeaab1516917bb))
+
+
+
+
+
+# [0.18.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.10...@synapsecns/sdk-router@0.18.0) (2025-05-07)
+
+
+### Features
+
+* **sdk-router:** hyper evm swaps [COR-850] ([#3679](https://github.com/synapsecns/sanguine/issues/3679)) ([758406e](https://github.com/synapsecns/sanguine/commit/758406ed4c0e2ce0eb6940dc6fa182f84ac5b2d1))
+
+
+
+
+
 ## [0.17.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.17.9...@synapsecns/sdk-router@0.17.10) (2025-05-02)
 
 

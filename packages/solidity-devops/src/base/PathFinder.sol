@@ -20,7 +20,7 @@ abstract contract PathFinder is CommonBase {
         _;
     }
 
-    function assertFileExists(string memory filePath) internal {
+    function assertFileExists(string memory filePath) internal view {
         require(vm.exists(filePath), StringUtils.concat("File does not exist: ", filePath));
     }
 

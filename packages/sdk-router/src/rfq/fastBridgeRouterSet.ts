@@ -141,24 +141,14 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   }
 
   @logExecutionTime('FastBridgeRouterSet.getBridgeRouteV2')
-  public async getBridgeRouteV2({
-    originSwapRoute,
-    bridgeToken,
-    toToken,
-    fromSender,
-    toRecipient,
-    slippage,
-    allowMultipleTxs,
-  }: GetBridgeRouteV2Parameters): Promise<BridgeRouteV2 | undefined> {
-    if (
-      !this.getModule(bridgeToken.originChainId) ||
-      !this.getModule(bridgeToken.destChainId)
-    ) {
+  public async getBridgeRouteV2(
+    params: GetBridgeRouteV2Parameters
+  ): Promise<BridgeRouteV2 | undefined> {
+    if (!this.validateBridgeRouteV2Params(params)) {
       return undefined
     }
-    if (!allowMultipleTxs && !isSameAddress(bridgeToken.destToken, toToken)) {
-      return undefined
-    }
+    const { originSwapRoute, bridgeToken, fromSender, toRecipient, slippage } =
+      params
     const originChainId = bridgeToken.originChainId
     const protocolFeeRate = await this.getFastBridgeRouter(
       originChainId
@@ -196,6 +186,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
       toToken: bridgeToken.destToken,
       expectedToAmount,
       minToAmount,
+      nativeFee: Zero,
       zapData: await this.getBridgeZapData(
         bridgeToken,
         expectedToAmount,

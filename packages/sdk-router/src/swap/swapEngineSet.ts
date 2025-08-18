@@ -1,3 +1,4 @@
+import { Provider } from '@ethersproject/abstract-provider'
 import { Zero } from '@ethersproject/constants'
 import invariant from 'tiny-invariant'
 
@@ -8,6 +9,7 @@ import {
   DefaultPoolsEngine,
   KyberSwapEngine,
   LiFiEngine,
+  LiquidSwapEngine,
   NoOpEngine,
   ParaSwapEngine,
 } from './engines'
@@ -47,17 +49,28 @@ export class SwapEngineSet {
   private tokenZaps: {
     [chainId: number]: string
   }
+  private providers: {
+    [chainId: number]: Provider
+  }
+  private tokenMetadataFetcher: TokenMetadataFetcher
 
   constructor(
     chains: ChainProvider[],
     tokenMetadataFetcher?: TokenMetadataFetcher
   ) {
+    this.providers = {}
+    chains.forEach(({ chainId, provider }) => {
+      this.providers[chainId] = provider
+    })
+    this.tokenMetadataFetcher =
+      tokenMetadataFetcher ?? new TokenMetadataFetcher(this.providers)
     this.engines = {}
     this._addEngine(new NoOpEngine())
     this._addEngine(new DefaultPoolsEngine(chains))
     this._addEngine(new KyberSwapEngine())
-    this._addEngine(new ParaSwapEngine(chains, tokenMetadataFetcher))
+    this._addEngine(new ParaSwapEngine(this.tokenMetadataFetcher))
     this._addEngine(new LiFiEngine())
+    this._addEngine(new LiquidSwapEngine(this.tokenMetadataFetcher))
 
     this.tokenZaps = {}
     chains.forEach(({ chainId }) => {
@@ -78,6 +91,10 @@ export class SwapEngineSet {
       engine,
       quotePromise: this._getQuote(engine, input, options),
     }))
+    // Ignore engine promises that rejected.
+    const allSettledPromise = Promise.allSettled(
+      enginePromises.map(({ quotePromise }) => quotePromise)
+    )
     // Wait for the first non-Zero quote to resolve from engines with the highest priority (Normal).
     const fastQuotePromise = await this._getFastestQuote(
       enginePromises
@@ -88,12 +105,20 @@ export class SwapEngineSet {
         .map(({ quotePromise }) => quotePromise)
     )
     if (fastQuotePromise) {
+      // Ensure all promises are handled to prevent unhandled rejections
+      void allSettledPromise
       return fastQuotePromise
     }
+    const allSettledQuotePromises = await allSettledPromise
     // Use the best quote from all the engines as a fallback.
-    const allQuotes = await Promise.all(
-      enginePromises.map(({ quotePromise }) => quotePromise)
-    )
+    const allQuotes = allSettledQuotePromises
+      .filter(
+        (
+          settledQuote
+        ): settledQuote is PromiseFulfilledResult<SwapEngineQuote> =>
+          settledQuote.status === 'fulfilled'
+      )
+      .map((settledQuote) => settledQuote.value)
     const quote = allQuotes.reduce(compareQuotesWithPriority)
     return quote.expectedToAmount.gt(Zero) ? quote : undefined
   }

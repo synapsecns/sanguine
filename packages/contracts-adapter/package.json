@@ -1,0 +1,41 @@
+{
+  "name": "@synapsecns/contracts-adapter",
+  "license": "MIT",
+  "version": "1.0.3",
+  "description": "SynapseBridge Adapter contracts",
+  "private": true,
+  "files": [
+    "src/**/*.sol"
+  ],
+  "dependencies": {
+    "@layerzerolabs/lz-evm-messagelib-v2": "3.0.88",
+    "@layerzerolabs/lz-evm-protocol-v2": "3.0.88",
+    "@layerzerolabs/oapp-evm": "0.3.2",
+    "@openzeppelin/contracts": "5.0.1",
+    "solidity-bytes-utils": "0.8.3"
+  },
+  "devDependencies": {
+    "@synapsecns/solidity-devops": "0.4.10",
+    "@types/node": "24.0.7",
+    "solhint": "5.0.3",
+    "ts-node": "10.9.2",
+    "typescript": "5.8.3",
+    "viem": "2.31.4"
+  },
+  "scripts": {
+    "build": " ",
+    "build:contracts": "forge build",
+    "build:slither": "forge build --out=out --build-info --force",
+    "test:coverage": "echo 'Please use foundry'",
+    "test": "forge test",
+    "lint": "forge fmt && npm run solhint",
+    "lint:check": "forge fmt --check && npm run solhint:check",
+    "ci:lint": "npm run lint:check",
+    "build:go": " ",
+    "solhint": "solhint '{src,script,test}/**/*.sol' --fix --noPrompt --max-warnings 3",
+    "solhint:check": "solhint '{src,script,test}/**/*.sol' --max-warnings 3",
+    "extract-chain-info": "ts-node script/utils/extractChainInfo.ts",
+    "extract-dvns": "ts-node script/utils/extractDVNs.ts",
+    "fetch-tokens": "ts-node script/utils/fetchBridgeTokens.ts"
+  }
+}

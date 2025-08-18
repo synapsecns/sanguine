@@ -89,6 +89,7 @@ const KyberSwapChainMap: Record<number, string> = {
   [SupportedChainId.BSC]: 'bsc',
   [SupportedChainId.ETH]: 'ethereum',
   [SupportedChainId.FANTOM]: 'fantom',
+  [SupportedChainId.HYPEREVM]: 'hyperevm',
   [SupportedChainId.LINEA]: 'linea',
   [SupportedChainId.OPTIMISM]: 'optimism',
   [SupportedChainId.POLYGON]: 'polygon',
@@ -183,7 +184,6 @@ export class KyberSwapEngine implements SwapEngine {
       expectedToAmount: quote.expectedToAmount,
       transaction: {
         chainId,
-        from: swapper,
         to: kyberSwapBuildResponse.data.routerAddress,
         value: isNativeToken(input.fromToken)
           ? input.fromAmount.toString()

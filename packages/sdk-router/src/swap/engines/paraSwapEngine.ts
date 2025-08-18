@@ -1,9 +1,8 @@
-import { Provider } from '@ethersproject/abstract-provider'
 import { Zero } from '@ethersproject/constants'
 import { BigNumber } from 'ethers'
 
 import { generateAPIRoute, TransactionData } from './response'
-import { ChainProvider } from '../../router'
+import { SupportedChainId } from '../../constants'
 import {
   getWithTimeout,
   postWithTimeout,
@@ -28,6 +27,16 @@ import {
 } from '../models'
 
 const PARASWAP_API_URL = 'https://api.paraswap.io'
+const PARASWAP_SUPPORTED_CHAINS = [
+  SupportedChainId.ARBITRUM,
+  SupportedChainId.AVALANCHE,
+  SupportedChainId.BASE,
+  SupportedChainId.BSC,
+  SupportedChainId.ETH,
+  SupportedChainId.OPTIMISM,
+  SupportedChainId.POLYGON,
+  SupportedChainId.UNICHAIN,
+]
 
 export type ParaSwapPricesRequest = {
   srcToken: string
@@ -87,21 +96,10 @@ const EmptyParaSwapQuote: ParaSwapQuote = {
 export class ParaSwapEngine implements SwapEngine {
   readonly id: EngineID = EngineID.ParaSwap
 
-  private providers: {
-    [chainId: number]: Provider
-  }
   private tokenMetadataFetcher: TokenMetadataFetcher
 
-  constructor(
-    chains: ChainProvider[],
-    tokenMetadataFetcher?: TokenMetadataFetcher
-  ) {
-    this.providers = {}
-    chains.forEach(({ chainId, provider }) => {
-      this.providers[chainId] = provider
-    })
-    this.tokenMetadataFetcher =
-      tokenMetadataFetcher ?? new TokenMetadataFetcher(this.providers)
+  constructor(tokenMetadataFetcher: TokenMetadataFetcher) {
+    this.tokenMetadataFetcher = tokenMetadataFetcher
   }
 
   public async getQuote(
@@ -110,6 +108,7 @@ export class ParaSwapEngine implements SwapEngine {
   ): Promise<ParaSwapQuote> {
     const { chainId, fromToken, toToken, swapper, fromAmount } = input
     if (
+      !PARASWAP_SUPPORTED_CHAINS.includes(chainId) ||
       isSameAddress(fromToken, toToken) ||
       BigNumber.from(fromAmount).eq(Zero)
     ) {

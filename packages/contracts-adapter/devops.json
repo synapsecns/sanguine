@@ -1,0 +1,26 @@
+{
+  "chains": {
+    "arbitrum": "",
+    "aurora": "--legacy --slow",
+    "avalanche": "",
+    "base": "",
+    "blast": "",
+    "bnb": "",
+    "canto": "--legacy --slow",
+    "cronos": "--slow",
+    "dfk": "--slow",
+    "ethereum": "--slow",
+    "fantom": "",
+    "harmony": "--legacy --slow",
+    "kaia": "--skip-simulation",
+    "metis": "--legacy",
+    "moonbeam": "--skip-simulation --slow",
+    "moonriver": "--skip-simulation --slow",
+    "optimism": "",
+    "polygon": "--slow"
+  },
+  "deployConfigs": "configs",
+  "deployments": "deployments",
+  "forgeArtifacts": "out",
+  "freshDeployments": ".deployments"
+}

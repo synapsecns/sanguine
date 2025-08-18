@@ -1,0 +1,15 @@
+{
+  "extends": "solhint:recommended",
+  "rules": {
+    "code-complexity": ["error"],
+    "compiler-version": "off",
+    "func-name-mixedcase": "error",
+    "func-visibility": ["error", { "ignoreConstructors": true }],
+    "gas-custom-errors": "off",
+    "immutable-vars-naming": ["error", { "immutablesAsConstants": false }],
+    "max-line-length": ["warn", 120],
+    "modifier-name-mixedcase": "error",
+    "ordering": "warn",
+    "var-name-mixedcase": "error"
+  }
+}

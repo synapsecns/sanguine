@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/solidity-devops",
-  "version": "0.4.8",
+  "version": "0.4.10",
   "description": "A collection of utils to effortlessly test, deploy and maintain the smart contracts on EVM compatible blockchains",
   "license": "MIT",
   "repository": {
@@ -30,7 +30,7 @@
   "dependencies": {
     "chalk": "^4.1.2",
     "dotenv": "^16.4.5",
-    "forge-std": "github:foundry-rs/forge-std#v1.8.2"
+    "forge-std": "github:foundry-rs/forge-std#v1.9.7"
   },
   "bin": {
     "fsr": "js/forgeScriptRun.js",
