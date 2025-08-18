@@ -169,10 +169,10 @@ An active list of dropdown selections are available from the `useBridgeSelection
 
 ```jsx
 const {
-  originChain, 
-  originToken, 
-  destinationChain, 
-  destinationToken, 
+  originChain,
+  originToken,
+  destinationChain,
+  destinationToken,
 } = useBridgeSelections()
 ```
 
@@ -193,4 +193,4 @@ For reference, you can find three example apps in the repository’s `/examples`
 
 ## Support
 
-If you have questions or need help implementing the widget, reach out to the team on [Discord](https://discord.gg/synapseprotocol).
+If you have questions or need help implementing the widget, reach out to the team on [Discord](https://discord.gg/4rMzuEnKqe).

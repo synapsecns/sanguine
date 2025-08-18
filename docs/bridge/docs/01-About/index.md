@@ -68,7 +68,7 @@ Synapse Router automatically determines the appropriate router for each Bridge t
 
 Connect with other developers and the Synapse team
 
-* **[Discord](https://discord.gg/synapseprotocol)**
+* **[Discord](https://discord.gg/4rMzuEnKqe)**
 * **[Twitter](https://twitter.com/SynapseProtocol)**
 * **[Telegram](https://t.me/synapseprotocol)**
 * **[Forum](https://common.xyz/cortex-dao)**

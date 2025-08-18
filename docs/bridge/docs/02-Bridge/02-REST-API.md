@@ -31,7 +31,7 @@ The API is available at [`https://api.synapseprotocol.com/`](https://api.synapse
 
 ## Support
 
-Please read the documentation and examples carefully before reaching out on [Discord](https://discord.gg/synapseprotocol) for questions.
+Please read the documentation and examples carefully before reaching out on [Discord](https://discord.gg/4rMzuEnKqe) for questions.
 
 <!-- ## GET Endpoints
 

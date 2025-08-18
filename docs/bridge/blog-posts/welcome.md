@@ -39,7 +39,7 @@ Here's a list of our most recent tech blog posts:
 To stay up-to-date with our latest tech developments:
 
 - Follow us on [Twitter](https://twitter.com/synapseprotocol)
-- Join our [Discord](https://discord.gg/synapseprotocol)
+- Join our [Discord](https://discord.gg/4rMzuEnKqe)
 - Check out our [GitHub](https://github.com/synapsecns)
 
 We're excited to share our journey with you as we continue to innovate and improve the Synapse Protocol. Happy reading!
