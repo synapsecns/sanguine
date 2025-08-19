@@ -378,7 +378,7 @@ func (s *ScribeSuite) TestLargeVolume() {
 	Equal(s.T(), sum, uint64(len(receipts)))
 }
 
-// TestChainIndexerLivfillToTip tests that the ChainIndexer can livefill events to the head.
+// TestChainIndexerLivefillToTip tests that the ChainIndexer can livefill events to the head.
 //
 // nolint:cyclop
 func (s *ScribeSuite) TestChainIndexerLivefillToTip() {

@@ -120,7 +120,7 @@ func findModPath() (string, error) {
 	}
 }
 
-// getModFile gets the module file from the root of the repo. It returns an error if the module cannot be found.
+// getModfile gets the module file from the root of the repo. It returns an error if the module cannot be found.
 func getModfile() (*modfile.File, error) {
 	modFile, err := findModPath()
 	if err != nil {
