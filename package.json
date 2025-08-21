@@ -82,7 +82,7 @@
     "wagmi": "^2.12.12"
   },
   "dependencies": {
-    "@changesets/cli": "2.22.0",
+    "@changesets/cli": "2.29.6",
     "eslint-plugin-jsx": "^0.1.0"
   },
   "packageManager": "yarn@1.22.19"
