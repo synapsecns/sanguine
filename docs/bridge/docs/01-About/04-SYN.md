@@ -7,6 +7,18 @@ title: $SYN Token
 :::note the SYN token is being migrated to the CX token. Learn more about the migration [here](https://docs.cortexprotocol.com/docs/Misc/TokenUpgradeFAQ).
 :::
 
+As part of the conversion the Total Supply will increase ~49M (19.75%) from 250,000,000 SYN to 299,380,000 SYN immediately. There was no immediate change in the Circulating Supply. The conversion ratio for SYN to CX is 1:5.5.
+
+As part of the conversion, the Total Supply of CX is thus 1,646,590,000 CX. This reflects the above increase in the SYN total supply (299,380,000 * 5.5). There was no immediate change in the Circulating Supply. The additional ~271M CX supply (~49M*5.5) is vested over 4 years with a one year cliff (inflation rate of 4.9%).
+
+Of the 271M CX total supply increase:
+
+66.6% (181,060,000 CX) of the allocation increase is delegated to the team (token grants to current and future contributors). This is vested over 4 years with a one year cliff.
+
+33.3% (90,530,000 CX) of the allocation increase is delegated to Ecosystem & Growth. This is allocated for marketing efforts, grants for builders, security (audits), and other growth initiatives (like trading competitions etc.). This is vested over 4 years with a one year cliff.
+
+The exact numbers are found [here](https://docs.cortexprotocol.com/docs/Misc/TokenUpgradeFAQ).
+
 $SYN is the legacy governance token for the Synapse Protocol. As per [SIP - 43](https://snapshot.box/#/s:synapseprotocol.eth/proposal/0x274e0c14be2a62c2a293a0cade4560481ab8da183e66d250ed9c8cdd9bbd5b4e), all SYN tokens will be converted to CX. To learn more about the conversion, please see https://docs.cortexprotocol.com/docs/Misc/TokenUpgradeFAQ.
 
 
