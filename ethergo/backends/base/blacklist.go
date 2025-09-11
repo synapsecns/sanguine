@@ -8,7 +8,7 @@ import (
 // blacklist is a global used for skipping contract verification
 // TODO: we should actually have a contractInfo not available state, but considering
 // the tenderly integration will probably be removed and otterscan self verification is not yet available
-// this seems likely likely to be removed entirely.
+// this seems likely to be removed entirely.
 var blacklist *xsync.MapOf[string, bool]
 
 func init() {
