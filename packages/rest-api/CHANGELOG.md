@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.20](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.19...@synapsecns/rest-api@1.13.20) (2025-09-19)
+
+
+### Bug Fixes
+
+* **rest-api:** error when no routes are found in bridgeV2 ([#3805](https://github.com/synapsecns/sanguine/issues/3805)) ([37dc6c3](https://github.com/synapsecns/sanguine/commit/37dc6c39d8f3d10b797f23d106dcdbe710ecfc57))
+
+
+
+
+
 ## [1.13.19](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.18...@synapsecns/rest-api@1.13.19) (2025-09-19)
 
 
