@@ -240,4 +240,17 @@ describe('Bridge Route with Real Synapse Service', () => {
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty('message', 'Invalid destAddress')
   }, 15000)
+
+  it('should return 404 when no bridge routes found for small amount (0.001 USDC from Arbitrum to Ethereum)', async () => {
+    const response = await request(app).get('/bridge').query({
+      fromChain: '42161', // Arbitrum
+      toChain: '1', // Ethereum
+      fromToken: USDC.addresses[42161],
+      toToken: USDC.addresses[1],
+      amount: '0.001',
+    })
+
+    expect(response.status).toBe(404)
+    expect(response.body).toHaveProperty('error', 'No bridge routes found')
+  }, 15000)
 })
