@@ -17823,9 +17823,9 @@ eslint-plugin-flowtype@^3.13.0:
     lodash "^4.17.15"
 
 eslint-plugin-i18next@^6.0.9:
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-i18next/-/eslint-plugin-i18next-6.1.0.tgz#2dc67c662ffeb578b0306f391a8242afd95aade9"
-  integrity sha512-upFtY6JyrJk8+nKp7utxlYyq5PMo/+FdgJIXpA29QdAaGR1whVmybUz2F5W+0TQYqIirekq4cSwWlej/ealBuA==
+  version "6.1.3"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-i18next/-/eslint-plugin-i18next-6.1.3.tgz#b7ac060c5aa8793b7c70dcfe49276926487b7146"
+  integrity sha512-z/h4oBRd9wI1ET60HqcLSU6XPeAh/EPOrBBTyCdkWeMoYrWAaUVA+DOQkWTiNIyCltG4NTmy62SQisVXxoXurw==
   dependencies:
     lodash "^4.17.21"
     requireindex "~1.1.0"
