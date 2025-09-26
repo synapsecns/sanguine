@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.11](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.10...@synapsecns/solidity-devops@0.4.11) (2025-09-26)
+
+
+### Bug Fixes
+
+* **solidity-devops:** optional Sourcify URL ([#3808](https://github.com/synapsecns/sanguine/issues/3808)) ([eb48cf8](https://github.com/synapsecns/sanguine/commit/eb48cf82a7dedac852b3cab261e059250c9c9cb4))
+
+
+
+
+
 ## [0.4.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.9...@synapsecns/solidity-devops@0.4.10) (2025-06-27)
 
 
