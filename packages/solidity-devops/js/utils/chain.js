@@ -80,7 +80,8 @@ const readBlockscoutOptions = (chainName) => {
 }
 
 const readSourcifyOptions = (chainName) => {
-  return '--verifier sourcify'
+  const url = tryReadEnv(chainName, 'VERIFIER_URL')
+  return '--verifier sourcify' + (url ? ` --verifier-url ${url}` : '')
 }
 
 /**
