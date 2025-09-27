@@ -1,6 +1,6 @@
 {
   "name": "with-next",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,7 +11,7 @@
   "dependencies": {
     "@synapsecns/widget": "^0.6.3",
     "ethers": "^6.9.1",
-    "next": "14.0.4",
+    "next": "14.2.32",
     "react": "^18",
     "react-dom": "^18"
   },
