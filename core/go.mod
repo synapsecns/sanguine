@@ -62,7 +62,7 @@ require (
 	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.11.0
-	google.golang.org/grpc v1.64.0
+	google.golang.org/grpc v1.64.1
 	gorm.io/driver/sqlite v1.5.6
 	gorm.io/gorm v1.25.10
 	k8s.io/apimachinery v0.29.3
