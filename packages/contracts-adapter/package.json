@@ -36,6 +36,7 @@
     "solhint:check": "solhint '{src,script,test}/**/*.sol' --max-warnings 3",
     "extract-chain-info": "ts-node script/utils/extractChainInfo.ts",
     "extract-dvns": "ts-node script/utils/extractDVNs.ts",
-    "fetch-tokens": "ts-node script/utils/fetchBridgeTokens.ts"
+    "fetch-tokens": "ts-node script/utils/fetchBridgeTokens.ts",
+    "verify-tokens": "ts-node script/utils/verifyTokens.ts"
   }
 }
