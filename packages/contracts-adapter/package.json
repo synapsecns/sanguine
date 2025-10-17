@@ -37,6 +37,7 @@
     "extract-chain-info": "ts-node script/utils/extractChainInfo.ts",
     "extract-dvns": "ts-node script/utils/extractDVNs.ts",
     "fetch-tokens": "ts-node script/utils/fetchBridgeTokens.ts",
+    "fetch-block-times": "ts-node script/utils/fetchBlockTimes.ts",
     "verify-tokens": "ts-node script/utils/verifyTokens.ts"
   }
 }
