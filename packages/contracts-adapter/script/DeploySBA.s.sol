@@ -36,7 +36,7 @@ contract DeploySBA is SynapseScript {
         // Every action below will be skipped if already done
         sba = SynapseBridgeAdapter(deployAdapter());
         setBridge();
-        // addTokens();
+        addTokens();
     }
 
     function loadConfigs() internal {
