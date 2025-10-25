@@ -48,7 +48,7 @@ base = { key = "${ETHERSCAN_KEY}", chain = 8453 }
 blast = { key = "${ETHERSCAN_KEY}", chain = 81457 }
 bnb = { key = "${ETHERSCAN_KEY}", chain = 56 }
 # canto = { key = "${CANTO_VERIFIER_KEY}", chain = 7700 }
-cronos = { key = "${ETHERSCAN_KEY}", chain = 25 }
+# cronos = { key = "${ETHERSCAN_KEY}", chain = 25 }
 # dfk = { key = "${DFK_VERIFIER_KEY}", chain = 53935 }
 ethereum = { key = "${ETHERSCAN_KEY}", chain = 1 }
 # fantom = { key = "${FANTOM_VERIFIER_KEY}", chain = 250 }
