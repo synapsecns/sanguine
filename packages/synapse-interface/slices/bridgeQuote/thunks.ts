@@ -153,16 +153,6 @@ export const fetchBridgeQuote = createAsyncThunk(
             spender: routerAddress,
           })
 
-    // Create placeholder query objects for backward compatibility
-    // These are not used with bridgeV2 since tx is already generated
-    const placeholderQuery = {
-      deadline: 0n,
-      minAmountOut: BigInt(minToAmount),
-      rawParams: '',
-      swapAdapter: '',
-      tokenOut: toToken.addresses[toChainId],
-    }
-
     return {
       inputAmountForQuote: debouncedFromValue,
       originTokenForQuote: fromToken,
@@ -180,8 +170,6 @@ export const fetchBridgeQuote = createAsyncThunk(
         toToken.decimals[toChainId]
       ),
       delta: toValueBigInt,
-      originQuery: placeholderQuery,
-      destQuery: placeholderQuery,
       estimatedTime,
       bridgeModuleName,
       gasDropAmount: BigInt(gasDropAmount),

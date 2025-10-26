@@ -180,11 +180,6 @@ const StateManagedSwap = () => {
               spender: quote.routerAddress,
             })
 
-      // Create placeholder query for backward compatibility
-      const placeholderQuery = {
-        minAmountOut: BigInt(quote.minToAmount),
-      }
-
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           setSwapQuote({
@@ -208,7 +203,6 @@ const StateManagedSwap = () => {
               swapToToken.decimals[swapChainId]
             ),
             delta: toValueBigInt,
-            quote: placeholderQuery,
             tx: quote.tx,
           })
         )

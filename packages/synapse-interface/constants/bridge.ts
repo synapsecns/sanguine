@@ -14,8 +14,6 @@ export const EMPTY_BRIDGE_QUOTE = {
   allowance: 0n,
   exchangeRate: 0n,
   delta: 0n,
-  originQuery: null,
-  destQuery: null,
   estimatedTime: null,
   bridgeModuleName: null,
   gasDropAmount: 0n,
