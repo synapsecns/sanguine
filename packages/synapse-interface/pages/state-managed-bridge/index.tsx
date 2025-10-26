@@ -175,6 +175,7 @@ const StateManagedBridge = () => {
             requestId: thisRequestId,
             currentTimestamp,
             address,
+            destinationAddress,
             pausedModulesList,
           })
         )

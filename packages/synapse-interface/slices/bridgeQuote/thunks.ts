@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { commify } from '@ethersproject/units'
-import { Address, zeroAddress } from 'viem'
+import { Address, isAddress, zeroAddress } from 'viem'
 
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
@@ -25,6 +25,7 @@ export const fetchBridgeQuote = createAsyncThunk(
       requestId,
       currentTimestamp,
       address,
+      destinationAddress,
       pausedModulesList,
     }: {
       synapseSDK: any
@@ -36,10 +37,16 @@ export const fetchBridgeQuote = createAsyncThunk(
       requestId: number
       currentTimestamp: number
       address: Address
+      destinationAddress?: Address
       pausedModulesList: BridgeModulePause[]
     },
     { rejectWithValue }
   ) => {
+    const toRecipient =
+      destinationAddress && isAddress(destinationAddress)
+        ? destinationAddress
+        : address
+
     const allQuotes = await synapseSDK.bridgeV2({
       fromChainId,
       toChainId,
@@ -50,6 +57,7 @@ export const fetchBridgeQuote = createAsyncThunk(
         fromToken?.decimals[fromChainId]
       ).toString(),
       fromSender: address,
+      toRecipient,
       slippagePercentage: 0.1,
     })
 
