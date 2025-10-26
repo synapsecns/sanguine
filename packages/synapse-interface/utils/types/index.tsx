@@ -125,6 +125,7 @@ export type SwapQuote = {
   exchangeRate: bigint
   delta: bigint
   quote: any
+  tx?: any
 }
 
 export type BridgeWatcherTx = {
