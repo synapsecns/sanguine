@@ -76,14 +76,6 @@ export const useBridgeValidations = () => {
     return stringifiedBridgeQuote === stringifiedBridgeState
   }, [stringifiedBridgeQuote, stringifiedBridgeState])
 
-  const isBridgeFeeGreaterThanInput = useMemo(() => {
-    return (
-      bridgeQuote.bridgeModuleName !== null &&
-      bridgeQuote.feeAmount === 0n &&
-      debouncedFromValueBigInt > 0n
-    )
-  }, [bridgeQuote.feeAmount, debouncedFromValueBigInt])
-
   const onSelectedChain: boolean = useMemo(() => {
     return chainId === fromChainId
   }, [fromChainId, chainId])
@@ -95,7 +87,6 @@ export const useBridgeValidations = () => {
     hasValidQuote,
     hasSufficientBalance,
     doesBridgeStateMatchQuote,
-    isBridgeFeeGreaterThanInput,
     onSelectedChain,
   }
 }

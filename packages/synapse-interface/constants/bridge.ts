@@ -13,7 +13,6 @@ export const EMPTY_BRIDGE_QUOTE = {
   routerAddress: '',
   allowance: 0n,
   exchangeRate: 0n,
-  feeAmount: 0n,
   delta: 0n,
   originQuery: null,
   destQuery: null,

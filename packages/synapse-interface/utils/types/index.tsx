@@ -79,7 +79,6 @@ export type BridgeQuote = {
   routerAddress: string
   allowance: bigint
   exchangeRate: bigint
-  feeAmount: bigint
   delta: bigint
   originQuery: QuoteQuery
   destQuery: QuoteQuery
@@ -90,6 +89,7 @@ export type BridgeQuote = {
   originChainId: number
   destChainId: number
   requestId: number
+  tx?: any
 }
 
 interface TokensByChain {
