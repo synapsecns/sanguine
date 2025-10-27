@@ -80,7 +80,6 @@ export const useGasEstimator = () => {
         const gasLimit = await queryEstimatedBridgeGasLimit(
           synapseSDK,
           address,
-          address,
           fromChainId,
           toChainId,
           fromToken,
@@ -145,7 +144,7 @@ const calculateMaxBridgeableGas = (
   return maxBridgeable > 0 ? maxBridgeable : 0
 }
 
-const getBridgeQuote = async (
+const getBridgePayload = async (
   synapseSDK: any,
   fromChainId: number,
   toChainId: number,
@@ -155,46 +154,20 @@ const getBridgeQuote = async (
   userAddress: string
 ) => {
   try {
-    return await synapseSDK.bridgeQuote(
+    const quotes = await synapseSDK.bridgeV2({
       fromChainId,
       toChainId,
-      fromToken.addresses[fromChainId],
-      toToken.addresses[toChainId],
-      stringToBigInt(amount, fromToken?.decimals[fromChainId]),
-      {
-        originUserAddress: userAddress,
-      }
-    )
-  } catch (error) {
-    console.error('getBridgeQuote: ', error)
-    return null
-  }
-}
-
-const getBridgePayload = async (
-  synapseSDK: any,
-  bridgeQuote: any | null,
-  address: string,
-  toAddress: string,
-  fromChainId: number,
-  toChainId: number,
-  fromToken: Token,
-  amount: string
-) => {
-  if (!bridgeQuote) return null
-
-  try {
-    const payload = await synapseSDK.bridge(
-      address,
-      bridgeQuote.routerAddress,
-      fromChainId,
-      toChainId,
-      fromToken?.addresses[fromChainId as keyof Token['addresses']],
-      stringToBigInt(amount, fromToken?.decimals[fromChainId]),
-      bridgeQuote.originQuery,
-      bridgeQuote.destQuery
-    )
-    return payload
+      fromToken: fromToken.addresses[fromChainId],
+      toToken: toToken.addresses[toChainId],
+      fromAmount: stringToBigInt(
+        amount,
+        fromToken?.decimals[fromChainId]
+      ).toString(),
+      fromSender: userAddress,
+      slippagePercentage: 0.1,
+    })
+    // Return the tx from the best quote
+    return quotes[0]?.tx || null
   } catch (error) {
     console.error('getBridgePayload: ', error)
     return null
@@ -227,32 +200,20 @@ const getBridgeGasLimitEstimate = async (
 const queryEstimatedBridgeGasLimit = async (
   synapseSDK: any,
   address: string,
-  toAddress: string,
   fromChainId: number,
   toChainId: number,
   fromToken: Token,
   toToken: Token,
   amount: string
 ) => {
-  const bridgeQuote = await getBridgeQuote(
+  const bridgePayload = await getBridgePayload(
     synapseSDK,
     fromChainId,
     toChainId,
     fromToken,
     toToken,
     amount,
-    address // userAddress
-  )
-
-  const bridgePayload = await getBridgePayload(
-    synapseSDK,
-    bridgeQuote,
-    address,
-    toAddress,
-    fromChainId,
-    toChainId,
-    fromToken,
-    amount
+    address
   )
 
   const gasLimit = await getBridgeGasLimitEstimate(
