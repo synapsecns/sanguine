@@ -35,6 +35,9 @@ jobs:
       # Foundry is required for formatting
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
+        # TODO: change to stable once the formatting diff is fixed
+        with:
+          version: v1.3.6
 
       - name: Run tests # Run tests of all packages
         run: npx lerna exec npm run ci:lint --parallel
