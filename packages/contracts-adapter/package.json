@@ -38,6 +38,7 @@
     "extract-dvns": "ts-node script/utils/extractDVNs.ts",
     "fetch-tokens": "ts-node script/utils/fetchBridgeTokens.ts",
     "fetch-block-times": "ts-node script/utils/fetchBlockTimes.ts",
-    "verify-tokens": "ts-node script/utils/verifyTokens.ts"
+    "verify-tokens": "ts-node script/utils/verifyTokens.ts",
+    "verify-sba": "ts-node script/utils/verifySBA.ts"
   }
 }
