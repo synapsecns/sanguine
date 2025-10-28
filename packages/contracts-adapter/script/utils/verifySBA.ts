@@ -91,6 +91,16 @@ const layerZeroEndpointAbi = [
     outputs: [{ name: 'sendLibrary', type: 'address' }],
   },
   {
+    name: 'isDefaultSendLibrary',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [
+      { name: '_sender', type: 'address' },
+      { name: '_dstEid', type: 'uint32' },
+    ],
+    outputs: [{ name: 'isDefault', type: 'bool' }],
+  },
+  {
     name: 'getReceiveLibrary',
     type: 'function',
     stateMutability: 'view',
@@ -636,10 +646,24 @@ async function verifyChain(
       allowFailure: true,
     })
 
+    // Check if send libraries are using default
+    const isDefaultSendLibraryCalls = libEids.map((remoteEid) => ({
+      address: chainInfo.endpointV2,
+      abi: layerZeroEndpointAbi,
+      functionName: 'isDefaultSendLibrary' as const,
+      args: [deployment.address, remoteEid] as const,
+    }))
+
+    const isDefaultSendLibraryResults = await client.multicall({
+      contracts: isDefaultSendLibraryCalls,
+      allowFailure: true,
+    })
+
     let sendLibSuccessCount = 0
     sendLibraryResults.forEach((sendLib, i) => {
       const remoteChain = libChains[i]
       if (sendLib.status === 'success' && sendLib.result) {
+        let hasError = false
         if (
           sendLib.result.toLowerCase() !== chainInfo.sendUln302.toLowerCase()
         ) {
@@ -647,9 +671,27 @@ async function verifyChain(
             chain,
             category: 'library',
             severity: 'error',
-            message: `Send library for ${remoteChain} incorrect: expected ${chainInfo.sendUln302}, got ${sendLib}`,
+            message: `Send library for ${remoteChain} incorrect: expected ${chainInfo.sendUln302}, got ${sendLib.result}`,
           })
-        } else {
+          hasError = true
+        }
+
+        // Check if using default send library
+        const isDefaultResult = isDefaultSendLibraryResults[i]
+        if (
+          isDefaultResult.status === 'success' &&
+          isDefaultResult.result === true
+        ) {
+          result.issues.push({
+            chain,
+            category: 'library',
+            severity: 'error',
+            message: `Send library for ${remoteChain} is using default library, should be custom`,
+          })
+          hasError = true
+        }
+
+        if (!hasError) {
           sendLibSuccessCount++
         }
       }
