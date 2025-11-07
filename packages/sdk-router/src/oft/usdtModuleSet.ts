@@ -24,15 +24,16 @@ import { ChainProvider } from '../router'
 import { applySlippage, encodeZapData, USER_SIMULATED_ADDRESS } from '../swap'
 import { isSameAddress, logExecutionTime, logger } from '../utils'
 
-// TODO: on-chain calls to get amount of block confirmations
+// Note: these constants are used as fallbacks if the LZ API fails to return the median time
 const MEDIAN_TIME_USDT = 60
 const MEDIAN_TIME_MAP: Record<number, number> = {
   [SupportedChainId.ARBITRUM]: 60,
   [SupportedChainId.BERACHAIN]: 2.5 * 60,
   [SupportedChainId.ETH]: 3.5 * 60,
-  // This is not a joke, currently taking a full day to be processed
-  [SupportedChainId.HYPEREVM]: 24 * 60 * 60,
+  // This is not a joke, currently taking half a day to be processed
+  [SupportedChainId.HYPEREVM]: 12 * 60 * 60,
   [SupportedChainId.OPTIMISM]: 16 * 60,
+  [SupportedChainId.POLYGON]: 1.5 * 60,
   [SupportedChainId.UNICHAIN]: 8 * 60,
 }
 

@@ -119,7 +119,7 @@ export const SwapTransactionButton = ({
     !isApproved &&
     !isLoading &&
     fromValueBigInt > 0 &&
-    swapQuote?.quote
+    swapQuote?.tx
   ) {
     buttonProperties = {
       onClick: approveTxn,

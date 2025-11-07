@@ -108,6 +108,7 @@ export const USDT0_ADDRESS_MAP: AddressMap = {
   [SupportedChainId.ETH]: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
   [SupportedChainId.HYPEREVM]: '0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb',
   [SupportedChainId.OPTIMISM]: '0x01bFF41798a0BcF287b996046Ca68b395DbC1071',
+  [SupportedChainId.POLYGON]: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
   [SupportedChainId.UNICHAIN]: '0x9151434b16b9763660705744891fA906F660EcC5',
 }
 
@@ -121,6 +122,7 @@ export const USDT_OFT_ADDRESS_MAP: AddressMap = {
   [SupportedChainId.ETH]: '0x6C96dE32CEa08842dcc4058c14d3aaAD7Fa41dee',
   [SupportedChainId.HYPEREVM]: '0x904861a24F30EC96ea7CFC3bE9EA4B476d237e98',
   [SupportedChainId.OPTIMISM]: '0xF03b4d9AC1D5d1E7c4cEf54C2A313b9fe051A0aD',
+  [SupportedChainId.POLYGON]: '0x6BA10300f0DC58B7a1e4c0e41f5daBb7D7829e13',
   [SupportedChainId.UNICHAIN]: '0xc07bE8994D035631c36fb4a89C918CeFB2f03EC3',
 }
 
@@ -130,6 +132,7 @@ export const LZ_EID_MAP: Record<number, number> = {
   [SupportedChainId.ETH]: 30101,
   [SupportedChainId.HYPEREVM]: 30367,
   [SupportedChainId.OPTIMISM]: 30111,
+  [SupportedChainId.POLYGON]: 30109,
   [SupportedChainId.UNICHAIN]: 30320,
 }
 
