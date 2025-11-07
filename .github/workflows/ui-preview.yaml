@@ -60,6 +60,7 @@ jobs:
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
         with:
+          nvmrc_path: ${{ matrix.package == 'docs' && 'docs/bridge/.nvmrc' || '.nvmrc' }}
           cache: 'npm'
           install_dependencies: 'false'
           cache-path: ''

@@ -46,6 +46,14 @@ export const bridgeController = async (req, res) => {
         : {}
     )
 
+    // Check if no bridge quotes were found
+    if (!resp || resp.length === 0) {
+      logger.info(`No bridge routes found`, {
+        query: req.query,
+      })
+      return res.status(404).json({ error: 'No bridge routes found' })
+    }
+
     const payload = await Promise.all(
       resp.map(async (quote) => {
         const originQueryTokenOutInfo = tokenAddressToToken(

@@ -11,7 +11,6 @@ export const EMPTY_SWAP_QUOTE: SwapQuote = {
   allowance: 0n,
   exchangeRate: 0n,
   delta: 0n,
-  quote: null,
 }
 
 export const EMPTY_SWAP_QUOTE_ZERO: SwapQuote = {
@@ -21,7 +20,6 @@ export const EMPTY_SWAP_QUOTE_ZERO: SwapQuote = {
   allowance: 0n,
   exchangeRate: 0n,
   delta: 0n,
-  quote: null,
 }
 
 export const DEFAULT_FROM_TOKEN_SYMBOL = 'USDC'

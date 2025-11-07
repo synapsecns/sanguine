@@ -71,7 +71,6 @@ export const BridgeTransactionButton = ({
     hasValidQuote,
     hasSufficientBalance,
     doesBridgeStateMatchQuote,
-    isBridgeFeeGreaterThanInput,
     onSelectedChain,
   } = useBridgeValidations()
 
@@ -140,11 +139,6 @@ export const BridgeTransactionButton = ({
     buttonProperties = {
       label: t('Connect Wallet to Bridge'),
       onClick: openConnectModal,
-    }
-  } else if (!isLoading && isBridgeFeeGreaterThanInput && hasValidInput) {
-    buttonProperties = {
-      label: t('Amount must be greater than fee'),
-      onClick: null,
     }
   } else if (!hasHyperliquidMinDeposit) {
     buttonProperties = {

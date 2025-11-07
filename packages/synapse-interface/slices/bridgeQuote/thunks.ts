@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { commify } from '@ethersproject/units'
-import { Address, zeroAddress } from 'viem'
+import { Address, isAddress, zeroAddress } from 'viem'
 
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
@@ -25,6 +25,7 @@ export const fetchBridgeQuote = createAsyncThunk(
       requestId,
       currentTimestamp,
       address,
+      destinationAddress,
       pausedModulesList,
     }: {
       synapseSDK: any
@@ -36,20 +37,29 @@ export const fetchBridgeQuote = createAsyncThunk(
       requestId: number
       currentTimestamp: number
       address: Address
+      destinationAddress?: Address
       pausedModulesList: BridgeModulePause[]
     },
     { rejectWithValue }
   ) => {
-    const allQuotes = await synapseSDK.allBridgeQuotes(
+    const toRecipient =
+      destinationAddress && isAddress(destinationAddress)
+        ? destinationAddress
+        : address
+
+    const allQuotes = await synapseSDK.bridgeV2({
       fromChainId,
       toChainId,
-      fromToken.addresses[fromChainId],
-      toToken.addresses[toChainId],
-      stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]),
-      {
-        originUserAddress: address,
-      }
-    )
+      fromToken: fromToken.addresses[fromChainId],
+      toToken: toToken.addresses[toChainId],
+      fromAmount: stringToBigInt(
+        debouncedFromValue,
+        fromToken?.decimals[fromChainId]
+      ).toString(),
+      fromSender: address,
+      toRecipient,
+      slippagePercentage: 0.1,
+    })
 
     const pausedBridgeModules = new Set(
       pausedModulesList
@@ -59,7 +69,7 @@ export const fetchBridgeQuote = createAsyncThunk(
         .flatMap(getBridgeModuleNames)
     )
     const activeQuotes = allQuotes.filter(
-      (quote) => !pausedBridgeModules.has(quote.bridgeModuleName)
+      (quote) => !quote.moduleNames.some((m) => pausedBridgeModules.has(m))
     )
 
     if (activeQuotes.length === 0) {
@@ -67,19 +77,19 @@ export const fetchBridgeQuote = createAsyncThunk(
       return rejectWithValue(msg)
     }
 
-    const rfqQuote = activeQuotes.find(
-      (q) => q.bridgeModuleName === 'SynapseRFQ'
+    const rfqQuote = activeQuotes.find((q) =>
+      q.moduleNames.includes('SynapseRFQ')
     )
 
     const nonRfqQuote = activeQuotes.find(
-      (quote) => quote.bridgeModuleName !== 'SynapseRFQ'
+      (quote) => !quote.moduleNames.includes('SynapseRFQ')
     )
 
     let quote
 
     if (rfqQuote && nonRfqQuote) {
-      const rfqMaxAmountOut = BigInt(rfqQuote.maxAmountOut.toString())
-      const nonRfqMaxAmountOut = BigInt(nonRfqQuote.maxAmountOut.toString())
+      const rfqMaxAmountOut = BigInt(rfqQuote.expectedToAmount)
+      const nonRfqMaxAmountOut = BigInt(nonRfqQuote.expectedToAmount)
 
       const allowedPercentileDifference = 30n
       const maxDifference =
@@ -90,16 +100,18 @@ export const fetchBridgeQuote = createAsyncThunk(
       } else {
         quote = nonRfqQuote
 
+        const nonRfqBridgeModule =
+          nonRfqQuote.moduleNames[nonRfqQuote.moduleNames.length - 1]
         segmentAnalyticsEvent(`[Bridge] use non-RFQ quote over RFQ`, {
-          bridgeModuleName: nonRfqQuote.bridgeModuleName,
+          bridgeModuleName: nonRfqBridgeModule,
           originChainId: fromChainId,
           originToken: fromToken.symbol,
           originTokenAddress: fromToken.addresses[fromChainId],
           destinationChainId: toChainId,
           destinationToken: toToken.symbol,
           destinationTokenAddress: toToken.addresses[toChainId],
-          rfqQuoteAmountOut: rfqQuote.maxAmountOut.toString(),
-          nonRfqMaxAmountOut: nonRfqQuote.maxAmountOut.toString(),
+          rfqQuoteAmountOut: rfqQuote.expectedToAmount,
+          nonRfqMaxAmountOut: nonRfqQuote.expectedToAmount,
         })
       }
     } else {
@@ -108,44 +120,24 @@ export const fetchBridgeQuote = createAsyncThunk(
 
     const {
       id,
-      feeAmount,
       routerAddress,
-      maxAmountOut,
-      originQuery,
-      destQuery,
+      expectedToAmount,
+      minToAmount,
       estimatedTime,
-      bridgeModuleName,
+      moduleNames,
       gasDropAmount,
-      originChainId,
-      destChainId,
+      fromChainId: originChainId,
+      toChainId: destChainId,
+      tx,
     } = quote
 
-    if (
-      !(
-        originQuery &&
-        maxAmountOut &&
-        destQuery &&
-        feeAmount &&
-        toChainId !== HYPERLIQUID.id
-      )
-    ) {
+    if (!(expectedToAmount && minToAmount && toChainId !== HYPERLIQUID.id)) {
       const msg = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken?.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
       return rejectWithValue(msg)
     }
 
-    const toValueBigInt = BigInt(maxAmountOut.toString()) ?? 0n
-
-    // Bridge Lifecycle: originToken -> bridgeToken -> destToken
-    // debouncedFromValue is in originToken decimals
-    // originQuery.minAmountOut and feeAmount is in bridgeToken decimals
-    // Adjust feeAmount to be in originToken decimals
-    const adjustedFeeAmount =
-      (BigInt(feeAmount) *
-        stringToBigInt(
-          `${debouncedFromValue}`,
-          fromToken?.decimals[fromChainId]
-        )) /
-      BigInt(originQuery.minAmountOut)
+    const toValueBigInt = BigInt(expectedToAmount) ?? 0n
+    const bridgeModuleName = moduleNames[moduleNames.length - 1]
 
     const isUnsupported = AcceptedChainId[fromChainId] ? false : true
 
@@ -161,11 +153,6 @@ export const fetchBridgeQuote = createAsyncThunk(
             spender: routerAddress,
           })
 
-    const {
-      originQuery: originQueryWithSlippage,
-      destQuery: destQueryWithSlippage,
-    } = synapseSDK.applyBridgeSlippage(bridgeModuleName, originQuery, destQuery)
-
     return {
       inputAmountForQuote: debouncedFromValue,
       originTokenForQuote: fromToken,
@@ -177,24 +164,21 @@ export const fetchBridgeQuote = createAsyncThunk(
       routerAddress,
       allowance,
       exchangeRate: calculateExchangeRate(
-        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]) -
-          BigInt(adjustedFeeAmount),
+        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]),
         fromToken?.decimals[fromChainId],
         toValueBigInt,
         toToken.decimals[toChainId]
       ),
-      feeAmount,
-      delta: BigInt(maxAmountOut.toString()),
-      originQuery: originQueryWithSlippage,
-      destQuery: destQueryWithSlippage,
+      delta: toValueBigInt,
       estimatedTime,
       bridgeModuleName,
-      gasDropAmount: BigInt(gasDropAmount.toString()),
+      gasDropAmount: BigInt(gasDropAmount),
       timestamp: currentTimestamp,
       originChainId,
       destChainId,
       requestId,
       id,
+      tx,
     }
   }
 )

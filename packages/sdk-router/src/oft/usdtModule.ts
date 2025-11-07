@@ -30,6 +30,7 @@ const LZ_API_TIMEOUT = 5000
 const LZ_COMPLETED_STATUSES = ['CONFIRMING', 'DELIVERED']
 
 const AVG_DST_BLOCK_TARGET = 3
+const MEDIAN_TIME_GRANULARITY = 30
 
 interface LZResponse {
   data?: {
@@ -136,9 +137,13 @@ export class UsdtModule implements SynapseModule {
     if (!confirmations) {
       return undefined
     }
-    return (
+    const expectedTime =
       confirmations * MEDIAN_TIME_BLOCK[this.chainId] +
       AVG_DST_BLOCK_TARGET * MEDIAN_TIME_BLOCK[toChainId]
+    // Round up to be a multiple of MEDIAN_TIME_GRANULARITY
+    return (
+      Math.ceil(expectedTime / MEDIAN_TIME_GRANULARITY) *
+      MEDIAN_TIME_GRANULARITY
     )
   }
 

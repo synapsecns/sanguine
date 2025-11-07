@@ -45,6 +45,14 @@ export const intentController = async (req, res) => {
       allowMultipleTxs,
     })
 
+    // Check if no intent quotes were found
+    if (!intentQuotes || intentQuotes.length === 0) {
+      logger.info(`No intent quotes found`, {
+        query: req.query,
+      })
+      return res.status(404).json({ error: 'No intent quotes found' })
+    }
+
     // Include callData only if both fromSender and toRecipient are provided.
     const payload = intentQuotes.map((quote) => ({
       ...quote,
