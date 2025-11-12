@@ -1,11 +1,10 @@
-import { useMemo } from 'react'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useAccount } from 'wagmi'
 import { useTranslations } from 'next-intl'
 
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { formatBigIntToPercentString } from '@/utils/bigint/format'
+import { useUsdSlippage } from '@hooks/useUsdSlippage'
+import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { getValidAddress, isValidAddress } from '@/utils/isValidAddress'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { CHAINS_BY_ID } from '@constants/chains'
@@ -61,22 +60,58 @@ const DestinationAddress = () => {
 }
 
 const Slippage = () => {
-  const { debouncedFromValue } = useBridgeState()
+  const { debouncedFromValue, fromChainId, toChainId } = useBridgeState()
   const t = useTranslations('Bridge')
-  // TODO: handle slippage between different types of assets
   const {
-    bridgeQuote: { exchangeRate, originTokenForQuote, destTokenForQuote },
+    bridgeQuote: {
+      inputAmountForQuote,
+      outputAmount,
+      originTokenForQuote,
+      destTokenForQuote,
+    },
   } = useBridgeQuoteState()
-  const areSameAssets =
-    originTokenForQuote?.swapableType === destTokenForQuote?.swapableType
 
-  const { formattedPercentSlippage, safeFromAmount, underFee, textColor } =
-    useExchangeRateInfo(debouncedFromValue, exchangeRate)
+  // Parse input amount - convert decimal string to bigint
+  const inputAmount =
+    inputAmountForQuote &&
+    inputAmountForQuote !== '0' &&
+    originTokenForQuote &&
+    fromChainId
+      ? stringToBigInt(
+          inputAmountForQuote,
+          typeof originTokenForQuote.decimals === 'number'
+            ? originTokenForQuote.decimals
+            : originTokenForQuote.decimals[fromChainId]
+        )
+      : null
+
+  // Calculate USD-based slippage
+  const { slippage, isLoading, error, textColor } = useUsdSlippage({
+    originToken: originTokenForQuote,
+    destToken: destTokenForQuote,
+    originChainId: fromChainId,
+    destChainId: toChainId,
+    inputAmount,
+    outputAmount,
+  })
+
+  // Show content
+  const shouldShow =
+    debouncedFromValue !== '0' && inputAmount && inputAmount > 0n
+
   return (
     <div className="flex justify-between">
       <span className="text-zinc-500 dark:text-zinc-400">{t('Slippage')}</span>
-      {safeFromAmount !== '0' && !underFee && areSameAssets ? (
-        <span className={textColor}>{formattedPercentSlippage}</span>
+      {shouldShow ? (
+        <>
+          {isLoading && <span className="text-zinc-400">Calculating...</span>}
+          {!isLoading && error && (
+            <span className="text-zinc-400">{error}</span>
+          )}
+          {!isLoading && !error && slippage !== null && (
+            <span className={textColor}>{slippage.toFixed(2)}%</span>
+          )}
+        </>
       ) : (
         <span className="">−</span>
       )}
@@ -171,38 +206,6 @@ const GasDropLabel = () => {
       </span>
     </>
   )
-}
-
-const useExchangeRateInfo = (value, exchangeRate) => {
-  const safeExchangeRate = typeof exchangeRate === 'bigint' ? exchangeRate : 0n
-  const safeFromAmount = value ?? '0'
-
-  const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 4)
-  const numExchangeRate = Number(formattedExchangeRate)
-  const slippage = safeExchangeRate - 1000000000000000000n
-  const formattedPercentSlippage = formatBigIntToPercentString(slippage, 18)
-  const underFee = safeExchangeRate === 0n && safeFromAmount !== '0'
-
-  const textColor: string = useMemo(() => {
-    if (numExchangeRate >= 1) {
-      return 'text-green-500'
-    } else if (numExchangeRate > 0.975) {
-      return 'text-amber-500'
-    } else {
-      return 'text-red-500'
-    }
-  }, [numExchangeRate])
-
-  return {
-    formattedExchangeRate,
-    formattedPercentSlippage,
-    numExchangeRate,
-    safeExchangeRate,
-    safeFromAmount,
-    slippage,
-    underFee,
-    textColor,
-  }
 }
 
 const getAirdropInDollars = (

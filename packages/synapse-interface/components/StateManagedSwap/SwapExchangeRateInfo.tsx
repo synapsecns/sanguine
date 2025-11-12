@@ -4,39 +4,37 @@ import { useTranslations } from 'next-intl'
 
 import { CHAINS_BY_ID } from '@constants/chains'
 import { Token } from '@/utils/types'
-import {
-  formatBigIntToPercentString,
-  formatBigIntToString,
-} from '@/utils/bigint/format'
+import { useUsdSlippage } from '@hooks/useUsdSlippage'
+import { formatBigIntToString } from '@/utils/bigint/format'
 
 const SwapExchangeRateInfo = ({
   fromAmount,
+  fromToken,
   toToken,
   exchangeRate,
   toChainId,
+  outputAmount,
 }: {
   fromAmount: bigint
+  fromToken: Token
   toToken: Token
   exchangeRate: bigint
   toChainId: number
+  outputAmount: bigint
 }) => {
-  const safeExchangeRate = useMemo(() => exchangeRate ?? 0n, [exchangeRate]) // todo clean
-  const safeFromAmount = useMemo(() => fromAmount ?? 0n, [fromAmount]) // todo clean
+  const safeExchangeRate = useMemo(() => exchangeRate ?? 0n, [exchangeRate])
+  const safeFromAmount = useMemo(() => fromAmount ?? 0n, [fromAmount])
   const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 5)
-  const numExchangeRate = Number(formattedExchangeRate)
-  const slippage = safeExchangeRate - 1000000000000000000n
-  const formattedPercentSlippage = formatBigIntToPercentString(slippage, 18)
-  const underFee = safeExchangeRate === 0n && safeFromAmount != 0n
 
-  const textColor: string = useMemo(() => {
-    if (numExchangeRate >= 1) {
-      return 'text-green-500'
-    } else if (numExchangeRate > 0.975) {
-      return 'text-amber-500'
-    } else {
-      return 'text-red-500'
-    }
-  }, [numExchangeRate])
+  // Calculate USD-based slippage
+  const { slippage, isLoading, error, textColor } = useUsdSlippage({
+    originToken: fromToken,
+    destToken: toToken,
+    originChainId: toChainId, // Swap happens on same chain
+    destChainId: toChainId,
+    inputAmount: safeFromAmount > 0n ? safeFromAmount : null,
+    outputAmount: outputAmount > 0n ? outputAmount : null,
+  })
 
   const expectedToChain = useMemo(() => {
     return toChainId && <ChainInfoLabel chainId={toChainId} />
@@ -53,9 +51,10 @@ const SwapExchangeRateInfo = ({
         />
         <Slippage
           safeFromAmount={safeFromAmount}
-          underFee={underFee}
+          slippage={slippage}
+          isLoading={isLoading}
+          error={error}
           textColor={textColor}
-          formattedPercentSlippage={formattedPercentSlippage}
         />
       </div>
     </div>
@@ -91,16 +90,29 @@ const ExpectedPrice = ({
 
 const Slippage = ({
   safeFromAmount,
-  underFee,
+  slippage,
+  isLoading,
+  error,
   textColor,
-  formattedPercentSlippage,
 }) => {
   const t = useTranslations('Swap')
+
+  const shouldShow = safeFromAmount > 0n
+
   return (
     <div className="flex justify-between">
       <p className="text-[#88818C] ">{t('Slippage')}</p>
-      {safeFromAmount != 0n && !underFee ? (
-        <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
+      {shouldShow ? (
+        <>
+          {isLoading && <span className="text-[#88818C]">Calculating...</span>}
+          {!isLoading && error && <span className="text-[#88818C]">{error}</span>}
+          {!isLoading && !error && slippage !== null && (
+            <span className={textColor}>{slippage.toFixed(2)}%</span>
+          )}
+          {!isLoading && !error && slippage === null && (
+            <span className="text-[#88818C]">—</span>
+          )}
+        </>
       ) : (
         <span className="text-[#88818C]">—</span>
       )}
