@@ -11,6 +11,7 @@ import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { getSignificantDecimals } from '@/utils/getSignificantDecimals'
+import { formatUsdDifference } from '@/utils/calculateUsdValue'
 
 export const BridgeExchangeRateInfo = () => {
   /* TODO:
@@ -86,7 +87,7 @@ const Slippage = () => {
       : null
 
   // Calculate USD-based slippage
-  const { slippage, isLoading, error, textColor } = useUsdSlippage({
+  const { slippage, usdDifference, isLoading, error, textColor } = useUsdSlippage({
     originToken: originTokenForQuote,
     destToken: destTokenForQuote,
     originChainId: fromChainId,
@@ -109,7 +110,10 @@ const Slippage = () => {
             <span className="text-zinc-400">{error}</span>
           )}
           {!isLoading && !error && slippage !== null && (
-            <span className={textColor}>{slippage.toFixed(2)}%</span>
+            <span className={textColor}>
+              {slippage >= 0 ? '+' : ''}
+              {slippage.toFixed(2)}%{formatUsdDifference(usdDifference)}
+            </span>
           )}
         </>
       ) : (

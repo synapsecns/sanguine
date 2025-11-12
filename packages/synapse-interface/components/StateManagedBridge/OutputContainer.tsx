@@ -17,17 +17,23 @@ import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { useTranslations } from 'next-intl'
 import { ARBITRUM, HYPERLIQUID } from '@/constants/chains/master'
+import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
+import { calculateUsdValue } from '@utils/calculateUsdValue'
+import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import { getParsedBalance } from '@/utils/getParsedBalance'
+import { formatAmount } from '@/utils/formatAmount'
 
 interface OutputContainerProps {
   isQuoteStale: boolean
 }
 
 export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
-  const { address } = useAccount()
+  const { address, isConnected } = useAccount()
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
   const { showDestinationAddress } = useBridgeDisplayState()
   const { hasValidInput, hasValidQuote } = useBridgeValidations()
-  const { debouncedFromValue, fromChainId, toChainId } = useBridgeState()
+  const { debouncedFromValue, fromChainId, toChainId, toToken } =
+    useBridgeState()
 
   const showValue = useMemo(() => {
     if (!hasValidInput) {
@@ -41,6 +47,28 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
 
   const inputClassName = isQuoteStale ? 'opacity-50' : undefined
 
+  // Fetch token price and calculate USD value
+  const toTokenPrice = useDefiLlamaPrice(toToken, toChainId)
+  const outputValue =
+    fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
+      ? debouncedFromValue
+      : showValue
+  const usdValue = calculateUsdValue(outputValue, toTokenPrice)
+
+  // Get destination token balance
+  const balances = usePortfolioBalances()
+  const toTokenAddress = toToken?.addresses[toChainId]
+  const toChainBalances = balances[toChainId]
+  const toTokenBalance = toChainBalances?.find(
+    (t) => t.tokenAddress === toTokenAddress
+  )?.balance
+  const toTokenDecimals =
+    typeof toToken?.decimals === 'number'
+      ? toToken.decimals
+      : toToken?.decimals?.[toChainId]
+  const parsedBalance = getParsedBalance(toTokenBalance, toTokenDecimals)
+  const formattedBalance = formatAmount(parsedBalance)
+
   return (
     <BridgeSectionContainer>
       <div className="flex items-center justify-between">
@@ -52,16 +80,28 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
 
       <BridgeAmountContainer>
         <ToTokenSelector />
-        <AmountInput
-          disabled={true}
-          showValue={
-            fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
-              ? debouncedFromValue
-              : showValue
-          }
-          isLoading={isLoading}
-          className={inputClassName}
-        />
+        <div className="flex flex-col w-full gap-1">
+          <AmountInput
+            disabled={true}
+            showValue={
+              fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
+                ? debouncedFromValue
+                : showValue
+            }
+            isLoading={isLoading}
+            className={inputClassName}
+          />
+          <div className="flex justify-between items-center">
+            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+              {usdValue}
+            </div>
+            {isConnected && (
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                Balance: {formattedBalance ?? '0.0'}
+              </div>
+            )}
+          </div>
+        </div>
       </BridgeAmountContainer>
     </BridgeSectionContainer>
   )

@@ -2,6 +2,7 @@ import { debounce, isNull } from 'lodash'
 import toast from 'react-hot-toast'
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useAccount } from 'wagmi'
+
 import { useAppDispatch } from '@/store/hooks'
 import { updateDebouncedFromValue } from '@/slices/bridge/reducer'
 import { AmountInput } from '@/components/ui/AmountInput'
@@ -15,15 +16,16 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
 import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { AvailableBalance } from './AvailableBalance'
-import { useGasEstimator } from '../../utils/hooks/useGasEstimator'
+import { useGasEstimator } from '@/utils/hooks/useGasEstimator'
 import { getParsedBalance } from '@/utils/getParsedBalance'
-import { MaxButton } from './MaxButton'
-import { formatAmount } from '../../utils/formatAmount'
+import { formatAmount } from '@/utils/formatAmount'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { FromChainSelector } from '@/components/StateManagedBridge/FromChainSelector'
 import { FromTokenSelector } from '@/components/StateManagedBridge/FromTokenSelector'
 import { useBridgeSelections } from './hooks/useBridgeSelections'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
+import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
+import { calculateUsdValue } from '@utils/calculateUsdValue'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -55,6 +57,10 @@ export const InputContainer: React.FC<InputContainerProps> = ({
     hasValidGasEstimateInputs,
     estimateBridgeableBalanceCallback,
   } = useGasEstimator()
+
+  // Fetch token price and calculate USD value
+  const fromTokenPrice = useDefiLlamaPrice(fromToken, fromChainId)
+  const usdValue = calculateUsdValue(localInputValue, fromTokenPrice)
 
   const isInputMax =
     maxBridgeableGas?.toString() === debouncedFromValue ||
@@ -149,7 +155,7 @@ export const InputContainer: React.FC<InputContainerProps> = ({
       </div>
       <BridgeAmountContainer>
         <FromTokenSelector />
-        <div className="flex flex-wrap w-full">
+        <div className="flex flex-col w-full gap-1">
           <AmountInput
             setIsTyping={setIsTyping}
             inputRef={inputRef}
@@ -157,24 +163,28 @@ export const InputContainer: React.FC<InputContainerProps> = ({
             handleFromValueChange={handleFromValueChange}
             disabled={isWalletPending}
           />
-          <AvailableBalance
-            balance={formattedBalance}
-            maxBridgeableBalance={maxBridgeableGas}
-            gasCost={parsedGasCost}
-            isGasToken={isGasToken}
-            isGasEstimateLoading={isLoading}
-            isDisabled={!isConnected || !hasValidFromSelections}
-          />
-          <MaxButton
-            onClick={onMaxBalance}
-            isHidden={
-              !isConnected ||
-              !hasValidSelections ||
-              isLoading ||
-              isInputMax ||
-              isWalletPending
-            }
-          />
+          <div className="flex justify-between items-center">
+            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+              {usdValue}
+            </div>
+            <AvailableBalance
+              balance={formattedBalance}
+              maxBridgeableBalance={maxBridgeableGas}
+              gasCost={parsedGasCost}
+              isGasToken={isGasToken}
+              isGasEstimateLoading={isLoading}
+              isDisabled={!isConnected || !hasValidFromSelections}
+              onClick={
+                !isConnected ||
+                !hasValidSelections ||
+                isLoading ||
+                isInputMax ||
+                isWalletPending
+                  ? undefined
+                  : onMaxBalance
+              }
+            />
+          </div>
         </div>
       </BridgeAmountContainer>
     </BridgeSectionContainer>

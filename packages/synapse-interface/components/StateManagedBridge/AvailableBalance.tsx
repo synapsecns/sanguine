@@ -10,6 +10,7 @@ export const AvailableBalance = ({
   isGasToken,
   isGasEstimateLoading,
   isDisabled,
+  onClick,
 }: {
   balance?: string
   maxBridgeableBalance?: number
@@ -17,11 +18,14 @@ export const AvailableBalance = ({
   isGasToken: boolean
   isGasEstimateLoading: boolean
   isDisabled: boolean
+  onClick?: () => void
 }) => {
   const labelClassNames = {
     space: 'block',
     text: 'text-xxs md:text-xs',
-    cursor: 'cursor-default',
+    cursor: onClick ? 'cursor-pointer' : 'cursor-default',
+    hover: onClick ? 'hover:opacity-70' : '',
+    animation: onClick ? 'transition-all duration-150' : '',
   }
 
   const t = useTranslations('Bridge')
@@ -38,11 +42,17 @@ export const AvailableBalance = ({
     )
   } else {
     return (
-      <label className={joinClassNames(labelClassNames)} htmlFor="inputRow">
+      <label
+        className={joinClassNames(labelClassNames)}
+        htmlFor="inputRow"
+        onClick={onClick}
+      >
         <span className="text-zinc-500 dark:text-zinc-400">
-          {t('Available')}:{' '}
+          {t('Balance')}:{' '}
         </span>
-        {formatAmount(maxBridgeableBalance?.toString()) ?? balance ?? '0.0'}
+        <span className={onClick ? 'text-fuchsia-400' : ''}>
+          {formatAmount(maxBridgeableBalance?.toString()) ?? balance ?? '0.0'}
+        </span>
       </label>
     )
   }
