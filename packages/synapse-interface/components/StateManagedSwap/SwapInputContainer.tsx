@@ -28,11 +28,12 @@ import { useSwapChainListArray } from '@/components/StateManagedSwap//hooks/useS
 import { useSwapFromTokenListArray } from '@/components/StateManagedSwap/hooks/useSwapFromTokenListOverlay'
 import { AmountInput } from '@/components/ui/AmountInput'
 import { joinClassNames } from '@/utils/joinClassNames'
-import { MaxButton } from '../StateManagedBridge/MaxButton'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { formatAmount } from '@/utils/formatAmount'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { useWalletState } from '@/slices/wallet/hooks'
+import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
+import { calculateUsdValue } from '@utils/calculateUsdValue'
 
 interface InputContainerProps {
   setIsTyping: React.Dispatch<React.SetStateAction<boolean>>
@@ -73,6 +74,10 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
   const isInputMax = parsedBalance === swapFromValue
 
   const t = useTranslations('Swap')
+
+  // Fetch token price and calculate USD value
+  const swapFromTokenPrice = useDefiLlamaPrice(swapFromToken, swapChainId)
+  const usdValue = calculateUsdValue(showValue, swapFromTokenPrice)
 
   useEffect(() => {
     if (
@@ -155,7 +160,7 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
       </div>
       <BridgeAmountContainer>
         <SwapFromTokenSelector />
-        <div className="flex flex-col">
+        <div className="flex flex-col w-full gap-1">
           <AmountInput
             setIsTyping={setIsTyping}
             inputRef={inputRef}
@@ -163,22 +168,31 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
             handleFromValueChange={handleFromValueChange}
             disabled={isWalletPending}
           />
-          <div className="flex">
+          <div className="flex justify-between items-center">
+            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+              {usdValue}
+            </div>
             {hasMounted && isConnected && (
               <label
                 htmlFor="inputRow"
-                className={joinClassNames(labelClassNames)}
+                className={joinClassNames({
+                  ...labelClassNames,
+                  cursor: 'cursor-pointer',
+                  hover: 'hover:opacity-70',
+                  animation: 'transition-all duration-150',
+                })}
+                onClick={!balance || isInputMax ? undefined : onMaxBalance}
               >
                 <span className="text-zinc-500 dark:text-zinc-400">
-                  {t('available')}:{' '}
+                  Balance:{' '}
                 </span>
-                {formattedBalance ?? '0.0'}
+                <span
+                  className={!balance || isInputMax ? '' : 'text-fuchsia-400'}
+                >
+                  {formattedBalance ?? '0.0'}
+                </span>
               </label>
             )}
-            <MaxButton
-              onClick={onMaxBalance}
-              isHidden={!isConnected || !balance || isInputMax}
-            />
           </div>
         </div>
       </BridgeAmountContainer>
