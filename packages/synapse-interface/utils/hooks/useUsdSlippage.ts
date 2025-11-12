@@ -52,60 +52,56 @@ export const useUsdSlippage = ({
     inputAmount > 0n &&
     outputAmount > 0n
 
+  // Check if prices are still loading (undefined = SWR fetching)
+  const arePricesLoading = originPrice === undefined || destPrice === undefined
+
+  // Check if prices are unavailable (null = not found in DefiLlama)
+  const arePricesUnavailable = originPrice === null || destPrice === null
+
   // Calculate slippage (no useMemo needed - calculation is lightweight)
   let slippage: number | null = null
   let usdDifference: number | null = null
 
-  if (hasAllParams) {
-    // Still loading (undefined means SWR is fetching)
-    if (originPrice !== undefined && destPrice !== undefined) {
-      // Price not available (null means not found in DefiLlama)
-      if (originPrice !== null && destPrice !== null) {
-        try {
-          // Get decimals for both tokens
-          const originDecimals =
-            typeof originToken.decimals === 'number'
-              ? originToken.decimals
-              : originToken.decimals[originChainId] ?? 18
+  if (hasAllParams && !arePricesLoading && !arePricesUnavailable) {
+    try {
+      // Get decimals for both tokens
+      const originDecimals =
+        typeof originToken.decimals === 'number'
+          ? originToken.decimals
+          : originToken.decimals[originChainId] ?? 18
 
-          const destDecimals =
-            typeof destToken.decimals === 'number'
-              ? destToken.decimals
-              : destToken.decimals[destChainId] ?? 18
+      const destDecimals =
+        typeof destToken.decimals === 'number'
+          ? destToken.decimals
+          : destToken.decimals[destChainId] ?? 18
 
-          // Convert amounts to decimal numbers
-          const inputAmountDecimal = parseFloat(
-            formatBigIntToString(inputAmount, originDecimals, originDecimals)
-          )
-          const outputAmountDecimal = parseFloat(
-            formatBigIntToString(outputAmount, destDecimals, destDecimals)
-          )
+      // Convert amounts to decimal numbers
+      const inputAmountDecimal = parseFloat(
+        formatBigIntToString(inputAmount, originDecimals, originDecimals)
+      )
+      const outputAmountDecimal = parseFloat(
+        formatBigIntToString(outputAmount, destDecimals, destDecimals)
+      )
 
-          // Calculate USD values
-          const valueIn = inputAmountDecimal * originPrice
-          const valueOut = outputAmountDecimal * destPrice
+      // Calculate USD values
+      const valueIn = inputAmountDecimal * originPrice!
+      const valueOut = outputAmountDecimal * destPrice!
 
-          // Calculate USD difference and slippage
-          usdDifference = valueOut - valueIn
-          slippage = (usdDifference / valueIn) * 100
-        } catch (err) {
-          console.error('Error calculating USD slippage:', err)
-          slippage = null
-        }
-      }
+      // Calculate USD difference and slippage
+      usdDifference = valueOut - valueIn
+      slippage = (usdDifference / valueIn) * 100
+    } catch (err) {
+      console.error('Error calculating USD slippage:', err)
+      slippage = null
     }
   }
 
-  // Determine loading state (prices are undefined = SWR loading)
-  const isLoading =
-    hasAllParams && (originPrice === undefined || destPrice === undefined)
+  // Determine loading state
+  const isLoading = hasAllParams && arePricesLoading
 
-  // Determine error state (prices are null = not found)
+  // Determine error state (prices were fetched but not found)
   const error =
-    hasAllParams &&
-    originPrice !== undefined &&
-    destPrice !== undefined &&
-    (originPrice === null || destPrice === null)
+    hasAllParams && !arePricesLoading && arePricesUnavailable
       ? 'Price data unavailable'
       : null
 
