@@ -3,6 +3,7 @@ import { Token } from '@utils/types'
 import { formatBigIntToString } from '@utils/bigint/format'
 
 const SLIPPAGE_WARNING_THRESHOLD = -2.5
+const USD_SLIPPAGE_WARNING_THRESHOLD = -1
 
 interface UseUsdSlippageParams {
   originToken: Token | null
@@ -15,6 +16,7 @@ interface UseUsdSlippageParams {
 
 interface UseUsdSlippageResult {
   slippage: number | null
+  usdDifference: number | null
   isLoading: boolean
   error: string | null
   textColor: string
@@ -52,6 +54,7 @@ export const useUsdSlippage = ({
 
   // Calculate slippage (no useMemo needed - calculation is lightweight)
   let slippage: number | null = null
+  let usdDifference: number | null = null
 
   if (hasAllParams) {
     // Still loading (undefined means SWR is fetching)
@@ -82,8 +85,9 @@ export const useUsdSlippage = ({
           const valueIn = inputAmountDecimal * originPrice
           const valueOut = outputAmountDecimal * destPrice
 
-          // Calculate slippage: ((valueOut - valueIn) / valueIn) * 100
-          slippage = ((valueOut - valueIn) / valueIn) * 100
+          // Calculate USD difference and slippage
+          usdDifference = valueOut - valueIn
+          slippage = (usdDifference / valueIn) * 100
         } catch (err) {
           console.error('Error calculating USD slippage:', err)
           slippage = null
@@ -105,15 +109,17 @@ export const useUsdSlippage = ({
       ? 'Price data unavailable'
       : null
 
-  // Determine text color based on slippage value
+  // Determine text color based on slippage value and USD difference
+  // Amber if percentage loss <= 2.5% OR USD loss <= $1
   const textColor =
-    slippage === null
+    slippage === null || usdDifference === null
       ? ''
       : slippage >= 0
       ? 'text-green-500'
-      : slippage > SLIPPAGE_WARNING_THRESHOLD
+      : slippage > SLIPPAGE_WARNING_THRESHOLD ||
+        usdDifference > USD_SLIPPAGE_WARNING_THRESHOLD
       ? 'text-amber-500'
       : 'text-red-500'
 
-  return { slippage, isLoading, error, textColor }
+  return { slippage, usdDifference, isLoading, error, textColor }
 }
