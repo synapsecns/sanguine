@@ -141,17 +141,19 @@ const EstimatedTime = () => {
   const shouldShow =
     fromToken &&
     bridgeQuote &&
-    bridgeQuote.outputAmount !== EMPTY_BRIDGE_QUOTE.outputAmount
+    bridgeQuote.outputAmount !== EMPTY_BRIDGE_QUOTE.outputAmount &&
+    typeof bridgeQuote.estimatedTime === 'number' &&
+    Number.isFinite(bridgeQuote.estimatedTime)
 
   let timeValue: number
   let timeUnit: string
 
   if (shouldShow) {
-    if (bridgeQuote?.estimatedTime > 60) {
+    if (bridgeQuote.estimatedTime > 60) {
       timeValue = bridgeQuote.estimatedTime / 60
       timeUnit = t('Time.minutes')
     } else {
-      timeValue = bridgeQuote?.estimatedTime
+      timeValue = bridgeQuote.estimatedTime
       timeUnit = t('Time.seconds')
     }
   }
