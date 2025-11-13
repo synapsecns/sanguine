@@ -43,7 +43,7 @@
     "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "Transfert initié avec succès de {fromToken} sur {originChainName} vers {toToken} sur {destinationChainName}",
     "Slippage": "Glissement",
     "Router": "Routeur",
-    "estimatedTime": "Estimated time",
+    "estimatedTime": "Temps estimé",
     "Powered by Synapse": "Propulsé par Synapse",
     "Will also receive": "Recevra également",
     "From": "De",
