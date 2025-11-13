@@ -8,11 +8,11 @@ import { commify } from '@/utils/bigint/format'
  *
  * Formatting rules:
  * - >= $10,000: 0 decimals (e.g., "12,345")
- *   Rationale: Cents are insignificant at this scale, cleaner display
+ * Rationale: Cents are insignificant at this scale, cleaner display
  * - >= $1,000: 1 decimal (e.g., "5,678.9")
- *   Rationale: Balances precision with readability
+ * Rationale: Balances precision with readability
  * - < $1,000: 2 decimals (e.g., "123.45", "0.10")
- *   Rationale: Standard currency precision, important for smaller amounts
+ * Rationale: Standard currency precision, important for smaller amounts
  * - All values get thousand separators via commify()
  */
 export const formatUsdValue = (value: number): string => {

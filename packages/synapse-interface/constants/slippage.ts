@@ -9,6 +9,7 @@
 /**
  * Percentage-based slippage threshold
  * Triggers amber warning if slippage is worse than this percentage
+ *
  * @example -2.5 means losses greater than 2.5% trigger a warning
  */
 export const SLIPPAGE_WARNING_THRESHOLD = -2.5
@@ -16,6 +17,7 @@ export const SLIPPAGE_WARNING_THRESHOLD = -2.5
 /**
  * USD-based slippage threshold
  * Triggers amber warning if USD loss is greater than this amount
+ *
  * @example -1 means losses greater than $1 trigger a warning
  */
 export const USD_SLIPPAGE_WARNING_THRESHOLD = -1
