@@ -1,3 +1,33 @@
+import { commify } from '@/utils/bigint/format'
+
+/**
+ * Formats a USD value with thousand separators and dynamic decimal places
+ *
+ * @param value - The numeric USD value to format
+ * @returns Formatted USD string with proper separators and decimals
+ *
+ * Formatting rules:
+ * - >= $10,000: 0 decimals (e.g., "12,345")
+ * - >= $1,000: 1 decimal (e.g., "5,678.9")
+ * - < $1,000: 2 decimals (e.g., "123.45")
+ * - All values get thousand separators via commify()
+ */
+export const formatUsdValue = (value: number): string => {
+  const absValue = Math.abs(value)
+
+  let decimals: number
+  if (absValue >= 10000) {
+    decimals = 0
+  } else if (absValue >= 1000) {
+    decimals = 1
+  } else {
+    decimals = 2
+  }
+
+  const formatted = value.toFixed(decimals)
+  return commify(formatted)
+}
+
 /**
  * Calculates and formats USD value for a token amount
  *
@@ -35,8 +65,8 @@ export const calculateUsdValue = (
     return '<$0.01'
   }
 
-  // Format with 2 decimal places
-  return `$${usdValue.toFixed(2)}`
+  // Format with dynamic decimal places and thousand separators
+  return `$${formatUsdValue(usdValue)}`
 }
 
 /**
@@ -64,7 +94,7 @@ export const formatInlineUsdDifference = (diff: number | null): string => {
     return ''
   }
 
-  // Format with sign and 2 decimal places
+  // Format with sign, dynamic decimal places, and thousand separators
   const sign = diff >= 0 ? '+' : '-'
-  return ` (${sign}$${absValue.toFixed(2)})`
+  return ` (${sign}$${formatUsdValue(absValue)})`
 }
