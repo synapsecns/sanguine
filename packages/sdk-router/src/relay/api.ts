@@ -26,6 +26,7 @@ export interface QuoteRequest {
   useReceiver: boolean
   explicitDeposit: boolean
   usePermit: boolean
+  slippageTolerance?: string
 }
 
 enum StepId {
