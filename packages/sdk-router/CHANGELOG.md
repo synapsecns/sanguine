@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.20.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.3...@synapsecns/sdk-router@0.20.4) (2025-11-13)
+
+
+### Bug Fixes
+
+* **sdk-router:** apply Relay slippage ([#3831](https://github.com/synapsecns/sanguine/issues/3831)) ([9ead809](https://github.com/synapsecns/sanguine/commit/9ead80922fc210b98619942c620e0bdb6208ab14))
+
+
+
+
+
 ## [0.20.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.2...@synapsecns/sdk-router@0.20.3) (2025-11-07)
 
 **Note:** Version bump only for package @synapsecns/sdk-router

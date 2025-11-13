@@ -28,7 +28,7 @@ import {
   StepData,
   TradeType,
 } from './api'
-import { encodeZapData, USER_SIMULATED_ADDRESS } from '../swap'
+import { encodeZapData, toBasisPoints, USER_SIMULATED_ADDRESS } from '../swap'
 
 export class RelayModuleSet extends SynapseModuleSet {
   public readonly moduleName = 'Relay'
@@ -94,7 +94,6 @@ export class RelayModuleSet extends SynapseModuleSet {
     if (!this.validateBridgeRouteV2Params(params) || !tokenZap) {
       return undefined
     }
-    // TODO: slippage
     const quoteRequest: QuoteRequest = {
       user: tokenZap,
       originChainId: params.bridgeToken.originChainId,
@@ -109,6 +108,9 @@ export class RelayModuleSet extends SynapseModuleSet {
       useReceiver: true,
       explicitDeposit: true,
       usePermit: false,
+      slippageTolerance: params.slippage
+        ? toBasisPoints(params.slippage).toString()
+        : undefined,
     }
     const quote = await getQuote(quoteRequest)
     if (!quote) {
