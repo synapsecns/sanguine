@@ -18,10 +18,15 @@ import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { useTranslations } from 'next-intl'
 import { ARBITRUM, HYPERLIQUID } from '@/constants/chains/master'
 import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
-import { calculateUsdValue } from '@utils/calculateUsdValue'
+import {
+  calculateUsdValue,
+  formatInlineUsdDifference,
+} from '@utils/calculateUsdValue'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { formatAmount } from '@/utils/formatAmount'
+import { useUsdSlippage } from '@hooks/useUsdSlippage'
+import { stringToBigInt } from '@/utils/bigint/format'
 
 interface OutputContainerProps {
   isQuoteStale: boolean
@@ -54,6 +59,30 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
       ? debouncedFromValue
       : showValue
   const usdValue = calculateUsdValue(outputValue, toTokenPrice)
+
+  // Convert input amount to bigint for slippage calculation
+  const inputAmount =
+    bridgeQuote.inputAmountForQuote &&
+    bridgeQuote.inputAmountForQuote !== '0' &&
+    bridgeQuote.originTokenForQuote &&
+    fromChainId
+      ? stringToBigInt(
+          bridgeQuote.inputAmountForQuote,
+          typeof bridgeQuote.originTokenForQuote.decimals === 'number'
+            ? bridgeQuote.originTokenForQuote.decimals
+            : bridgeQuote.originTokenForQuote.decimals[fromChainId]
+        )
+      : null
+
+  // Calculate USD-based slippage to get USD difference
+  const { usdDifference } = useUsdSlippage({
+    originToken: bridgeQuote.originTokenForQuote,
+    destToken: bridgeQuote.destTokenForQuote,
+    originChainId: fromChainId,
+    destChainId: toChainId,
+    inputAmount,
+    outputAmount: bridgeQuote.outputAmount,
+  })
 
   // Get destination token balance
   const balances = usePortfolioBalances()
@@ -97,6 +126,7 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
           <div className="flex justify-between items-center">
             <div className="text-xs text-zinc-500 dark:text-zinc-400">
               {usdValue}
+              {formatInlineUsdDifference(usdDifference)}
             </div>
             {isConnected && (
               <div className="text-xs text-zinc-500 dark:text-zinc-400">

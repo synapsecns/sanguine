@@ -9,14 +9,26 @@ import { useSwapToTokenListArray } from './hooks/useSwapToTokenListArray'
 import { AmountInput } from '@/components/ui/AmountInput'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
-import { calculateUsdValue } from '@utils/calculateUsdValue'
+import {
+  calculateUsdValue,
+  formatInlineUsdDifference,
+} from '@utils/calculateUsdValue'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { formatAmount } from '@/utils/formatAmount'
+import { useUsdSlippage } from '@hooks/useUsdSlippage'
+import { stringToBigInt } from '@/utils/bigint/format'
 
 export const SwapOutputContainer = () => {
   const { isConnected } = useAccount()
-  const { swapQuote, isLoading, swapChainId, swapToToken } = useSwapState()
+  const {
+    swapQuote,
+    isLoading,
+    swapChainId,
+    swapToToken,
+    swapFromToken,
+    swapFromValue,
+  } = useSwapState()
 
   const showValue =
     swapQuote.outputAmountString === '0' ? '' : swapQuote.outputAmountString
@@ -24,6 +36,25 @@ export const SwapOutputContainer = () => {
   // Fetch token price and calculate USD value
   const swapToTokenPrice = useDefiLlamaPrice(swapToToken, swapChainId)
   const usdValue = calculateUsdValue(showValue, swapToTokenPrice)
+
+  // Convert input amount to bigint for slippage calculation
+  const inputAmount =
+    swapFromToken && swapFromValue && swapFromValue !== '0'
+      ? stringToBigInt(swapFromValue, swapFromToken.decimals[swapChainId])
+      : null
+
+  // Calculate USD-based slippage to get USD difference
+  const { usdDifference } = useUsdSlippage({
+    originToken: swapFromToken,
+    destToken: swapToToken,
+    originChainId: swapChainId,
+    destChainId: swapChainId,
+    inputAmount: inputAmount && inputAmount > 0n ? inputAmount : null,
+    outputAmount:
+      swapQuote.outputAmount && swapQuote.outputAmount > 0n
+        ? swapQuote.outputAmount
+        : null,
+  })
 
   // Get output token balance
   const { balances } = usePortfolioState()
@@ -51,6 +82,7 @@ export const SwapOutputContainer = () => {
           <div className="flex justify-between items-center">
             <div className="text-xs text-zinc-500 dark:text-zinc-400">
               {usdValue}
+              {formatInlineUsdDifference(usdDifference)}
             </div>
             {isConnected && (
               <div className="text-xs text-zinc-500 dark:text-zinc-400">

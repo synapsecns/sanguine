@@ -40,29 +40,31 @@ export const calculateUsdValue = (
 }
 
 /**
- * Formats USD difference for display in slippage information
+ * Formats USD difference for inline display next to USD values
  *
  * @param diff - USD difference between output and input values (null = unavailable)
- * @returns Formatted string: " ($5.00)", " (<$0.01)", or "" if null
+ * @returns Formatted string: " (+$5.00)", " (-$5.00)", or "" if null/under 1 cent
  * @example
- * formatUsdDifference(5.25)   // " ($5.25)"
- * formatUsdDifference(0.005)  // " (<$0.01)"
- * formatUsdDifference(null)   // ""
+ * formatInlineUsdDifference(5.25)   // " (+$5.25)"
+ * formatInlineUsdDifference(-3.50)  // " (-$3.50)"
+ * formatInlineUsdDifference(0.005)  // "" (don't show if under 1 cent)
+ * formatInlineUsdDifference(null)   // ""
  */
-export const formatUsdDifference = (diff: number | null): string => {
+export const formatInlineUsdDifference = (diff: number | null): string => {
   // Return empty string if difference is unavailable
   if (diff === null) {
     return ''
   }
 
-  // Get absolute value for display
+  // Get absolute value
   const absValue = Math.abs(diff)
 
-  // Handle very small amounts (less than 1 cent)
+  // Don't show if under 1 cent
   if (absValue < 0.01) {
-    return ' (<$0.01)'
+    return ''
   }
 
-  // Format with 2 decimal places, always show absolute value
-  return ` ($${absValue.toFixed(2)})`
+  // Format with sign and 2 decimal places
+  const sign = diff >= 0 ? '+' : '-'
+  return ` (${sign}$${absValue.toFixed(2)})`
 }

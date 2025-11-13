@@ -6,7 +6,6 @@ import { CHAINS_BY_ID } from '@constants/chains'
 import { Token } from '@/utils/types'
 import { useUsdSlippage } from '@hooks/useUsdSlippage'
 import { formatBigIntToString } from '@/utils/bigint/format'
-import { formatUsdDifference } from '@/utils/calculateUsdValue'
 
 const SwapExchangeRateInfo = ({
   fromAmount,
@@ -28,7 +27,7 @@ const SwapExchangeRateInfo = ({
   const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 5)
 
   // Calculate USD-based slippage
-  const { slippage, usdDifference, isLoading, error, textColor } = useUsdSlippage({
+  const { slippage, isLoading, error, textColor } = useUsdSlippage({
     originToken: fromToken,
     destToken: toToken,
     originChainId: toChainId, // Swap happens on same chain
@@ -53,7 +52,6 @@ const SwapExchangeRateInfo = ({
         <Slippage
           safeFromAmount={safeFromAmount}
           slippage={slippage}
-          usdDifference={usdDifference}
           isLoading={isLoading}
           error={error}
           textColor={textColor}
@@ -93,7 +91,6 @@ const ExpectedPrice = ({
 interface SlippageProps {
   safeFromAmount: bigint
   slippage: number | null
-  usdDifference: number | null
   isLoading: boolean
   error: string | null
   textColor: string
@@ -102,7 +99,6 @@ interface SlippageProps {
 const Slippage = ({
   safeFromAmount,
   slippage,
-  usdDifference,
   isLoading,
   error,
   textColor,
@@ -121,7 +117,7 @@ const Slippage = ({
           {!isLoading && !error && slippage !== null && (
             <span className={textColor}>
               {slippage >= 0 ? '+' : ''}
-              {slippage.toFixed(2)}%{formatUsdDifference(usdDifference)}
+              {slippage.toFixed(2)}%
             </span>
           )}
           {!isLoading && !error && slippage === null && (
