@@ -1,9 +1,10 @@
 import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
 import { Token } from '@utils/types'
 import { formatBigIntToString } from '@utils/bigint/format'
-
-const SLIPPAGE_WARNING_THRESHOLD = -2.5
-const USD_SLIPPAGE_WARNING_THRESHOLD = -1
+import {
+  SLIPPAGE_WARNING_THRESHOLD,
+  USD_SLIPPAGE_WARNING_THRESHOLD,
+} from '@constants/slippage'
 
 interface UseUsdSlippageParams {
   originToken: Token | null
