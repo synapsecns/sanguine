@@ -17,11 +17,8 @@ import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { useTranslations } from 'next-intl'
 import { ARBITRUM, HYPERLIQUID } from '@/constants/chains/master'
-import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
-import {
-  calculateUsdValue,
-  formatInlineUsdDifference,
-} from '@utils/calculateUsdValue'
+import { useUsdDisplay } from '@hooks/useUsdDisplay'
+import { formatInlineUsdDifference } from '@utils/calculateUsdValue'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { formatAmount } from '@/utils/formatAmount'
@@ -53,12 +50,11 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
   const inputClassName = isQuoteStale ? 'opacity-50' : undefined
 
   // Fetch token price and calculate USD value
-  const toTokenPrice = useDefiLlamaPrice(toToken, toChainId)
   const outputValue =
     fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
       ? debouncedFromValue
       : showValue
-  const usdValue = calculateUsdValue(outputValue, toTokenPrice)
+  const usdValue = useUsdDisplay(toToken, outputValue, toChainId)
 
   // Convert input amount to bigint for slippage calculation
   const inputAmount =

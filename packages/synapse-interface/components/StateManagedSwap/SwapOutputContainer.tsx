@@ -8,11 +8,8 @@ import { setSwapToToken } from '@/slices/swap/reducer'
 import { useSwapToTokenListArray } from './hooks/useSwapToTokenListArray'
 import { AmountInput } from '@/components/ui/AmountInput'
 import { useWalletState } from '@/slices/wallet/hooks'
-import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
-import {
-  calculateUsdValue,
-  formatInlineUsdDifference,
-} from '@utils/calculateUsdValue'
+import { useUsdDisplay } from '@hooks/useUsdDisplay'
+import { formatInlineUsdDifference } from '@utils/calculateUsdValue'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { formatAmount } from '@/utils/formatAmount'
@@ -34,8 +31,7 @@ export const SwapOutputContainer = () => {
     swapQuote.outputAmountString === '0' ? '' : swapQuote.outputAmountString
 
   // Fetch token price and calculate USD value
-  const swapToTokenPrice = useDefiLlamaPrice(swapToToken, swapChainId)
-  const usdValue = calculateUsdValue(showValue, swapToTokenPrice)
+  const usdValue = useUsdDisplay(swapToToken, showValue, swapChainId)
 
   // Convert input amount to bigint for slippage calculation
   const inputAmount =
