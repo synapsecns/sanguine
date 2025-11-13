@@ -34,11 +34,17 @@ export const useDefiLlamaPrice = (
       ? `https://coins.llama.fi/prices/current/${coinKey}`
       : null
 
-  const { data } = useSwr(apiUrl)
+  const { data, error } = useSwr(apiUrl)
 
   // Return override price if defined (checked after hook call)
   if (token?.priceOverride !== undefined) {
     return token.priceOverride
+  }
+
+  // Log error for debugging but don't throw (graceful degradation)
+  if (error) {
+    console.warn('DefiLlama price fetch failed:', error)
+    return null
   }
 
   if (data && coinKey) {

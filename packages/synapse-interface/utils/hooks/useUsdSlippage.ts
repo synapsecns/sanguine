@@ -89,9 +89,15 @@ export const useUsdSlippage = ({
       const valueIn = inputAmountDecimal * originPrice!
       const valueOut = outputAmountDecimal * destPrice!
 
-      // Calculate USD difference and slippage
-      usdDifference = valueOut - valueIn
-      slippage = (usdDifference / valueIn) * 100
+      // Guard against division by zero
+      if (valueIn === 0 || valueOut === 0) {
+        slippage = null
+        usdDifference = null
+      } else {
+        // Calculate USD difference and slippage
+        usdDifference = valueOut - valueIn
+        slippage = (usdDifference / valueIn) * 100
+      }
     } catch (err) {
       console.error('Error calculating USD slippage:', err)
       slippage = null
