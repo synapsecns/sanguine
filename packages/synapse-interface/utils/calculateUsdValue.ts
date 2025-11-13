@@ -9,7 +9,7 @@ import { commify } from '@/utils/bigint/format'
  * Formatting rules:
  * - >= $10,000: 0 decimals (e.g., "12,345")
  * - >= $1,000: 1 decimal (e.g., "5,678.9")
- * - < $1,000: 2 decimals (e.g., "123.45")
+ * - < $1,000: 2 decimals (e.g., "123.45", "0.10")
  * - All values get thousand separators via commify()
  */
 export const formatUsdValue = (value: number): string => {
@@ -25,6 +25,13 @@ export const formatUsdValue = (value: number): string => {
   }
 
   const formatted = value.toFixed(decimals)
+
+  // For values with 2 decimals, preserve trailing zeros by formatting parts separately
+  if (decimals === 2) {
+    const [integerPart, decimalPart] = formatted.split('.')
+    return `${commify(integerPart)}.${decimalPart}`
+  }
+
   return commify(formatted)
 }
 
