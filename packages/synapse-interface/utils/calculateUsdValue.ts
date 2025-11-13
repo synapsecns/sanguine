@@ -8,8 +8,11 @@ import { commify } from '@/utils/bigint/format'
  *
  * Formatting rules:
  * - >= $10,000: 0 decimals (e.g., "12,345")
+ *   Rationale: Cents are insignificant at this scale, cleaner display
  * - >= $1,000: 1 decimal (e.g., "5,678.9")
+ *   Rationale: Balances precision with readability
  * - < $1,000: 2 decimals (e.g., "123.45", "0.10")
+ *   Rationale: Standard currency precision, important for smaller amounts
  * - All values get thousand separators via commify()
  */
 export const formatUsdValue = (value: number): string => {
@@ -26,7 +29,9 @@ export const formatUsdValue = (value: number): string => {
 
   const formatted = value.toFixed(decimals)
 
-  // For values with 2 decimals, preserve trailing zeros by formatting parts separately
+  // Special handling for 2-decimal values to preserve trailing zeros
+  // toFixed() returns "0.10" but commify() would strip to "0.1"
+  // We split and rejoin to maintain precision (e.g., "$0.10" not "$0.1")
   if (decimals === 2) {
     const [integerPart, decimalPart] = formatted.split('.')
     return `${commify(integerPart)}.${decimalPart}`
