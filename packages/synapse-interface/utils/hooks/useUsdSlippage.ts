@@ -77,10 +77,10 @@ export const useUsdSlippage = ({
 
       // Convert amounts to decimal numbers
       const inputAmountDecimal = parseFloat(
-        formatBigIntToString(inputAmount, originDecimals, originDecimals)
+        formatBigIntToString(inputAmount, originDecimals)
       )
       const outputAmountDecimal = parseFloat(
-        formatBigIntToString(outputAmount, destDecimals, destDecimals)
+        formatBigIntToString(outputAmount, destDecimals)
       )
 
       // Calculate USD values

@@ -19,8 +19,8 @@ export const calculateUsdValue = (
     return '—'
   }
 
-  // Parse amount to number
-  const numericAmount = parseFloat(amount)
+  // Parse amount to number (remove commas first)
+  const numericAmount = parseFloat(amount.replace(/,/g, ''))
 
   // Return placeholder if amount is invalid or zero
   if (isNaN(numericAmount) || numericAmount === 0) {
