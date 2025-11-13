@@ -42,15 +42,16 @@ export const useUsdSlippage = ({
   const destPrice = useDefiLlamaPrice(destToken, destChainId)
 
   // Check if we have all required parameters
-  const hasAllParams =
+  const hasAllParams = Boolean(
     originToken &&
-    destToken &&
-    originChainId !== null &&
-    destChainId !== null &&
-    inputAmount &&
-    outputAmount &&
-    inputAmount > 0n &&
-    outputAmount > 0n
+      destToken &&
+      originChainId !== null &&
+      destChainId !== null &&
+      inputAmount &&
+      outputAmount &&
+      inputAmount > 0n &&
+      outputAmount > 0n
+  )
 
   // Check if prices are still loading (undefined = SWR fetching)
   const arePricesLoading = originPrice === undefined || destPrice === undefined
