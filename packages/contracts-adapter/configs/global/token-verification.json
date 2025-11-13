@@ -1,0 +1,172 @@
+{
+  "timestamp": "2025-10-17T18:56:05.195Z",
+  "totalTokens": 41,
+  "totalDeployments": 173,
+  "successfulVerifications": 173,
+  "failedVerifications": 0,
+  "mismatches": {
+    "symbolMismatches": [
+      {
+        "tokenSymbol": "AVAX",
+        "symbols": {
+          "WAVAX": [
+            "avalanche"
+          ],
+          "AVAX": [
+            "dfk",
+            "harmony",
+            "kaia",
+            "moonbeam"
+          ]
+        }
+      },
+      {
+        "tokenSymbol": "FTM",
+        "symbols": {
+          "FTM": [
+            "dfk"
+          ],
+          "WFTM": [
+            "fantom"
+          ]
+        }
+      },
+      {
+        "tokenSymbol": "JEWEL",
+        "symbols": {
+          "JEWEL": [
+            "avalanche",
+            "ethereum",
+            "kaia",
+            "metis"
+          ],
+          "WJEWEL": [
+            "dfk"
+          ],
+          "synJEWEL": [
+            "harmony"
+          ]
+        }
+      },
+      {
+        "tokenSymbol": "KLAY",
+        "symbols": {
+          "KLAY": [
+            "dfk"
+          ],
+          "WKLAY": [
+            "kaia"
+          ]
+        }
+      },
+      {
+        "tokenSymbol": "MATIC",
+        "symbols": {
+          "MATIC": [
+            "dfk"
+          ],
+          "WPOL": [
+            "polygon"
+          ]
+        }
+      },
+      {
+        "tokenSymbol": "MOVR",
+        "symbols": {
+          "MOVR": [
+            "moonbeam"
+          ],
+          "WMOVR": [
+            "moonriver"
+          ]
+        }
+      },
+      {
+        "tokenSymbol": "Metis",
+        "symbols": {
+          "Metis": [
+            "dfk",
+            "kaia"
+          ],
+          "WMETIS": [
+            "metis"
+          ]
+        }
+      },
+      {
+        "tokenSymbol": "agEUR",
+        "symbols": {
+          "agEUR": [
+            "arbitrum",
+            "optimism"
+          ],
+          "EURA": [
+            "ethereum"
+          ]
+        }
+      },
+      {
+        "tokenSymbol": "nETH",
+        "symbols": {
+          "nETH": [
+            "arbitrum",
+            "avalanche",
+            "base",
+            "blast",
+            "canto",
+            "fantom",
+            "harmony",
+            "metis",
+            "optimism"
+          ],
+          "ETH": [
+            "dfk"
+          ],
+          "WETH": [
+            "ethereum",
+            "kaia",
+            "moonbeam"
+          ]
+        }
+      },
+      {
+        "tokenSymbol": "nUSD",
+        "symbols": {
+          "nUSD": [
+            "arbitrum",
+            "aurora",
+            "avalanche",
+            "blast",
+            "bnb",
+            "canto",
+            "cronos",
+            "ethereum",
+            "fantom",
+            "harmony",
+            "metis",
+            "optimism",
+            "polygon"
+          ],
+          "USDC": [
+            "dfk"
+          ]
+        }
+      },
+      {
+        "tokenSymbol": "synFRAX",
+        "symbols": {
+          "FRAX": [
+            "ethereum"
+          ],
+          "synFRAX": [
+            "fantom",
+            "harmony",
+            "moonbeam",
+            "moonriver"
+          ]
+        }
+      }
+    ],
+    "decimalMismatches": []
+  }
+}
