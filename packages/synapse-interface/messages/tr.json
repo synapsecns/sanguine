@@ -43,6 +43,7 @@
     "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "{originChainName}'deki {fromToken}'dan {destinationChainName}'deki {toToken}'a köprü başarıyla başlatıldı",
     "Slippage": "Kayma",
     "Router": "Yönlendirici",
+    "estimatedTime": "Estimated time",
     "Powered by Synapse": "Synapse tarafından desteklenmektedir",
     "Will also receive": "Ayrıca alacak",
     "From": "Nereden",

@@ -43,6 +43,7 @@
     "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "تم بدء الجسر بنجاح من {fromToken} على {originChainName} إلى {toToken} على {destinationChainName}",
     "Slippage": "الانزلاق",
     "Router": "الموجه",
+    "estimatedTime": "Estimated time",
     "Powered by Synapse": "مدعوم من سينابس",
     "Will also receive": "سيتم أيضًا استلام",
     "From": "من",

@@ -43,6 +43,7 @@
     "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "{originChainName}の{fromToken}から{destinationChainName}の{toToken}へのブリッジを正常に開始しました",
     "Slippage": "スリッページ",
     "Router": "ルーター",
+    "estimatedTime": "Estimated time",
     "Powered by Synapse": "Synapseによって提供",
     "Will also receive": "また受け取ります",
     "From": "送信元",

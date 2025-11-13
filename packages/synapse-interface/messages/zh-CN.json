@@ -43,6 +43,7 @@
     "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "成功发起从 {originChainName} 的 {fromToken} 到 {destinationChainName} 的 {toToken} 的桥接",
     "Slippage": "滑点",
     "Router": "路由器",
+    "estimatedTime": "Estimated time",
     "Powered by Synapse": "由Synapse提供支持",
     "Will also receive": "将额外收到",
     "From": "从",

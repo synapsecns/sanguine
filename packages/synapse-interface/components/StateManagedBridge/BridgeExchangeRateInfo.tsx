@@ -21,13 +21,11 @@ export const BridgeExchangeRateInfo = () => {
 
   return (
     <div className="mt-1 mb-2 text-sm">
-      <div className="block px-1 mb-2 text-right cursor-default pointer-events-none">
-        <TimeEstimate />
-      </div>
       <div className="block p-2 leading-relaxed border rounded border-zinc-300 dark:border-separator">
         {' '}
         <GasDropLabel />
         <Router />
+        <EstimatedTime />
         <Slippage />
         <DestinationAddress />
       </div>
@@ -135,44 +133,45 @@ const Router = () => {
   )
 }
 
-const TimeEstimate = () => {
+const EstimatedTime = () => {
   const { fromToken } = useBridgeState()
   const { bridgeQuote } = useBridgeQuoteState()
   const t = useTranslations()
 
-  let showText
-  let showTime
-  let timeUnit
+  const shouldShow =
+    fromToken &&
+    bridgeQuote &&
+    bridgeQuote.outputAmount !== EMPTY_BRIDGE_QUOTE.outputAmount
 
-  if (fromToken && bridgeQuote?.estimatedTime > 60) {
-    showTime = bridgeQuote?.estimatedTime / 60
-    timeUnit = t('Time.minutes')
-    showText = `${showTime} ${timeUnit} via ${bridgeQuote.bridgeModuleName}`
+  let timeValue: number
+  let timeUnit: string
+
+  if (shouldShow) {
+    if (bridgeQuote?.estimatedTime > 60) {
+      timeValue = bridgeQuote.estimatedTime / 60
+      timeUnit = t('Time.minutes')
+    } else {
+      timeValue = bridgeQuote?.estimatedTime
+      timeUnit = t('Time.seconds')
+    }
   }
 
-  if (fromToken && bridgeQuote.estimatedTime <= 60) {
-    showTime = bridgeQuote?.estimatedTime
-    timeUnit = t('Time.seconds')
-    showText = `${showTime} ${timeUnit} via ${bridgeQuote.bridgeModuleName}`
-  }
-
-  if (
-    !bridgeQuote ||
-    bridgeQuote.outputAmount === EMPTY_BRIDGE_QUOTE.outputAmount
-  ) {
-    showText = (
+  return (
+    <div className="flex justify-between">
       <span className="text-zinc-500 dark:text-zinc-400">
-        {t('Bridge.Powered by Synapse')}
+        {t('Bridge.estimatedTime')}
       </span>
-    )
-  }
-
-  if (!fromToken) {
-    showText = t('Bridge.Select origin token')
-  }
-
-  return showText
+      {shouldShow ? (
+        <span>
+          {timeValue} {timeUnit}
+        </span>
+      ) : (
+        <span className="">−</span>
+      )}
+    </div>
+  )
 }
+
 
 const GasDropLabel = () => {
   const { toChainId } = useBridgeState()
