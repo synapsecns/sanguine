@@ -68,10 +68,14 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
 
   const balance = tokenData?.balance
   const decimals = tokenData?.token?.decimals[swapChainId]
-  const parsedBalance = getParsedBalance(balance, decimals)
+  const parsedBalance =
+    balance !== undefined && decimals !== undefined
+      ? getParsedBalance(balance, decimals)
+      : '0.0'
   const formattedBalance = formatAmount(parsedBalance)
 
   const isInputMax = parsedBalance === swapFromValue
+  const isBalanceClickable = balance && !isInputMax
 
   const t = useTranslations('Swap')
 
@@ -177,18 +181,16 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
                 htmlFor="inputRow"
                 className={joinClassNames({
                   ...labelClassNames,
-                  cursor: 'cursor-pointer',
-                  hover: 'hover:opacity-70',
+                  cursor: isBalanceClickable ? 'cursor-pointer' : 'cursor-default',
+                  hover: isBalanceClickable ? 'hover:opacity-70' : '',
                   animation: 'transition-all duration-150',
                 })}
-                onClick={!balance || isInputMax ? undefined : onMaxBalance}
+                onClick={isBalanceClickable ? onMaxBalance : undefined}
               >
                 <span className="text-zinc-500 dark:text-zinc-400">
                   Balance:{' '}
                 </span>
-                <span
-                  className={!balance || isInputMax ? '' : 'text-fuchsia-400'}
-                >
+                <span className={isBalanceClickable ? 'text-fuchsia-400' : ''}>
                   {formattedBalance ?? '0.0'}
                 </span>
               </label>

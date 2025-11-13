@@ -66,7 +66,10 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
     typeof toToken?.decimals === 'number'
       ? toToken.decimals
       : toToken?.decimals?.[toChainId]
-  const parsedBalance = getParsedBalance(toTokenBalance, toTokenDecimals)
+  const parsedBalance =
+    toTokenBalance !== undefined && toTokenDecimals !== undefined
+      ? getParsedBalance(toTokenBalance, toTokenDecimals)
+      : '0.0'
   const formattedBalance = formatAmount(parsedBalance)
 
   return (

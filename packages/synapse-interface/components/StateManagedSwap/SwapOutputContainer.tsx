@@ -32,7 +32,10 @@ export const SwapOutputContainer = () => {
   )
   const balance = tokenData?.balance
   const decimals = tokenData?.token?.decimals[swapChainId]
-  const parsedBalance = getParsedBalance(balance, decimals)
+  const parsedBalance =
+    balance !== undefined && decimals !== undefined
+      ? getParsedBalance(balance, decimals)
+      : '0.0'
   const formattedBalance = formatAmount(parsedBalance)
 
   return (
