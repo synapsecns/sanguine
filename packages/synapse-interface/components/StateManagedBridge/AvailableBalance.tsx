@@ -51,7 +51,9 @@ export const AvailableBalance = ({
           {t('Balance')}:{' '}
         </span>
         <span className={onClick ? 'text-fuchsia-400' : ''}>
-          {formatAmount(maxBridgeableBalance?.toString()) ?? balance ?? '0.0'}
+          {maxBridgeableBalance != null
+            ? formatAmount(maxBridgeableBalance.toString())
+            : balance ?? '0.0'}
         </span>
       </label>
     )
