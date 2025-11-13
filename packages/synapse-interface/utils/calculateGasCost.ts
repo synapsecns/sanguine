@@ -12,8 +12,8 @@ export const calculateGasCost = (
   gasLimit: string,
   chainId: number | null
 ): {
-  rawGasCost: string
-  parsedGasCost: string
+  rawGasCost: string | null | undefined
+  parsedGasCost: string | null | undefined
 } => {
   if (!gasPrice || !gasLimit || !chainId) {
     return {
