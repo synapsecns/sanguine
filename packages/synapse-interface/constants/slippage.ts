@@ -2,8 +2,10 @@
  * Slippage warning thresholds for USD-based slippage calculations
  *
  * These thresholds determine when to show amber vs red warning colors to users.
- * A warning (amber) is shown if EITHER threshold is exceeded.
- * A critical warning (red) is shown if BOTH thresholds are exceeded.
+ * The color logic works as follows:
+ * - Green: Positive slippage (gain)
+ * - Amber: Loss <= 2.5% OR loss <= $1 (either threshold provides warning)
+ * - Red: Loss > 2.5% AND loss > $1 (both thresholds must be exceeded)
  */
 
 /**
