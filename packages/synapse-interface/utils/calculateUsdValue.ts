@@ -33,7 +33,7 @@ export const formatUsdValue = (value: number): string => {
   // toFixed() returns "0.10" but commify() would strip to "0.1"
   // We split and rejoin to maintain precision (e.g., "$0.10" not "$0.1")
   if (decimals === 2) {
-    const [integerPart, decimalPart] = formatted.split('.')
+    const [integerPart, decimalPart = '00'] = formatted.split('.')
     return `${commify(integerPart)}.${decimalPart}`
   }
 

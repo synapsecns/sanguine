@@ -95,7 +95,11 @@ const Slippage = () => {
 
   // Show content
   const shouldShow =
-    debouncedFromValue !== '0' && inputAmount && inputAmount > 0n
+    debouncedFromValue !== '0' &&
+    inputAmount &&
+    inputAmount > 0n &&
+    outputAmount &&
+    outputAmount > 0n
 
   return (
     <div className="flex justify-between">
@@ -111,6 +115,9 @@ const Slippage = () => {
               {slippage >= 0 ? '+' : ''}
               {slippage.toFixed(2)}%
             </span>
+          )}
+          {!isLoading && !error && slippage === null && (
+            <span className="">−</span>
           )}
         </>
       ) : (

@@ -70,12 +70,45 @@ export const useUsdSlippage = ({
       const originDecimals =
         typeof originToken.decimals === 'number'
           ? originToken.decimals
-          : originToken.decimals[originChainId] ?? 18
+          : originToken.decimals[originChainId]
 
       const destDecimals =
         typeof destToken.decimals === 'number'
           ? destToken.decimals
-          : destToken.decimals[destChainId] ?? 18
+          : destToken.decimals[destChainId]
+
+      // Validate decimals are available
+      if (originDecimals === undefined) {
+        console.error(
+          'Missing decimals for origin token',
+          originToken.symbol,
+          'on chain',
+          originChainId
+        )
+        return {
+          slippage: null,
+          usdDifference: null,
+          isLoading: false,
+          error: 'Missing token decimals',
+          textColor: '',
+        }
+      }
+
+      if (destDecimals === undefined) {
+        console.error(
+          'Missing decimals for destination token',
+          destToken.symbol,
+          'on chain',
+          destChainId
+        )
+        return {
+          slippage: null,
+          usdDifference: null,
+          isLoading: false,
+          error: 'Missing token decimals',
+          textColor: '',
+        }
+      }
 
       // Convert amounts to decimal numbers
       const inputAmountDecimal = parseFloat(

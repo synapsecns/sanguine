@@ -19,6 +19,13 @@ export const useDefiLlamaPrice = (
   // Get chain name from mapping
   const chainName = chainId ? CHAIN_ID_TO_DEFILLAMA_NAME[chainId] : null
 
+  // Warn if chain ID is not in mapping
+  if (chainId && !chainName) {
+    console.warn(
+      `DefiLlama chain mapping missing for chainId: ${chainId}. Add to CHAIN_ID_TO_DEFILLAMA_NAME in constants/defiLlama.ts`
+    )
+  }
+
   // Get token address
   const address =
     token && chainId ? token.addresses[chainId]?.toLowerCase() : null
