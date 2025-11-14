@@ -112,8 +112,8 @@ const Slippage = ({
       <p className="text-[#88818C] ">{t('Slippage')}</p>
       {shouldShow ? (
         <>
-          {isLoading && <span className="text-[#88818C]">Calculating...</span>}
-          {!isLoading && error && <span className="text-[#88818C]">{error}</span>}
+          {isLoading && <span className="text-[#88818C]">{t('Calculating')}</span>}
+          {!isLoading && error && <span className="text-[#88818C]">{t(error)}</span>}
           {!isLoading && !error && slippage !== null && (
             <span className={textColor}>
               {slippage >= 0 ? '+' : ''}

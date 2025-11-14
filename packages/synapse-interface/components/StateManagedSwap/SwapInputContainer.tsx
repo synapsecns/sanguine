@@ -186,7 +186,7 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
                 onClick={isBalanceClickable ? onMaxBalance : undefined}
               >
                 <span className="text-zinc-500 dark:text-zinc-400">
-                  Balance:{' '}
+                  {t('Balance')}:{' '}
                 </span>
                 <span className={isBalanceClickable ? 'text-fuchsia-400' : ''}>
                   {formattedBalance ?? '0.0'}

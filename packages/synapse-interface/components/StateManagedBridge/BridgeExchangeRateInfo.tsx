@@ -106,9 +106,9 @@ const Slippage = () => {
       <span className="text-zinc-500 dark:text-zinc-400">{t('Slippage')}</span>
       {shouldShow ? (
         <>
-          {isLoading && <span className="text-zinc-400">Calculating...</span>}
+          {isLoading && <span className="text-zinc-400">{t('Calculating')}</span>}
           {!isLoading && error && (
-            <span className="text-zinc-400">{error}</span>
+            <span className="text-zinc-400">{t(error)}</span>
           )}
           {!isLoading && !error && slippage !== null && (
             <span className={textColor}>

@@ -30,6 +30,7 @@ interface OutputContainerProps {
 }
 
 export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
+  const t = useTranslations('Bridge')
   const { address, isConnected } = useAccount()
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
   const { showDestinationAddress } = useBridgeDisplayState()
@@ -126,7 +127,7 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
             </div>
             {isConnected && (
               <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                Balance: {formattedBalance ?? '0.0'}
+                {t('Balance')}: {formattedBalance ?? '0.0'}
               </div>
             )}
           </div>

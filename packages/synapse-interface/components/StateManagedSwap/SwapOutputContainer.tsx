@@ -1,4 +1,5 @@
 import { useAccount } from 'wagmi'
+import { useTranslations } from 'next-intl'
 
 import { useSwapState } from '@/slices/swap/hooks'
 import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
@@ -17,6 +18,7 @@ import { useUsdSlippage } from '@hooks/useUsdSlippage'
 import { stringToBigInt } from '@/utils/bigint/format'
 
 export const SwapOutputContainer = () => {
+  const t = useTranslations('Swap')
   const { isConnected } = useAccount()
   const {
     swapQuote,
@@ -82,7 +84,7 @@ export const SwapOutputContainer = () => {
             </div>
             {isConnected && (
               <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                Balance: {formattedBalance ?? '0.0'}
+                {t('Balance')}: {formattedBalance ?? '0.0'}
               </div>
             )}
           </div>
