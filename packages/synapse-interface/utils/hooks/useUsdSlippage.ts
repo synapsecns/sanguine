@@ -23,12 +23,52 @@ interface UseUsdSlippageResult {
   textColor: string
 }
 
+const DEFAULT_RESULT: UseUsdSlippageResult = {
+  slippage: null,
+  usdDifference: null,
+  isLoading: false,
+  error: null,
+  textColor: '',
+}
+
 /**
- * Hook to calculate USD-based slippage between origin and destination tokens
+ * Extracts token decimals for a given chain
+ */
+const getTokenDecimals = (
+  token: Token,
+  chainId: number
+): number | undefined => {
+  return typeof token.decimals === 'number'
+    ? token.decimals
+    : token.decimals[chainId]
+}
+
+/**
+ * Determines text color based on slippage percentage and USD difference
+ */
+const calculateSlippageColor = (
+  slippage: number,
+  usdDifference: number
+): string => {
+  if (slippage >= 0) return 'text-green-500'
+
+  // Amber warning if loss <= 2.5% OR loss <= $1
+  if (
+    slippage > SLIPPAGE_WARNING_THRESHOLD ||
+    usdDifference > USD_SLIPPAGE_WARNING_THRESHOLD
+  ) {
+    return 'text-amber-500'
+  }
+
+  return 'text-red-500'
+}
+
+/**
+ * Calculates USD-based slippage between origin and destination tokens
  *
- * Slippage formula: ((valueOut - valueIn) / valueIn) * 100
+ * Formula: ((valueOut - valueIn) / valueIn) * 100
  *
- * @returns slippage percentage (positive = gain, negative = loss), loading state, and error
+ * @returns slippage percentage (positive = gain, negative = loss), USD difference, loading state, and error
  */
 export const useUsdSlippage = ({
   originToken,
@@ -38,11 +78,11 @@ export const useUsdSlippage = ({
   inputAmount,
   outputAmount,
 }: UseUsdSlippageParams): UseUsdSlippageResult => {
-  // Fetch prices using SWR hooks
+  // Fetch prices for both tokens
   const originPrice = useDefiLlamaPrice(originToken, originChainId)
   const destPrice = useDefiLlamaPrice(destToken, destChainId)
 
-  // Check if we have all required parameters
+  // Validate all required parameters are present
   const hasAllParams = Boolean(
     originToken &&
       destToken &&
@@ -53,110 +93,71 @@ export const useUsdSlippage = ({
       inputAmount > 0n &&
       outputAmount > 0n
   )
+  if (!hasAllParams) return DEFAULT_RESULT
 
-  // Check if prices are still loading (undefined = SWR fetching)
-  const arePricesLoading = originPrice === undefined || destPrice === undefined
-
-  // Check if prices are unavailable (null = not found in DefiLlama)
-  const arePricesUnavailable = originPrice === null || destPrice === null
-
-  // Calculate slippage (no useMemo needed - calculation is lightweight)
-  let slippage: number | null = null
-  let usdDifference: number | null = null
-
-  if (hasAllParams && !arePricesLoading && !arePricesUnavailable) {
-    try {
-      // Get decimals for both tokens
-      const originDecimals =
-        typeof originToken.decimals === 'number'
-          ? originToken.decimals
-          : originToken.decimals[originChainId]
-
-      const destDecimals =
-        typeof destToken.decimals === 'number'
-          ? destToken.decimals
-          : destToken.decimals[destChainId]
-
-      // Validate decimals are available
-      if (originDecimals === undefined) {
-        console.error(
-          'Missing decimals for origin token',
-          originToken.symbol,
-          'on chain',
-          originChainId
-        )
-        return {
-          slippage: null,
-          usdDifference: null,
-          isLoading: false,
-          error: 'Missing token decimals',
-          textColor: '',
-        }
-      }
-
-      if (destDecimals === undefined) {
-        console.error(
-          'Missing decimals for destination token',
-          destToken.symbol,
-          'on chain',
-          destChainId
-        )
-        return {
-          slippage: null,
-          usdDifference: null,
-          isLoading: false,
-          error: 'Missing token decimals',
-          textColor: '',
-        }
-      }
-
-      // Convert amounts to decimal numbers
-      const inputAmountDecimal = parseFloat(
-        formatBigIntToString(inputAmount, originDecimals)
-      )
-      const outputAmountDecimal = parseFloat(
-        formatBigIntToString(outputAmount, destDecimals)
-      )
-
-      // Calculate USD values
-      const valueIn = inputAmountDecimal * originPrice!
-      const valueOut = outputAmountDecimal * destPrice!
-
-      // Guard against division by zero
-      if (valueIn === 0 || valueOut === 0) {
-        slippage = null
-        usdDifference = null
-      } else {
-        // Calculate USD difference and slippage
-        usdDifference = valueOut - valueIn
-        slippage = (usdDifference / valueIn) * 100
-      }
-    } catch (err) {
-      console.error('Error calculating USD slippage:', err)
-      slippage = null
-    }
+  // Handle loading state (prices not yet fetched)
+  if (originPrice === undefined || destPrice === undefined) {
+    return { ...DEFAULT_RESULT, isLoading: true }
   }
 
-  // Determine loading state
-  const isLoading = hasAllParams && arePricesLoading
+  // Handle unavailable prices
+  if (originPrice === null || destPrice === null) {
+    return { ...DEFAULT_RESULT, error: 'Price data unavailable' }
+  }
 
-  // Determine error state (prices were fetched but not found)
-  const error =
-    hasAllParams && !arePricesLoading && arePricesUnavailable
-      ? 'Price data unavailable'
-      : null
+  // Extract decimals for both tokens
+  const originDecimals = getTokenDecimals(originToken, originChainId)
+  const destDecimals = getTokenDecimals(destToken, destChainId)
 
-  // Determine text color based on slippage value and USD difference
-  // Amber if percentage loss <= 2.5% OR USD loss <= $1
-  const textColor =
-    slippage === null || usdDifference === null
-      ? ''
-      : slippage >= 0
-      ? 'text-green-500'
-      : slippage > SLIPPAGE_WARNING_THRESHOLD ||
-        usdDifference > USD_SLIPPAGE_WARNING_THRESHOLD
-      ? 'text-amber-500'
-      : 'text-red-500'
+  if (originDecimals === undefined) {
+    console.error(
+      'Missing decimals for origin token',
+      originToken.symbol,
+      'on chain',
+      originChainId
+    )
+    return { ...DEFAULT_RESULT, error: 'Missing token decimals' }
+  }
 
-  return { slippage, usdDifference, isLoading, error, textColor }
+  if (destDecimals === undefined) {
+    console.error(
+      'Missing decimals for destination token',
+      destToken.symbol,
+      'on chain',
+      destChainId
+    )
+    return { ...DEFAULT_RESULT, error: 'Missing token decimals' }
+  }
+
+  // Calculate slippage
+  try {
+    const inputAmountDecimal = parseFloat(
+      formatBigIntToString(inputAmount, originDecimals)
+    )
+    const outputAmountDecimal = parseFloat(
+      formatBigIntToString(outputAmount, destDecimals)
+    )
+
+    const valueIn = inputAmountDecimal * originPrice
+    const valueOut = outputAmountDecimal * destPrice
+
+    // Guard against division by zero
+    if (valueIn === 0 || valueOut === 0) {
+      return DEFAULT_RESULT
+    }
+
+    const usdDifference = valueOut - valueIn
+    const slippage = (usdDifference / valueIn) * 100
+
+    return {
+      slippage,
+      usdDifference,
+      isLoading: false,
+      error: null,
+      textColor: calculateSlippageColor(slippage, usdDifference),
+    }
+  } catch (err) {
+    console.error('Error calculating USD slippage:', err)
+    return DEFAULT_RESULT
+  }
 }
