@@ -41,12 +41,8 @@
     "Gas token": "Token de gas",
     "Not bridgeable": "No se puede hacer puente",
     "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "Se inició con éxito el puente de {fromToken} en {originChainName} a {toToken} en {destinationChainName}",
-    "Slippage": "Deslizamiento",
     "Router": "Enrutador",
     "estimatedTime": "Tiempo estimado",
-    "Calculating": "Calculando...",
-    "priceUnavailable": "Datos de precio no disponibles",
-    "missingDecimals": "Decimales faltantes",
     "Powered by Synapse": "Impulsado por Synapse",
     "Will also receive": "También recibirá",
     "From": "Desde",
@@ -291,10 +287,6 @@
     "Successfully swapped from {swapFromToken} to {swapToToken} on {currentChainName}": "Intercambio exitoso de {swapFromToken} a {swapToToken} en {currentChainName}",
     "available": "disponible",
     "Expected price on": "Precio esperado en",
-    "Slippage": "Deslizamiento",
-    "Calculating": "Calculando...",
-    "priceUnavailable": "Datos de precio no disponibles",
-    "missingDecimals": "Decimales faltantes",
     "Swap paused": "Intercambio en pausa",
     "Please select Origin network": "Por favor, selecciona la red de Origen",
     "Swaps are not available on this network": "Los intercambios no están disponibles en esta red",
@@ -309,6 +301,12 @@
     "Route found for swapping {value} {fromSymbol} on {chain} to {toSymbol}": "Ruta encontrada para intercambiar {value} {fromSymbol} en {chain} a {toSymbol}",
     "Initiating swap from {fromSymbol} to {toSymbol} on {chain}": "Iniciando intercambio de {fromSymbol} a {toSymbol} en {chain}",
     "Swapping {fromSymbol} on {chain} to {toSymbol}": "Intercambiando {fromSymbol} en {chain} a {toSymbol}"
+  },
+  "Slippage": {
+    "Slippage": "Deslizamiento",
+    "Calculating": "Calculando...",
+    "Price data unavailable": "Datos de precio no disponibles",
+    "Missing token decimals": "Decimales faltantes"
   },
   "Time": {
     "d": "d",

@@ -103,7 +103,7 @@ const Slippage = ({
   error,
   textColor,
 }: SlippageProps) => {
-  const t = useTranslations('Swap')
+  const t = useTranslations('Slippage')
 
   const shouldShow = safeFromAmount > 0n
 

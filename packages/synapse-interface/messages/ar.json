@@ -41,12 +41,8 @@
     "Gas token": "رمز الغاز",
     "Not bridgeable": "غير قابل للجسر",
     "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "تم بدء الجسر بنجاح من {fromToken} على {originChainName} إلى {toToken} على {destinationChainName}",
-    "Slippage": "الانزلاق",
     "Router": "الموجه",
     "estimatedTime": "الوقت المقدر",
-    "Calculating": "جارٍ الحساب...",
-    "priceUnavailable": "بيانات السعر غير متاحة",
-    "missingDecimals": "المنازل العشرية مفقودة",
     "Powered by Synapse": "مدعوم من سينابس",
     "Will also receive": "سيتم أيضًا استلام",
     "From": "من",
@@ -291,10 +287,6 @@
     "Successfully swapped from {swapFromToken} to {swapToToken} on {currentChainName}": "تم التبديل بنجاح من {swapFromToken} إلى {swapToToken} على {currentChainName}",
     "available": "المتاح",
     "Expected price on": "السعر المتوقع على",
-    "Slippage": "الانزلاق",
-    "Calculating": "جارٍ الحساب...",
-    "priceUnavailable": "بيانات السعر غير متاحة",
-    "missingDecimals": "المنازل العشرية مفقودة",
     "Swap paused": "التبادل موقف مؤقتا",
     "Please select Origin network": "يرجى اختيار شبكة المصدر",
     "Swaps are not available on this network": "المقايضات غير متاحة على هذه شبكة",
@@ -309,6 +301,12 @@
     "Route found for swapping {value} {fromSymbol} on {chain} to {toSymbol}": "تم العثور على مسار للتبديل من {value} {fromSymbol} على {chain} إلى {toSymbol}",
     "Initiating swap from {fromSymbol} to {toSymbol} on {chain}": "بدء التبديل من {fromSymbol} إلى {toSymbol} على {chain}",
     "Swapping {fromSymbol} on {chain} to {toSymbol}": "جار التبديل من {fromSymbol} على {chain} إلى {toSymbol}"
+  },
+  "Slippage": {
+    "Slippage": "الانزلاق",
+    "Calculating": "جارٍ الحساب...",
+    "Price data unavailable": "بيانات السعر غير متاحة",
+    "Missing token decimals": "المنازل العشرية مفقودة"
   },
   "Time": {
     "d": "ي",

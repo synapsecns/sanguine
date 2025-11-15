@@ -59,7 +59,7 @@ const DestinationAddress = () => {
 
 const Slippage = () => {
   const { debouncedFromValue, fromChainId, toChainId } = useBridgeState()
-  const t = useTranslations('Bridge')
+  const t = useTranslations('Slippage')
   const {
     bridgeQuote: {
       inputAmountForQuote,

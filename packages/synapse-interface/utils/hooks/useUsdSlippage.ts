@@ -102,7 +102,7 @@ export const useUsdSlippage = ({
 
   // Handle unavailable prices
   if (originPrice === null || destPrice === null) {
-    return { ...DEFAULT_RESULT, error: 'priceUnavailable' }
+    return { ...DEFAULT_RESULT, error: 'Price data unavailable' }
   }
 
   // Extract decimals for both tokens
@@ -116,7 +116,7 @@ export const useUsdSlippage = ({
       'on chain',
       originChainId
     )
-    return { ...DEFAULT_RESULT, error: 'missingDecimals' }
+    return { ...DEFAULT_RESULT, error: 'Missing token decimals' }
   }
 
   if (destDecimals === undefined) {
@@ -126,7 +126,7 @@ export const useUsdSlippage = ({
       'on chain',
       destChainId
     )
-    return { ...DEFAULT_RESULT, error: 'missingDecimals' }
+    return { ...DEFAULT_RESULT, error: 'Missing token decimals' }
   }
 
   // Calculate slippage
