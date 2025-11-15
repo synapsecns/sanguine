@@ -421,9 +421,11 @@ const StateManagedSwap = () => {
                     )
                   : 0n
               }
+              fromToken={swapFromToken}
               toToken={swapToToken}
               exchangeRate={swapQuote.exchangeRate}
               toChainId={swapChainId}
+              outputAmount={swapQuote.outputAmount ?? 0n}
             />
             <SwapTransactionButton
               isTyping={isTyping}

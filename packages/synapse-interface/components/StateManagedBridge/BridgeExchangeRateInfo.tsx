@@ -1,11 +1,10 @@
-import { useMemo } from 'react'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useAccount } from 'wagmi'
 import { useTranslations } from 'next-intl'
 
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { formatBigIntToPercentString } from '@/utils/bigint/format'
+import { useUsdSlippage } from '@hooks/useUsdSlippage'
+import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { getValidAddress, isValidAddress } from '@/utils/isValidAddress'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { CHAINS_BY_ID } from '@constants/chains'
@@ -22,13 +21,11 @@ export const BridgeExchangeRateInfo = () => {
 
   return (
     <div className="mt-1 mb-2 text-sm">
-      <div className="block px-1 mb-2 text-right cursor-default pointer-events-none">
-        <TimeEstimate />
-      </div>
       <div className="block p-2 leading-relaxed border rounded border-zinc-300 dark:border-separator">
         {' '}
         <GasDropLabel />
         <Router />
+        <EstimatedTime />
         <Slippage />
         <DestinationAddress />
       </div>
@@ -61,22 +58,68 @@ const DestinationAddress = () => {
 }
 
 const Slippage = () => {
-  const { debouncedFromValue } = useBridgeState()
-  const t = useTranslations('Bridge')
-  // TODO: handle slippage between different types of assets
+  const { debouncedFromValue, fromChainId, toChainId } = useBridgeState()
+  const t = useTranslations('Slippage')
   const {
-    bridgeQuote: { exchangeRate, originTokenForQuote, destTokenForQuote },
+    bridgeQuote: {
+      inputAmountForQuote,
+      outputAmount,
+      originTokenForQuote,
+      destTokenForQuote,
+    },
   } = useBridgeQuoteState()
-  const areSameAssets =
-    originTokenForQuote?.swapableType === destTokenForQuote?.swapableType
 
-  const { formattedPercentSlippage, safeFromAmount, underFee, textColor } =
-    useExchangeRateInfo(debouncedFromValue, exchangeRate)
+  // Parse input amount - convert decimal string to bigint
+  const inputAmount =
+    inputAmountForQuote &&
+    inputAmountForQuote !== '0' &&
+    originTokenForQuote &&
+    fromChainId
+      ? stringToBigInt(
+          inputAmountForQuote,
+          typeof originTokenForQuote.decimals === 'number'
+            ? originTokenForQuote.decimals
+            : originTokenForQuote.decimals[fromChainId]
+        )
+      : null
+
+  // Calculate USD-based slippage
+  const { slippage, isLoading, error, textColor } = useUsdSlippage({
+    originToken: originTokenForQuote,
+    destToken: destTokenForQuote,
+    originChainId: fromChainId,
+    destChainId: toChainId,
+    inputAmount,
+    outputAmount,
+  })
+
+  // Show content
+  const shouldShow =
+    debouncedFromValue !== '0' &&
+    inputAmount &&
+    inputAmount > 0n &&
+    outputAmount &&
+    outputAmount > 0n
+
   return (
     <div className="flex justify-between">
       <span className="text-zinc-500 dark:text-zinc-400">{t('Slippage')}</span>
-      {safeFromAmount !== '0' && !underFee && areSameAssets ? (
-        <span className={textColor}>{formattedPercentSlippage}</span>
+      {shouldShow ? (
+        <>
+          {isLoading && <span className="text-zinc-400">{t('Calculating')}</span>}
+          {!isLoading && error && (
+            <span className="text-zinc-400">{t(error)}</span>
+          )}
+          {!isLoading && !error && slippage !== null && (
+            <span className={textColor}>
+              {slippage >= 0 ? '+' : ''}
+              {slippage.toFixed(2)}%
+            </span>
+          )}
+          {!isLoading && !error && slippage === null && (
+            <span className="">−</span>
+          )}
+        </>
       ) : (
         <span className="">−</span>
       )}
@@ -97,44 +140,47 @@ const Router = () => {
   )
 }
 
-const TimeEstimate = () => {
+const EstimatedTime = () => {
   const { fromToken } = useBridgeState()
   const { bridgeQuote } = useBridgeQuoteState()
   const t = useTranslations()
 
-  let showText
-  let showTime
-  let timeUnit
+  const shouldShow =
+    fromToken &&
+    bridgeQuote &&
+    bridgeQuote.outputAmount !== EMPTY_BRIDGE_QUOTE.outputAmount &&
+    typeof bridgeQuote.estimatedTime === 'number' &&
+    Number.isFinite(bridgeQuote.estimatedTime)
 
-  if (fromToken && bridgeQuote?.estimatedTime > 60) {
-    showTime = bridgeQuote?.estimatedTime / 60
-    timeUnit = t('Time.minutes')
-    showText = `${showTime} ${timeUnit} via ${bridgeQuote.bridgeModuleName}`
+  let timeValue: number
+  let timeUnit: string
+
+  if (shouldShow) {
+    if (bridgeQuote.estimatedTime > 60) {
+      timeValue = bridgeQuote.estimatedTime / 60
+      timeUnit = t('Time.minutes')
+    } else {
+      timeValue = bridgeQuote.estimatedTime
+      timeUnit = t('Time.seconds')
+    }
   }
 
-  if (fromToken && bridgeQuote.estimatedTime <= 60) {
-    showTime = bridgeQuote?.estimatedTime
-    timeUnit = t('Time.seconds')
-    showText = `${showTime} ${timeUnit} via ${bridgeQuote.bridgeModuleName}`
-  }
-
-  if (
-    !bridgeQuote ||
-    bridgeQuote.outputAmount === EMPTY_BRIDGE_QUOTE.outputAmount
-  ) {
-    showText = (
+  return (
+    <div className="flex justify-between">
       <span className="text-zinc-500 dark:text-zinc-400">
-        {t('Bridge.Powered by Synapse')}
+        {t('Bridge.estimatedTime')}
       </span>
-    )
-  }
-
-  if (!fromToken) {
-    showText = t('Bridge.Select origin token')
-  }
-
-  return showText
+      {shouldShow ? (
+        <span>
+          {timeValue} {timeUnit}
+        </span>
+      ) : (
+        <span className="">−</span>
+      )}
+    </div>
+  )
 }
+
 
 const GasDropLabel = () => {
   const { toChainId } = useBridgeState()
@@ -171,38 +217,6 @@ const GasDropLabel = () => {
       </span>
     </>
   )
-}
-
-const useExchangeRateInfo = (value, exchangeRate) => {
-  const safeExchangeRate = typeof exchangeRate === 'bigint' ? exchangeRate : 0n
-  const safeFromAmount = value ?? '0'
-
-  const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 4)
-  const numExchangeRate = Number(formattedExchangeRate)
-  const slippage = safeExchangeRate - 1000000000000000000n
-  const formattedPercentSlippage = formatBigIntToPercentString(slippage, 18)
-  const underFee = safeExchangeRate === 0n && safeFromAmount !== '0'
-
-  const textColor: string = useMemo(() => {
-    if (numExchangeRate >= 1) {
-      return 'text-green-500'
-    } else if (numExchangeRate > 0.975) {
-      return 'text-amber-500'
-    } else {
-      return 'text-red-500'
-    }
-  }, [numExchangeRate])
-
-  return {
-    formattedExchangeRate,
-    formattedPercentSlippage,
-    numExchangeRate,
-    safeExchangeRate,
-    safeFromAmount,
-    slippage,
-    underFee,
-    textColor,
-  }
 }
 
 const getAirdropInDollars = (

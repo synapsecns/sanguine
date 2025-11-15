@@ -114,8 +114,12 @@ const calculateOutputRelativeDifference = (
     return null
   }
 
-  const currentOutput = parseFloat(currentQuote.outputAmountString)
-  const previousOutput = parseFloat(previousQuote.outputAmountString)
+  const currentOutput = parseFloat(
+    currentQuote.outputAmountString.replace(/,/g, '')
+  )
+  const previousOutput = parseFloat(
+    previousQuote.outputAmountString.replace(/,/g, '')
+  )
 
   if (previousOutput === 0) {
     return null

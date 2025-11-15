@@ -35,13 +35,14 @@
     "Max": "Max",
     "available": "available",
     "Available": "Available",
+    "Balance": "Balance",
     "calculating gas": "calculating gas",
     "New": "New",
     "Gas token": "Gas token",
     "Not bridgeable": "Not bridgeable",
     "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}",
-    "Slippage": "Slippage",
     "Router": "Router",
+    "estimatedTime": "Estimated time",
     "Powered by Synapse": "Powered by Synapse",
     "Will also receive": "Will also receive",
     "From": "From",
@@ -286,7 +287,6 @@
     "Successfully swapped from {swapFromToken} to {swapToToken} on {currentChainName}": "Successfully swapped from {swapFromToken} to {swapToToken} on {currentChainName}",
     "available": "available",
     "Expected price on": "Expected price on",
-    "Slippage": "Slippage",
     "Swap paused": "Swap paused",
     "Please select Origin network": "Please select Origin network",
     "Swaps are not available on this network": "Swaps are not available on this network",
@@ -301,6 +301,12 @@
     "Route found for swapping {value} {fromSymbol} on {chain} to {toSymbol}": "Route found for swapping {value} {fromSymbol} on {chain} to {toSymbol}",
     "Initiating swap from {fromSymbol} to {toSymbol} on {chain}": "Initiating swap from {fromSymbol} to {toSymbol} on {chain}",
     "Swapping {fromSymbol} on {chain} to {toSymbol}": "Swapping {fromSymbol} on {chain} to {toSymbol}"
+  },
+  "Slippage": {
+    "Slippage": "Slippage",
+    "Calculating": "Calculating...",
+    "Price data unavailable": "Price data unavailable",
+    "Missing token decimals": "Missing token decimals"
   },
   "Time": {
     "d": "d",
