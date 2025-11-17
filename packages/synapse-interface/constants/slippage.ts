@@ -3,23 +3,18 @@
  *
  * These thresholds determine when to show amber vs red warning colors to users.
  * The color logic works as follows:
- * - Green: Positive slippage (gain)
- * - Amber: Loss <= 2.5% OR loss <= $1 (either threshold provides warning)
- * - Red: Loss > 2.5% AND loss > $1 (both thresholds must be exceeded)
+ * - Green: Positive slippage and difference (both higher than neutral thresholds)
+ * - White: Either slippage or difference is below neutral thresholds (positive or negative)
+ * - Amber: Slippage or difference is below warning thresholds (negative)
+ * - Red: Negative slippage and difference (both higher than warning thresholds)
  */
 
-/**
- * Percentage-based slippage threshold
- * Triggers amber warning if slippage is worse than this percentage
- *
- * @example -2.5 means losses greater than 2.5% trigger a warning
- */
-export const SLIPPAGE_WARNING_THRESHOLD = -2.5
+export enum PercentageThreshold {
+  NEUTRAL = 0.1,
+  WARNING = 1,
+}
 
-/**
- * USD-based slippage threshold
- * Triggers amber warning if USD loss is greater than this amount
- *
- * @example -1 means losses greater than $1 trigger a warning
- */
-export const USD_SLIPPAGE_WARNING_THRESHOLD = -1
+export enum AbsoluteThreshold {
+  NEUTRAL = 1,
+  WARNING = 10,
+}

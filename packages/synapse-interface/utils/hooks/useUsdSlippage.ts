@@ -1,10 +1,7 @@
 import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
 import { Token } from '@utils/types'
 import { formatBigIntToString } from '@utils/bigint/format'
-import {
-  SLIPPAGE_WARNING_THRESHOLD,
-  USD_SLIPPAGE_WARNING_THRESHOLD,
-} from '@constants/slippage'
+import { AbsoluteThreshold, PercentageThreshold } from '@constants/slippage'
 
 interface UseUsdSlippageParams {
   originToken: Token | null
@@ -50,16 +47,20 @@ const calculateSlippageColor = (
   slippage: number,
   usdDifference: number
 ): string => {
-  if (slippage >= 0) return 'text-green-500'
+  // We show white if either of values are in the neutral range
+  const isSlippageNeutral = Math.abs(slippage) <= PercentageThreshold.NEUTRAL
+  const isDiffNeutral = Math.abs(usdDifference) <= AbsoluteThreshold.NEUTRAL
+  if (isSlippageNeutral || isDiffNeutral) return 'text-white'
 
-  // Amber warning if loss <= 2.5% OR loss <= $1
-  if (
-    slippage > SLIPPAGE_WARNING_THRESHOLD ||
-    usdDifference > USD_SLIPPAGE_WARNING_THRESHOLD
-  ) {
-    return 'text-amber-500'
-  }
+  // For positive slippage (gain), we show green if it's not neutral
+  if (slippage > 0) return 'text-green-500'
 
+  // Show amber if either of values are in the warning range
+  const isSlippageWarning = Math.abs(slippage) <= PercentageThreshold.WARNING
+  const isDiffWarning = Math.abs(usdDifference) <= AbsoluteThreshold.WARNING
+  if (isSlippageWarning || isDiffWarning) return 'text-amber-500'
+
+  // Show red if both are out of warning range
   return 'text-red-500'
 }
 
