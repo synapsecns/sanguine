@@ -41,18 +41,18 @@ export function AmountInput({
     font: 'text-xl md:text-2xl font-medium',
     focus: 'focus:outline-none focus:ring-0 focus:border-none',
     custom: className,
+    loading: isLoading ? 'invisible' : '',
   }
 
   return (
     <>
-      {isLoading ? (
-        <LoadingDots className="opacity-50" />
-      ) : (
+      <div className="flex items-center">
+        {isLoading && <LoadingDots className="opacity-50" />}
         <NumericFormat
           inputMode="numeric"
           getInputRef={inputRef}
           placeholder="0.0000"
-          value={showValue}
+          value={isLoading ? '0' : showValue}
           pattern={disabled ? '[0-9.]+' : '^[0-9]+([.,]?[0-9]+)?$'}
           disabled={disabled}
           readOnly={disabled}
@@ -65,7 +65,7 @@ export function AmountInput({
           thousandSeparator={true}
           allowNegative={false}
         />
-      )}
+      </div>
     </>
   )
 }
