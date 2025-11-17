@@ -66,6 +66,7 @@ export const SwapOutputContainer = () => {
       ? getParsedBalance(balance, decimals)
       : '0.0'
   const formattedBalance = formatAmount(parsedBalance)
+  const formattedUsdValue = `${usdValue}${formatInlineUsdDifference(usdDifference)}`
 
   return (
     <BridgeSectionContainer>
@@ -79,8 +80,7 @@ export const SwapOutputContainer = () => {
           />
           <div className="flex justify-between items-center">
             <div className="text-xs text-zinc-500 dark:text-zinc-400">
-              {usdValue}
-              {formatInlineUsdDifference(usdDifference)}
+              {!isLoading && formattedUsdValue}
             </div>
             {isConnected && (
               <div className="text-xs text-zinc-500 dark:text-zinc-400">

@@ -9,6 +9,7 @@ import { getValidAddress, isValidAddress } from '@/utils/isValidAddress'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
+import {DATA_PLACEHOLDER} from '@/constants/placeholders'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { getSignificantDecimals } from '@/utils/getSignificantDecimals'
 import { formatSlippage } from '@/utils/formatSlippage'
@@ -68,6 +69,7 @@ const Slippage = () => {
       originTokenForQuote,
       destTokenForQuote,
     },
+    isLoading: isQuoteLoading,
   } = useBridgeQuoteState()
 
   // Parse input amount - convert decimal string to bigint
@@ -85,7 +87,12 @@ const Slippage = () => {
       : null
 
   // Calculate USD-based slippage
-  const { slippage, isLoading, error, textColor } = useUsdSlippage({
+  const {
+    slippage,
+    isLoading: isSlippageLoading,
+    error,
+    textColor,
+  } = useUsdSlippage({
     originToken: originTokenForQuote,
     destToken: destTokenForQuote,
     originChainId: fromChainId,
@@ -95,7 +102,9 @@ const Slippage = () => {
   })
 
   // Show content
+  const isLoading = isSlippageLoading || isQuoteLoading
   const shouldShow =
+    !isLoading &&
     debouncedFromValue !== '0' &&
     inputAmount &&
     inputAmount > 0n &&
@@ -107,19 +116,18 @@ const Slippage = () => {
       <span className="text-zinc-500 dark:text-zinc-400">{t('Slippage')}</span>
       {shouldShow ? (
         <>
-          {isLoading && <span className="text-zinc-400">{t('Calculating')}</span>}
-          {!isLoading && error && (
+          {error && (
             <span className="text-zinc-400">{t(error)}</span>
           )}
-          {!isLoading && !error && slippage !== null && (
+          {!error && slippage !== null && (
             <span className={textColor}>{formatSlippage(slippage)}</span>
           )}
-          {!isLoading && !error && slippage === null && (
-            <span className="">−</span>
+          {!error && slippage === null && (
+            DATA_PLACEHOLDER
           )}
         </>
       ) : (
-        <span className="">−</span>
+        DATA_PLACEHOLDER
       )}
     </div>
   )
@@ -128,22 +136,25 @@ const Slippage = () => {
 const Router = () => {
   const {
     bridgeQuote: { bridgeModuleName },
+    isLoading,
   } = useBridgeQuoteState()
   const t = useTranslations('Bridge')
+  const shouldShow = !isLoading && bridgeModuleName
   return (
     <div className="flex justify-between">
       <span className="text-zinc-500 dark:text-zinc-400">{t('Router')}</span>
-      {bridgeModuleName}
+      {shouldShow ? bridgeModuleName : DATA_PLACEHOLDER}
     </div>
   )
 }
 
 const EstimatedTime = () => {
   const { fromToken } = useBridgeState()
-  const { bridgeQuote } = useBridgeQuoteState()
+  const { bridgeQuote, isLoading } = useBridgeQuoteState()
   const t = useTranslations('Time')
 
   const shouldShow =
+    !isLoading &&
     fromToken &&
     bridgeQuote &&
     bridgeQuote.outputAmount !== EMPTY_BRIDGE_QUOTE.outputAmount &&
@@ -173,17 +184,17 @@ const EstimatedTime = () => {
           {timeValue} {timeUnit}
         </span>
       ) : (
-        <span className="">−</span>
+        DATA_PLACEHOLDER
       )}
     </div>
   )
 }
 
-
 const GasDropLabel = () => {
   const { toChainId } = useBridgeState()
   const {
     bridgeQuote: { gasDropAmount },
+    isLoading,
   } = useBridgeQuoteState()
 
   const t = useTranslations('Bridge')
@@ -200,7 +211,7 @@ const GasDropLabel = () => {
 
   const airdropInDollars = getAirdropInDollars(symbol, formattedGasDropAmount)
 
-  if (gasDropAmount === EMPTY_BRIDGE_QUOTE.gasDropAmount) {
+  if (isLoading || gasDropAmount === EMPTY_BRIDGE_QUOTE.gasDropAmount) {
     return null
   }
 

@@ -1,4 +1,8 @@
 import { commify } from '@/utils/bigint/format'
+import {
+  USD_DIFFERENCE_PLACEHOLDER,
+  USD_VALUE_PLACEHOLDER,
+} from '@/constants/placeholders'
 
 /**
  * Formats a USD value with thousand separators and dynamic decimal places
@@ -45,7 +49,7 @@ export const formatUsdValue = (value: number): string => {
  *
  * @param amount - Token amount as string (e.g., "100.5")
  * @param price - USD price per token (undefined = loading, null = unavailable)
- * @returns Formatted USD string: "$123.45", "<$0.01", or "—"
+ * @returns Formatted USD string: "$123.45", "<$0.01", or ""
  */
 export const calculateUsdValue = (
   amount: string | null | undefined,
@@ -53,12 +57,12 @@ export const calculateUsdValue = (
 ): string => {
   // Return placeholder if price is loading (undefined) or unavailable (null)
   if (price === undefined || price === null) {
-    return '—'
+    return USD_VALUE_PLACEHOLDER
   }
 
   // Return placeholder if amount is empty or invalid
   if (!amount || amount === '') {
-    return '—'
+    return USD_VALUE_PLACEHOLDER
   }
 
   // Parse amount to number (remove commas first)
@@ -66,7 +70,7 @@ export const calculateUsdValue = (
 
   // Return placeholder if amount is invalid or zero
   if (isNaN(numericAmount) || numericAmount === 0) {
-    return '—'
+    return USD_VALUE_PLACEHOLDER
   }
 
   // Calculate USD value
@@ -95,7 +99,7 @@ export const calculateUsdValue = (
 export const formatInlineUsdDifference = (diff: number | null): string => {
   // Return empty string if difference is unavailable
   if (diff === null) {
-    return ''
+    return USD_DIFFERENCE_PLACEHOLDER
   }
 
   // Get absolute value
@@ -103,7 +107,7 @@ export const formatInlineUsdDifference = (diff: number | null): string => {
 
   // Don't show if under 1 cent
   if (absValue < 0.01) {
-    return ''
+    return USD_DIFFERENCE_PLACEHOLDER
   }
 
   // Format with sign, dynamic decimal places, and thousand separators

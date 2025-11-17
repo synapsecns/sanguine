@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 
 import { CHAINS_BY_ID } from '@constants/chains'
+import { DATA_PLACEHOLDER } from '@/constants/placeholders'
 import { Token } from '@/utils/types'
 import { useUsdSlippage } from '@hooks/useUsdSlippage'
 import { formatBigIntToString } from '@/utils/bigint/format'
@@ -15,6 +16,7 @@ const SwapExchangeRateInfo = ({
   exchangeRate,
   toChainId,
   outputAmount,
+  isQuoteLoading,
 }: {
   fromAmount: bigint
   fromToken: Token
@@ -22,6 +24,7 @@ const SwapExchangeRateInfo = ({
   exchangeRate: bigint
   toChainId: number
   outputAmount: bigint
+  isQuoteLoading: boolean
 }) => {
   const safeExchangeRate = useMemo(() => exchangeRate ?? 0n, [exchangeRate])
   const safeFromAmount = useMemo(() => fromAmount ?? 0n, [fromAmount])
@@ -49,11 +52,12 @@ const SwapExchangeRateInfo = ({
           safeFromAmount={safeFromAmount}
           formattedExchangeRate={formattedExchangeRate}
           toToken={toToken}
+          isQuoteLoading={isQuoteLoading}
         />
         <Slippage
           safeFromAmount={safeFromAmount}
           slippage={slippage}
-          isLoading={isLoading}
+          isLoading={isLoading || isQuoteLoading}
           error={error}
           textColor={textColor}
         />
@@ -67,6 +71,7 @@ const ExpectedPrice = ({
   safeFromAmount,
   formattedExchangeRate,
   toToken,
+  isQuoteLoading,
 }) => {
   const t = useTranslations('Swap')
 
@@ -76,13 +81,13 @@ const ExpectedPrice = ({
         <p>{t('Expected price on')}</p> {expectedToChain}
       </div>
       <span className="text-[#88818C]">
-        {safeFromAmount != 0n ? (
+        {safeFromAmount != 0n && !isQuoteLoading ? (
           <>
             {formattedExchangeRate}{' '}
             <span className="text-white">{toToken?.symbol}</span>
           </>
         ) : (
-          '—'
+          DATA_PLACEHOLDER
         )}
       </span>
     </div>
@@ -106,24 +111,25 @@ const Slippage = ({
 }: SlippageProps) => {
   const t = useTranslations('Slippage')
 
-  const shouldShow = safeFromAmount > 0n
+  const shouldShow = !isLoading && safeFromAmount > 0n
 
   return (
     <div className="flex justify-between">
       <p className="text-[#88818C] ">{t('Slippage')}</p>
       {shouldShow ? (
         <>
-          {isLoading && <span className="text-[#88818C]">{t('Calculating')}</span>}
-          {!isLoading && error && <span className="text-[#88818C]">{t(error)}</span>}
-          {!isLoading && !error && slippage !== null && (
+          {error && (
+            <span className="text-[#88818C]">{t(error)}</span>
+          )}
+          {!error && slippage !== null && (
             <span className={textColor}>{formatSlippage(slippage)}</span>
           )}
-          {!isLoading && !error && slippage === null && (
-            <span className="text-[#88818C]">—</span>
+          {!error && slippage === null && (
+            <span className="text-[#88818C]">{DATA_PLACEHOLDER}</span>
           )}
         </>
       ) : (
-        <span className="text-[#88818C]">—</span>
+        <span className="text-[#88818C]">{DATA_PLACEHOLDER}</span>
       )}
     </div>
   )
