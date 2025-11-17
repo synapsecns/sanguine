@@ -42,7 +42,6 @@
     "Not bridgeable": "Köprülenemez",
     "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "{originChainName}'deki {fromToken}'dan {destinationChainName}'deki {toToken}'a köprü başarıyla başlatıldı",
     "Router": "Yönlendirici",
-    "estimatedTime": "Tahmini süre",
     "Powered by Synapse": "Synapse tarafından desteklenmektedir",
     "Will also receive": "Ayrıca alacak",
     "From": "Nereden",
@@ -292,6 +291,7 @@
     "Exchange assets on chain": "Zincir üzerinde varlık takası.",
     "Successfully swapped from {swapFromToken} to {swapToToken} on {currentChainName}": "{currentChainName} üzerinde {swapFromToken}'dan {swapToToken}'a başarıyla takas edildi",
     "available": "mevcut",
+    "Balance": "Bakiye",
     "Expected price on": "Beklenen fiyat",
     "Swap paused": "Takas duraklatıldı",
     "Please select Origin network": "Lütfen Kaynak ağı seçin",
@@ -309,6 +309,7 @@
     "Swapping {fromSymbol} on {chain} to {toSymbol}": "{chain} üzerinde {fromSymbol}'ı {toSymbol}'a takas ediliyor"
   },
   "Time": {
+    "Estimated Time": "Tahmini süre",
     "d": "g",
     "min": "dk",
     "Waiting": "Bekleniyor",

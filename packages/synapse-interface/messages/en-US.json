@@ -42,7 +42,6 @@
     "Not bridgeable": "Not bridgeable",
     "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}",
     "Router": "Router",
-    "estimatedTime": "Estimated time",
     "Powered by Synapse": "Powered by Synapse",
     "Will also receive": "Will also receive",
     "From": "From",
@@ -286,6 +285,7 @@
     "Exchange assets on chain": "Exchange assets on chain.",
     "Successfully swapped from {swapFromToken} to {swapToToken} on {currentChainName}": "Successfully swapped from {swapFromToken} to {swapToToken} on {currentChainName}",
     "available": "available",
+    "Balance": "Balance",
     "Expected price on": "Expected price on",
     "Swap paused": "Swap paused",
     "Please select Origin network": "Please select Origin network",
@@ -309,6 +309,7 @@
     "Missing token decimals": "Missing token decimals"
   },
   "Time": {
+    "Estimated Time": "Estimated Time",
     "d": "d",
     "min": "min",
     "Waiting": "Waiting",

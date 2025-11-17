@@ -42,7 +42,6 @@
     "Not bridgeable": "不可桥接",
     "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "成功发起从 {originChainName} 的 {fromToken} 到 {destinationChainName} 的 {toToken} 的桥接",
     "Router": "路由器",
-    "estimatedTime": "预计时间",
     "Powered by Synapse": "由Synapse提供支持",
     "Will also receive": "将额外收到",
     "From": "从",
@@ -292,6 +291,7 @@
     "Exchange assets on chain": "在链上交换资产。",
     "Successfully swapped from {swapFromToken} to {swapToToken} on {currentChainName}": "成功从 {currentChainName} 的 {swapFromToken} 交换为 {swapToToken}",
     "available": "可用",
+    "Balance": "余额",
     "Expected price on": "预计价格在",
     "Swap paused": "交换已暂停",
     "Please select Origin network": "请选择来源网络",
@@ -309,6 +309,7 @@
     "Swapping {fromSymbol} on {chain} to {toSymbol}": "正在交换：从 {chain} 的 {fromSymbol} 到 {toSymbol}"
   },
   "Time": {
+    "Estimated Time": "预计时间",
     "d": "天",
     "min": "分钟",
     "Waiting": "等待中",

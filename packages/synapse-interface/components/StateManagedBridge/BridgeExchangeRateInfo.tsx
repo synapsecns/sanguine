@@ -141,7 +141,7 @@ const Router = () => {
 const EstimatedTime = () => {
   const { fromToken } = useBridgeState()
   const { bridgeQuote } = useBridgeQuoteState()
-  const t = useTranslations()
+  const t = useTranslations('Time')
 
   const shouldShow =
     fromToken &&
@@ -156,17 +156,17 @@ const EstimatedTime = () => {
   if (shouldShow) {
     if (bridgeQuote.estimatedTime > 60) {
       timeValue = bridgeQuote.estimatedTime / 60
-      timeUnit = t('Time.minutes')
+      timeUnit = t('minutes')
     } else {
       timeValue = bridgeQuote.estimatedTime
-      timeUnit = t('Time.seconds')
+      timeUnit = t('seconds')
     }
   }
 
   return (
     <div className="flex justify-between">
       <span className="text-zinc-500 dark:text-zinc-400">
-        {t('Bridge.estimatedTime')}
+        {t('Estimated Time')}
       </span>
       {shouldShow ? (
         <span>

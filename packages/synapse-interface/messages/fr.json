@@ -42,7 +42,6 @@
     "Not bridgeable": "Non transférable",
     "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "Transfert initié avec succès de {fromToken} sur {originChainName} vers {toToken} sur {destinationChainName}",
     "Router": "Routeur",
-    "estimatedTime": "Temps estimé",
     "Powered by Synapse": "Propulsé par Synapse",
     "Will also receive": "Recevra également",
     "From": "De",
@@ -292,6 +291,7 @@
     "Exchange assets on chain": "Échanger des actifs sur la chaîne.",
     "Successfully swapped from {swapFromToken} to {swapToToken} on {currentChainName}": "Échange réussi de {swapFromToken} à {swapToToken} sur {currentChainName}",
     "available": "disponible",
+    "Balance": "Solde",
     "Expected price on": "Prix attendu sur",
     "Swap paused": "Échange en pause",
     "Please select Origin network": "Veuillez sélectionner le réseau d'origine",
@@ -309,6 +309,7 @@
     "Swapping {fromSymbol} on {chain} to {toSymbol}": "Échange de {fromSymbol} sur {chain} vers {toSymbol}"
   },
   "Time": {
+    "Estimated Time": "Temps estimé",
     "d": "j",
     "min": "min",
     "Waiting": "En attente",

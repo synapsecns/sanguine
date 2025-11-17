@@ -42,7 +42,6 @@
     "Not bridgeable": "ブリッジ不可",
     "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "{originChainName}の{fromToken}から{destinationChainName}の{toToken}へのブリッジを正常に開始しました",
     "Router": "ルーター",
-    "estimatedTime": "推定時間",
     "Powered by Synapse": "Synapseによって提供",
     "Will also receive": "また受け取ります",
     "From": "送信元",
@@ -292,6 +291,7 @@
     "Exchange assets on chain": "チェーン上でアセットを交換。",
     "Successfully swapped from {swapFromToken} to {swapToToken} on {currentChainName}": "{currentChainName}で{swapFromToken}から{swapToToken}へのスワップが成功しました",
     "available": "利用可能",
+    "Balance": "残高",
     "Expected price on": "予想価格：",
     "Swap paused": "スワップ一時停止中",
     "Please select Origin network": "オリジンネットワークを選択してください",
@@ -309,6 +309,7 @@
     "Swapping {fromSymbol} on {chain} to {toSymbol}": "{chain}上の{fromSymbol}から{toSymbol}へスワップ中"
   },
   "Time": {
+    "Estimated Time": "推定時間",
     "d": "日",
     "min": "分",
     "Waiting": "待機中",
