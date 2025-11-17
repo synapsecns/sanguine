@@ -11,6 +11,7 @@ import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { getSignificantDecimals } from '@/utils/getSignificantDecimals'
+import { formatSlippage } from '@/utils/formatSlippage'
 
 export const BridgeExchangeRateInfo = () => {
   /* TODO:
@@ -111,10 +112,7 @@ const Slippage = () => {
             <span className="text-zinc-400">{t(error)}</span>
           )}
           {!isLoading && !error && slippage !== null && (
-            <span className={textColor}>
-              {slippage >= 0 ? '+' : ''}
-              {slippage.toFixed(2)}%
-            </span>
+            <span className={textColor}>{formatSlippage(slippage)}</span>
           )}
           {!isLoading && !error && slippage === null && (
             <span className="">−</span>

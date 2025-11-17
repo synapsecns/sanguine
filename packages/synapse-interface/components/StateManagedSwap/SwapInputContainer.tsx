@@ -162,7 +162,7 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
       </div>
       <BridgeAmountContainer>
         <SwapFromTokenSelector />
-        <div className="flex flex-col w-full gap-1">
+        <div className="flex flex-col w-full">
           <AmountInput
             setIsTyping={setIsTyping}
             inputRef={inputRef}

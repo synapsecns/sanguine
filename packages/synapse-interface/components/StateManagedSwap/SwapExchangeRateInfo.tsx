@@ -6,6 +6,7 @@ import { CHAINS_BY_ID } from '@constants/chains'
 import { Token } from '@/utils/types'
 import { useUsdSlippage } from '@hooks/useUsdSlippage'
 import { formatBigIntToString } from '@/utils/bigint/format'
+import { formatSlippage } from '@/utils/formatSlippage'
 
 const SwapExchangeRateInfo = ({
   fromAmount,
@@ -115,10 +116,7 @@ const Slippage = ({
           {isLoading && <span className="text-[#88818C]">{t('Calculating')}</span>}
           {!isLoading && error && <span className="text-[#88818C]">{t(error)}</span>}
           {!isLoading && !error && slippage !== null && (
-            <span className={textColor}>
-              {slippage >= 0 ? '+' : ''}
-              {slippage.toFixed(2)}%
-            </span>
+            <span className={textColor}>{formatSlippage(slippage)}</span>
           )}
           {!isLoading && !error && slippage === null && (
             <span className="text-[#88818C]">—</span>

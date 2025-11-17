@@ -107,6 +107,6 @@ export const formatInlineUsdDifference = (diff: number | null): string => {
   }
 
   // Format with sign, dynamic decimal places, and thousand separators
-  const sign = diff >= 0 ? '+' : '-'
+  const sign = diff >= 0 ? '+' : '−'
   return ` (${sign}$${formatUsdValue(absValue)})`
 }

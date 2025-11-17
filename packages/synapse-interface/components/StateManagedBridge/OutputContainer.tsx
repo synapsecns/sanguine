@@ -109,7 +109,7 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
 
       <BridgeAmountContainer>
         <ToTokenSelector />
-        <div className="flex flex-col w-full gap-1">
+        <div className="flex flex-col w-full">
           <AmountInput
             disabled={true}
             showValue={

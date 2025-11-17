@@ -71,7 +71,7 @@ export const SwapOutputContainer = () => {
     <BridgeSectionContainer>
       <BridgeAmountContainer>
         <SwapToTokenSelector />
-        <div className="flex flex-col w-full gap-1">
+        <div className="flex flex-col w-full">
           <AmountInput
             disabled={true}
             showValue={showValue}
