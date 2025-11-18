@@ -3,7 +3,7 @@ import { useAccount } from 'wagmi'
 import { useTranslations } from 'next-intl'
 
 import { useUsdSlippage } from '@hooks/useUsdSlippage'
-import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
+import { formatBigIntToString } from '@/utils/bigint/format'
 import { getValidAddress, isValidAddress } from '@/utils/isValidAddress'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { CHAINS_BY_ID } from '@constants/chains'
@@ -204,7 +204,8 @@ const GasDropLabel = () => {
     significantDecimals
   )
 
-  const airdropInDollars = getAirdropInDollars(toChainId, formattedGasDropAmount)
+  const price = useDefiLlamaPrice({ addresses: { [toChainId]: zeroAddress } })
+  const airdropInDollars = calculateUsdValue(formattedGasDropAmount, price)
 
   if (isLoading || gasDropAmount === EMPTY_BRIDGE_QUOTE.gasDropAmount) {
     return null
@@ -221,21 +222,4 @@ const GasDropLabel = () => {
       </span>
     </>
   )
-}
-
-const getAirdropInDollars = (
-  chainId: number,
-  formattedGasDropAmount: string
-) => {
-  const price = useDefiLlamaPrice({
-    addresses: {
-      [chainId]: zeroAddress
-    }
-  })
-
-  if (price) {
-    return calculateUsdValue(formattedGasDropAmount, price)
-  } else {
-    return undefined
-  }
 }

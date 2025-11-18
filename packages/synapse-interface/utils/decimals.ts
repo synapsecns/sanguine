@@ -1,5 +1,5 @@
-import { Token } from '@utils/types'
-import { parseUnits } from 'viem'
+import { Token } from '@/utils/types'
+import { stringToBigInt } from '@/utils/bigint/format'
 
 export const getTokenDecimals = (
   token?: Pick<Token, 'decimals'>,
@@ -21,5 +21,5 @@ export const parseTokenAmount = (
 
   if (!decimals || !amount) return undefined
 
-  return parseUnits(amount, decimals)
+  return stringToBigInt(amount, decimals)
 }
