@@ -13,9 +13,11 @@ import { CHAIN_ID_TO_DEFILLAMA_NAME } from '@constants/defiLlama'
  * @returns Price in USD, undefined (loading), or null (not available)
  */
 export const useDefiLlamaPrice = (
-  token: Token | null,
-  chainId: number | null
+  token: Token | null
 ): number | null | undefined => {
+  // Get first chainId: address pair
+  const chainId = token ? Object.keys(token.addresses)[0] : null
+
   // Get chain name from mapping
   const chainName = chainId ? CHAIN_ID_TO_DEFILLAMA_NAME[chainId] : null
 

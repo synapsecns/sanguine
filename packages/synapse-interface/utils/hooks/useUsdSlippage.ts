@@ -80,8 +80,8 @@ export const useUsdSlippage = ({
   outputAmount,
 }: UseUsdSlippageParams): UseUsdSlippageResult => {
   // Fetch prices for both tokens
-  const originPrice = useDefiLlamaPrice(originToken, originChainId)
-  const destPrice = useDefiLlamaPrice(destToken, destChainId)
+  const originPrice = useDefiLlamaPrice(originToken)
+  const destPrice = useDefiLlamaPrice(destToken)
 
   // Validate all required parameters are present
   const hasAllParams = Boolean(

@@ -55,7 +55,7 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
     fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
       ? debouncedFromValue
       : showValue
-  const usdValue = useUsdDisplay(toToken, outputValue, toChainId)
+  const usdValue = useUsdDisplay(toToken, outputValue)
 
   // Convert input amount to bigint for slippage calculation
   const inputAmount =

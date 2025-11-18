@@ -33,7 +33,7 @@ export const SwapOutputContainer = () => {
     swapQuote.outputAmountString === '0' ? '' : swapQuote.outputAmountString
 
   // Fetch token price and calculate USD value
-  const usdValue = useUsdDisplay(swapToToken, showValue, swapChainId)
+  const usdValue = useUsdDisplay(swapToToken, showValue)
 
   // Convert input amount to bigint for slippage calculation
   const inputAmount =

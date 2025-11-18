@@ -58,7 +58,7 @@ export const InputContainer: React.FC<InputContainerProps> = ({
   } = useGasEstimator()
 
   // Fetch token price and calculate USD value
-  const usdValue = useUsdDisplay(fromToken, localInputValue, fromChainId)
+  const usdValue = useUsdDisplay(fromToken, localInputValue)
 
   const isInputMax =
     maxBridgeableGas?.toString() === debouncedFromValue ||

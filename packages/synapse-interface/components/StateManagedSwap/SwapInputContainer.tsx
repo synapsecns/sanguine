@@ -79,7 +79,7 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
   const t = useTranslations('Swap')
 
   // Fetch token price and calculate USD value
-  const usdValue = useUsdDisplay(swapFromToken, showValue, swapChainId)
+  const usdValue = useUsdDisplay(swapFromToken, showValue)
 
   useEffect(() => {
     if (

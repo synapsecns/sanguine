@@ -19,9 +19,8 @@ import { calculateUsdValue } from '@utils/calculateUsdValue'
  */
 export const useUsdDisplay = (
   token: Token | null,
-  amount: string | null | undefined,
-  chainId: number | null
+  amount: string | null | undefined
 ): string => {
-  const price = useDefiLlamaPrice(token, chainId)
+  const price = useDefiLlamaPrice(token)
   return calculateUsdValue(amount, price)
 }
