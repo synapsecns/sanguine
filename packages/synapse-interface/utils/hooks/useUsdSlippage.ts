@@ -1,4 +1,5 @@
 import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
+import { getTokenDecimals } from '@utils/decimals'
 import { Token } from '@utils/types'
 import { formatBigIntToString } from '@utils/bigint/format'
 import { AbsoluteThreshold, PercentageThreshold } from '@constants/slippage'
@@ -26,18 +27,6 @@ const DEFAULT_RESULT: UseUsdSlippageResult = {
   isLoading: false,
   error: null,
   textColor: '',
-}
-
-/**
- * Extracts token decimals for a given chain
- */
-const getTokenDecimals = (
-  token: Token,
-  chainId: number
-): number | undefined => {
-  return typeof token.decimals === 'number'
-    ? token.decimals
-    : token.decimals[chainId]
 }
 
 /**

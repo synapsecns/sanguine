@@ -23,7 +23,7 @@ import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { formatAmount } from '@/utils/formatAmount'
 import { useUsdSlippage } from '@hooks/useUsdSlippage'
-import { stringToBigInt } from '@/utils/bigint/format'
+import { getTokenDecimals, parseTokenAmount } from '@/utils/decimals'
 
 interface OutputContainerProps {
   isQuoteStale: boolean
@@ -58,18 +58,11 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
   const usdValue = useUsdDisplay(toToken, outputValue)
 
   // Convert input amount to bigint for slippage calculation
-  const inputAmount =
-    bridgeQuote.inputAmountForQuote &&
-    bridgeQuote.inputAmountForQuote !== '0' &&
-    bridgeQuote.originTokenForQuote &&
+  const inputAmount = parseTokenAmount(
+    bridgeQuote.inputAmountForQuote,
+    bridgeQuote.originTokenForQuote,
     fromChainId
-      ? stringToBigInt(
-          bridgeQuote.inputAmountForQuote,
-          typeof bridgeQuote.originTokenForQuote.decimals === 'number'
-            ? bridgeQuote.originTokenForQuote.decimals
-            : bridgeQuote.originTokenForQuote.decimals[fromChainId]
-        )
-      : null
+  )
 
   // Calculate USD-based slippage to get USD difference
   const { usdDifference } = useUsdSlippage({
@@ -88,10 +81,7 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
   const toTokenBalance = toChainBalances?.find(
     (t) => t.tokenAddress === toTokenAddress
   )?.balance
-  const toTokenDecimals =
-    typeof toToken?.decimals === 'number'
-      ? toToken.decimals
-      : toToken?.decimals?.[toChainId]
+  const toTokenDecimals = getTokenDecimals(toToken, toChainId)
   const parsedBalance =
     toTokenBalance !== undefined && toTokenDecimals !== undefined
       ? getParsedBalance(toTokenBalance, toTokenDecimals)

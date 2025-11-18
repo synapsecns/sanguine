@@ -14,6 +14,7 @@ import { formatSlippage } from '@/utils/formatSlippage'
 import { useDefiLlamaPrice } from '@/utils/hooks/useDefiLlamaPrice'
 import { zeroAddress } from 'viem'
 import { calculateUsdValue } from '@/utils/calculateUsdValue'
+import { parseTokenAmount } from '@/utils/decimals'
 
 export const BridgeExchangeRateInfo = () => {
   /* TODO:
@@ -74,18 +75,11 @@ const Slippage = () => {
   } = useBridgeQuoteState()
 
   // Parse input amount - convert decimal string to bigint
-  const inputAmount =
-    inputAmountForQuote &&
-    inputAmountForQuote !== '0' &&
-    originTokenForQuote &&
+  const inputAmount = parseTokenAmount(
+    inputAmountForQuote,
+    originTokenForQuote,
     fromChainId
-      ? stringToBigInt(
-          inputAmountForQuote,
-          typeof originTokenForQuote.decimals === 'number'
-            ? originTokenForQuote.decimals
-            : originTokenForQuote.decimals[fromChainId]
-        )
-      : null
+  )
 
   // Calculate USD-based slippage
   const {

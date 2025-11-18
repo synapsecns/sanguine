@@ -15,7 +15,7 @@ import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { formatAmount } from '@/utils/formatAmount'
 import { useUsdSlippage } from '@hooks/useUsdSlippage'
-import { stringToBigInt } from '@/utils/bigint/format'
+import { getTokenDecimals, parseTokenAmount } from '@/utils/decimals'
 
 export const SwapOutputContainer = () => {
   const t = useTranslations('Swap')
@@ -36,10 +36,11 @@ export const SwapOutputContainer = () => {
   const usdValue = useUsdDisplay(swapToToken, showValue)
 
   // Convert input amount to bigint for slippage calculation
-  const inputAmount =
-    swapFromToken && swapFromValue && swapFromValue !== '0'
-      ? stringToBigInt(swapFromValue, swapFromToken.decimals[swapChainId])
-      : null
+  const inputAmount = parseTokenAmount(
+    swapFromValue,
+    swapFromToken,
+    swapChainId
+  )
 
   // Calculate USD-based slippage to get USD difference
   const { usdDifference } = useUsdSlippage({
@@ -60,7 +61,7 @@ export const SwapOutputContainer = () => {
     (token) => token.tokenAddress === swapToToken?.addresses[swapChainId]
   )
   const balance = tokenData?.balance
-  const decimals = tokenData?.token?.decimals[swapChainId]
+  const decimals = getTokenDecimals(swapToToken, swapChainId)
   const parsedBalance =
     balance !== undefined && decimals !== undefined
       ? getParsedBalance(balance, decimals)
