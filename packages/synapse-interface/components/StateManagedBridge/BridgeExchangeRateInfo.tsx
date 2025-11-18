@@ -2,17 +2,18 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { useAccount } from 'wagmi'
 import { useTranslations } from 'next-intl'
 
-import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import { useUsdSlippage } from '@hooks/useUsdSlippage'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { getValidAddress, isValidAddress } from '@/utils/isValidAddress'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { CHAINS_BY_ID } from '@constants/chains'
-import * as CHAINS from '@constants/chains/master'
 import {DATA_PLACEHOLDER} from '@/constants/placeholders'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { getSignificantDecimals } from '@/utils/getSignificantDecimals'
 import { formatSlippage } from '@/utils/formatSlippage'
+import { useDefiLlamaPrice } from '@/utils/hooks/useDefiLlamaPrice'
+import { zeroAddress } from 'viem'
+import { calculateUsdValue } from '@/utils/calculateUsdValue'
 
 export const BridgeExchangeRateInfo = () => {
   /* TODO:
@@ -209,7 +210,7 @@ const GasDropLabel = () => {
     significantDecimals
   )
 
-  const airdropInDollars = getAirdropInDollars(symbol, formattedGasDropAmount)
+  const airdropInDollars = getAirdropInDollars(toChainId, formattedGasDropAmount)
 
   if (isLoading || gasDropAmount === EMPTY_BRIDGE_QUOTE.gasDropAmount) {
     return null
@@ -222,23 +223,24 @@ const GasDropLabel = () => {
       </span>
       <span>
         {' '}
-        {symbol} {airdropInDollars && `($${airdropInDollars})`}
+        {symbol} {airdropInDollars && `(${airdropInDollars})`}
       </span>
     </>
   )
 }
 
 const getAirdropInDollars = (
-  symbol: string,
+  chainId: number,
   formattedGasDropAmount: string
 ) => {
-  const decimals = symbol === 'JEWEL' ? 4 : 2
-  const price = useCoingeckoPrice(symbol)
+  const price = useDefiLlamaPrice({
+    addresses: {
+      [chainId]: zeroAddress
+    }
+  })
 
   if (price) {
-    const airdropInDollars = parseFloat(formattedGasDropAmount) * price
-
-    return airdropInDollars.toFixed(decimals)
+    return calculateUsdValue(formattedGasDropAmount, price)
   } else {
     return undefined
   }

@@ -5,15 +5,13 @@ import { CHAIN_ID_TO_DEFILLAMA_NAME } from '@constants/defiLlama'
 /**
  * Hook to fetch token price from DefiLlama API
  *
- * Follows the SWR pattern used in useCoingeckoPrice for consistency.
  * Returns undefined while loading, null if price unavailable, or the price number.
  *
  * @param token - Token object with addresses
- * @param chainId - Chain ID to fetch price for
  * @returns Price in USD, undefined (loading), or null (not available)
  */
 export const useDefiLlamaPrice = (
-  token: Token | null
+  token: Pick<Token, 'addresses' | 'priceOverride'> | null
 ): number | null | undefined => {
   // Get first chainId: address pair
   const chainId = token ? Object.keys(token.addresses)[0] : null
