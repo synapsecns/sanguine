@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@binance/w3w-rainbow-connector-v2": "^1.0.2",
-    "@cloudflare/next-on-pages": "^1.11.0",
+    "@cloudflare/next-on-pages": "^1.13.16",
     "@codecov/webpack-plugin": "^0.0.1-beta.10",
     "@ethersproject/bignumber": "5.7.0",
     "@ethersproject/providers": "5.7.2",
@@ -50,7 +50,7 @@
     "@types/web3": "^1.2.2",
     "@visx/chord": "^3.0.0",
     "@visx/shape": "^3.0.0",
-    "@wagmi/connectors": "^5.1.11",
+    "@wagmi/connectors": "^7.0.0",
     "@wagmi/core": "^2.13.5",
     "babel-plugin-transform-bigint": "^1.0.32",
     "deepmerge": "^4.3.1",
