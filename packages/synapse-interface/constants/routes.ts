@@ -49,11 +49,6 @@ export const NAVIGATION: RouteObject = {
       startsWith: STAKE_PATH,
     },
   },
-  Analytics: {
-    path: EXPLORER_PATH,
-    text: 'Explorer',
-    match: null,
-  },
   SYN: {
     path: SYN_TOKEN_LINK,
     text: '$SYN',
@@ -62,11 +57,6 @@ export const NAVIGATION: RouteObject = {
   Solana: {
     path: SOLANA_BRIDGE_LINK,
     text: 'Solana Bridge',
-    match: null,
-  },
-  Cortex: {
-    path: STAKE_SYN_FOR_CX_URL,
-    text: 'Stake SYN for CX',
     match: null,
   },
 }
