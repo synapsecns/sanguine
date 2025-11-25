@@ -1,5 +1,4 @@
 import {
-  EXPLORER_PATH,
   SWAP_PATH,
   STAKE_PATH,
   POOLS_PATH,
@@ -8,7 +7,6 @@ import {
   BRIDGE_PATH,
   SOLANA_BRIDGE_LINK,
   SYN_TOKEN_LINK,
-  STAKE_SYN_FOR_CX_URL,
 } from './urls'
 
 export interface RouteObject {
