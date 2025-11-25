@@ -399,7 +399,7 @@ export const BUSD = new Token({
   color: 'yellow',
   priorityRank: 200,
   routeSymbol: 'BUSD',
-  priceOverride: 1.0,
+  priceOverride: 1,
 })
 
 export const USDC = new Token({
@@ -447,7 +447,7 @@ export const USDC = new Token({
   color: 'blue',
   priorityRank: 100,
   routeSymbol: 'USDC',
-  priceOverride: 1.0,
+  priceOverride: 1,
 })
 
 export const METISUSDC = new Token({
@@ -500,7 +500,7 @@ export const USDT = new Token({
   visibilityRank: 100,
   priorityRank: 101,
   routeSymbol: 'USDT',
-  priceOverride: 1.0,
+  priceOverride: 1,
 })
 
 export const USDT0 = new Token({
@@ -517,7 +517,7 @@ export const USDT0 = new Token({
   visibilityRank: 100,
   priorityRank: 102,
   routeSymbol: 'USD₮0',
-  priceOverride: 1.0,
+  priceOverride: 1,
 })
 
 export const DAI = new Token({
@@ -540,7 +540,7 @@ export const DAI = new Token({
   visibilityRank: 100,
   priorityRank: 102,
   routeSymbol: 'DAI',
-  priceOverride: 1.0,
+  priceOverride: 1,
 })
 
 export const WBTC = new Token({
@@ -638,7 +638,7 @@ export const FRAX = new Token({
   color: 'gray',
   priorityRank: 200,
   routeSymbol: 'FRAX',
-  priceOverride: 1.0,
+  priceOverride: 1,
 })
 
 export const SYNFRAX = new Token({
@@ -656,7 +656,7 @@ export const SYNFRAX = new Token({
   color: 'gray',
   priorityRank: 400,
   routeSymbol: 'synFRAX',
-  priceOverride: 1.0,
+  priceOverride: 1,
 })
 
 export const NUSD = new Token({
@@ -685,6 +685,7 @@ export const NUSD = new Token({
   visibilityRank: 50,
   priorityRank: 110,
   routeSymbol: 'nUSD',
+  // nUSD is redeemable for ~1.0012 USD on Ethereum Mainnet
   priceOverride: 1.0012,
 })
 
@@ -903,7 +904,7 @@ export const USDCe = new Token({
   visibilityRank: 100,
   priorityRank: 125,
   routeSymbol: 'USDC.e',
-  priceOverride: 1.0,
+  priceOverride: 1,
 })
 
 export const USDTe = new Token({
@@ -920,7 +921,7 @@ export const USDTe = new Token({
   color: 'green',
   priorityRank: 125,
   routeSymbol: 'USDT.e',
-  priceOverride: 1.0,
+  priceOverride: 1,
 })
 
 export const SUSD = new Token({
@@ -1043,7 +1044,7 @@ export const DAIE = new Token({
   visibilityRank: 100,
   priorityRank: 125,
   routeSymbol: 'DAI.e',
-  priceOverride: 1.0,
+  priceOverride: 1,
 })
 
 export const KLAY = new Token({

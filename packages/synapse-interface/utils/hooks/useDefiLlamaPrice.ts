@@ -35,9 +35,7 @@ export const useDefiLlamaPrice = (
 
   // Build API URL - return null if priceOverride exists (SWR won't fetch)
   const apiUrl =
-    token?.priceOverride !== undefined
-      ? null
-      : coinKey
+    coinKey && !token?.priceOverride
       ? `https://coins.llama.fi/prices/current/${coinKey}`
       : null
 

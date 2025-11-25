@@ -66,10 +66,10 @@ export const calculateUsdValue = (
   }
 
   // Parse amount to number (remove commas first)
-  const numericAmount = parseFloat(amount.replace(/,/g, ''))
+  const numericAmount = Number.parseFloat(amount.replaceAll(',', ''))
 
   // Return placeholder if amount is invalid or zero
-  if (isNaN(numericAmount) || numericAmount === 0) {
+  if (Number.isNaN(numericAmount) || numericAmount === 0) {
     return USD_VALUE_PLACEHOLDER
   }
 

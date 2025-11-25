@@ -121,10 +121,10 @@ export const useUsdSlippage = ({
 
   // Calculate slippage
   try {
-    const inputAmountDecimal = parseFloat(
+    const inputAmountDecimal = Number.parseFloat(
       formatBigIntToString(inputAmount, originDecimals)
     )
-    const outputAmountDecimal = parseFloat(
+    const outputAmountDecimal = Number.parseFloat(
       formatBigIntToString(outputAmount, destDecimals)
     )
 
