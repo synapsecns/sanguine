@@ -42,20 +42,16 @@ export const AvailableBalance = ({
     )
   } else {
     return (
-      <label
-        className={joinClassNames(labelClassNames)}
-        htmlFor="inputRow"
-        onClick={onClick}
-      >
+      <button className={joinClassNames(labelClassNames)} onClick={onClick}>
         <span className="text-zinc-500 dark:text-zinc-400">
           {t('Balance')}:{' '}
         </span>
         <span className={onClick ? 'text-fuchsia-400' : ''}>
-          {maxBridgeableBalance != null
+          {maxBridgeableBalance
             ? formatAmount(maxBridgeableBalance.toString())
             : balance ?? '0.0'}
         </span>
-      </label>
+      </button>
     )
   }
 }

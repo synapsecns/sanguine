@@ -175,8 +175,7 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
               {usdValue}
             </div>
             {hasMounted && isConnected && (
-              <label
-                htmlFor="inputRow"
+              <button
                 className={joinClassNames({
                   ...labelClassNames,
                   cursor: isBalanceClickable ? 'cursor-pointer' : 'cursor-default',
@@ -191,7 +190,7 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
                 <span className={isBalanceClickable ? 'text-fuchsia-400' : ''}>
                   {formattedBalance ?? '0.0'}
                 </span>
-              </label>
+              </button>
             )}
           </div>
         </div>
