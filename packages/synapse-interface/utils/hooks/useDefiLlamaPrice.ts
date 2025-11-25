@@ -13,7 +13,7 @@ import { CHAIN_ID_TO_DEFILLAMA_NAME } from '@constants/defiLlama'
 export const useDefiLlamaPrice = (
   token: Pick<Token, 'addresses' | 'priceOverride'> | null
 ): number | null | undefined => {
-  // Get first chainId: address pair
+  // Use first chain's address for consistent pricing across all chains for multi-chain tokens
   const chainId = token ? Object.keys(token.addresses)[0] : null
 
   // Get chain name from mapping
@@ -41,7 +41,10 @@ export const useDefiLlamaPrice = (
       ? `https://coins.llama.fi/prices/current/${coinKey}`
       : null
 
-  const { data, error } = useSwr(apiUrl)
+  const { data, error } = useSwr(apiUrl, {
+    refreshInterval: 60000,
+    dedupingInterval: 10000,
+  })
 
   // Return override price if defined (checked after hook call)
   if (token?.priceOverride !== undefined) {

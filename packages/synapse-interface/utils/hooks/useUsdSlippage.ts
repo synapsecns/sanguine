@@ -26,7 +26,7 @@ const DEFAULT_RESULT: UseUsdSlippageResult = {
   usdDifference: null,
   isLoading: false,
   error: null,
-  textColor: '',
+  textColor: 'text-zinc-400',
 }
 
 /**
