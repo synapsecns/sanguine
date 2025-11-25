@@ -1,0 +1,57 @@
+[
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "amount", "type": "uint256" },
+      {
+        "internalType": "uint16",
+        "name": "destinationChain",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint32",
+        "name": "destinationDomain",
+        "type": "uint32"
+      },
+      { "internalType": "bytes32", "name": "mintRecipient", "type": "bytes32" },
+      { "internalType": "address", "name": "burnToken", "type": "address" },
+      {
+        "internalType": "bytes32",
+        "name": "destinationCaller",
+        "type": "bytes32"
+      },
+      { "internalType": "uint256", "name": "maxFee", "type": "uint256" },
+      {
+        "internalType": "uint32",
+        "name": "minFinalityThreshold",
+        "type": "uint32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "refundAddress",
+            "type": "address"
+          },
+          { "internalType": "bytes", "name": "signedQuote", "type": "bytes" },
+          { "internalType": "bytes", "name": "instructions", "type": "bytes" }
+        ],
+        "internalType": "struct ExecutorArgs",
+        "name": "executorArgs",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          { "internalType": "uint16", "name": "dbps", "type": "uint16" },
+          { "internalType": "address", "name": "payee", "type": "address" }
+        ],
+        "internalType": "struct FeeArgs",
+        "name": "feeArgs",
+        "type": "tuple"
+      }
+    ],
+    "name": "depositForBurn",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  }
+]

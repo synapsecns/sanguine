@@ -33,13 +33,13 @@ export class CctpModuleSet extends SynapseModuleSet {
   constructor(chains: ChainProvider[]) {
     super()
     this.modules = {}
-    chains.forEach(({ chainId }) => {
+    chains.forEach(({ chainId, provider }) => {
       const address = CCTP_V2_EXECUTOR_ADDRESS_MAP[chainId]
       // Skip chains without an address
       if (!address) {
         return
       }
-      this.modules[chainId] = new CctpModule(chainId, address)
+      this.modules[chainId] = new CctpModule(chainId, provider, address)
     })
   }
 
