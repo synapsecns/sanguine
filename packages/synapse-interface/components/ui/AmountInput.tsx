@@ -45,27 +45,25 @@ export function AmountInput({
   }
 
   return (
-    <>
-      <div className="flex items-center">
-        {isLoading && <LoadingDots className="opacity-50" />}
-        <NumericFormat
-          inputMode="numeric"
-          getInputRef={inputRef}
-          placeholder="0.0000"
-          value={isLoading ? '0' : showValue}
-          pattern={disabled ? '[0-9.]+' : '^[0-9]+([.,]?[0-9]+)?$'}
-          disabled={disabled}
-          readOnly={disabled}
-          onChange={handleInputChange}
-          className={joinClassNames(inputClassNames)}
-          name="inputRow"
-          minLength={1}
-          maxLength={79}
-          autoComplete="off"
-          thousandSeparator={true}
-          allowNegative={false}
-        />
-      </div>
-    </>
+    <div className="flex items-center">
+      {isLoading && <LoadingDots className="opacity-50" />}
+      <NumericFormat
+        inputMode="numeric"
+        getInputRef={inputRef}
+        placeholder="0.0000"
+        value={isLoading ? '0' : showValue}
+        pattern={disabled ? '[0-9.]+' : '^[0-9]+([.,]?[0-9]+)?$'}
+        disabled={disabled}
+        readOnly={disabled}
+        onChange={handleInputChange}
+        className={joinClassNames(inputClassNames)}
+        name="inputRow"
+        minLength={1}
+        maxLength={79}
+        autoComplete="off"
+        thousandSeparator={true}
+        allowNegative={false}
+      />
+    </div>
   )
 }
