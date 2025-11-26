@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.11](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-constants@1.8.10...@synapsecns/synapse-constants@1.8.11) (2025-11-26)
+
+
+### Bug Fixes
+
+* replace RPCs that are not responding ([#3846](https://github.com/synapsecns/sanguine/issues/3846)) ([1c67df0](https://github.com/synapsecns/sanguine/commit/1c67df040dec29cf2a16cd427226c60ef7f1bd2b))
+
+
+
+
+
 ## [1.8.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-constants@1.8.9...@synapsecns/synapse-constants@1.8.10) (2025-04-10)
 
 **Note:** Version bump only for package @synapsecns/synapse-constants

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.24](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.23...@synapsecns/rest-api@1.13.24) (2025-11-26)
+
+
+### Bug Fixes
+
+* replace RPCs that are not responding ([#3846](https://github.com/synapsecns/sanguine/issues/3846)) ([1c67df0](https://github.com/synapsecns/sanguine/commit/1c67df040dec29cf2a16cd427226c60ef7f1bd2b))
+
+
+
+
+
 ## [1.13.23](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.13.22...@synapsecns/rest-api@1.13.23) (2025-11-13)
 
 **Note:** Version bump only for package @synapsecns/rest-api

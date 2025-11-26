@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.47](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.46...@synapsecns/widget@0.9.47) (2025-11-26)
+
+
+### Bug Fixes
+
+* replace RPCs that are not responding ([#3846](https://github.com/synapsecns/sanguine/issues/3846)) ([1c67df0](https://github.com/synapsecns/sanguine/commit/1c67df040dec29cf2a16cd427226c60ef7f1bd2b))
+
+
+
+
+
 ## [0.9.46](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.45...@synapsecns/widget@0.9.46) (2025-11-13)
 
 **Note:** Version bump only for package @synapsecns/widget

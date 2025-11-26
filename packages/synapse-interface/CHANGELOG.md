@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.43.31](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.30...@synapsecns/synapse-interface@0.43.31) (2025-11-26)
+
+
+### Bug Fixes
+
+* replace RPCs that are not responding ([#3846](https://github.com/synapsecns/sanguine/issues/3846)) ([1c67df0](https://github.com/synapsecns/sanguine/commit/1c67df040dec29cf2a16cd427226c60ef7f1bd2b))
+
+
+
+
+
 ## [0.43.30](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.29...@synapsecns/synapse-interface@0.43.30) (2025-11-25)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
