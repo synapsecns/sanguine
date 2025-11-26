@@ -17,6 +17,7 @@
     "lint:check": "eslint . --max-warnings=0",
     "lint:find-string-literals": "npx eslint -c .eslintrc-i18n.js './**/*.{js,jsx,ts,tsx}'",
     "check-translation-jsons": "node scripts/checkTranslationJsons.js",
+    "check-rpc": "node scripts/checkRpcHealth.js",
     "ci:lint": "npm run lint:check",
     "build:go": " ",
     "build:slither": " ",
