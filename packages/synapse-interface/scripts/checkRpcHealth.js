@@ -18,6 +18,9 @@ const MAX_RETRIES = 3
 const TIMEOUT_MS = 10000
 const CONCURRENCY = 10
 
+// Chains where chain ID mismatch is expected (deliberate choice)
+const IGNORE_CHAIN_ID_MISMATCH = [998] // Hyperliquid
+
 const PACKAGE_PATHS = {
   'synapse-interface': '../constants/chains/master.tsx',
   'synapse-constants': '../../synapse-constants/src/constants/chains/master.ts',
@@ -91,10 +94,15 @@ function parseChainRpcUrls(filePath) {
     // Extract networkUrl (only hardcoded strings, outside rpcUrls block)
     const networkUrlMatch = blockContent.match(/networkUrl:\s*['"]([^'"]+)['"]/)
 
+    // Extract chain ID
+    const idMatch = blockContent.match(/id:\s*(\d+)/)
+    const chainId = idMatch ? parseInt(idMatch[1], 10) : null
+
     if (primaryMatch || fallbackMatch || networkUrlMatch) {
       chains.push({
         chain: chainName,
         name: displayName,
+        id: chainId,
         primary: primaryMatch ? primaryMatch[1] : null,
         fallback: fallbackMatch ? fallbackMatch[1] : null,
         networkUrl: networkUrlMatch ? networkUrlMatch[1] : null,
@@ -130,8 +138,9 @@ async function runWithConcurrency(tasks, concurrency) {
 
 /**
  * Test a single RPC endpoint with retries
+ * Validates that the returned chain ID matches the expected value
  */
-async function testRpc(url, retries = MAX_RETRIES) {
+async function testRpc(url, expectedChainId, retries = MAX_RETRIES) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const controller = new AbortController()
@@ -142,7 +151,7 @@ async function testRpc(url, retries = MAX_RETRIES) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           jsonrpc: '2.0',
-          method: 'eth_blockNumber',
+          method: 'eth_chainId',
           params: [],
           id: 1,
         }),
@@ -153,7 +162,22 @@ async function testRpc(url, retries = MAX_RETRIES) {
 
       const data = await response.json()
       if (data.result) {
-        return { success: true, blockNumber: data.result }
+        const returnedChainId = parseInt(data.result, 16)
+        if (expectedChainId && returnedChainId !== expectedChainId) {
+          // Check if this chain should ignore chain ID mismatch
+          if (IGNORE_CHAIN_ID_MISMATCH.includes(expectedChainId)) {
+            return {
+              success: true,
+              warning: `Chain ID mismatch (expected ${expectedChainId}, got ${returnedChainId})`,
+              chainId: returnedChainId,
+            }
+          }
+          return {
+            success: false,
+            error: `Chain ID mismatch: expected ${expectedChainId}, got ${returnedChainId}`,
+          }
+        }
+        return { success: true, chainId: returnedChainId }
       }
       if (data.error) {
         throw new Error(data.error.message || 'RPC error')
@@ -191,6 +215,7 @@ async function checkPackage(packageName) {
       urlsToTest.push({
         chain: chain.chain,
         name: chain.name,
+        chainId: chain.id,
         type: 'primary',
         url: chain.primary,
       })
@@ -199,6 +224,7 @@ async function checkPackage(packageName) {
       urlsToTest.push({
         chain: chain.chain,
         name: chain.name,
+        chainId: chain.id,
         type: 'fallback',
         url: chain.fallback,
       })
@@ -207,6 +233,7 @@ async function checkPackage(packageName) {
       urlsToTest.push({
         chain: chain.chain,
         name: chain.name,
+        chainId: chain.id,
         type: 'networkUrl',
         url: chain.networkUrl,
       })
@@ -221,15 +248,25 @@ async function checkPackage(packageName) {
   console.log('')
 
   const failed = []
+  const warnings = []
 
   // Create tasks for parallel execution
   const tasks = urlsToTest.map((item) => async () => {
-    const result = await testRpc(item.url)
-    const status = result.success ? '\x1b[32m✓\x1b[0m' : '\x1b[31m✗\x1b[0m'
+    const result = await testRpc(item.url, item.chainId)
+    let status
+    if (result.success && result.warning) {
+      status = '\x1b[33m⚠\x1b[0m' // Yellow warning
+    } else if (result.success) {
+      status = '\x1b[32m✓\x1b[0m' // Green success
+    } else {
+      status = '\x1b[31m✗\x1b[0m' // Red failure
+    }
     console.log(`${status} ${item.chain} (${item.type}): ${item.url}`)
 
     if (!result.success) {
       failed.push({ ...item, error: result.error, package: packageName })
+    } else if (result.warning) {
+      warnings.push({ ...item, warning: result.warning, package: packageName })
     }
     return { ...item, ...result }
   })
@@ -247,6 +284,7 @@ async function checkPackage(packageName) {
 
   return {
     failed,
+    warnings,
     duplicates,
     total: urlsToTest.length,
     success: urlsToTest.length - failed.length,
@@ -267,6 +305,7 @@ async function main() {
   let totalUrls = 0
   let totalSuccess = 0
   const allFailed = []
+  const allWarnings = []
   const allDuplicates = []
 
   for (const pkg of packages) {
@@ -277,6 +316,7 @@ async function main() {
     totalUrls += result.total
     totalSuccess += result.success
     allFailed.push(...result.failed)
+    allWarnings.push(...result.warnings)
     allDuplicates.push(...result.duplicates)
     console.log('')
   }
@@ -288,7 +328,17 @@ async function main() {
 
   console.log(`Total: ${totalUrls} URLs`)
   console.log(`\x1b[32mWorking: ${totalSuccess}\x1b[0m`)
+  console.log(`\x1b[33mWarnings: ${allWarnings.length}\x1b[0m`)
   console.log(`\x1b[31mFailed: ${allFailed.length}\x1b[0m`)
+
+  if (allWarnings.length > 0) {
+    console.log('')
+    console.log('\x1b[33mChain ID warnings (expected):\x1b[0m')
+    for (const w of allWarnings) {
+      const pkgPrefix = packages.length > 1 ? `[${w.package}] ` : ''
+      console.log(`  - ${pkgPrefix}${w.chain} (${w.type}): ${w.warning}`)
+    }
+  }
 
   if (allFailed.length > 0) {
     console.log('')
