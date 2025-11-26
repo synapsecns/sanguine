@@ -5,8 +5,8 @@ export const ETHEREUM: Chain = {
   id: 1,
   name: 'Ethereum',
   rpcUrls: {
-    primary: 'https://ethereum.blockpi.network/v1/rpc/public',
-    fallback: 'https://rpc.ankr.com/eth',
+    primary: 'https://eth.drpc.org',
+    fallback: 'https://eth.llamarpc.com',
   },
   explorerUrl: 'https://etherscan.com',
   explorerName: 'Etherscan',
@@ -26,7 +26,7 @@ export const ARBITRUM: Chain = {
   id: 42161,
   name: 'Arbitrum',
   rpcUrls: {
-    primary: 'https://arbitrum.blockpi.network/v1/rpc/public',
+    primary: 'https://arbitrum.drpc.org',
     fallback: 'https://arb1.arbitrum.io/rpc',
   },
   explorerUrl: 'https://arbiscan.io',
@@ -89,8 +89,8 @@ export const CANTO: Chain = {
   id: 7700,
   name: 'Canto',
   rpcUrls: {
-    primary: 'https://mainnode.plexnode.org:8545',
-    fallback: 'https://canto.slingshot.finance',
+    primary: 'https://canto.gravitychain.io',
+    fallback: 'https://canto-rpc.ansybl.io',
   },
   explorerUrl: 'https://tuber.build/',
   explorerName: 'Canto Explorer',
@@ -98,7 +98,7 @@ export const CANTO: Chain = {
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/canto.cb85e14f.svg',
   networkName: 'Canto',
-  networkUrl: 'https://canto.slingshot.finance',
+  networkUrl: 'https://canto.gravitychain.io',
   nativeCurrency: {
     name: 'Canto',
     symbol: 'CANTO',
@@ -132,7 +132,7 @@ export const POLYGON: Chain = {
   name: 'Polygon',
   rpcUrls: {
     primary: 'https://polygon-bor.publicnode.com',
-    fallback: 'https://polygon.llamarpc.com',
+    fallback: 'https://polygon.drpc.org',
   },
   explorerUrl: 'https://polygonscan.com',
   explorerName: 'PolygonScan',
@@ -153,7 +153,7 @@ export const DFK: Chain = {
   name: 'DFK Chain',
   rpcUrls: {
     primary: 'https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc',
-    fallback: 'https://dfkchain.api.onfinality.io/public',
+    fallback: 'https://avax-dfk.api.pocket.network',
   },
   explorerUrl: 'https://subnets.avax.network/defi-kingdoms',
   explorerName: 'DFK Subnet Explorer',
@@ -182,7 +182,7 @@ export const KLAYTN: Chain = {
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/klaytn.59495fbb.svg',
   networkName: 'Klaytn Mainnet Cypress',
-  networkUrl: 'https://public-en-cypress.klaytn.net',
+  networkUrl: 'https://klaytn.drpc.org',
   nativeCurrency: {
     name: 'Klaytn',
     symbol: 'KLAY',
@@ -194,8 +194,8 @@ export const FANTOM: Chain = {
   id: 250,
   name: 'Fantom',
   rpcUrls: {
-    primary: 'https://rpc.ftm.tools',
-    fallback: 'https://fantom-rpc.gateway.pokt.network/',
+    primary: 'https://rpcapi.fantom.network',
+    fallback: 'https://fantom.drpc.org',
   },
   explorerUrl: 'https://ftmscan.com',
   explorerName: 'FTMScan',
@@ -203,7 +203,7 @@ export const FANTOM: Chain = {
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/fantom.1e444dad.svg',
   networkName: 'Fantom Opera',
-  networkUrl: 'https://rpc.ftm.tools',
+  networkUrl: 'https://rpcapi.fantom.network',
   nativeCurrency: {
     name: 'Fantom',
     symbol: 'FTM',
@@ -215,8 +215,8 @@ export const CRONOS: Chain = {
   id: 25,
   name: 'Cronos',
   rpcUrls: {
-    primary: 'https://evm-cronos.crypto.org',
-    fallback: 'https://cronos.blockpi.network/v1/rpc/public',
+    primary: 'https://evm.cronos.org',
+    fallback: 'https://cronos.drpc.org',
   },
   explorerUrl: 'https://cronoscan.com',
   explorerName: 'CronoScan',
@@ -237,7 +237,7 @@ export const BOBA: Chain = {
   name: 'Boba Chain',
   rpcUrls: {
     primary: 'https://mainnet.boba.network',
-    fallback: 'https://replica.boba.network',
+    fallback: 'https://boba-eth.drpc.org',
   },
   explorerUrl: 'https://bobascan.com',
   explorerName: 'Boba Explorer',
@@ -258,7 +258,7 @@ export const METIS: Chain = {
   name: 'Metis',
   rpcUrls: {
     primary: 'https://andromeda.metis.io/?owner=1088',
-    fallback: 'https://metis-mainnet.public.blastapi.io',
+    fallback: 'https://metis.drpc.org',
   },
   explorerUrl: 'https://andromeda-explorer.metis.io',
   explorerName: 'Metis Explorer',
@@ -321,7 +321,7 @@ export const MOONBEAM: Chain = {
   name: 'Moonbeam',
   rpcUrls: {
     primary: 'https://rpc.api.moonbeam.network',
-    fallback: 'https://moonbeam.public.blastapi.io',
+    fallback: 'https://moonbeam.drpc.org',
   },
   explorerUrl: 'https://moonbeam.moonscan.io',
   explorerName: 'Moonbeam Explorer',
@@ -342,7 +342,7 @@ export const MOONRIVER: Chain = {
   name: 'Moonriver',
   rpcUrls: {
     primary: 'https://rpc.api.moonriver.moonbeam.network',
-    fallback: 'https://moonriver.public.blastapi.io',
+    fallback: 'https://moonriver.drpc.org',
   },
   explorerUrl: 'https://moonriver.moonscan.io',
   explorerName: 'Moonriver Explorer',
@@ -383,8 +383,8 @@ export const BASE: Chain = {
   id: 8453,
   name: 'Base',
   rpcUrls: {
-    primary: 'https://base.blockpi.network/v1/rpc/public',
-    fallback: 'https://developer-access-mainnet.base.org',
+    primary: 'https://mainnet.base.org',
+    fallback: 'https://base.drpc.org',
   },
   explorerUrl: 'https://basescan.org',
   explorerName: 'BaseScan',
@@ -406,7 +406,7 @@ export const BLAST: Chain = {
   rpcUrls: {
     primary:
       'https://lingering-indulgent-replica.blast-mainnet.quiknode.pro/6667a8f4be701cb6549b415d567bc706fb2f13a8/',
-    fallback: 'https://blast.blockpi.network/v1/rpc/publicChain',
+    fallback: 'https://blast.drpc.org',
   },
   explorerUrl: 'https://blastscan.io',
   explorerName: 'Blastscan',
@@ -427,7 +427,7 @@ export const SCROLL: Chain = {
   name: 'Scroll',
   rpcUrls: {
     primary: 'https://rpc.scroll.io/',
-    fallback: 'https://scroll.blockpi.network/v1/rpc/public',
+    fallback: 'https://scroll.drpc.org',
   },
   explorerUrl: 'https://scrollscan.com',
   explorerName: 'Scrollscan',
@@ -448,7 +448,7 @@ export const LINEA: Chain = {
   name: 'Linea',
   rpcUrls: {
     primary: 'https://rpc.linea.build',
-    fallback: 'https://linea.blockpi.network/v1/rpc/public',
+    fallback: 'https://linea.drpc.org',
   },
   explorerUrl: 'https://lineascan.build',
   explorerName: 'LineaScan',
@@ -469,7 +469,7 @@ export const WORLDCHAIN: Chain = {
   name: 'World Chain',
   rpcUrls: {
     primary: 'https://worldchain-mainnet.g.alchemy.com/public',
-    fallback: 'https://worldchain-mainnet.g.alchemy.com/public',
+    fallback: 'https://worldchain.drpc.org',
   },
   explorerUrl: 'https://worldchain-mainnet.explorer.alchemy.com',
   explorerName: 'World Chain Explorer',
