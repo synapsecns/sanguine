@@ -2,6 +2,7 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import invariant from 'tiny-invariant'
 
+import { CctpModuleSet } from './cctp'
 import { GasZipModuleSet } from './gaszip'
 import { SynapseModuleSet } from './module'
 import { UsdtModuleSet } from './oft'
@@ -21,6 +22,7 @@ class SynapseSDK {
   public gasZipModuleSet: GasZipModuleSet
   public relayModuleSet: RelayModuleSet
   public usdtModuleSet: UsdtModuleSet
+  public cctpModuleSet: CctpModuleSet
 
   public sirSet: SynapseIntentRouterSet
   public swapEngineSet: SwapEngineSet
@@ -59,6 +61,7 @@ class SynapseSDK {
     this.gasZipModuleSet = new GasZipModuleSet(chainProviders)
     this.relayModuleSet = new RelayModuleSet(chainProviders)
     this.usdtModuleSet = new UsdtModuleSet(chainProviders)
+    this.cctpModuleSet = new CctpModuleSet(chainProviders)
     this.allModuleSets = [
       this.synapseRouterSet,
       this.synapseCCTPRouterSet,
@@ -66,6 +69,7 @@ class SynapseSDK {
       this.gasZipModuleSet,
       this.relayModuleSet,
       this.usdtModuleSet,
+      this.cctpModuleSet,
     ]
     this.sirSet = new SynapseIntentRouterSet(chainProviders)
     this.swapEngineSet = new SwapEngineSet(

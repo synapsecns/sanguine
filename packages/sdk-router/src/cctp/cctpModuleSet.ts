@@ -1,8 +1,23 @@
-import { Zero } from '@ethersproject/constants'
+import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from 'ethers'
+import { parseUnits } from 'ethers/lib/utils'
 
+import {
+  CircleFeesRequest as ChainDomains,
+  ExecutorQuoteRequest,
+  ExecutorQuoteResponse,
+  getCircleFastAllowance,
+  getCircleFees,
+  getExecutorQuote,
+} from './api'
 import { CctpModule } from './cctpModule'
 import {
+  addressToBytes32,
+  evmChainIdToWormholeChainId,
+  serializeGasInstruction,
+} from './utils'
+import {
+  CCTP_DOMAIN_MAP,
   CCTP_V2_EXECUTOR_ADDRESS_MAP,
   TOKEN_ZAP_V1_ADDRESS_MAP,
   USDC_ADDRESS_MAP,
@@ -15,11 +30,15 @@ import {
   GetBridgeRouteV2Parameters,
   GetBridgeTokenCandidatesParameters,
   Query,
-  SynapseModule,
   SynapseModuleSet,
 } from '../module'
 import { ChainProvider } from '../router'
+import { applySlippage, encodeZapData } from '../swap'
 import { isSameAddress, logExecutionTime } from '../utils'
+
+const FAST_FINALITY_THRESHOLD = 1000
+// TODO
+const MEDIAN_TIME = 30
 
 export class CctpModuleSet extends SynapseModuleSet {
   public readonly moduleName = 'CCTP'
@@ -92,8 +111,64 @@ export class CctpModuleSet extends SynapseModuleSet {
     if (!this.validateBridgeRouteV2Params(params) || !tokenZap) {
       return undefined
     }
-    // TODO: implement
-    return undefined
+    const { originSwapRoute, bridgeToken, slippage } = params
+    const domains = {
+      sourceDomainId: CCTP_DOMAIN_MAP[bridgeToken.originChainId],
+      destDomainId: CCTP_DOMAIN_MAP[bridgeToken.destChainId],
+    }
+    if (
+      domains.sourceDomainId === undefined ||
+      domains.destDomainId === undefined
+    ) {
+      return undefined
+    }
+    const request = this.getExecutorQuoteRequest(bridgeToken)
+    const [quote, fastAllowance, fastFinalityFee] = await Promise.all([
+      getExecutorQuote(request),
+      getCircleFastAllowance(),
+      this.getFastFinalityFee(domains),
+    ])
+    if (!quote || !fastAllowance || fastFinalityFee === null) {
+      return undefined
+    }
+    // Check if the fast USDC allowance is sufficient
+    if (
+      parseUnits(fastAllowance.allowance.toFixed(6), 6).lt(
+        originSwapRoute.expectedToAmount.mul(2)
+      )
+    ) {
+      // TODO: fallback to slow USDC transfer if insufficient
+      return undefined
+    }
+    const expectedFee = this.getFee(
+      originSwapRoute.expectedToAmount,
+      fastFinalityFee
+    )
+    const expectedToAmount = originSwapRoute.expectedToAmount.sub(expectedFee)
+    // With no slippage or no swap on origin, the minToAmount is the same as expectedToAmount.
+    const hasOriginSlippage = !originSwapRoute.expectedToAmount.eq(
+      originSwapRoute.minToAmount
+    )
+    const minToAmount =
+      hasOriginSlippage && slippage
+        ? applySlippage(expectedToAmount, slippage)
+        : expectedToAmount
+    const zapData = await this.getZapData(
+      params,
+      domains,
+      expectedFee,
+      request,
+      quote
+    )
+    return {
+      bridgeToken,
+      toToken: bridgeToken.destToken,
+      expectedToAmount,
+      minToAmount,
+      nativeFee: BigNumber.from(quote.estimatedCost),
+      estimatedTime: MEDIAN_TIME,
+      zapData,
+    }
   }
 
   public async getBridgeRoutes(): Promise<BridgeRoute[]> {
@@ -136,5 +211,70 @@ export class CctpModuleSet extends SynapseModuleSet {
       originQuery: originQueryPrecise,
       destQuery: destQueryPrecise,
     }
+  }
+
+  private async getFastFinalityFee(
+    domains: ChainDomains
+  ): Promise<number | null> {
+    const fees = await getCircleFees(domains)
+    if (!fees || fees.length === 0) {
+      return null
+    }
+    // Extract the fee for the fast finality threshold
+    const feeInfo = fees.find(
+      (fee) => fee.finalityThreshold === FAST_FINALITY_THRESHOLD
+    )
+    return feeInfo?.minimumFee ?? null
+  }
+
+  private getExecutorQuoteRequest(
+    bridgeToken: BridgeTokenCandidate
+  ): ExecutorQuoteRequest {
+    return {
+      srcChain: evmChainIdToWormholeChainId(bridgeToken.originChainId),
+      dstChain: evmChainIdToWormholeChainId(bridgeToken.destChainId),
+      relayInstructions: serializeGasInstruction({}),
+    }
+  }
+
+  private async getZapData(
+    params: GetBridgeRouteV2Parameters,
+    domains: ChainDomains,
+    expectedFee: BigNumber,
+    request: ExecutorQuoteRequest,
+    quote: ExecutorQuoteResponse
+  ): Promise<string | undefined> {
+    const module = this.getModule(params.bridgeToken.originChainId)
+    if (!module || !params.fromSender || !params.toRecipient) {
+      return undefined
+    }
+    const tx = await module.contract.populateTransaction.depositForBurn(
+      0, // amount - will be populated within TokenZap using amountPosition
+      request.dstChain, // destinationChain (WH)
+      domains.destDomainId, // destinationDomain (CCTP)
+      addressToBytes32(params.toRecipient), // mintRecipient
+      params.bridgeToken.originToken, // burnToken
+      addressToBytes32(AddressZero), // destinationCaller
+      expectedFee.mul(2), // maxFee (inflated to account for positive slippage)
+      FAST_FINALITY_THRESHOLD, // minFinalityThreshold
+      {
+        refundAddress: params.fromSender,
+        signedQuote: quote.signedQuote,
+        instructions: request.relayInstructions,
+      }, // executorArgs
+      {
+        dbps: 0,
+        payee: AddressZero,
+      } // feeArgs
+    )
+    return encodeZapData({
+      target: module.address,
+      payload: tx.data,
+      amountPosition: 4, // first argument of depositForBurn
+    })
+  }
+
+  private getFee(amount: BigNumber, fee: number): BigNumber {
+    return amount.mul(fee).div(10000)
   }
 }

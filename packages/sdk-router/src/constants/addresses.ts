@@ -124,6 +124,19 @@ export const CCTP_V2_EXECUTOR_ADDRESS_MAP: AddressMap = {
   [SupportedChainId.WORLDCHAIN]: '0x789f2b91f7B35D5B890983328340c4600339B354',
 }
 
+export const CCTP_DOMAIN_MAP: Record<number, number> = {
+  [SupportedChainId.ARBITRUM]: 3,
+  [SupportedChainId.AVALANCHE]: 1,
+  [SupportedChainId.BASE]: 6,
+  [SupportedChainId.ETH]: 0,
+  [SupportedChainId.HYPEREVM]: 19,
+  [SupportedChainId.LINEA]: 11,
+  [SupportedChainId.OPTIMISM]: 2,
+  [SupportedChainId.POLYGON]: 7,
+  [SupportedChainId.UNICHAIN]: 10,
+  [SupportedChainId.WORLDCHAIN]: 14,
+}
+
 /**
  * USDT0 contract address for supported chains.
  * Note: for Ethereum this is actually native USDT.
