@@ -17,6 +17,17 @@ export interface ExecutorQuoteResponse {
   estimatedCost: string
 }
 
+export interface ExecutorTxStatusRequest {
+  txHash: string
+  chainId: number
+}
+
+export type ExecutorTxStatusResponse = Array<{
+  status: string
+  txHash: string
+  failureCause?: string
+}>
+
 export interface CircleFeesRequest {
   sourceDomainId: number
   destDomainId: number
@@ -48,6 +59,23 @@ export const getExecutorQuote = async (
   return data
 }
 
+export const getExecutorTxStatus = async (
+  request: ExecutorTxStatusRequest
+): Promise<ExecutorTxStatusResponse | null> => {
+  const response = await postWithTimeout(
+    'Wormhole API',
+    `${WH_API_URL}/v0/status/tx`,
+    WH_API_TIMEOUT,
+    request
+  )
+  if (!response) {
+    return null
+  }
+  const data: ExecutorTxStatusResponse = await response.json()
+
+  return data
+}
+
 export const getCircleFees = async (
   request: CircleFeesRequest
 ): Promise<CircleFeesResponse | null> => {
@@ -63,15 +91,16 @@ export const getCircleFees = async (
   return data
 }
 
-export async function getCircleFastAllowance(): Promise<CircleFastAllowanceResponse | null> {
-  const response = await getWithTimeout(
-    'CCTP API',
-    `${CCTP_API_URL}/v2/fastBurn/USDC/allowance`,
-    CCTP_API_TIMEOUT
-  )
-  if (!response) {
-    return null
+export const getCircleFastAllowance =
+  async (): Promise<CircleFastAllowanceResponse | null> => {
+    const response = await getWithTimeout(
+      'CCTP API',
+      `${CCTP_API_URL}/v2/fastBurn/USDC/allowance`,
+      CCTP_API_TIMEOUT
+    )
+    if (!response) {
+      return null
+    }
+    const data: CircleFastAllowanceResponse = await response.json()
+    return data
   }
-  const data: CircleFastAllowanceResponse = await response.json()
-  return data
-}
