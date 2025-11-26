@@ -4,11 +4,11 @@
  * Tests all URLs in parallel with configurable concurrency
  *
  * Usage:
- *   node scripts/checkRpcHealth.js                         # default: synapse-interface
- *   node scripts/checkRpcHealth.js --package rest-api
- *   node scripts/checkRpcHealth.js --package widget
- *   node scripts/checkRpcHealth.js --package synapse-constants
- *   node scripts/checkRpcHealth.js --package all           # check all packages
+ * node scripts/checkRpcHealth.js                         # default: synapse-interface
+ * node scripts/checkRpcHealth.js --package rest-api
+ * node scripts/checkRpcHealth.js --package widget
+ * node scripts/checkRpcHealth.js --package synapse-constants
+ * node scripts/checkRpcHealth.js --package all           # check all packages
  */
 
 const fs = require('fs')
@@ -31,7 +31,7 @@ const PACKAGE_PATHS = {
 /**
  * Parse CLI arguments
  */
-function parseArgs() {
+const parseArgs = () => {
   const args = process.argv.slice(2)
   let packageName = 'synapse-interface'
 
@@ -59,7 +59,7 @@ function parseArgs() {
  * Parse chain config file to extract chain names and RPC URLs
  * Skips dynamic URLs like getOmniRpcUrl()
  */
-function parseChainRpcUrls(filePath) {
+const parseChainRpcUrls = (filePath) => {
   const content = fs.readFileSync(filePath, 'utf-8')
   const chains = []
 
@@ -116,7 +116,7 @@ function parseChainRpcUrls(filePath) {
 /**
  * Run async tasks with limited concurrency
  */
-async function runWithConcurrency(tasks, concurrency) {
+const runWithConcurrency = async (tasks, concurrency) => {
   const results = []
   const executing = new Set()
 
@@ -140,7 +140,7 @@ async function runWithConcurrency(tasks, concurrency) {
  * Test a single RPC endpoint with retries
  * Validates that the returned chain ID matches the expected value
  */
-async function testRpc(url, expectedChainId, retries = MAX_RETRIES) {
+const testRpc = async (url, expectedChainId, retries = MAX_RETRIES) => {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const controller = new AbortController()
@@ -197,7 +197,7 @@ async function testRpc(url, expectedChainId, retries = MAX_RETRIES) {
 /**
  * Check a single package and return results
  */
-async function checkPackage(packageName) {
+const checkPackage = async (packageName) => {
   const configPath = path.join(__dirname, PACKAGE_PATHS[packageName])
 
   // Check if file exists
@@ -291,7 +291,7 @@ async function checkPackage(packageName) {
   }
 }
 
-async function main() {
+const main = async () => {
   const { packageName } = parseArgs()
 
   console.log('RPC Health Check')
