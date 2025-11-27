@@ -17,6 +17,7 @@ export interface _TransactionDetails {
   routerAddress: string
   estimatedTime: number
   timestamp: number
+  submittedAt?: number
   kappa?: string
   status: 'pending' | 'completed' | 'reverted' | 'refunded'
 }

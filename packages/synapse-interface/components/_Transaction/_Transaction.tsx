@@ -35,6 +35,7 @@ interface _TransactionProps {
   routerAddress: string
   estimatedTime: number // in seconds
   timestamp: number
+  submittedAt?: number
   currentTime: number
   kappa?: string
   status: 'pending' | 'completed' | 'reverted' | 'refunded'
@@ -55,12 +56,15 @@ export const _Transaction = ({
   routerAddress,
   estimatedTime,
   timestamp,
+  submittedAt,
   currentTime,
   kappa,
   status,
   disabled,
 }: _TransactionProps) => {
   const dispatch = useAppDispatch()
+
+  const startTime = submittedAt ?? timestamp
 
   const t = useTranslations('Time')
 
@@ -85,7 +89,7 @@ export const _Transaction = ({
     isCheckTxStatus,
     isCheckTxForRevert,
     isCheckTxForRefund,
-  } = calculateEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
+  } = calculateEstimatedTimeStatus(currentTime, startTime, estimatedTime)
   if (bridgeModuleName === 'Gas.zip') {
     isCheckTxForRefund = isEstimatedTimeReached
   }
@@ -174,7 +178,7 @@ export const _Transaction = ({
           >
             <div className="p-2 mt-1 text-xs cursor-default text-zinc-300">
               {t('Began')}{' '}
-              {new Date(timestamp * 1000).toLocaleString('en-US', {
+              {new Date(startTime * 1000).toLocaleString('en-US', {
                 month: 'short',
                 day: 'numeric',
                 hour: '2-digit',
@@ -221,7 +225,7 @@ export const _Transaction = ({
       <div className="px-1">
         <AnimatedProgressBar
           id={originTxHash}
-          startTime={timestamp}
+          startTime={startTime}
           estDuration={estimatedTime * 2} // 2x buffer
           status={status}
         />

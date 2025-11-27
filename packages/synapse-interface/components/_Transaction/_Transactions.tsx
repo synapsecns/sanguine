@@ -61,6 +61,7 @@ export const _Transactions = ({
               estimatedTime={tx.estimatedTime}
               kappa={tx?.kappa}
               timestamp={tx.timestamp}
+              submittedAt={tx.submittedAt}
               currentTime={currentTime}
               status={
                 tx.destinationChain.id === HYPERLIQUID.id
