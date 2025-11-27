@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.20.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.5...@synapsecns/sdk-router@0.20.6) (2025-11-27)
+
+
+### Bug Fixes
+
+* **sdk-router:** bridge time rounding ([#3852](https://github.com/synapsecns/sanguine/issues/3852)) ([e6e67b0](https://github.com/synapsecns/sanguine/commit/e6e67b028f77d5bccd23865dd75f95993bd35058))
+
+
+
+
+
 ## [0.20.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.4...@synapsecns/sdk-router@0.20.5) (2025-11-26)
 
 

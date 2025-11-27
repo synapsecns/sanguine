@@ -75,23 +75,14 @@ export const MEDIAN_TIME_CCTP = {
 
 /**
  * Median time (in seconds) for a SynapseRFQ transaction to be completed,
- * when the transaction is sent from a given chain.
- * TODO: Update this value once we have a better estimate.
+ * when the transaction doesn't involve Ethereum Mainnet.
  */
-export const MEDIAN_TIME_RFQ = {
-  [SupportedChainId.ETH]: 25,
-  [SupportedChainId.OPTIMISM]: 15,
-  [SupportedChainId.BSC]: 15,
-  [SupportedChainId.BASE]: 15,
-  [SupportedChainId.ARBITRUM]: 15,
-  [SupportedChainId.LINEA]: 15,
-  [SupportedChainId.BLAST]: 15,
-  [SupportedChainId.SCROLL]: 15,
-  [SupportedChainId.WORLDCHAIN]: 15,
-  [SupportedChainId.UNICHAIN]: 15,
-  [SupportedChainId.BERACHAIN]: 15,
-  [SupportedChainId.HYPEREVM]: 15,
-}
+export const MEDIAN_TIME_RFQ = 10
+/**
+ * Median time (in seconds) for a SynapseRFQ transaction to be completed,
+ * when the transaction involves Ethereum Mainnet.
+ */
+export const MEDIAN_TIME_RFQ_ETHEREUM = 20
 
 export const MEDIAN_TIME_CCTP_V2_FAST = 8
 export const MEDIAN_TIME_CCTP_V2_FAST_MAP: Record<number, number> = {
