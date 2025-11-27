@@ -19,6 +19,10 @@ import {
 import {
   CCTP_DOMAIN_MAP,
   CCTP_V2_EXECUTOR_ADDRESS_MAP,
+  isChainIdSupported,
+  MEDIAN_TIME_BLOCK,
+  MEDIAN_TIME_CCTP_V2_FAST,
+  MEDIAN_TIME_CCTP_V2_FAST_MAP,
   TOKEN_ZAP_V1_ADDRESS_MAP,
   USDC_ADDRESS_MAP,
 } from '../constants'
@@ -37,8 +41,6 @@ import { applySlippage, encodeZapData } from '../swap'
 import { isSameAddress, logExecutionTime } from '../utils'
 
 const FAST_FINALITY_THRESHOLD = 1000
-// TODO
-const MEDIAN_TIME = 30
 
 export class CctpModuleSet extends SynapseModuleSet {
   public readonly moduleName = 'CCTP'
@@ -66,8 +68,14 @@ export class CctpModuleSet extends SynapseModuleSet {
     return this.modules[chainId]
   }
 
-  public getEstimatedTime(): number {
-    return 0
+  public getEstimatedTime(originChainId: number, destChainId?: number): number {
+    const originEstimate =
+      MEDIAN_TIME_CCTP_V2_FAST_MAP[originChainId] || MEDIAN_TIME_CCTP_V2_FAST
+    const destEstimate =
+      destChainId && isChainIdSupported(destChainId)
+        ? MEDIAN_TIME_BLOCK[destChainId]
+        : 0
+    return originEstimate + destEstimate
   }
 
   public async getGasDropAmount(): Promise<BigNumber> {
@@ -166,7 +174,8 @@ export class CctpModuleSet extends SynapseModuleSet {
       expectedToAmount,
       minToAmount,
       nativeFee: BigNumber.from(quote.estimatedCost),
-      estimatedTime: MEDIAN_TIME,
+      // Will be filled using getEstimatedTime
+      estimatedTime: 0,
       zapData,
     }
   }

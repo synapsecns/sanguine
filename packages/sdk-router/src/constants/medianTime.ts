@@ -92,3 +92,8 @@ export const MEDIAN_TIME_RFQ = {
   [SupportedChainId.BERACHAIN]: 15,
   [SupportedChainId.HYPEREVM]: 15,
 }
+
+export const MEDIAN_TIME_CCTP_V2_FAST = 8
+export const MEDIAN_TIME_CCTP_V2_FAST_MAP: Record<number, number> = {
+  [SupportedChainId.ETH]: 20,
+}
