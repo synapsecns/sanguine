@@ -28,11 +28,11 @@ import { useSwapChainListArray } from '@/components/StateManagedSwap//hooks/useS
 import { useSwapFromTokenListArray } from '@/components/StateManagedSwap/hooks/useSwapFromTokenListOverlay'
 import { AmountInput } from '@/components/ui/AmountInput'
 import { joinClassNames } from '@/utils/joinClassNames'
-import { MaxButton } from '../StateManagedBridge/MaxButton'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { formatAmount } from '@/utils/formatAmount'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { useWalletState } from '@/slices/wallet/hooks'
+import { useUsdDisplay } from '@hooks/useUsdDisplay'
 
 interface InputContainerProps {
   setIsTyping: React.Dispatch<React.SetStateAction<boolean>>
@@ -67,12 +67,19 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
 
   const balance = tokenData?.balance
   const decimals = tokenData?.token?.decimals[swapChainId]
-  const parsedBalance = getParsedBalance(balance, decimals)
+  const parsedBalance =
+    balance !== undefined && decimals !== undefined
+      ? getParsedBalance(balance, decimals)
+      : '0.0'
   const formattedBalance = formatAmount(parsedBalance)
 
   const isInputMax = parsedBalance === swapFromValue
+  const isBalanceClickable = balance && !isInputMax
 
   const t = useTranslations('Swap')
+
+  // Fetch token price and calculate USD value
+  const usdValue = useUsdDisplay(swapFromToken, showValue)
 
   useEffect(() => {
     if (
@@ -155,7 +162,7 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
       </div>
       <BridgeAmountContainer>
         <SwapFromTokenSelector />
-        <div className="flex flex-col">
+        <div className="flex flex-col w-full">
           <AmountInput
             setIsTyping={setIsTyping}
             inputRef={inputRef}
@@ -163,22 +170,28 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
             handleFromValueChange={handleFromValueChange}
             disabled={isWalletPending}
           />
-          <div className="flex">
+          <div className="flex justify-between items-center">
+            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+              {usdValue}
+            </div>
             {hasMounted && isConnected && (
-              <label
-                htmlFor="inputRow"
-                className={joinClassNames(labelClassNames)}
+              <button
+                className={joinClassNames({
+                  ...labelClassNames,
+                  cursor: isBalanceClickable ? 'cursor-pointer' : 'cursor-default',
+                  hover: isBalanceClickable ? 'hover:opacity-70' : '',
+                  animation: 'transition-all duration-150',
+                })}
+                onClick={isBalanceClickable ? onMaxBalance : undefined}
               >
                 <span className="text-zinc-500 dark:text-zinc-400">
-                  {t('available')}:{' '}
+                  {t('Balance')}:{' '}
                 </span>
-                {formattedBalance ?? '0.0'}
-              </label>
+                <span className={isBalanceClickable ? 'text-fuchsia-400' : ''}>
+                  {formattedBalance ?? '0.0'}
+                </span>
+              </button>
             )}
-            <MaxButton
-              onClick={onMaxBalance}
-              isHidden={!isConnected || !balance || isInputMax}
-            />
           </div>
         </div>
       </BridgeAmountContainer>

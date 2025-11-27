@@ -34,13 +34,12 @@
     "Bridging": "Köprüleniyor",
     "Max": "Maks",
     "available": "mevcut",
-    "Available": "Mevcut",
+    "Balance": "Bakiye",
     "calculating gas": "gaz hesaplanıyor",
     "New": "Yeni",
     "Gas token": "Gaz tokeni",
     "Not bridgeable": "Köprülenemez",
     "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "{originChainName}'deki {fromToken}'dan {destinationChainName}'deki {toToken}'a köprü başarıyla başlatıldı",
-    "Slippage": "Kayma",
     "Router": "Yönlendirici",
     "Powered by Synapse": "Synapse tarafından desteklenmektedir",
     "Will also receive": "Ayrıca alacak",
@@ -280,13 +279,18 @@
     "Show withdrawal address": "Çekme adresini göster",
     "Allows bridging to another address": "Başka bir adrese köprülemeye izin verir."
   },
+  "Slippage": {
+    "Slippage": "Kayma",
+    "Calculating": "Hesaplanıyor...",
+    "Price data unavailable": "Fiyat verileri mevcut değil",
+    "Missing token decimals": "Ondalık basamaklar eksik"
+  },
   "Swap": {
     "Swap": "Takas",
     "Exchange assets on chain": "Zincir üzerinde varlık takası.",
     "Successfully swapped from {swapFromToken} to {swapToToken} on {currentChainName}": "{currentChainName} üzerinde {swapFromToken}'dan {swapToToken}'a başarıyla takas edildi",
-    "available": "mevcut",
+    "Balance": "Bakiye",
     "Expected price on": "Beklenen fiyat",
-    "Slippage": "Kayma",
     "Swap paused": "Takas duraklatıldı",
     "Please select Origin network": "Lütfen Kaynak ağı seçin",
     "Swaps are not available on this network": "Bu ağda takaslar mevcut değil",
@@ -303,6 +307,7 @@
     "Swapping {fromSymbol} on {chain} to {toSymbol}": "{chain} üzerinde {fromSymbol}'ı {toSymbol}'a takas ediliyor"
   },
   "Time": {
+    "Estimated Time": "Tahmini süre",
     "d": "g",
     "min": "dk",
     "Waiting": "Bekleniyor",
