@@ -152,7 +152,7 @@ const StateManagedBridge = () => {
     } else {
       dispatch(resetBridgeQuote())
     }
-  }, [fromChainId, toChainId, fromToken, toToken, debouncedFromValue])
+  }, [fromChainId, toChainId, fromToken, toToken, debouncedFromValue, address, destinationAddress])
 
   const getAndSetBridgeQuote = async () => {
     currentSDKRequestID.current += 1
