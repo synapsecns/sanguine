@@ -41,6 +41,15 @@ import { applySlippage, encodeZapData } from '../swap'
 import { isSameAddress, logExecutionTime } from '../utils'
 
 const FAST_FINALITY_THRESHOLD = 1000
+/**
+ * @dev We use 5x buffer to account for other people trying to use the same allowance.
+ */
+const ALLOWANCE_BUFFER = 5
+/**
+ * @dev We use 2x the expected fee to account for positive slippage,
+ * as the fee is paid as percentage from the final amount.
+ */
+const MAX_FEE_MULTIPLIER = 2
 
 export class CctpModuleSet extends SynapseModuleSet {
   public readonly moduleName = 'CCTP'
@@ -142,7 +151,7 @@ export class CctpModuleSet extends SynapseModuleSet {
     // Check if the fast USDC allowance is sufficient
     if (
       parseUnits(fastAllowance.allowance.toFixed(6), 6).lt(
-        originSwapRoute.expectedToAmount.mul(2)
+        originSwapRoute.expectedToAmount.mul(ALLOWANCE_BUFFER)
       )
     ) {
       // TODO: fallback to slow USDC transfer if insufficient
@@ -264,7 +273,7 @@ export class CctpModuleSet extends SynapseModuleSet {
       addressToBytes32(params.toRecipient), // mintRecipient
       params.bridgeToken.originToken, // burnToken
       addressToBytes32(AddressZero), // destinationCaller
-      expectedFee.mul(2), // maxFee (inflated to account for positive slippage)
+      expectedFee.mul(MAX_FEE_MULTIPLIER), // maxFee (inflated to account for positive slippage)
       FAST_FINALITY_THRESHOLD, // minFinalityThreshold
       {
         refundAddress: params.fromSender,
@@ -279,7 +288,7 @@ export class CctpModuleSet extends SynapseModuleSet {
     return encodeZapData({
       target: module.address,
       payload: tx.data,
-      amountPosition: 4, // first argument of depositForBurn
+      amountPosition: 4, // first argument of depositForBurn (function selector is 4 bytes)
     })
   }
 
