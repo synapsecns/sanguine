@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.43.32](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.31...@synapsecns/synapse-interface@0.43.32) (2025-11-27)
+
+
+### Bug Fixes
+
+* **synapse-interface:** refetch quote on address changes ([#3849](https://github.com/synapsecns/sanguine/issues/3849)) ([a7f47ec](https://github.com/synapsecns/sanguine/commit/a7f47ec8a664042399a7bf6676d1a38724e6e417))
+
+
+
+
+
 ## [0.43.31](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.30...@synapsecns/synapse-interface@0.43.31) (2025-11-26)
 
 
