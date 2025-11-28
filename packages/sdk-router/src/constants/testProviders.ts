@@ -26,7 +26,7 @@ const PUBLIC_PROVIDER_URLS: Partial<Record<SupportedChainId, string[]>> = {
   [SupportedChainId.MOONBEAM]: [
     'https://rpc.api.moonbeam.network',
     'https://moonbeam.publicnode.com',
-    'https://moonbeam.public.blastapi.io',
+    'https://moonbeam.drpc.org',
   ],
   [SupportedChainId.ARBITRUM]: [
     // 'https://arbitrum.llamarpc.com',
