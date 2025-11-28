@@ -52,28 +52,18 @@ const TODO_REMOVE_wrapperStyle = {
   backgroundRepeat: 'no-repeat',
 }
 
-
-const HypercallBannerContent = () => {
+const StakingBannerContent = () => {
   return (
     <div>
-      We&apos;ve{' '}
+      Convert your SYN to receive CX (Cortex Protocol) tokens{' '}
       <a
-        href="https://x.com/SynapseProtocol/status/1993054780437205498"
-        target="_blank"
-        rel="noopener  "
-        className="underline hover:cursor hover:text-white/65"
-      >
-        announced
-      </a>{' '}
-      our newest product: Hypercall. Check it out{' '}
-      <a
-        href="https://hypercall.xyz"
-        target="_blank"
-        rel="noopener  "
+        href={STAKE_SYN_FOR_CX_URL}
+        target="blank"
         className="underline hover:cursor hover:text-white/65"
       >
         here
       </a>
+      !
     </div>
   )
 }
@@ -86,10 +76,10 @@ export function LandingPageWrapper({ children }: { children: any }) {
         style={TODO_REMOVE_wrapperStyle}
       >
         <AnnouncementBanner
-          bannerId="11242024-hypercall-launch"
-          bannerContent={<HypercallBannerContent />}
-          startDate={new Date('2024-11-24T00:00:00+00:00')}
-          endDate={null}
+          bannerId="2024-12-18-cortex-staking"
+          bannerContent={<StakingBannerContent />}
+          startDate={new Date('2024-12-17T18:45:09+00:00')}
+          endDate={new Date('2025-08-25T18:45:09+00:00')}
         />
         <MaintenanceBanners />
         <LandingNav />
