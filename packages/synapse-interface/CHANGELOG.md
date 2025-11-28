@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.43.34](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.33...@synapsecns/synapse-interface@0.43.34) (2025-11-28)
+
+
+### Bug Fixes
+
+* **synapse-interface:** fix navigation menu error ([#3863](https://github.com/synapsecns/sanguine/issues/3863)) ([15cd050](https://github.com/synapsecns/sanguine/commit/15cd050dbc9a6cbfb9dcc70bb2686948e258d851))
+
+
+
+
+
 ## [0.43.33](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.32...@synapsecns/synapse-interface@0.43.33) (2025-11-27)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
