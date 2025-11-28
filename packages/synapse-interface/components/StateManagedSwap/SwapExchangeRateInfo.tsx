@@ -3,40 +3,42 @@ import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 
 import { CHAINS_BY_ID } from '@constants/chains'
+import { DATA_PLACEHOLDER } from '@/constants/placeholders'
 import { Token } from '@/utils/types'
-import {
-  formatBigIntToPercentString,
-  formatBigIntToString,
-} from '@/utils/bigint/format'
+import { useUsdSlippage } from '@hooks/useUsdSlippage'
+import { formatBigIntToString } from '@/utils/bigint/format'
+import { formatSlippage } from '@/utils/formatSlippage'
 
 const SwapExchangeRateInfo = ({
   fromAmount,
+  fromToken,
   toToken,
   exchangeRate,
   toChainId,
+  outputAmount,
+  isQuoteLoading,
 }: {
   fromAmount: bigint
+  fromToken: Token
   toToken: Token
   exchangeRate: bigint
   toChainId: number
+  outputAmount: bigint
+  isQuoteLoading: boolean
 }) => {
-  const safeExchangeRate = useMemo(() => exchangeRate ?? 0n, [exchangeRate]) // todo clean
-  const safeFromAmount = useMemo(() => fromAmount ?? 0n, [fromAmount]) // todo clean
+  const safeExchangeRate = useMemo(() => exchangeRate ?? 0n, [exchangeRate])
+  const safeFromAmount = useMemo(() => fromAmount ?? 0n, [fromAmount])
   const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 5)
-  const numExchangeRate = Number(formattedExchangeRate)
-  const slippage = safeExchangeRate - 1000000000000000000n
-  const formattedPercentSlippage = formatBigIntToPercentString(slippage, 18)
-  const underFee = safeExchangeRate === 0n && safeFromAmount != 0n
 
-  const textColor: string = useMemo(() => {
-    if (numExchangeRate >= 1) {
-      return 'text-green-500'
-    } else if (numExchangeRate > 0.975) {
-      return 'text-amber-500'
-    } else {
-      return 'text-red-500'
-    }
-  }, [numExchangeRate])
+  // Calculate USD-based slippage
+  const { slippage, isLoading, error, textColor } = useUsdSlippage({
+    originToken: fromToken,
+    destToken: toToken,
+    originChainId: toChainId, // Swap happens on same chain
+    destChainId: toChainId,
+    inputAmount: safeFromAmount > 0n ? safeFromAmount : null,
+    outputAmount: outputAmount > 0n ? outputAmount : null,
+  })
 
   const expectedToChain = useMemo(() => {
     return toChainId && <ChainInfoLabel chainId={toChainId} />
@@ -50,12 +52,14 @@ const SwapExchangeRateInfo = ({
           safeFromAmount={safeFromAmount}
           formattedExchangeRate={formattedExchangeRate}
           toToken={toToken}
+          isQuoteLoading={isQuoteLoading}
         />
         <Slippage
           safeFromAmount={safeFromAmount}
-          underFee={underFee}
+          slippage={slippage}
+          isLoading={isLoading || isQuoteLoading}
+          error={error}
           textColor={textColor}
-          formattedPercentSlippage={formattedPercentSlippage}
         />
       </div>
     </div>
@@ -67,6 +71,7 @@ const ExpectedPrice = ({
   safeFromAmount,
   formattedExchangeRate,
   toToken,
+  isQuoteLoading,
 }) => {
   const t = useTranslations('Swap')
 
@@ -76,33 +81,55 @@ const ExpectedPrice = ({
         <p>{t('Expected price on')}</p> {expectedToChain}
       </div>
       <span className="text-[#88818C]">
-        {safeFromAmount != 0n ? (
+        {safeFromAmount != 0n && !isQuoteLoading ? (
           <>
             {formattedExchangeRate}{' '}
             <span className="text-white">{toToken?.symbol}</span>
           </>
         ) : (
-          '—'
+          DATA_PLACEHOLDER
         )}
       </span>
     </div>
   )
 }
 
+interface SlippageProps {
+  safeFromAmount: bigint
+  slippage: number | null
+  isLoading: boolean
+  error: string | null
+  textColor: string
+}
+
 const Slippage = ({
   safeFromAmount,
-  underFee,
+  slippage,
+  isLoading,
+  error,
   textColor,
-  formattedPercentSlippage,
-}) => {
-  const t = useTranslations('Swap')
+}: SlippageProps) => {
+  const t = useTranslations('Slippage')
+
+  const shouldShow = !isLoading && safeFromAmount > 0n
+
   return (
     <div className="flex justify-between">
       <p className="text-[#88818C] ">{t('Slippage')}</p>
-      {safeFromAmount != 0n && !underFee ? (
-        <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
+      {shouldShow ? (
+        <>
+          {error && (
+            <span className="text-[#88818C]">{t(error)}</span>
+          )}
+          {!error && slippage !== null && (
+            <span className={textColor}>{formatSlippage(slippage)}</span>
+          )}
+          {!error && slippage === null && (
+            <span className="text-[#88818C]">{DATA_PLACEHOLDER}</span>
+          )}
+        </>
       ) : (
-        <span className="text-[#88818C]">—</span>
+        <span className="text-[#88818C]">{DATA_PLACEHOLDER}</span>
       )}
     </div>
   )

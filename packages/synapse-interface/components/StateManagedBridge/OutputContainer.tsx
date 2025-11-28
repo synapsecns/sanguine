@@ -17,17 +17,26 @@ import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { useTranslations } from 'next-intl'
 import { ARBITRUM, HYPERLIQUID } from '@/constants/chains/master'
+import { useUsdDisplay } from '@hooks/useUsdDisplay'
+import { formatInlineUsdDifference } from '@utils/calculateUsdValue'
+import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import { getParsedBalance } from '@/utils/getParsedBalance'
+import { formatAmount } from '@/utils/formatAmount'
+import { useUsdSlippage } from '@hooks/useUsdSlippage'
+import { getTokenDecimals, parseTokenAmount } from '@/utils/decimals'
 
 interface OutputContainerProps {
   isQuoteStale: boolean
 }
 
 export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
-  const { address } = useAccount()
+  const t = useTranslations('Bridge')
+  const { address, isConnected } = useAccount()
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
   const { showDestinationAddress } = useBridgeDisplayState()
   const { hasValidInput, hasValidQuote } = useBridgeValidations()
-  const { debouncedFromValue, fromChainId, toChainId } = useBridgeState()
+  const { debouncedFromValue, fromChainId, toChainId, toToken } =
+    useBridgeState()
 
   const showValue = useMemo(() => {
     if (!hasValidInput) {
@@ -41,6 +50,45 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
 
   const inputClassName = isQuoteStale ? 'opacity-50' : undefined
 
+  // Fetch token price and calculate USD value
+  const outputValue =
+    fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
+      ? debouncedFromValue
+      : showValue
+  const usdValue = useUsdDisplay(toToken, outputValue)
+
+  // Convert input amount to bigint for slippage calculation
+  const inputAmount = parseTokenAmount(
+    bridgeQuote.inputAmountForQuote,
+    bridgeQuote.originTokenForQuote,
+    fromChainId
+  )
+
+  // Calculate USD-based slippage to get USD difference
+  const { usdDifference } = useUsdSlippage({
+    originToken: bridgeQuote.originTokenForQuote,
+    destToken: bridgeQuote.destTokenForQuote,
+    originChainId: fromChainId,
+    destChainId: toChainId,
+    inputAmount,
+    outputAmount: bridgeQuote.outputAmount,
+  })
+
+  // Get destination token balance
+  const balances = usePortfolioBalances()
+  const toTokenAddress = toToken?.addresses[toChainId]
+  const toChainBalances = balances[toChainId]
+  const toTokenBalance = toChainBalances?.find(
+    (t) => t.tokenAddress === toTokenAddress
+  )?.balance
+  const toTokenDecimals = getTokenDecimals(toToken, toChainId)
+  const parsedBalance =
+    toTokenBalance !== undefined && toTokenDecimals !== undefined
+      ? getParsedBalance(toTokenBalance, toTokenDecimals)
+      : '0.0'
+  const formattedBalance = formatAmount(parsedBalance)
+  const formattedUsdValue = `${usdValue}${formatInlineUsdDifference(usdDifference)}`
+
   return (
     <BridgeSectionContainer>
       <div className="flex items-center justify-between">
@@ -52,16 +100,28 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
 
       <BridgeAmountContainer>
         <ToTokenSelector />
-        <AmountInput
-          disabled={true}
-          showValue={
-            fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
-              ? debouncedFromValue
-              : showValue
-          }
-          isLoading={isLoading}
-          className={inputClassName}
-        />
+        <div className="flex flex-col w-full">
+          <AmountInput
+            disabled={true}
+            showValue={
+              fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
+                ? debouncedFromValue
+                : showValue
+            }
+            isLoading={isLoading}
+            className={inputClassName}
+          />
+          <div className="flex justify-between items-center">
+            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+              {!isLoading && formattedUsdValue}
+            </div>
+            {isConnected && (
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                {t('Balance')}: {formattedBalance ?? '0.0'}
+              </div>
+            )}
+          </div>
+        </div>
       </BridgeAmountContainer>
     </BridgeSectionContainer>
   )

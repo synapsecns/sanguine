@@ -148,8 +148,8 @@ export const CANTO: Chain = {
   layer: 1,
   blockTime: 6000,
   rpcUrls: {
-    primary: 'https://mainnode.plexnode.org:8545',
-    fallback: 'https://canto.slingshot.finance',
+    primary: 'https://canto.gravitychain.io',
+    fallback: 'https://canto-rpc.ansybl.io',
   },
   nativeCurrency: {
     name: 'Canto',
@@ -201,7 +201,7 @@ export const POLYGON: Chain = {
   rpcUrls: {
     primary:
       'https://polygon-mainnet.g.alchemy.com/v2/mN1t8Oc6E912QF28iPHaRvVEmv6EpYSs',
-    fallback: 'https://polygon.llamarpc.com',
+    fallback: 'https://polygon.drpc.org',
   },
   nativeCurrency: {
     name: 'Matic',
@@ -226,7 +226,7 @@ export const DFK: Chain = {
   blockTime: 2000,
   rpcUrls: {
     primary: 'https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc',
-    fallback: 'https://dfkchain.rpc.defikingdoms.com/api=654302102',
+    fallback: 'https://avax-dfk.api.pocket.network',
   },
   nativeCurrency: {
     name: 'Jewel',
@@ -275,8 +275,8 @@ export const FANTOM: Chain = {
   layer: 1,
   blockTime: 1000,
   rpcUrls: {
-    primary: 'https://rpc.ftm.tools',
-    fallback: 'https://fantom-rpc.gateway.pokt.network/',
+    primary: 'https://rpcapi.fantom.network',
+    fallback: 'https://fantom.drpc.org',
   },
   nativeCurrency: {
     name: 'Fantom',
@@ -300,8 +300,8 @@ export const CRONOS: Chain = {
   layer: 1,
   blockTime: 6000,
   rpcUrls: {
-    primary: 'https://evm-cronos.crypto.org',
-    fallback: 'https://cronos.blockpi.network/v1/rpc/public',
+    primary: 'https://evm.cronos.org',
+    fallback: 'https://cronos.drpc.org',
   },
   nativeCurrency: {
     name: 'Cronos',
@@ -326,7 +326,7 @@ export const BOBA: Chain = {
   blockTime: 1000,
   rpcUrls: {
     primary: 'https://mainnet.boba.network',
-    fallback: 'https://replica.boba.network',
+    fallback: 'https://boba-eth.drpc.org',
   },
   nativeCurrency: {
     name: 'Ethereum',
@@ -351,7 +351,7 @@ export const METIS: Chain = {
   blockTime: 4000,
   rpcUrls: {
     primary: 'https://andromeda.metis.io/?owner=1088',
-    fallback: 'https://metis-mainnet.public.blastapi.io',
+    fallback: 'https://metis.drpc.org',
   },
   nativeCurrency: {
     name: 'Metis',
@@ -426,7 +426,7 @@ export const MOONBEAM: Chain = {
   blockTime: 12000,
   rpcUrls: {
     primary: 'https://rpc.api.moonbeam.network',
-    fallback: 'https://moonbeam.public.blastapi.io',
+    fallback: 'https://moonbeam.drpc.org',
   },
   nativeCurrency: {
     name: 'Glimmer',
@@ -451,7 +451,7 @@ export const MOONRIVER: Chain = {
   blockTime: 12000,
   rpcUrls: {
     primary: 'https://rpc.api.moonriver.moonbeam.network',
-    fallback: 'https://moonriver.public.blastapi.io',
+    fallback: 'https://moonriver.drpc.org',
   },
   nativeCurrency: {
     name: 'Moonriver',
@@ -501,7 +501,7 @@ export const BASE: Chain = {
   rpcUrls: {
     primary:
       'https://base-mainnet.g.alchemy.com/v2/_YKy-Vm3LsknT8JKSa2ZTSmKu9Qp01Vd',
-    fallback: 'https://developer-access-mainnet.base.org',
+    fallback: 'https://mainnet.base.org',
   },
   explorerUrl: 'https://basescan.org',
   explorerName: 'BaseScan',
@@ -527,7 +527,7 @@ export const BLAST: Chain = {
   rpcUrls: {
     primary:
       'https://lingering-indulgent-replica.blast-mainnet.quiknode.pro/6667a8f4be701cb6549b415d567bc706fb2f13a8/',
-    fallback: 'https://blast.blockpi.network/v1/rpc/publicChain',
+    fallback: 'https://blast.drpc.org',
   },
   explorerUrl: 'https://blastscan.io',
   explorerName: 'Blastscan',
@@ -552,7 +552,7 @@ export const SCROLL: Chain = {
   layer: 2,
   rpcUrls: {
     primary: 'https://rpc.scroll.io/',
-    fallback: 'https://scroll.blockpi.network/v1/rpc/public',
+    fallback: 'https://scroll.drpc.org',
   },
   explorerUrl: 'https://scrollscan.com',
   explorerName: 'Scrollscan',
@@ -577,7 +577,7 @@ export const LINEA: Chain = {
   layer: 2,
   rpcUrls: {
     primary: 'https://rpc.linea.build',
-    fallback: 'https://linea.blockpi.network/v1/rpc/public',
+    fallback: 'https://linea.drpc.org',
   },
   explorerUrl: 'https://lineascan.build',
   explorerName: 'LineaScan',
@@ -655,7 +655,7 @@ export const UNICHAIN: Chain = {
   layer: 2,
   rpcUrls: {
     primary: 'https://mainnet.unichain.org',
-    fallback: 'https://mainnet.unichain.org',
+    fallback: 'https://unichain.drpc.org',
   },
   explorerUrl: 'https://uniscan.xyz',
   explorerName: 'Uniscan',
@@ -681,7 +681,7 @@ export const BERACHAIN: Chain = {
   layer: 2,
   rpcUrls: {
     primary: 'https://rpc.berachain.com',
-    fallback: 'https://rpc.berachain.com',
+    fallback: 'https://berachain.drpc.org',
   },
   explorerUrl: 'https://berascan.com',
   explorerName: 'Berascan',
@@ -708,7 +708,7 @@ export const HYPEREVM: Chain = {
   layer: 2,
   rpcUrls: {
     primary: 'https://rpc.hyperliquid.xyz/evm',
-    fallback: 'https://rpc.hyperliquid.xyz/evm',
+    fallback: 'https://hyperliquid.drpc.org',
   },
   explorerUrl: 'https://purrsec.com',
   explorerName: 'Purrsec',

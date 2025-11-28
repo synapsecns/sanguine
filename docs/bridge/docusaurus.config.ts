@@ -112,16 +112,28 @@ const config: Config = {
           label: 'Docs',
         },
         { to: '/blog', label: 'Blog', position: 'left' },
-        {
-          href: 'https://cortexprotocol.com/convert',
-          label: 'Convert SYN to CX',
-          position: 'right',
-        },
       ],
     },
     footer: {
       // style: 'dark',
       links: [
+        {
+          title: 'Products',
+          items: [
+            {
+              label: 'Synapse',
+              href: 'https://synapseprotocol.com',
+            },
+            {
+              label: 'Cortex AI',
+              href: 'https://cortexprotocol.com',
+            },
+            {
+              label: 'HyperCall (Coming soon)',
+              href: 'https://hypercall.xyz',
+            },
+          ],
+        },
         {
           title: 'Community',
           items: [

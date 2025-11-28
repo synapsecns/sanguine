@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.43.28",
+  "version": "0.43.34",
   "private": true,
   "engines": {
     "node": ">=18.18.0"
@@ -17,6 +17,7 @@
     "lint:check": "eslint . --max-warnings=0",
     "lint:find-string-literals": "npx eslint -c .eslintrc-i18n.js './**/*.{js,jsx,ts,tsx}'",
     "check-translation-jsons": "node scripts/checkTranslationJsons.js",
+    "check-rpc": "node scripts/checkRpcHealth.js",
     "ci:lint": "npm run lint:check",
     "build:go": " ",
     "build:slither": " ",
@@ -41,7 +42,7 @@
     "@reduxjs/toolkit": "^1.9.5",
     "@rtk-query/graphql-request-base-query": "^2.2.0",
     "@segment/analytics-next": "^1.53.0",
-    "@synapsecns/sdk-router": "^0.20.4",
+    "@synapsecns/sdk-router": "^0.20.6",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.9",

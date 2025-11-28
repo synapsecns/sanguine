@@ -74,8 +74,14 @@ const StateManagedSwap = () => {
 
   const { balances: portfolioBalances } = useFetchPortfolioBalances()
 
-  const { swapChainId, swapFromToken, swapToToken, swapFromValue, swapQuote } =
-    useSwapState()
+  const {
+    swapChainId,
+    swapFromToken,
+    swapToToken,
+    swapFromValue,
+    swapQuote,
+    isLoading,
+  } = useSwapState()
 
   const { isWalletPending } = useWalletState()
 
@@ -421,9 +427,12 @@ const StateManagedSwap = () => {
                     )
                   : 0n
               }
+              fromToken={swapFromToken}
               toToken={swapToToken}
               exchangeRate={swapQuote.exchangeRate}
               toChainId={swapChainId}
+              outputAmount={swapQuote.outputAmount ?? 0n}
+              isQuoteLoading={isLoading}
             />
             <SwapTransactionButton
               isTyping={isTyping}

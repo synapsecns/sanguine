@@ -13,7 +13,7 @@ import { RFQFlow } from '@site/src/components/RFQFlow'
 # Synapse
 
 :::note
-Synapse Protocol lives under the Cortex umbrella, Convert SYN to CX before the end of the migration period. Learn more about Cortex in the [Cortex Docs](https://docs.cortexprotocol.com/docs/StartHere)
+$SYN is the governance token for Synapse Protocol and is listed on major exchanges including Binance and Kraken.
 :::
 
 Synapse is an Interchain Programming Interface. Developers read and write interchain data with Synapse, which has settled $50B in transactions between 2M+ users, and generated $30M+ in fees. Eventually, all Synapse Protocol features will fold into Cortex.
@@ -77,5 +77,4 @@ Connect with other developers and the Synapse team
 
 Synapse transactions can be observed confirmed via the following methods:
 
-* **[Synapse Bridge](https://synapseprotocol.com)** – Bridge, Swap, and Stake via Synapse's cross-chain pools.
-* **[Synapse Explorer](https://explorer.synapseprotocol.com)** – Public explorer for Synapse Bridge transactions.
+* **[Synapse Bridge](https://synapseprotocol.com)** – Bridge, Swap, and Stake via Synapse's cross-chain pools.
