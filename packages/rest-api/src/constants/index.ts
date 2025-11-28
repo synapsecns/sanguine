@@ -14,6 +14,9 @@ export const VALID_BRIDGE_MODULES = [
   'SynapseCCTP',
   'SynapseRFQ',
   'Gas.zip',
+  'CCTP',
+  'USDT0',
+  'Relay',
 ]
 
 export const ZeroAddress = '0x0000000000000000000000000000000000000000'
