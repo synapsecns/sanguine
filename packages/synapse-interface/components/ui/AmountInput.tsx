@@ -52,7 +52,6 @@ export function AmountInput({
         getInputRef={inputRef}
         placeholder="0.0000"
         value={isLoading ? '0' : showValue}
-        pattern={disabled ? '[0-9.]+' : '^[0-9]+([.,]?[0-9]+)?$'}
         disabled={disabled}
         readOnly={disabled}
         onChange={handleInputChange}
