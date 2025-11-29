@@ -5,43 +5,19 @@ import {
 } from '@/constants/placeholders'
 
 /**
- * Formats a USD value with thousand separators and dynamic decimal places
+ * Formats a USD value with thousand separators and 2 decimal places
  *
  * @param value - The numeric USD value to format
- * @returns Formatted USD string with proper separators and decimals
+ * @returns Formatted USD string with proper separators and 2 decimals
  *
- * Formatting rules:
- * - >= $10,000: 0 decimals (e.g., "12,345")
- * Rationale: Cents are insignificant at this scale, cleaner display
- * - >= $1,000: 1 decimal (e.g., "5,678.9")
- * Rationale: Balances precision with readability
- * - < $1,000: 2 decimals (e.g., "123.45", "0.10")
- * Rationale: Standard currency precision, important for smaller amounts
- * - All values get thousand separators via commify()
+ * Examples: "12,345.60", "5,678.90", "123.45", "0.10"
  */
 export const formatUsdValue = (value: number): string => {
-  const absValue = Math.abs(value)
+  const formatted = value.toFixed(2)
 
-  let decimals: number
-  if (absValue >= 10000) {
-    decimals = 0
-  } else if (absValue >= 1000) {
-    decimals = 1
-  } else {
-    decimals = 2
-  }
-
-  const formatted = value.toFixed(decimals)
-
-  // Special handling for 2-decimal values to preserve trailing zeros
-  // toFixed() returns "0.10" but commify() would strip to "0.1"
-  // We split and rejoin to maintain precision (e.g., "$0.10" not "$0.1")
-  if (decimals === 2) {
-    const [integerPart, decimalPart = '00'] = formatted.split('.')
-    return `${commify(integerPart)}.${decimalPart}`
-  }
-
-  return commify(formatted)
+  // Split to preserve trailing zeros (toFixed returns "0.10" but commify strips to "0.1")
+  const [integerPart, decimalPart = '00'] = formatted.split('.')
+  return `${commify(integerPart)}.${decimalPart}`
 }
 
 /**
