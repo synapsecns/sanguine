@@ -93,7 +93,7 @@ export const formatAmountByPrice = (
     return formatAmount(amount)
   }
 
-  const floatAmount = parseFloat(amount.replace(/,/g, ''))
+  const floatAmount = Number.parseFloat(amount.replaceAll(',', ''))
 
   if (!Number.isFinite(floatAmount)) {
     return amount
@@ -124,8 +124,8 @@ export const getTooltipValue = (
 ): string | undefined => {
   if (!showValue || !fullValue) return undefined
 
-  const showNum = Number.parseFloat(showValue.replace(/,/g, ''))
-  const fullNum = Number.parseFloat(fullValue.replace(/,/g, ''))
+  const showNum = Number.parseFloat(showValue.replaceAll(',', ''))
+  const fullNum = Number.parseFloat(fullValue.replaceAll(',', ''))
   if (Math.abs(showNum - fullNum) < 1e-8) return undefined
 
   return symbol ? `${fullValue} ${symbol}` : fullValue
