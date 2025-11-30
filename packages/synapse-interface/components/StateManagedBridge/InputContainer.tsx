@@ -24,7 +24,8 @@ import { FromChainSelector } from '@/components/StateManagedBridge/FromChainSele
 import { FromTokenSelector } from '@/components/StateManagedBridge/FromTokenSelector'
 import { useBridgeSelections } from './hooks/useBridgeSelections'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
-import { useUsdDisplay } from '@hooks/useUsdDisplay'
+import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
+import { calculateUsdValue } from '@utils/calculateUsdValue'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -58,7 +59,8 @@ export const InputContainer: React.FC<InputContainerProps> = ({
   } = useGasEstimator()
 
   // Fetch token price and calculate USD value
-  const usdValue = useUsdDisplay(fromToken, localInputValue)
+  const fromTokenPrice = useDefiLlamaPrice(fromToken)
+  const usdValue = calculateUsdValue(localInputValue, fromTokenPrice)
 
   const isInputMax =
     maxBridgeableGas?.toString() === debouncedFromValue ||
