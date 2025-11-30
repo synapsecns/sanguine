@@ -13,7 +13,7 @@ import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
 import { calculateUsdValue, formatInlineUsdDifference } from '@utils/calculateUsdValue'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { getParsedBalance } from '@/utils/getParsedBalance'
-import { formatAmount, formatAmountByPrice } from '@/utils/formatAmount'
+import { formatAmount, formatAmountByPrice, getTooltipValue } from '@/utils/formatAmount'
 import { useUsdSlippage } from '@hooks/useUsdSlippage'
 import { getTokenDecimals, parseTokenAmount } from '@/utils/decimals'
 
@@ -38,6 +38,7 @@ export const SwapOutputContainer = () => {
 
   // Format output amount based on price (each decimal digit = $0.01)
   const showValue = formatAmountByPrice(outputValue, toTokenPrice)
+  const tooltipValue = getTooltipValue(showValue, outputValue, swapToToken?.symbol)
 
   // Convert input amount to bigint for slippage calculation
   const inputAmount = parseTokenAmount(
@@ -82,6 +83,7 @@ export const SwapOutputContainer = () => {
             disabled={true}
             showValue={showValue}
             isLoading={isLoading}
+            tooltipValue={tooltipValue}
           />
           <div className="flex justify-between items-center">
             <div className="text-xs text-zinc-500 dark:text-zinc-400">

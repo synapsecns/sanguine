@@ -22,7 +22,7 @@ import { calculateUsdValue } from '@utils/calculateUsdValue'
 import { formatInlineUsdDifference } from '@utils/calculateUsdValue'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { getParsedBalance } from '@/utils/getParsedBalance'
-import { formatAmount, formatAmountByPrice } from '@/utils/formatAmount'
+import { formatAmount, formatAmountByPrice, getTooltipValue } from '@/utils/formatAmount'
 import { useUsdSlippage } from '@hooks/useUsdSlippage'
 import { getTokenDecimals, parseTokenAmount } from '@/utils/decimals'
 
@@ -64,6 +64,7 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
     outputValue ?? '',
     toTokenPrice
   )
+  const tooltipValue = getTooltipValue(showValue, outputValue ?? '', toToken?.symbol)
 
   // Convert input amount to bigint for slippage calculation
   const inputAmount = parseTokenAmount(
@@ -114,6 +115,7 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
             showValue={showValue}
             isLoading={isLoading}
             className={inputClassName}
+            tooltipValue={tooltipValue}
           />
           <div className="flex justify-between items-center">
             <div className="text-xs text-zinc-500 dark:text-zinc-400">

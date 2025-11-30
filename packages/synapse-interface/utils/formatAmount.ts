@@ -112,3 +112,21 @@ export const formatAmountByPrice = (
     maximumFractionDigits: clampedDecimals,
   }).format(floatAmount)
 }
+
+/**
+ * Returns tooltip text if showValue differs numerically from fullValue.
+ * Handles cases like "20.0" vs "20" (equal) and "1,234" vs "1234" (equal).
+ */
+export const getTooltipValue = (
+  showValue: string,
+  fullValue: string,
+  symbol?: string
+): string | undefined => {
+  if (!showValue || !fullValue) return undefined
+
+  const showNum = Number.parseFloat(showValue.replace(/,/g, ''))
+  const fullNum = Number.parseFloat(fullValue.replace(/,/g, ''))
+  if (Math.abs(showNum - fullNum) < 1e-8) return undefined
+
+  return symbol ? `${fullValue} ${symbol}` : fullValue
+}

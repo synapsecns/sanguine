@@ -3,6 +3,7 @@ import React, { useCallback } from 'react'
 import { NumericFormat } from 'react-number-format'
 import { joinClassNames } from '@/utils/joinClassNames'
 import LoadingDots from './tailwind/LoadingDots'
+import { HoverTooltip } from '@/components/HoverTooltip'
 
 interface AmountInputTypes {
   inputRef?: React.RefObject<HTMLInputElement>
@@ -12,6 +13,7 @@ interface AmountInputTypes {
   handleFromValueChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
   setIsTyping?: (isTyping: boolean) => void
   className?: string
+  tooltipValue?: string
 }
 
 export function AmountInput({
@@ -22,6 +24,7 @@ export function AmountInput({
   handleFromValueChange,
   setIsTyping,
   className,
+  tooltipValue,
 }: AmountInputTypes) {
   const debouncedSetIsTyping = useCallback(
     debounce((value: boolean) => setIsTyping?.(value), 600),
@@ -47,22 +50,28 @@ export function AmountInput({
   return (
     <div className="flex items-center">
       {isLoading && <LoadingDots className="opacity-50" />}
-      <NumericFormat
-        inputMode="numeric"
-        getInputRef={inputRef}
-        placeholder="0.0000"
-        value={isLoading ? '0' : showValue}
-        disabled={disabled}
-        readOnly={disabled}
-        onChange={handleInputChange}
-        className={joinClassNames(inputClassNames)}
-        name="inputRow"
-        minLength={1}
-        maxLength={79}
-        autoComplete="off"
-        thousandSeparator={true}
-        allowNegative={false}
-      />
+      <HoverTooltip
+        hoverContent={tooltipValue}
+        isActive={!!(tooltipValue && !isLoading)}
+        align="start"
+      >
+        <NumericFormat
+          inputMode="numeric"
+          getInputRef={inputRef}
+          placeholder="0.0000"
+          value={isLoading ? '0' : showValue}
+          disabled={disabled}
+          readOnly={disabled}
+          onChange={handleInputChange}
+          className={joinClassNames(inputClassNames)}
+          name="inputRow"
+          minLength={1}
+          maxLength={79}
+          autoComplete="off"
+          thousandSeparator={true}
+          allowNegative={false}
+        />
+      </HoverTooltip>
     </div>
   )
 }
