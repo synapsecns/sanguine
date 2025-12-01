@@ -5,11 +5,13 @@ export const HoverTooltip = ({
   hoverContent,
   isActive = true,
   align = 'center',
+  position = 'top',
 }: {
   children: React.ReactNode
   hoverContent: React.ReactNode
   isActive?: boolean
   align?: 'center' | 'start'
+  position?: 'top' | 'bottom'
 }) => {
   const [showTooltip, setShowTooltip] = useState(false)
 
@@ -27,7 +29,7 @@ export const HoverTooltip = ({
       >
         {children}
         {hoverContent ? (
-          <Tooltip isHovered={showTooltip} align={align}>
+          <Tooltip isHovered={showTooltip} align={align} position={position}>
             {hoverContent}
           </Tooltip>
         ) : null}
@@ -40,19 +42,23 @@ const Tooltip = ({
   isHovered,
   children,
   align = 'center',
+  position = 'top',
 }: {
   isHovered: boolean
   children: React.ReactNode
   align?: 'center' | 'start'
+  position?: 'top' | 'bottom'
 }) => {
   if (isHovered) {
-    const positionClass =
+    const alignClass =
       align === 'start' ? 'left-0' : 'left-1/2 translate-x-[-50%]'
+    const positionClass =
+      position === 'bottom' ? 'top-full mt-1' : 'bottom-full mb-1'
     return (
       <div
         className={`
-          absolute ${positionClass} bottom-full
-          z-50 hover-content px-2 py-1 text-white mb-1
+          absolute ${alignClass} ${positionClass}
+          z-50 hover-content px-2 py-1 text-white
           border border-solid border-[#252537]
           bg-[#101018] rounded-md text-left text-sm whitespace-nowrap
         `}
