@@ -12,45 +12,21 @@ import {
  *
  * Examples: "12,345.60", "5,678.90", "123.45", "0.10"
  */
-export const formatUsdValue = (value: number): string => {
-  const formatted = value.toFixed(2)
-
-  // Split to preserve trailing zeros (toFixed returns "0.10" but commify strips to "0.1")
-  const [integerPart, decimalPart = '00'] = formatted.split('.')
+const _formatUsd = (value: number): string => {
+  const [integerPart, decimalPart = '00'] = value.toFixed(2).split('.')
   return `${commify(integerPart)}.${decimalPart}`
 }
 
 /**
- * Calculates and formats USD value for a token amount
+ * Formats a USD value as a display string
  *
- * @param amount - Token amount as string (e.g., "100.5")
- * @param price - USD price per token (undefined = loading, null = unavailable)
+ * @param usdValue - USD value to format (null = unavailable)
  * @returns Formatted USD string: "$123.45", "<$0.01", or ""
  */
-export const calculateUsdValue = (
-  amount: string | null | undefined,
-  price: number | null | undefined
-): string => {
-  // Return placeholder if price is loading (undefined) or unavailable (null)
-  if (price === undefined || price === null) {
+export const formatUsdValue = (usdValue: number | null): string => {
+  if (!usdValue) {
     return USD_VALUE_PLACEHOLDER
   }
-
-  // Return placeholder if amount is empty or invalid
-  if (!amount || amount === '') {
-    return USD_VALUE_PLACEHOLDER
-  }
-
-  // Parse amount to number (remove commas first)
-  const numericAmount = Number.parseFloat(amount.replaceAll(',', ''))
-
-  // Return placeholder if amount is invalid or zero
-  if (Number.isNaN(numericAmount) || numericAmount === 0) {
-    return USD_VALUE_PLACEHOLDER
-  }
-
-  // Calculate USD value
-  const usdValue = numericAmount * price
 
   // Handle very small amounts (less than 1 cent)
   if (usdValue < 0.01) {
@@ -58,7 +34,94 @@ export const calculateUsdValue = (
   }
 
   // Format with dynamic decimal places and thousand separators
-  return `$${formatUsdValue(usdValue)}`
+  return `$${_formatUsd(usdValue)}`
+}
+
+/**
+ * Calculates the USD value for a token amount
+ *
+ * @param amount - Token amount as string (e.g., "100.5")
+ * @param price - USD price per token (undefined = loading, null = unavailable)
+ * @returns Numeric USD value, or null if calculation not possible
+ */
+export const calculateUsdValue = (
+  amount: string | null | undefined,
+  price: number | null | undefined
+): number | null => {
+  if (!Number.isFinite(price)) {
+    return null
+  }
+
+  const numericAmount = Number.parseFloat(amount?.replaceAll(',', '') ?? '')
+  if (!Number.isFinite(numericAmount)) {
+    return null
+  }
+
+  return numericAmount * price
+}
+
+/**
+ * Calculates total USD value for a token amount plus optional native component
+ *
+ * Universal utility for:
+ * - Input value: token amount + native fee
+ * - Output value: token amount + gas airdrop
+ *
+ * @param tokenAmount - Token amount as string
+ * @param tokenPrice - Token USD price
+ * @param nativeAmount - Native amount as string (fee or airdrop)
+ * @param nativePrice - Native token USD price
+ * @returns Total USD value, or null if token value unavailable
+ */
+export const calculateTotalUsdValue = (
+  tokenAmount: string | null | undefined,
+  tokenPrice: number | null | undefined,
+  nativeAmount: string | null | undefined,
+  nativePrice: number | null | undefined
+): {
+  tokenValue: number | null
+  nativeValue: number | null
+  totalValue: number | null
+} => {
+  const tokenValue = calculateUsdValue(tokenAmount, tokenPrice)
+  const nativeValue = calculateUsdValue(nativeAmount, nativePrice)
+  const totalValue = Number.isFinite(tokenValue)
+    ? tokenValue + (nativeValue ?? 0)
+    : null
+  return { tokenValue, nativeValue, totalValue }
+}
+
+/**
+ * Formats a tooltip showing USD breakdown (token + native component)
+ *
+ * Rounds native first (consistent across quotes), derives token as remainder.
+ *
+ * @param nativeValue - Native USD value (fee or airdrop)
+ * @param totalValue - Total USD value - what's displayed to user
+ * @param nativeLabel - Label for native component (e.g., "gas fee", "gas airdrop")
+ * @returns Tooltip string: "$100.00 + $0.50 (gas fee)" or null if no breakdown needed
+ */
+export const formatUsdBreakdownTooltip = (
+  nativeValue: number | null,
+  totalValue: number | null,
+  nativeLabel: string
+): string | null => {
+  if (!nativeValue || !totalValue) {
+    return null
+  }
+
+  // Work in cents (integers) to avoid floating-point issues
+  // Round native first (consistent across quotes), derive token as remainder
+  const totalCents = Math.round(totalValue * 100)
+  const nativeCents = Math.round(nativeValue * 100)
+  const tokenCents = totalCents - nativeCents
+
+  // Don't show breakdown if native < 1 cent
+  if (nativeCents < 1) {
+    return null
+  }
+
+  return `${formatUsdValue(tokenCents / 100)} + ${formatUsdValue(nativeCents / 100)} (${nativeLabel})`
 }
 
 /**
@@ -88,5 +151,5 @@ export const formatInlineUsdDifference = (diff: number | null): string => {
 
   // Format with sign, dynamic decimal places, and thousand separators
   const sign = diff >= 0 ? '+' : '−'
-  return ` (${sign}$${formatUsdValue(absValue)})`
+  return ` (${sign}$${_formatUsd(absValue)})`
 }
