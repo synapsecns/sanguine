@@ -10,7 +10,7 @@ import { useSwapToTokenListArray } from './hooks/useSwapToTokenListArray'
 import { AmountInput } from '@/components/ui/AmountInput'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
-import { calculateUsdValue, formatInlineUsdDifference } from '@utils/calculateUsdValue'
+import { formatInlineUsdDifference, formatUsdValue } from '@utils/calculateUsdValue'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { formatAmount, formatAmountByPrice, getTooltipValue } from '@/utils/formatAmount'
@@ -32,11 +32,8 @@ export const SwapOutputContainer = () => {
   const outputValue =
     swapQuote.outputAmountString === '0' ? '' : swapQuote.outputAmountString
 
-  // Fetch token price and calculate USD value
-  const toTokenPrice = useDefiLlamaPrice(swapToToken)
-  const usdValue = calculateUsdValue(outputValue, toTokenPrice)
-
   // Format output amount based on price (each decimal digit = $0.01)
+  const toTokenPrice = useDefiLlamaPrice(swapToToken)
   const showValue = formatAmountByPrice(outputValue, toTokenPrice)
   const tooltipValue = getTooltipValue(showValue, outputValue, swapToToken?.symbol)
 
@@ -48,7 +45,7 @@ export const SwapOutputContainer = () => {
   )
 
   // Calculate USD-based slippage to get USD difference
-  const { usdDifference } = useUsdSlippage({
+  const { valueOut, usdDifference } = useUsdSlippage({
     originToken: swapFromToken,
     destToken: swapToToken,
     originChainId: swapChainId,
@@ -58,6 +55,8 @@ export const SwapOutputContainer = () => {
       swapQuote.outputAmount && swapQuote.outputAmount > 0n
         ? swapQuote.outputAmount
         : null,
+    formattedGasDrop: null,
+    formattedNativeFee: null,
   })
 
   // Get output token balance
@@ -72,7 +71,7 @@ export const SwapOutputContainer = () => {
       ? getParsedBalance(balance, decimals)
       : '0.0'
   const formattedBalance = formatAmount(parsedBalance)
-  const formattedUsdValue = `${usdValue}${formatInlineUsdDifference(usdDifference)}`
+  const formattedUsdValue = `${formatUsdValue(valueOut)}${formatInlineUsdDifference(usdDifference)}`
 
   return (
     <BridgeSectionContainer>
