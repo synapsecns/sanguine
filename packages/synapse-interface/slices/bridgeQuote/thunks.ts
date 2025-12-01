@@ -126,6 +126,7 @@ export const fetchBridgeQuote = createAsyncThunk(
       estimatedTime,
       moduleNames,
       gasDropAmount,
+      nativeFee,
       fromChainId: originChainId,
       toChainId: destChainId,
       tx,
@@ -138,6 +139,21 @@ export const fetchBridgeQuote = createAsyncThunk(
 
     const toValueBigInt = BigInt(expectedToAmount) ?? 0n
     const bridgeModuleName = moduleNames[moduleNames.length - 1]
+    // Strip trailing zeros from decimal places
+    const gasDropAmountBigInt = BigInt(gasDropAmount)
+    const formattedGasDrop = gasDropAmountBigInt
+      ? formatBigIntToString(gasDropAmountBigInt, 18).replace(
+          /(\.\d*[1-9])0+$|\.0+$/,
+          '$1'
+        )
+      : ''
+    const nativeFeeAmountBigInt = BigInt(nativeFee || '0')
+    const formattedNativeFee = nativeFeeAmountBigInt
+      ? formatBigIntToString(nativeFeeAmountBigInt, 18).replace(
+          /(\.\d*[1-9])0+$|\.0+$/,
+          '$1'
+        )
+      : ''
 
     const isUnsupported = AcceptedChainId[fromChainId] ? false : true
 
@@ -172,7 +188,8 @@ export const fetchBridgeQuote = createAsyncThunk(
       delta: toValueBigInt,
       estimatedTime,
       bridgeModuleName,
-      gasDropAmount: BigInt(gasDropAmount),
+      formattedGasDrop,
+      formattedNativeFee,
       timestamp: currentTimestamp,
       originChainId,
       destChainId,
