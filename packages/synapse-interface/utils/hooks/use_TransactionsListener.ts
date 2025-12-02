@@ -53,6 +53,7 @@ export const use_TransactionsListener = () => {
               routerAddress: tx.routerAddress,
               estimatedTime: tx.estimatedTime,
               timestamp: tx.id,
+              submittedAt: tx.timestamp ?? tx.id,
               status: 'pending',
             })
           )
