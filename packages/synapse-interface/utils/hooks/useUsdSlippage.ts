@@ -1,8 +1,10 @@
+import { zeroAddress } from 'viem'
 import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
 import { getTokenDecimals } from '@utils/decimals'
 import { Token } from '@utils/types'
 import { formatBigIntToString } from '@utils/bigint/format'
 import { AbsoluteThreshold, PercentageThreshold } from '@constants/slippage'
+import { calculateTotalUsdValue } from '@utils/calculateUsdValue'
 
 interface UseUsdSlippageParams {
   originToken: Token | null
@@ -11,9 +13,15 @@ interface UseUsdSlippageParams {
   destChainId: number | null
   inputAmount: bigint | null
   outputAmount: bigint | null
+  formattedGasDrop: string | null
+  formattedNativeFee: string | null
 }
 
 interface UseUsdSlippageResult {
+  valueIn: number | null
+  valueOut: number | null
+  destTokenUsd: number | null
+  gasDropUsd: number | null
   slippage: number | null
   usdDifference: number | null
   isLoading: boolean
@@ -22,6 +30,10 @@ interface UseUsdSlippageResult {
 }
 
 const DEFAULT_RESULT: UseUsdSlippageResult = {
+  valueIn: null,
+  valueOut: null,
+  destTokenUsd: null,
+  gasDropUsd: null,
   slippage: null,
   usdDifference: null,
   isLoading: false,
@@ -67,10 +79,22 @@ export const useUsdSlippage = ({
   destChainId,
   inputAmount,
   outputAmount,
+  formattedGasDrop,
+  formattedNativeFee,
 }: UseUsdSlippageParams): UseUsdSlippageResult => {
   // Fetch prices for both tokens
   const originPrice = useDefiLlamaPrice(originToken)
   const destPrice = useDefiLlamaPrice(destToken)
+
+  // Fetch native token price for airdrop calculation (destination chain)
+  const destNativePrice = useDefiLlamaPrice({
+    addresses: { [destChainId ?? 0]: zeroAddress },
+  })
+
+  // Fetch native token price for native fee calculation (origin chain)
+  const originNativePrice = useDefiLlamaPrice({
+    addresses: { [originChainId ?? 0]: zeroAddress },
+  })
 
   // Validate all required parameters are present
   const hasAllParams = Boolean(
@@ -119,20 +143,27 @@ export const useUsdSlippage = ({
     return { ...DEFAULT_RESULT, error: 'Missing token decimals' }
   }
 
-  // Calculate slippage
   try {
-    const inputAmountDecimal = Number.parseFloat(
-      formatBigIntToString(inputAmount, originDecimals)
+    // Calculate total USD values (token + native component)
+    const { totalValue: valueIn } = calculateTotalUsdValue(
+      formatBigIntToString(inputAmount, originDecimals),
+      originPrice,
+      formattedNativeFee,
+      originNativePrice
     )
-    const outputAmountDecimal = Number.parseFloat(
-      formatBigIntToString(outputAmount, destDecimals)
+    const {
+      tokenValue: destTokenUsd,
+      nativeValue: gasDropUsd,
+      totalValue: valueOut,
+    } = calculateTotalUsdValue(
+      formatBigIntToString(outputAmount, destDecimals),
+      destPrice,
+      formattedGasDrop,
+      destNativePrice
     )
 
-    const valueIn = inputAmountDecimal * originPrice
-    const valueOut = outputAmountDecimal * destPrice
-
-    // Guard against division by zero
-    if (valueIn === 0 || valueOut === 0) {
+    // Guard against null or zero values
+    if (!valueIn || !valueOut) {
       return DEFAULT_RESULT
     }
 
@@ -140,6 +171,10 @@ export const useUsdSlippage = ({
     const slippage = (usdDifference / valueIn) * 100
 
     return {
+      valueIn,
+      valueOut,
+      destTokenUsd,
+      gasDropUsd,
       slippage,
       usdDifference,
       isLoading: false,

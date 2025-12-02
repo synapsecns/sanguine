@@ -2,6 +2,7 @@ import { debounce, isNull } from 'lodash'
 import toast from 'react-hot-toast'
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useAccount } from 'wagmi'
+import { zeroAddress } from 'viem'
 
 import { useAppDispatch } from '@/store/hooks'
 import { updateDebouncedFromValue } from '@/slices/bridge/reducer'
@@ -13,19 +14,28 @@ import {
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
 import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
+import { CHAINS_BY_ID } from '@/constants/chains'
+import { GasInfoBadge } from '@/components/StateManagedBridge/GasInfoBadge'
+import { useTranslations } from 'next-intl'
 import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
 import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { AvailableBalance } from './AvailableBalance'
 import { useGasEstimator } from '@/utils/hooks/useGasEstimator'
 import { getParsedBalance } from '@/utils/getParsedBalance'
-import { formatAmount } from '@/utils/formatAmount'
+import { formatAmount, formatAmountByPrice } from '@/utils/formatAmount'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { FromChainSelector } from '@/components/StateManagedBridge/FromChainSelector'
 import { FromTokenSelector } from '@/components/StateManagedBridge/FromTokenSelector'
 import { useBridgeSelections } from './hooks/useBridgeSelections'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
-import { calculateUsdValue } from '@utils/calculateUsdValue'
+import {
+  calculateTotalUsdValue,
+  formatUsdValue,
+  formatUsdBreakdownTooltip,
+} from '@utils/calculateUsdValue'
+import { HoverTooltip } from '@/components/HoverTooltip'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -36,11 +46,14 @@ interface InputContainerProps {
 export const InputContainer: React.FC<InputContainerProps> = ({
   setIsTyping,
 }) => {
+  const t = useTranslations('Bridge')
   const dispatch = useAppDispatch()
   const { chain, isConnected } = useAccount()
   const { isWalletPending } = useWalletState()
   const { fromChainId, fromToken, debouncedFromValue } = useBridgeState()
+  const { bridgeQuote, isLoading: isQuoteLoading } = useBridgeQuoteState()
   const [localInputValue, setLocalInputValue] = useState(debouncedFromValue)
+  const fromChainNativeSymbol = CHAINS_BY_ID[fromChainId]?.nativeCurrency.symbol
 
   const { hasValidFromSelections, hasValidSelections, onSelectedChain } =
     useBridgeValidations()
@@ -58,9 +71,22 @@ export const InputContainer: React.FC<InputContainerProps> = ({
     estimateBridgeableBalanceCallback,
   } = useGasEstimator()
 
-  // Fetch token price and calculate USD value
+  // Fetch token price and native price for USD value calculation
   const fromTokenPrice = useDefiLlamaPrice(fromToken)
-  const usdValue = calculateUsdValue(localInputValue, fromTokenPrice)
+  const originNativePrice = useDefiLlamaPrice({
+    addresses: { [fromChainId]: zeroAddress },
+  })
+
+  // Calculate total input USD value (token + native fee)
+  // Use null for native fee while loading to avoid showing stale data
+  const nativeFee = isQuoteLoading ? null : bridgeQuote.formattedNativeFee
+  const { nativeValue, totalValue } = calculateTotalUsdValue(
+    localInputValue,
+    fromTokenPrice,
+    nativeFee,
+    originNativePrice
+  )
+  const usdTooltip = formatUsdBreakdownTooltip(nativeValue, totalValue, t('gas fee'))
 
   const isInputMax =
     maxBridgeableGas?.toString() === debouncedFromValue ||
@@ -156,17 +182,32 @@ export const InputContainer: React.FC<InputContainerProps> = ({
       <BridgeAmountContainer>
         <FromTokenSelector />
         <div className="flex flex-col w-full">
-          <AmountInput
-            setIsTyping={setIsTyping}
-            inputRef={inputRef}
-            showValue={localInputValue}
-            handleFromValueChange={handleFromValueChange}
-            disabled={isWalletPending}
-          />
           <div className="flex justify-between items-center">
-            <div className="text-xs text-zinc-500 dark:text-zinc-400">
-              {usdValue}
-            </div>
+            <AmountInput
+              setIsTyping={setIsTyping}
+              inputRef={inputRef}
+              showValue={localInputValue}
+              handleFromValueChange={handleFromValueChange}
+              disabled={isWalletPending}
+            />
+            {nativeFee && (
+              <GasInfoBadge
+                // Format amount by price to avoid showing too many decimals
+                amount={formatAmountByPrice(nativeFee, originNativePrice)}
+                symbol={fromChainNativeSymbol}
+                tooltipText={`${bridgeQuote.bridgeModuleName} ${t('gas fee')}`}
+              />
+            )}
+          </div>
+          <div className="flex justify-between items-center">
+            <HoverTooltip
+              hoverContent={usdTooltip}
+              position="bottom"
+            >
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                {formatUsdValue(totalValue)}
+              </div>
+            </HoverTooltip>
             <AvailableBalance
               balance={formattedBalance}
               maxBridgeableBalance={maxBridgeableGas}

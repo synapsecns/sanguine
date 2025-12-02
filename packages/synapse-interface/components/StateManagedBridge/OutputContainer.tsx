@@ -2,6 +2,7 @@ import { useAccount } from 'wagmi'
 import { useMemo } from 'react'
 
 import { ChainSelector } from '@/components/ui/ChainSelector'
+import { GasInfoBadge } from '@/components/StateManagedBridge/GasInfoBadge'
 import { TokenSelector } from '@/components/ui/TokenSelector'
 import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
 import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
@@ -18,7 +19,12 @@ import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { useTranslations } from 'next-intl'
 import { ARBITRUM, HYPERLIQUID } from '@/constants/chains/master'
 import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
-import { calculateUsdValue, formatInlineUsdDifference } from '@utils/calculateUsdValue'
+import {
+  formatInlineUsdDifference,
+  formatUsdValue,
+  formatUsdBreakdownTooltip,
+} from '@utils/calculateUsdValue'
+import { HoverTooltip } from '@/components/HoverTooltip'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { formatAmount, formatAmountByPrice, getTooltipValue } from '@/utils/formatAmount'
@@ -50,15 +56,12 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
 
   const inputClassName = isQuoteStale ? 'opacity-50' : undefined
 
-  // Fetch token price and calculate USD value
   const outputValue =
     fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
       ? debouncedFromValue
       : bridgeQuoteValue
-  const toTokenPrice = useDefiLlamaPrice(toToken)
-  const usdValue = calculateUsdValue(outputValue, toTokenPrice)
-
   // Format output amount based on price (each decimal digit = $0.01)
+  const toTokenPrice = useDefiLlamaPrice(toToken)
   const showValue = formatAmountByPrice(
     outputValue ?? '',
     toTokenPrice
@@ -73,13 +76,15 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
   )
 
   // Calculate USD-based slippage to get USD difference
-  const { usdDifference } = useUsdSlippage({
+  const { valueOut, gasDropUsd, usdDifference } = useUsdSlippage({
     originToken: bridgeQuote.originTokenForQuote,
     destToken: bridgeQuote.destTokenForQuote,
     originChainId: fromChainId,
     destChainId: toChainId,
     inputAmount,
     outputAmount: bridgeQuote.outputAmount,
+    formattedGasDrop: bridgeQuote.formattedGasDrop,
+    formattedNativeFee: bridgeQuote.formattedNativeFee,
   })
 
   // Get destination token balance
@@ -95,7 +100,9 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
       ? getParsedBalance(toTokenBalance, toTokenDecimals)
       : '0.0'
   const formattedBalance = formatAmount(parsedBalance)
-  const formattedUsdValue = `${usdValue}${formatInlineUsdDifference(usdDifference)}`
+  const formattedUsdValue = `${formatUsdValue(valueOut)}${formatInlineUsdDifference(usdDifference)}`
+  const usdBreakdown = formatUsdBreakdownTooltip(gasDropUsd, valueOut, t('gas airdrop'))
+  const toChainNativeSymbol = CHAINS_BY_ID[toChainId]?.nativeCurrency.symbol
 
   return (
     <BridgeSectionContainer>
@@ -109,17 +116,31 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
       <BridgeAmountContainer>
         <ToTokenSelector />
         <div className="flex flex-col w-full">
-          <AmountInput
-            disabled={true}
-            showValue={showValue}
-            isLoading={isLoading}
-            className={inputClassName}
-            tooltipValue={tooltipValue}
-          />
           <div className="flex justify-between items-center">
-            <div className="text-xs text-zinc-500 dark:text-zinc-400">
-              {!isLoading && formattedUsdValue}
-            </div>
+            <AmountInput
+              disabled={true}
+              showValue={showValue}
+              isLoading={isLoading}
+              className={inputClassName}
+              tooltipValue={tooltipValue}
+            />
+            {bridgeQuote.formattedGasDrop && !isLoading && (
+              <GasInfoBadge
+                amount={bridgeQuote.formattedGasDrop}
+                symbol={toChainNativeSymbol}
+                tooltipText={`${bridgeQuote.bridgeModuleName} ${t('gas airdrop')}`}
+              />
+            )}
+          </div>
+          <div className="flex justify-between items-center">
+            <HoverTooltip
+              hoverContent={usdBreakdown}
+              position="bottom"
+            >
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                {!isLoading && formattedUsdValue}
+              </div>
+            </HoverTooltip>
             {isConnected && (
               <div className="text-xs text-zinc-500 dark:text-zinc-400">
                 {t('Balance')}: {formattedBalance ?? '0.0'}

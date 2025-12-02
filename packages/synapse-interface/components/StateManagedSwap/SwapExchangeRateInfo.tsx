@@ -38,6 +38,8 @@ const SwapExchangeRateInfo = ({
     destChainId: toChainId,
     inputAmount: safeFromAmount > 0n ? safeFromAmount : null,
     outputAmount: outputAmount > 0n ? outputAmount : null,
+    formattedGasDrop: null,
+    formattedNativeFee: null,
   })
 
   const expectedToChain = useMemo(() => {

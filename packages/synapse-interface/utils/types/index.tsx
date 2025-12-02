@@ -74,7 +74,8 @@ export type BridgeQuote = {
   delta: bigint
   estimatedTime: number
   bridgeModuleName: string
-  gasDropAmount: bigint
+  formattedGasDrop: string
+  formattedNativeFee: string
   timestamp: number
   originChainId: number
   destChainId: number

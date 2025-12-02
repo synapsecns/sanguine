@@ -3,17 +3,11 @@ import { useAccount } from 'wagmi'
 import { useTranslations } from 'next-intl'
 
 import { useUsdSlippage } from '@hooks/useUsdSlippage'
-import { formatBigIntToString } from '@/utils/bigint/format'
 import { getValidAddress, isValidAddress } from '@/utils/isValidAddress'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
-import { CHAINS_BY_ID } from '@constants/chains'
-import {DATA_PLACEHOLDER} from '@/constants/placeholders'
+import { DATA_PLACEHOLDER } from '@/constants/placeholders'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
-import { getSignificantDecimals } from '@/utils/getSignificantDecimals'
 import { formatSlippage } from '@/utils/formatSlippage'
-import { useDefiLlamaPrice } from '@/utils/hooks/useDefiLlamaPrice'
-import { zeroAddress } from 'viem'
-import { calculateUsdValue } from '@/utils/calculateUsdValue'
 import { parseTokenAmount } from '@/utils/decimals'
 
 export const BridgeExchangeRateInfo = () => {
@@ -26,8 +20,6 @@ export const BridgeExchangeRateInfo = () => {
   return (
     <div className="mt-1 mb-2 text-sm">
       <div className="block p-2 leading-relaxed border rounded border-zinc-300 dark:border-separator">
-        {' '}
-        <GasDropLabel />
         <Router />
         <EstimatedTime />
         <Slippage />
@@ -70,6 +62,8 @@ const Slippage = () => {
       outputAmount,
       originTokenForQuote,
       destTokenForQuote,
+      formattedGasDrop,
+      formattedNativeFee,
     },
     isLoading: isQuoteLoading,
   } = useBridgeQuoteState()
@@ -94,6 +88,8 @@ const Slippage = () => {
     destChainId: toChainId,
     inputAmount,
     outputAmount,
+    formattedGasDrop,
+    formattedNativeFee,
   })
 
   // Show content
@@ -185,41 +181,3 @@ const EstimatedTime = () => {
   )
 }
 
-const GasDropLabel = () => {
-  const { toChainId } = useBridgeState()
-  const {
-    bridgeQuote: { gasDropAmount },
-    isLoading,
-  } = useBridgeQuoteState()
-
-  const t = useTranslations('Bridge')
-  const symbol = CHAINS_BY_ID[toChainId]?.nativeCurrency.symbol
-
-  const stringifiedGasAmount = formatBigIntToString(gasDropAmount, 18)
-  const significantDecimals = getSignificantDecimals(stringifiedGasAmount)
-
-  const formattedGasDropAmount = formatBigIntToString(
-    gasDropAmount,
-    18,
-    significantDecimals
-  )
-
-  const price = useDefiLlamaPrice({ addresses: { [toChainId]: zeroAddress } })
-  const airdropInDollars = calculateUsdValue(formattedGasDropAmount, price)
-
-  if (isLoading || gasDropAmount === EMPTY_BRIDGE_QUOTE.gasDropAmount) {
-    return null
-  }
-
-  return (
-    <>
-      <span className="text-zinc-500 dark:text-zinc-400">
-        {t('Will also receive')} {formattedGasDropAmount}
-      </span>
-      <span>
-        {' '}
-        {symbol} {airdropInDollars && `(${airdropInDollars})`}
-      </span>
-    </>
-  )
-}

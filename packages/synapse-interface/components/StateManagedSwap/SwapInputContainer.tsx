@@ -33,7 +33,7 @@ import { formatAmount } from '@/utils/formatAmount'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
-import { calculateUsdValue } from '@utils/calculateUsdValue'
+import { calculateUsdValue, formatUsdValue } from '@utils/calculateUsdValue'
 
 interface InputContainerProps {
   setIsTyping: React.Dispatch<React.SetStateAction<boolean>>
@@ -174,7 +174,7 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
           />
           <div className="flex justify-between items-center">
             <div className="text-xs text-zinc-500 dark:text-zinc-400">
-              {usdValue}
+              {formatUsdValue(usdValue)}
             </div>
             {hasMounted && isConnected && (
               <button
