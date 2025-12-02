@@ -121,7 +121,9 @@ export const formatUsdBreakdownTooltip = (
     return null
   }
 
-  return `${formatUsdValue(tokenCents / 100)} + ${formatUsdValue(nativeCents / 100)} (${nativeLabel})`
+  return `${formatUsdValue(tokenCents / 100)} + ${formatUsdValue(
+    nativeCents / 100
+  )} (${nativeLabel})`
 }
 
 /**
