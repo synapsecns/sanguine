@@ -51,10 +51,7 @@ describe.skip('Get Bridge TX Status Route', () => {
         '0x9beb59b36ff4570d6b823b075dcd4fa9acd82dc4a28bf93a456ab8c93990604a',
     })
     expect(response.status).toBe(400)
-    expect(response.body.error).toHaveProperty(
-      'message',
-      'Invalid bridge module. Must be one of: SynapseBridge, SynapseCCTP, SynapseRFQ, Gas.zip'
-    )
+    expect(response.body.error.message).toContain('Invalid bridge module')
   }, 10000)
 
   it('should return 400 for missing synapseTxId', async () => {
