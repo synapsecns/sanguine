@@ -1,5 +1,6 @@
 export * from './api'
 export * from './addressUtils'
+export * from './chainHash'
 export * from './deadlines'
 export * from './logger'
 export * from './logs'
