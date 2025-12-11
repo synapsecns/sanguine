@@ -27,7 +27,7 @@ const router: express.Router = express.Router()
  *         required: true
  *         schema:
  *           type: string
- *           enum: [SynapseRFQ, SynapseBridge, SynapseCCTP]
+ *           enum: [SynapseBridge, SynapseCCTP, SynapseRFQ, Gas.zip, CCTP, USDT0, Relay]
  *         description: The bridge module used for the transaction
  *       - in: query
  *         name: synapseTxId

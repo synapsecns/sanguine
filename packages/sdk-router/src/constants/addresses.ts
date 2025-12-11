@@ -98,6 +98,45 @@ export const RELAY_ADDRESS_MAP: AddressMap = generateAddressMap(
   RELAY_EXCEPTION_MAP
 )
 
+export const USDC_ADDRESS_MAP: AddressMap = {
+  [SupportedChainId.ARBITRUM]: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+  [SupportedChainId.AVALANCHE]: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
+  [SupportedChainId.BASE]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+  [SupportedChainId.ETH]: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+  [SupportedChainId.HYPEREVM]: '0xb88339CB7199b77E23DB6E890353E22632Ba630f',
+  [SupportedChainId.LINEA]: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
+  [SupportedChainId.OPTIMISM]: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
+  [SupportedChainId.POLYGON]: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
+  [SupportedChainId.UNICHAIN]: '0x078D782b760474a361dDA0AF3839290b0EF57AD6',
+  [SupportedChainId.WORLDCHAIN]: '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1',
+}
+
+export const CCTP_V2_EXECUTOR_ADDRESS_MAP: AddressMap = {
+  [SupportedChainId.ARBITRUM]: '0x8442d68524217601ed126f6859694E4B0C7c66A1',
+  [SupportedChainId.AVALANCHE]: '0x3952914628650Ca510404872D84DfF10A844C5B5',
+  [SupportedChainId.BASE]: '0xbd8d42f40a11b37bD1b3770D754f9629F7cd5679',
+  [SupportedChainId.ETH]: '0x2cCf230467FE7387674BAa657747F0B5485c7fEC',
+  [SupportedChainId.HYPEREVM]: '0xACD054f83c0b852d02503191e2c26527A7E72B1f',
+  [SupportedChainId.LINEA]: '0xc48c126468BE919068dE1983F00F65af759a4E87',
+  [SupportedChainId.OPTIMISM]: '0xd0A8940b2e743E33b682dAEc4D52b46713606C9D',
+  [SupportedChainId.POLYGON]: '0xc8A8E6D760dCBd5d6746E2F66cd2fFA722dd1E59',
+  [SupportedChainId.UNICHAIN]: '0xD5D5D640D8b758672Cc7A078734175c4433866d5',
+  [SupportedChainId.WORLDCHAIN]: '0x789f2b91f7B35D5B890983328340c4600339B354',
+}
+
+export const CCTP_DOMAIN_MAP: Record<number, number> = {
+  [SupportedChainId.ARBITRUM]: 3,
+  [SupportedChainId.AVALANCHE]: 1,
+  [SupportedChainId.BASE]: 6,
+  [SupportedChainId.ETH]: 0,
+  [SupportedChainId.HYPEREVM]: 19,
+  [SupportedChainId.LINEA]: 11,
+  [SupportedChainId.OPTIMISM]: 2,
+  [SupportedChainId.POLYGON]: 7,
+  [SupportedChainId.UNICHAIN]: 10,
+  [SupportedChainId.WORLDCHAIN]: 14,
+}
+
 /**
  * USDT0 contract address for supported chains.
  * Note: for Ethereum this is actually native USDT.

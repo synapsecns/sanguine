@@ -83,3 +83,8 @@ export const MEDIAN_TIME_RFQ = 10
  * when the transaction involves Ethereum Mainnet.
  */
 export const MEDIAN_TIME_RFQ_ETHEREUM = 20
+
+export const MEDIAN_TIME_CCTP_V2_FAST = 8
+export const MEDIAN_TIME_CCTP_V2_FAST_MAP: Record<number, number> = {
+  [SupportedChainId.ETH]: 20,
+}

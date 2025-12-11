@@ -1,4 +1,5 @@
 module.exports = {
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   maxConcurrency: 1,
   testTimeout: 30000,
   moduleNameMapper: {

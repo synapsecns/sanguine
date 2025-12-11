@@ -606,8 +606,8 @@ export const BRIDGE_MAP = {
     '0x078D782b760474a361dDA0AF3839290b0EF57AD6': {
       decimals: 6,
       symbol: 'USDC',
-      origin: ['RFQ.USDC'],
-      destination: ['RFQ.USDC'],
+      origin: ['CCTP.USDC', 'RFQ.USDC'],
+      destination: ['CCTP.USDC', 'RFQ.USDC'],
       swappable: [],
     },
     '0x4200000000000000000000000000000000000006': {
@@ -926,9 +926,9 @@ export const BRIDGE_MAP = {
     },
     '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1': {
       decimals: 6,
-      symbol: 'USDC.e',
-      origin: ['RFQ.USDC'],
-      destination: ['RFQ.USDC'],
+      symbol: 'USDC',
+      origin: ['CCTP.USDC', 'RFQ.USDC'],
+      destination: ['CCTP.USDC', 'RFQ.USDC'],
       swappable: [],
     },
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
@@ -940,6 +940,13 @@ export const BRIDGE_MAP = {
     },
   },
   '999': {
+    '0xb88339CB7199b77E23DB6E890353E22632Ba630f': {
+      decimals: 6,
+      symbol: 'USDC',
+      origin: ['CCTP.USDC', 'RFQ.USDC'],
+      destination: ['CCTP.USDC', 'RFQ.USDC'],
+      swappable: [],
+    },
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
       decimals: 18,
       symbol: 'HYPE',

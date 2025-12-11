@@ -71,6 +71,7 @@
     "@ethersproject/bytes": "^5.7.0",
     "@ethersproject/constants": "^5.7.0",
     "@ethersproject/contracts": "^5.7.0",
+    "@wormhole-foundation/sdk-connect": "^4.0.2",
     "babel-jest": "^25.2.6",
     "big.js": "^5.2.2",
     "decimal.js-light": "^2.5.1",
