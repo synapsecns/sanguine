@@ -198,6 +198,7 @@ export class Token {
   notStake?: boolean
   routeSymbol?: string
   priceOverride?: number // USD price override (e.g., 1.0 for stables)
+  priceChainId?: number
   constructor({
     addresses,
     wrapperAddresses,
@@ -238,6 +239,7 @@ export class Token {
     notStake,
     routeSymbol,
     priceOverride,
+    priceChainId,
   }: {
     addresses: { [x: number]: string }
     wrapperAddresses?: Record<number, string>
@@ -289,6 +291,7 @@ export class Token {
     notStake?: boolean
     routeSymbol?: string
     priceOverride?: number
+    priceChainId?: number
   }) {
     const isMetaVar = Boolean(swapDepositAddresses || forceMeta)
     this.addresses = validateAddresses(addresses)
@@ -332,6 +335,7 @@ export class Token {
     this.notStake = notStake ?? false
     this.routeSymbol = routeSymbol
     this.priceOverride = priceOverride
+    this.priceChainId = priceChainId
   }
 }
 

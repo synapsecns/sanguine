@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.20.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.6...@synapsecns/sdk-router@0.20.7) (2025-12-02)
+
+
+### Bug Fixes
+
+* **sdk-router:** make logExecutionTime conditional ([#3886](https://github.com/synapsecns/sanguine/issues/3886)) ([848f751](https://github.com/synapsecns/sanguine/commit/848f75177cb9dfbd0f02059ceee913bf7e557161))
+
+
+
+
+
 ## [0.20.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.5...@synapsecns/sdk-router@0.20.6) (2025-11-27)
 
 

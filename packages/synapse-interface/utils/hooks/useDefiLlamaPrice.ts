@@ -11,10 +11,12 @@ import { CHAIN_ID_TO_DEFILLAMA_NAME } from '@constants/defiLlama'
  * @returns Price in USD, undefined (loading), or null (not available)
  */
 export const useDefiLlamaPrice = (
-  token: Pick<Token, 'addresses' | 'priceOverride'> | null
+  token: Pick<Token, 'addresses' | 'priceOverride' | 'priceChainId'> | null
 ): number | null | undefined => {
   // Use first chain's address for consistent pricing across all chains for multi-chain tokens
-  const chainId = token ? Number(Object.keys(token.addresses)[0]) : null
+  const chainId = token
+    ? token.priceChainId || Number(Object.keys(token.addresses)[0])
+    : null
 
   // Get chain name from mapping
   const chainName = chainId ? CHAIN_ID_TO_DEFILLAMA_NAME[chainId] : null

@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.43.36](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.35...@synapsecns/synapse-interface@0.43.36) (2025-12-11)
+
+
+### Bug Fixes
+
+* **synapse-interface:** token definitions chain order ([#3894](https://github.com/synapsecns/sanguine/issues/3894)) ([ccc96a8](https://github.com/synapsecns/sanguine/commit/ccc96a8f35137026689aa9f40fc2a7a935ac9611))
+
+
+
+
+
+## [0.43.35](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.34...@synapsecns/synapse-interface@0.43.35) (2025-12-02)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.43.34](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.33...@synapsecns/synapse-interface@0.43.34) (2025-11-28)
 
 

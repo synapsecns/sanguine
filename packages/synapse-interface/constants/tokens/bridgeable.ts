@@ -192,6 +192,7 @@ export const NFD = new Token({
   color: 'yellow',
   priorityRank: 600,
   routeSymbol: 'NFD',
+  priceChainId: CHAINS.POLYGON.id,
 })
 
 export const SOLAR = new Token({
@@ -771,6 +772,7 @@ export const MOVR = new Token({
   color: 'lime',
   priorityRank: 300,
   routeSymbol: 'MOVR',
+  priceChainId: CHAINS.MOONRIVER.id,
 })
 
 export const AVAX = new Token({
@@ -791,6 +793,7 @@ export const AVAX = new Token({
   visibilityRank: 90,
   priorityRank: 300,
   routeSymbol: 'AVAX',
+  priceChainId: CHAINS.AVALANCHE.id,
 })
 
 export const WMOVR = new Token({
@@ -1029,6 +1032,7 @@ export const BTCB = new Token({
   color: 'orange',
   priorityRank: 300,
   routeSymbol: 'BTC.b',
+  priceChainId: CHAINS.AVALANCHE.id,
 })
 
 export const DAIE = new Token({
@@ -1283,6 +1287,7 @@ export const METIS = new Token({
   logo: metisLogo,
   color: 'blue',
   routeSymbol: 'Metis',
+  priceChainId: CHAINS.METIS.id,
 })
 
 export const BERA = new Token({
