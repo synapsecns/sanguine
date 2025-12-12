@@ -8,7 +8,7 @@ export const ETHEREUM: Chain = {
   name: 'Ethereum',
   rpcUrls: {
     primary: getOmniRpcUrl(1),
-    fallback: 'https://ethereum.blockpi.network/v1/rpc/public',
+    fallback: 'https://eth.llamarpc.com',
   },
   explorerUrl: 'https://etherscan.com',
   explorerName: 'Etherscan',
@@ -29,7 +29,7 @@ export const ARBITRUM: Chain = {
   name: 'Arbitrum',
   rpcUrls: {
     primary: getOmniRpcUrl(42161),
-    fallback: 'https://arbitrum.blockpi.network/v1/rpc/public',
+    fallback: 'https://arbitrum.drpc.org',
   },
   explorerUrl: 'https://arbiscan.io',
   explorerName: 'Arbiscan',
@@ -92,7 +92,7 @@ export const CANTO: Chain = {
   name: 'Canto',
   rpcUrls: {
     primary: getOmniRpcUrl(7700),
-    fallback: 'https://mainnode.plexnode.org:8545',
+    fallback: 'https://canto.gravitychain.io',
   },
   explorerUrl: 'https://tuber.build/',
   explorerName: 'Canto Explorer',
@@ -100,7 +100,7 @@ export const CANTO: Chain = {
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/canto.cb85e14f.svg',
   networkName: 'Canto',
-  networkUrl: 'https://canto.slingshot.finance',
+  networkUrl: 'https://canto-rpc.ansybl.io',
   nativeCurrency: {
     name: 'Canto',
     symbol: 'CANTO',
@@ -184,7 +184,7 @@ export const KLAYTN: Chain = {
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/klaytn.59495fbb.svg',
   networkName: 'Klaytn Mainnet Cypress',
-  networkUrl: 'https://public-en-cypress.klaytn.net',
+  networkUrl: 'https://klaytn.drpc.org',
   nativeCurrency: {
     name: 'Klaytn',
     symbol: 'KLAY',
@@ -197,7 +197,7 @@ export const FANTOM: Chain = {
   name: 'Fantom',
   rpcUrls: {
     primary: getOmniRpcUrl(250),
-    fallback: 'https://rpc.ftm.tools',
+    fallback: 'https://rpcapi.fantom.network',
   },
   explorerUrl: 'https://ftmscan.com',
   explorerName: 'FTMScan',
@@ -205,7 +205,7 @@ export const FANTOM: Chain = {
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/fantom.1e444dad.svg',
   networkName: 'Fantom Opera',
-  networkUrl: 'https://rpc.ftm.tools',
+  networkUrl: 'https://rpcapi.fantom.network',
   nativeCurrency: {
     name: 'Fantom',
     symbol: 'FTM',
@@ -218,7 +218,7 @@ export const CRONOS: Chain = {
   name: 'Cronos',
   rpcUrls: {
     primary: getOmniRpcUrl(25),
-    fallback: 'https://evm-cronos.crypto.org',
+    fallback: 'https://evm.cronos.org',
   },
   explorerUrl: 'https://cronoscan.com',
   explorerName: 'CronoScan',
@@ -386,7 +386,7 @@ export const BASE: Chain = {
   name: 'Base',
   rpcUrls: {
     primary: getOmniRpcUrl(8453),
-    fallback: 'https://base.blockpi.network/v1/rpc/public',
+    fallback: 'https://mainnet.base.org',
   },
   explorerUrl: 'https://basescan.org',
   explorerName: 'BaseScan',
@@ -471,7 +471,7 @@ export const WORLDCHAIN: Chain = {
   name: 'World Chain',
   rpcUrls: {
     primary: 'https://worldchain-mainnet.g.alchemy.com/public',
-    fallback: 'https://worldchain-mainnet.g.alchemy.com/public',
+    fallback: 'https://worldchain.drpc.org',
   },
   explorerUrl: 'https://worldchain-mainnet.explorer.alchemy.com',
   explorerName: 'World Chain Explorer',

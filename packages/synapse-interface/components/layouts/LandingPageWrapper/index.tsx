@@ -232,12 +232,6 @@ function MoreInfoButtons() {
   return (
     <>
       <MoreInfoItem
-        className="mdl:hidden"
-        to={NAVIGATION.Analytics.path}
-        labelText={NAVIGATION.Analytics.text}
-        description="See preliminary analytics of the bridge"
-      />
-      <MoreInfoItem
         to={NAVIGATION.SYN.path}
         labelText={NAVIGATION.SYN.text}
         description="View $SYN related information such as contract addresses"

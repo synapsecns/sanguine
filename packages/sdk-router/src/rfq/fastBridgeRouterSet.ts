@@ -3,12 +3,13 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
 import { BigNumberish } from 'ethers'
 import NodeCache from 'node-cache'
-import invariant from 'tiny-invariant'
 
 import {
   FAST_BRIDGE_INTERCEPTOR_ADDRESS_MAP,
   FAST_BRIDGE_ROUTER_ADDRESS_MAP,
   MEDIAN_TIME_RFQ,
+  MEDIAN_TIME_RFQ_ETHEREUM,
+  SupportedChainId,
 } from '../constants'
 import {
   BridgeRoute,
@@ -98,10 +99,11 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   /**
    * @inheritdoc SynapseModuleSet.getOriginAmountOut
    */
-  public getEstimatedTime(chainId: number): number {
-    const medianTime = MEDIAN_TIME_RFQ[chainId as keyof typeof MEDIAN_TIME_RFQ]
-    invariant(medianTime, `No estimated time for chain ${chainId}`)
-    return medianTime
+  public getEstimatedTime(originChainId: number, destChainId?: number): number {
+    return originChainId === SupportedChainId.ETH ||
+      destChainId === SupportedChainId.ETH
+      ? MEDIAN_TIME_RFQ_ETHEREUM
+      : MEDIAN_TIME_RFQ
   }
 
   /**
