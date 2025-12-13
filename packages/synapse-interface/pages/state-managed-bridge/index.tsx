@@ -378,7 +378,7 @@ const StateManagedBridge = () => {
       dispatch(
         updatePendingBridgeTransaction({
           id: currentTimestamp,
-          timestamp: undefined,
+          timestamp: getUnixTimeMinutesFromNow(0),
           transactionHash: tx,
           isSubmitted: false,
         })
