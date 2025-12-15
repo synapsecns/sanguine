@@ -32,7 +32,8 @@ import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterD
 import { formatAmount } from '@/utils/formatAmount'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { useWalletState } from '@/slices/wallet/hooks'
-import { useUsdDisplay } from '@hooks/useUsdDisplay'
+import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
+import { calculateUsdValue } from '@utils/calculateUsdValue'
 
 interface InputContainerProps {
   setIsTyping: React.Dispatch<React.SetStateAction<boolean>>
@@ -79,7 +80,8 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
   const t = useTranslations('Swap')
 
   // Fetch token price and calculate USD value
-  const usdValue = useUsdDisplay(swapFromToken, showValue)
+  const fromTokenPrice = useDefiLlamaPrice(swapFromToken)
+  const usdValue = calculateUsdValue(showValue, fromTokenPrice)
 
   useEffect(() => {
     if (

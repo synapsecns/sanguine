@@ -9,11 +9,11 @@ import { setSwapToToken } from '@/slices/swap/reducer'
 import { useSwapToTokenListArray } from './hooks/useSwapToTokenListArray'
 import { AmountInput } from '@/components/ui/AmountInput'
 import { useWalletState } from '@/slices/wallet/hooks'
-import { useUsdDisplay } from '@hooks/useUsdDisplay'
-import { formatInlineUsdDifference } from '@utils/calculateUsdValue'
+import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
+import { calculateUsdValue, formatInlineUsdDifference } from '@utils/calculateUsdValue'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { getParsedBalance } from '@/utils/getParsedBalance'
-import { formatAmount } from '@/utils/formatAmount'
+import { formatAmount, formatAmountByPrice, getTooltipValue } from '@/utils/formatAmount'
 import { useUsdSlippage } from '@hooks/useUsdSlippage'
 import { getTokenDecimals, parseTokenAmount } from '@/utils/decimals'
 
@@ -29,11 +29,16 @@ export const SwapOutputContainer = () => {
     swapFromValue,
   } = useSwapState()
 
-  const showValue =
+  const outputValue =
     swapQuote.outputAmountString === '0' ? '' : swapQuote.outputAmountString
 
   // Fetch token price and calculate USD value
-  const usdValue = useUsdDisplay(swapToToken, showValue)
+  const toTokenPrice = useDefiLlamaPrice(swapToToken)
+  const usdValue = calculateUsdValue(outputValue, toTokenPrice)
+
+  // Format output amount based on price (each decimal digit = $0.01)
+  const showValue = formatAmountByPrice(outputValue, toTokenPrice)
+  const tooltipValue = getTooltipValue(showValue, outputValue, swapToToken?.symbol)
 
   // Convert input amount to bigint for slippage calculation
   const inputAmount = parseTokenAmount(
@@ -78,6 +83,7 @@ export const SwapOutputContainer = () => {
             disabled={true}
             showValue={showValue}
             isLoading={isLoading}
+            tooltipValue={tooltipValue}
           />
           <div className="flex justify-between items-center">
             <div className="text-xs text-zinc-500 dark:text-zinc-400">

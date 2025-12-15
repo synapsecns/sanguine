@@ -17,11 +17,11 @@ import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { useTranslations } from 'next-intl'
 import { ARBITRUM, HYPERLIQUID } from '@/constants/chains/master'
-import { useUsdDisplay } from '@hooks/useUsdDisplay'
-import { formatInlineUsdDifference } from '@utils/calculateUsdValue'
+import { useDefiLlamaPrice } from '@hooks/useDefiLlamaPrice'
+import { calculateUsdValue, formatInlineUsdDifference } from '@utils/calculateUsdValue'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { getParsedBalance } from '@/utils/getParsedBalance'
-import { formatAmount } from '@/utils/formatAmount'
+import { formatAmount, formatAmountByPrice, getTooltipValue } from '@/utils/formatAmount'
 import { useUsdSlippage } from '@hooks/useUsdSlippage'
 import { getTokenDecimals, parseTokenAmount } from '@/utils/decimals'
 
@@ -38,7 +38,7 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
   const { debouncedFromValue, fromChainId, toChainId, toToken } =
     useBridgeState()
 
-  const showValue = useMemo(() => {
+  const bridgeQuoteValue = useMemo(() => {
     if (!hasValidInput) {
       return ''
     } else if (hasValidQuote) {
@@ -54,8 +54,16 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
   const outputValue =
     fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
       ? debouncedFromValue
-      : showValue
-  const usdValue = useUsdDisplay(toToken, outputValue)
+      : bridgeQuoteValue
+  const toTokenPrice = useDefiLlamaPrice(toToken)
+  const usdValue = calculateUsdValue(outputValue, toTokenPrice)
+
+  // Format output amount based on price (each decimal digit = $0.01)
+  const showValue = formatAmountByPrice(
+    outputValue ?? '',
+    toTokenPrice
+  )
+  const tooltipValue = getTooltipValue(showValue, outputValue ?? '', toToken?.symbol)
 
   // Convert input amount to bigint for slippage calculation
   const inputAmount = parseTokenAmount(
@@ -103,13 +111,10 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
         <div className="flex flex-col w-full">
           <AmountInput
             disabled={true}
-            showValue={
-              fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
-                ? debouncedFromValue
-                : showValue
-            }
+            showValue={showValue}
             isLoading={isLoading}
             className={inputClassName}
+            tooltipValue={tooltipValue}
           />
           <div className="flex justify-between items-center">
             <div className="text-xs text-zinc-500 dark:text-zinc-400">
