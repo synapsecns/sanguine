@@ -16,7 +16,7 @@
     "synapseBridge": "0xaeD5b25BE1c3163c907a471082640450F928DDFE"
   },
   "avalanche": {
-    "blockTime": 1550,
+    "blockTime": 1650,
     "eid": 30106,
     "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
     "receiveUln302": "0xbf3521d309642FA9B1c91A08609505BA09752c61",
@@ -40,7 +40,7 @@
     "synapseBridge": "0x55769bAF6ec39B3bf4aAE948eB890eA33307Ef3C"
   },
   "bnb": {
-    "blockTime": 1500,
+    "blockTime": 750,
     "eid": 30102,
     "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
     "receiveUln302": "0xB217266c3A98C8B2709Ee26836C98cf12f6cCEC1",
@@ -48,7 +48,7 @@
     "synapseBridge": "0xd123f70AE324d34A9E76b67a27bf77593bA8749f"
   },
   "canto": {
-    "blockTime": 5650,
+    "blockTime": 5550,
     "eid": 30159,
     "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
     "receiveUln302": "0x6BD792911F4B3714E88FbDf32B351632e7d22c70",
@@ -56,7 +56,7 @@
     "synapseBridge": "0xDde5BEC4815E1CeCf336fb973Ca578e8D83606E0"
   },
   "cronos": {
-    "blockTime": 5600,
+    "blockTime": 600,
     "eid": 30359,
     "endpointV2": "0x3A73033C0b1407574C76BdBAc67f126f6b4a9AA9",
     "receiveUln302": "0xc1B621b18187F74c8F6D52a6F709Dd2780C09821",
@@ -64,7 +64,7 @@
     "synapseBridge": "0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9"
   },
   "dfk": {
-    "blockTime": 2050,
+    "blockTime": 2000,
     "eid": 30115,
     "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
     "receiveUln302": "0x556d7664d5b4Db11f381c714B6b47A8Bf0b494FD",
@@ -80,7 +80,7 @@
     "synapseBridge": "0x2796317b0fF8538F253012862c06787Adfb8cEb6"
   },
   "fantom": {
-    "blockTime": 1350,
+    "blockTime": 3450,
     "eid": 30112,
     "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
     "receiveUln302": "0xe1Dd69A2D08dF4eA6a30a91cC061ac70F98aAbe3",
@@ -104,7 +104,7 @@
     "synapseBridge": "0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b"
   },
   "metis": {
-    "blockTime": 12050,
+    "blockTime": 11200,
     "eid": 30151,
     "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
     "receiveUln302": "0x5539Eb17a84E1D59d37C222Eb2CC4C81b502D1Ac",
@@ -112,7 +112,7 @@
     "synapseBridge": "0x06Fea8513FF03a0d3f61324da709D4cf06F42A5c"
   },
   "moonbeam": {
-    "blockTime": 6150,
+    "blockTime": 7050,
     "eid": 30126,
     "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
     "receiveUln302": "0x2F4C6eeA955e95e6d65E08620D980C0e0e92211F",
@@ -120,7 +120,7 @@
     "synapseBridge": "0x84A420459cd31C3c34583F67E0f0fB191067D32f"
   },
   "moonriver": {
-    "blockTime": 6700,
+    "blockTime": 6650,
     "eid": 30167,
     "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
     "receiveUln302": "0xe8BAa65CeD8E46DA43520375Af6fAbC31D7bCb8B",
@@ -136,7 +136,7 @@
     "synapseBridge": "0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b"
   },
   "polygon": {
-    "blockTime": 2150,
+    "blockTime": 2100,
     "eid": 30109,
     "endpointV2": "0x1a44076050125825900e736c501f859c50fE728c",
     "receiveUln302": "0x1322871e4ab09Bc7f5717189434f97bBD9546e95",
