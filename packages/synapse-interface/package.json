@@ -58,7 +58,7 @@
     "ethers": "5.7.2",
     "fuse.js": "^6.6.2",
     "graphql": "^16.7.1",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "logrocket": "^7.0.0",
     "logrocket-react": "^6.0.3",
     "next": "^14.1.3",
