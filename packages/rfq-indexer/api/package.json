@@ -42,7 +42,7 @@
     "viem": "^2.21.6"
   },
   "engines": {
-    "node": ">=18.17"
+    "node": ">=20"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

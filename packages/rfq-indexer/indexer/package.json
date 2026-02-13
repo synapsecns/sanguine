@@ -24,7 +24,7 @@
     "viem": "^1.19.3"
   },
   "engines": {
-    "node": ">=18.17.0"
+    "node": ">=20"
   },
   "devDependencies": {
     "@types/node": "^20.9.0",
