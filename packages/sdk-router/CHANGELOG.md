@@ -3,16 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [Unreleased]
+
+### Features
+
+* **sdk-router:** add `CircleCCTPV2` bridge-v2 module for Circle forwarding-service CCTP V2 routes
+
 ## [0.20.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.7...@synapsecns/sdk-router@0.20.8) (2026-03-12)
 
 
 ### Bug Fixes
 
 * **sdk-router:** pauses ([#3964](https://github.com/synapsecns/sanguine/issues/3964)) ([2cfb7a6](https://github.com/synapsecns/sanguine/commit/2cfb7a6322dff14a2971ec34a644528498221134))
-
-
-
-
 
 ## [0.20.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.6...@synapsecns/sdk-router@0.20.7) (2025-12-02)
 

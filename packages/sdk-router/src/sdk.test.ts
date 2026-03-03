@@ -25,6 +25,7 @@ import {
   NATIVE_ADDRESS,
 } from './constants/testValues'
 import { Query, RouterQuery } from './module'
+import * as operations from './operations'
 import { SynapseSDK } from './sdk'
 import { SwapQuote } from './types'
 
@@ -141,6 +142,33 @@ describe('SynapseSDK', () => {
       expect(
         synapse.synapseCCTPRouterSet.routers[SupportedChainId.AVALANCHE]
       ).toBeUndefined()
+    })
+
+    it('Instantiates CircleCCTPV2 modules for supported chains with providers', () => {
+      expect(synapse.circleCCTPV2ModuleSet).toBeDefined()
+      expect(
+        synapse.circleCCTPV2ModuleSet.modules[SupportedChainId.ETH]
+      ).toBeDefined()
+      expect(
+        synapse.circleCCTPV2ModuleSet.modules[SupportedChainId.ARBITRUM]
+      ).toBeDefined()
+    })
+
+    it('Does not instantiate CircleCCTPV2 modules for unsupported chains or chains without providers', () => {
+      expect(
+        synapse.circleCCTPV2ModuleSet.modules[SupportedChainId.BSC]
+      ).toBeUndefined()
+      expect(
+        synapse.circleCCTPV2ModuleSet.modules[SupportedChainId.AVALANCHE]
+      ).toBeUndefined()
+    })
+
+    it('Registers CircleCCTPV2 module set by default', () => {
+      expect(
+        synapse.allModuleSets.some(
+          (moduleSet) => moduleSet.moduleName === 'CircleCCTPV2'
+        )
+      ).toBe(true)
     })
 
     it('Saves providers', () => {
@@ -345,6 +373,95 @@ describe('SynapseSDK', () => {
     )
   })
 
+  describe('bridgeV2', () => {
+    it('Includes CircleCCTPV2 in module names when Circle route is selected', async () => {
+      const synapse = new SynapseSDK(
+        [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
+        [ethProvider, arbProvider]
+      )
+      const amount = BigNumber.from(10).pow(9)
+      const bridgeToken = {
+        originChainId: SupportedChainId.ETH,
+        destChainId: SupportedChainId.ARBITRUM,
+        originToken: ETH_USDC,
+        destToken: ARB_USDC,
+      }
+      const originSwapRoute = {
+        engineID: 0,
+        engineName: 'DefaultPools',
+        chainId: SupportedChainId.ETH,
+        fromToken: ETH_USDC,
+        fromAmount: amount,
+        toToken: ETH_USDC,
+        expectedToAmount: amount,
+        steps: [],
+        minToAmount: amount,
+      }
+      const bridgeRoute = {
+        bridgeToken,
+        toToken: ARB_USDC,
+        expectedToAmount: amount,
+        minToAmount: amount,
+        nativeFee: Zero,
+        zapData: '0x',
+      }
+      const baseQuote = {
+        id: 'test-circle-cctp-v2-quote',
+        fromChainId: SupportedChainId.ETH,
+        fromToken: ETH_USDC,
+        fromAmount: amount.toString(),
+        toChainId: SupportedChainId.ARBITRUM,
+        toToken: ARB_USDC,
+        expectedToAmount: amount.toString(),
+        minToAmount: amount.toString(),
+        routerAddress: '0x0000000000000000000000000000000000001111',
+        estimatedTime: 0,
+        moduleNames: [],
+        gasDropAmount: '0',
+        nativeFee: '0',
+      }
+
+      // Keep this test fully offline by forcing bridgeV2 to evaluate CircleCCTPV2 only.
+      synapse.allModuleSets = [synapse.circleCCTPV2ModuleSet]
+
+      jest
+        .spyOn(synapse.circleCCTPV2ModuleSet, 'getBridgeTokenCandidates')
+        .mockResolvedValue([bridgeToken])
+      jest
+        .spyOn(synapse.circleCCTPV2ModuleSet, 'getBridgeRouteV2')
+        .mockResolvedValue(bridgeRoute as any)
+      jest
+        .spyOn(synapse.swapEngineSet, 'getTokenZap')
+        .mockReturnValue('0x0000000000000000000000000000000000001234')
+      jest.spyOn(synapse.swapEngineSet, 'getBestQuote').mockResolvedValue({
+        engineID: 0,
+        engineName: 'DefaultPools',
+        chainId: SupportedChainId.ETH,
+        fromToken: ETH_USDC,
+        fromAmount: amount,
+        toToken: ETH_USDC,
+        expectedToAmount: amount,
+      } as any)
+      jest
+        .spyOn(synapse.swapEngineSet, 'generateRoute')
+        .mockResolvedValue(originSwapRoute as any)
+      jest
+        .spyOn(synapse.sirSet, 'finalizeBridgeRouteV2')
+        .mockResolvedValue(baseQuote)
+
+      const quotes = await synapse.bridgeV2({
+        fromChainId: SupportedChainId.ETH,
+        fromToken: ETH_USDC,
+        fromAmount: amount.toString(),
+        toChainId: SupportedChainId.ARBITRUM,
+        toToken: ARB_USDC,
+        slippagePercentage: 1,
+      })
+
+      expect(quotes).toHaveLength(1)
+      expect(quotes[0].moduleNames).toContain('CircleCCTPV2')
+    })
+  })
   describe('Get bridge gas', () => {
     const synapse = new SynapseSDK(
       [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
@@ -556,6 +673,39 @@ describe('SynapseSDK', () => {
       expect(result.routerAddress).toEqual(
         ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
       )
+    })
+  })
+  describe('Internal functions', () => {
+    const synapse = new SynapseSDK(
+      [SupportedChainId.ARBITRUM, SupportedChainId.ETH],
+      [arbProvider, ethProvider]
+    )
+    describe('getModuleSet', () => {
+      it('Returns correct set for SynapseBridge', () => {
+        const routerSet = operations.getModuleSet.call(synapse, 'SynapseBridge')
+        expect(routerSet).toEqual(synapse.synapseRouterSet)
+      })
+
+      it('Returns correct set for SynapseCCTP', () => {
+        const routerSet = operations.getModuleSet.call(synapse, 'SynapseCCTP')
+        expect(routerSet).toEqual(synapse.synapseCCTPRouterSet)
+      })
+
+      it('Returns correct set for SynapseRFQ', () => {
+        const routerSet = operations.getModuleSet.call(synapse, 'SynapseRFQ')
+        expect(routerSet).toEqual(synapse.fastBridgeRouterSet)
+      })
+
+      it('Returns correct set for CircleCCTPV2', () => {
+        const routerSet = operations.getModuleSet.call(synapse, 'CircleCCTPV2')
+        expect(routerSet).toEqual(synapse.circleCCTPV2ModuleSet)
+      })
+
+      it('Throws when bridge module name is invalid', () => {
+        expect(() =>
+          operations.getModuleSet.call(synapse, 'SynapseSynapse')
+        ).toThrow('Unknown bridge module')
+      })
     })
   })
 })
