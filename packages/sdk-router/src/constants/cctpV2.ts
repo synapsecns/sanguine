@@ -36,9 +36,14 @@ export const CCTP_V2_TOKEN_MESSENGER_ADDRESS_MAP: Record<number, string> = {
   [SupportedChainId.POLYGON]: '0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d',
 }
 
-export const CCTP_V2_FORWARD_SERVICE_FEE_USDC = {
-  ETH: 1_250_000,
-  NON_ETH: 200_000,
+export const CCTP_V2_FORWARD_SERVICE_FEE_USDC: {
+  defaultFee: number
+  perChainOverrides: Record<number, number>
+} = {
+  defaultFee: 200_000,
+  perChainOverrides: {
+    [SupportedChainId.ETH]: 1_250_000,
+  },
 }
 
 export const CCTP_V2_FORWARD_HOOK_DATA =
