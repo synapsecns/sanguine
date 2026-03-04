@@ -189,7 +189,9 @@ describe('CircleCCTPV2ModuleSet', () => {
       },
     ])
 
-    const highRoute = await moduleSet.getBridgeRouteV2(makeRouteParams(1_000_000))
+    const highRoute = await moduleSet.getBridgeRouteV2(
+      makeRouteParams(1_000_000)
+    )
 
     expect(highRoute).toBeDefined()
     expect(highRoute!.expectedToAmount).toEqual(BigNumber.from(997_150))
@@ -207,7 +209,9 @@ describe('CircleCCTPV2ModuleSet', () => {
       },
     ])
 
-    const lowRoute = await moduleSet.getBridgeRouteV2(makeRouteParams(1_000_000))
+    const lowRoute = await moduleSet.getBridgeRouteV2(
+      makeRouteParams(1_000_000)
+    )
 
     expect(lowRoute).toBeDefined()
     expect(lowRoute!.expectedToAmount).toEqual(BigNumber.from(997_380))
