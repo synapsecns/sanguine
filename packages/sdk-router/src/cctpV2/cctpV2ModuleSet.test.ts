@@ -118,12 +118,12 @@ describe('CircleCCTPV2ModuleSet', () => {
       {
         finalityThreshold: 1000,
         minimumFee: 5,
-        forwardFee: { basic: 50 },
+        forwardFee: { high: 50 },
       },
       {
         finalityThreshold: 3000,
         minimumFee: 20,
-        forwardFee: { basic: 150 },
+        forwardFee: { high: 150 },
       },
     ])
 
@@ -137,24 +137,84 @@ describe('CircleCCTPV2ModuleSet', () => {
     expect(decodeBurnCalldata(route!.zapData!).minFinalityThreshold).toBe(3000)
   })
 
-  it('computes maxFee as minimumFee budget plus forwarding fee budget', async () => {
+  it('prefers med forwarding tier over high when both are present', async () => {
     const moduleSet = makeModuleSet()
     mockGetBurnUSDCFees.mockResolvedValueOnce([
       {
         finalityThreshold: 1200,
         minimumFee: 25,
-        forwardFee: { low: 120, high: 350 },
+        forwardFee: { med: 150, high: 350, low: 120 },
       },
     ])
 
     const route = await moduleSet.getBridgeRouteV2(makeRouteParams(1_000_000))
 
     expect(route).toBeDefined()
-    expect(route!.expectedToAmount).toEqual(BigNumber.from(997_150))
-    expect(route!.minToAmount).toEqual(BigNumber.from(997_150))
-    const quoteMaxFee = BigNumber.from(2850)
+    expect(route!.expectedToAmount).toEqual(BigNumber.from(997_350))
+    expect(route!.minToAmount).toEqual(BigNumber.from(997_350))
+    const quoteMaxFee = BigNumber.from(2650)
     expect(decodeBurnCalldata(route!.zapData!).maxFee).toEqual(
       getBurnMaxFeeWithSlippage(quoteMaxFee)
+    )
+  })
+
+  it('prefers medium forwarding tier when med is absent', async () => {
+    const moduleSet = makeModuleSet()
+    mockGetBurnUSDCFees.mockResolvedValueOnce([
+      {
+        finalityThreshold: 1200,
+        minimumFee: 25,
+        forwardFee: { medium: 170, high: 350, low: 120 },
+      },
+    ])
+
+    const route = await moduleSet.getBridgeRouteV2(makeRouteParams(1_000_000))
+
+    expect(route).toBeDefined()
+    expect(route!.expectedToAmount).toEqual(BigNumber.from(997_330))
+    expect(route!.minToAmount).toEqual(BigNumber.from(997_330))
+    const quoteMaxFee = BigNumber.from(2670)
+    expect(decodeBurnCalldata(route!.zapData!).maxFee).toEqual(
+      getBurnMaxFeeWithSlippage(quoteMaxFee)
+    )
+  })
+
+  it('falls back to high, then low, when middle tier is missing', async () => {
+    const moduleSet = makeModuleSet()
+    mockGetBurnUSDCFees.mockResolvedValueOnce([
+      {
+        finalityThreshold: 1200,
+        minimumFee: 25,
+        forwardFee: { high: 350, low: 120 },
+      },
+    ])
+
+    const highRoute = await moduleSet.getBridgeRouteV2(makeRouteParams(1_000_000))
+
+    expect(highRoute).toBeDefined()
+    expect(highRoute!.expectedToAmount).toEqual(BigNumber.from(997_150))
+    expect(highRoute!.minToAmount).toEqual(BigNumber.from(997_150))
+    const highQuoteMaxFee = BigNumber.from(2850)
+    expect(decodeBurnCalldata(highRoute!.zapData!).maxFee).toEqual(
+      getBurnMaxFeeWithSlippage(highQuoteMaxFee)
+    )
+
+    mockGetBurnUSDCFees.mockResolvedValueOnce([
+      {
+        finalityThreshold: 1200,
+        minimumFee: 25,
+        forwardFee: { high: 350.5, low: 120 },
+      },
+    ])
+
+    const lowRoute = await moduleSet.getBridgeRouteV2(makeRouteParams(1_000_000))
+
+    expect(lowRoute).toBeDefined()
+    expect(lowRoute!.expectedToAmount).toEqual(BigNumber.from(997_380))
+    expect(lowRoute!.minToAmount).toEqual(BigNumber.from(997_380))
+    const lowQuoteMaxFee = BigNumber.from(2620)
+    expect(decodeBurnCalldata(lowRoute!.zapData!).maxFee).toEqual(
+      getBurnMaxFeeWithSlippage(lowQuoteMaxFee)
     )
   })
 
@@ -204,7 +264,7 @@ describe('CircleCCTPV2ModuleSet', () => {
       {
         finalityThreshold: 1200,
         minimumFee: 1.5,
-        forwardFee: { basic: 0 },
+        forwardFee: { high: 0 },
       },
     ])
 
@@ -225,7 +285,7 @@ describe('CircleCCTPV2ModuleSet', () => {
       {
         finalityThreshold: 1200,
         minimumFee: 1e-7,
-        forwardFee: { basic: 0 },
+        forwardFee: { high: 0 },
       },
     ])
 
@@ -293,6 +353,42 @@ describe('CircleCCTPV2ModuleSet', () => {
         finalityThreshold: 1000,
         minimumFee: 20,
         forwardFee: {} as Record<string, number>,
+      },
+    ])
+
+    await expect(
+      moduleSet.getBridgeRouteV2(makeRouteParams(1_000_000))
+    ).resolves.toBeUndefined()
+
+    mockGetBurnUSDCFees.mockResolvedValueOnce([
+      {
+        finalityThreshold: 1000,
+        minimumFee: 20,
+        forwardFee: { med: -1, high: 250, low: 100 },
+      },
+    ])
+
+    await expect(
+      moduleSet.getBridgeRouteV2(makeRouteParams(1_000_000))
+    ).resolves.toBeUndefined()
+
+    mockGetBurnUSDCFees.mockResolvedValueOnce([
+      {
+        finalityThreshold: 1000,
+        minimumFee: 20,
+        forwardFee: { medium: -1, high: 250, low: 100 },
+      },
+    ])
+
+    await expect(
+      moduleSet.getBridgeRouteV2(makeRouteParams(1_000_000))
+    ).resolves.toBeUndefined()
+
+    mockGetBurnUSDCFees.mockResolvedValueOnce([
+      {
+        finalityThreshold: 1000,
+        minimumFee: 20,
+        forwardFee: null as unknown as Record<string, number>,
       },
     ])
 

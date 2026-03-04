@@ -290,17 +290,34 @@ export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
     destChainId: number,
     forwardFee?: Record<string, number>
   ): BigNumber | undefined {
-    if (forwardFee) {
-      const feeValues = Object.values(forwardFee).filter(
-        (fee) => Number.isInteger(fee) && fee >= 0
-      )
-      if (!feeValues.length) {
+    if (forwardFee !== undefined) {
+      if (!forwardFee || typeof forwardFee !== 'object') {
         return undefined
       }
-      return feeValues.reduce<BigNumber>((maxFee, feeValue) => {
-        const fee = BigNumber.from(feeValue)
-        return fee.gt(maxFee) ? fee : maxFee
-      }, Zero)
+      // Circle forwarding tiers are key-based; unknown-only keysets fail closed.
+      const parseTierFee = (tier: string): BigNumber | undefined => {
+        const feeValue = forwardFee[tier]
+        if (Number.isInteger(feeValue) && feeValue >= 0) {
+          return BigNumber.from(feeValue)
+        }
+        return undefined
+      }
+      const hasMed = Object.prototype.hasOwnProperty.call(forwardFee, 'med')
+      const hasMedium = Object.prototype.hasOwnProperty.call(
+        forwardFee,
+        'medium'
+      )
+      if (hasMed) {
+        return parseTierFee('med')
+      }
+      if (hasMedium) {
+        return parseTierFee('medium')
+      }
+      const highFee = parseTierFee('high')
+      if (highFee) {
+        return highFee
+      }
+      return parseTierFee('low')
     }
     const fallbackFee =
       CCTP_V2_FORWARD_SERVICE_FEE_USDC.perChainOverrides[destChainId] ??
