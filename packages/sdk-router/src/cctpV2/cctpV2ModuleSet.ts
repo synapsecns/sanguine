@@ -247,45 +247,25 @@ export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
         denominator: BigNumber
       }
     | undefined {
-    // Parse decimal (including scientific notation) into exact integer ratio
-    // so fee math stays deterministic and does not depend on float rounding.
     if (!Number.isFinite(value) || value < 0) {
       return undefined
     }
-    const match = value
-      .toString()
-      .toLowerCase()
-      .match(/^(\d+)(?:\.(\d+))?(?:e([+-]?\d+))?$/)
-    if (!match) {
+    const valueString = value.toString()
+    if (valueString.toLowerCase().includes('e')) {
       return undefined
     }
-    const exponent = Number.parseInt(match[3] ?? '0', 10)
-    if (!Number.isInteger(exponent)) {
+    const [wholePart = '', fractionalPart = ''] = valueString.split('.')
+    if (!/^\d+$/.test(wholePart) || !/^\d*$/.test(fractionalPart)) {
       return undefined
     }
-    let numerator = BigInt(`${match[1]}${match[2] ?? ''}`)
-    let denominator = 10n ** BigInt((match[2] ?? '').length)
-    if (exponent > 0) {
-      numerator *= 10n ** BigInt(exponent)
-    } else if (exponent < 0) {
-      denominator *= 10n ** BigInt(-exponent)
-    }
-    const divisor = this.gcd(numerator, denominator)
+    const decimals = fractionalPart.length
+    const numerator = BigNumber.from(
+      (`${wholePart}${fractionalPart}`.replace(/^0+(?=\d)/, '') || '0').toString()
+    )
     return {
-      numerator: BigNumber.from((numerator / divisor).toString()),
-      denominator: BigNumber.from((denominator / divisor).toString()),
+      numerator,
+      denominator: BigNumber.from(10).pow(decimals),
     }
-  }
-
-  private gcd(a: bigint, b: bigint): bigint {
-    let left = a
-    let right = b
-    while (right !== 0n) {
-      const remainder = left % right
-      left = right
-      right = remainder
-    }
-    return left
   }
 
   private getForwardingFeeBudget(
