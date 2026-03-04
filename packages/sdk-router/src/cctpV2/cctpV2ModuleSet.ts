@@ -23,7 +23,7 @@ import { ChainProvider } from '../router'
 import { encodeZapData } from '../swap'
 import { isSameAddress, logExecutionTime } from '../utils'
 import { CctpV2Fee, getBurnUSDCFees } from './api'
-import { CircleCCTPV2Module } from './cctpV2Module'
+import { CCTPv2Module } from './cctpV2Module'
 
 const BPS_DENOMINATOR = 10_000
 const BURN_MAX_FEE_NUMERATOR = 11
@@ -49,13 +49,13 @@ const CCTP_V2_FAST_ESTIMATED_TIME_BY_SOURCE_CHAIN: Record<number, number> = {
   [SupportedChainId.POLYGON]: 6,
 }
 
-export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
-  public readonly moduleName = 'CircleCCTPV2'
+export class CCTPv2ModuleSet extends SynapseModuleSet {
+  public readonly moduleName = 'CCTPv2'
   public readonly allEvents = []
   public readonly isBridgeV2Supported = true
 
   public modules: {
-    [chainId: number]: CircleCCTPV2Module
+    [chainId: number]: CCTPv2Module
   }
 
   constructor(chains: ChainProvider[]) {
@@ -66,7 +66,7 @@ export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
       if (!address) {
         return
       }
-      this.modules[chainId] = new CircleCCTPV2Module(chainId, address)
+      this.modules[chainId] = new CCTPv2Module(chainId, address)
     })
   }
 
@@ -125,7 +125,7 @@ export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
     ]
   }
 
-  @logExecutionTime('CircleCCTPV2ModuleSet.getBridgeRouteV2')
+  @logExecutionTime('CCTPv2ModuleSet.getBridgeRouteV2')
   public async getBridgeRouteV2(
     params: GetBridgeRouteV2Parameters
   ): Promise<BridgeRouteV2 | undefined> {

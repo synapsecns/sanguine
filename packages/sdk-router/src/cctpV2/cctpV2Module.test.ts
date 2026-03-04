@@ -8,7 +8,7 @@ import {
   SupportedChainId,
 } from '../constants'
 import { getMessages } from './api'
-import { CctpV2BurnParams, CircleCCTPV2Module } from './cctpV2Module'
+import { CctpV2BurnParams, CCTPv2Module } from './cctpV2Module'
 
 jest.mock('./api', () => ({
   getMessages: jest.fn(),
@@ -20,8 +20,8 @@ const MODULE_ADDRESS = '0x1111111111111111111111111111111111111111'
 const MINT_RECIPIENT = '0x2222222222222222222222222222222222222222'
 const BURN_TOKEN = '0x3333333333333333333333333333333333333333'
 
-describe('CircleCCTPV2Module', () => {
-  let module: CircleCCTPV2Module
+describe('CCTPv2Module', () => {
+  let module: CCTPv2Module
 
   const burnParams: CctpV2BurnParams = {
     amount: 1_000_000,
@@ -33,14 +33,14 @@ describe('CircleCCTPV2Module', () => {
   }
 
   beforeEach(() => {
-    module = new CircleCCTPV2Module(SupportedChainId.ETH, MODULE_ADDRESS)
+    module = new CCTPv2Module(SupportedChainId.ETH, MODULE_ADDRESS)
     mockGetMessages.mockReset()
   })
 
   it('encodes depositForBurnWithHook calldata', () => {
     const tx = module.populateDepositForBurnWithHook(burnParams)
     const expectedData =
-      CircleCCTPV2Module.tokenMessengerV2Interface.encodeFunctionData(
+      CCTPv2Module.tokenMessengerV2Interface.encodeFunctionData(
         'depositForBurnWithHook',
         [
           burnParams.amount,
@@ -61,7 +61,7 @@ describe('CircleCCTPV2Module', () => {
   })
 
   it('uses bytes hookData in TokenMessengerV2 ABI', () => {
-    const fn = CircleCCTPV2Module.tokenMessengerV2Interface.getFunction(
+    const fn = CCTPv2Module.tokenMessengerV2Interface.getFunction(
       'depositForBurnWithHook'
     )
     expect(fn.inputs[7].type).toBe('bytes')
@@ -95,7 +95,7 @@ describe('CircleCCTPV2Module', () => {
   it('uses the forwarding hook constant in calldata', () => {
     const tx = module.populateDepositForBurnWithHook(burnParams)
     const decoded =
-      CircleCCTPV2Module.tokenMessengerV2Interface.decodeFunctionData(
+      CCTPv2Module.tokenMessengerV2Interface.decodeFunctionData(
         'depositForBurnWithHook',
         tx.data!
       )

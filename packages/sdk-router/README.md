@@ -91,9 +91,9 @@ The SDK consumer simply operates by getting quotes for sending `tokenIn` on the 
 
 ![Bridging Workflow(simplified)](./puml/BridgingWorkflowSimplified.png)
 
-### Bridge V2-only module: CircleCCTPV2
+### Bridge V2-only module: CCTPv2
 
-`CircleCCTPV2` is available through `bridgeV2` only. It is not used by legacy
+`CCTPv2` is available through `bridgeV2` only. It is not used by legacy
 `bridgeQuote`/`allBridgeQuotes` APIs.
 
 Key behavior:
@@ -103,7 +103,7 @@ Key behavior:
 - Uses Circle Forwarding Service hook data and `destinationCaller = bytes32(0)`.
 - Returns no quote when live Circle fee/finality data is unavailable or unusable
   (module-level fail-closed behavior).
-- `moduleNames` in returned `BridgeQuoteV2` includes `CircleCCTPV2` when this
+- `moduleNames` in returned `BridgeQuoteV2` includes `CCTPv2` when this
   path is selected.
 
 ### Getting a bridge quote

@@ -2,7 +2,7 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import invariant from 'tiny-invariant'
 
-import { CircleCCTPV2ModuleSet } from './cctpV2'
+import { CCTPv2ModuleSet } from './cctpV2'
 import { GasZipModuleSet } from './gaszip'
 import { SynapseModuleSet } from './module'
 import { UsdtModuleSet } from './oft'
@@ -18,7 +18,7 @@ class SynapseSDK {
   public allModuleSets: SynapseModuleSet[]
   public synapseRouterSet: SynapseRouterSet
   public synapseCCTPRouterSet: SynapseCCTPRouterSet
-  public circleCCTPV2ModuleSet: CircleCCTPV2ModuleSet
+  public cctpV2ModuleSet: CCTPv2ModuleSet
   public fastBridgeRouterSet: FastBridgeRouterSet
   public gasZipModuleSet: GasZipModuleSet
   public relayModuleSet: RelayModuleSet
@@ -57,7 +57,7 @@ class SynapseSDK {
     // Initialize the Module Sets
     this.synapseRouterSet = new SynapseRouterSet(chainProviders)
     this.synapseCCTPRouterSet = new SynapseCCTPRouterSet(chainProviders)
-    this.circleCCTPV2ModuleSet = new CircleCCTPV2ModuleSet(chainProviders)
+    this.cctpV2ModuleSet = new CCTPv2ModuleSet(chainProviders)
     this.fastBridgeRouterSet = new FastBridgeRouterSet(chainProviders)
     this.gasZipModuleSet = new GasZipModuleSet(chainProviders)
     this.relayModuleSet = new RelayModuleSet(chainProviders)
@@ -65,7 +65,7 @@ class SynapseSDK {
     this.allModuleSets = [
       this.synapseRouterSet,
       this.synapseCCTPRouterSet,
-      this.circleCCTPV2ModuleSet,
+      this.cctpV2ModuleSet,
       this.fastBridgeRouterSet,
       this.gasZipModuleSet,
       this.relayModuleSet,

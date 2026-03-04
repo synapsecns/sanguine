@@ -32,7 +32,7 @@ export type CctpV2BurnParams = {
   minFinalityThreshold: number
 }
 
-export class CircleCCTPV2Module implements SynapseModule {
+export class CCTPv2Module implements SynapseModule {
   static tokenMessengerV2Interface = new Interface(TOKEN_MESSENGER_V2_ABI)
 
   readonly address: string
@@ -74,7 +74,7 @@ export class CircleCCTPV2Module implements SynapseModule {
     params: CctpV2BurnParams
   ): PopulatedTransaction {
     const data =
-      CircleCCTPV2Module.tokenMessengerV2Interface.encodeFunctionData(
+      CCTPv2Module.tokenMessengerV2Interface.encodeFunctionData(
         'depositForBurnWithHook',
         [
           params.amount,

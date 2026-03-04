@@ -221,29 +221,29 @@ describe('SynapseSDK', () => {
       ).toBeUndefined()
     })
 
-    it('Instantiates CircleCCTPV2 modules for supported chains with providers', () => {
-      expect(synapse.circleCCTPV2ModuleSet).toBeDefined()
+    it('Instantiates CCTPv2 modules for supported chains with providers', () => {
+      expect(synapse.cctpV2ModuleSet).toBeDefined()
       expect(
-        synapse.circleCCTPV2ModuleSet.modules[SupportedChainId.ETH]
+        synapse.cctpV2ModuleSet.modules[SupportedChainId.ETH]
       ).toBeDefined()
       expect(
-        synapse.circleCCTPV2ModuleSet.modules[SupportedChainId.ARBITRUM]
+        synapse.cctpV2ModuleSet.modules[SupportedChainId.ARBITRUM]
       ).toBeDefined()
     })
 
-    it('Does not instantiate CircleCCTPV2 modules for unsupported chains or chains without providers', () => {
+    it('Does not instantiate CCTPv2 modules for unsupported chains or chains without providers', () => {
       expect(
-        synapse.circleCCTPV2ModuleSet.modules[SupportedChainId.BSC]
+        synapse.cctpV2ModuleSet.modules[SupportedChainId.BSC]
       ).toBeUndefined()
       expect(
-        synapse.circleCCTPV2ModuleSet.modules[SupportedChainId.AVALANCHE]
+        synapse.cctpV2ModuleSet.modules[SupportedChainId.AVALANCHE]
       ).toBeUndefined()
     })
 
-    it('Registers CircleCCTPV2 module set by default', () => {
+    it('Registers CCTPv2 module set by default', () => {
       expect(
         synapse.allModuleSets.some(
-          (moduleSet) => moduleSet.moduleName === 'CircleCCTPV2'
+          (moduleSet) => moduleSet.moduleName === 'CCTPv2'
         )
       ).toBe(true)
     })
@@ -1032,7 +1032,7 @@ describe('SynapseSDK', () => {
   })
 
   describe('bridgeV2', () => {
-    it('Includes CircleCCTPV2 in module names when Circle route is selected', async () => {
+    it('Includes CCTPv2 in module names when Circle route is selected', async () => {
       const synapse = new SynapseSDK(
         [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
         [ethProvider, arbProvider]
@@ -1065,14 +1065,14 @@ describe('SynapseSDK', () => {
         zapData: '0x',
       }
 
-      // Keep this test fully offline by forcing bridgeV2 to evaluate CircleCCTPV2 only.
-      synapse.allModuleSets = [synapse.circleCCTPV2ModuleSet]
+      // Keep this test fully offline by forcing bridgeV2 to evaluate CCTPv2 only.
+      synapse.allModuleSets = [synapse.cctpV2ModuleSet]
 
       jest
-        .spyOn(synapse.circleCCTPV2ModuleSet, 'getBridgeTokenCandidates')
+        .spyOn(synapse.cctpV2ModuleSet, 'getBridgeTokenCandidates')
         .mockResolvedValue([bridgeToken])
       jest
-        .spyOn(synapse.circleCCTPV2ModuleSet, 'getBridgeRouteV2')
+        .spyOn(synapse.cctpV2ModuleSet, 'getBridgeRouteV2')
         .mockResolvedValue(bridgeRoute as any)
       jest
         .spyOn(synapse.swapEngineSet, 'getTokenZap')
@@ -1107,7 +1107,7 @@ describe('SynapseSDK', () => {
       })
 
       expect(quotes).toHaveLength(1)
-      expect(quotes[0].moduleNames).toContain('CircleCCTPV2')
+      expect(quotes[0].moduleNames).toContain('CCTPv2')
       expect(quotes[0].estimatedTime).toBeGreaterThan(0)
       expect(quotes[0].estimatedTime).toEqual(
         CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH
@@ -1586,12 +1586,12 @@ describe('SynapseSDK', () => {
         ).toEqual(MEDIAN_TIME_CCTP[SupportedChainId.ETH])
       })
 
-      it('Returns non-zero estimated time for CircleCCTPV2', () => {
+      it('Returns non-zero estimated time for CCTPv2', () => {
         expect(
-          synapse.getEstimatedTime(SupportedChainId.ETH, 'CircleCCTPV2')
+          synapse.getEstimatedTime(SupportedChainId.ETH, 'CCTPv2')
         ).toEqual(CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH)
         expect(
-          synapse.getEstimatedTime(SupportedChainId.ETH, 'CircleCCTPV2')
+          synapse.getEstimatedTime(SupportedChainId.ETH, 'CCTPv2')
         ).toBeGreaterThan(0)
       })
 
@@ -1870,9 +1870,9 @@ describe('SynapseSDK', () => {
         expect(routerSet).toEqual(synapse.fastBridgeRouterSet)
       })
 
-      it('Returns correct set for CircleCCTPV2', () => {
-        const routerSet = operations.getModuleSet.call(synapse, 'CircleCCTPV2')
-        expect(routerSet).toEqual(synapse.circleCCTPV2ModuleSet)
+      it('Returns correct set for CCTPv2', () => {
+        const routerSet = operations.getModuleSet.call(synapse, 'CCTPv2')
+        expect(routerSet).toEqual(synapse.cctpV2ModuleSet)
       })
 
       it('Throws when bridge module name is invalid', () => {
