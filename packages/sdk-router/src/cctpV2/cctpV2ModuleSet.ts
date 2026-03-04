@@ -148,6 +148,9 @@ export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
       amountInExpected,
       selectedFee.minimumFee
     )
+    if (protocolFee === undefined) {
+      return undefined
+    }
     const forwardingFee = this.getForwardingFeeBudget(
       bridgeToken.destChainId,
       selectedFee.forwardFee
@@ -226,11 +229,61 @@ export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
   private getProtocolFeeBudget(
     amount: BigNumber,
     minimumFeeBps: number
-  ): BigNumber {
+  ): BigNumber | undefined {
+    const minimumFee = this.parseDecimalToFraction(minimumFeeBps)
+    if (!minimumFee) {
+      return undefined
+    }
+    const denominator = minimumFee.denominator.mul(BPS_DENOMINATOR)
     return amount
-      .mul(minimumFeeBps)
-      .add(BPS_DENOMINATOR - 1)
-      .div(BPS_DENOMINATOR)
+      .mul(minimumFee.numerator)
+      .add(denominator.sub(1))
+      .div(denominator)
+  }
+
+  private parseDecimalToFraction(value: number): {
+    numerator: BigNumber
+    denominator: BigNumber
+  } | undefined {
+    // Parse decimal (including scientific notation) into exact integer ratio
+    // so fee math stays deterministic and does not depend on float rounding.
+    if (!Number.isFinite(value) || value < 0) {
+      return undefined
+    }
+    const match = value
+      .toString()
+      .toLowerCase()
+      .match(/^(\d+)(?:\.(\d+))?(?:e([+-]?\d+))?$/)
+    if (!match) {
+      return undefined
+    }
+    const exponent = Number.parseInt(match[3] ?? '0', 10)
+    if (!Number.isInteger(exponent)) {
+      return undefined
+    }
+    let numerator = BigInt(`${match[1]}${match[2] ?? ''}`)
+    let denominator = 10n ** BigInt((match[2] ?? '').length)
+    if (exponent > 0) {
+      numerator *= 10n ** BigInt(exponent)
+    } else if (exponent < 0) {
+      denominator *= 10n ** BigInt(-exponent)
+    }
+    const divisor = this.gcd(numerator, denominator)
+    return {
+      numerator: BigNumber.from((numerator / divisor).toString()),
+      denominator: BigNumber.from((denominator / divisor).toString()),
+    }
+  }
+
+  private gcd(a: bigint, b: bigint): bigint {
+    let left = a
+    let right = b
+    while (right !== 0n) {
+      const remainder = left % right
+      left = right
+      right = remainder
+    }
+    return left
   }
 
   private getForwardingFeeBudget(
