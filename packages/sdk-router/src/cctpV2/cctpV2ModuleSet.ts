@@ -241,10 +241,12 @@ export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
       .div(denominator)
   }
 
-  private parseDecimalToFraction(value: number): {
-    numerator: BigNumber
-    denominator: BigNumber
-  } | undefined {
+  private parseDecimalToFraction(value: number):
+    | {
+        numerator: BigNumber
+        denominator: BigNumber
+      }
+    | undefined {
     // Parse decimal (including scientific notation) into exact integer ratio
     // so fee math stays deterministic and does not depend on float rounding.
     if (!Number.isFinite(value) || value < 0) {
