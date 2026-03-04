@@ -66,6 +66,9 @@ const decodeBurnCalldata = (zapData: string) => {
   )
 }
 
+const getBurnMaxFeeWithSlippage = (maxFee: BigNumber): BigNumber =>
+  maxFee.mul(11).add(9).div(10)
+
 describe('CircleCCTPV2ModuleSet', () => {
   beforeEach(() => {
     mockGetBurnUSDCFees.mockReset()
@@ -149,8 +152,9 @@ describe('CircleCCTPV2ModuleSet', () => {
     expect(route).toBeDefined()
     expect(route!.expectedToAmount).toEqual(BigNumber.from(997_150))
     expect(route!.minToAmount).toEqual(BigNumber.from(997_150))
+    const quoteMaxFee = BigNumber.from(2850)
     expect(decodeBurnCalldata(route!.zapData!).maxFee).toEqual(
-      BigNumber.from(2850)
+      getBurnMaxFeeWithSlippage(quoteMaxFee)
     )
   })
 
@@ -173,7 +177,7 @@ describe('CircleCCTPV2ModuleSet', () => {
     expect(route!.minToAmount).toEqual(BigNumber.from(897_150))
   })
 
-  it('returns no quote when origin min amount is not greater than maxFee', async () => {
+  it('returns no quote when origin min amount is not greater than burn maxFee', async () => {
     const moduleSet = makeModuleSet()
     mockGetBurnUSDCFees.mockResolvedValueOnce([
       {
@@ -212,13 +216,13 @@ describe('CircleCCTPV2ModuleSet', () => {
     expect(fallbackRoute).toBeDefined()
 
     const expectedMaxFeeWithFallback = BigNumber.from(2000).add(
-      CCTP_V2_FORWARD_SERVICE_FEE_USDC.NON_ETH
+      CCTP_V2_FORWARD_SERVICE_FEE_USDC.defaultFee
     )
     expect(fallbackRoute!.expectedToAmount).toEqual(
       BigNumber.from(1_000_000).sub(expectedMaxFeeWithFallback)
     )
     expect(decodeBurnCalldata(fallbackRoute!.zapData!).maxFee).toEqual(
-      expectedMaxFeeWithFallback
+      getBurnMaxFeeWithSlippage(expectedMaxFeeWithFallback)
     )
 
     mockGetBurnUSDCFees.mockResolvedValueOnce([
@@ -251,5 +255,57 @@ describe('CircleCCTPV2ModuleSet', () => {
 
     expect(route).toBeDefined()
     expect(route!.toToken).toBe(DEST_TOKEN)
+  })
+
+  it('uses per-chain forwarding fee override for ETH destination', async () => {
+    const originChainId = SupportedChainId.ARBITRUM
+    const destChainId = SupportedChainId.ETH
+    const originToken = CCTP_V2_USDC_ADDRESS_MAP[originChainId]
+    const destToken = CCTP_V2_USDC_ADDRESS_MAP[destChainId]
+    const moduleSet = new CircleCCTPV2ModuleSet([
+      { chainId: originChainId, provider: {} as any },
+      { chainId: destChainId, provider: {} as any },
+    ])
+    mockGetBurnUSDCFees.mockResolvedValueOnce([
+      {
+        finalityThreshold: 1000,
+        minimumFee: 20,
+      },
+    ])
+
+    const route = await moduleSet.getBridgeRouteV2({
+      bridgeToken: {
+        originChainId,
+        destChainId,
+        originToken,
+        destToken,
+      },
+      originSwapRoute: {
+        engineID: EngineID.NoOp,
+        engineName: EngineID[EngineID.NoOp],
+        chainId: originChainId,
+        fromToken: originToken,
+        fromAmount: BigNumber.from(2_000_000),
+        toToken: originToken,
+        expectedToAmount: BigNumber.from(2_000_000),
+        minToAmount: BigNumber.from(2_000_000),
+        steps: [],
+      },
+      toToken: destToken,
+      allowMultipleTxs: false,
+      fromSender: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      toRecipient: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+    } as any)
+
+    const quoteMaxFee = BigNumber.from(4000).add(
+      CCTP_V2_FORWARD_SERVICE_FEE_USDC.perChainOverrides[SupportedChainId.ETH]
+    )
+    expect(route).toBeDefined()
+    expect(route!.expectedToAmount).toEqual(
+      BigNumber.from(2_000_000).sub(quoteMaxFee)
+    )
+    expect(decodeBurnCalldata(route!.zapData!).maxFee).toEqual(
+      getBurnMaxFeeWithSlippage(quoteMaxFee)
+    )
   })
 })

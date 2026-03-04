@@ -6,7 +6,6 @@ import {
   CCTP_V2_FORWARD_SERVICE_FEE_USDC,
   CCTP_V2_TOKEN_MESSENGER_ADDRESS_MAP,
   CCTP_V2_USDC_ADDRESS_MAP,
-  SupportedChainId,
 } from '../constants'
 import {
   BridgeRoute,
@@ -26,6 +25,8 @@ import { CctpV2Fee, getBurnUSDCFees } from './api'
 import { CircleCCTPV2Module } from './cctpV2Module'
 
 const BPS_DENOMINATOR = 10_000
+const BURN_MAX_FEE_NUMERATOR = 11
+const BURN_MAX_FEE_DENOMINATOR = 10
 
 export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
   public readonly moduleName = 'CircleCCTPV2'
@@ -155,7 +156,8 @@ export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
       return undefined
     }
     const maxFee = protocolFee.add(forwardingFee)
-    if (amountInMin.lte(maxFee)) {
+    const maxFeeForBurn = this.getBurnMaxFee(maxFee)
+    if (amountInMin.lte(maxFeeForBurn)) {
       return undefined
     }
     const expectedToAmount = amountInExpected.sub(maxFee)
@@ -173,7 +175,7 @@ export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
       zapData: this.getBurnZapData({
         ...params,
         toToken: routeToToken,
-        maxFee,
+        maxFee: maxFeeForBurn,
         minFinalityThreshold: selectedFee.finalityThreshold,
       }),
     }
@@ -248,10 +250,16 @@ export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
       }, Zero)
     }
     const fallbackFee =
-      destChainId === SupportedChainId.ETH
-        ? CCTP_V2_FORWARD_SERVICE_FEE_USDC.ETH
-        : CCTP_V2_FORWARD_SERVICE_FEE_USDC.NON_ETH
+      CCTP_V2_FORWARD_SERVICE_FEE_USDC.perChainOverrides[destChainId] ??
+      CCTP_V2_FORWARD_SERVICE_FEE_USDC.defaultFee
     return BigNumber.from(fallbackFee)
+  }
+
+  private getBurnMaxFee(maxFee: BigNumber): BigNumber {
+    return maxFee
+      .mul(BURN_MAX_FEE_NUMERATOR)
+      .add(BURN_MAX_FEE_DENOMINATOR - 1)
+      .div(BURN_MAX_FEE_DENOMINATOR)
   }
 
   private getSlowestFeeEntry(feeEntries: CctpV2Fee[]): CctpV2Fee | undefined {
