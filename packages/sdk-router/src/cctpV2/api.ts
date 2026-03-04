@@ -5,7 +5,6 @@ import { getWithTimeout } from '../utils'
 
 const CIRCLE_API_TIMEOUT = 5000
 const FEE_CACHE_TTL_SECONDS = 15
-const STATUS_CACHE_TTL_SECONDS = 5
 
 const circleApiCache = new NodeCache({
   useClones: false,
@@ -139,11 +138,6 @@ export const getMessages = async (
   sourceDomainId: number,
   transactionHash: string
 ): Promise<CctpV2Message[] | null> => {
-  const cacheKey = `cctp-v2-status-${sourceDomainId}-${transactionHash.toLowerCase()}`
-  const cached = circleApiCache.get<CctpV2Message[] | null>(cacheKey)
-  if (cached !== undefined) {
-    return cached
-  }
   const response = await getWithTimeout(
     'Circle CCTP API',
     `${CIRCLE_IRIS_API_HOST}/v2/messages/${sourceDomainId}`,
@@ -151,15 +145,11 @@ export const getMessages = async (
     { transactionHash }
   )
   if (!response) {
-    circleApiCache.set(cacheKey, null, STATUS_CACHE_TTL_SECONDS)
     return null
   }
   try {
-    const parsed = parseMessagesResponse(await response.json())
-    circleApiCache.set(cacheKey, parsed, STATUS_CACHE_TTL_SECONDS)
-    return parsed
+    return parseMessagesResponse(await response.json())
   } catch {
-    circleApiCache.set(cacheKey, null, STATUS_CACHE_TTL_SECONDS)
     return null
   }
 }
