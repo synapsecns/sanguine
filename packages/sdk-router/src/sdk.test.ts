@@ -173,6 +173,17 @@ describe('SynapseSDK', () => {
       ).toBe(true)
     })
 
+    it('Formats CCTPv2 synapseTxId as txHash:originChainId', async () => {
+      const txHash =
+        '0xcd593dc11f7607e2e48c1cc70236c0a993cf54b37ad398d14e485087b4508d34'
+      const synapseTxId = await synapse.getSynapseTxId(
+        SupportedChainId.ETH,
+        'CCTPv2',
+        txHash
+      )
+      expect(synapseTxId).toEqual(`${txHash}:${SupportedChainId.ETH}`)
+    })
+
     it('Saves providers', () => {
       expect(synapse.providers[SupportedChainId.ETH]).toBe(ethProvider)
       expect(synapse.providers[SupportedChainId.ARBITRUM]).toBe(arbProvider)

@@ -19,6 +19,11 @@ const mockGetMessages = getMessages as jest.MockedFunction<typeof getMessages>
 const MODULE_ADDRESS = '0x1111111111111111111111111111111111111111'
 const MINT_RECIPIENT = '0x2222222222222222222222222222222222222222'
 const BURN_TOKEN = '0x3333333333333333333333333333333333333333'
+const ORIGIN_CHAIN_ID = SupportedChainId.ETH
+const ORIGIN_DOMAIN = CCTP_V2_DOMAIN_MAP[ORIGIN_CHAIN_ID]
+const ORIGIN_TX_HASH =
+  '0xcd593dc11f7607e2e48c1cc70236c0a993cf54b37ad398d14e485087b4508d34'
+const CCTP_V2_SYNAPSE_TX_ID = `${ORIGIN_TX_HASH}:${ORIGIN_CHAIN_ID}`
 
 describe('CCTPv2Module', () => {
   let module: CCTPv2Module
@@ -35,6 +40,12 @@ describe('CCTPv2Module', () => {
   beforeEach(() => {
     module = new CCTPv2Module(SupportedChainId.ETH, MODULE_ADDRESS)
     mockGetMessages.mockReset()
+  })
+
+  it('formats synapseTxId as txHash:originChainId', async () => {
+    await expect(module.getSynapseTxId(ORIGIN_TX_HASH)).resolves.toBe(
+      CCTP_V2_SYNAPSE_TX_ID
+    )
   })
 
   it('encodes depositForBurnWithHook calldata', () => {
@@ -129,15 +140,37 @@ describe('CCTPv2Module', () => {
     async (_caseName, message, expectedStatus) => {
       mockGetMessages.mockResolvedValueOnce([message])
 
-      await expect(module.getBridgeTxStatus('0xabc')).resolves.toBe(
+      await expect(module.getBridgeTxStatus(CCTP_V2_SYNAPSE_TX_ID)).resolves.toBe(
         expectedStatus
       )
+      expect(mockGetMessages).toHaveBeenCalledWith(ORIGIN_DOMAIN, ORIGIN_TX_HASH)
     }
   )
+
+  it('returns false for malformed CCTPv2 synapseTxId', async () => {
+    await expect(module.getBridgeTxStatus(ORIGIN_TX_HASH)).resolves.toBe(false)
+    expect(mockGetMessages).not.toHaveBeenCalled()
+  })
+
+  it('returns false for malformed txHash segment', async () => {
+    await expect(
+      module.getBridgeTxStatus(`0xabc:${ORIGIN_CHAIN_ID}`)
+    ).resolves.toBe(false)
+    expect(mockGetMessages).not.toHaveBeenCalled()
+  })
+
+  it('returns false for unsupported origin chain id segment', async () => {
+    await expect(
+      module.getBridgeTxStatus(`${ORIGIN_TX_HASH}:999999`)
+    ).resolves.toBe(false)
+    expect(mockGetMessages).not.toHaveBeenCalled()
+  })
 
   it('returns false when status API errors', async () => {
     mockGetMessages.mockRejectedValueOnce(new Error('Circle API unavailable'))
 
-    await expect(module.getBridgeTxStatus('0xabc')).resolves.toBe(false)
+    await expect(module.getBridgeTxStatus(CCTP_V2_SYNAPSE_TX_ID)).resolves.toBe(
+      false
+    )
   })
 })

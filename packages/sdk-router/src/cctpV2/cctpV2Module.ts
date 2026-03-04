@@ -6,7 +6,6 @@ import { BigNumberish, PopulatedTransaction, utils } from 'ethers'
 import {
   CCTP_V2_DOMAIN_MAP,
   CCTP_V2_FORWARD_HOOK_DATA,
-  CCTP_V2_SUPPORTED_CHAIN_IDS,
 } from '../constants'
 import { SynapseModule } from '../module'
 import { CctpV2Message, getMessages } from './api'
@@ -22,6 +21,8 @@ const FORWARD_SUCCESS_STATES = new Set([
   'SUCCESS',
   'SUCCEEDED',
 ])
+const CCTP_V2_SYNAPSE_TX_ID_SEPARATOR = ':'
+const TX_HASH_REGEX = /^0x[0-9a-fA-F]{64}$/
 
 export type CctpV2BurnParams = {
   amount: BigNumberish
@@ -50,12 +51,19 @@ export class CCTPv2Module implements SynapseModule {
   }
 
   public async getSynapseTxId(txHash: string): Promise<string> {
-    return txHash
+    return `${txHash}${CCTP_V2_SYNAPSE_TX_ID_SEPARATOR}${this.chainId}`
   }
 
   public async getBridgeTxStatus(synapseTxId: string): Promise<boolean> {
     try {
-      const message = await this.getMessageByTxHash(synapseTxId)
+      const parsed = this.parseSynapseTxId(synapseTxId)
+      if (!parsed) {
+        return false
+      }
+      const message = await this.getMessageByTxHash(
+        parsed.txHash,
+        parsed.originChainId
+      )
       if (!message) {
         return false
       }
@@ -137,23 +145,41 @@ export class CCTPv2Module implements SynapseModule {
     )
   }
 
+  private parseSynapseTxId(
+    synapseTxId: string
+  ): { txHash: string; originChainId: number } | null {
+    if (typeof synapseTxId !== 'string') {
+      return null
+    }
+    const parts = synapseTxId.split(CCTP_V2_SYNAPSE_TX_ID_SEPARATOR)
+    if (parts.length !== 2) {
+      return null
+    }
+    const [txHash, originChainIdRaw] = parts
+    if (!TX_HASH_REGEX.test(txHash)) {
+      return null
+    }
+    if (!/^\d+$/.test(originChainIdRaw)) {
+      return null
+    }
+    const originChainId = Number(originChainIdRaw)
+    if (!Number.isSafeInteger(originChainId) || originChainId <= 0) {
+      return null
+    }
+    return { txHash, originChainId }
+  }
+
   private async getMessageByTxHash(
-    txHash: string
+    txHash: string,
+    originChainId: number
   ): Promise<CctpV2Message | null> {
-    const sourceDomains = [
-      ...new Set(
-        CCTP_V2_SUPPORTED_CHAIN_IDS.map(
-          (chainId) => CCTP_V2_DOMAIN_MAP[chainId]
-        )
-      ),
-    ]
-    const messagesByDomain = await Promise.all(
-      sourceDomains.map((sourceDomainId) => getMessages(sourceDomainId, txHash))
-    )
-    for (const messages of messagesByDomain) {
-      if (messages?.length) {
-        return messages[0]
-      }
+    const sourceDomain = CCTP_V2_DOMAIN_MAP[originChainId]
+    if (sourceDomain === undefined) {
+      return null
+    }
+    const messages = await getMessages(sourceDomain, txHash)
+    if (messages?.length) {
+      return messages[0]
     }
     return null
   }

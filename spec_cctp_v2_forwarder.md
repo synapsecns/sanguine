@@ -97,7 +97,7 @@ We need a CCTP V2 path that:
 3. Do not use stale-cache-beyond-TTL fallback for quote generation.
 
 ### Transaction Lifecycle
-1. `getSynapseTxId(txHash)` returns `txHash`.
+1. `getSynapseTxId(txHash)` returns `txHash:originChainId` for `CCTPv2`.
 2. `getBridgeTxStatus()` queries Circle `v2/messages` and returns `true` only when:
    - Message `status` is terminal success, and
    - `forwardState` is terminal success for forwarding-enabled transfers.
