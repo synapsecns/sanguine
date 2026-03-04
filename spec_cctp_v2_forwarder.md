@@ -17,6 +17,7 @@ We need a CCTP V2 path that:
 3. Execute via SIR (`BridgeRouteV2.zapData`) only.
 4. Use Circle Forwarding Service hook format with no extra custom hook payload.
 5. Keep legacy `SynapseCCTP` behavior unchanged for existing V1 quote APIs.
+6. Define accurate `estimatedTime` policy for CCTP V2 using Circle finality settings.
 
 ## Non-Goals
 1. Replacing/removing `SynapseCCTP` in this phase.
@@ -28,8 +29,9 @@ We need a CCTP V2 path that:
 - Package: `packages/sdk-router` only.
 - Primary APIs impacted: `bridgeV2` path and module composition in `sdk.ts`.
 - Legacy APIs `bridgeQuote/allBridgeQuotes` continue using existing module behavior.
+- This document reflects current implemented progress for the `sdk-router` CCTP V2 module.
 
-## External Constraints (Validated March 3, 2026)
+## External Constraints (Validated March 4, 2026)
 1. Forwarding service is enabled through burn hook data with reserved `cctp-forward` format.
 2. Forwarding service does not support wrapper-contract forwarding when `destinationCaller` is set.
 3. Forwarding-service fixed service fees documented by Circle:
@@ -37,6 +39,13 @@ We need a CCTP V2 path that:
    - All other destinations: `0.20` USDC.
 4. CCTP fee/finality data is available via Circle API `GET /v2/burn/USDC/fees/{sourceDomainId}/{destDomainId}` (use `?forward=true` for forwarding-aware responses where available).
 5. Message/forwarding status is available via `GET /v2/messages/{sourceDomainId}?transactionHash=...`.
+6. Circle finality semantics:
+   - `minFinalityThreshold = 2000`: Standard Transfer attestation.
+   - `1000 <= minFinalityThreshold < 2000`: Fast Transfer attestation.
+7. Circle required-block-confirmation timing (as source chain) for Standard Transfer:
+   - Ethereum, Arbitrum, Base, Optimism: `~15-19 minutes`.
+   - Avalanche, Polygon PoS: `~8 seconds`.
+8. Spot checks against live Iris fee responses on March 4, 2026 show fee tiers include `finalityThreshold` values `1000` and `2000`, consistent with Circle finality modes.
 
 ## Requirements
 
@@ -68,6 +77,17 @@ We need a CCTP V2 path that:
      - `1.25` USDC for Ethereum destination.
      - `0.20` USDC for all other destinations.
 5. If fee API request fails or returns unusable data for a route, return no `CircleCCTPV2` quote for that route (fail closed for this module only).
+
+### Estimated Time Policy
+1. `estimatedTime` must be derived from selected `finalityThreshold` and source-chain finality timing from Circle docs.
+2. Standard mode (`finalityThreshold >= 2000`) timing estimates by source chain:
+   - `ETH`, `ARBITRUM`, `BASE`, `OPTIMISM`: `1020` seconds (midpoint of `15-19 minutes`).
+   - `AVALANCHE`, `POLYGON`: `8` seconds (rounded to `10` by SDK quote time precision).
+3. Fast mode (`1000 <= finalityThreshold < 2000`) timing estimates by source chain:
+   - `ETH`, `ARBITRUM`, `BASE`, `OPTIMISM`: `600` seconds.
+   - `AVALANCHE`, `POLYGON`: `6` seconds (rounded to `10` by SDK quote time precision).
+4. If `finalityThreshold` is unmappable for policy (for example `< 1000`), return no `CircleCCTPV2` quote (fail closed).
+5. Module-level `getEstimatedTime(chainId)` should return non-zero fallback values for supported CCTP V2 source chains.
 
 ### API Strategy
 1. Runtime source of truth is Circle API (not static quote constants).
@@ -132,6 +152,7 @@ Add explicit maps for:
 3. `fromSender` missing -> quote can be returned, tx omitted (existing bridge-V2 pattern).
 4. `toRecipient` missing and cannot be defaulted -> no zapData/tx.
 5. Circle status available but non-terminal -> `getBridgeTxStatus = false`.
+6. Scientific-notation `minimumFee` values are treated as unusable input in current implementation -> no quote (fail closed).
 
 ## Testing Plan
 
@@ -143,6 +164,9 @@ Add explicit maps for:
 2. `cctpV2ModuleSet.test.ts`
    - Candidate filtering.
    - Max-finality route selection from mocked fee response.
+   - Finality-derived `estimatedTime` selection and chain mapping (with SDK rounding behavior).
+   - Unmappable finality threshold returns no quote (fail closed).
+   - Scientific-notation `minimumFee` values are treated as unusable and return no quote.
    - `maxFee` calculation from `minimumFee` + forwarding fee.
    - API error path returns no quote.
    - Forwarding fee fallback (only when `forwardFee` missing).
@@ -151,6 +175,8 @@ Add explicit maps for:
 1. `sdk.test.ts`
    - `bridgeV2` includes `CircleCCTPV2` by default when supported.
    - `moduleNames` includes `CircleCCTPV2`.
+   - `estimatedTime` for `CircleCCTPV2` is non-zero and matches finality-derived policy.
+   - `getEstimatedTime(..., 'CircleCCTPV2')` returns non-zero chain-aware values.
    - Legacy `SynapseCCTP` V1 quote APIs remain unchanged.
 
 ### Regression
@@ -163,12 +189,26 @@ Add explicit maps for:
 3. Update docs/changelog.
 4. Validate supported chain mappings against Circle supported-blockchain docs before release.
 
+## Implementation Status (As of March 4, 2026)
+Implemented:
+1. `CircleCCTPV2` bridge-v2 module, forwarding hook, fee API integration, and max-finality (`max finalityThreshold`) route selection.
+2. Route-level `estimatedTime` emission based on selected `finalityThreshold` mode (standard vs fast) and source-chain mapping.
+3. Fail-closed behavior for unmappable finality thresholds (`no quote`).
+4. Module-level `getEstimatedTime()` non-zero fallback for supported CCTP V2 source chains.
+5. Unit and SDK tests covering finality-derived estimated-time behavior.
+
+Not Implemented Yet (for this spec scope):
+1. `packages/sdk-router/README.md` updates listed in proposed design are not yet landed.
+2. `packages/sdk-router/CHANGELOG.md` updates listed in proposed design are not yet landed.
+
 ## Acceptance Criteria
 1. `bridgeV2` returns `CircleCCTPV2` quotes by default for supported CCTP V2 USDC routes.
 2. Generated tx path is SIR-based and includes forwarding hook payload.
 3. Finality policy always chooses the slowest available API finality threshold.
 4. Module fails closed (no quote) when live API data is unavailable or unusable.
-5. Legacy `SynapseCCTP` quote behavior remains unchanged.
+5. `CircleCCTPV2` quotes include non-zero `estimatedTime` derived from finality mode and source-chain mapping.
+6. Unmappable `finalityThreshold` values fail closed (`no quote`).
+7. Legacy `SynapseCCTP` quote behavior remains unchanged.
 
 ## Open Questions
 None.
@@ -179,3 +219,5 @@ None.
 3. Fee API: https://developers.circle.com/api-reference/cctp/all/get-burn-usdc-fees
 4. Messages/status API: https://developers.circle.com/api-reference/cctp/all/get-messages-v2
 5. V1->V2 migration: https://developers.circle.com/cctp/migration-from-v1-to-v2
+6. Required block confirmations (finality timing): https://developers.circle.com/cctp/required-block-confirmations
+7. Supported blockchains/domains: https://developers.circle.com/cctp/supported-blockchains
