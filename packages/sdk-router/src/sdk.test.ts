@@ -40,6 +40,8 @@ global.fetch = jest.fn(() =>
 // Retry the flaky tests up to 3 times
 jest.retryTimes(3)
 
+const CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH = 1020
+
 const expectCorrectPopulatedTransaction = (
   populatedTransaction: PopulatedTransaction,
   expectedValue: BigNumber = Zero
@@ -403,22 +405,8 @@ describe('SynapseSDK', () => {
         expectedToAmount: amount,
         minToAmount: amount,
         nativeFee: Zero,
+        estimatedTime: CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH,
         zapData: '0x',
-      }
-      const baseQuote = {
-        id: 'test-circle-cctp-v2-quote',
-        fromChainId: SupportedChainId.ETH,
-        fromToken: ETH_USDC,
-        fromAmount: amount.toString(),
-        toChainId: SupportedChainId.ARBITRUM,
-        toToken: ARB_USDC,
-        expectedToAmount: amount.toString(),
-        minToAmount: amount.toString(),
-        routerAddress: '0x0000000000000000000000000000000000001111',
-        estimatedTime: 0,
-        moduleNames: [],
-        gasDropAmount: '0',
-        nativeFee: '0',
       }
 
       // Keep this test fully offline by forcing bridgeV2 to evaluate CircleCCTPV2 only.
@@ -446,8 +434,12 @@ describe('SynapseSDK', () => {
         .spyOn(synapse.swapEngineSet, 'generateRoute')
         .mockResolvedValue(originSwapRoute as any)
       jest
-        .spyOn(synapse.sirSet, 'finalizeBridgeRouteV2')
-        .mockResolvedValue(baseQuote)
+        .spyOn(synapse.sirSet, 'completeIntentWithBalanceChecks')
+        .mockResolvedValue({
+          to: '0x0000000000000000000000000000000000001111',
+          data: '0x',
+          value: Zero,
+        } as PopulatedTransaction)
 
       const quotes = await synapse.bridgeV2({
         fromChainId: SupportedChainId.ETH,
@@ -460,6 +452,10 @@ describe('SynapseSDK', () => {
 
       expect(quotes).toHaveLength(1)
       expect(quotes[0].moduleNames).toContain('CircleCCTPV2')
+      expect(quotes[0].estimatedTime).toBeGreaterThan(0)
+      expect(quotes[0].estimatedTime).toEqual(
+        CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH
+      )
     })
   })
   describe('Get bridge gas', () => {
