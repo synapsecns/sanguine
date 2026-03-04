@@ -283,7 +283,7 @@ describe('CircleCCTPV2ModuleSet', () => {
     )
   })
 
-  it('supports scientific notation minimumFee values', async () => {
+  it('fails closed for scientific notation minimumFee values', async () => {
     const moduleSet = makeModuleSet()
     mockGetBurnUSDCFees.mockResolvedValueOnce([
       {
@@ -293,15 +293,9 @@ describe('CircleCCTPV2ModuleSet', () => {
       },
     ])
 
-    const route = await moduleSet.getBridgeRouteV2(makeRouteParams(1_000_000))
-
-    expect(route).toBeDefined()
-    const quoteMaxFee = BigNumber.from(1)
-    expect(route!.expectedToAmount).toEqual(BigNumber.from(999_999))
-    expect(route!.minToAmount).toEqual(BigNumber.from(999_999))
-    expect(decodeBurnCalldata(route!.zapData!).maxFee).toEqual(
-      getBurnMaxFeeWithSlippage(quoteMaxFee)
-    )
+    await expect(
+      moduleSet.getBridgeRouteV2(makeRouteParams(1_000_000))
+    ).resolves.toBeUndefined()
   })
 
   it('returns no quote when origin min amount is not greater than burn maxFee', async () => {
