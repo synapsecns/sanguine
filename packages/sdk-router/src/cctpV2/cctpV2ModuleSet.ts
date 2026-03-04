@@ -6,6 +6,7 @@ import {
   CCTP_V2_FORWARD_SERVICE_FEE_USDC,
   CCTP_V2_TOKEN_MESSENGER_ADDRESS_MAP,
   CCTP_V2_USDC_ADDRESS_MAP,
+  SupportedChainId,
 } from '../constants'
 import {
   BridgeRoute,
@@ -27,6 +28,26 @@ import { CircleCCTPV2Module } from './cctpV2Module'
 const BPS_DENOMINATOR = 10_000
 const BURN_MAX_FEE_NUMERATOR = 11
 const BURN_MAX_FEE_DENOMINATOR = 10
+const FAST_FINALITY_THRESHOLD = 1000
+const STANDARD_FINALITY_THRESHOLD = 2000
+
+const CCTP_V2_STANDARD_ESTIMATED_TIME_BY_SOURCE_CHAIN: Record<number, number> = {
+  [SupportedChainId.ETH]: 1020,
+  [SupportedChainId.ARBITRUM]: 1020,
+  [SupportedChainId.BASE]: 1020,
+  [SupportedChainId.OPTIMISM]: 1020,
+  [SupportedChainId.AVALANCHE]: 8,
+  [SupportedChainId.POLYGON]: 8,
+}
+
+const CCTP_V2_FAST_ESTIMATED_TIME_BY_SOURCE_CHAIN: Record<number, number> = {
+  [SupportedChainId.ETH]: 600,
+  [SupportedChainId.ARBITRUM]: 600,
+  [SupportedChainId.BASE]: 600,
+  [SupportedChainId.OPTIMISM]: 600,
+  [SupportedChainId.AVALANCHE]: 6,
+  [SupportedChainId.POLYGON]: 6,
+}
 
 export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
   public readonly moduleName = 'CircleCCTPV2'
@@ -58,8 +79,8 @@ export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
     return undefined
   }
 
-  public getEstimatedTime(): number {
-    return 0
+  public getEstimatedTime(originChainId: number, _destChainId?: number): number {
+    return this.getEstimatedTimeFallback(originChainId) ?? 0
   }
 
   public async getGasDropAmount(): Promise<BigNumber> {
@@ -142,6 +163,14 @@ export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
     if (!selectedFee) {
       return undefined
     }
+    const estimatedTime =
+      this.getEstimatedTimeByFinalityThreshold(
+        bridgeToken.originChainId,
+        selectedFee.finalityThreshold
+      ) ?? this.getEstimatedTimeFallback(bridgeToken.originChainId)
+    if (estimatedTime === undefined) {
+      return undefined
+    }
     const amountInExpected = BigNumber.from(originSwapRoute.expectedToAmount)
     const amountInMin = BigNumber.from(originSwapRoute.minToAmount)
     const protocolFee = this.getProtocolFeeBudget(
@@ -175,6 +204,7 @@ export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
       expectedToAmount,
       minToAmount,
       nativeFee: Zero,
+      estimatedTime,
       zapData: this.getBurnZapData({
         ...params,
         toToken: routeToToken,
@@ -321,6 +351,27 @@ export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
       }
       return slowest
     }, undefined)
+  }
+
+  private getEstimatedTimeByFinalityThreshold(
+    originChainId: number,
+    finalityThreshold: number
+  ): number | undefined {
+    // Circle CCTP V2 finality modes: >=2000 is standard, [1000, 2000) is fast.
+    if (finalityThreshold >= STANDARD_FINALITY_THRESHOLD) {
+      return CCTP_V2_STANDARD_ESTIMATED_TIME_BY_SOURCE_CHAIN[originChainId]
+    }
+    if (finalityThreshold >= FAST_FINALITY_THRESHOLD) {
+      return CCTP_V2_FAST_ESTIMATED_TIME_BY_SOURCE_CHAIN[originChainId]
+    }
+    return undefined
+  }
+
+  private getEstimatedTimeFallback(originChainId: number): number | undefined {
+    return (
+      CCTP_V2_STANDARD_ESTIMATED_TIME_BY_SOURCE_CHAIN[originChainId] ??
+      CCTP_V2_FAST_ESTIMATED_TIME_BY_SOURCE_CHAIN[originChainId]
+    )
   }
 
   private getBurnZapData({
