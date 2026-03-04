@@ -208,7 +208,7 @@ describe('CircleCCTPV2ModuleSet', () => {
     expect(route!.estimatedTime).toBeGreaterThan(0)
   })
 
-  it('falls back to chain estimated time when finality threshold is unmappable', async () => {
+  it('returns no quote when finality threshold is unmappable', async () => {
     const moduleSet = makeModuleSet()
     mockGetBurnUSDCFees.mockResolvedValueOnce([
       {
@@ -218,11 +218,9 @@ describe('CircleCCTPV2ModuleSet', () => {
       },
     ])
 
-    const route = await moduleSet.getBridgeRouteV2(makeRouteParams())
-
-    expect(route).toBeDefined()
-    expect(route!.estimatedTime).toBe(ETH_STANDARD_ESTIMATED_TIME)
-    expect(route!.estimatedTime).toBeGreaterThan(0)
+    await expect(
+      moduleSet.getBridgeRouteV2(makeRouteParams())
+    ).resolves.toBeUndefined()
   })
 
   it('returns non-zero estimated times for all supported CCTP V2 chain ids', () => {

@@ -163,11 +163,10 @@ export class CircleCCTPV2ModuleSet extends SynapseModuleSet {
     if (!selectedFee) {
       return undefined
     }
-    const estimatedTime =
-      this.getEstimatedTimeByFinalityThreshold(
-        bridgeToken.originChainId,
-        selectedFee.finalityThreshold
-      ) ?? this.getEstimatedTimeFallback(bridgeToken.originChainId)
+    const estimatedTime = this.getEstimatedTimeByFinalityThreshold(
+      bridgeToken.originChainId,
+      selectedFee.finalityThreshold
+    )
     if (estimatedTime === undefined) {
       return undefined
     }
