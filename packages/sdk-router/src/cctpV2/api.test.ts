@@ -1,5 +1,5 @@
 import { getWithTimeout } from '../utils'
-import { clearCctpV2ApiCache, getBurnUSDCFees } from './api'
+import { clearCctpV2ApiCache, getBurnUSDCFees, getMessages } from './api'
 
 jest.mock('../utils', () => ({
   getWithTimeout: jest.fn(),
@@ -11,6 +11,8 @@ const mockGetWithTimeout = getWithTimeout as jest.MockedFunction<
 
 const SOURCE_DOMAIN_ID = 10_001
 const DEST_DOMAIN_ID = 20_001
+const MESSAGE_TX_HASH =
+  '0xcd593dc11f7607e2e48c1cc70236c0a993cf54b37ad398d14e485087b4508d34'
 
 const responseWithJson = (data: unknown): Response =>
   ({
@@ -77,5 +79,27 @@ describe('getBurnUSDCFees', () => {
     await expect(
       getBurnUSDCFees(SOURCE_DOMAIN_ID, DEST_DOMAIN_ID)
     ).resolves.toBeNull()
+  })
+})
+
+describe('getMessages', () => {
+  beforeEach(() => {
+    mockGetWithTimeout.mockReset()
+    clearCctpV2ApiCache()
+  })
+
+  it('does not cache /v2/messages responses', async () => {
+    mockGetWithTimeout
+      .mockResolvedValueOnce(responseWithJson({ messages: [] }))
+      .mockResolvedValueOnce(responseWithJson({ messages: [] }))
+
+    await expect(getMessages(SOURCE_DOMAIN_ID, MESSAGE_TX_HASH)).resolves.toEqual(
+      []
+    )
+    await expect(getMessages(SOURCE_DOMAIN_ID, MESSAGE_TX_HASH)).resolves.toEqual(
+      []
+    )
+
+    expect(mockGetWithTimeout).toHaveBeenCalledTimes(2)
   })
 })
