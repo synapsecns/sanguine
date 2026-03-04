@@ -81,11 +81,11 @@ We need a CCTP V2 path that:
 ### Estimated Time Policy
 1. `estimatedTime` must be derived from selected `finalityThreshold` and source-chain finality timing from Circle docs.
 2. Standard mode (`finalityThreshold >= 2000`) timing estimates by source chain:
-   - `ETH`, `ARBITRUM`, `BASE`, `OPTIMISM`: `1020` seconds (midpoint of `15-19 minutes`).
-   - `AVALANCHE`, `POLYGON`: `8` seconds (rounded to `10` by SDK quote time precision).
+   - `ETH`, `ARBITRUM`, `BASE`, `OPTIMISM`: `1035` seconds (`1020` baseline + `15` relay delay).
+   - `AVALANCHE`, `POLYGON`: `23` seconds (`8` baseline + `15` relay delay).
 3. Fast mode (`1000 <= finalityThreshold < 2000`) timing estimates by source chain:
-   - `ETH`, `ARBITRUM`, `BASE`, `OPTIMISM`: `600` seconds.
-   - `AVALANCHE`, `POLYGON`: `6` seconds (rounded to `10` by SDK quote time precision).
+   - `ETH`, `ARBITRUM`, `BASE`, `OPTIMISM`: `615` seconds (`600` baseline + `15` relay delay).
+   - `AVALANCHE`, `POLYGON`: `21` seconds (`6` baseline + `15` relay delay).
 4. If `finalityThreshold` is unmappable for policy (for example `< 1000`), return no `CCTPv2` quote (fail closed).
 5. Module-level `getEstimatedTime(chainId)` should return non-zero fallback values for supported CCTP V2 source chains.
 
@@ -100,7 +100,7 @@ We need a CCTP V2 path that:
 1. `getSynapseTxId(txHash)` returns `txHash:originChainId` for `CCTPv2`.
 2. `getBridgeTxStatus()` queries Circle `v2/messages` and returns `true` only when:
    - Message `status` is terminal success, and
-   - `forwardState` is terminal success for forwarding-enabled transfers.
+   - `forwardState` is terminal success for forwarding-enabled transfers (including `CONFIRMED`).
 3. Pending/unknown/API-error states return `false` (no throw for transient fetch failures).
 
 ## Proposed Design

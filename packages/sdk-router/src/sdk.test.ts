@@ -40,7 +40,8 @@ global.fetch = jest.fn(() =>
 // Retry the flaky tests up to 3 times
 jest.retryTimes(3)
 
-const CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH = 1020
+const CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH = 1035
+const CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH_ROUNDED = 1040
 
 const expectCorrectPopulatedTransaction = (
   populatedTransaction: PopulatedTransaction,
@@ -465,7 +466,7 @@ describe('SynapseSDK', () => {
       expect(quotes[0].moduleNames).toContain('CCTPv2')
       expect(quotes[0].estimatedTime).toBeGreaterThan(0)
       expect(quotes[0].estimatedTime).toEqual(
-        CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH
+        CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH_ROUNDED
       )
     })
   })
