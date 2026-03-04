@@ -55,6 +55,7 @@ const EXPECTED_GAS_DROP: { [chainId: number]: BigNumber } = {
   [SupportedChainId.BSC]: parseFixed('0.0004', 18),
   [SupportedChainId.AVALANCHE]: parseFixed('0.025', 18),
 }
+const CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH = 1020
 
 const expectCorrectFeeConfig = (feeConfig: FeeConfig) => {
   expect(feeConfig).toBeDefined()
@@ -1060,22 +1061,8 @@ describe('SynapseSDK', () => {
         expectedToAmount: amount,
         minToAmount: amount,
         nativeFee: Zero,
+        estimatedTime: CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH,
         zapData: '0x',
-      }
-      const baseQuote = {
-        id: 'test-circle-cctp-v2-quote',
-        fromChainId: SupportedChainId.ETH,
-        fromToken: ETH_USDC,
-        fromAmount: amount.toString(),
-        toChainId: SupportedChainId.ARBITRUM,
-        toToken: ARB_USDC,
-        expectedToAmount: amount.toString(),
-        minToAmount: amount.toString(),
-        routerAddress: '0x0000000000000000000000000000000000001111',
-        estimatedTime: 0,
-        moduleNames: [],
-        gasDropAmount: '0',
-        nativeFee: '0',
       }
 
       // Keep this test fully offline by forcing bridgeV2 to evaluate CircleCCTPV2 only.
@@ -1103,8 +1090,12 @@ describe('SynapseSDK', () => {
         .spyOn(synapse.swapEngineSet, 'generateRoute')
         .mockResolvedValue(originSwapRoute as any)
       jest
-        .spyOn(synapse.sirSet, 'finalizeBridgeRouteV2')
-        .mockResolvedValue(baseQuote)
+        .spyOn(synapse.sirSet, 'completeIntentWithBalanceChecks')
+        .mockResolvedValue({
+          to: '0x0000000000000000000000000000000000001111',
+          data: '0x',
+          value: Zero,
+        } as PopulatedTransaction)
 
       const quotes = await synapse.bridgeV2({
         fromChainId: SupportedChainId.ETH,
@@ -1117,6 +1108,10 @@ describe('SynapseSDK', () => {
 
       expect(quotes).toHaveLength(1)
       expect(quotes[0].moduleNames).toContain('CircleCCTPV2')
+      expect(quotes[0].estimatedTime).toBeGreaterThan(0)
+      expect(quotes[0].estimatedTime).toEqual(
+        CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH
+      )
     })
   })
 
@@ -1589,6 +1584,15 @@ describe('SynapseSDK', () => {
         expect(
           synapse.getEstimatedTime(SupportedChainId.ETH, 'SynapseCCTP')
         ).toEqual(MEDIAN_TIME_CCTP[SupportedChainId.ETH])
+      })
+
+      it('Returns non-zero estimated time for CircleCCTPV2', () => {
+        expect(
+          synapse.getEstimatedTime(SupportedChainId.ETH, 'CircleCCTPV2')
+        ).toEqual(CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH)
+        expect(
+          synapse.getEstimatedTime(SupportedChainId.ETH, 'CircleCCTPV2')
+        ).toBeGreaterThan(0)
       })
 
       it('Throws when bridge module does not exist on a chain', () => {

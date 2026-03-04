@@ -3,6 +3,7 @@ import { BigNumber } from 'ethers'
 import {
   CCTP_V2_DOMAIN_MAP,
   CCTP_V2_FORWARD_SERVICE_FEE_USDC,
+  CCTP_V2_SUPPORTED_CHAIN_IDS,
   CCTP_V2_USDC_ADDRESS_MAP,
   SupportedChainId,
 } from '../constants'
@@ -23,6 +24,8 @@ const ORIGIN_CHAIN_ID = SupportedChainId.ETH
 const DEST_CHAIN_ID = SupportedChainId.ARBITRUM
 const ORIGIN_TOKEN = CCTP_V2_USDC_ADDRESS_MAP[ORIGIN_CHAIN_ID]
 const DEST_TOKEN = CCTP_V2_USDC_ADDRESS_MAP[DEST_CHAIN_ID]
+const ETH_STANDARD_ESTIMATED_TIME = 1020
+const ETH_FAST_ESTIMATED_TIME = 600
 
 const makeModuleSet = () =>
   new CircleCCTPV2ModuleSet([
@@ -135,6 +138,99 @@ describe('CircleCCTPV2ModuleSet', () => {
       CCTP_V2_DOMAIN_MAP[DEST_CHAIN_ID]
     )
     expect(decodeBurnCalldata(route!.zapData!).minFinalityThreshold).toBe(3000)
+  })
+
+  it('uses standard estimated time for standard finality threshold', async () => {
+    const moduleSet = makeModuleSet()
+    mockGetBurnUSDCFees.mockResolvedValueOnce([
+      {
+        finalityThreshold: 2000,
+        minimumFee: 20,
+        forwardFee: { high: 150 },
+      },
+    ])
+
+    const route = await moduleSet.getBridgeRouteV2(makeRouteParams())
+
+    expect(route).toBeDefined()
+    expect(route!.estimatedTime).toBe(ETH_STANDARD_ESTIMATED_TIME)
+    expect(route!.estimatedTime).toBeGreaterThan(0)
+  })
+
+  it('uses fast estimated time for fast finality threshold', async () => {
+    const moduleSet = makeModuleSet()
+    mockGetBurnUSDCFees.mockResolvedValueOnce([
+      {
+        finalityThreshold: 1200,
+        minimumFee: 20,
+        forwardFee: { high: 150 },
+      },
+    ])
+
+    const route = await moduleSet.getBridgeRouteV2(makeRouteParams())
+
+    expect(route).toBeDefined()
+    expect(route!.estimatedTime).toBe(ETH_FAST_ESTIMATED_TIME)
+    expect(route!.estimatedTime).toBeGreaterThan(0)
+  })
+
+  it('uses fast estimated time when finality threshold is exactly 1000', async () => {
+    const moduleSet = makeModuleSet()
+    mockGetBurnUSDCFees.mockResolvedValueOnce([
+      {
+        finalityThreshold: 1000,
+        minimumFee: 20,
+        forwardFee: { high: 150 },
+      },
+    ])
+
+    const route = await moduleSet.getBridgeRouteV2(makeRouteParams())
+
+    expect(route).toBeDefined()
+    expect(route!.estimatedTime).toBe(ETH_FAST_ESTIMATED_TIME)
+    expect(route!.estimatedTime).toBeGreaterThan(0)
+  })
+
+  it('uses fast estimated time when finality threshold is 1999', async () => {
+    const moduleSet = makeModuleSet()
+    mockGetBurnUSDCFees.mockResolvedValueOnce([
+      {
+        finalityThreshold: 1999,
+        minimumFee: 20,
+        forwardFee: { high: 150 },
+      },
+    ])
+
+    const route = await moduleSet.getBridgeRouteV2(makeRouteParams())
+
+    expect(route).toBeDefined()
+    expect(route!.estimatedTime).toBe(ETH_FAST_ESTIMATED_TIME)
+    expect(route!.estimatedTime).toBeGreaterThan(0)
+  })
+
+  it('falls back to chain estimated time when finality threshold is unmappable', async () => {
+    const moduleSet = makeModuleSet()
+    mockGetBurnUSDCFees.mockResolvedValueOnce([
+      {
+        finalityThreshold: 999,
+        minimumFee: 20,
+        forwardFee: { high: 150 },
+      },
+    ])
+
+    const route = await moduleSet.getBridgeRouteV2(makeRouteParams())
+
+    expect(route).toBeDefined()
+    expect(route!.estimatedTime).toBe(ETH_STANDARD_ESTIMATED_TIME)
+    expect(route!.estimatedTime).toBeGreaterThan(0)
+  })
+
+  it('returns non-zero estimated times for all supported CCTP V2 chain ids', () => {
+    const moduleSet = makeModuleSet()
+
+    CCTP_V2_SUPPORTED_CHAIN_IDS.forEach((chainId) => {
+      expect(moduleSet.getEstimatedTime(chainId)).toBeGreaterThan(0)
+    })
   })
 
   it('prefers med forwarding tier over high when both are present', async () => {
