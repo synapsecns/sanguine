@@ -18,6 +18,7 @@ const MESSAGE_SUCCESS_STATUS = 'complete'
 const FORWARD_SUCCESS_STATES = new Set([
   'COMPLETE',
   'COMPLETED',
+  'CONFIRMED',
   'SUCCESS',
   'SUCCEEDED',
 ])

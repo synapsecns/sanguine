@@ -121,6 +121,11 @@ describe('CCTPv2Module', () => {
       true,
     ],
     [
+      'terminal success + forwarding confirmed',
+      { status: 'complete', forwardState: 'confirmed' },
+      true,
+    ],
+    [
       'pending message status',
       { status: 'pending', forwardState: 'succeeded' },
       false,

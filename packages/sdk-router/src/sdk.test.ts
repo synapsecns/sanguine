@@ -55,7 +55,8 @@ const EXPECTED_GAS_DROP: { [chainId: number]: BigNumber } = {
   [SupportedChainId.BSC]: parseFixed('0.0004', 18),
   [SupportedChainId.AVALANCHE]: parseFixed('0.025', 18),
 }
-const CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH = 1020
+const CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH = 1035
+const CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH_ROUNDED = 1040
 
 const expectCorrectFeeConfig = (feeConfig: FeeConfig) => {
   expect(feeConfig).toBeDefined()
@@ -1121,7 +1122,7 @@ describe('SynapseSDK', () => {
       expect(quotes[0].moduleNames).toContain('CCTPv2')
       expect(quotes[0].estimatedTime).toBeGreaterThan(0)
       expect(quotes[0].estimatedTime).toEqual(
-        CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH
+        CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH_ROUNDED
       )
     })
   })

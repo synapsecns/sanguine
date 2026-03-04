@@ -32,21 +32,21 @@ const FAST_FINALITY_THRESHOLD = 1000
 const STANDARD_FINALITY_THRESHOLD = 2000
 
 const CCTP_V2_STANDARD_ESTIMATED_TIME_BY_SOURCE_CHAIN: Record<number, number> = {
-  [SupportedChainId.ETH]: 1020,
-  [SupportedChainId.ARBITRUM]: 1020,
-  [SupportedChainId.BASE]: 1020,
-  [SupportedChainId.OPTIMISM]: 1020,
-  [SupportedChainId.AVALANCHE]: 8,
-  [SupportedChainId.POLYGON]: 8,
+  [SupportedChainId.ETH]: 1035,
+  [SupportedChainId.ARBITRUM]: 1035,
+  [SupportedChainId.BASE]: 1035,
+  [SupportedChainId.OPTIMISM]: 1035,
+  [SupportedChainId.AVALANCHE]: 23,
+  [SupportedChainId.POLYGON]: 23,
 }
 
 const CCTP_V2_FAST_ESTIMATED_TIME_BY_SOURCE_CHAIN: Record<number, number> = {
-  [SupportedChainId.ETH]: 600,
-  [SupportedChainId.ARBITRUM]: 600,
-  [SupportedChainId.BASE]: 600,
-  [SupportedChainId.OPTIMISM]: 600,
-  [SupportedChainId.AVALANCHE]: 6,
-  [SupportedChainId.POLYGON]: 6,
+  [SupportedChainId.ETH]: 615,
+  [SupportedChainId.ARBITRUM]: 615,
+  [SupportedChainId.BASE]: 615,
+  [SupportedChainId.OPTIMISM]: 615,
+  [SupportedChainId.AVALANCHE]: 21,
+  [SupportedChainId.POLYGON]: 21,
 }
 
 export class CCTPv2ModuleSet extends SynapseModuleSet {
