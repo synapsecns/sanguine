@@ -11,7 +11,7 @@ import { Token } from '@/utils/types'
 import { BridgeModulePause } from '@/components/Maintenance/Maintenance'
 import { HYPERLIQUID } from '@/constants/chains/master'
 
-const CCTP_V2_MODULE_NAME = 'CircleCCTPV2'
+const CCTP_V2_MODULE_NAME = 'CCTPv2'
 
 export const fetchBridgeQuote = createAsyncThunk(
   'bridgeQuote/fetchBridgeQuote',

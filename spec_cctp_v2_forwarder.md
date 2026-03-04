@@ -12,8 +12,8 @@ We need a CCTP V2 path that:
 - Integrates through `bridgeV2` and SynapseIntentRouter (SIR), not a new standalone router flow.
 
 ## Goals
-1. Add a new bridge-V2 module named `CircleCCTPV2`.
-2. Include `CircleCCTPV2` by default in `bridgeV2` quote discovery.
+1. Add a new bridge-V2 module named `CCTPv2`.
+2. Include `CCTPv2` by default in `bridgeV2` quote discovery.
 3. Execute via SIR (`BridgeRouteV2.zapData`) only.
 4. Use Circle Forwarding Service hook format with no extra custom hook payload.
 5. Keep legacy `SynapseCCTP` behavior unchanged for existing V1 quote APIs.
@@ -50,13 +50,13 @@ We need a CCTP V2 path that:
 ## Requirements
 
 ### Functional
-1. Add `CircleCCTPV2ModuleSet` (bridge-V2 only):
-   - `moduleName = 'CircleCCTPV2'`
+1. Add `CCTPv2ModuleSet` (bridge-V2 only):
+   - `moduleName = 'CCTPv2'`
    - `isBridgeV2Supported = true`
    - `getBridgeRoutes()` returns `[]`
    - `getBridgeTokenCandidates()` returns supported native-USDC CCTP V2 pairs
    - `getBridgeRouteV2()` returns `BridgeRouteV2` with `zapData`
-2. Add `CircleCCTPV2Module` for low-level calldata/status helpers.
+2. Add `CCTPv2Module` for low-level calldata/status helpers.
 3. Register module in `sdk.ts` and `allModuleSets` so it is active by default in `bridgeV2`.
 4. Keep `SynapseCCTPRouterSet` unchanged and still available for legacy quote APIs.
 
@@ -65,7 +65,7 @@ We need a CCTP V2 path that:
 2. Use forwarding hook payload with no custom append data:
    - `0x636374702d666f72776172640000000000000000000000000000000000000000`
 3. Set `destinationCaller = bytes32(0)` for forwarding-service compatibility.
-4. If forwarding prerequisites are not met (unsupported chain/config/API data), do not return a `CircleCCTPV2` quote.
+4. If forwarding prerequisites are not met (unsupported chain/config/API data), do not return a `CCTPv2` quote.
 
 ### Fee and Finality Policy
 1. Use live Circle fee API (with cache) for every route evaluation.
@@ -76,7 +76,7 @@ We need a CCTP V2 path that:
    - If `forwardFee` is not present in fee response, use fixed service-fee constants:
      - `1.25` USDC for Ethereum destination.
      - `0.20` USDC for all other destinations.
-5. If fee API request fails or returns unusable data for a route, return no `CircleCCTPV2` quote for that route (fail closed for this module only).
+5. If fee API request fails or returns unusable data for a route, return no `CCTPv2` quote for that route (fail closed for this module only).
 
 ### Estimated Time Policy
 1. `estimatedTime` must be derived from selected `finalityThreshold` and source-chain finality timing from Circle docs.
@@ -86,7 +86,7 @@ We need a CCTP V2 path that:
 3. Fast mode (`1000 <= finalityThreshold < 2000`) timing estimates by source chain:
    - `ETH`, `ARBITRUM`, `BASE`, `OPTIMISM`: `600` seconds.
    - `AVALANCHE`, `POLYGON`: `6` seconds (rounded to `10` by SDK quote time precision).
-4. If `finalityThreshold` is unmappable for policy (for example `< 1000`), return no `CircleCCTPV2` quote (fail closed).
+4. If `finalityThreshold` is unmappable for policy (for example `< 1000`), return no `CCTPv2` quote (fail closed).
 5. Module-level `getEstimatedTime(chainId)` should return non-zero fallback values for supported CCTP V2 source chains.
 
 ### API Strategy
@@ -118,12 +118,12 @@ Update:
 3. `packages/sdk-router/README.md`
 4. `packages/sdk-router/CHANGELOG.md`
 
-### `CCTPV2Module` Responsibilities
+### `CCTPv2Module` Responsibilities
 1. Encode burn calldata for hook-enabled CCTP V2 forwarding path.
 2. Provide amount-position detection for zap payload substitution.
 3. Provide status lookup helper over `/v2/messages`.
 
-### `CCTPV2ModuleSet` Responsibilities
+### `CCTPv2ModuleSet` Responsibilities
 1. Candidate discovery for supported source/destination USDC pairs.
 2. Live fee fetch + route finality selection (max threshold).
 3. `maxFee` composition (protocol + forwarding fee budget).
@@ -173,10 +173,10 @@ Add explicit maps for:
 
 ### SDK Integration
 1. `sdk.test.ts`
-   - `bridgeV2` includes `CircleCCTPV2` by default when supported.
-   - `moduleNames` includes `CircleCCTPV2`.
-   - `estimatedTime` for `CircleCCTPV2` is non-zero and matches finality-derived policy.
-   - `getEstimatedTime(..., 'CircleCCTPV2')` returns non-zero chain-aware values.
+   - `bridgeV2` includes `CCTPv2` by default when supported.
+   - `moduleNames` includes `CCTPv2`.
+   - `estimatedTime` for `CCTPv2` is non-zero and matches finality-derived policy.
+   - `getEstimatedTime(..., 'CCTPv2')` returns non-zero chain-aware values.
    - Legacy `SynapseCCTP` V1 quote APIs remain unchanged.
 
 ### Regression
@@ -191,7 +191,7 @@ Add explicit maps for:
 
 ## Implementation Status (As of March 4, 2026)
 Implemented:
-1. `CircleCCTPV2` bridge-v2 module, forwarding hook, fee API integration, and max-finality (`max finalityThreshold`) route selection.
+1. `CCTPv2` bridge-v2 module, forwarding hook, fee API integration, and max-finality (`max finalityThreshold`) route selection.
 2. Route-level `estimatedTime` emission based on selected `finalityThreshold` mode (standard vs fast) and source-chain mapping.
 3. Fail-closed behavior for unmappable finality thresholds (`no quote`).
 4. Module-level `getEstimatedTime()` non-zero fallback for supported CCTP V2 source chains.
@@ -202,11 +202,11 @@ Not Implemented Yet (for this spec scope):
 2. `packages/sdk-router/CHANGELOG.md` updates listed in proposed design are not yet landed.
 
 ## Acceptance Criteria
-1. `bridgeV2` returns `CircleCCTPV2` quotes by default for supported CCTP V2 USDC routes.
+1. `bridgeV2` returns `CCTPv2` quotes by default for supported CCTP V2 USDC routes.
 2. Generated tx path is SIR-based and includes forwarding hook payload.
 3. Finality policy always chooses the slowest available API finality threshold.
 4. Module fails closed (no quote) when live API data is unavailable or unusable.
-5. `CircleCCTPV2` quotes include non-zero `estimatedTime` derived from finality mode and source-chain mapping.
+5. `CCTPv2` quotes include non-zero `estimatedTime` derived from finality mode and source-chain mapping.
 6. Unmappable `finalityThreshold` values fail closed (`no quote`).
 7. Legacy `SynapseCCTP` quote behavior remains unchanged.
 

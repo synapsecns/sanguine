@@ -9,8 +9,8 @@ import {
 } from '../constants'
 import { decodeZapData, EngineID } from '../swap'
 import { getBurnUSDCFees } from './api'
-import { CircleCCTPV2Module } from './cctpV2Module'
-import { CircleCCTPV2ModuleSet } from './cctpV2ModuleSet'
+import { CCTPv2Module } from './cctpV2Module'
+import { CCTPv2ModuleSet } from './cctpV2ModuleSet'
 
 jest.mock('./api', () => ({
   getBurnUSDCFees: jest.fn(),
@@ -28,7 +28,7 @@ const ETH_STANDARD_ESTIMATED_TIME = 1020
 const ETH_FAST_ESTIMATED_TIME = 600
 
 const makeModuleSet = () =>
-  new CircleCCTPV2ModuleSet([
+  new CCTPv2ModuleSet([
     { chainId: ORIGIN_CHAIN_ID, provider: {} as any },
     { chainId: DEST_CHAIN_ID, provider: {} as any },
   ])
@@ -63,7 +63,7 @@ const makeRouteParams = (
 
 const decodeBurnCalldata = (zapData: string) => {
   const decodedZapData = decodeZapData(zapData)
-  return CircleCCTPV2Module.tokenMessengerV2Interface.decodeFunctionData(
+  return CCTPv2Module.tokenMessengerV2Interface.decodeFunctionData(
     'depositForBurnWithHook',
     decodedZapData.payload!
   )
@@ -72,7 +72,7 @@ const decodeBurnCalldata = (zapData: string) => {
 const getBurnMaxFeeWithSlippage = (maxFee: BigNumber): BigNumber =>
   maxFee.mul(11).add(9).div(10)
 
-describe('CircleCCTPV2ModuleSet', () => {
+describe('CCTPv2ModuleSet', () => {
   beforeEach(() => {
     mockGetBurnUSDCFees.mockReset()
   })
@@ -513,7 +513,7 @@ describe('CircleCCTPV2ModuleSet', () => {
     const destChainId = SupportedChainId.ETH
     const originToken = CCTP_V2_USDC_ADDRESS_MAP[originChainId]
     const destToken = CCTP_V2_USDC_ADDRESS_MAP[destChainId]
-    const moduleSet = new CircleCCTPV2ModuleSet([
+    const moduleSet = new CCTPv2ModuleSet([
       { chainId: originChainId, provider: {} as any },
       { chainId: destChainId, provider: {} as any },
     ])
