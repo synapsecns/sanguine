@@ -177,6 +177,69 @@ describe('CircleCCTPV2ModuleSet', () => {
     expect(route!.minToAmount).toEqual(BigNumber.from(897_150))
   })
 
+  it('supports fractional minimumFee bps with deterministic integer math', async () => {
+    const moduleSet = makeModuleSet()
+    mockGetBurnUSDCFees.mockResolvedValueOnce([
+      {
+        finalityThreshold: 1200,
+        minimumFee: 1.3,
+        forwardFee: { low: 120, high: 350 },
+      },
+    ])
+
+    const route = await moduleSet.getBridgeRouteV2(makeRouteParams(1_000_001))
+
+    expect(route).toBeDefined()
+    const quoteMaxFee = BigNumber.from(481)
+    expect(route!.expectedToAmount).toEqual(BigNumber.from(999_520))
+    expect(route!.minToAmount).toEqual(BigNumber.from(999_520))
+    expect(decodeBurnCalldata(route!.zapData!).maxFee).toEqual(
+      getBurnMaxFeeWithSlippage(quoteMaxFee)
+    )
+  })
+
+  it('applies ceiling to fractional minimumFee protocol fee', async () => {
+    const moduleSet = makeModuleSet()
+    mockGetBurnUSDCFees.mockResolvedValueOnce([
+      {
+        finalityThreshold: 1200,
+        minimumFee: 1.5,
+        forwardFee: { basic: 0 },
+      },
+    ])
+
+    const route = await moduleSet.getBridgeRouteV2(makeRouteParams(6_667))
+
+    expect(route).toBeDefined()
+    const quoteMaxFee = BigNumber.from(2)
+    expect(route!.expectedToAmount).toEqual(BigNumber.from(6_665))
+    expect(route!.minToAmount).toEqual(BigNumber.from(6_665))
+    expect(decodeBurnCalldata(route!.zapData!).maxFee).toEqual(
+      getBurnMaxFeeWithSlippage(quoteMaxFee)
+    )
+  })
+
+  it('supports scientific notation minimumFee values', async () => {
+    const moduleSet = makeModuleSet()
+    mockGetBurnUSDCFees.mockResolvedValueOnce([
+      {
+        finalityThreshold: 1200,
+        minimumFee: 1e-7,
+        forwardFee: { basic: 0 },
+      },
+    ])
+
+    const route = await moduleSet.getBridgeRouteV2(makeRouteParams(1_000_000))
+
+    expect(route).toBeDefined()
+    const quoteMaxFee = BigNumber.from(1)
+    expect(route!.expectedToAmount).toEqual(BigNumber.from(999_999))
+    expect(route!.minToAmount).toEqual(BigNumber.from(999_999))
+    expect(decodeBurnCalldata(route!.zapData!).maxFee).toEqual(
+      getBurnMaxFeeWithSlippage(quoteMaxFee)
+    )
+  })
+
   it('returns no quote when origin min amount is not greater than burn maxFee', async () => {
     const moduleSet = makeModuleSet()
     mockGetBurnUSDCFees.mockResolvedValueOnce([

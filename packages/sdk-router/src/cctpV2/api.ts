@@ -11,6 +11,10 @@ const circleApiCache = new NodeCache({
   useClones: false,
 })
 
+export const clearCctpV2ApiCache = (): void => {
+  circleApiCache.flushAll()
+}
+
 export type CctpV2Fee = {
   finalityThreshold: number
   minimumFee: number
@@ -34,6 +38,12 @@ const isObject = (value: unknown): value is Record<string, unknown> => {
 const toNonNegativeInteger = (value: unknown): number | undefined => {
   return Number.isInteger(value) && (value as number) >= 0
     ? (value as number)
+    : undefined
+}
+
+const toNonNegativeNumber = (value: unknown): number | undefined => {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0
+    ? value
     : undefined
 }
 
@@ -62,7 +72,7 @@ const parseFeeResponse = (data: unknown): CctpV2Fee[] | null => {
         return null
       }
       const finalityThreshold = toNonNegativeInteger(item.finalityThreshold)
-      const minimumFee = toNonNegativeInteger(item.minimumFee)
+      const minimumFee = toNonNegativeNumber(item.minimumFee)
       if (finalityThreshold === undefined || minimumFee === undefined) {
         return null
       }
