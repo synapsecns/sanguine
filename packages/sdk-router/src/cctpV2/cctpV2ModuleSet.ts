@@ -31,14 +31,15 @@ const BURN_MAX_FEE_DENOMINATOR = 10
 const FAST_FINALITY_THRESHOLD = 1000
 const STANDARD_FINALITY_THRESHOLD = 2000
 
-const CCTP_V2_STANDARD_ESTIMATED_TIME_BY_SOURCE_CHAIN: Record<number, number> = {
-  [SupportedChainId.ETH]: 1035,
-  [SupportedChainId.ARBITRUM]: 1035,
-  [SupportedChainId.BASE]: 1035,
-  [SupportedChainId.OPTIMISM]: 1035,
-  [SupportedChainId.AVALANCHE]: 23,
-  [SupportedChainId.POLYGON]: 23,
-}
+const CCTP_V2_STANDARD_ESTIMATED_TIME_BY_SOURCE_CHAIN: Record<number, number> =
+  {
+    [SupportedChainId.ETH]: 1035,
+    [SupportedChainId.ARBITRUM]: 1035,
+    [SupportedChainId.BASE]: 1035,
+    [SupportedChainId.OPTIMISM]: 1035,
+    [SupportedChainId.AVALANCHE]: 23,
+    [SupportedChainId.POLYGON]: 23,
+  }
 
 const CCTP_V2_FAST_ESTIMATED_TIME_BY_SOURCE_CHAIN: Record<number, number> = {
   [SupportedChainId.ETH]: 615,
@@ -79,7 +80,7 @@ export class CCTPv2ModuleSet extends SynapseModuleSet {
     return undefined
   }
 
-  public getEstimatedTime(originChainId: number, _destChainId?: number): number {
+  public getEstimatedTime(originChainId: number): number {
     return this.getEstimatedTimeFallback(originChainId) ?? 0
   }
 
@@ -289,7 +290,9 @@ export class CCTPv2ModuleSet extends SynapseModuleSet {
     }
     const decimals = fractionalPart.length
     const numerator = BigNumber.from(
-      (`${wholePart}${fractionalPart}`.replace(/^0+(?=\d)/, '') || '0').toString()
+      (
+        `${wholePart}${fractionalPart}`.replace(/^0+(?=\d)/, '') || '0'
+      ).toString()
     )
     return {
       numerator,

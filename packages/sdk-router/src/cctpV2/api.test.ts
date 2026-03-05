@@ -93,12 +93,12 @@ describe('getMessages', () => {
       .mockResolvedValueOnce(responseWithJson({ messages: [] }))
       .mockResolvedValueOnce(responseWithJson({ messages: [] }))
 
-    await expect(getMessages(SOURCE_DOMAIN_ID, MESSAGE_TX_HASH)).resolves.toEqual(
-      []
-    )
-    await expect(getMessages(SOURCE_DOMAIN_ID, MESSAGE_TX_HASH)).resolves.toEqual(
-      []
-    )
+    await expect(
+      getMessages(SOURCE_DOMAIN_ID, MESSAGE_TX_HASH)
+    ).resolves.toEqual([])
+    await expect(
+      getMessages(SOURCE_DOMAIN_ID, MESSAGE_TX_HASH)
+    ).resolves.toEqual([])
 
     expect(mockGetWithTimeout).toHaveBeenCalledTimes(2)
   })

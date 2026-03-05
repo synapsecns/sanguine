@@ -105,11 +105,10 @@ describe('CCTPv2Module', () => {
 
   it('uses the forwarding hook constant in calldata', () => {
     const tx = module.populateDepositForBurnWithHook(burnParams)
-    const decoded =
-      CCTPv2Module.tokenMessengerV2Interface.decodeFunctionData(
-        'depositForBurnWithHook',
-        tx.data!
-      )
+    const decoded = CCTPv2Module.tokenMessengerV2Interface.decodeFunctionData(
+      'depositForBurnWithHook',
+      tx.data!
+    )
 
     expect(decoded.hookData).toBe(CCTP_V2_FORWARD_HOOK_DATA)
   })
@@ -145,10 +144,13 @@ describe('CCTPv2Module', () => {
     async (_caseName, message, expectedStatus) => {
       mockGetMessages.mockResolvedValueOnce([message])
 
-      await expect(module.getBridgeTxStatus(CCTP_V2_SYNAPSE_TX_ID)).resolves.toBe(
-        expectedStatus
+      await expect(
+        module.getBridgeTxStatus(CCTP_V2_SYNAPSE_TX_ID)
+      ).resolves.toBe(expectedStatus)
+      expect(mockGetMessages).toHaveBeenCalledWith(
+        ORIGIN_DOMAIN,
+        ORIGIN_TX_HASH
       )
-      expect(mockGetMessages).toHaveBeenCalledWith(ORIGIN_DOMAIN, ORIGIN_TX_HASH)
     }
   )
 
