@@ -7,6 +7,7 @@ import { useMaintenanceState } from '@/slices/maintenance/hooks'
 import { isChainIncluded } from '@/utils/isChainIncluded'
 import { isValidBridgeModule } from './functions/isValidBridgeModule'
 import { getFurthestFutureDate } from './functions/getFurthestFutureDate'
+import { useTranslations } from 'next-intl'
 
 interface ChainPause {
   id: string
@@ -77,10 +78,11 @@ const useMaintenanceData = () => {
 }
 
 export const MaintenanceBanners = () => {
-  const { pausedChainsList } = useMaintenanceData()
+  const { pausedChainsList, pausedModulesList } = useMaintenanceData()
   const { fromChainId: bridgeFromChainId, toChainId: bridgeToChainId } =
     useBridgeState()
   const { swapChainId } = useSwapState()
+  const t = useTranslations('Bridge')
 
   const activeBanner = pausedChainsList.find(
     (pausedChain) =>
@@ -90,15 +92,33 @@ export const MaintenanceBanners = () => {
       isChainIncluded(pausedChain?.pausedToChains, [swapChainId])
   )
 
-  if (activeBanner) {
+  const isGlobalBridgeModulePause = pausedModulesList.some(
+    (module) => !module.chainId && module.bridgeModuleName === 'ALL'
+  )
+
+  if (activeBanner || isGlobalBridgeModulePause) {
     return (
-      <MaintenanceBanner
-        id={activeBanner?.id}
-        bannerMessage={activeBanner?.bannerMessage}
-        startDate={activeBanner?.startTimeBanner}
-        endDate={activeBanner?.endTimeBanner}
-        disabled={activeBanner?.disableBanner}
-      />
+      <>
+        {activeBanner ? (
+          <MaintenanceBanner
+            id={activeBanner?.id}
+            bannerMessage={activeBanner?.bannerMessage}
+            startDate={activeBanner?.startTimeBanner}
+            endDate={activeBanner?.endTimeBanner}
+            disabled={activeBanner?.disableBanner}
+          />
+        ) : null}
+        {isGlobalBridgeModulePause ? (
+          <div className="mt-2">
+            <MaintenanceBanner
+              id="global-bridge-pause-banner"
+              bannerMessage={<p className="text-left">{t('Bridge paused')}</p>}
+              startDate={new Date('2020-01-01T00:00:00Z')}
+              endDate={null}
+            />
+          </div>
+        ) : null}
+      </>
     )
   }
 }
