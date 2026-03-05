@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.20](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.5.19...@synapsecns/explorer-ui@0.5.20) (2026-02-13)
+
+
+### Bug Fixes
+
+* **explorer-ui:** update .nvmrc to Node 20 (Node 18 deprecated on Vercel) ([71ad823](https://github.com/synapsecns/sanguine/commit/71ad823b8c63cef2aedb72e85b591c68183eacea))
+* **explorer-ui:** update TOS entity to Distributed Systems LTD and Cayman Islands jurisdiction ([b768b18](https://github.com/synapsecns/sanguine/commit/b768b18265a27dfdb15bdc200413e883c819c3af))
+
+
+
+
+
 ## [0.5.19](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.5.18...@synapsecns/explorer-ui@0.5.19) (2025-11-26)
 
 **Note:** Version bump only for package @synapsecns/explorer-ui
