@@ -4,14 +4,13 @@ import { Address, isAddress, zeroAddress } from 'viem'
 
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { stringToBigInt, formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { getBridgeModuleNames } from '@/utils/getBridgeModuleNames'
 import { Token } from '@/utils/types'
 import { BridgeModulePause } from '@/components/Maintenance/Maintenance'
 import { HYPERLIQUID } from '@/constants/chains/master'
-
-const CCTP_V2_MODULE_NAME = 'CCTPv2'
 
 export const fetchBridgeQuote = createAsyncThunk(
   'bridgeQuote/fetchBridgeQuote',
@@ -78,10 +77,46 @@ export const fetchBridgeQuote = createAsyncThunk(
       return rejectWithValue(msg)
     }
 
-    const cctpV2Quote = activeQuotes.find((q) =>
-      q.moduleNames.includes(CCTP_V2_MODULE_NAME)
+    const rfqQuote = activeQuotes.find((q) =>
+      q.moduleNames.includes('SynapseRFQ')
     )
-    const quote = cctpV2Quote ?? activeQuotes[0]
+
+    const nonRfqQuote = activeQuotes.find(
+      (quote) => !quote.moduleNames.includes('SynapseRFQ')
+    )
+
+    let quote
+
+    if (rfqQuote && nonRfqQuote) {
+      const rfqMaxAmountOut = BigInt(rfqQuote.expectedToAmount)
+      const nonRfqMaxAmountOut = BigInt(nonRfqQuote.expectedToAmount)
+
+      const allowedPercentileDifference = 30n
+      const maxDifference =
+        (nonRfqMaxAmountOut * allowedPercentileDifference) / 100n
+
+      if (rfqMaxAmountOut > nonRfqMaxAmountOut - maxDifference) {
+        quote = rfqQuote
+      } else {
+        quote = nonRfqQuote
+
+        const nonRfqBridgeModule =
+          nonRfqQuote.moduleNames[nonRfqQuote.moduleNames.length - 1]
+        segmentAnalyticsEvent(`[Bridge] use non-RFQ quote over RFQ`, {
+          bridgeModuleName: nonRfqBridgeModule,
+          originChainId: fromChainId,
+          originToken: fromToken.symbol,
+          originTokenAddress: fromToken.addresses[fromChainId],
+          destinationChainId: toChainId,
+          destinationToken: toToken.symbol,
+          destinationTokenAddress: toToken.addresses[toChainId],
+          rfqQuoteAmountOut: rfqQuote.expectedToAmount,
+          nonRfqMaxAmountOut: nonRfqQuote.expectedToAmount,
+        })
+      }
+    } else {
+      quote = rfqQuote ?? nonRfqQuote
+    }
 
     const {
       id,

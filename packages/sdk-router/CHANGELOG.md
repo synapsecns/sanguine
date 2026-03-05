@@ -3,12 +3,6 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [Unreleased]
-
-### Features
-
-* **sdk-router:** add `CCTPv2` bridge-v2 module for Circle forwarding-service CCTP V2 routes
-
 ## [0.20.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.6...@synapsecns/sdk-router@0.20.7) (2025-12-02)
 
 
