@@ -3,10 +3,7 @@ import { hexDataLength, hexDataSlice } from '@ethersproject/bytes'
 import { AddressZero } from '@ethersproject/constants'
 import { BigNumberish, PopulatedTransaction, utils } from 'ethers'
 
-import {
-  CCTP_V2_DOMAIN_MAP,
-  CCTP_V2_FORWARD_HOOK_DATA,
-} from '../constants'
+import { CCTP_V2_DOMAIN_MAP, CCTP_V2_FORWARD_HOOK_DATA } from '../constants'
 import { SynapseModule } from '../module'
 import { CctpV2Message, getMessages } from './api'
 
@@ -82,20 +79,19 @@ export class CCTPv2Module implements SynapseModule {
   public populateDepositForBurnWithHook(
     params: CctpV2BurnParams
   ): PopulatedTransaction {
-    const data =
-      CCTPv2Module.tokenMessengerV2Interface.encodeFunctionData(
-        'depositForBurnWithHook',
-        [
-          params.amount,
-          params.destinationDomain,
-          utils.hexZeroPad(params.mintRecipient, 32),
-          params.burnToken,
-          utils.hexZeroPad(AddressZero, 32),
-          params.maxFee,
-          params.minFinalityThreshold,
-          CCTP_V2_FORWARD_HOOK_DATA,
-        ]
-      )
+    const data = CCTPv2Module.tokenMessengerV2Interface.encodeFunctionData(
+      'depositForBurnWithHook',
+      [
+        params.amount,
+        params.destinationDomain,
+        utils.hexZeroPad(params.mintRecipient, 32),
+        params.burnToken,
+        utils.hexZeroPad(AddressZero, 32),
+        params.maxFee,
+        params.minFinalityThreshold,
+        CCTP_V2_FORWARD_HOOK_DATA,
+      ]
+    )
     return {
       to: this.address,
       data,
