@@ -4,6 +4,7 @@ import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber, PopulatedTransaction } from 'ethers'
 
 import {
+  CCTP_V2_USDC_ADDRESS_MAP,
   CCTP_ROUTER_ADDRESS_MAP,
   MEDIAN_TIME_BRIDGE,
   MEDIAN_TIME_CCTP,
@@ -1125,6 +1126,88 @@ describe('SynapseSDK', () => {
         CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH_ROUNDED
       )
     })
+
+    it.each([SupportedChainId.BASE, SupportedChainId.POLYGON])(
+      'handles checksum-valid CCTPv2 USDC routes from chain %s',
+      async (fromChainId) => {
+        const fromProvider: Provider = getTestProvider(fromChainId)
+        const synapse = new SynapseSDK(
+          [fromChainId, SupportedChainId.ARBITRUM],
+          [fromProvider, arbProvider]
+        )
+        const amount = BigNumber.from(10).pow(6)
+        const fromUsdc = CCTP_V2_USDC_ADDRESS_MAP[fromChainId]
+        const toUsdc = CCTP_V2_USDC_ADDRESS_MAP[SupportedChainId.ARBITRUM]
+        const bridgeToken = {
+          originChainId: fromChainId,
+          destChainId: SupportedChainId.ARBITRUM,
+          originToken: fromUsdc,
+          destToken: toUsdc,
+        }
+        const originSwapRoute = {
+          engineID: 0,
+          engineName: 'DefaultPools',
+          chainId: fromChainId,
+          fromToken: fromUsdc,
+          fromAmount: amount,
+          toToken: fromUsdc,
+          expectedToAmount: amount,
+          steps: [],
+          minToAmount: amount,
+        }
+        const bridgeRoute = {
+          bridgeToken,
+          toToken: toUsdc,
+          expectedToAmount: amount,
+          minToAmount: amount,
+          nativeFee: Zero,
+          estimatedTime: CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH,
+          zapData: '0x',
+        }
+
+        synapse.allModuleSets = [synapse.cctpV2ModuleSet]
+
+        jest
+          .spyOn(synapse.cctpV2ModuleSet, 'getBridgeTokenCandidates')
+          .mockResolvedValue([bridgeToken])
+        jest
+          .spyOn(synapse.cctpV2ModuleSet, 'getBridgeRouteV2')
+          .mockResolvedValue(bridgeRoute as any)
+        jest
+          .spyOn(synapse.swapEngineSet, 'getTokenZap')
+          .mockReturnValue('0x0000000000000000000000000000000000001234')
+        jest.spyOn(synapse.swapEngineSet, 'getBestQuote').mockResolvedValue({
+          engineID: 0,
+          engineName: 'DefaultPools',
+          chainId: fromChainId,
+          fromToken: fromUsdc,
+          fromAmount: amount,
+          toToken: fromUsdc,
+          expectedToAmount: amount,
+        } as any)
+        jest
+          .spyOn(synapse.swapEngineSet, 'generateRoute')
+          .mockResolvedValue(originSwapRoute as any)
+        jest
+          .spyOn(synapse.sirSet, 'completeIntentWithBalanceChecks')
+          .mockResolvedValue({
+            to: '0x0000000000000000000000000000000000001111',
+            data: '0x',
+            value: Zero,
+          } as PopulatedTransaction)
+
+        await expect(
+          synapse.bridgeV2({
+            fromChainId,
+            fromToken: fromUsdc,
+            fromAmount: amount.toString(),
+            toChainId: SupportedChainId.ARBITRUM,
+            toToken: toUsdc,
+            slippagePercentage: 1,
+          })
+        ).resolves.toHaveLength(1)
+      }
+    )
   })
 
   describe('Bridge Tx Status', () => {
