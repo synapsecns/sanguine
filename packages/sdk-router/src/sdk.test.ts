@@ -4,6 +4,7 @@ import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber, PopulatedTransaction } from 'ethers'
 
 import {
+  CCTP_V2_USDC_ADDRESS_MAP,
   CCTP_ROUTER_ADDRESS_MAP,
   MEDIAN_TIME_BRIDGE,
   MEDIAN_TIME_CCTP,
@@ -55,6 +56,8 @@ const EXPECTED_GAS_DROP: { [chainId: number]: BigNumber } = {
   [SupportedChainId.BSC]: parseFixed('0.0004', 18),
   [SupportedChainId.AVALANCHE]: parseFixed('0.025', 18),
 }
+const CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH = 1035
+const CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH_ROUNDED = 1040
 
 const expectCorrectFeeConfig = (feeConfig: FeeConfig) => {
   expect(feeConfig).toBeDefined()
@@ -218,6 +221,44 @@ describe('SynapseSDK', () => {
       expect(
         synapse.synapseCCTPRouterSet.routers[SupportedChainId.AVALANCHE]
       ).toBeUndefined()
+    })
+
+    it('Instantiates CCTPv2 modules for supported chains with providers', () => {
+      expect(synapse.cctpV2ModuleSet).toBeDefined()
+      expect(
+        synapse.cctpV2ModuleSet.modules[SupportedChainId.ETH]
+      ).toBeDefined()
+      expect(
+        synapse.cctpV2ModuleSet.modules[SupportedChainId.ARBITRUM]
+      ).toBeDefined()
+    })
+
+    it('Does not instantiate CCTPv2 modules for unsupported chains or chains without providers', () => {
+      expect(
+        synapse.cctpV2ModuleSet.modules[SupportedChainId.BSC]
+      ).toBeUndefined()
+      expect(
+        synapse.cctpV2ModuleSet.modules[SupportedChainId.AVALANCHE]
+      ).toBeUndefined()
+    })
+
+    it('Registers CCTPv2 module set by default', () => {
+      expect(
+        synapse.allModuleSets.some(
+          (moduleSet) => moduleSet.moduleName === 'CCTPv2'
+        )
+      ).toBe(true)
+    })
+
+    it('Formats CCTPv2 synapseTxId as txHash:originChainId', async () => {
+      const txHash =
+        '0xcd593dc11f7607e2e48c1cc70236c0a993cf54b37ad398d14e485087b4508d34'
+      const synapseTxId = await synapse.getSynapseTxId(
+        SupportedChainId.ETH,
+        'CCTPv2',
+        txHash
+      )
+      expect(synapseTxId).toEqual(`${txHash}:${SupportedChainId.ETH}`)
     })
 
     it('Saves providers', () => {
@@ -1003,6 +1044,172 @@ describe('SynapseSDK', () => {
     )
   })
 
+  describe('bridgeV2', () => {
+    it('Includes CCTPv2 in module names when Circle route is selected', async () => {
+      const synapse = new SynapseSDK(
+        [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
+        [ethProvider, arbProvider]
+      )
+      const amount = BigNumber.from(10).pow(9)
+      const bridgeToken = {
+        originChainId: SupportedChainId.ETH,
+        destChainId: SupportedChainId.ARBITRUM,
+        originToken: ETH_USDC,
+        destToken: ARB_USDC,
+      }
+      const originSwapRoute = {
+        engineID: 0,
+        engineName: 'DefaultPools',
+        chainId: SupportedChainId.ETH,
+        fromToken: ETH_USDC,
+        fromAmount: amount,
+        toToken: ETH_USDC,
+        expectedToAmount: amount,
+        steps: [],
+        minToAmount: amount,
+      }
+      const bridgeRoute = {
+        bridgeToken,
+        toToken: ARB_USDC,
+        expectedToAmount: amount,
+        minToAmount: amount,
+        nativeFee: Zero,
+        estimatedTime: CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH,
+        zapData: '0x',
+      }
+
+      // Keep this test fully offline by forcing bridgeV2 to evaluate CCTPv2 only.
+      synapse.allModuleSets = [synapse.cctpV2ModuleSet]
+
+      jest
+        .spyOn(synapse.cctpV2ModuleSet, 'getBridgeTokenCandidates')
+        .mockResolvedValue([bridgeToken])
+      jest
+        .spyOn(synapse.cctpV2ModuleSet, 'getBridgeRouteV2')
+        .mockResolvedValue(bridgeRoute as any)
+      jest
+        .spyOn(synapse.swapEngineSet, 'getTokenZap')
+        .mockReturnValue('0x0000000000000000000000000000000000001234')
+      jest.spyOn(synapse.swapEngineSet, 'getBestQuote').mockResolvedValue({
+        engineID: 0,
+        engineName: 'DefaultPools',
+        chainId: SupportedChainId.ETH,
+        fromToken: ETH_USDC,
+        fromAmount: amount,
+        toToken: ETH_USDC,
+        expectedToAmount: amount,
+      } as any)
+      jest
+        .spyOn(synapse.swapEngineSet, 'generateRoute')
+        .mockResolvedValue(originSwapRoute as any)
+      jest
+        .spyOn(synapse.sirSet, 'completeIntentWithBalanceChecks')
+        .mockResolvedValue({
+          to: '0x0000000000000000000000000000000000001111',
+          data: '0x',
+          value: Zero,
+        } as PopulatedTransaction)
+
+      const quotes = await synapse.bridgeV2({
+        fromChainId: SupportedChainId.ETH,
+        fromToken: ETH_USDC,
+        fromAmount: amount.toString(),
+        toChainId: SupportedChainId.ARBITRUM,
+        toToken: ARB_USDC,
+        slippagePercentage: 1,
+      })
+
+      expect(quotes).toHaveLength(1)
+      expect(quotes[0].moduleNames).toContain('CCTPv2')
+      expect(quotes[0].estimatedTime).toBeGreaterThan(0)
+      expect(quotes[0].estimatedTime).toEqual(
+        CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH_ROUNDED
+      )
+    })
+
+    it.each([SupportedChainId.BASE, SupportedChainId.POLYGON])(
+      'handles checksum-valid CCTPv2 USDC routes from chain %s',
+      async (fromChainId) => {
+        const fromProvider: Provider = getTestProvider(fromChainId)
+        const synapse = new SynapseSDK(
+          [fromChainId, SupportedChainId.ARBITRUM],
+          [fromProvider, arbProvider]
+        )
+        const amount = BigNumber.from(10).pow(6)
+        const fromUsdc = CCTP_V2_USDC_ADDRESS_MAP[fromChainId]
+        const toUsdc = CCTP_V2_USDC_ADDRESS_MAP[SupportedChainId.ARBITRUM]
+        const bridgeToken = {
+          originChainId: fromChainId,
+          destChainId: SupportedChainId.ARBITRUM,
+          originToken: fromUsdc,
+          destToken: toUsdc,
+        }
+        const originSwapRoute = {
+          engineID: 0,
+          engineName: 'DefaultPools',
+          chainId: fromChainId,
+          fromToken: fromUsdc,
+          fromAmount: amount,
+          toToken: fromUsdc,
+          expectedToAmount: amount,
+          steps: [],
+          minToAmount: amount,
+        }
+        const bridgeRoute = {
+          bridgeToken,
+          toToken: toUsdc,
+          expectedToAmount: amount,
+          minToAmount: amount,
+          nativeFee: Zero,
+          estimatedTime: CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH,
+          zapData: '0x',
+        }
+
+        synapse.allModuleSets = [synapse.cctpV2ModuleSet]
+
+        jest
+          .spyOn(synapse.cctpV2ModuleSet, 'getBridgeTokenCandidates')
+          .mockResolvedValue([bridgeToken])
+        jest
+          .spyOn(synapse.cctpV2ModuleSet, 'getBridgeRouteV2')
+          .mockResolvedValue(bridgeRoute as any)
+        jest
+          .spyOn(synapse.swapEngineSet, 'getTokenZap')
+          .mockReturnValue('0x0000000000000000000000000000000000001234')
+        jest.spyOn(synapse.swapEngineSet, 'getBestQuote').mockResolvedValue({
+          engineID: 0,
+          engineName: 'DefaultPools',
+          chainId: fromChainId,
+          fromToken: fromUsdc,
+          fromAmount: amount,
+          toToken: fromUsdc,
+          expectedToAmount: amount,
+        } as any)
+        jest
+          .spyOn(synapse.swapEngineSet, 'generateRoute')
+          .mockResolvedValue(originSwapRoute as any)
+        jest
+          .spyOn(synapse.sirSet, 'completeIntentWithBalanceChecks')
+          .mockResolvedValue({
+            to: '0x0000000000000000000000000000000000001111',
+            data: '0x',
+            value: Zero,
+          } as PopulatedTransaction)
+
+        await expect(
+          synapse.bridgeV2({
+            fromChainId,
+            fromToken: fromUsdc,
+            fromAmount: amount.toString(),
+            toChainId: SupportedChainId.ARBITRUM,
+            toToken: toUsdc,
+            slippagePercentage: 1,
+          })
+        ).resolves.toHaveLength(1)
+      }
+    )
+  })
+
   describe('Bridge Tx Status', () => {
     const synapse = new SynapseSDK(
       [
@@ -1474,6 +1681,15 @@ describe('SynapseSDK', () => {
         ).toEqual(MEDIAN_TIME_CCTP[SupportedChainId.ETH])
       })
 
+      it('Returns non-zero estimated time for CCTPv2', () => {
+        expect(
+          synapse.getEstimatedTime(SupportedChainId.ETH, 'CCTPv2')
+        ).toEqual(CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH)
+        expect(
+          synapse.getEstimatedTime(SupportedChainId.ETH, 'CCTPv2')
+        ).toBeGreaterThan(0)
+      })
+
       it('Throws when bridge module does not exist on a chain', () => {
         expect(() =>
           synapse.getEstimatedTime(SupportedChainId.BSC, 'SynapseCCTP')
@@ -1747,6 +1963,11 @@ describe('SynapseSDK', () => {
       it('Returns correct set for SynapseRFQ', () => {
         const routerSet = operations.getModuleSet.call(synapse, 'SynapseRFQ')
         expect(routerSet).toEqual(synapse.fastBridgeRouterSet)
+      })
+
+      it('Returns correct set for CCTPv2', () => {
+        const routerSet = operations.getModuleSet.call(synapse, 'CCTPv2')
+        expect(routerSet).toEqual(synapse.cctpV2ModuleSet)
       })
 
       it('Throws when bridge module name is invalid', () => {
