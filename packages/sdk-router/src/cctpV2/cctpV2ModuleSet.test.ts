@@ -24,8 +24,9 @@ const ORIGIN_CHAIN_ID = SupportedChainId.ETH
 const DEST_CHAIN_ID = SupportedChainId.ARBITRUM
 const ORIGIN_TOKEN = CCTP_V2_USDC_ADDRESS_MAP[ORIGIN_CHAIN_ID]
 const DEST_TOKEN = CCTP_V2_USDC_ADDRESS_MAP[DEST_CHAIN_ID]
-const ETH_STANDARD_ESTIMATED_TIME = 1035
-const ETH_FAST_ESTIMATED_TIME = 615
+const ETH_STANDARD_ESTIMATED_TIME = 1080
+const ETH_FAST_ESTIMATED_TIME = 630
+const SHORT_CHAIN_ESTIMATED_TIME = 30
 
 const makeModuleSet = () =>
   new CCTPv2ModuleSet([
@@ -222,6 +223,23 @@ describe('CCTPv2ModuleSet', () => {
       moduleSet.getBridgeRouteV2(makeRouteParams())
     ).resolves.toBeUndefined()
   })
+
+  it.each([
+    [SupportedChainId.ETH, ETH_STANDARD_ESTIMATED_TIME],
+    [SupportedChainId.ARBITRUM, ETH_STANDARD_ESTIMATED_TIME],
+    [SupportedChainId.BASE, ETH_STANDARD_ESTIMATED_TIME],
+    [SupportedChainId.OPTIMISM, ETH_STANDARD_ESTIMATED_TIME],
+    [SupportedChainId.AVALANCHE, SHORT_CHAIN_ESTIMATED_TIME],
+    [SupportedChainId.POLYGON, SHORT_CHAIN_ESTIMATED_TIME],
+  ])(
+    'returns expected fallback estimated time for supported CCTP V2 chain %s',
+    (chainId, expectedTime) => {
+      const moduleSet = makeModuleSet()
+
+      expect(moduleSet.getEstimatedTime(chainId)).toBe(expectedTime)
+      expect(moduleSet.getEstimatedTime(chainId)).toBeGreaterThan(0)
+    }
+  )
 
   it('returns non-zero estimated times for all supported CCTP V2 chain ids', () => {
     const moduleSet = makeModuleSet()

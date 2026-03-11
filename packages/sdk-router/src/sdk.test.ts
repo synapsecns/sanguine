@@ -44,8 +44,8 @@ global.fetch = jest.fn(() =>
 // Retry the flaky tests up to 3 times
 jest.retryTimes(3)
 
-const CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH = 1035
-const CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH_ROUNDED = 1040
+const CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH = 1080
+const CIRCLE_CCTP_V2_STANDARD_ESTIMATED_TIME_ETH_ROUNDED = 1080
 
 const expectCorrectPopulatedTransaction = (
   populatedTransaction: PopulatedTransaction,
