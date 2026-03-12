@@ -527,8 +527,11 @@ export function getBridgeModuleName(
   this: SynapseSDK,
   eventName: string
 ): string {
+  const candidateNames = eventName.endsWith('Event')
+    ? [eventName, eventName.slice(0, -'Event'.length)]
+    : [eventName]
   const moduleSet = this.allModuleSets.find((set) =>
-    set.allEvents.includes(eventName)
+    set.allEvents.some((name) => candidateNames.includes(name))
   )
   if (!moduleSet) {
     throw new Error('Unknown event')
