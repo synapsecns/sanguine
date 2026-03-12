@@ -37,7 +37,6 @@ contract WireSBA is SynapseScript {
     string internal dvnsConfig;
 
     string internal securityConfig;
-    uint256 internal confirmationTimeMs;
     address[] internal requiredDVNs;
 
     /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
@@ -66,14 +65,12 @@ contract WireSBA is SynapseScript {
     }
 
     function getChainConfirmations(string memory chain) internal view returns (uint64 confirmations) {
-        if (confirmationTimeMs == 0) {
-            printFailWithIndent("Confirmation time not set");
+        string memory configPath = string.concat(".blockConfirmations.", chain);
+        if (!securityConfig.keyExists(configPath)) {
+            printFailWithIndent(string.concat("Block confirmations not set for chain: ", chain));
             assert(false);
         }
-        uint256 blockTimeMs = chainsConfig.readUint(string.concat(".", chain, ".blockTime"));
-        confirmations = uint64(confirmationTimeMs / blockTimeMs);
-        // Round up to be a multiple of 10
-        confirmations = (confirmations + 9) / 10 * 10;
+        confirmations = uint64(securityConfig.readUint(configPath));
     }
 
     function getUlnConfig(uint64 confirmations) internal view returns (UlnConfig memory) {
@@ -91,7 +88,6 @@ contract WireSBA is SynapseScript {
         dvnsConfig = readGlobalDeployProdConfig("dvns", true);
 
         securityConfig = readGlobalDeployProdConfig("security", true);
-        confirmationTimeMs = readConfirmationTimeMs();
         string[] memory dvnNames = securityConfig.readStringArray(".DVNs");
         for (uint256 i = 0; i < dvnNames.length; ++i) {
             requiredDVNs.push(dvnsConfig.readAddress(string.concat(".", activeChain, ".", dvnNames[i])));
@@ -131,22 +127,6 @@ contract WireSBA is SynapseScript {
                 );
             }
         }
-    }
-
-    function readConfirmationTimeMs() internal view returns (uint256) {
-        uint256 confirmationTimeSeconds = securityConfig.readUint(".confirmationTimeSeconds");
-        logTime(confirmationTimeSeconds, 1 days, "days") || logTime(confirmationTimeSeconds, 1 hours, "hours")
-            || logTime(confirmationTimeSeconds, 1 minutes, "minutes")
-            || logTime(confirmationTimeSeconds, 1 seconds, "seconds");
-        return confirmationTimeSeconds * 1000;
-    }
-
-    function logTime(uint256 time, uint256 period, string memory unit) internal view returns (bool logged) {
-        if (time % period == 0) {
-            printInfo(string.concat("Confirmation time: ", vm.toString(time / period), " ", unit));
-            return true;
-        }
-        return false;
     }
 
     function sortAddresses(address[] memory addresses) internal returns (address[] memory sorted) {

@@ -25,11 +25,6 @@ const colors = {
 // LayerZero config types
 const CONFIG_TYPE_ULN = 2
 
-// Verification constants
-const TARGET_CONFIRMATION_TIME_SECONDS = 3600 // 1 hour
-const CONFIRMATION_TIME_TOLERANCE_PERCENT = 0.05 // ±5%
-const MS_TO_SECONDS = 1000
-
 // ABI definitions
 const synapseBridgeAdapterAbi = [
   {
@@ -157,7 +152,7 @@ type DVNConfig = {
 }
 
 type SecurityConfig = {
-  confirmationTimeSeconds: number
+  blockConfirmations: Record<string, number>
   DVNs: string[]
 }
 
@@ -271,7 +266,7 @@ function getRpcUrl(chainId: number): string {
 
   // Special case for Moonbeam (chainId 1284)
   if (chainId === 1284) {
-    return 'https://moonbeam.unitedbloc.com'
+    return 'https://moonbeam.api.pocket.network'
   }
 
   return `${baseUrl}/${chainId}`
@@ -353,22 +348,15 @@ function pluralize(count: number, word: string): string {
   return `${count} ${word}${count === 1 ? '' : 's'}`
 }
 
-function blockTimeToSeconds(blockTimeMs: number): number {
-  return blockTimeMs / MS_TO_SECONDS
-}
-
-// Validation helper functions
-function validateConfirmationTime(
-  confirmations: bigint,
-  blockTimeMs: number
-): { isValid: boolean; actualSeconds: number } {
-  const actualTimeSeconds =
-    Number(confirmations) * blockTimeToSeconds(blockTimeMs)
-  const tolerance =
-    TARGET_CONFIRMATION_TIME_SECONDS * CONFIRMATION_TIME_TOLERANCE_PERCENT
-  const isValid =
-    Math.abs(actualTimeSeconds - TARGET_CONFIRMATION_TIME_SECONDS) <= tolerance
-  return { isValid, actualSeconds: actualTimeSeconds }
+function getExpectedConfirmations(
+  securityConfig: SecurityConfig,
+  chain: string
+): number {
+  const confirmations = securityConfig.blockConfirmations[chain]
+  if (typeof confirmations !== 'number') {
+    throw new Error(`Missing block confirmations for chain: ${chain}`)
+  }
+  return confirmations
 }
 
 function areDVNsEqual(actual: Address[], expected: Address[]): boolean {
@@ -385,7 +373,7 @@ function verifyUlnConfig(
   chain: string,
   remoteChain: string,
   configBytes: string,
-  blockTimeMs: number,
+  expectedConfirmations: number,
   expectedDVNs: Address[],
   configDirection: 'send' | 'receive'
 ): VerificationIssue[] {
@@ -394,27 +382,17 @@ function verifyUlnConfig(
   try {
     const decoded = decodeUlnConfig(configBytes)
 
-    // Validate confirmation time
-    const { isValid, actualSeconds } = validateConfirmationTime(
-      decoded.confirmations,
-      blockTimeMs
-    )
-    if (!isValid) {
+    // Validate block confirmations
+    if (decoded.confirmations !== BigInt(expectedConfirmations)) {
       issues.push({
         chain,
         category: 'confirmations',
         severity: 'warning',
         message: `${
           configDirection === 'send' ? 'Send' : 'Receive'
-        } confirmations for ${remoteChain}: ${
+        } confirmations for ${remoteChain} incorrect: expected ${expectedConfirmations}, got ${
           decoded.confirmations
-        } blocks × ${blockTimeToSeconds(blockTimeMs).toFixed(
-          1
-        )}s = ${actualSeconds.toFixed(
-          0
-        )}s (expected ~${TARGET_CONFIRMATION_TIME_SECONDS}s ±${
-          CONFIRMATION_TIME_TOLERANCE_PERCENT * 100
-        }%)`,
+        }`,
       })
     }
 
@@ -619,6 +597,7 @@ async function verifyChain(
     const expectedDVNs = sortAddresses(
       securityConfig.DVNs.map((dvnName) => dvnsConfig[chain][dvnName])
     )
+    const sendConfirmations = getExpectedConfirmations(securityConfig, chain)
 
     // Build metadata arrays for library and config verification
     const libChains: string[] = []
@@ -792,7 +771,7 @@ async function verifyChain(
           chain,
           remoteChain,
           sendConfig.result,
-          chainInfo.blockTime,
+          sendConfirmations,
           expectedDVNs,
           'send'
         )
@@ -837,13 +816,16 @@ async function verifyChain(
     let receiveConfigSuccessCount = 0
     receiveConfigResults.forEach((receiveConfig, i) => {
       const remoteChain = libChains[i]
-      const remoteBlockTime = chainsConfig[remoteChain].blockTime
+      const receiveConfirmations = getExpectedConfirmations(
+        securityConfig,
+        remoteChain
+      )
       if (receiveConfig.status === 'success' && receiveConfig.result) {
         const configIssues = verifyUlnConfig(
           chain,
           remoteChain,
           receiveConfig.result,
-          remoteBlockTime,
+          receiveConfirmations,
           expectedDVNs,
           'receive'
         )
@@ -1231,9 +1213,9 @@ async function main() {
     `Loaded configuration for ${Object.keys(chainsConfig).length} chains`
   )
   console.log(
-    `Security config: ${
-      securityConfig.confirmationTimeSeconds
-    }s confirmation time, DVNs: ${securityConfig.DVNs.join(', ')}\n`
+    `Security config: block confirmations for ${
+      Object.keys(securityConfig.blockConfirmations).length
+    } chains, DVNs: ${securityConfig.DVNs.join(', ')}\n`
   )
 
   // Get all chains with deployments
