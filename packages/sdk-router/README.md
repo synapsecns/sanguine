@@ -91,21 +91,6 @@ The SDK consumer simply operates by getting quotes for sending `tokenIn` on the 
 
 ![Bridging Workflow(simplified)](./puml/BridgingWorkflowSimplified.png)
 
-### Bridge V2-only module: CCTPv2
-
-`CCTPv2` is available through `bridgeV2` only. It is not used by legacy
-`bridgeQuote`/`allBridgeQuotes` APIs.
-
-Key behavior:
-
-- Uses Circle CCTP V2 `depositForBurnWithHook` execution through
-  `SynapseIntentRouter` (`BridgeQuoteV2.tx` path), not legacy router bridging.
-- Uses Circle Forwarding Service hook data and `destinationCaller = bytes32(0)`.
-- Returns no quote when live Circle fee/finality data is unavailable or unusable
-  (module-level fail-closed behavior).
-- `moduleNames` in returned `BridgeQuoteV2` includes `CCTPv2` when this
-  path is selected.
-
 ### Getting a bridge quote
 
 Below is the example of how to get the list of quotes for sending 1000 USDC from Ethereum and receiving USDT on Arbitrum:
