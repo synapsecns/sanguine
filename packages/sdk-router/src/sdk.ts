@@ -60,8 +60,6 @@ class SynapseSDK {
     this.relayModuleSet = new RelayModuleSet(chainProviders)
     this.usdtModuleSet = new UsdtModuleSet(chainProviders)
     this.allModuleSets = [
-      this.synapseRouterSet,
-      this.synapseCCTPRouterSet,
       this.fastBridgeRouterSet,
       this.gasZipModuleSet,
       this.relayModuleSet,
