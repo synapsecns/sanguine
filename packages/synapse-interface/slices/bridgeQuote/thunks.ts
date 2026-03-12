@@ -4,7 +4,6 @@ import { Address, isAddress, zeroAddress } from 'viem'
 
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { stringToBigInt, formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { getBridgeModuleNames } from '@/utils/getBridgeModuleNames'
@@ -77,46 +76,10 @@ export const fetchBridgeQuote = createAsyncThunk(
       return rejectWithValue(msg)
     }
 
-    const rfqQuote = activeQuotes.find((q) =>
-      q.moduleNames.includes('SynapseRFQ')
+    const preferredQuote = activeQuotes.find((quote) =>
+      quote.moduleNames.includes('SynapseBridgeAdapter')
     )
-
-    const nonRfqQuote = activeQuotes.find(
-      (quote) => !quote.moduleNames.includes('SynapseRFQ')
-    )
-
-    let quote
-
-    if (rfqQuote && nonRfqQuote) {
-      const rfqMaxAmountOut = BigInt(rfqQuote.expectedToAmount)
-      const nonRfqMaxAmountOut = BigInt(nonRfqQuote.expectedToAmount)
-
-      const allowedPercentileDifference = 30n
-      const maxDifference =
-        (nonRfqMaxAmountOut * allowedPercentileDifference) / 100n
-
-      if (rfqMaxAmountOut > nonRfqMaxAmountOut - maxDifference) {
-        quote = rfqQuote
-      } else {
-        quote = nonRfqQuote
-
-        const nonRfqBridgeModule =
-          nonRfqQuote.moduleNames[nonRfqQuote.moduleNames.length - 1]
-        segmentAnalyticsEvent(`[Bridge] use non-RFQ quote over RFQ`, {
-          bridgeModuleName: nonRfqBridgeModule,
-          originChainId: fromChainId,
-          originToken: fromToken.symbol,
-          originTokenAddress: fromToken.addresses[fromChainId],
-          destinationChainId: toChainId,
-          destinationToken: toToken.symbol,
-          destinationTokenAddress: toToken.addresses[toChainId],
-          rfqQuoteAmountOut: rfqQuote.expectedToAmount,
-          nonRfqMaxAmountOut: nonRfqQuote.expectedToAmount,
-        })
-      }
-    } else {
-      quote = rfqQuote ?? nonRfqQuote
-    }
+    const quote = preferredQuote ?? activeQuotes[0]
 
     const {
       id,
