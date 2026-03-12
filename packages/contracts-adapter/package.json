@@ -39,6 +39,7 @@
     "fetch-multisig": "ts-node script/utils/fetchMultisig.ts",
     "fetch-tokens": "ts-node script/utils/fetchBridgeTokens.ts",
     "fetch-block-times": "ts-node script/utils/fetchBlockTimes.ts",
+    "verify-ownership": "ts-node script/utils/verifyOwnership.ts",
     "verify-tokens": "ts-node script/utils/verifyTokens.ts",
     "verify-sba": "ts-node script/utils/verifySBA.ts"
   }
