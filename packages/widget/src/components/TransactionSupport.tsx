@@ -20,7 +20,7 @@ export const TransactionSupport = () => {
         </a>
         <div>/</div>
         <a
-          href="https://discord.gg/synapseprotocol"
+          href="https://discord.gg/4rMzuEnKqe"
           target="_blank"
           className={`
             px-2 py-1 underline text-[--synapse-text]

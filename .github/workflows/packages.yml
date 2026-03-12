@@ -35,8 +35,9 @@ jobs:
       # Foundry is required for formatting
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
+        # TODO: change to stable once the formatting diff is fixed
         with:
-          version: nightly
+          version: v1.3.6
 
       - name: Run tests # Run tests of all packages
         run: npx lerna exec npm run ci:lint --parallel
@@ -63,8 +64,6 @@ jobs:
         # Foundry is required for build
         - name: Install Foundry
           uses: foundry-rs/foundry-toolchain@v1
-          with:
-            version: nightly
 
         - name: Filter changed files
           uses: dorny/paths-filter@v2

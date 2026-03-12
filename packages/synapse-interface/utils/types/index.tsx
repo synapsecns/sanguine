@@ -61,14 +61,6 @@ export type PoolData = {
   swapFee?: bigint
 }
 
-type QuoteQuery = {
-  deadline: bigint
-  minAmountOut: bigint
-  rawParams: string
-  swapAdapter: string
-  tokenOut: string
-}
-
 export type BridgeQuote = {
   id: string
   inputAmountForQuote: string
@@ -79,10 +71,7 @@ export type BridgeQuote = {
   routerAddress: string
   allowance: bigint
   exchangeRate: bigint
-  feeAmount: bigint
   delta: bigint
-  originQuery: QuoteQuery
-  destQuery: QuoteQuery
   estimatedTime: number
   bridgeModuleName: string
   gasDropAmount: bigint
@@ -90,6 +79,7 @@ export type BridgeQuote = {
   originChainId: number
   destChainId: number
   requestId: number
+  tx?: any
 }
 
 interface TokensByChain {
@@ -124,7 +114,7 @@ export type SwapQuote = {
   allowance: bigint
   exchangeRate: bigint
   delta: bigint
-  quote: any
+  tx?: any
 }
 
 export type BridgeWatcherTx = {
@@ -207,6 +197,8 @@ export class Token {
   priceUnits?: string
   notStake?: boolean
   routeSymbol?: string
+  priceOverride?: number // USD price override (e.g., 1.0 for stables)
+  priceChainId?: number
   constructor({
     addresses,
     wrapperAddresses,
@@ -246,6 +238,8 @@ export class Token {
     priceUnits,
     notStake,
     routeSymbol,
+    priceOverride,
+    priceChainId,
   }: {
     addresses: { [x: number]: string }
     wrapperAddresses?: Record<number, string>
@@ -296,6 +290,8 @@ export class Token {
     priceUnits?: string
     notStake?: boolean
     routeSymbol?: string
+    priceOverride?: number
+    priceChainId?: number
   }) {
     const isMetaVar = Boolean(swapDepositAddresses || forceMeta)
     this.addresses = validateAddresses(addresses)
@@ -338,6 +334,8 @@ export class Token {
     this.priceUnits = priceUnits ?? 'USD'
     this.notStake = notStake ?? false
     this.routeSymbol = routeSymbol
+    this.priceOverride = priceOverride
+    this.priceChainId = priceChainId
   }
 }
 

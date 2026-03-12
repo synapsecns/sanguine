@@ -42,6 +42,14 @@ export const bridgeV2Controller = async (req, res) => {
       slippagePercentage: slippage ?? DEFAULT_SWAP_SLIPPAGE_PERCENTAGE,
     })
 
+    // Check if no bridge quotes were found
+    if (!allQuotes || allQuotes.length === 0) {
+      logger.info(`No bridge routes found`, {
+        query: req.query,
+      })
+      return res.status(404).json({ error: 'No bridge routes found' })
+    }
+
     // Include callData only if both fromSender and toRecipient are provided.
     const payload = allQuotes.map((quote) =>
       formatTransactionData(quote, !!fromSender && !!toRecipient)

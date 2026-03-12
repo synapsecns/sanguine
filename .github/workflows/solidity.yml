@@ -73,9 +73,6 @@ jobs:
           cache-path: ''
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        with:
-          # TODO: get back to nightly once `forge doc` is working with it
-          version: nightly-09fe3e041369a816365a020f715ad6f94dbce9f2
       - name: Install Vercel CLI
         run: npm install --global vercel@30.1.0
       - name: Get Project ID
@@ -157,8 +154,6 @@ jobs:
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        with:
-          version: nightly
 
       # TODO: find a flag for this
       - name: Delete Untested Files
@@ -217,8 +212,6 @@ jobs:
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        with:
-          version: nightly
 
       - name: Run Foundry Tests
         working-directory: './packages/${{matrix.package}}'
@@ -278,8 +271,6 @@ jobs:
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        with:
-          version: nightly
 
       - name: Run tests and generate gas report
         working-directory: './packages/${{matrix.package}}'
@@ -328,8 +319,6 @@ jobs:
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        with:
-          version: nightly
 
       # This will run https://book.getfoundry.sh/reference/forge/forge-build#build-options
       - name: Run forge build --sizes

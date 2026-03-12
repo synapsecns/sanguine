@@ -3,6 +3,66 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.20.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.6...@synapsecns/sdk-router@0.20.7) (2025-12-02)
+
+
+### Bug Fixes
+
+* **sdk-router:** make logExecutionTime conditional ([#3886](https://github.com/synapsecns/sanguine/issues/3886)) ([848f751](https://github.com/synapsecns/sanguine/commit/848f75177cb9dfbd0f02059ceee913bf7e557161))
+
+
+
+
+
+## [0.20.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.5...@synapsecns/sdk-router@0.20.6) (2025-11-27)
+
+
+### Bug Fixes
+
+* **sdk-router:** bridge time rounding ([#3852](https://github.com/synapsecns/sanguine/issues/3852)) ([e6e67b0](https://github.com/synapsecns/sanguine/commit/e6e67b028f77d5bccd23865dd75f95993bd35058))
+
+
+
+
+
+## [0.20.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.4...@synapsecns/sdk-router@0.20.5) (2025-11-26)
+
+
+### Bug Fixes
+
+* replace RPCs that are not responding ([#3846](https://github.com/synapsecns/sanguine/issues/3846)) ([1c67df0](https://github.com/synapsecns/sanguine/commit/1c67df040dec29cf2a16cd427226c60ef7f1bd2b))
+
+
+
+
+
+## [0.20.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.3...@synapsecns/sdk-router@0.20.4) (2025-11-13)
+
+
+### Bug Fixes
+
+* **sdk-router:** apply Relay slippage ([#3831](https://github.com/synapsecns/sanguine/issues/3831)) ([9ead809](https://github.com/synapsecns/sanguine/commit/9ead80922fc210b98619942c620e0bdb6208ab14))
+
+
+
+
+
+## [0.20.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.2...@synapsecns/sdk-router@0.20.3) (2025-11-07)
+
+**Note:** Version bump only for package @synapsecns/sdk-router
+
+
+
+
+
+## [0.20.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.1...@synapsecns/sdk-router@0.20.2) (2025-10-27)
+
+**Note:** Version bump only for package @synapsecns/sdk-router
+
+
+
+
+
 ## [0.20.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.0...@synapsecns/sdk-router@0.20.1) (2025-07-22)
 
 

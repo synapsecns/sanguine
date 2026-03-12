@@ -40,6 +40,7 @@ import unidexLogo from '@assets/icons/unidex.svg'
 import usdbLogo from '@assets/icons/usdb.svg'
 import usdcLogo from '@assets/icons/usdc.svg'
 import usdtLogo from '@assets/icons/usdt.svg'
+import usdt0Logo from '@assets/icons/usdt0.svg'
 import vstaLogo from '@assets/icons/vsta.svg'
 import wbtcLogo from '@assets/icons/wbtc.svg'
 import wethLogo from '@assets/icons/weth.svg'
@@ -191,6 +192,7 @@ export const NFD = new Token({
   color: 'yellow',
   priorityRank: 600,
   routeSymbol: 'NFD',
+  priceChainId: CHAINS.POLYGON.id,
 })
 
 export const SOLAR = new Token({
@@ -398,6 +400,7 @@ export const BUSD = new Token({
   color: 'yellow',
   priorityRank: 200,
   routeSymbol: 'BUSD',
+  priceOverride: 1,
 })
 
 export const USDC = new Token({
@@ -445,6 +448,7 @@ export const USDC = new Token({
   color: 'blue',
   priorityRank: 100,
   routeSymbol: 'USDC',
+  priceOverride: 1,
 })
 
 export const METISUSDC = new Token({
@@ -469,12 +473,10 @@ export const USDT = new Token({
     [CHAINS.ETH.id]: '0xdac17f958d2ee523a2206206994597c13d831ec7',
     [CHAINS.OPTIMISM.id]: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
     [CHAINS.BNB.id]: '0x55d398326f99059ff775485246999027b3197955',
-    [CHAINS.POLYGON.id]: '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',
     [CHAINS.BOBA.id]: '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d',
     [CHAINS.DOGE.id]: '0x7f8e71DD5A7e445725F0EF94c7F01806299e877A',
     [CHAINS.CANTO.id]: '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75',
     [CHAINS.KLAYTN.id]: '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3',
-    [CHAINS.ARBITRUM.id]: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
     [CHAINS.AVALANCHE.id]: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
     [CHAINS.SCROLL.id]: '0xf55BEC9cafDbE8730f096Aa55dad6D22d44099Df',
     [CHAINS.LINEA.id]: '0xA219439258ca9da29E9Cc4cE5596924745e12B93',
@@ -483,12 +485,10 @@ export const USDT = new Token({
     [CHAINS.ETH.id]: 6,
     [CHAINS.OPTIMISM.id]: 6,
     [CHAINS.BNB.id]: 18,
-    [CHAINS.POLYGON.id]: 6,
     [CHAINS.BOBA.id]: 6,
     [CHAINS.DOGE.id]: 6,
     [CHAINS.CANTO.id]: 6,
     [CHAINS.KLAYTN.id]: 6,
-    [CHAINS.ARBITRUM.id]: 6,
     [CHAINS.AVALANCHE.id]: 6,
     [CHAINS.SCROLL.id]: 6,
     [CHAINS.LINEA.id]: 6,
@@ -501,6 +501,24 @@ export const USDT = new Token({
   visibilityRank: 100,
   priorityRank: 101,
   routeSymbol: 'USDT',
+  priceOverride: 1,
+})
+
+export const USDT0 = new Token({
+  addresses: {
+    [CHAINS.ARBITRUM.id]: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
+    [CHAINS.POLYGON.id]: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
+  },
+  decimals: 6,
+  symbol: 'USD₮0',
+  name: 'USD₮0',
+  logo: usdt0Logo,
+  color: 'lime',
+  swapableType: 'USD',
+  visibilityRank: 100,
+  priorityRank: 102,
+  routeSymbol: 'USD₮0',
+  priceOverride: 1,
 })
 
 export const DAI = new Token({
@@ -523,6 +541,7 @@ export const DAI = new Token({
   visibilityRank: 100,
   priorityRank: 102,
   routeSymbol: 'DAI',
+  priceOverride: 1,
 })
 
 export const WBTC = new Token({
@@ -620,6 +639,7 @@ export const FRAX = new Token({
   color: 'gray',
   priorityRank: 200,
   routeSymbol: 'FRAX',
+  priceOverride: 1,
 })
 
 export const SYNFRAX = new Token({
@@ -637,6 +657,7 @@ export const SYNFRAX = new Token({
   color: 'gray',
   priorityRank: 400,
   routeSymbol: 'synFRAX',
+  priceOverride: 1,
 })
 
 export const NUSD = new Token({
@@ -665,6 +686,8 @@ export const NUSD = new Token({
   visibilityRank: 50,
   priorityRank: 110,
   routeSymbol: 'nUSD',
+  // nUSD is redeemable for ~1.0012 USD on Ethereum Mainnet
+  priceOverride: 1.0012,
 })
 
 export const NOTE = new Token({
@@ -749,6 +772,7 @@ export const MOVR = new Token({
   color: 'lime',
   priorityRank: 300,
   routeSymbol: 'MOVR',
+  priceChainId: CHAINS.MOONRIVER.id,
 })
 
 export const AVAX = new Token({
@@ -769,6 +793,7 @@ export const AVAX = new Token({
   visibilityRank: 90,
   priorityRank: 300,
   routeSymbol: 'AVAX',
+  priceChainId: CHAINS.AVALANCHE.id,
 })
 
 export const WMOVR = new Token({
@@ -882,6 +907,7 @@ export const USDCe = new Token({
   visibilityRank: 100,
   priorityRank: 125,
   routeSymbol: 'USDC.e',
+  priceOverride: 1,
 })
 
 export const USDTe = new Token({
@@ -898,6 +924,7 @@ export const USDTe = new Token({
   color: 'green',
   priorityRank: 125,
   routeSymbol: 'USDT.e',
+  priceOverride: 1,
 })
 
 export const SUSD = new Token({
@@ -1005,6 +1032,7 @@ export const BTCB = new Token({
   color: 'orange',
   priorityRank: 300,
   routeSymbol: 'BTC.b',
+  priceChainId: CHAINS.AVALANCHE.id,
 })
 
 export const DAIE = new Token({
@@ -1020,6 +1048,7 @@ export const DAIE = new Token({
   visibilityRank: 100,
   priorityRank: 125,
   routeSymbol: 'DAI.e',
+  priceOverride: 1,
 })
 
 export const KLAY = new Token({
@@ -1258,6 +1287,7 @@ export const METIS = new Token({
   logo: metisLogo,
   color: 'blue',
   routeSymbol: 'Metis',
+  priceChainId: CHAINS.METIS.id,
 })
 
 export const BERA = new Token({

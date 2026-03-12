@@ -14,6 +14,7 @@ import { applyOptionalDeadline, isSameAddress } from '../utils'
 import { Query } from './query'
 import { Slippage, SwapEngineRoute } from '../swap'
 import { BridgeQuote, BridgeQuoteV2 } from '../types'
+import { roundUp } from '../utils/rounding'
 
 /**
  * Parameters for `getBridgeTokenCandidates` function.
@@ -51,6 +52,8 @@ export type GetBridgeRouteV2Parameters = {
   slippage?: Slippage
   allowMultipleTxs?: boolean
 }
+
+const TIME_PRECISION = 10
 
 export abstract class SynapseModuleSet {
   abstract readonly moduleName: string
@@ -314,6 +317,10 @@ export abstract class SynapseModuleSet {
     originQuery.deadline = originModuleDeadline
     destQuery.deadline = destModuleDeadline
     const { feeAmount, feeConfig } = await this.getFeeData(bridgeRoute)
+    const estimatedTime = this.getEstimatedTime(
+      bridgeRoute.originChainId,
+      bridgeRoute.destChainId
+    )
     return {
       id: uuid,
       feeAmount,
@@ -322,10 +329,7 @@ export abstract class SynapseModuleSet {
       maxAmountOut: destQuery.minAmountOut,
       originQuery,
       destQuery,
-      estimatedTime: this.getEstimatedTime(
-        bridgeRoute.originChainId,
-        bridgeRoute.destChainId
-      ),
+      estimatedTime: roundUp(estimatedTime, TIME_PRECISION),
       bridgeModuleName: bridgeRoute.bridgeModuleName,
       gasDropAmount: await this.getGasDropAmount(
         bridgeRoute.destChainId,
@@ -344,11 +348,12 @@ export abstract class SynapseModuleSet {
       bridgeQuote.toChainId,
       bridgeToken.destToken
     )
+    const estimatedTime =
+      bridgeQuote.estimatedTime ||
+      this.getEstimatedTime(bridgeQuote.fromChainId, bridgeQuote.toChainId)
     return {
       ...bridgeQuote,
-      estimatedTime:
-        bridgeQuote.estimatedTime ||
-        this.getEstimatedTime(bridgeQuote.fromChainId, bridgeQuote.toChainId),
+      estimatedTime: roundUp(estimatedTime, TIME_PRECISION),
       moduleNames: [...bridgeQuote.moduleNames, this.moduleName],
       gasDropAmount: gasDropAmount.toString(),
     }

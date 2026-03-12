@@ -152,7 +152,7 @@ export const Transaction = ({
             )}
             <MenuItem
               text="Contact Support"
-              link="https://discord.gg/synapseprotocol"
+              link="https://discord.gg/4rMzuEnKqe"
             />
             {isTxFinalized && (
               <MenuItem

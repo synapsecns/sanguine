@@ -12,7 +12,6 @@ import {
 } from './constants'
 import { getTestProvider } from './constants/testProviders'
 import {
-  ARB_GMX,
   ARB_NETH,
   ARB_NUSD,
   ARB_POOL_ETH_WRAPPER,
@@ -22,7 +21,6 @@ import {
   ARB_USDC_E,
   ARB_USDT,
   ARB_WETH,
-  AVAX_GMX,
   AVAX_GOHM,
   AVAX_USDC,
   AVAX_USDC_E,
@@ -726,47 +724,6 @@ describe('SynapseSDK', () => {
         )
         expect(result.originChainId).toEqual(SupportedChainId.BSC)
         expect(result.destChainId).toEqual(SupportedChainId.AVALANCHE)
-      })
-    })
-  })
-
-  describe('Gas drop edge cases', () => {
-    const synapse = new SynapseSDK(
-      [
-        SupportedChainId.ARBITRUM,
-        SupportedChainId.AVALANCHE,
-        SupportedChainId.BSC,
-      ],
-      [arbProvider, avaxProvider, bscProvider]
-    )
-
-    describe('GMX', () => {
-      it('ARB -> AVAX: non-zero gas drop', async () => {
-        const result = await synapse.bridgeQuote(
-          SupportedChainId.ARBITRUM,
-          SupportedChainId.AVALANCHE,
-          ARB_GMX,
-          AVAX_GMX,
-          parseFixed('100', 18)
-        )
-        expect(result).toBeDefined()
-        expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toEqual(
-          EXPECTED_GAS_DROP[SupportedChainId.AVALANCHE]
-        )
-      })
-
-      it('AVAX -> ARB: zero gas drop', async () => {
-        const result = await synapse.bridgeQuote(
-          SupportedChainId.AVALANCHE,
-          SupportedChainId.ARBITRUM,
-          AVAX_GMX,
-          ARB_GMX,
-          parseFixed('100', 18)
-        )
-        expect(result).toBeDefined()
-        expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toEqual(Zero)
       })
     })
   })

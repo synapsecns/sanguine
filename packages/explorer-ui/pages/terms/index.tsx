@@ -9,7 +9,7 @@ export const Terms = () => {
       <div className="pt-2 font-medium text-white text-md">
         <p>
           This website-hosted interface (the "Site") is provided by
-          Interoperability Inc. ("Interoperability", "we", "our", or "us"). The
+          Distributed Systems LTD ("Distributed Systems LTD", "we", "our", or "us"). The
           Site provides users with an informational interface relating to a
           decentralized protocol on the Synapse messaging application that
           allows users to bridge, stake, and pool certain digital assets (the
@@ -25,13 +25,13 @@ export const Terms = () => {
           PLEASE NOTE: THE "DISPUTE RESOLUTION" SECTION OF THESE TERMS CONTAINS
           AN ARBITRATION CLAUSE THAT REQUIRES DISPUTES TO BE ARBITRATED ON AN
           INDIVIDUAL BASIS, AND PROHIBITS CLASS ACTION CLAIMS. IT AFFECTS HOW
-          DISPUTES BETWEEN YOU AND THE INTEROPERABILITY ARE RESOLVED. BY
+          DISPUTES BETWEEN YOU AND DISTRIBUTED SYSTEMS LTD ARE RESOLVED. BY
           ACCEPTING THESE TERMS, YOU AGREE TO BE BOUND BY THIS ARBITRATION
           PROVISION. PLEASE READ IT CAREFULLY.
           <br />
           1. Modification of these Terms
           <br />
-          Interoperability reserves the right, in its sole discretion, to modify
+          Distributed Systems LTD reserves the right, in its sole discretion, to modify
           these Terms from time to time. If any modifications are made, we will
           be notified by an updated to the date at the top of the Terms. A
           current version of the Terms is maintained at
@@ -76,20 +76,20 @@ export const Terms = () => {
           If we determine in our sole and absolute discretion that you have
           breached your representations and/or obligations under this section,
           we will block your access to the Site if continued access to the Site
-          could result in Interoperability being in violation, or subject to
+          could result in Distributed Systems LTD being in violation, or subject to
           negative consequences, under any sanctions laws or other law or
           regulation. While the Site does not custody or hold any assets of
-          users, rendering Interoperability incapable of “blocking” any
+          users, rendering Distributed Systems LTD incapable of “blocking” any
           interests in property, to the extent (in our sole and absolute
           discretion) you breach your representations and/or obligations under
-          this section, Interoperability reserves the right to notify any
+          this section, Distributed Systems LTD reserves the right to notify any
           relevant identifiable persons of such breach to enable the blocking of
           interests in property as required under relevant rules and
           regulations.
           <br />
           3. Proprietary Rights
           <br />
-          Interoperability and its related entities own all intellectual
+          Distributed Systems LTD and its related entities own all intellectual
           property and other rights in the Site and its contents, including (but
           not limited to) software, text, images, trademarks, service marks,
           copyrights, patents, and designs. The Synapse Protocol is comprised of
@@ -97,7 +97,7 @@ export const Terms = () => {
           <br />
           4. Additional Rights
           <br />
-          Interoperability reserves the following rights: (a) with or without
+          Distributed Systems LTD reserves the following rights: (a) with or without
           notice to you, to modify, substitute, eliminate or add to the Site;
           (b) to review, modify, filter, disable, delete and remove any and all
           content and information from the Site; and (c) to cooperate with any
@@ -115,14 +115,14 @@ export const Terms = () => {
           <br />
           When you utilize any data inputs provided by the Site to execute
           transactions, you are interacting with public blockchains, which
-          provide transparency into your transactions. Interoperability does not
+          provide transparency into your transactions. Distributed Systems LTD does not
           control and is not responsible for any information you make public on
           any public blockchain by taking actions utilizing data provided by the
           Site.
           <br />
-          Interoperability may share the information collected with blockchain
+          Distributed Systems LTD may share the information collected with blockchain
           analytics providers to promote the safety, security, and integrity of
-          the Site. Interoperability does not retain any information collected
+          the Site. Distributed Systems LTD does not retain any information collected
           any longer than necessary for this purpose.
           <br />
           6. Prohibited Activity
@@ -151,7 +151,7 @@ export const Terms = () => {
           Circumventing Security/Compliance Measures. The use of any means,
           including masking your IP address or using a proxy IP address or
           virtual private network, to bypass or circumvent any security and/or
-          compliance measures taken by Interoperability with respect to Site
+          compliance measures taken by Distributed Systems LTD with respect to Site
           access.
           <br />
           Violation of Law. Violate any applicable federal, state, local,
@@ -164,7 +164,7 @@ export const Terms = () => {
           <br />
           7. Not Registered with FinCEN or any agency
           <br />
-          Interoperability is not registered with the Financial Crimes
+          Distributed Systems LTD is not registered with the Financial Crimes
           Enforcement Network as a money services business or in any other
           capacity, or with any other regulatory body in any capacity. You
           understand and acknowledge that we do not broker trading orders on
@@ -360,10 +360,10 @@ export const Terms = () => {
           <br />
           17. Dispute Resolution
           <br />
-          Interoperability will use our best efforts to resolve any potential
+          Distributed Systems LTD will use our best efforts to resolve any potential
           disputes through informal, good faith negotiations. If a potential
           dispute arises, you must contact us by sending an email to
-          notices@Interoperability.com so that we can attempt to resolve it
+          notices@distributedsystems.ltd so that we can attempt to resolve it
           without resorting to formal dispute resolution. If we aren't able to
           reach an informal resolution within sixty days of your email, then you
           and we both agree to resolve the potential dispute according to the
@@ -377,8 +377,7 @@ export const Terms = () => {
           Procedures. You understand that you are required to resolve all
           Disputes by binding arbitration. The arbitration shall be held on a
           confidential basis before a single arbitrator, who shall be selected
-          pursuant to JAMS rules. The arbitration will be held in Kent County,
-          Delaware, unless you and we both agree to hold it elsewhere. Unless we
+          pursuant to JAMS rules. The arbitration will be held in the Cayman Islands, unless you and we both agree to hold it elsewhere. Unless we
           agree otherwise, the arbitrator may not consolidate your claims with
           those of any other party. Any judgment on the award rendered by the
           arbitrator may be entered in any court of competent jurisdiction.
@@ -389,21 +388,21 @@ export const Terms = () => {
           capacity and not as a plaintiff in or member of any purported class
           action, collective action, private attorney general action, or other
           representative proceeding. This provision applies to class
-          arbitration. You and Interoperability both agree to waive the right to
+          arbitration. You and Distributed Systems LTD both agree to waive the right to
           demand a trial by jury.
           <br />
           19. Governing Law
           <br />
-          You agree that the laws of the State of Delaware, without regard to
+          You agree that the laws of the Cayman Islands, without regard to
           principles of conflict of laws, govern these Terms and any Dispute
           between you and us. You further agree that for purposes of venue the
-          Site shall be deemed to be based solely in Kent County, Delaware, and
+          Site shall be deemed to be based solely in the Cayman Islands, and
           that although the Site may be available in other jurisdictions, its
           availability does not give rise to general or specific personal
-          jurisdiction in any forum outside of Kent County, Delaware. Any
+          jurisdiction in any forum outside of the Cayman Islands. Any
           arbitration conducted pursuant to these Terms shall be governed by the
           JAMS Comprehensive Arbitration Rules and Procedures. You agree that
-          the federal courts of Delaware are the proper forum for any appeals of
+          the courts of the Cayman Islands are the proper forum for any appeals of
           an arbitration award or for court proceedings in the event that the
           binding arbitration clause of these Terms is found to be
           unenforceable.
@@ -414,8 +413,8 @@ export const Terms = () => {
           <br />
           For the avoidance of doubt, you agree you are solely responsible for
           all interactions with any other user in connection with the Services,
-          and Interoperability will have no liability or responsibility with
-          respect thereto. Interoperability reserves the right, but has no
+          and Distributed Systems LTD will have no liability or responsibility with
+          respect thereto. Distributed Systems LTD reserves the right, but has no
           obligation, to become involved in any way in disputes between you and
           any other user of the Site.
           <br />

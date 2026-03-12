@@ -10,7 +10,7 @@ export const ETH: Chain = {
     'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/ethereum.4a372106.svg',
   layer: 1,
   rpcUrls: {
-    primary: 'https://rpc.ankr.com/eth',
+    primary: 'https://eth.llamarpc.com',
     fallback: 'https://1rpc.io/eth',
   },
   explorerUrl: 'https://etherscan.io',
@@ -37,7 +37,7 @@ export const ARBITRUM: Chain = {
   codeName: 'arbitrum',
   blockTime: 300,
   rpcUrls: {
-    primary: 'https://arbitrum.blockpi.network/v1/rpc/public',
+    primary: 'https://arbitrum.drpc.org',
     fallback: 'https://arb1.arbitrum.io/rpc',
   },
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
@@ -104,8 +104,8 @@ export const CANTO: Chain = {
   codeName: 'canto',
   blockTime: 6000,
   rpcUrls: {
-    primary: 'https://mainnode.plexnode.org:8545',
-    fallback: 'https://canto.slingshot.finance',
+    primary: 'https://canto.gravitychain.io',
+    fallback: 'https://canto-rpc.ansybl.io',
   },
   nativeCurrency: { name: 'Canto', symbol: 'CANTO', decimals: 18 },
   explorerUrl: 'https://tuber.build/',
@@ -149,7 +149,7 @@ export const POLYGON: Chain = {
   blockTime: 2000,
   rpcUrls: {
     primary: 'https://polygon-bor.publicnode.com',
-    fallback: 'https://polygon.llamarpc.com',
+    fallback: 'https://polygon.drpc.org',
   },
   nativeCurrency: { name: 'Matic', symbol: 'MATIC', decimals: 18 },
   explorerUrl: 'https://polygonscan.com',
@@ -171,7 +171,7 @@ export const DFK: Chain = {
   blockTime: 2000,
   rpcUrls: {
     primary: 'https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc',
-    fallback: 'https://dfkchain.api.onfinality.io/public',
+    fallback: 'https://avax-dfk.api.pocket.network',
   },
   nativeCurrency: { name: 'Jewel', symbol: 'JEWEL', decimals: 18 },
   explorerUrl: 'https://subnets.avax.network/defi-kingdoms',
@@ -214,8 +214,8 @@ export const FANTOM: Chain = {
   codeName: 'fantom',
   blockTime: 1000,
   rpcUrls: {
-    primary: 'https://rpc.ftm.tools',
-    fallback: 'https://fantom-rpc.gateway.pokt.network/',
+    primary: 'https://rpcapi.fantom.network',
+    fallback: 'https://fantom.drpc.org',
   },
   nativeCurrency: { name: 'Fantom', symbol: 'FTM', decimals: 18 },
   explorerUrl: 'https://ftmscan.com',
@@ -236,8 +236,8 @@ export const CRONOS: Chain = {
   codeName: 'cronos',
   blockTime: 6000,
   rpcUrls: {
-    primary: 'https://evm-cronos.crypto.org',
-    fallback: 'https://cronos.blockpi.network/v1/rpc/public',
+    primary: 'https://evm.cronos.org',
+    fallback: 'https://cronos.drpc.org',
   },
   nativeCurrency: { name: 'Cronos', symbol: 'CRO', decimals: 18 },
   explorerUrl: 'https://cronoscan.com',
@@ -259,7 +259,7 @@ export const BOBA: Chain = {
   blockTime: 1000,
   rpcUrls: {
     primary: 'https://mainnet.boba.network',
-    fallback: 'https://replica.boba.network',
+    fallback: 'https://boba-eth.drpc.org',
   },
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://bobascan.com',
@@ -281,7 +281,7 @@ export const METIS: Chain = {
   blockTime: 4000,
   rpcUrls: {
     primary: 'https://andromeda.metis.io/?owner=1088',
-    fallback: 'https://metis-mainnet.public.blastapi.io',
+    fallback: 'https://metis.drpc.org',
   },
   nativeCurrency: { name: 'Metis', symbol: 'METIS', decimals: 18 },
   explorerUrl: 'https://andromeda-explorer.metis.io',
@@ -347,7 +347,7 @@ export const MOONBEAM: Chain = {
   blockTime: 12000,
   rpcUrls: {
     primary: 'https://rpc.api.moonbeam.network',
-    fallback: 'https://moonbeam.public.blastapi.io',
+    fallback: 'https://moonbeam.drpc.org',
   },
   nativeCurrency: { name: 'Glimmer', symbol: 'GLMR', decimals: 18 },
   explorerUrl: 'https://moonbeam.moonscan.io',
@@ -369,7 +369,7 @@ export const MOONRIVER: Chain = {
   blockTime: 12000,
   rpcUrls: {
     primary: 'https://rpc.api.moonriver.moonbeam.network',
-    fallback: 'https://moonriver.public.blastapi.io',
+    fallback: 'https://moonriver.drpc.org',
   },
   nativeCurrency: { name: 'Moonriver', symbol: 'MOVR', decimals: 18 },
   explorerUrl: 'https://moonriver.moonscan.io',
@@ -411,8 +411,8 @@ export const BASE: Chain = {
     'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/base.d919fbef.svg',
   layer: 2,
   rpcUrls: {
-    primary: 'https://base.blockpi.network/v1/rpc/public',
-    fallback: 'https://developer-access-mainnet.base.org',
+    primary: 'https://mainnet.base.org',
+    fallback: 'https://base.drpc.org',
   },
   explorerUrl: 'https://basescan.org',
   explorerName: 'BaseScan',
@@ -438,7 +438,7 @@ export const BLAST: Chain = {
   layer: 2,
   rpcUrls: {
     primary: 'https://rpc.blast.io',
-    fallback: 'https://blast.blockpi.network/v1/rpc/publicChain',
+    fallback: 'https://blast.drpc.org',
   },
   explorerUrl: 'https://blastscan.io',
   explorerName: 'Blastscan',
@@ -464,7 +464,7 @@ export const SCROLL: Chain = {
   layer: 2,
   rpcUrls: {
     primary: 'https://rpc.scroll.io',
-    fallback: 'https://scroll.blockpi.network/v1/rpc/public',
+    fallback: 'https://scroll.drpc.org',
   },
   explorerUrl: 'https://scrollscan.com/',
   explorerName: 'Scrollscan',
@@ -489,8 +489,8 @@ export const LINEA: Chain = {
     'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/linea.e476f2ad.svg',
   layer: 2,
   rpcUrls: {
-    primary: 'https://linea.blockpi.network/v1/rpc/public',
-    fallback: 'https://rpc.linea.build',
+    primary: 'https://rpc.linea.build',
+    fallback: 'https://linea.drpc.org',
   },
   explorerUrl: 'https://lineascan.build/',
   explorerName: 'LineaScan',
@@ -516,7 +516,7 @@ export const WORLDCHAIN: Chain = {
   layer: 2,
   rpcUrls: {
     primary: 'https://worldchain-mainnet.g.alchemy.com/public',
-    fallback: 'https://worldchain-mainnet.g.alchemy.com/public',
+    fallback: 'https://worldchain.drpc.org',
   },
   explorerUrl: 'https://worldchain-mainnet.explorer.alchemy.com',
   explorerName: 'World Chain Explorer',
@@ -541,8 +541,8 @@ export const BERACHAIN: Chain = {
     'https://e8ff9599.sanguine-fe.pages.dev/_next/static/media/berachain.57304c86.svg',
   layer: 1,
   rpcUrls: {
-    primary: 'https://berachain.blockpi.network/v1/rpc/public',
-    fallback: 'https://rpc.berachain.com',
+    primary: 'https://rpc.berachain.com',
+    fallback: 'https://berachain.drpc.org',
   },
   explorerUrl: 'https://berascan.com',
   explorerName: 'Berascan',
@@ -563,8 +563,8 @@ export const UNICHAIN: Chain = {
     'https://e8ff9599.sanguine-fe.pages.dev/_next/static/media/unichain.02b81e3e.svg',
   layer: 2,
   rpcUrls: {
-    primary: 'https://unichain-rpc.publicnode.com',
-    fallback: 'https://rpc.unichain.io',
+    primary: 'https://mainnet.unichain.org',
+    fallback: 'https://unichain.drpc.org',
   },
   explorerUrl: 'https://uniscan.xyz',
   explorerName: 'Uniscan',
@@ -586,7 +586,7 @@ export const HYPEREVM: Chain = {
   layer: 2,
   rpcUrls: {
     primary: 'https://rpc.hyperliquid.xyz/evm',
-    fallback: 'https://rpc.hyperliquid.xyz/evm',
+    fallback: 'https://hyperliquid.drpc.org',
   },
   explorerUrl: 'https://purrsec.com',
   explorerName: 'PurrSec',

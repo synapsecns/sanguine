@@ -60,6 +60,7 @@ jobs:
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
         with:
+          nvmrc_path: ${{ matrix.package == 'docs' && 'docs/bridge/.nvmrc' || '.nvmrc' }}
           cache: 'npm'
           install_dependencies: 'false'
           cache-path: ''
@@ -85,7 +86,7 @@ jobs:
           # set the vercel project id`
           echo "VERCEL_PROJECT_ID=$TARGET_ID" >> $GITHUB_ENV
       - name: Install Vercel CLI
-        run: npm install --global vercel@32.5.3
+        run: npm install --global vercel@latest
       - name: Deploy to Vercel (Output Preview/Inspect Links)
         if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref }}
         id: deploy
