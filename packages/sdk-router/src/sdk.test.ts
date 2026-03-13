@@ -775,14 +775,16 @@ describe('SynapseSDK', () => {
       [arbProvider, ethProvider]
     )
     describe('getModuleSet', () => {
-      it('Returns correct set for SynapseBridge', () => {
-        const routerSet = operations.getModuleSet.call(synapse, 'SynapseBridge')
-        expect(routerSet).toEqual(synapse.synapseRouterSet)
+      it('Throws for paused SynapseBridge', () => {
+        expect(() =>
+          operations.getModuleSet.call(synapse, 'SynapseBridge')
+        ).toThrow('Unknown bridge module')
       })
 
-      it('Returns correct set for SynapseCCTP', () => {
-        const routerSet = operations.getModuleSet.call(synapse, 'SynapseCCTP')
-        expect(routerSet).toEqual(synapse.synapseCCTPRouterSet)
+      it('Throws for paused SynapseCCTP', () => {
+        expect(() =>
+          operations.getModuleSet.call(synapse, 'SynapseCCTP')
+        ).toThrow('Unknown bridge module')
       })
 
       it('Returns correct set for SynapseRFQ', () => {
