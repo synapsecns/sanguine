@@ -9,11 +9,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ### Bug Fixes
 
 * **sdk-router:** pauses ([#3964](https://github.com/synapsecns/sanguine/issues/3964)) ([2cfb7a6](https://github.com/synapsecns/sanguine/commit/2cfb7a6322dff14a2971ec34a644528498221134))
-
-
-
-
-
 ## [0.20.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.6...@synapsecns/sdk-router@0.20.7) (2025-12-02)
 
 
