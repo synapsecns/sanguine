@@ -3,7 +3,7 @@
   "version": "0.43.40",
   "private": true,
   "engines": {
-    "node": ">=18"
+    "node": ">=18.17.0"
   },
   "scripts": {
     "cf:build": "npx @cloudflare/next-on-pages",
@@ -117,7 +117,7 @@
     "cspell": "^8.15.4",
     "dayjs": "^1.11.7",
     "eslint": "^8.37.0",
-    "eslint-config-next": "^13.5.6",
+    "eslint-config-next": "^14.2.35",
     "eslint-plugin-i18next": "^6.0.9",
     "start-server-and-test": "^2.0.0",
     "vercel": "^33.6.2"
