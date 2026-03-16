@@ -2,14 +2,14 @@
 
 ## Goal
 
-Add `SynapseBridgeAdapter` support to `@synapsecns/sdk-router` as a `bridgeV2`-capable module for direct ERC20 bridging only: the origin token must already be SBA-supported on the origin chain, the bridge lands into the single remote token configured by SBA, `bridgeV2()` returns direct no-origin-swap routes, `intent({ allowMultipleTxs: true })` may append a destination-side swap after the SBA bridge step, and completion tracking follows the same LayerZero-style pattern already used by the OFT module.
+Add `SynapseBridgeAdapter` support to `@synapsecns/sdk-router` as a `bridgeV2`-capable module for direct ERC20 bridging plus a narrow origin-side native-to-wrapped flow: the bridge still lands into the single remote token configured by SBA, `bridgeV2()` may return either a direct no-origin-swap route or a route with at most one origin-side step only when that step wraps the chain's native gas token into its canonical wrapped-native SBA bridge token, `intent({ allowMultipleTxs: true })` may append a destination-side swap after the SBA bridge step, and completion tracking follows the same LayerZero-style pattern already used by the OFT module.
 
 ## Context
 
 - `bridgeV2` is already implemented in `packages/sdk-router/src/operations/bridge.ts`, but it only considers module sets where `isBridgeV2Supported === true`.
 - Existing V2-capable modules implement the `SynapseModuleSet` contract in `packages/sdk-router/src/module/synapseModuleSet.ts` and hand off populated transactions to `SynapseIntentRouterSet.finalizeBridgeRouteV2()`.
 - `SynapseBridgeAdapter` is not router-like. It exposes `bridgeERC20(dstEid, to, token, amount, gasLimit)`, `getNativeFee(dstEid, gasLimit)`, and point lookups for token mappings, but it does not expose route enumeration or swap-query construction.
-- Under the accepted scope for this spec, SBA support is limited to non-swap origin routes. That means the SDK only needs to answer whether the user’s `fromToken` is directly bridgeable to the destination chain; the origin adapter can answer that via `getRemoteAddress(remoteEid, fromToken)`.
+- Under the original accepted scope for this spec, SBA support was limited to non-swap origin routes. This follow-up expands that only for native-asset -> canonical wrapped-native on the origin chain, reusing the existing one-step V2 swap path instead of introducing a broader SBA token-discovery pattern.
 - The adapter contract has a hard minimum LayerZero gas limit of `200_000`, and the user chose to keep phase 1 on that hardcoded minimum instead of adding a new public SDK override.
 - The user explicitly scoped out legacy bridgeV1 support. `allBridgeQuotes()`, `bridgeQuote()`, legacy `Query` objects, and legacy `bridge()` routing are not part of this feature.
 - SBA deployment and chain metadata already exists elsewhere in the monorepo:
@@ -20,7 +20,7 @@ Add `SynapseBridgeAdapter` support to `@synapsecns/sdk-router` as a `bridgeV2`-c
 - Current repository constraints limit SBA `bridgeV2` origins to chains that have both SBA deployments and intent infrastructure. Based on the checked-in configs, those origin chains are `ETH`, `OPTIMISM`, `BSC`, `POLYGON`, `BASE`, `ARBITRUM`, `AVALANCHE`, and `BLAST`.
 - Current repository constraints limit SBA destinations to active, bridge-supported chains that also have SBA deployments. Based on the checked-in configs, those destination chains are `ETH`, `OPTIMISM`, `BSC`, `POLYGON`, `FANTOM`, `METIS`, `CANTO`, `KLAYTN` (`kaia` in contracts-adapter configs), `BASE`, `ARBITRUM`, `AVALANCHE`, `DFK`, and `BLAST`.
 - The OFT (`USDT0`) module already shows the preferred LayerZero integration pattern for a V2-only module: it is not part of legacy bridge routing, it returns `txHash` from `getSynapseTxId()`, and it checks completion through the LayerZero scan API.
-- The existing V2 quote pipeline still starts from `getBridgeTokenCandidates()` and runs the swap engine set. Under this scope, SBA should only ever yield the direct input token as the bridge candidate, so the origin leg resolves through the existing `NoOpEngine` path with zero origin steps.
+- The existing V2 quote pipeline still starts from `getBridgeTokenCandidates()` and runs the swap engine set. Under this follow-up scope, SBA should still prefer the direct bridge token candidate when possible, but it may also rely on a single origin-side route only when that route wraps the native gas token into the SBA bridge token.
 
 ## Scope
 
@@ -28,6 +28,7 @@ Add `SynapseBridgeAdapter` support to `@synapsecns/sdk-router` as a `bridgeV2`-c
 - Bundle SBA chain, endpoint-ID, and deployment-address metadata inside `packages/sdk-router/src` as committed source.
 - Make SBA routes available to `SynapseSDK.bridgeV2()` and to cross-chain `SynapseSDK.intent()`.
 - Support direct SBA-backed quotes where `toToken` equals the mapped remote token.
+- Support origin-side native-asset input only when the origin chain can resolve it into the canonical wrapped-native SBA bridge token in a single origin-side step.
 - Support SBA as the bridge step inside `intent({ allowMultipleTxs: true })`, where the bridge lands into the mapped remote token and the existing destination-side intent flow may add a follow-up swap.
 - Quote and surface the adapter’s LayerZero `nativeFee`.
 - Populate origin-chain transactions through the existing SIR / TokenZap path when `fromSender` is provided.
@@ -39,8 +40,9 @@ Add `SynapseBridgeAdapter` support to `@synapsecns/sdk-router` as a `bridgeV2`-c
 
 - No support for SBA in `bridgeQuote()`, `allBridgeQuotes()`, `applyBridgeDeadline()`, `applyBridgeSlippage()`, or the legacy `bridge()` path.
 - No new public SDK parameter for overriding SBA gas limit.
-- No origin-side swap support for SBA. If the input token is not directly bridgeable through SBA, no SBA quote should be returned.
-- No native-token SBA entrypoint support. SBA itself only bridges ERC20 tokens.
+- No multi-step origin-side swap support for SBA. Routes with more than one origin-side step remain out of scope.
+- No direct native-token SBA entrypoint support. SBA itself still only bridges ERC20 tokens; native-asset support must be satisfied by a single origin-side step into the SBA bridge token.
+- No generic origin-side swap-engine support for SBA beyond native gas token -> canonical wrapped-native.
 - No dynamic on-chain route enumeration. The contract does not expose it.
 - No widget or `synapse-interface` UI integration work.
 - No automation requirement for regenerating SBA chain/deployment metadata from `contracts-adapter`; phase 1 may check in static metadata with comments naming the source files.
@@ -58,13 +60,21 @@ Add `SynapseBridgeAdapter` support to `@synapsecns/sdk-router` as a `bridgeV2`-c
    - Resolve `remoteEid` from the destination chain and call `originAdapter.getRemoteAddress(remoteEid, fromToken)`.
    - Return `[]` when `getRemoteAddress(...)` returns `address(0)`.
    - Return `[]` when `toToken` is provided and does not equal the returned remote token.
-   - Return a single direct candidate where `originToken = fromToken` and `destToken = remoteToken`.
-8. `_collectV2Quotes()` must continue to use the existing V2 candidate flow, but SBA candidates must only produce no-op origin routes. Any origin route that requires an actual swap is out of scope for SBA.
+   - Return a single candidate where `destToken = remoteToken` and `originToken` is the token that must actually enter SBA on the origin chain.
+   - When the requested origin input is the chain's native asset, the implementation may map that input onto the canonical wrapped-native SBA bridge token for candidate discovery.
+   - No other origin-side swap candidate discovery is required.
+8. `_collectV2Quotes()` must continue to use the existing V2 candidate flow, but SBA candidates may only produce:
+   - a zero-step no-op origin route, or
+   - a single origin-side route that wraps the native gas token into the SBA bridge token.
+   Multi-step origin routes and other origin-side swap routes remain out of scope for SBA.
 9. `getBridgeRouteV2()` for SBA must:
     - Reject invalid candidate / chain / token combinations by returning `undefined`.
-    - Reject any origin route with non-empty `steps`; SBA only supports direct no-op origin routes.
-    - Treat SBA as a 1:1 bridge of the direct input token. `expectedToAmount` must equal the no-op origin route amount.
-    - Set `minToAmount` equal to `expectedToAmount` for the SBA bridge step.
+    - Reject any origin route with more than one step.
+    - Reject a single-step origin route unless it represents the supported native gas token -> canonical wrapped-native flow into the SBA bridge token.
+    - Treat SBA as a 1:1 bridge of whatever amount reaches the SBA bridge token on the origin chain.
+    - Set `expectedToAmount` equal to `originSwapRoute.expectedToAmount`.
+    - For no-op origin routes, set `minToAmount` equal to `expectedToAmount`.
+    - For the supported native-wrap origin route, preserve the origin route's slippage-protected minimum by setting `minToAmount = originSwapRoute.minToAmount`.
     - Set `gasDropAmount` to zero.
     - Set bridge fee amount to zero.
     - Quote `nativeFee` by calling `adapter.getNativeFee(dstEid, 200_000)`.
@@ -74,7 +84,9 @@ Add `SynapseBridgeAdapter` support to `@synapsecns/sdk-router` as a `bridgeV2`-c
 13. The SBA zap payload must target the origin SBA contract and encode `bridgeERC20(dstEid, toRecipient, originBridgeToken, amount, 200_000)`.
 14. The SBA zap payload must set `amountPosition` to the calldata slot for `bridgeERC20.amount` so TokenZap can patch the bridged amount at execution time.
 15. When `fromSender` is absent, SBA quotes may still be returned, but `tx` must remain undefined just like other bridgeV2 modules.
-16. `BridgeQuoteV2.moduleNames` must include `SynapseBridgeAdapter`, and SBA quotes must not include origin swap engine names because origin swaps are out of scope.
+16. `BridgeQuoteV2.moduleNames` must include `SynapseBridgeAdapter`.
+    - For no-op origin routes, SBA quotes should not include origin swap engine names.
+    - For the supported native-wrap origin route, SBA quotes may include the single origin swap engine name that resolves the input into the SBA bridge token.
 17. `BridgeQuoteV2.routerAddress` for SBA quotes must remain the SIR address for the origin chain, not the SBA contract address, because the public transaction still enters through SIR.
 18. `getSynapseTxId()` for SBA must return the origin transaction hash unchanged, matching the OFT module’s LayerZero semantics.
 19. `getBridgeTxStatus()` for SBA must use the LayerZero scan API and the same completion states already accepted by the OFT module (`CONFIRMING`, `DELIVERED`).
@@ -104,15 +116,16 @@ Add `SynapseBridgeAdapter` support to `@synapsecns/sdk-router` as a `bridgeV2`-c
   - `getDefaultPeriods()` returns zeroes because legacy deadlines are out of scope
   - `applySlippage()` returns inputs unchanged because legacy slippage helpers are out of scope
 - `getBridgeTokenCandidates()` should use the origin SBA contract as a point lookup only: resolve `remoteEid`, call `getRemoteAddress(remoteEid, fromToken)`, and derive the single direct candidate from the returned remote token.
+- When the requested origin input is the chain's native asset, the implementation may first normalize that input to the origin chain's canonical wrapped-native token for SBA candidate discovery.
 - `getBridgeRouteV2()` should:
   - Validate `bridgeToken`, module existence, and requested-token compatibility through the existing `validateBridgeRouteV2Params()` path.
-  - Require a zero-step origin route and return `undefined` if the route implies any origin swap.
+  - Allow an origin route with at most one step and return `undefined` unless that single step is the supported native-wrap flow.
   - Fetch `nativeFee` from the origin adapter using `getNativeFee(dstEid, 200_000)`.
-  - Reuse the direct input amount because SBA does not apply an additional bridge fee or origin swap.
+  - Reuse the amount output by the origin route because SBA does not apply an additional bridge fee after the origin-side step.
   - Build zap data only when `fromSender` and `toRecipient` are present.
 - The concrete module should expose a helper such as `populateBridgeERC20(params, nativeFee)` that returns the adapter calldata and `msg.value`.
 - The SBA zap-data encoding should mirror the existing OFT and FastBridge patterns: `target`, `payload`, and `amountPosition` are sufficient. `finalToken`, `forwardTo`, and `minFinalAmount` can remain at their existing defaults.
-- Because `SynapseIntentRouterSet.finalizeBridgeRouteV2()` already appends the bridge step after the origin route, no SIR contract changes are required. For SBA that origin route should be the zero-step no-op route.
+- Because `SynapseIntentRouterSet.finalizeBridgeRouteV2()` already appends the bridge step after the origin route, no SIR contract changes are required. For SBA that origin route may now be either the zero-step no-op route or the supported single-step native-wrap route into the SBA bridge token.
 - No changes are needed in `_collectV1Quotes()` besides the new module appearing in `allModuleSets`; it will already be excluded from legacy quote collection because `isBridgeV2Supported` is true.
 - The module set should cache pathway ETA refreshes with a TTL, similar to `UsdtModuleSet`, to avoid repeated external API calls.
 - The module set should not attempt bridge-token discovery from static token registries and should not attempt destination-side amount-out simulation beyond 1:1 transfer semantics. Any post-bridge swap belongs to the existing `intent()` multi-step flow.
@@ -140,7 +153,8 @@ Add `SynapseBridgeAdapter` support to `@synapsecns/sdk-router` as a `bridgeV2`-c
 - If the destination chain is paused or otherwise unsupported by `isChainIdSupported()`, SBA must produce no V2 quote even if the adapter is deployed there.
 - If the origin token has no SBA mapping for the destination chain, SBA must produce no quote.
 - If the requested `toToken` does not equal the SBA remote token and `allowMultipleTxs` is false, SBA must produce no quote.
-- If the V2 pipeline does not yield a zero-step origin route for the direct input token, SBA must produce no quote.
+- If the V2 pipeline yields a multi-step origin route, SBA must produce no quote.
+- If the V2 pipeline yields a single-step origin route that is not the supported native-wrap flow, SBA must produce no quote.
 - If `getNativeFee()` reverts or the adapter lookup data is missing, SBA must produce no quote rather than a partially populated quote.
 - If the LayerZero status API is unavailable, `getBridgeTxStatus()` must return `false` rather than throwing for routine polling flows, matching existing LayerZero-style modules.
 - If the LayerZero ETA refresh fails, SBA must continue to return the static fallback ETA.
@@ -163,7 +177,10 @@ Add `SynapseBridgeAdapter` support to `@synapsecns/sdk-router` as a `bridgeV2`-c
 - SBA quotes report a non-zero `nativeFee` when the adapter quotes one.
 - SBA quotes return `tx` only when `fromSender` is provided.
 - SBA quotes use SIR as `routerAddress`.
-- SBA quotes never include origin swap steps or origin swap module names.
+- SBA quotes never include more than one origin-side step.
+- For direct no-op origin routes, SBA quotes do not include origin swap module names.
+- For the supported native-to-wrapped single-step origin route, SBA quotes may include that single origin swap module name.
+- `SynapseSDK.bridgeV2()` can also return SBA-backed quotes when the origin input is the native gas token and the chain's canonical wrapped-native token is SBA-supported.
 - `SynapseSDK.intent()` can include SBA as the bridge step when `allowMultipleTxs` is enabled and a destination-side swap is required.
 - `SynapseSDK.bridgeQuote()` and `SynapseSDK.allBridgeQuotes()` behavior is unchanged.
 - `SynapseSDK.getSynapseTxId(originChainId, 'SynapseBridgeAdapter', txHash)` returns `txHash`.
@@ -187,7 +204,8 @@ Add `SynapseBridgeAdapter` support to `@synapsecns/sdk-router` as a `bridgeV2`-c
 ## Risks and assumptions
 
 - Assumption: the current SBA destination handler remains compatible with the minimum LayerZero gas limit of `200_000`. If the adapter receive logic grows, this hardcoded default will need to be revisited.
-- Assumption: SBA `getRemoteAddress(...)` remains the authoritative source for whether a direct input token is bridgeable to a specific destination chain.
+- Assumption: SBA `getRemoteAddress(...)` remains the authoritative source for whether the token that actually enters SBA on the origin chain is bridgeable to a specific destination chain.
+- Assumption: the origin chain's canonical wrapped-native token can be sourced from existing sdk-router swap / previewer infrastructure without introducing a new broad SBA token registry.
 - Assumption: using the OFT module’s LayerZero tx-hash tracking model is acceptable for SBA even though SBA also emits its own `TokenSent` / `TokenReceived` events.
 - Risk: checked-in SBA chain/deployment metadata can drift from on-chain deployments even though token support itself is discovered live from the adapter.
 - Risk: ETA and completion tracking depend on the external LayerZero scan API.
