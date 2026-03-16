@@ -167,6 +167,43 @@ describe('SynapseSDK', () => {
         )
       ).toBe(true)
     })
+
+    it('builds the shared intent path for DFK, Harmony, and Klaytn', () => {
+      const dfkProvider = mock<Provider>()
+      const harmonyProvider = mock<Provider>()
+      const klaytnProvider = mock<Provider>()
+
+      const intentsSynapse = new SynapseSDK(
+        [
+          SupportedChainId.DFK,
+          SupportedChainId.HARMONY,
+          SupportedChainId.KLAYTN,
+        ],
+        [dfkProvider, harmonyProvider, klaytnProvider]
+      )
+
+      expect(
+        intentsSynapse.synapseBridgeAdapterModuleSet.modules[
+          SupportedChainId.DFK
+        ]
+      ).toBeDefined()
+      expect(
+        intentsSynapse.synapseBridgeAdapterModuleSet.modules[
+          SupportedChainId.HARMONY
+        ]
+      ).toBeDefined()
+      expect(
+        intentsSynapse.synapseBridgeAdapterModuleSet.modules[
+          SupportedChainId.KLAYTN
+        ]
+      ).toBeDefined()
+      expect(() =>
+        intentsSynapse.swapEngineSet.getTokenZap(SupportedChainId.DFK)
+      ).not.toThrow()
+      expect(
+        intentsSynapse.sirSet.getSirAddress(SupportedChainId.HARMONY)
+      ).toEqual(SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.HARMONY])
+    })
   })
 
   describe('applyBridgeSlippage', () => {
@@ -1014,6 +1051,138 @@ describe('SynapseSDK', () => {
       })
       expect(quotes[0].steps[0].tx).toBeDefined()
       expect(quotes[0].steps[1].tx).toBeDefined()
+    })
+
+    it('supports Harmony as an SBA origin chain', async () => {
+      const harmonyProvider = mock<Provider>()
+      const baseProvider = mock<Provider>()
+      const harmonyToken = '0x0000000000000000000000000000000000000d01'
+      const baseToken = '0x0000000000000000000000000000000000000b01'
+      const harmonySender = '0x0000000000000000000000000000000000000f11'
+      const harmonyRecipient = '0x0000000000000000000000000000000000000f12'
+      const synapse = new SynapseSDK(
+        [SupportedChainId.HARMONY, SupportedChainId.BASE],
+        [harmonyProvider, baseProvider]
+      )
+
+      synapse.allModuleSets = [synapse.synapseBridgeAdapterModuleSet]
+      jest
+        .spyOn(synapse.synapseBridgeAdapterModuleSet, 'getGasDropAmount')
+        .mockResolvedValue(Zero)
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[
+            SupportedChainId.HARMONY
+          ],
+          'getRemoteAddress'
+        )
+        .mockResolvedValue(baseToken)
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[
+            SupportedChainId.HARMONY
+          ],
+          'getNativeFee'
+        )
+        .mockResolvedValue(BigNumber.from(11))
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[
+            SupportedChainId.HARMONY
+          ],
+          'getEstimatedTime'
+        )
+        .mockResolvedValue(33)
+      jest.spyOn(synapse.swapEngineSet, 'getBestQuote').mockResolvedValue({
+        engineID: EngineID.NoOp,
+        engineName: EngineID[EngineID.NoOp],
+        chainId: SupportedChainId.HARMONY,
+        fromToken: harmonyToken,
+        fromAmount: BigNumber.from(1000),
+        toToken: harmonyToken,
+        expectedToAmount: BigNumber.from(1000),
+        minToAmount: BigNumber.from(1000),
+        steps: [],
+      } as any)
+      jest
+        .spyOn(synapse.swapEngineSet, 'generateRoute')
+        .mockImplementation(async (_input, quote) => quote as any)
+
+      const quotes = await synapse.bridgeV2({
+        fromChainId: SupportedChainId.HARMONY,
+        toChainId: SupportedChainId.BASE,
+        fromToken: harmonyToken,
+        toToken: baseToken,
+        fromAmount: '1000',
+        fromSender: harmonySender,
+        toRecipient: harmonyRecipient,
+      })
+
+      expect(quotes).toHaveLength(1)
+      expect(quotes[0].moduleNames).toEqual(['SynapseBridgeAdapter'])
+      expect(quotes[0].routerAddress).toEqual(
+        SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.HARMONY]
+      )
+    })
+
+    it('supports Harmony as an SBA destination chain', async () => {
+      const ethProviderMock = mock<Provider>()
+      const harmonyProvider = mock<Provider>()
+      const ethToken = '0x0000000000000000000000000000000000000e01'
+      const harmonyToken = '0x0000000000000000000000000000000000000d01'
+      const synapse = new SynapseSDK(
+        [SupportedChainId.ETH, SupportedChainId.HARMONY],
+        [ethProviderMock, harmonyProvider]
+      )
+
+      synapse.allModuleSets = [synapse.synapseBridgeAdapterModuleSet]
+      jest
+        .spyOn(synapse.synapseBridgeAdapterModuleSet, 'getGasDropAmount')
+        .mockResolvedValue(Zero)
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.ETH],
+          'getRemoteAddress'
+        )
+        .mockResolvedValue(harmonyToken)
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.ETH],
+          'getNativeFee'
+        )
+        .mockResolvedValue(BigNumber.from(22))
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.ETH],
+          'getEstimatedTime'
+        )
+        .mockResolvedValue(44)
+      jest.spyOn(synapse.swapEngineSet, 'getBestQuote').mockResolvedValue({
+        engineID: EngineID.NoOp,
+        engineName: EngineID[EngineID.NoOp],
+        chainId: SupportedChainId.ETH,
+        fromToken: ethToken,
+        fromAmount: BigNumber.from(1000),
+        toToken: ethToken,
+        expectedToAmount: BigNumber.from(1000),
+        minToAmount: BigNumber.from(1000),
+        steps: [],
+      } as any)
+      jest
+        .spyOn(synapse.swapEngineSet, 'generateRoute')
+        .mockImplementation(async (_input, quote) => quote as any)
+
+      const quotes = await synapse.bridgeV2({
+        fromChainId: SupportedChainId.ETH,
+        toChainId: SupportedChainId.HARMONY,
+        fromToken: ethToken,
+        toToken: harmonyToken,
+        fromAmount: '1000',
+      })
+
+      expect(quotes).toHaveLength(1)
+      expect(quotes[0].moduleNames).toEqual(['SynapseBridgeAdapter'])
+      expect(quotes[0].toToken).toEqual(harmonyToken)
     })
   })
 

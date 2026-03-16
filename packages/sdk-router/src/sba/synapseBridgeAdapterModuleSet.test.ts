@@ -1,7 +1,14 @@
 import { BigNumber, providers } from 'ethers'
 import { mock } from 'jest-mock-extended'
 
-import { MEDIAN_TIME_BLOCK, SupportedChainId } from '../constants'
+import {
+  MEDIAN_TIME_BLOCK,
+  SupportedChainId,
+  SWAP_QUOTER_V2_ADDRESS_MAP,
+  SYNAPSE_INTENT_PREVIEWER_ADDRESS_MAP,
+  SYNAPSE_INTENT_ROUTER_ADDRESS_MAP,
+  TOKEN_ZAP_V1_ADDRESS_MAP,
+} from '../constants'
 import { BridgeTokenCandidate, GetBridgeRouteV2Parameters } from '../module'
 import { EngineID, decodeZapData } from '../swap'
 import { SynapseBridgeAdapterModule } from './synapseBridgeAdapterModule'
@@ -227,5 +234,32 @@ describe('SynapseBridgeAdapterModuleSet', () => {
       )
     ).toEqual(42)
     expect(estimatedTimeSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('includes DFK, Harmony, and Klaytn in the shared-intent address maps', () => {
+    expect(SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.DFK]).toEqual(
+      '0x512000a034E154908Efb1eC48579F4ffDb000512'
+    )
+    expect(SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.HARMONY]).toEqual(
+      '0x512000a034E154908Efb1eC48579F4ffDb000512'
+    )
+    expect(SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.KLAYTN]).toEqual(
+      '0x512000a034E154908Efb1eC48579F4ffDb000512'
+    )
+    expect(TOKEN_ZAP_V1_ADDRESS_MAP[SupportedChainId.DFK]).toEqual(
+      '0x2aAaa9b71E479e6e2De7E091b09D61C25D2AAAa9'
+    )
+    expect(
+      SYNAPSE_INTENT_PREVIEWER_ADDRESS_MAP[SupportedChainId.HARMONY]
+    ).toEqual('0x519519a57a6Ea930f87e3436b6ea113A990fF519')
+    expect(SWAP_QUOTER_V2_ADDRESS_MAP[SupportedChainId.DFK]).toEqual(
+      '0xe367B3B59A24C4c301e27F9Ca3282E7dB0f64D07'
+    )
+    expect(SWAP_QUOTER_V2_ADDRESS_MAP[SupportedChainId.HARMONY]).toEqual(
+      '0x1ab1142cb469Fb57F3b0957d438ebCD4b006083A'
+    )
+    expect(SWAP_QUOTER_V2_ADDRESS_MAP[SupportedChainId.KLAYTN]).toEqual(
+      '0x2E087ecbeA4b33F5b973C0721b578518911d741D'
+    )
   })
 })
