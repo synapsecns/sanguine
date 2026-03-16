@@ -285,6 +285,7 @@ const status: boolean = await synapseSDK.getBridgeTxStatus(
 Current SBA scope:
 
 - SBA is `bridgeV2`-only. It is not used by legacy `bridgeQuote()`, `allBridgeQuotes()`, or `bridge()`.
+- The shared intent path now includes DFK, Harmony, and Klaytn/Kaia for SBA routing, without implicitly enabling unsupported Gas.zip or Relay behavior on those chains.
 - The origin token must already be directly supported by the adapter on the origin chain.
 - SBA only returns direct origin routes. If the origin leg requires a swap, no SBA quote is returned.
 - Single-transaction `bridgeV2()` quotes are only returned when the requested `toToken` exactly matches the SBA-mapped remote token.
