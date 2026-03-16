@@ -84,6 +84,11 @@ export const SBA_CHAIN_METADATA: Partial<
     lzEid: 30115,
     originBlockConfirmations: 100,
   },
+  [SupportedChainId.HARMONY]: {
+    adapterAddress: SBA_DEPLOYMENT_ADDRESS,
+    lzEid: 30116,
+    originBlockConfirmations: 100,
+  },
   [SupportedChainId.BLAST]: {
     adapterAddress: SBA_DEPLOYMENT_ADDRESS,
     lzEid: 30243,

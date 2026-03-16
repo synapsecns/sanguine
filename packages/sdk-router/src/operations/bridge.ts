@@ -147,10 +147,14 @@ async function _collectV2Quotes(
   params: BridgeV2InternalParameters,
   bridgeV2Modules: SynapseModuleSet[]
 ): Promise<BridgeQuoteV2[]> {
-  // Intents need to be supported on the `from` chain, while `to` chain needs to be supported in general
+  const isBridgeV2DestinationSupported =
+    isChainIdSupported(params.toChainId) ||
+    areIntentsSupported(params.toChainId)
+  // The origin must support the shared intent path, while destinations may be
+  // supported either through the legacy bridge set or the shared intent path.
   if (
     !areIntentsSupported(params.fromChainId) ||
-    !isChainIdSupported(params.toChainId)
+    !isBridgeV2DestinationSupported
   ) {
     return []
   }
