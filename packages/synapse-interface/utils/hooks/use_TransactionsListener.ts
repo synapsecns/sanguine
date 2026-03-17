@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import { useEffect } from 'react'
 import { useAccount } from 'wagmi'
 
@@ -7,6 +6,7 @@ import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { addTransaction } from '@/slices/_transactions/reducer'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
+import { getPendingBridgeTransactionTrackingData } from '@/utils/getPendingBridgeTransactionTrackingData'
 import {
   PendingBridgeTransaction,
   removePendingBridgeTransaction,
@@ -22,9 +22,10 @@ export const use_TransactionsListener = () => {
   useEffect(() => {
     if (checkTransactionsExist(pendingBridgeTransactions)) {
       pendingBridgeTransactions.forEach((tx: PendingBridgeTransaction) => {
-        /** Check Transaction has been confirmed */
-        const txnConfirmed =
-          !_.isNull(tx.transactionHash) && !_.isUndefined(tx.transactionHash)
+        const trackedTransaction = address
+          ? getPendingBridgeTransactionTrackingData(tx, address)
+          : null
+        const txnConfirmed = trackedTransaction !== null
 
         /** Check Transaction is already stored */
         const txnExists =
@@ -39,23 +40,7 @@ export const use_TransactionsListener = () => {
         }
 
         if (txnConfirmed && !txnExists) {
-          dispatch(
-            addTransaction({
-              address,
-              destinationAddress: tx.destinationAddress,
-              originTxHash: tx.transactionHash,
-              originValue: tx.originValue,
-              originChain: tx.originChain,
-              originToken: tx.originToken,
-              destinationChain: tx.destinationChain,
-              destinationToken: tx.destinationToken,
-              bridgeModuleName: tx.bridgeModuleName,
-              routerAddress: tx.routerAddress,
-              estimatedTime: tx.estimatedTime,
-              timestamp: tx.id,
-              status: 'pending',
-            })
-          )
+          dispatch(addTransaction(trackedTransaction))
         }
       })
     }
