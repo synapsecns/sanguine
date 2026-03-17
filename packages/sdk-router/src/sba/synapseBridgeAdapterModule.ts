@@ -4,7 +4,7 @@ import { hexDataLength, hexDataSlice } from '@ethersproject/bytes'
 import { AddressZero } from '@ethersproject/constants'
 import { BigNumber, BigNumberish, Contract, PopulatedTransaction } from 'ethers'
 
-import { MEDIAN_TIME_BLOCK } from '../constants'
+import { MEDIAN_TIME_BLOCK, SWAP_QUOTER_V2_ADDRESS_MAP } from '../constants'
 import { SynapseModule } from '../module'
 import { getWithTimeout } from '../utils'
 import {
@@ -18,6 +18,7 @@ const SBA_ABI = [
   'function getNativeFee(uint32 dstEid, uint64 gasLimit) view returns (uint256 nativeFee)',
   'function getRemoteAddress(uint32 eid, address localAddr) view returns (address remoteAddr)',
 ]
+const SWAP_QUOTER_ABI = ['function weth() view returns (address)']
 
 const LZ_API_URL = 'https://scan.layerzero-api.com/v1'
 const LZ_API_TIMEOUT = 5000
@@ -49,8 +50,10 @@ export class SynapseBridgeAdapterModule implements SynapseModule {
   readonly address: string
   readonly chainId: number
   readonly adapterContract: Contract
+  readonly swapQuoterContract?: Contract
 
   private amountPositionCache: number | undefined
+  private wrappedNativeTokenCache: string | undefined
 
   constructor(chainId: number, provider: Provider, address: string) {
     this.chainId = chainId
@@ -60,6 +63,14 @@ export class SynapseBridgeAdapterModule implements SynapseModule {
       SynapseBridgeAdapterModule.sbaInterface,
       provider
     )
+    const swapQuoterAddress = SWAP_QUOTER_V2_ADDRESS_MAP[chainId]
+    if (swapQuoterAddress) {
+      this.swapQuoterContract = new Contract(
+        swapQuoterAddress,
+        SWAP_QUOTER_ABI,
+        provider
+      )
+    }
   }
 
   public async bridge(): Promise<PopulatedTransaction> {
@@ -142,6 +153,21 @@ export class SynapseBridgeAdapterModule implements SynapseModule {
 
   public async getNativeFee(dstEid: number): Promise<BigNumber> {
     return this.adapterContract.getNativeFee(dstEid, SBA_MIN_GAS_LIMIT)
+  }
+
+  public async getWrappedNativeToken(): Promise<string | undefined> {
+    if (this.wrappedNativeTokenCache) {
+      return this.wrappedNativeTokenCache
+    }
+    if (!this.swapQuoterContract) {
+      return undefined
+    }
+    const wrappedNativeToken = await this.swapQuoterContract.weth()
+    if (!wrappedNativeToken || wrappedNativeToken === AddressZero) {
+      return undefined
+    }
+    this.wrappedNativeTokenCache = wrappedNativeToken
+    return wrappedNativeToken
   }
 
   public populateBridgeERC20(

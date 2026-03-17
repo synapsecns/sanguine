@@ -35,6 +35,7 @@ import { Query, RouterQuery } from './module'
 import { SynapseSDK } from './sdk'
 import { EngineID } from './swap'
 import { BridgeQuoteV2, IntentQuote, SwapQuote } from './types'
+import { ETH_NATIVE_TOKEN_ADDRESS } from './utils'
 
 // Override fetch to exclude RFQ from tests
 global.fetch = jest.fn(() =>
@@ -1019,6 +1020,66 @@ describe('SynapseSDK', () => {
         moduleNames: ['SynapseBridgeAdapter'],
         nativeFee: '77',
         gasDropAmount: '0',
+      })
+      expect(quotes[0].tx).toBeDefined()
+    })
+
+    it('supports native-wrap origins in bridgeV2', async () => {
+      const synapse = setupSynapse()
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.ETH],
+          'getWrappedNativeToken'
+        )
+        .mockResolvedValue(sbaOriginToken)
+      jest
+        .spyOn(synapse.swapEngineSet, 'getBestQuote')
+        .mockImplementation(async (input) => {
+          if (
+            input.chainId === SupportedChainId.ETH &&
+            input.fromToken === ETH_NATIVE_TOKEN_ADDRESS &&
+            input.toToken.toLowerCase() === sbaOriginToken.toLowerCase()
+          ) {
+            return {
+              ...noOpRoute,
+              fromToken: ETH_NATIVE_TOKEN_ADDRESS,
+              expectedToAmount: BigNumber.from(1000),
+              minToAmount: BigNumber.from(950),
+              steps: [
+                {
+                  token: ETH_NATIVE_TOKEN_ADDRESS,
+                  amount: BigNumber.from(1000),
+                  msgValue: BigNumber.from(1000),
+                  zapData: '0x1234',
+                },
+              ],
+            } as any
+          }
+          return undefined as any
+        })
+      jest
+        .spyOn(synapse.swapEngineSet, 'generateRoute')
+        .mockImplementation(async (_input, quote) => quote as any)
+
+      const quotes: BridgeQuoteV2[] = await synapse.bridgeV2({
+        fromChainId: SupportedChainId.ETH,
+        toChainId: SupportedChainId.OPTIMISM,
+        fromToken: ETH_NATIVE_TOKEN_ADDRESS,
+        toToken: sbaRemoteToken,
+        fromAmount: '1000',
+        fromSender: sender,
+        toRecipient: recipient,
+      })
+
+      expect(quotes).toHaveLength(1)
+      expect(quotes[0]).toMatchObject({
+        fromToken: ETH_NATIVE_TOKEN_ADDRESS,
+        toToken: sbaRemoteToken,
+        expectedToAmount: '1000',
+        minToAmount: '950',
+        moduleNames: [EngineID[EngineID.NoOp], 'SynapseBridgeAdapter'],
+        routerAddress: SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.ETH],
+        nativeFee: '77',
       })
       expect(quotes[0].tx).toBeDefined()
     })

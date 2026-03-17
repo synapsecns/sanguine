@@ -11,6 +11,7 @@ import {
 } from '../constants'
 import { BridgeTokenCandidate, GetBridgeRouteV2Parameters } from '../module'
 import { EngineID, decodeZapData } from '../swap'
+import { ETH_NATIVE_TOKEN_ADDRESS } from '../utils'
 import { SynapseBridgeAdapterModule } from './synapseBridgeAdapterModule'
 import { SynapseBridgeAdapterModuleSet } from './synapseBridgeAdapterModuleSet'
 import { SwapEngineRoute } from '../swap/models'
@@ -123,25 +124,130 @@ describe('SynapseBridgeAdapterModuleSet', () => {
     ).resolves.toEqual([bridgeToken])
   })
 
-  it('rejects bridge routes that require origin swap steps', async () => {
+  it('normalizes native input to the wrapped-native SBA bridge token for candidate discovery', async () => {
+    jest
+      .spyOn(originModule, 'getWrappedNativeToken')
+      .mockResolvedValue(ETH_TOKEN)
     jest.spyOn(originModule, 'getRemoteAddress').mockResolvedValue(OP_TOKEN)
 
     await expect(
-      moduleSet.getBridgeRouteV2({
-        ...getRouteParams(),
-        originSwapRoute: {
-          ...createNoOpRoute(),
-          steps: [
-            {
-              token: ETH_TOKEN,
-              amount: BigNumber.from(1000),
-              msgValue: BigNumber.from(0),
-              zapData: '0x',
-            },
-          ],
-        },
+      moduleSet.getBridgeTokenCandidates({
+        fromChainId: SupportedChainId.ETH,
+        toChainId: SupportedChainId.OPTIMISM,
+        fromToken: ETH_NATIVE_TOKEN_ADDRESS,
       })
-    ).resolves.toBeUndefined()
+    ).resolves.toEqual([bridgeToken])
+  })
+
+  it('accepts one-step origin routes and preserves their minimum amount', async () => {
+    jest.spyOn(originModule, 'getRemoteAddress').mockResolvedValue(OP_TOKEN)
+    jest
+      .spyOn(originModule, 'getNativeFee')
+      .mockResolvedValue(BigNumber.from(77))
+    jest.spyOn(originModule, 'getEstimatedTime').mockResolvedValue(undefined)
+
+    const route = await moduleSet.getBridgeRouteV2({
+      ...getRouteParams(),
+      originSwapRoute: {
+        ...createNoOpRoute(BigNumber.from(1100)),
+        fromToken: OTHER_TOKEN,
+        toToken: ETH_TOKEN,
+        expectedToAmount: BigNumber.from(1000),
+        minToAmount: BigNumber.from(925),
+        steps: [
+          {
+            token: OTHER_TOKEN,
+            amount: BigNumber.from(1100),
+            msgValue: BigNumber.from(0),
+            zapData: '0x1234',
+          },
+        ],
+      },
+    })
+
+    expect(route).toMatchObject({
+      toToken: OP_TOKEN,
+      expectedToAmount: BigNumber.from(1000),
+      minToAmount: BigNumber.from(925),
+      nativeFee: BigNumber.from(77),
+    })
+  })
+
+  it('accepts multi-step origin routes and preserves their minimum amount', async () => {
+    jest.spyOn(originModule, 'getRemoteAddress').mockResolvedValue(OP_TOKEN)
+    jest
+      .spyOn(originModule, 'getNativeFee')
+      .mockResolvedValue(BigNumber.from(77))
+    jest.spyOn(originModule, 'getEstimatedTime').mockResolvedValue(undefined)
+
+    const route = await moduleSet.getBridgeRouteV2({
+      ...getRouteParams(),
+      originSwapRoute: {
+        ...createNoOpRoute(BigNumber.from(1200)),
+        fromToken: OTHER_TOKEN,
+        toToken: ETH_TOKEN,
+        expectedToAmount: BigNumber.from(1000),
+        minToAmount: BigNumber.from(900),
+        steps: [
+          {
+            token: OTHER_TOKEN,
+            amount: BigNumber.from(1200),
+            msgValue: BigNumber.from(0),
+            zapData: '0x1111',
+          },
+          {
+            token: ETH_TOKEN,
+            amount: BigNumber.from(1000),
+            msgValue: BigNumber.from(0),
+            zapData: '0x2222',
+          },
+        ],
+      },
+    })
+
+    expect(route).toMatchObject({
+      toToken: OP_TOKEN,
+      expectedToAmount: BigNumber.from(1000),
+      minToAmount: BigNumber.from(900),
+      nativeFee: BigNumber.from(77),
+    })
+  })
+
+  it('accepts the supported native-wrap route and preserves its minimum amount', async () => {
+    jest.spyOn(originModule, 'getRemoteAddress').mockResolvedValue(OP_TOKEN)
+    jest
+      .spyOn(originModule, 'getNativeFee')
+      .mockResolvedValue(BigNumber.from(77))
+    jest.spyOn(originModule, 'getEstimatedTime').mockResolvedValue(undefined)
+    jest
+      .spyOn(originModule, 'getWrappedNativeToken')
+      .mockResolvedValue(ETH_TOKEN)
+
+    const route = await moduleSet.getBridgeRouteV2({
+      ...getRouteParams(),
+      originSwapRoute: {
+        ...createNoOpRoute(BigNumber.from(1100)),
+        fromToken: ETH_NATIVE_TOKEN_ADDRESS,
+        toToken: ETH_TOKEN,
+        expectedToAmount: BigNumber.from(1000),
+        minToAmount: BigNumber.from(950),
+        steps: [
+          {
+            token: ETH_NATIVE_TOKEN_ADDRESS,
+            amount: BigNumber.from(1100),
+            msgValue: BigNumber.from(1100),
+            zapData: '0x1234',
+          },
+        ],
+      },
+    })
+
+    expect(route).toMatchObject({
+      toToken: OP_TOKEN,
+      expectedToAmount: BigNumber.from(1000),
+      minToAmount: BigNumber.from(950),
+      nativeFee: BigNumber.from(77),
+    })
   })
 
   it('forwards the native fee and keeps the SBA bridge step 1:1', async () => {

@@ -17,6 +17,7 @@ describe('SynapseBridgeAdapterModule', () => {
   beforeEach(() => {
     fetchMock = jest.fn()
     global.fetch = fetchMock as any
+    ;(module as any).wrappedNativeTokenCache = undefined
   })
 
   afterEach(() => {
@@ -82,6 +83,24 @@ describe('SynapseBridgeAdapterModule', () => {
     await expect(
       module.getEstimatedTime(SupportedChainId.OPTIMISM)
     ).resolves.toBeCloseTo(expectedEstimatedTime)
+  })
+
+  it('queries SwapQuoterV2 for the canonical wrapped-native token and caches it', async () => {
+    const wethSpy = jest
+      .fn()
+      .mockResolvedValue('0x00000000000000000000000000000000000000aa')
+    Object.defineProperty(module, 'swapQuoterContract', {
+      configurable: true,
+      value: { weth: wethSpy },
+    })
+
+    await expect(module.getWrappedNativeToken()).resolves.toEqual(
+      '0x00000000000000000000000000000000000000aa'
+    )
+    await expect(module.getWrappedNativeToken()).resolves.toEqual(
+      '0x00000000000000000000000000000000000000aa'
+    )
+    expect(wethSpy).toHaveBeenCalledTimes(1)
   })
 
   it('returns undefined estimated time when querying the same chain', async () => {

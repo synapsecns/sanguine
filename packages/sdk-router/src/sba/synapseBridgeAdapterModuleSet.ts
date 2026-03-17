@@ -16,7 +16,12 @@ import {
 } from '../module'
 import { ChainProvider } from '../router'
 import { encodeZapData } from '../swap'
-import { isSameAddress, logExecutionTime, logger } from '../utils'
+import {
+  isNativeToken,
+  isSameAddress,
+  logExecutionTime,
+  logger,
+} from '../utils'
 import {
   getSbaChainMetadata,
   SBA_DEFAULT_DESTINATION_BLOCKS,
@@ -86,9 +91,15 @@ export class SynapseBridgeAdapterModuleSet extends SynapseModuleSet {
       return []
     }
     try {
+      const originBridgeToken = isNativeToken(fromToken)
+        ? await originModule.getWrappedNativeToken()
+        : fromToken
+      if (!originBridgeToken) {
+        return []
+      }
       const remoteToken = await originModule.getRemoteAddress(
         destMetadata.lzEid,
-        fromToken
+        originBridgeToken
       )
       if (!remoteToken || isSameAddress(remoteToken, AddressZero)) {
         return []
@@ -100,7 +111,7 @@ export class SynapseBridgeAdapterModuleSet extends SynapseModuleSet {
         {
           originChainId: fromChainId,
           destChainId: toChainId,
-          originToken: fromToken,
+          originToken: originBridgeToken,
           destToken: remoteToken,
         },
       ]
@@ -126,9 +137,6 @@ export class SynapseBridgeAdapterModuleSet extends SynapseModuleSet {
       toRecipient,
       allowMultipleTxs,
     } = params
-    if (originSwapRoute.steps.length > 0) {
-      return undefined
-    }
     const originModule = this.modules[bridgeToken.originChainId]
     const destMetadata = getSbaChainMetadata(bridgeToken.destChainId)
     if (!originModule || !destMetadata) {
@@ -170,7 +178,10 @@ export class SynapseBridgeAdapterModuleSet extends SynapseModuleSet {
         },
         toToken: remoteToken,
         expectedToAmount,
-        minToAmount: expectedToAmount,
+        minToAmount:
+          originSwapRoute.steps.length === 0
+            ? expectedToAmount
+            : originSwapRoute.minToAmount,
         nativeFee,
         estimatedTime,
         zapData: this.getBridgeZapData(

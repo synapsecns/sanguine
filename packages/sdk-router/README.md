@@ -287,7 +287,8 @@ Current SBA scope:
 - SBA is `bridgeV2`-only. It is not used by legacy `bridgeQuote()`, `allBridgeQuotes()`, or `bridge()`.
 - The shared intent path now includes DFK, Harmony, and Klaytn/Kaia for SBA routing, without implicitly enabling unsupported Gas.zip or Relay behavior on those chains.
 - The origin token must already be directly supported by the adapter on the origin chain.
-- SBA only returns direct origin routes. If the origin leg requires a swap, no SBA quote is returned.
+- SBA normally returns direct origin routes. The one exception is native gas token -> canonical wrapped-native on the origin chain, where the SDK reuses the existing one-step V2 swap path.
+- For that native-wrap exception, the canonical wrapped-native token is sourced at runtime from `SwapQuoterV2.weth()` on the origin chain.
 - Single-transaction `bridgeV2()` quotes are only returned when the requested `toToken` exactly matches the SBA-mapped remote token.
 - `intent({ allowMultipleTxs: true })` may still use SBA when the final token differs. In that case SBA bridges into the mapped remote token first, then the existing destination-side intent flow can append a follow-up swap.
 
