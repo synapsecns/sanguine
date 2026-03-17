@@ -309,6 +309,8 @@
   "Time": {
     "Estimated Time": "الوقت المقدر",
     "d": "ي",
+    "m": "د",
+    "s": "ث",
     "min": "د",
     "Waiting": "انتظار",
     "Began": "بدأ",
@@ -322,8 +324,7 @@
     "Support": "الدعم",
     "minutes": "دقائق",
     "seconds": "ثوانٍ",
-    "m remaining": "م متبقية",
-    "s remaining": "ث متبقية",
+    "remaining": "المتبقية",
     "Clear notification": "مسح الإشعار",
     "Clear transaction": "مسح المعاملات",
     "Contact Support (Discord)": "اتصل بالدعم (ديسكورد)"

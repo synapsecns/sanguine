@@ -309,6 +309,8 @@
   "Time": {
     "Estimated Time": "推定時間",
     "d": "日",
+    "m": "分",
+    "s": "秒",
     "min": "分",
     "Waiting": "待機中",
     "Began": "開始",
@@ -322,8 +324,7 @@
     "Support": "サポート",
     "minutes": "分",
     "seconds": "秒",
-    "m remaining": "分残り",
-    "s remaining": "秒残り",
+    "remaining": "残り",
     "Clear notification": "通知をクリア",
     "Clear transaction": "トランザクションをクリア",
     "Contact Support (Discord)": "サポートにお問い合わせください (Discord)"

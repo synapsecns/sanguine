@@ -1,16 +1,16 @@
 export const oneMonthInMinutes: number = 43200
 export const oneDayInMinutes: number = 1440
 
-export const getUnixTimeMinutesFromNow = (minutesFromNow) => {
-  const currentTimeSeconds = new Date().getTime() / 1000
+export const getUnixTimeSecondsNow = (): number => {
+  return Math.round(new Date().getTime() / 1000)
+}
 
-  return Math.round(currentTimeSeconds + 60 * minutesFromNow)
+export const getUnixTimeMinutesFromNow = (minutesFromNow) => {
+  return Math.round(getUnixTimeSecondsNow() + 60 * minutesFromNow)
 }
 
 export const getUnixTimeMinutesBeforeNow = (minutesBeforeNow) => {
-  const currentTimeSeconds = new Date().getTime() / 1000
-
-  return Math.round(currentTimeSeconds - 60 * minutesBeforeNow)
+  return Math.round(getUnixTimeSecondsNow() - 60 * minutesBeforeNow)
 }
 
 export const calculateTimeBetween = (
@@ -54,4 +54,30 @@ export const isTimestampToday = (unixTimestamp: number): boolean => {
 
 export const convertMsToSeconds = (ms: number) => {
   return Math.ceil(ms / 1000)
+}
+
+type CompactDurationLabels = {
+  minute: string
+  second: string
+}
+
+const DEFAULT_COMPACT_DURATION_LABELS: CompactDurationLabels = {
+  minute: 'm',
+  second: 's',
+}
+
+export const formatCompactDuration = (
+  durationInSeconds: number,
+  labels: CompactDurationLabels = DEFAULT_COMPACT_DURATION_LABELS
+): string => {
+  const normalizedDuration = Math.max(0, Math.trunc(durationInSeconds))
+
+  if (normalizedDuration < 60) {
+    return `${normalizedDuration}${labels.second}`
+  }
+
+  const minutes = Math.floor(normalizedDuration / 60)
+  const seconds = normalizedDuration % 60
+
+  return `${minutes}${labels.minute}${seconds}${labels.second}`
 }

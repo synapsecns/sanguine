@@ -309,6 +309,8 @@
   "Time": {
     "Estimated Time": "Tiempo estimado",
     "d": "d",
+    "m": "m",
+    "s": "s",
     "min": "min",
     "Waiting": "Esperando",
     "Began": "Comenzó",
@@ -322,8 +324,7 @@
     "Support": "Soporte",
     "minutes": "minutos",
     "seconds": "segundos",
-    "m remaining": "m restantes",
-    "s remaining": "s restantes",
+    "remaining": "restante",
     "Clear notification": "Borrar notificación",
     "Clear transaction": "Borrar transacciones",
     "Contact Support (Discord)": "Contactar Soporte (Discord)"

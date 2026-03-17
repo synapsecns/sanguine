@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 
 import ExclamationIcon from '@components/icons/ExclamationIcon'
+import { formatCompactDuration } from '@/utils/time'
 
 export const TimeRemaining = ({
   isDelayed,
@@ -15,14 +16,17 @@ export const TimeRemaining = ({
   status: 'pending' | 'completed' | 'reverted' | 'refunded'
 }) => {
   const t = useTranslations('Time')
+  const compactDurationLabels = {
+    minute: t('m'),
+    second: t('s'),
+  }
 
   const estTime = useMemo(() => {
-    if (remainingTime > 60) {
-      return `${Math.ceil(remainingTime / 60)}${t('m remaining')}`
-    } else {
-      return `${remainingTime}${t('s remaining')}`
-    }
-  }, [remainingTime])
+    return `${formatCompactDuration(
+      remainingTime,
+      compactDurationLabels
+    )} ${t('remaining')}`
+  }, [compactDurationLabels, remainingTime, t])
 
   if (status === 'completed') {
     return <div className="text-sm text-green-400">{t('Complete')}!</div>
@@ -45,12 +49,17 @@ export const TimeRemaining = ({
   }
 
   if (isDelayed) {
-    const delayedTimeInMin = Math.floor(delayedTime / 60)
-    const absoluteDelayedTime = Math.abs(delayedTimeInMin)
-    const showDelayedTime = delayedTimeInMin < -1
+    const absoluteDelayedTime = Math.abs(delayedTime)
+    const showDelayedTime = absoluteDelayedTime > 60
     return (
       <div className="text-sm">
-        {t('Waiting')}... {showDelayedTime ? `(${absoluteDelayedTime}m)` : null}
+        {t('Waiting')}...{' '}
+        {showDelayedTime
+          ? `(${formatCompactDuration(
+              absoluteDelayedTime,
+              compactDurationLabels
+            )})`
+          : null}
       </div>
     )
   }

@@ -309,6 +309,8 @@
   "Time": {
     "Estimated Time": "预计时间",
     "d": "天",
+    "m": "分",
+    "s": "秒",
     "min": "分钟",
     "Waiting": "等待中",
     "Began": "已开始",
@@ -322,8 +324,7 @@
     "Support": "支持",
     "minutes": "分钟",
     "seconds": "秒",
-    "m remaining": "分钟剩余",
-    "s remaining": "秒剩余",
+    "remaining": "剩余",
     "Clear notification": "清除通知",
     "Clear transaction": "清除交易",
     "Contact Support (Discord)": "联系支持（Discord）"

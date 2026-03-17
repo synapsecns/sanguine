@@ -309,6 +309,8 @@
   "Time": {
     "Estimated Time": "Tahmini süre",
     "d": "g",
+    "m": "dk",
+    "s": "sn",
     "min": "dk",
     "Waiting": "Bekleniyor",
     "Began": "Başladı",
@@ -322,8 +324,7 @@
     "Support": "Destek",
     "minutes": "dakika",
     "seconds": "saniye",
-    "m remaining": "dk kaldı",
-    "s remaining": "sn kaldı",
+    "remaining": "kalan",
     "Clear notification": "Bildirimi temizle",
     "Clear transaction": "İşlemleri temizle",
     "Contact Support (Discord)": "Destek ile İletişime Geç (Discord)"
