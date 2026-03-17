@@ -261,6 +261,7 @@ const synapseTxId = await synapseSDK.getSynapseTxId(
 
 The status of the bridge transaction can then be checked using the `getBridgeTxStatus` method:
 
+
 ```ts
 const status: boolean = await synapseSDK.getBridgeTxStatus(
   // Chain ID of the DESTINATION chain
