@@ -68,10 +68,18 @@ const readChainVerificationOptions = (chainName) => {
   }
 }
 
+const optionalParam = (name, value) => {
+  return value ? `${name} ${value}` : ''
+}
+
 const readEtherscanOptions = (chainName) => {
-  const url = readEnv(chainName, 'VERIFIER_URL')
-  const key = readEnv(chainName, 'VERIFIER_KEY')
-  return `--verifier etherscan --verifier-url ${url} --etherscan-api-key ${key}`
+  const url = tryReadEnv(chainName, 'VERIFIER_URL')
+  const key =
+    tryReadEnv(chainName, 'VERIFIER_KEY') ?? readEnv('ETHERSCAN_V2_KEY')
+  return `--verifier etherscan --etherscan-api-key ${key} ${optionalParam(
+    '--verifier-url',
+    url
+  )}`
 }
 
 const readBlockscoutOptions = (chainName) => {
@@ -81,7 +89,7 @@ const readBlockscoutOptions = (chainName) => {
 
 const readSourcifyOptions = (chainName) => {
   const url = tryReadEnv(chainName, 'VERIFIER_URL')
-  return '--verifier sourcify' + (url ? ` --verifier-url ${url}` : '')
+  return `--verifier sourcify ${optionalParam('--verifier-url', url)}`
 }
 
 /**
@@ -100,7 +108,7 @@ const applyAutoFillGasPrice = (chainName, options) => {
     )
   } else if (options.includes(OPTION_AUTO_FILL_GAS_PRICE_1559)) {
     const priorityFee = getChainMaxPriorityFee(chainName)
-    /* 
+    /*
     TODO: reenable this once the foundry bug is fixed: https://github.com/foundry-rs/foundry/issues/7486
     Currently the maxGasPrice is used for both base and priority, rendering the setting of priority fee useless.
 
