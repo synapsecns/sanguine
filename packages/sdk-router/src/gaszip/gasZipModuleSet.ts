@@ -7,7 +7,6 @@ import {
   BridgeRoute,
   BridgeRouteV2,
   BridgeTokenCandidate,
-  createNoSwapQuery,
   FeeConfig,
   GetBridgeRouteV2Parameters,
   GetBridgeTokenCandidatesParameters,
@@ -169,55 +168,14 @@ export class GasZipModuleSet extends SynapseModuleSet {
    */
   @logExecutionTime('GasZipModuleSet.getBridgeRoutes')
   public async getBridgeRoutes(
-    originChainId: number,
-    destChainId: number,
-    tokenIn: string,
-    tokenOut: string,
-    amountIn: BigNumberish
+    _originChainId: number,
+    _destChainId: number,
+    _tokenIn: string,
+    _tokenOut: string,
+    _amountIn: BigNumberish
   ): Promise<BridgeRoute[]> {
-    const syncedPromise = this.checkBlockHeights(originChainId, destChainId)
-    // Check that both chains are supported by gas.zip
-    const supportedChainIds = await this.getAllChainIds()
-    if (
-      !supportedChainIds.includes(originChainId) ||
-      !supportedChainIds.includes(destChainId)
-    ) {
-      return []
-    }
-    // Check that both tokens are native assets
-    if (!isNativeToken(tokenIn) || !isNativeToken(tokenOut)) {
-      return []
-    }
-    const destGasZipChain = await this.getGasZipId(destChainId)
-    if (!destGasZipChain) {
-      return []
-    }
-    const quote = await getGasZipQuote(originChainId, destChainId, amountIn)
-    // Check that non-zero amount is returned
-    if (quote.amountOut.eq(Zero)) {
-      return []
-    }
-    // Save destination gas.zip chain id in the destination query raw params
-    const originQuery = createNoSwapQuery(tokenIn, BigNumber.from(amountIn))
-    const destQuery = createNoSwapQuery(tokenOut, quote.amountOut)
-    destQuery.rawParams = '0x' + destGasZipChain.toString(16)
-    const route: BridgeRoute = {
-      originChainId,
-      destChainId,
-      originQuery,
-      destQuery,
-      bridgeToken: {
-        symbol: 'NATIVE',
-        token: tokenIn,
-      },
-      bridgeModuleName: this.moduleName,
-    }
-    // Verify that both chains are up to date before returning the route
-    const synced = await syncedPromise
-    if (!synced) {
-      return []
-    }
-    return [route]
+    // Bridge V1 is not supported
+    return []
   }
 
   /**
