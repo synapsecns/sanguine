@@ -324,7 +324,8 @@
     "Support": "サポート",
     "minutes": "分",
     "seconds": "秒",
-    "remaining": "残り",
+    "m remaining": "分残り",
+    "s remaining": "秒残り",
     "Clear notification": "通知をクリア",
     "Clear transaction": "トランザクションをクリア",
     "Contact Support (Discord)": "サポートにお問い合わせください (Discord)"

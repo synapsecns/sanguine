@@ -324,7 +324,8 @@
     "Support": "الدعم",
     "minutes": "دقائق",
     "seconds": "ثوانٍ",
-    "remaining": "متبقية",
+    "m remaining": "م متبقية",
+    "s remaining": "ث متبقية",
     "Clear notification": "مسح الإشعار",
     "Clear transaction": "مسح المعاملات",
     "Contact Support (Discord)": "اتصل بالدعم (ديسكورد)"
