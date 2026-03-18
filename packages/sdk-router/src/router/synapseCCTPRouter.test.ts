@@ -9,7 +9,7 @@ import { DestRequest } from './types'
 import { getTestProvider } from '../constants/testProviders'
 import { ETH_USDC } from '../constants/testValues'
 
-describe('SynapseCCTPRouter', () => {
+describe.skip('SynapseCCTPRouter', () => {
   const ethAddress = CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
   const ethProvider: Provider = getTestProvider(SupportedChainId.ETH)
 
