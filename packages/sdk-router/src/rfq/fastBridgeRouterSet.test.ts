@@ -149,17 +149,20 @@ describe('FastBridgeRouterSet', () => {
 
     it('preserves the FastBridge zap deadline for direct V2 routes', async () => {
       jest.spyOn(Date, 'now').mockReturnValue(nowMs)
-      jest.spyOn(routerSet as never, 'getQuotes' as never).mockResolvedValue([
-        quote,
-      ] as never)
+      jest
+        .spyOn(routerSet as never, 'getQuotes' as never)
+        .mockResolvedValue([quote] as never)
 
       const populateBridge = jest.fn(async (params: unknown) => ({
-        data: FastBridgeRouter.fastBridgeInterface.encodeFunctionData('bridge', [
-          params,
-        ]),
+        data: FastBridgeRouter.fastBridgeInterface.encodeFunctionData(
+          'bridge',
+          [params]
+        ),
       }))
       const router = routerSet.getFastBridgeRouter(SupportedChainId.ETH)
-      jest.spyOn(router, 'getProtocolFeeRate').mockResolvedValue(BigNumber.from(0))
+      jest
+        .spyOn(router, 'getProtocolFeeRate')
+        .mockResolvedValue(BigNumber.from(0))
       jest.spyOn(router, 'getFastBridgeContract').mockResolvedValue({
         address: '0x00000000000000000000000000000000000000f1',
         populateTransaction: {
@@ -183,10 +186,11 @@ describe('FastBridgeRouterSet', () => {
       expect(decodedZapData.target).toEqual(
         '0x00000000000000000000000000000000000000f1'
       )
-      const decodedBridgeCall = FastBridgeRouter.fastBridgeInterface.decodeFunctionData(
-        'bridge',
-        decodedZapData.payload!
-      )
+      const decodedBridgeCall =
+        FastBridgeRouter.fastBridgeInterface.decodeFunctionData(
+          'bridge',
+          decodedZapData.payload!
+        )
       const bridgeParams = decodedBridgeCall[0] as { deadline: BigNumber }
       expect(bridgeParams.deadline).toEqual(
         BigNumber.from(Math.floor(nowMs / 1000) + 2 * 60 * 60)

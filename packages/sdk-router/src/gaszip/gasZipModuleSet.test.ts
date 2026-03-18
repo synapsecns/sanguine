@@ -132,9 +132,7 @@ describe('GasZipModuleSet', () => {
     }
 
     it('returns the original queries unchanged', () => {
-      expect(
-        moduleSet.applySlippage(originQuery, destQuery)
-      ).toEqual({
+      expect(moduleSet.applySlippage(originQuery, destQuery)).toEqual({
         originQuery,
         destQuery,
       })
