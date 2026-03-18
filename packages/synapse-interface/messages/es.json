@@ -380,12 +380,5 @@
     "Discord": "Discord",
     "Twitter": "Twitter"
   },
-  "Warning": {
-    "Warning! The Harmony bridge has been exploited": "¡Advertencia! El puente de Harmony ha sido comprometido.",
-    "Do not bridge via Harmony unless you understand the risks involved": "No uses el puente a través de Harmony a menos que entiendas los riesgos involucrados.",
-    "Warning! The Fantom bridge has been exploited": "¡Advertencia! El puente de Fantom ha sido comprometido.",
-    "Do not bridge via Fantom unless you understand the risks involved": "No uses el puente a través de Fantom a menos que entiendas los riesgos involucrados.",
-    "Alert: Transactions to Dogechain are temporarily paused": "Alerta: Las transacciones a Dogechain están temporalmente en pausa.",
-    "You may still bridge funds from Dogechain to any supported destination chain": "Aún puedes puentear fondos desde Dogechain a cualquier cadena de destino compatible."
-  }
+  "Warning": {}
 }
