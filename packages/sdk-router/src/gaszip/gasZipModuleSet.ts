@@ -167,13 +167,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
    * @inheritdoc SynapseModuleSet.getBridgeRoutes
    */
   @logExecutionTime('GasZipModuleSet.getBridgeRoutes')
-  public async getBridgeRoutes(
-    _originChainId: number,
-    _destChainId: number,
-    _tokenIn: string,
-    _tokenOut: string,
-    _amountIn: BigNumberish
-  ): Promise<BridgeRoute[]> {
+  public async getBridgeRoutes(): Promise<BridgeRoute[]> {
     // Bridge V1 is not supported
     return []
   }
@@ -185,7 +179,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
     feeAmount: BigNumber
     feeConfig: FeeConfig
   }> {
-    // There's no good way to determine the fee for gas.zip
+    // Bridge V1 is not supported
     return {
       feeAmount: Zero,
       feeConfig: {
@@ -203,7 +197,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
     originPeriod: number
     destPeriod: number
   } {
-    // Deadline settings are not supported by gas.zip
+    // Bridge V1 is not supported
     return {
       originPeriod: 0,
       destPeriod: 0,
@@ -217,7 +211,7 @@ export class GasZipModuleSet extends SynapseModuleSet {
     originQueryPrecise: Query,
     destQueryPrecise: Query
   ): { originQuery: Query; destQuery: Query } {
-    // Slippage settings are not supported by gas.zip
+    // Bridge V1 is not supported
     return {
       originQuery: originQueryPrecise,
       destQuery: destQueryPrecise,

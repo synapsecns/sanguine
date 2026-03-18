@@ -33,15 +33,7 @@ describe('GasZipModuleSet', () => {
 
   describe('getBridgeRoutes', () => {
     it('returns an empty array for legacy bridge quotes', async () => {
-      await expect(
-        moduleSet.getBridgeRoutes(
-          SupportedChainId.ETH,
-          SupportedChainId.ARBITRUM,
-          '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-          '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-          BigNumber.from(1)
-        )
-      ).resolves.toEqual([])
+      await expect(moduleSet.getBridgeRoutes()).resolves.toEqual([])
     })
   })
 

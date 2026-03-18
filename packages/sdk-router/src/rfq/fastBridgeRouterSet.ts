@@ -1,7 +1,6 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
-import { BigNumberish } from 'ethers'
 import NodeCache from 'node-cache'
 
 import {
@@ -202,25 +201,19 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
    * @inheritdoc SynapseModuleSet.getBridgeRoutes
    */
   @logExecutionTime('FastBridgeRouterSet.getBridgeRoutes')
-  public async getBridgeRoutes(
-    _originChainId: number,
-    _destChainId: number,
-    _tokenIn: string,
-    _tokenOut: string,
-    _amountIn: BigNumberish,
-    _originUserAddress?: string
-  ): Promise<BridgeRoute[]> {
-    // Bridge V1 is not supported.
+  public async getBridgeRoutes(): Promise<BridgeRoute[]> {
+    // Bridge V1 is not supported
     return []
   }
 
   /**
    * @inheritdoc SynapseModuleSet.getFeeData
    */
-  public async getFeeData(_bridgeRoute: BridgeRoute): Promise<{
+  public async getFeeData(): Promise<{
     feeAmount: BigNumber
     feeConfig: FeeConfig
   }> {
+    // Bridge V1 is not supported
     return {
       feeAmount: Zero,
       feeConfig: {
@@ -249,10 +242,9 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
    */
   public applySlippage(
     originQueryPrecise: Query,
-    destQueryPrecise: Query,
-    _slipNumerator: number,
-    _slipDenominator: number
+    destQueryPrecise: Query
   ): { originQuery: Query; destQuery: Query } {
+    // Bridge V1 is not supported
     return {
       originQuery: originQueryPrecise,
       destQuery: destQueryPrecise,

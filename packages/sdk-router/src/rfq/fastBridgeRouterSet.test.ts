@@ -34,15 +34,7 @@ describe('FastBridgeRouterSet', () => {
 
   describe('getBridgeRoutes', () => {
     it('returns an empty array for legacy bridge quotes', async () => {
-      await expect(
-        routerSet.getBridgeRoutes(
-          SupportedChainId.ETH,
-          SupportedChainId.ARBITRUM,
-          '0x00000000000000000000000000000000000000a0',
-          '0x00000000000000000000000000000000000000b0',
-          BigNumber.from(1)
-        )
-      ).resolves.toEqual([])
+      await expect(routerSet.getBridgeRoutes()).resolves.toEqual([])
     })
   })
 
