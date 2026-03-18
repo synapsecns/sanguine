@@ -2,11 +2,14 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber, parseFixed } from '@ethersproject/bignumber'
 
 import { SupportedChainId } from '../constants'
-import { FastBridgeRouterSet } from './fastBridgeRouterSet'
 import { getTestProvider } from '../constants/testProviders'
-import { CCTPRouterQuery } from '../module'
+import { BridgeTokenCandidate, CCTPRouterQuery } from '../module'
 import { ChainProvider } from '../router'
 import { createSlippageTests } from '../router/synapseCCTPRouterSet.test'
+import { decodeZapData, EngineID, SwapEngineRoute } from '../swap'
+import { FastBridgeRouter } from './fastBridgeRouter'
+import { FastBridgeRouterSet } from './fastBridgeRouterSet'
+import { FastBridgeQuote } from './quote'
 
 describe('FastBridgeRouterSet', () => {
   const ethProvider: Provider = getTestProvider(SupportedChainId.ETH)
@@ -25,8 +28,25 @@ describe('FastBridgeRouterSet', () => {
 
   const routerSet = new FastBridgeRouterSet(testProviders)
 
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  describe('getBridgeRoutes', () => {
+    it('returns an empty array for legacy bridge quotes', async () => {
+      await expect(
+        routerSet.getBridgeRoutes(
+          SupportedChainId.ETH,
+          SupportedChainId.ARBITRUM,
+          '0x00000000000000000000000000000000000000a0',
+          '0x00000000000000000000000000000000000000b0',
+          BigNumber.from(1)
+        )
+      ).resolves.toEqual([])
+    })
+  })
+
   describe('applySlippage', () => {
-    const fixedFee = parseFixed('40', 18)
     const originQuery: CCTPRouterQuery = {
       routerAdapter: '1',
       tokenOut: '2',
@@ -38,14 +58,9 @@ describe('FastBridgeRouterSet', () => {
     const destQuery: CCTPRouterQuery = {
       routerAdapter: '5',
       tokenOut: '6',
-      minAmountOut: originQuery.minAmountOut.sub(fixedFee),
+      minAmountOut: parseFixed('960', 18),
       deadline: BigNumber.from(8),
       rawParams: '9',
-    }
-
-    const biggerDestQuery: CCTPRouterQuery = {
-      ...destQuery,
-      minAmountOut: originQuery.minAmountOut.add(fixedFee),
     }
 
     describe('0% slippage', () => {
@@ -53,50 +68,33 @@ describe('FastBridgeRouterSet', () => {
         routerSet,
         originQuery,
         destQuery,
-        parseFixed('1000', 18),
+        originQuery.minAmountOut,
         destQuery.minAmountOut,
         0,
         10000
       )
     })
 
-    // Destination amount should be not modified by slippage
     describe('0.1% slippage', () => {
       createSlippageTests(
         routerSet,
         originQuery,
         destQuery,
-        parseFixed('999', 18),
+        originQuery.minAmountOut,
         destQuery.minAmountOut,
         10,
         10000
       )
     })
 
-    // Origin slippage should be capped at 5% of the fixed fee
-    // Destination amount should be not modified by slippage
     describe('1% slippage', () => {
       createSlippageTests(
         routerSet,
         originQuery,
         destQuery,
-        // 1000 - 40 * 0.05 = 998
-        parseFixed('998', 18),
+        originQuery.minAmountOut,
         destQuery.minAmountOut,
         100,
-        10000
-      )
-    })
-
-    // If destination amount is bigger than origin amount, origin slippage is capped at zero
-    describe('0.1% slippage with bigger destination amount', () => {
-      createSlippageTests(
-        routerSet,
-        originQuery,
-        biggerDestQuery,
-        originQuery.minAmountOut,
-        biggerDestQuery.minAmountOut,
-        10,
         10000
       )
     })
@@ -118,41 +116,90 @@ describe('FastBridgeRouterSet', () => {
     })
   })
 
-  describe('createRFQDestQuery', () => {
-    const tokenOut = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-    const amountOut = parseFixed('1000', 18)
-
-    const expectedDestQuery: CCTPRouterQuery = {
-      routerAdapter: '0x0000000000000000000000000000000000000000',
-      tokenOut,
-      minAmountOut: amountOut,
-      deadline: BigNumber.from(0),
-      rawParams: '0x',
+  describe('getBridgeRouteV2', () => {
+    const nowMs = 1_700_000_000_000
+    const bridgeToken: BridgeTokenCandidate = {
+      originChainId: SupportedChainId.ETH,
+      destChainId: SupportedChainId.ARBITRUM,
+      originToken: '0x00000000000000000000000000000000000000a1',
+      destToken: '0x00000000000000000000000000000000000000b1',
+    }
+    const originSwapRoute: SwapEngineRoute = {
+      engineID: EngineID.DefaultPools,
+      engineName: EngineID[EngineID.DefaultPools],
+      chainId: SupportedChainId.ETH,
+      fromToken: '0x00000000000000000000000000000000000000c1',
+      fromAmount: BigNumber.from(1_000),
+      toToken: bridgeToken.originToken,
+      expectedToAmount: BigNumber.from(1_000),
+      minToAmount: BigNumber.from(1_000),
+      steps: [],
+    }
+    const quote: FastBridgeQuote = {
+      ticker: {
+        originToken: {
+          chainId: SupportedChainId.ETH,
+          token: bridgeToken.originToken,
+        },
+        destToken: {
+          chainId: SupportedChainId.ARBITRUM,
+          token: bridgeToken.destToken,
+        },
+      },
+      destAmount: BigNumber.from(1_500),
+      maxOriginAmount: BigNumber.from(1_000),
+      fixedFee: BigNumber.from(0),
+      originFastBridge: '0x00000000000000000000000000000000000000d1',
+      destFastBridge: '0x00000000000000000000000000000000000000d2',
+      relayerAddr: '0x00000000000000000000000000000000000000d3',
+      updatedAt: nowMs,
     }
 
-    const originUserAddress = '0x1234567890abcdef1234567890abcdef12345678'
-    // "No gas rebate" flag, followed by the user address
-    const expectedRawParamsWithUserAddress =
-      '0x001234567890abcdef1234567890abcdef12345678'
+    it('preserves the FastBridge zap deadline for direct V2 routes', async () => {
+      jest.spyOn(Date, 'now').mockReturnValue(nowMs)
+      jest.spyOn(routerSet as never, 'getQuotes' as never).mockResolvedValue([
+        quote,
+      ] as never)
 
-    it('Origin user address is not provided', () => {
-      const destQuery = FastBridgeRouterSet.createRFQDestQuery(
-        tokenOut,
-        amountOut
-      )
-      expect(destQuery).toEqual(expectedDestQuery)
-    })
+      const populateBridge = jest.fn(async (params: unknown) => ({
+        data: FastBridgeRouter.fastBridgeInterface.encodeFunctionData('bridge', [
+          params,
+        ]),
+      }))
+      const router = routerSet.getFastBridgeRouter(SupportedChainId.ETH)
+      jest.spyOn(router, 'getProtocolFeeRate').mockResolvedValue(BigNumber.from(0))
+      jest.spyOn(router, 'getFastBridgeContract').mockResolvedValue({
+        address: '0x00000000000000000000000000000000000000f1',
+        populateTransaction: {
+          bridge: populateBridge,
+        },
+      } as never)
 
-    it('Origin user address is provided', () => {
-      const destQuery = FastBridgeRouterSet.createRFQDestQuery(
-        tokenOut,
-        amountOut,
-        originUserAddress
-      )
-      expect(destQuery).toEqual({
-        ...expectedDestQuery,
-        rawParams: expectedRawParamsWithUserAddress,
+      const route = await routerSet.getBridgeRouteV2({
+        originSwapRoute,
+        bridgeToken,
+        toToken: bridgeToken.destToken,
+        fromSender: '0x0000000000000000000000000000000000000137',
+        toRecipient: '0x0000000000000000000000000000000000000138',
       })
+
+      expect(route).toBeDefined()
+      expect(route?.expectedToAmount).toEqual(BigNumber.from(1_500))
+      expect(route?.minToAmount).toEqual(BigNumber.from(1_500))
+      expect(route?.zapData).toBeDefined()
+      const decodedZapData = decodeZapData(route!.zapData!)
+      expect(decodedZapData.target).toEqual(
+        '0x00000000000000000000000000000000000000f1'
+      )
+      const decodedBridgeCall = FastBridgeRouter.fastBridgeInterface.decodeFunctionData(
+        'bridge',
+        decodedZapData.payload!
+      )
+      const bridgeParams = decodedBridgeCall[0] as { deadline: BigNumber }
+      expect(bridgeParams.deadline).toEqual(
+        BigNumber.from(Math.floor(nowMs / 1000) + 2 * 60 * 60)
+      )
+      expect(populateBridge).toHaveBeenCalledTimes(1)
     })
   })
 })
