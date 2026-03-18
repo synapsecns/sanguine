@@ -2,7 +2,7 @@ export const oneMonthInMinutes: number = 43200
 export const oneDayInMinutes: number = 1440
 
 export const getUnixTimeSecondsNow = (): number => {
-  return Math.round(new Date().getTime() / 1000)
+  return Math.floor(Date.now() / 1000)
 }
 
 export const getUnixTimeMinutesFromNow = (minutesFromNow) => {
