@@ -309,6 +309,8 @@
   "Time": {
     "Estimated Time": "Temps estimé",
     "d": "j",
+    "m": "m",
+    "s": "s",
     "min": "min",
     "Waiting": "En attente",
     "Began": "Commencé",

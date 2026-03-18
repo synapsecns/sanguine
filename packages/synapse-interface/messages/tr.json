@@ -309,6 +309,8 @@
   "Time": {
     "Estimated Time": "Tahmini süre",
     "d": "g",
+    "m": "dk",
+    "s": "sn",
     "min": "dk",
     "Waiting": "Bekleniyor",
     "Began": "Başladı",

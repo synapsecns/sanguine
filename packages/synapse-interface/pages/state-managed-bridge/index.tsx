@@ -59,7 +59,7 @@ import {
 } from '@/slices/transactions/actions'
 import { useAppDispatch } from '@/store/hooks'
 import { RootState } from '@/store/store'
-import { getUnixTimeMinutesFromNow } from '@/utils/time'
+import { getUnixTimeMinutesFromNow, getUnixTimeSecondsNow } from '@/utils/time'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { wagmiConfig } from '@/wagmiConfig'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
@@ -279,7 +279,7 @@ const StateManagedBridge = () => {
   const executeBridge = async () => {
     let pendingPopup: any
 
-    const currentTimestamp: number = getUnixTimeMinutesFromNow(0)
+    const pendingTransactionId: number = getUnixTimeSecondsNow()
 
     if (destinationAddress) {
       const isRisky = await screenAddress(destinationAddress)
@@ -309,7 +309,7 @@ const StateManagedBridge = () => {
 
     dispatch(
       addPendingBridgeTransaction({
-        id: currentTimestamp,
+        id: pendingTransactionId,
         originChain: CHAINS_BY_ID[fromChainId],
         originToken: fromToken,
         originValue: debouncedFromValue,
@@ -354,6 +354,7 @@ const StateManagedBridge = () => {
         ...payload,
         gas: gasEstimate,
       })
+      const submittedAt = getUnixTimeSecondsNow()
 
       const originChainName = CHAINS_BY_ID[fromChainId]?.name
       const destinationChainName = CHAINS_BY_ID[toChainId]?.name
@@ -377,10 +378,10 @@ const StateManagedBridge = () => {
       })
       dispatch(
         updatePendingBridgeTransaction({
-          id: currentTimestamp,
-          timestamp: undefined,
+          id: pendingTransactionId,
+          timestamp: submittedAt,
           transactionHash: tx,
-          isSubmitted: false,
+          isSubmitted: true,
         })
       )
       dispatch(resetBridgeQuote())
@@ -441,7 +442,7 @@ const StateManagedBridge = () => {
       segmentAnalyticsEvent(`[Bridge]  error bridging`, {
         errorCode: error.code,
       })
-      dispatch(removePendingBridgeTransaction(currentTimestamp))
+      dispatch(removePendingBridgeTransaction(pendingTransactionId))
       console.error('Error executing bridge: ', error)
       toast.dismiss(pendingPopup)
 
