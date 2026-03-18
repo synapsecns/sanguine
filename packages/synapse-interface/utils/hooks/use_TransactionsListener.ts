@@ -44,7 +44,7 @@ export const use_TransactionsListener = () => {
         }
       })
     }
-  }, [pendingBridgeTransactions, transactions])
+  }, [address, pendingBridgeTransactions, transactions])
 
   return null
 }
