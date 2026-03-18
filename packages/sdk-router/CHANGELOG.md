@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.21.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.9...@synapsecns/sdk-router@0.21.0) (2026-03-18)
+
+
+### Features
+
+* **sdk-router:** remove bridgeV1 support for gasZip, synapseRFQ ([#3982](https://github.com/synapsecns/sanguine/issues/3982)) ([35f333a](https://github.com/synapsecns/sanguine/commit/35f333a7f5248570199ed8555a4f5941fa760520))
+
+
+
+
+
 ## [0.20.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.8...@synapsecns/sdk-router@0.20.9) (2026-03-17)
 
 
