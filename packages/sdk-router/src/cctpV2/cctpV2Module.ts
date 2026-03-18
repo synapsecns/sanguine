@@ -32,7 +32,9 @@ export type CctpV2BurnParams = {
 }
 
 export class CCTPv2Module implements SynapseModule {
-  static tokenMessengerV2Interface = new Interface(TOKEN_MESSENGER_V2_ABI)
+  public static readonly tokenMessengerV2Interface = new Interface(
+    TOKEN_MESSENGER_V2_ABI
+  )
 
   readonly address: string
   readonly chainId: number
@@ -111,14 +113,14 @@ export class CCTPv2Module implements SynapseModule {
       this.populateDepositForBurnWithHook({
         ...params,
         amount: amountAA,
-      }).data!,
+      }).data,
       4
     )
     const dataBB = hexDataSlice(
       this.populateDepositForBurnWithHook({
         ...params,
         amount: amountBB,
-      }).data!,
+      }).data,
       4
     )
     const length = hexDataLength(dataAA)

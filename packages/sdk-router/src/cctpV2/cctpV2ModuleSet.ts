@@ -316,11 +316,8 @@ export class CCTPv2ModuleSet extends SynapseModuleSet {
         }
         return undefined
       }
-      const hasMed = Object.prototype.hasOwnProperty.call(forwardFee, 'med')
-      const hasMedium = Object.prototype.hasOwnProperty.call(
-        forwardFee,
-        'medium'
-      )
+      const hasMed = Object.hasOwn(forwardFee, 'med')
+      const hasMedium = Object.hasOwn(forwardFee, 'medium')
       if (hasMed) {
         return parseTierFee('med')
       }
