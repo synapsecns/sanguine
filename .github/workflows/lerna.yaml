@@ -30,6 +30,8 @@ jobs:
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly-2025-02-27
 
       - name: Authenticate with GitHub Packages
         run: |
