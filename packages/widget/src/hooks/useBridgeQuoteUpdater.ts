@@ -20,28 +20,56 @@ export const useBridgeQuoteUpdater = (
   const isValidQuote = isNumber(quoteTime) && !isNull(quoteTime)
   const currentTime = useIntervalTimer(staleTimeout, !isValidQuote)
   const eventListenerRef = useRef<null | (() => void)>(null)
+  const refreshQuoteCallbackRef = useRef(refreshQuoteCallback)
 
   useEffect(() => {
-    if (isValidQuote && !isQuoteLoading && !isWalletPending) {
-      const timeDifference = calculateTimeBetween(currentTime, quoteTime)
-      const isStaleQuote = timeDifference >= staleTimeout
+    refreshQuoteCallbackRef.current = refreshQuoteCallback
+  }, [refreshQuoteCallback])
 
-      if (isStaleQuote) {
-        if (eventListenerRef.current) {
-          document.removeEventListener('mousemove', eventListenerRef.current)
-        }
+  useEffect(() => {
+    if (!isValidQuote || isQuoteLoading || isWalletPending) {
+      if (eventListenerRef.current) {
+        document.removeEventListener('mousemove', eventListenerRef.current)
+        eventListenerRef.current = null
+      }
 
-        const newEventListener = () => {
-          refreshQuoteCallback()
-          eventListenerRef.current = null
-        }
+      return
+    }
 
-        document.addEventListener('mousemove', newEventListener, {
-          once: true,
-        })
+    const timeDifference = calculateTimeBetween(currentTime, quoteTime)
+    const isStaleQuote = timeDifference >= staleTimeout
 
-        eventListenerRef.current = newEventListener
+    if (!isStaleQuote) {
+      return
+    }
+
+    if (eventListenerRef.current) {
+      document.removeEventListener('mousemove', eventListenerRef.current)
+    }
+
+    const newEventListener = () => {
+      refreshQuoteCallbackRef.current()
+      eventListenerRef.current = null
+    }
+
+    document.addEventListener('mousemove', newEventListener, {
+      once: true,
+    })
+
+    eventListenerRef.current = newEventListener
+
+    return () => {
+      if (eventListenerRef.current) {
+        document.removeEventListener('mousemove', eventListenerRef.current)
+        eventListenerRef.current = null
       }
     }
-  }, [currentTime, staleTimeout])
+  }, [
+    currentTime,
+    quoteTime,
+    isValidQuote,
+    isQuoteLoading,
+    isWalletPending,
+    staleTimeout,
+  ])
 }
