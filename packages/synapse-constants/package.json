@@ -15,7 +15,8 @@
   },
   "homepage": "https://github.com/synapsecns/sanguine/blob/master/packages/synapse-constants/README.md",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
     "test:coverage": "echo 'No tests defined.'",
