@@ -95,6 +95,7 @@ export const fetchBridgeQuote = createAsyncThunk(
 
     const bridgeModuleName = quote.moduleNames[quote.moduleNames.length - 1]
     const toValueBigInt = BigInt(quote.expectedToAmount)
+    const hasExecutableQuoteTx = Boolean(quote.tx?.to && quote.tx?.data)
 
     return {
       outputAmount: toValueBigInt,
@@ -120,6 +121,8 @@ export const fetchBridgeQuote = createAsyncThunk(
       estimatedTime: quote.estimatedTime,
       bridgeModuleName,
       tx: quote.tx ?? null,
+      quoteAddress:
+        hasExecutableQuoteTx && connectedAddress ? connectedAddress : null,
       requestId,
       timestamp,
     }

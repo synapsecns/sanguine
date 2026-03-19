@@ -331,13 +331,18 @@ export const Widget = ({
   }
 
   const executeBridge = async () => {
+    const quoteTx = bridgeQuote?.tx
+    const canExecuteConnectedQuote =
+      Boolean(connectedAddress && signer) &&
+      bridgeQuote?.quoteAddress === connectedAddress &&
+      Boolean(quoteTx?.to && quoteTx?.data)
+
+    if (!canExecuteConnectedQuote || !quoteTx) {
+      return
+    }
+
     try {
       dispatch(setIsWalletPending(true))
-      const quoteTx = bridgeQuote?.tx
-
-      if (!quoteTx) {
-        return
-      }
 
       const action = await dispatch(
         executeBridgeTxn({
@@ -400,13 +405,15 @@ export const Widget = ({
 
   const isCurrentRequestedQuote =
     bridgeQuote?.requestId === currentSDKRequestID.current
-  const hasExecutableQuote =
-    !connectedAddress || Boolean(bridgeQuote?.tx?.to && bridgeQuote?.tx?.data)
+  const hasMatchingConnectedQuote =
+    !connectedAddress ||
+    (bridgeQuote?.quoteAddress === connectedAddress &&
+      Boolean(bridgeQuote?.tx?.to && bridgeQuote?.tx?.data))
   const isValidBridgeQuote =
     Boolean(bridgeQuote) &&
     bridgeQuote !== EMPTY_BRIDGE_QUOTE &&
     isCurrentRequestedQuote &&
-    hasExecutableQuote
+    hasMatchingConnectedQuote
 
   const destinationValue = useMemo(() => {
     if (isLoading) {

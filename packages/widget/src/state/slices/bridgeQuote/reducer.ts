@@ -25,6 +25,7 @@ export type BridgeQuote = {
   estimatedTime: number | null
   bridgeModuleName: string | null
   tx: BridgeQuoteTransaction | null
+  quoteAddress: string | null
   requestId: number | null
   timestamp: number | null
 }
@@ -39,6 +40,7 @@ export const EMPTY_BRIDGE_QUOTE: BridgeQuote = {
   estimatedTime: null,
   bridgeModuleName: null,
   tx: null,
+  quoteAddress: null,
   requestId: null,
   timestamp: null,
 }
