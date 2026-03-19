@@ -5,8 +5,8 @@ import {
   type PublicClient,
   defineChain,
 } from 'viem'
-import * as fs from 'fs'
-import * as path from 'path'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 
 // Multicall3 address (universal deployment across chains)
 const MULTICALL3_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11'
@@ -81,6 +81,28 @@ type VerificationSummary = {
   }
 }
 
+type TokenDeploymentTarget = {
+  tokenSymbol: string
+  chain: string
+  address: string
+}
+
+function formatError(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message
+  }
+
+  if (typeof error === 'object' && error !== null) {
+    try {
+      return JSON.stringify(error)
+    } catch {
+      return 'Unknown object error'
+    }
+  }
+
+  return String(error)
+}
+
 // Function to check if a token should be skipped
 function shouldSkipVerification(tokenSymbol: string, chain: string): boolean {
   return SKIP_VERIFICATION.some(
@@ -106,16 +128,20 @@ function loadChainIds(): Record<string, number> {
 
     if (fs.existsSync(chainIdPath)) {
       try {
-        const chainId = parseInt(
+        const chainId = Number.parseInt(
           fs.readFileSync(chainIdPath, 'utf8').trim(),
           10
         )
-        if (!isNaN(chainId)) {
+        if (!Number.isNaN(chainId)) {
           chainIds[dir] = chainId
         }
       } catch (error) {
         console.warn(
-          `${colors.yellow}Warning: Failed to read chain ID for ${dir}${colors.reset}`
+          `${
+            colors.yellow
+          }Warning: Failed to read chain ID for ${dir}: ${formatError(error)}${
+            colors.reset
+          }`
         )
       }
     }
@@ -226,12 +252,50 @@ async function verifyTokenDeployment(
           }`
     }
   } catch (error) {
-    result.error = `RPC error: ${
-      error instanceof Error ? error.message : String(error)
-    }`
+    result.error = `RPC error: ${formatError(error)}`
   }
 
   return result
+}
+
+function getOrCreateSet<K, V>(map: Map<K, Set<V>>, key: K): Set<V> {
+  let existing = map.get(key)
+  if (!existing) {
+    existing = new Set<V>()
+    map.set(key, existing)
+  }
+
+  return existing
+}
+
+function addObservedValues(
+  symbolsByToken: Map<string, Set<string>>,
+  decimalsByToken: Map<string, Set<number>>,
+  result: TokenVerificationResult
+) {
+  const symbols = getOrCreateSet(symbolsByToken, result.tokenSymbol)
+  if (result.onChainSymbol) {
+    symbols.add(result.onChainSymbol)
+  }
+
+  const decimals = getOrCreateSet(decimalsByToken, result.tokenSymbol)
+  if (result.onChainDecimals !== null) {
+    decimals.add(result.onChainDecimals)
+  }
+}
+
+function collectMultiValueEntries<T>(
+  valuesByToken: Map<string, Set<T>>
+): Map<string, Set<T>> {
+  const mismatches = new Map<string, Set<T>>()
+
+  for (const [token, values] of valuesByToken.entries()) {
+    if (values.size > 1) {
+      mismatches.set(token, values)
+    }
+  }
+
+  return mismatches
 }
 
 // Function to detect mismatches
@@ -245,37 +309,93 @@ function detectMismatches(results: TokenVerificationResult[]): {
   for (const result of results) {
     if (result.error) continue
 
-    if (!symbolsByToken.has(result.tokenSymbol)) {
-      symbolsByToken.set(result.tokenSymbol, new Set())
-    }
-    if (result.onChainSymbol) {
-      symbolsByToken.get(result.tokenSymbol)!.add(result.onChainSymbol)
-    }
-
-    if (!decimalsByToken.has(result.tokenSymbol)) {
-      decimalsByToken.set(result.tokenSymbol, new Set())
-    }
-    if (result.onChainDecimals !== null) {
-      decimalsByToken.get(result.tokenSymbol)!.add(result.onChainDecimals)
-    }
+    addObservedValues(symbolsByToken, decimalsByToken, result)
   }
 
-  const symbolMismatches = new Map<string, Set<string>>()
-  const decimalMismatches = new Map<string, Set<number>>()
+  return {
+    symbolMismatches: collectMultiValueEntries(symbolsByToken),
+    decimalMismatches: collectMultiValueEntries(decimalsByToken),
+  }
+}
 
-  for (const [token, symbols] of symbolsByToken.entries()) {
-    if (symbols.size > 1) {
-      symbolMismatches.set(token, symbols)
+function groupResultsByToken(
+  results: TokenVerificationResult[]
+): Map<string, TokenVerificationResult[]> {
+  const grouped = new Map<string, TokenVerificationResult[]>()
+
+  for (const result of results) {
+    const tokenResults = grouped.get(result.tokenSymbol)
+    if (tokenResults) {
+      tokenResults.push(result)
+      continue
     }
+
+    grouped.set(result.tokenSymbol, [result])
   }
 
-  for (const [token, decimals] of decimalsByToken.entries()) {
-    if (decimals.size > 1) {
-      decimalMismatches.set(token, decimals)
-    }
+  return grouped
+}
+
+function printMismatchSection<T>(
+  title: string,
+  description: string,
+  mismatches: Map<string, Set<T>>,
+  resultsByToken: Map<string, TokenVerificationResult[]>,
+  valueSelector: (result: TokenVerificationResult) => T | null
+) {
+  if (mismatches.size === 0) {
+    return
   }
 
-  return { symbolMismatches, decimalMismatches }
+  console.log(`\n${colors.bold}${colors.red}${title}:${colors.reset}`)
+  for (const token of mismatches.keys()) {
+    console.log(`\n  ${colors.yellow}${token}${colors.reset} ${description}`)
+
+    for (const result of resultsByToken.get(token) || []) {
+      const value = valueSelector(result)
+      if (value === null) {
+        continue
+      }
+
+      console.log(
+        `    ${result.chain} (${result.chainId}): ${colors.red}${value}${colors.reset}`
+      )
+    }
+  }
+}
+
+function printErrors(errors: TokenVerificationResult[]) {
+  if (errors.length === 0) {
+    return
+  }
+
+  console.log(`\n${colors.bold}${colors.yellow}Errors:${colors.reset}`)
+  for (const result of errors) {
+    console.log(
+      `  ${result.tokenSymbol} on ${result.chain} (${result.chainId}): ${colors.red}${result.error}${colors.reset}`
+    )
+  }
+}
+
+function printVerificationSummary(
+  symbolMismatches: Map<string, Set<string>>,
+  decimalMismatches: Map<string, Set<number>>,
+  errors: TokenVerificationResult[]
+) {
+  if (
+    symbolMismatches.size === 0 &&
+    decimalMismatches.size === 0 &&
+    errors.length === 0
+  ) {
+    console.log(
+      `\n${colors.bold}${colors.green}✓ All tokens verified successfully with consistent symbols and decimals!${colors.reset}\n`
+    )
+    return
+  }
+
+  console.log(
+    `\n${colors.bold}${colors.yellow}⚠ Verification completed with warnings${colors.reset}\n`
+  )
 }
 
 // Function to print results to console
@@ -297,80 +417,184 @@ function printResults(
     console.log(`${colors.red}✗ Failed: ${failCount}${colors.reset}`)
   }
 
-  // Group results by token
-  const resultsByToken = new Map<string, TokenVerificationResult[]>()
-  for (const result of results) {
-    if (!resultsByToken.has(result.tokenSymbol)) {
-      resultsByToken.set(result.tokenSymbol, [])
-    }
-    resultsByToken.get(result.tokenSymbol)!.push(result)
-  }
+  const resultsByToken = groupResultsByToken(results)
+  printMismatchSection(
+    'Symbol Mismatches Found',
+    'has different symbols:',
+    symbolMismatches,
+    resultsByToken,
+    (result) => result.onChainSymbol
+  )
+  printMismatchSection(
+    'Decimal Mismatches Found',
+    'has different decimals:',
+    decimalMismatches,
+    resultsByToken,
+    (result) => result.onChainDecimals
+  )
 
-  // Print symbol mismatches
-  if (symbolMismatches.size > 0) {
-    console.log(
-      `\n${colors.bold}${colors.red}Symbol Mismatches Found:${colors.reset}`
-    )
-    for (const token of symbolMismatches.keys()) {
-      console.log(
-        `\n  ${colors.yellow}${token}${colors.reset} has different symbols:`
-      )
-      const tokenResults = resultsByToken.get(token)!
-      for (const result of tokenResults) {
-        if (result.onChainSymbol) {
-          console.log(
-            `    ${result.chain} (${result.chainId}): ${colors.red}${result.onChainSymbol}${colors.reset}`
-          )
-        }
-      }
-    }
-  }
-
-  // Print decimal mismatches
-  if (decimalMismatches.size > 0) {
-    console.log(
-      `\n${colors.bold}${colors.red}Decimal Mismatches Found:${colors.reset}`
-    )
-    for (const token of decimalMismatches.keys()) {
-      console.log(
-        `\n  ${colors.yellow}${token}${colors.reset} has different decimals:`
-      )
-      const tokenResults = resultsByToken.get(token)!
-      for (const result of tokenResults) {
-        if (result.onChainDecimals !== null) {
-          console.log(
-            `    ${result.chain} (${result.chainId}): ${colors.red}${result.onChainDecimals}${colors.reset}`
-          )
-        }
-      }
-    }
-  }
-
-  // Print errors if any
   const errors = results.filter((r) => r.error)
-  if (errors.length > 0) {
-    console.log(`\n${colors.bold}${colors.yellow}Errors:${colors.reset}`)
-    for (const result of errors) {
-      console.log(
-        `  ${result.tokenSymbol} on ${result.chain} (${result.chainId}): ${colors.red}${result.error}${colors.reset}`
-      )
+  printErrors(errors)
+  printVerificationSummary(symbolMismatches, decimalMismatches, errors)
+}
+
+function loadTokensConfig(): TokenConfig {
+  const tokensConfigPath = path.join(
+    __dirname,
+    '../../configs/global/tokens.json'
+  )
+
+  if (!fs.existsSync(tokensConfigPath)) {
+    throw new Error(`Tokens config not found: ${tokensConfigPath}`)
+  }
+
+  return JSON.parse(fs.readFileSync(tokensConfigPath, 'utf8')) as TokenConfig
+}
+
+function collectDeploymentsToVerify(
+  tokensConfig: TokenConfig,
+  chainIds: Record<string, number>
+): { deploymentsToVerify: TokenDeploymentTarget[]; skippedCount: number } {
+  const deploymentsToVerify: TokenDeploymentTarget[] = []
+  let skippedCount = 0
+
+  for (const [tokenSymbol, chains] of Object.entries(tokensConfig)) {
+    for (const [chain, config] of Object.entries(chains)) {
+      if (!chainIds[chain]) {
+        continue
+      }
+
+      if (shouldSkipVerification(tokenSymbol, chain)) {
+        skippedCount++
+        console.log(
+          `${colors.cyan}Skipping ${tokenSymbol} on ${chain} (in skip list)${colors.reset}`
+        )
+        continue
+      }
+
+      deploymentsToVerify.push({
+        tokenSymbol,
+        chain,
+        address: config.tokenAddress,
+      })
     }
   }
 
-  // Print summary
-  if (
-    symbolMismatches.size === 0 &&
-    decimalMismatches.size === 0 &&
-    errors.length === 0
-  ) {
-    console.log(
-      `\n${colors.bold}${colors.green}✓ All tokens verified successfully with consistent symbols and decimals!${colors.reset}\n`
+  return { deploymentsToVerify, skippedCount }
+}
+
+async function verifyDeployments(
+  deploymentsToVerify: TokenDeploymentTarget[],
+  chainIds: Record<string, number>
+): Promise<TokenVerificationResult[]> {
+  const results: TokenVerificationResult[] = []
+  let processed = 0
+
+  for (const deployment of deploymentsToVerify) {
+    const chainId = chainIds[deployment.chain]
+    results.push(
+      await verifyTokenDeployment(
+        deployment.tokenSymbol,
+        deployment.chain,
+        chainId,
+        deployment.address
+      )
     )
-  } else {
-    console.log(
-      `\n${colors.bold}${colors.yellow}⚠ Verification completed with warnings${colors.reset}\n`
-    )
+
+    processed++
+    if (processed % 10 === 0) {
+      console.log(`Progress: ${processed}/${deploymentsToVerify.length}`)
+    }
   }
+
+  return results
+}
+
+function groupChainsBySymbol(
+  results: TokenVerificationResult[],
+  tokenSymbol: string
+): Record<string, string[]> {
+  const symbolToChains: Record<string, string[]> = {}
+
+  results
+    .filter((result) => result.tokenSymbol === tokenSymbol)
+    .forEach((result) => {
+      if (result.onChainSymbol === null) {
+        return
+      }
+
+      const symbol = result.onChainSymbol
+      if (!symbolToChains[symbol]) {
+        symbolToChains[symbol] = []
+      }
+      symbolToChains[symbol].push(result.chain)
+    })
+
+  return symbolToChains
+}
+
+function groupChainsByDecimals(
+  results: TokenVerificationResult[],
+  tokenSymbol: string
+): Record<number, string[]> {
+  const decimalsToChains: Record<number, string[]> = {}
+
+  results
+    .filter((result) => result.tokenSymbol === tokenSymbol)
+    .forEach((result) => {
+      if (result.onChainDecimals === null) {
+        return
+      }
+
+      const decimals = result.onChainDecimals
+      if (!decimalsToChains[decimals]) {
+        decimalsToChains[decimals] = []
+      }
+      decimalsToChains[decimals].push(result.chain)
+    })
+
+  return decimalsToChains
+}
+
+function buildSummary(
+  tokenSymbols: string[],
+  results: TokenVerificationResult[],
+  symbolMismatches: Map<string, Set<string>>,
+  decimalMismatches: Map<string, Set<number>>
+): VerificationSummary {
+  return {
+    timestamp: new Date().toISOString(),
+    totalTokens: tokenSymbols.length,
+    totalDeployments: results.length,
+    successfulVerifications: results.filter((result) => !result.error).length,
+    failedVerifications: results.filter((result) => result.error).length,
+    mismatches: {
+      symbolMismatches: Array.from(symbolMismatches.keys()).map(
+        (tokenSymbol) => ({
+          tokenSymbol,
+          symbols: groupChainsBySymbol(results, tokenSymbol),
+        })
+      ),
+      decimalMismatches: Array.from(decimalMismatches.keys()).map(
+        (tokenSymbol) => ({
+          tokenSymbol,
+          decimals: groupChainsByDecimals(results, tokenSymbol),
+        })
+      ),
+    },
+  }
+}
+
+function hasVerificationWarnings(
+  results: TokenVerificationResult[],
+  symbolMismatches: Map<string, Set<string>>,
+  decimalMismatches: Map<string, Set<number>>
+): boolean {
+  return (
+    symbolMismatches.size > 0 ||
+    decimalMismatches.size > 0 ||
+    results.some((result) => result.error)
+  )
 }
 
 async function main() {
@@ -382,49 +606,14 @@ async function main() {
     `Loaded ${Object.keys(chainIds).length} chain IDs from deployments`
   )
 
-  // Load tokens config
-  const tokensConfigPath = path.join(
-    __dirname,
-    '../../configs/global/tokens.json'
-  )
-
-  if (!fs.existsSync(tokensConfigPath)) {
-    throw new Error(`Tokens config not found: ${tokensConfigPath}`)
-  }
-
-  const tokensConfig: TokenConfig = JSON.parse(
-    fs.readFileSync(tokensConfigPath, 'utf8')
-  )
-
+  const tokensConfig = loadTokensConfig()
   const tokenSymbols = Object.keys(tokensConfig)
   console.log(`Found ${tokenSymbols.length} tokens in config`)
 
-  // Build list of all deployments to verify
-  const deploymentsToVerify: Array<{
-    tokenSymbol: string
-    chain: string
-    address: string
-  }> = []
-  let skippedCount = 0
-
-  for (const [tokenSymbol, chains] of Object.entries(tokensConfig)) {
-    for (const [chain, config] of Object.entries(chains)) {
-      if (chainIds[chain]) {
-        if (shouldSkipVerification(tokenSymbol, chain)) {
-          skippedCount++
-          console.log(
-            `${colors.cyan}Skipping ${tokenSymbol} on ${chain} (in skip list)${colors.reset}`
-          )
-        } else {
-          deploymentsToVerify.push({
-            tokenSymbol,
-            chain,
-            address: config.tokenAddress,
-          })
-        }
-      }
-    }
-  }
+  const { deploymentsToVerify, skippedCount } = collectDeploymentsToVerify(
+    tokensConfig,
+    chainIds
+  )
 
   if (skippedCount > 0) {
     console.log(`\nSkipped ${skippedCount} deployment(s) from verification`)
@@ -435,88 +624,19 @@ async function main() {
     } chains...\n`
   )
 
-  // Verify each deployment
-  const results: TokenVerificationResult[] = []
-  let processed = 0
-
-  for (const deployment of deploymentsToVerify) {
-    const chainId = chainIds[deployment.chain]
-    const result = await verifyTokenDeployment(
-      deployment.tokenSymbol,
-      deployment.chain,
-      chainId,
-      deployment.address
-    )
-    results.push(result)
-
-    processed++
-    if (processed % 10 === 0) {
-      console.log(`Progress: ${processed}/${deploymentsToVerify.length}`)
-    }
-  }
-
+  const results = await verifyDeployments(deploymentsToVerify, chainIds)
   console.log(`\nCompleted verification of ${results.length} deployments`)
 
-  // Detect mismatches
   const { symbolMismatches, decimalMismatches } = detectMismatches(results)
-
-  // Print results to console
   printResults(results, symbolMismatches, decimalMismatches)
 
-  // Prepare summary for JSON output
-  const summary: VerificationSummary = {
-    timestamp: new Date().toISOString(),
-    totalTokens: tokenSymbols.length,
-    totalDeployments: results.length,
-    successfulVerifications: results.filter((r) => !r.error).length,
-    failedVerifications: results.filter((r) => r.error).length,
-    mismatches: {
-      symbolMismatches: Array.from(symbolMismatches.keys()).map(
-        (tokenSymbol) => {
-          // Group chains by their on-chain symbol
-          const symbolToChains: Record<string, string[]> = {}
-          results
-            .filter(
-              (r) => r.tokenSymbol === tokenSymbol && r.onChainSymbol !== null
-            )
-            .forEach((r) => {
-              const symbol = r.onChainSymbol!
-              if (!symbolToChains[symbol]) {
-                symbolToChains[symbol] = []
-              }
-              symbolToChains[symbol].push(r.chain)
-            })
-          return {
-            tokenSymbol,
-            symbols: symbolToChains,
-          }
-        }
-      ),
-      decimalMismatches: Array.from(decimalMismatches.keys()).map(
-        (tokenSymbol) => {
-          // Group chains by their on-chain decimals
-          const decimalsToChains: Record<number, string[]> = {}
-          results
-            .filter(
-              (r) => r.tokenSymbol === tokenSymbol && r.onChainDecimals !== null
-            )
-            .forEach((r) => {
-              const decimals = r.onChainDecimals!
-              if (!decimalsToChains[decimals]) {
-                decimalsToChains[decimals] = []
-              }
-              decimalsToChains[decimals].push(r.chain)
-            })
-          return {
-            tokenSymbol,
-            decimals: decimalsToChains,
-          }
-        }
-      ),
-    },
-  }
+  const summary = buildSummary(
+    tokenSymbols,
+    results,
+    symbolMismatches,
+    decimalMismatches
+  )
 
-  // Save to JSON file
   const outputPath = path.join(
     __dirname,
     '../../configs/global/token-verification.json'
@@ -524,18 +644,17 @@ async function main() {
   fs.writeFileSync(outputPath, JSON.stringify(summary, null, 2) + '\n')
   console.log(`Verification results saved to ${outputPath}`)
 
-  // Exit with warning code if mismatches found
-  if (
-    symbolMismatches.size > 0 ||
-    decimalMismatches.size > 0 ||
-    results.some((r) => r.error)
-  ) {
+  if (hasVerificationWarnings(results, symbolMismatches, decimalMismatches)) {
     process.exit(78)
   }
 }
 
 // Run the script
-main().catch((error) => {
-  console.error(`${colors.red}Error: ${error}${colors.reset}`)
-  process.exit(1)
-})
+void (async () => {
+  try {
+    await main()
+  } catch (error) {
+    console.error(`${colors.red}Error: ${formatError(error)}${colors.reset}`)
+    process.exit(1)
+  }
+})()
