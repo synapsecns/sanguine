@@ -236,6 +236,17 @@ type CountedIssues = {
   issues: VerificationIssue[]
 }
 
+type UlnVerificationArgs = {
+  chain: string
+  client: PublicClient
+  deployment: DeploymentInfo
+  chainInfo: ChainInfo
+  remoteDeployments: RemoteChainDeployment[]
+  securityConfig: SecurityConfig
+  expectedDVNs: Address[]
+  direction: 'send' | 'receive'
+}
+
 type ResultStats = {
   totalChains: number
   chainsWithIssues: number
@@ -1036,16 +1047,16 @@ async function verifyReceiveLibraries(
   return issues
 }
 
-async function verifyUlnConfigs(
-  chain: string,
-  client: PublicClient,
-  deployment: DeploymentInfo,
-  chainInfo: ChainInfo,
-  remoteDeployments: RemoteChainDeployment[],
-  securityConfig: SecurityConfig,
-  expectedDVNs: Address[],
-  direction: 'send' | 'receive'
-): Promise<VerificationIssue[]> {
+async function verifyUlnConfigs({
+  chain,
+  client,
+  deployment,
+  chainInfo,
+  remoteDeployments,
+  securityConfig,
+  expectedDVNs,
+  direction,
+}: UlnVerificationArgs): Promise<VerificationIssue[]> {
   if (remoteDeployments.length === 0) {
     return []
   }
@@ -1408,66 +1419,58 @@ async function verifyChain(
 
     result.owner = basicInfo.owner
     result.bridge = basicInfo.bridge
-    result.issues.push(...basicInfo.issues)
-    result.issues.push(
+    const stageIssues = [
+      ...basicInfo.issues,
       ...(await verifyPeerConfiguration(
         chain,
         client,
         deployment,
         remoteDeployments
-      ))
-    )
-    result.issues.push(
+      )),
       ...(await verifySendLibraries(
         chain,
         client,
         deployment,
         chainInfo,
         remoteDeployments
-      ))
-    )
-    result.issues.push(
+      )),
       ...(await verifyReceiveLibraries(
         chain,
         client,
         deployment,
         chainInfo,
         remoteDeployments
-      ))
-    )
-    result.issues.push(
-      ...(await verifyUlnConfigs(
+      )),
+      ...(await verifyUlnConfigs({
         chain,
         client,
         deployment,
         chainInfo,
         remoteDeployments,
-        context.securityConfig,
+        securityConfig: context.securityConfig,
         expectedDVNs,
-        'send'
-      ))
-    )
-    result.issues.push(
-      ...(await verifyUlnConfigs(
+        direction: 'send',
+      })),
+      ...(await verifyUlnConfigs({
         chain,
         client,
         deployment,
         chainInfo,
         remoteDeployments,
-        context.securityConfig,
+        securityConfig: context.securityConfig,
         expectedDVNs,
-        'receive'
-      ))
-    )
-    result.issues.push(
+        direction: 'receive',
+      })),
       ...(await verifyTokensForChain(
         chain,
         client,
         deployment,
         context,
         remoteDeployments
-      ))
-    )
+      )),
+    ]
+
+    result.issues.push(...stageIssues)
   } catch (error) {
     result.issues.push(
       createIssue(chain, 'error', 'error', `RPC error: ${formatError(error)}`)
