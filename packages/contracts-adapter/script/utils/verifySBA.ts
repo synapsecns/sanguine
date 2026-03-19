@@ -8,8 +8,8 @@ import {
   decodeAbiParameters,
   parseAbiParameters,
 } from 'viem'
-import * as fs from 'fs'
-import * as path from 'path'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 
 // ANSI color codes for console output
 const colors = {
@@ -191,8 +191,152 @@ type ChainVerificationResult = {
   issues: VerificationIssue[]
 }
 
+type VerificationContext = {
+  chainsConfig: ChainsConfig
+  tokensConfig: TokenConfig
+  dvnsConfig: DVNConfig
+  securityConfig: SecurityConfig
+  allChains: string[]
+}
+
+type RemoteChainDeployment = {
+  chain: string
+  eid: number
+  deployment: DeploymentInfo
+}
+
+type BasicInfoVerification = {
+  owner: Address | null
+  bridge: Address | null
+  issues: VerificationIssue[]
+}
+
+type TokenTypeRequest = {
+  tokenSymbol: string
+  tokenAddr: Address
+}
+
+type RemoteAddressRequest = {
+  tokenSymbol: string
+  remoteChain: string
+  remoteEid: number
+  expectedAddr: Address
+  tokenAddr: Address
+}
+
+type TokenVerificationPlan = {
+  tokenTypeRequests: TokenTypeRequest[]
+  remoteAddressRequests: RemoteAddressRequest[]
+  skippedGMX: boolean
+  skippedSingleChainTokens: string[]
+}
+
+type CountedIssues = {
+  successCount: number
+  issues: VerificationIssue[]
+}
+
+type ResultStats = {
+  totalChains: number
+  chainsWithIssues: number
+  errors: number
+  warnings: number
+  totalIssues: number
+}
+
 // Multicall3 address (universal deployment)
 const MULTICALL3_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11'
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+const ZERO_PEER = `0x${'0'.repeat(64)}`
+
+const categoryLabels: Record<VerificationIssue['category'], string> = {
+  peer: 'Peer Configuration',
+  library: 'Library Configuration',
+  dvn: 'DVN Configuration',
+  confirmations: 'Block Confirmations',
+  token: 'Token Configuration',
+  bridge: 'Bridge Configuration',
+  error: 'Errors',
+}
+
+const severityIcons: Record<VerificationIssue['severity'], string> = {
+  error: '✗',
+  warning: '⚠',
+  info: '✓',
+}
+
+const severityColors: Record<VerificationIssue['severity'], string> = {
+  error: colors.red,
+  warning: colors.yellow,
+  info: colors.green,
+}
+
+function formatError(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message
+  }
+
+  if (typeof error === 'object' && error !== null) {
+    try {
+      return JSON.stringify(error)
+    } catch {
+      return 'Unknown object error'
+    }
+  }
+
+  return String(error)
+}
+
+function createIssue(
+  chain: string,
+  category: VerificationIssue['category'],
+  severity: VerificationIssue['severity'],
+  message: string
+): VerificationIssue {
+  return { chain, category, severity, message }
+}
+
+function hasActionableIssue(issue: VerificationIssue): boolean {
+  return issue.severity === 'error' || issue.severity === 'warning'
+}
+
+function groupIssuesByCategory(
+  issues: VerificationIssue[]
+): Record<string, VerificationIssue[]> {
+  return issues.reduce((grouped, issue) => {
+    if (!grouped[issue.category]) {
+      grouped[issue.category] = []
+    }
+    grouped[issue.category].push(issue)
+    return grouped
+  }, {} as Record<string, VerificationIssue[]>)
+}
+
+function calculateResultStats(results: ChainVerificationResult[]): ResultStats {
+  const totalChains = results.length
+  const chainsWithIssues = results.filter((result) =>
+    result.issues.some(hasActionableIssue)
+  ).length
+  const errors = results.reduce(
+    (sum, result) =>
+      sum + result.issues.filter((issue) => issue.severity === 'error').length,
+    0
+  )
+  const warnings = results.reduce(
+    (sum, result) =>
+      sum +
+      result.issues.filter((issue) => issue.severity === 'warning').length,
+    0
+  )
+
+  return {
+    totalChains,
+    chainsWithIssues,
+    errors,
+    warnings,
+    totalIssues: errors + warnings,
+  }
+}
 
 // Function to load chain IDs from deployment directories
 function loadChainIds(): Record<string, number> {
@@ -210,16 +354,20 @@ function loadChainIds(): Record<string, number> {
 
     if (fs.existsSync(chainIdPath)) {
       try {
-        const chainId = parseInt(
+        const chainId = Number.parseInt(
           fs.readFileSync(chainIdPath, 'utf8').trim(),
           10
         )
-        if (!isNaN(chainId)) {
+        if (!Number.isNaN(chainId)) {
           chainIds[dir] = chainId
         }
       } catch (error) {
         console.warn(
-          `${colors.yellow}Warning: Failed to read chain ID for ${dir}${colors.reset}`
+          `${
+            colors.yellow
+          }Warning: Failed to read chain ID for ${dir}: ${formatError(error)}${
+            colors.reset
+          }`
         )
       }
     }
@@ -248,7 +396,11 @@ function loadDeployment(chain: string): DeploymentInfo | null {
     }
   } catch (error) {
     console.warn(
-      `${colors.yellow}Warning: Failed to read deployment for ${chain}${colors.reset}`
+      `${
+        colors.yellow
+      }Warning: Failed to read deployment for ${chain}: ${formatError(error)}${
+        colors.reset
+      }`
     )
     return null
   }
@@ -336,10 +488,18 @@ function decodeUlnConfig(configBytes: string): UlnConfig {
 }
 
 // Function to sort addresses
+function compareBigInts(left: bigint, right: bigint): number {
+  if (left === right) {
+    return 0
+  }
+
+  return left < right ? -1 : 1
+}
+
 function sortAddresses(addresses: Address[]): Address[] {
   return addresses
     .map((addr) => ({ addr, num: BigInt(addr) }))
-    .sort((a, b) => (a.num < b.num ? -1 : a.num > b.num ? 1 : 0))
+    .sort((left, right) => compareBigInts(left.num, right.num))
     .map((item) => item.addr)
 }
 
@@ -354,7 +514,7 @@ function getExpectedConfirmations(
 ): number {
   const confirmations = securityConfig.blockConfirmations[chain]
   if (typeof confirmations !== 'number') {
-    throw new Error(`Missing block confirmations for chain: ${chain}`)
+    throw new TypeError(`Missing block confirmations for chain: ${chain}`)
   }
   return confirmations
 }
@@ -378,78 +538,184 @@ function verifyUlnConfig(
   configDirection: 'send' | 'receive'
 ): VerificationIssue[] {
   const issues: VerificationIssue[] = []
+  const directionLabel = configDirection === 'send' ? 'Send' : 'Receive'
 
   try {
     const decoded = decodeUlnConfig(configBytes)
 
     // Validate block confirmations
     if (decoded.confirmations !== BigInt(expectedConfirmations)) {
-      issues.push({
-        chain,
-        category: 'confirmations',
-        severity: 'warning',
-        message: `${
-          configDirection === 'send' ? 'Send' : 'Receive'
-        } confirmations for ${remoteChain} incorrect: expected ${expectedConfirmations}, got ${
-          decoded.confirmations
-        }`,
-      })
+      issues.push(
+        createIssue(
+          chain,
+          'confirmations',
+          'warning',
+          `${directionLabel} confirmations for ${remoteChain} incorrect: expected ${expectedConfirmations}, got ${decoded.confirmations.toString()}`
+        )
+      )
     }
 
     // Validate DVNs
     if (!areDVNsEqual(decoded.requiredDVNs, expectedDVNs)) {
       const sortedActual = sortAddresses(decoded.requiredDVNs)
       const sortedExpected = sortAddresses(expectedDVNs)
-      issues.push({
-        chain,
-        category: 'dvn',
-        severity: 'error',
-        message: `${
-          configDirection === 'send' ? 'Send' : 'Receive'
-        } DVNs for ${remoteChain} incorrect: expected [${sortedExpected.join(
-          ', '
-        )}], got [${sortedActual.join(', ')}]`,
-      })
+      issues.push(
+        createIssue(
+          chain,
+          'dvn',
+          'error',
+          `${directionLabel} DVNs for ${remoteChain} incorrect: expected [${sortedExpected.join(
+            ', '
+          )}], got [${sortedActual.join(', ')}]`
+        )
+      )
     }
   } catch (error) {
-    issues.push({
-      chain,
-      category: 'error',
-      severity: 'error',
-      message: `Failed to decode ${configDirection} config for ${remoteChain}: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-    })
+    issues.push(
+      createIssue(
+        chain,
+        'error',
+        'error',
+        `Failed to decode ${configDirection} config for ${remoteChain}: ${formatError(
+          error
+        )}`
+      )
+    )
   }
 
   return issues
 }
 
-// Function to verify a single chain
-async function verifyChain(
-  chain: string,
-  chainId: number,
-  deployment: DeploymentInfo,
-  chainsConfig: ChainsConfig,
-  tokensConfig: TokenConfig,
-  dvnsConfig: DVNConfig,
-  securityConfig: SecurityConfig,
-  allChains: string[]
-): Promise<ChainVerificationResult> {
-  const result: ChainVerificationResult = {
-    chain,
-    chainId,
-    owner: null,
-    bridge: null,
-    issues: [],
+function printOverview(stats: ResultStats) {
+  console.log(`Total chains verified: ${stats.totalChains}`)
+  console.log(
+    `${colors.green}✓ Chains without issues: ${
+      stats.totalChains - stats.chainsWithIssues
+    }${colors.reset}`
+  )
+
+  if (stats.chainsWithIssues === 0) {
+    return
   }
 
-  try {
-    const client = createChainClient(chainId)
-    const chainInfo = chainsConfig[chain]
+  console.log(
+    `${colors.yellow}⚠ Chains with issues: ${stats.chainsWithIssues}${colors.reset}`
+  )
+  console.log(`  Total issues: ${stats.totalIssues}`)
 
-    // Prepare multicall for basic info
-    const basicInfoCalls = [
+  if (stats.errors > 0) {
+    console.log(`  ${colors.red}✗ Errors: ${stats.errors}${colors.reset}`)
+  }
+
+  if (stats.warnings > 0) {
+    console.log(
+      `  ${colors.yellow}⚠ Warnings: ${stats.warnings}${colors.reset}`
+    )
+  }
+}
+
+function printChainResult(result: ChainVerificationResult) {
+  console.log(
+    `\n${colors.bold}${colors.cyan}${result.chain} (Chain ID: ${result.chainId})${colors.reset}`
+  )
+  console.log(
+    `  Owner: ${result.owner || colors.red + 'Unknown' + colors.reset}`
+  )
+  console.log(
+    `  Bridge: ${result.bridge || colors.red + 'Not set' + colors.reset}`
+  )
+
+  const errorWarningIssues = result.issues.filter(hasActionableIssue)
+  if (errorWarningIssues.length === 0) {
+    console.log(`  ${colors.green}✓ All checks passed${colors.reset}`)
+  } else {
+    console.log(
+      `  ${colors.yellow}Issues found: ${errorWarningIssues.length}${colors.reset}`
+    )
+  }
+
+  const issuesByCategory = groupIssuesByCategory(result.issues)
+  for (const [category, issues] of Object.entries(issuesByCategory)) {
+    const categoryLabel =
+      categoryLabels[category as VerificationIssue['category']] || category
+
+    console.log(`\n    ${colors.bold}${categoryLabel}:${colors.reset}`)
+    for (const issue of issues) {
+      const icon = severityIcons[issue.severity]
+      const color = severityColors[issue.severity]
+      console.log(`      ${color}${icon} ${issue.message}${colors.reset}`)
+    }
+  }
+}
+
+function printSummary(stats: ResultStats) {
+  console.log(`\n${colors.bold}${colors.cyan}Summary${colors.reset}`)
+
+  if (stats.totalIssues === 0) {
+    console.log(
+      `${colors.green}✓ All SynapseBridgeAdapter contracts are correctly configured!${colors.reset}\n`
+    )
+    return
+  }
+
+  console.log(
+    `${colors.yellow}⚠ Found ${stats.totalIssues} issue(s) across ${stats.chainsWithIssues} chain(s)${colors.reset}`
+  )
+
+  if (stats.errors > 0) {
+    console.log(
+      `${colors.red}Please fix ${stats.errors} error(s) before proceeding${colors.reset}\n`
+    )
+    return
+  }
+
+  console.log(
+    `${colors.yellow}Please review ${stats.warnings} warning(s)${colors.reset}\n`
+  )
+}
+
+function getRemoteDeployments(
+  chain: string,
+  context: VerificationContext
+): RemoteChainDeployment[] {
+  const remoteDeployments: RemoteChainDeployment[] = []
+
+  for (const remoteChain of context.allChains) {
+    if (remoteChain === chain) {
+      continue
+    }
+
+    const deployment = loadDeployment(remoteChain)
+    if (!deployment) {
+      continue
+    }
+
+    remoteDeployments.push({
+      chain: remoteChain,
+      eid: context.chainsConfig[remoteChain].eid,
+      deployment,
+    })
+  }
+
+  return remoteDeployments
+}
+
+function formatPeerAddress(address: Address): string {
+  return `0x${address.slice(2).padStart(64, '0')}`
+}
+
+async function verifyBasicInfo(
+  chain: string,
+  client: PublicClient,
+  deployment: DeploymentInfo,
+  chainInfo: ChainInfo
+): Promise<BasicInfoVerification> {
+  const issues: VerificationIssue[] = []
+  let owner: Address | null = null
+  let bridge: Address | null = null
+
+  const basicResults = await client.multicall({
+    contracts: [
       {
         address: deployment.address,
         abi: synapseBridgeAdapterAbi,
@@ -465,575 +731,747 @@ async function verifyChain(
         abi: synapseBridgeAdapterAbi,
         functionName: 'endpoint',
       },
-    ] as const
+    ],
+    allowFailure: true,
+  })
 
-    const basicResults = await client.multicall({
-      contracts: basicInfoCalls,
-      allowFailure: true,
-    })
+  if (basicResults[0].status === 'success' && basicResults[0].result) {
+    owner = basicResults[0].result
+  }
 
-    if (basicResults[0].status === 'success' && basicResults[0].result) {
-      result.owner = basicResults[0].result
-    }
-
-    if (basicResults[1].status === 'success' && basicResults[1].result) {
-      result.bridge = basicResults[1].result
-      if (result.bridge === '0x0000000000000000000000000000000000000000') {
-        result.issues.push({
+  if (basicResults[1].status === 'success' && basicResults[1].result) {
+    bridge = basicResults[1].result
+    if (bridge === ZERO_ADDRESS) {
+      issues.push(
+        createIssue(chain, 'bridge', 'error', 'Bridge address not set')
+      )
+    } else if (bridge.toLowerCase() !== chainInfo.synapseBridge.toLowerCase()) {
+      issues.push(
+        createIssue(
           chain,
-          category: 'bridge',
-          severity: 'error',
-          message: 'Bridge address not set',
-        })
-      } else if (
-        result.bridge.toLowerCase() !== chainInfo.synapseBridge.toLowerCase()
-      ) {
-        result.issues.push({
-          chain,
-          category: 'bridge',
-          severity: 'warning',
-          message: `Bridge address mismatch: expected ${chainInfo.synapseBridge}, got ${result.bridge}`,
-        })
-      }
-    } else {
-      result.issues.push({
-        chain,
-        category: 'error',
-        severity: 'error',
-        message: 'Failed to fetch bridge address',
-      })
+          'bridge',
+          'warning',
+          `Bridge address mismatch: expected ${chainInfo.synapseBridge}, got ${bridge}`
+        )
+      )
     }
-
-    // Verify LayerZero endpoint
-    if (basicResults[2].status === 'success' && basicResults[2].result) {
-      const endpoint = basicResults[2].result
-      if (endpoint.toLowerCase() !== chainInfo.endpointV2.toLowerCase()) {
-        result.issues.push({
-          chain,
-          category: 'error',
-          severity: 'error',
-          message: `Endpoint mismatch: expected ${chainInfo.endpointV2}, got ${endpoint}`,
-        })
-      }
-    }
-
-    // Verify peers for all other chains
-    const peerChains: string[] = []
-    const peerEids: number[] = []
-    const peerExpected: string[] = []
-    const peerCalls = []
-
-    for (const remoteChain of allChains) {
-      if (remoteChain === chain) continue
-      const remoteDeployment = loadDeployment(remoteChain)
-      if (!remoteDeployment) continue
-      const remoteEid = chainsConfig[remoteChain].eid
-      const expectedPeer = `0x${remoteDeployment.address
-        .slice(2)
-        .padStart(64, '0')}`
-
-      peerChains.push(remoteChain)
-      peerEids.push(remoteEid)
-      peerExpected.push(expectedPeer)
-      peerCalls.push({
-        address: deployment.address,
-        abi: synapseBridgeAdapterAbi,
-        functionName: 'peers' as const,
-        args: [remoteEid] as const,
-      })
-    }
-
-    const peerResults = await client.multicall({
-      contracts: peerCalls,
-      allowFailure: true,
-    })
-
-    let peerSuccessCount = 0
-    peerResults.forEach((peer, i) => {
-      const remoteChain = peerChains[i]
-      const remoteEid = peerEids[i]
-      const expectedPeer = peerExpected[i]
-
-      if (peer.status === 'success' && peer.result) {
-        if (peer.result.toLowerCase() !== expectedPeer.toLowerCase()) {
-          if (peer.result === '0x' + '0'.repeat(64)) {
-            result.issues.push({
-              chain,
-              category: 'peer',
-              severity: 'error',
-              message: `Peer not set for ${remoteChain} (eid: ${remoteEid})`,
-            })
-          } else {
-            result.issues.push({
-              chain,
-              category: 'peer',
-              severity: 'error',
-              message: `Peer mismatch for ${remoteChain}: expected ${expectedPeer}, got ${peer.result}`,
-            })
-          }
-        } else {
-          peerSuccessCount++
-        }
-      } else {
-        result.issues.push({
-          chain,
-          category: 'error',
-          severity: 'error',
-          message: `Failed to fetch peer for ${remoteChain}`,
-        })
-      }
-    })
-
-    if (peerSuccessCount > 0) {
-      result.issues.push({
-        chain,
-        category: 'peer',
-        severity: 'info',
-        message: `Verified ${pluralize(peerSuccessCount, 'peer')}`,
-      })
-    }
-
-    // Prepare expected DVNs (sorted)
-    const expectedDVNs = sortAddresses(
-      securityConfig.DVNs.map((dvnName) => dvnsConfig[chain][dvnName])
+  } else {
+    issues.push(
+      createIssue(chain, 'error', 'error', 'Failed to fetch bridge address')
     )
-    const sendConfirmations = getExpectedConfirmations(securityConfig, chain)
+  }
 
-    // Build metadata arrays for library and config verification
-    const libChains: string[] = []
-    const libEids: number[] = []
+  if (basicResults[2].status === 'success' && basicResults[2].result) {
+    const endpoint = basicResults[2].result
+    if (endpoint.toLowerCase() !== chainInfo.endpointV2.toLowerCase()) {
+      issues.push(
+        createIssue(
+          chain,
+          'error',
+          'error',
+          `Endpoint mismatch: expected ${chainInfo.endpointV2}, got ${endpoint}`
+        )
+      )
+    }
+  }
 
-    for (const remoteChain of allChains) {
-      if (remoteChain === chain) continue
-      if (!loadDeployment(remoteChain)) continue
-      const remoteEid = chainsConfig[remoteChain].eid
+  return { owner, bridge, issues }
+}
 
-      libChains.push(remoteChain)
-      libEids.push(remoteEid)
+async function verifyPeerConfiguration(
+  chain: string,
+  client: PublicClient,
+  deployment: DeploymentInfo,
+  remoteDeployments: RemoteChainDeployment[]
+): Promise<VerificationIssue[]> {
+  if (remoteDeployments.length === 0) {
+    return []
+  }
+
+  const peerResults = await client.multicall({
+    contracts: remoteDeployments.map(({ eid }) => ({
+      address: deployment.address,
+      abi: synapseBridgeAdapterAbi,
+      functionName: 'peers' as const,
+      args: [eid] as const,
+    })),
+    allowFailure: true,
+  })
+
+  const issues: VerificationIssue[] = []
+  let successCount = 0
+
+  peerResults.forEach((peer, index) => {
+    const remoteDeployment = remoteDeployments[index]
+    const expectedPeer = formatPeerAddress(remoteDeployment.deployment.address)
+
+    if (peer.status !== 'success' || !peer.result) {
+      issues.push(
+        createIssue(
+          chain,
+          'error',
+          'error',
+          `Failed to fetch peer for ${remoteDeployment.chain}`
+        )
+      )
+      return
     }
 
-    // Verify send libraries
-    const sendLibraryCalls = libEids.map((remoteEid) => ({
+    if (peer.result.toLowerCase() === expectedPeer.toLowerCase()) {
+      successCount++
+      return
+    }
+
+    if (peer.result === ZERO_PEER) {
+      issues.push(
+        createIssue(
+          chain,
+          'peer',
+          'error',
+          `Peer not set for ${remoteDeployment.chain} (eid: ${remoteDeployment.eid})`
+        )
+      )
+      return
+    }
+
+    issues.push(
+      createIssue(
+        chain,
+        'peer',
+        'error',
+        `Peer mismatch for ${remoteDeployment.chain}: expected ${expectedPeer}, got ${peer.result}`
+      )
+    )
+  })
+
+  if (successCount > 0) {
+    issues.push(
+      createIssue(
+        chain,
+        'peer',
+        'info',
+        `Verified ${pluralize(successCount, 'peer')}`
+      )
+    )
+  }
+
+  return issues
+}
+
+function getExpectedDVNs(
+  chain: string,
+  context: VerificationContext
+): Address[] {
+  return sortAddresses(
+    context.securityConfig.DVNs.map(
+      (dvnName) => context.dvnsConfig[chain][dvnName]
+    )
+  )
+}
+
+async function verifySendLibraries(
+  chain: string,
+  client: PublicClient,
+  deployment: DeploymentInfo,
+  chainInfo: ChainInfo,
+  remoteDeployments: RemoteChainDeployment[]
+): Promise<VerificationIssue[]> {
+  if (remoteDeployments.length === 0) {
+    return []
+  }
+
+  const sendLibraryResults = await client.multicall({
+    contracts: remoteDeployments.map(({ eid }) => ({
       address: chainInfo.endpointV2,
       abi: layerZeroEndpointAbi,
       functionName: 'getSendLibrary' as const,
-      args: [deployment.address, remoteEid] as const,
-    }))
+      args: [deployment.address, eid] as const,
+    })),
+    allowFailure: true,
+  })
 
-    const sendLibraryResults = await client.multicall({
-      contracts: sendLibraryCalls,
-      allowFailure: true,
-    })
-
-    // Check if send libraries are using default
-    const isDefaultSendLibraryCalls = libEids.map((remoteEid) => ({
+  const defaultLibraryResults = await client.multicall({
+    contracts: remoteDeployments.map(({ eid }) => ({
       address: chainInfo.endpointV2,
       abi: layerZeroEndpointAbi,
       functionName: 'isDefaultSendLibrary' as const,
-      args: [deployment.address, remoteEid] as const,
-    }))
+      args: [deployment.address, eid] as const,
+    })),
+    allowFailure: true,
+  })
 
-    const isDefaultSendLibraryResults = await client.multicall({
-      contracts: isDefaultSendLibraryCalls,
-      allowFailure: true,
-    })
+  const issues: VerificationIssue[] = []
+  let successCount = 0
 
-    let sendLibSuccessCount = 0
-    sendLibraryResults.forEach((sendLib, i) => {
-      const remoteChain = libChains[i]
-      if (sendLib.status === 'success' && sendLib.result) {
-        let hasError = false
-        if (
-          sendLib.result.toLowerCase() !== chainInfo.sendUln302.toLowerCase()
-        ) {
-          result.issues.push({
-            chain,
-            category: 'library',
-            severity: 'error',
-            message: `Send library for ${remoteChain} incorrect: expected ${chainInfo.sendUln302}, got ${sendLib.result}`,
-          })
-          hasError = true
-        }
-
-        // Check if using default send library
-        const isDefaultResult = isDefaultSendLibraryResults[i]
-        if (
-          isDefaultResult.status === 'success' &&
-          isDefaultResult.result === true
-        ) {
-          result.issues.push({
-            chain,
-            category: 'library',
-            severity: 'error',
-            message: `Send library for ${remoteChain} is using default library, should be custom`,
-          })
-          hasError = true
-        }
-
-        if (!hasError) {
-          sendLibSuccessCount++
-        }
-      }
-    })
-
-    if (sendLibSuccessCount > 0) {
-      result.issues.push({
-        chain,
-        category: 'library',
-        severity: 'info',
-        message: `Send library verified for ${pluralize(
-          sendLibSuccessCount,
-          'chain'
-        )}`,
-      })
+  sendLibraryResults.forEach((sendLibrary, index) => {
+    if (sendLibrary.status !== 'success' || !sendLibrary.result) {
+      return
     }
 
-    // Verify receive libraries
-    const receiveLibraryCalls = libEids.map((remoteEid) => ({
+    const remoteChain = remoteDeployments[index].chain
+    let hasError = false
+
+    if (
+      sendLibrary.result.toLowerCase() !== chainInfo.sendUln302.toLowerCase()
+    ) {
+      issues.push(
+        createIssue(
+          chain,
+          'library',
+          'error',
+          `Send library for ${remoteChain} incorrect: expected ${chainInfo.sendUln302}, got ${sendLibrary.result}`
+        )
+      )
+      hasError = true
+    }
+
+    const defaultLibrary = defaultLibraryResults[index]
+    if (defaultLibrary.status === 'success' && defaultLibrary.result === true) {
+      issues.push(
+        createIssue(
+          chain,
+          'library',
+          'error',
+          `Send library for ${remoteChain} is using default library, should be custom`
+        )
+      )
+      hasError = true
+    }
+
+    if (!hasError) {
+      successCount++
+    }
+  })
+
+  if (successCount > 0) {
+    issues.push(
+      createIssue(
+        chain,
+        'library',
+        'info',
+        `Send library verified for ${pluralize(successCount, 'chain')}`
+      )
+    )
+  }
+
+  return issues
+}
+
+async function verifyReceiveLibraries(
+  chain: string,
+  client: PublicClient,
+  deployment: DeploymentInfo,
+  chainInfo: ChainInfo,
+  remoteDeployments: RemoteChainDeployment[]
+): Promise<VerificationIssue[]> {
+  if (remoteDeployments.length === 0) {
+    return []
+  }
+
+  const receiveLibraryResults = await client.multicall({
+    contracts: remoteDeployments.map(({ eid }) => ({
       address: chainInfo.endpointV2,
       abi: layerZeroEndpointAbi,
       functionName: 'getReceiveLibrary' as const,
-      args: [deployment.address, remoteEid] as const,
-    }))
+      args: [deployment.address, eid] as const,
+    })),
+    allowFailure: true,
+  })
 
-    const receiveLibraryResults = await client.multicall({
-      contracts: receiveLibraryCalls,
-      allowFailure: true,
-    })
+  const issues: VerificationIssue[] = []
+  let successCount = 0
 
-    let receiveLibSuccessCount = 0
-    receiveLibraryResults.forEach((receiveLib, i) => {
-      const remoteChain = libChains[i]
-      if (receiveLib.status === 'success' && receiveLib.result) {
-        const [receiveLibAddr, isDefault] = receiveLib.result
-        let hasError = false
-        if (
-          receiveLibAddr.toLowerCase() !== chainInfo.receiveUln302.toLowerCase()
-        ) {
-          result.issues.push({
-            chain,
-            category: 'library',
-            severity: 'error',
-            message: `Receive library for ${remoteChain} incorrect: expected ${chainInfo.receiveUln302}, got ${receiveLibAddr}`,
-          })
-          hasError = true
-        }
-        if (isDefault) {
-          result.issues.push({
-            chain,
-            category: 'library',
-            severity: 'error',
-            message: `Receive library for ${remoteChain} is using default library, should be custom`,
-          })
-          hasError = true
-        }
-        if (!hasError) {
-          receiveLibSuccessCount++
-        }
-      }
-    })
-
-    if (receiveLibSuccessCount > 0) {
-      result.issues.push({
-        chain,
-        category: 'library',
-        severity: 'info',
-        message: `Receive library verified for ${pluralize(
-          receiveLibSuccessCount,
-          'chain'
-        )}`,
-      })
+  receiveLibraryResults.forEach((receiveLibrary, index) => {
+    if (receiveLibrary.status !== 'success' || !receiveLibrary.result) {
+      return
     }
 
-    // Verify send configs
-    const sendConfigCalls = libEids.map((remoteEid) => ({
-      address: chainInfo.endpointV2,
-      abi: layerZeroEndpointAbi,
-      functionName: 'getConfig' as const,
-      args: [
-        deployment.address,
-        chainInfo.sendUln302,
-        remoteEid,
-        CONFIG_TYPE_ULN,
-      ] as const,
-    }))
+    const remoteChain = remoteDeployments[index].chain
+    const [receiveLibraryAddress, isDefault] = receiveLibrary.result
+    let hasError = false
 
-    const sendConfigResults = await client.multicall({
-      contracts: sendConfigCalls,
-      allowFailure: true,
-    })
-
-    let sendConfigSuccessCount = 0
-    sendConfigResults.forEach((sendConfig, i) => {
-      const remoteChain = libChains[i]
-      if (sendConfig.status === 'success' && sendConfig.result) {
-        const configIssues = verifyUlnConfig(
+    if (
+      receiveLibraryAddress.toLowerCase() !==
+      chainInfo.receiveUln302.toLowerCase()
+    ) {
+      issues.push(
+        createIssue(
           chain,
-          remoteChain,
-          sendConfig.result,
-          sendConfirmations,
-          expectedDVNs,
-          'send'
+          'library',
+          'error',
+          `Receive library for ${remoteChain} incorrect: expected ${chainInfo.receiveUln302}, got ${receiveLibraryAddress}`
         )
-        if (configIssues.length === 0) {
-          sendConfigSuccessCount++
-        } else {
-          result.issues.push(...configIssues)
-        }
-      }
-    })
-
-    if (sendConfigSuccessCount > 0) {
-      result.issues.push({
-        chain,
-        category: 'confirmations',
-        severity: 'info',
-        message: `Send config verified for ${pluralize(
-          sendConfigSuccessCount,
-          'chain'
-        )} (DVNs & confirmations)`,
-      })
-    }
-
-    // Verify receive configs
-    const receiveConfigCalls = libEids.map((remoteEid) => ({
-      address: chainInfo.endpointV2,
-      abi: layerZeroEndpointAbi,
-      functionName: 'getConfig' as const,
-      args: [
-        deployment.address,
-        chainInfo.receiveUln302,
-        remoteEid,
-        CONFIG_TYPE_ULN,
-      ] as const,
-    }))
-
-    const receiveConfigResults = await client.multicall({
-      contracts: receiveConfigCalls,
-      allowFailure: true,
-    })
-
-    let receiveConfigSuccessCount = 0
-    receiveConfigResults.forEach((receiveConfig, i) => {
-      const remoteChain = libChains[i]
-      const receiveConfirmations = getExpectedConfirmations(
-        securityConfig,
-        remoteChain
       )
-      if (receiveConfig.status === 'success' && receiveConfig.result) {
-        const configIssues = verifyUlnConfig(
-          chain,
-          remoteChain,
-          receiveConfig.result,
-          receiveConfirmations,
-          expectedDVNs,
-          'receive'
-        )
-        if (configIssues.length === 0) {
-          receiveConfigSuccessCount++
-        } else {
-          result.issues.push(...configIssues)
-        }
-      }
-    })
-
-    if (receiveConfigSuccessCount > 0) {
-      result.issues.push({
-        chain,
-        category: 'confirmations',
-        severity: 'info',
-        message: `Receive config verified for ${pluralize(
-          receiveConfigSuccessCount,
-          'chain'
-        )} (DVNs & confirmations)`,
-      })
+      hasError = true
     }
 
-    // Verify tokens
-    const tokensOnChain = Object.entries(tokensConfig).filter(
-      ([_, chains]) => chains[chain] !== undefined
+    if (isDefault) {
+      issues.push(
+        createIssue(
+          chain,
+          'library',
+          'error',
+          `Receive library for ${remoteChain} is using default library, should be custom`
+        )
+      )
+      hasError = true
+    }
+
+    if (!hasError) {
+      successCount++
+    }
+  })
+
+  if (successCount > 0) {
+    issues.push(
+      createIssue(
+        chain,
+        'library',
+        'info',
+        `Receive library verified for ${pluralize(successCount, 'chain')}`
+      )
+    )
+  }
+
+  return issues
+}
+
+async function verifyUlnConfigs(
+  chain: string,
+  client: PublicClient,
+  deployment: DeploymentInfo,
+  chainInfo: ChainInfo,
+  remoteDeployments: RemoteChainDeployment[],
+  securityConfig: SecurityConfig,
+  expectedDVNs: Address[],
+  direction: 'send' | 'receive'
+): Promise<VerificationIssue[]> {
+  if (remoteDeployments.length === 0) {
+    return []
+  }
+
+  const libraryAddress =
+    direction === 'send' ? chainInfo.sendUln302 : chainInfo.receiveUln302
+  const localConfirmations =
+    direction === 'send'
+      ? getExpectedConfirmations(securityConfig, chain)
+      : null
+  const directionLabel = direction === 'send' ? 'Send' : 'Receive'
+
+  const configResults = await client.multicall({
+    contracts: remoteDeployments.map(({ eid }) => ({
+      address: chainInfo.endpointV2,
+      abi: layerZeroEndpointAbi,
+      functionName: 'getConfig' as const,
+      args: [deployment.address, libraryAddress, eid, CONFIG_TYPE_ULN] as const,
+    })),
+    allowFailure: true,
+  })
+
+  const issues: VerificationIssue[] = []
+  let successCount = 0
+
+  configResults.forEach((configResult, index) => {
+    if (configResult.status !== 'success' || !configResult.result) {
+      return
+    }
+
+    const remoteChain = remoteDeployments[index].chain
+    const expectedConfirmations =
+      localConfirmations ??
+      getExpectedConfirmations(securityConfig, remoteChain)
+    const configIssues = verifyUlnConfig(
+      chain,
+      remoteChain,
+      configResult.result,
+      expectedConfirmations,
+      expectedDVNs,
+      direction
     )
 
-    // Build metadata arrays for token type verification
-    const tokenTypeSymbols: string[] = []
-    const tokenTypeAddrs: Address[] = []
-    const tokenTypeCalls = []
-
-    // Build metadata arrays for remote address verification
-    const remoteAddrSymbols: string[] = []
-    const remoteAddrChains: string[] = []
-    const remoteAddrExpected: Address[] = []
-    const remoteAddrCalls = []
-
-    // Track skipped tokens
-    let skippedGMX = false
-    const skippedSingleChainTokens: string[] = []
-
-    for (const [tokenSymbol, chains] of tokensOnChain) {
-      // Skip GMX token (not supported by new adapter)
-      if (tokenSymbol === 'GMX') {
-        skippedGMX = true
-        continue
-      }
-
-      // Skip tokens that only exist on a single chain (no remote addresses to verify)
-      const chainCount = Object.keys(chains).length
-      if (chainCount <= 1) {
-        skippedSingleChainTokens.push(tokenSymbol)
-        continue
-      }
-
-      const tokenAddr = chains[chain].tokenAddress
-
-      // Add token type check
-      tokenTypeSymbols.push(tokenSymbol)
-      tokenTypeAddrs.push(tokenAddr)
-      tokenTypeCalls.push({
-        address: deployment.address,
-        abi: synapseBridgeAdapterAbi,
-        functionName: 'getTokenType' as const,
-        args: [tokenAddr] as const,
-      })
-
-      // Add remote address checks for all chains where this token exists
-      for (const remoteChain of allChains) {
-        if (remoteChain === chain) continue
-        if (!chains[remoteChain]) continue
-        if (!loadDeployment(remoteChain)) continue
-
-        const remoteEid = chainsConfig[remoteChain].eid
-        remoteAddrSymbols.push(tokenSymbol)
-        remoteAddrChains.push(remoteChain)
-        remoteAddrExpected.push(chains[remoteChain].tokenAddress)
-        remoteAddrCalls.push({
-          address: deployment.address,
-          abi: synapseBridgeAdapterAbi,
-          functionName: 'getRemoteAddress' as const,
-          args: [remoteEid, tokenAddr] as const,
-        })
-      }
+    if (configIssues.length === 0) {
+      successCount++
+      return
     }
 
-    // Verify token types
-    const tokenTypeResults = await client.multicall({
-      contracts: tokenTypeCalls,
-      allowFailure: true,
-    })
+    issues.push(...configIssues)
+  })
 
-    let tokenTypeSuccessCount = 0
-    tokenTypeResults.forEach((tokenType, i) => {
-      const tokenSymbol = tokenTypeSymbols[i]
-      const tokenAddr = tokenTypeAddrs[i]
-
-      if (tokenType.status === 'success' && tokenType.result !== undefined) {
-        if (tokenType.result === 0) {
-          result.issues.push({
-            chain,
-            category: 'token',
-            severity: 'error',
-            message: `Token ${tokenSymbol} (${tokenAddr}) not added`,
-          })
-        } else {
-          tokenTypeSuccessCount++
-        }
-      } else {
-        result.issues.push({
-          chain,
-          category: 'token',
-          severity: 'error',
-          message: `Failed to check token type for ${tokenSymbol}`,
-        })
-      }
-    })
-
-    // Verify remote addresses
-    const remoteAddrResults = await client.multicall({
-      contracts: remoteAddrCalls,
-      allowFailure: true,
-    })
-
-    let remoteAddrSuccessCount = 0
-    remoteAddrResults.forEach((remoteAddr, i) => {
-      const tokenSymbol = remoteAddrSymbols[i]
-      const remoteChain = remoteAddrChains[i]
-      const expectedAddr = remoteAddrExpected[i]
-
-      if (remoteAddr.status === 'success' && remoteAddr.result) {
-        if (
-          remoteAddr.result === '0x0000000000000000000000000000000000000000'
-        ) {
-          result.issues.push({
-            chain,
-            category: 'token',
-            severity: 'error',
-            message: `Token ${tokenSymbol} remote address for ${remoteChain} not set`,
-          })
-        } else if (
-          remoteAddr.result.toLowerCase() !== expectedAddr.toLowerCase()
-        ) {
-          result.issues.push({
-            chain,
-            category: 'token',
-            severity: 'error',
-            message: `Token ${tokenSymbol} remote address for ${remoteChain} mismatch: expected ${expectedAddr}, got ${remoteAddr.result}`,
-          })
-        } else {
-          remoteAddrSuccessCount++
-        }
-      } else {
-        result.issues.push({
-          chain,
-          category: 'token',
-          severity: 'error',
-          message: `Failed to check token ${tokenSymbol} remote address for ${remoteChain}`,
-        })
-      }
-    })
-
-    if (tokenTypeSuccessCount > 0 || remoteAddrSuccessCount > 0) {
-      result.issues.push({
+  if (successCount > 0) {
+    issues.push(
+      createIssue(
         chain,
-        category: 'token',
-        severity: 'info',
-        message: `Verified ${pluralize(
+        'confirmations',
+        'info',
+        `${directionLabel} config verified for ${pluralize(
+          successCount,
+          'chain'
+        )} (DVNs & confirmations)`
+      )
+    )
+  }
+
+  return issues
+}
+
+function buildTokenVerificationPlan(
+  chain: string,
+  context: VerificationContext,
+  remoteChainNames: Set<string>
+): TokenVerificationPlan {
+  const tokenTypeRequests: TokenTypeRequest[] = []
+  const remoteAddressRequests: RemoteAddressRequest[] = []
+  let skippedGMX = false
+  const skippedSingleChainTokens: string[] = []
+
+  for (const [tokenSymbol, chains] of Object.entries(context.tokensConfig)) {
+    if (chains[chain] === undefined) {
+      continue
+    }
+
+    if (tokenSymbol === 'GMX') {
+      skippedGMX = true
+      continue
+    }
+
+    if (Object.keys(chains).length <= 1) {
+      skippedSingleChainTokens.push(tokenSymbol)
+      continue
+    }
+
+    const tokenAddr = chains[chain].tokenAddress
+    tokenTypeRequests.push({ tokenSymbol, tokenAddr })
+
+    for (const remoteChain of context.allChains) {
+      if (remoteChain === chain) {
+        continue
+      }
+
+      if (!chains[remoteChain] || !remoteChainNames.has(remoteChain)) {
+        continue
+      }
+
+      remoteAddressRequests.push({
+        tokenSymbol,
+        remoteChain,
+        remoteEid: context.chainsConfig[remoteChain].eid,
+        expectedAddr: chains[remoteChain].tokenAddress,
+        tokenAddr,
+      })
+    }
+  }
+
+  return {
+    tokenTypeRequests,
+    remoteAddressRequests,
+    skippedGMX,
+    skippedSingleChainTokens,
+  }
+}
+
+async function verifyTokenTypes(
+  chain: string,
+  client: PublicClient,
+  deployment: DeploymentInfo,
+  requests: TokenTypeRequest[]
+): Promise<CountedIssues> {
+  if (requests.length === 0) {
+    return { successCount: 0, issues: [] }
+  }
+
+  const tokenTypeResults = await client.multicall({
+    contracts: requests.map(({ tokenAddr }) => ({
+      address: deployment.address,
+      abi: synapseBridgeAdapterAbi,
+      functionName: 'getTokenType' as const,
+      args: [tokenAddr] as const,
+    })),
+    allowFailure: true,
+  })
+
+  const issues: VerificationIssue[] = []
+  let successCount = 0
+
+  tokenTypeResults.forEach((tokenType, index) => {
+    const request = requests[index]
+
+    if (tokenType.status !== 'success' || tokenType.result === undefined) {
+      issues.push(
+        createIssue(
+          chain,
+          'token',
+          'error',
+          `Failed to check token type for ${request.tokenSymbol}`
+        )
+      )
+      return
+    }
+
+    if (tokenType.result === 0) {
+      issues.push(
+        createIssue(
+          chain,
+          'token',
+          'error',
+          `Token ${request.tokenSymbol} (${request.tokenAddr}) not added`
+        )
+      )
+      return
+    }
+
+    successCount++
+  })
+
+  return { successCount, issues }
+}
+
+async function verifyRemoteAddresses(
+  chain: string,
+  client: PublicClient,
+  deployment: DeploymentInfo,
+  requests: RemoteAddressRequest[]
+): Promise<CountedIssues> {
+  if (requests.length === 0) {
+    return { successCount: 0, issues: [] }
+  }
+
+  const remoteAddressResults = await client.multicall({
+    contracts: requests.map(({ remoteEid, tokenAddr }) => ({
+      address: deployment.address,
+      abi: synapseBridgeAdapterAbi,
+      functionName: 'getRemoteAddress' as const,
+      args: [remoteEid, tokenAddr] as const,
+    })),
+    allowFailure: true,
+  })
+
+  const issues: VerificationIssue[] = []
+  let successCount = 0
+
+  remoteAddressResults.forEach((remoteAddress, index) => {
+    const request = requests[index]
+
+    if (remoteAddress.status !== 'success' || !remoteAddress.result) {
+      issues.push(
+        createIssue(
+          chain,
+          'token',
+          'error',
+          `Failed to check token ${request.tokenSymbol} remote address for ${request.remoteChain}`
+        )
+      )
+      return
+    }
+
+    if (
+      remoteAddress.result.toLowerCase() === request.expectedAddr.toLowerCase()
+    ) {
+      successCount++
+      return
+    }
+
+    if (remoteAddress.result === ZERO_ADDRESS) {
+      issues.push(
+        createIssue(
+          chain,
+          'token',
+          'error',
+          `Token ${request.tokenSymbol} remote address for ${request.remoteChain} not set`
+        )
+      )
+      return
+    }
+
+    issues.push(
+      createIssue(
+        chain,
+        'token',
+        'error',
+        `Token ${request.tokenSymbol} remote address for ${request.remoteChain} mismatch: expected ${request.expectedAddr}, got ${remoteAddress.result}`
+      )
+    )
+  })
+
+  return { successCount, issues }
+}
+
+function buildTokenInfoIssues(
+  chain: string,
+  plan: TokenVerificationPlan,
+  tokenTypeSuccessCount: number,
+  remoteAddressSuccessCount: number
+): VerificationIssue[] {
+  const issues: VerificationIssue[] = []
+
+  if (tokenTypeSuccessCount > 0 || remoteAddressSuccessCount > 0) {
+    issues.push(
+      createIssue(
+        chain,
+        'token',
+        'info',
+        `Verified ${pluralize(
           tokenTypeSuccessCount,
           'token'
-        )} with ${remoteAddrSuccessCount} remote address${
-          remoteAddrSuccessCount === 1 ? '' : 'es'
-        }`,
-      })
-    }
+        )} with ${remoteAddressSuccessCount} remote address${
+          remoteAddressSuccessCount === 1 ? '' : 'es'
+        }`
+      )
+    )
+  }
 
-    // Add info logs for skipped tokens
-    if (skippedGMX) {
-      result.issues.push({
-        chain,
-        category: 'token',
-        severity: 'info',
-        message: `Skipped GMX (not supported)`,
-      })
-    }
+  if (plan.skippedGMX) {
+    issues.push(
+      createIssue(chain, 'token', 'info', 'Skipped GMX (not supported)')
+    )
+  }
 
-    if (skippedSingleChainTokens.length > 0) {
-      result.issues.push({
+  if (plan.skippedSingleChainTokens.length > 0) {
+    issues.push(
+      createIssue(
         chain,
-        category: 'token',
-        severity: 'info',
-        message: `Skipped ${pluralize(
-          skippedSingleChainTokens.length,
+        'token',
+        'info',
+        `Skipped ${pluralize(
+          plan.skippedSingleChainTokens.length,
           'single-chain token'
-        )}: ${skippedSingleChainTokens.join(', ')}`,
-      })
-    }
-  } catch (error) {
-    result.issues.push({
+        )}: ${plan.skippedSingleChainTokens.join(', ')}`
+      )
+    )
+  }
+
+  return issues
+}
+
+async function verifyTokensForChain(
+  chain: string,
+  client: PublicClient,
+  deployment: DeploymentInfo,
+  context: VerificationContext,
+  remoteDeployments: RemoteChainDeployment[]
+): Promise<VerificationIssue[]> {
+  const plan = buildTokenVerificationPlan(
+    chain,
+    context,
+    new Set(remoteDeployments.map((remoteDeployment) => remoteDeployment.chain))
+  )
+  const tokenTypes = await verifyTokenTypes(
+    chain,
+    client,
+    deployment,
+    plan.tokenTypeRequests
+  )
+  const remoteAddresses = await verifyRemoteAddresses(
+    chain,
+    client,
+    deployment,
+    plan.remoteAddressRequests
+  )
+
+  return [
+    ...tokenTypes.issues,
+    ...remoteAddresses.issues,
+    ...buildTokenInfoIssues(
       chain,
-      category: 'error',
-      severity: 'error',
-      message: `RPC error: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-    })
+      plan,
+      tokenTypes.successCount,
+      remoteAddresses.successCount
+    ),
+  ]
+}
+
+// Function to verify a single chain
+async function verifyChain(
+  chain: string,
+  chainId: number,
+  deployment: DeploymentInfo,
+  context: VerificationContext
+): Promise<ChainVerificationResult> {
+  const result: ChainVerificationResult = {
+    chain,
+    chainId,
+    owner: null,
+    bridge: null,
+    issues: [],
+  }
+
+  try {
+    const client = createChainClient(chainId)
+    const chainInfo = context.chainsConfig[chain]
+    const remoteDeployments = getRemoteDeployments(chain, context)
+    const basicInfo = await verifyBasicInfo(
+      chain,
+      client,
+      deployment,
+      chainInfo
+    )
+    const expectedDVNs = getExpectedDVNs(chain, context)
+
+    result.owner = basicInfo.owner
+    result.bridge = basicInfo.bridge
+    result.issues.push(...basicInfo.issues)
+    result.issues.push(
+      ...(await verifyPeerConfiguration(
+        chain,
+        client,
+        deployment,
+        remoteDeployments
+      ))
+    )
+    result.issues.push(
+      ...(await verifySendLibraries(
+        chain,
+        client,
+        deployment,
+        chainInfo,
+        remoteDeployments
+      ))
+    )
+    result.issues.push(
+      ...(await verifyReceiveLibraries(
+        chain,
+        client,
+        deployment,
+        chainInfo,
+        remoteDeployments
+      ))
+    )
+    result.issues.push(
+      ...(await verifyUlnConfigs(
+        chain,
+        client,
+        deployment,
+        chainInfo,
+        remoteDeployments,
+        context.securityConfig,
+        expectedDVNs,
+        'send'
+      ))
+    )
+    result.issues.push(
+      ...(await verifyUlnConfigs(
+        chain,
+        client,
+        deployment,
+        chainInfo,
+        remoteDeployments,
+        context.securityConfig,
+        expectedDVNs,
+        'receive'
+      ))
+    )
+    result.issues.push(
+      ...(await verifyTokensForChain(
+        chain,
+        client,
+        deployment,
+        context,
+        remoteDeployments
+      ))
+    )
+  } catch (error) {
+    result.issues.push(
+      createIssue(chain, 'error', 'error', `RPC error: ${formatError(error)}`)
+    )
   }
 
   return result
@@ -1041,132 +1479,18 @@ async function verifyChain(
 
 // Function to print results
 function printResults(results: ChainVerificationResult[]) {
-  // Maps for cleaner output formatting
-  const categoryLabels: Record<string, string> = {
-    peer: 'Peer Configuration',
-    library: 'Library Configuration',
-    dvn: 'DVN Configuration',
-    confirmations: 'Block Confirmations',
-    token: 'Token Configuration',
-    bridge: 'Bridge Configuration',
-    error: 'Errors',
-  }
-
-  const severityIcons: Record<string, string> = {
-    error: '✗',
-    warning: '⚠',
-    info: '✓',
-  }
-
-  const severityColors: Record<string, string> = {
-    error: colors.red,
-    warning: colors.yellow,
-    info: colors.green,
-  }
-
   console.log(
     `\n${colors.bold}${colors.cyan}SynapseBridgeAdapter Verification Results${colors.reset}\n`
   )
 
-  const totalChains = results.length
-  const chainsWithIssues = results.filter((r) =>
-    r.issues.some((i) => i.severity === 'error' || i.severity === 'warning')
-  ).length
-  const errors = results.reduce(
-    (sum, r) => sum + r.issues.filter((i) => i.severity === 'error').length,
-    0
-  )
-  const warnings = results.reduce(
-    (sum, r) => sum + r.issues.filter((i) => i.severity === 'warning').length,
-    0
-  )
-  const totalIssues = errors + warnings
+  const stats = calculateResultStats(results)
+  printOverview(stats)
 
-  console.log(`Total chains verified: ${totalChains}`)
-  console.log(
-    `${colors.green}✓ Chains without issues: ${totalChains - chainsWithIssues}${
-      colors.reset
-    }`
-  )
-  if (chainsWithIssues > 0) {
-    console.log(
-      `${colors.yellow}⚠ Chains with issues: ${chainsWithIssues}${colors.reset}`
-    )
-    console.log(`  Total issues: ${totalIssues}`)
-    if (errors > 0) {
-      console.log(`  ${colors.red}✗ Errors: ${errors}${colors.reset}`)
-    }
-    if (warnings > 0) {
-      console.log(`  ${colors.yellow}⚠ Warnings: ${warnings}${colors.reset}`)
-    }
-  }
-
-  // Print detailed results for each chain
   for (const result of results) {
-    console.log(
-      `\n${colors.bold}${colors.cyan}${result.chain} (Chain ID: ${result.chainId})${colors.reset}`
-    )
-    console.log(
-      `  Owner: ${result.owner || colors.red + 'Unknown' + colors.reset}`
-    )
-    console.log(
-      `  Bridge: ${result.bridge || colors.red + 'Not set' + colors.reset}`
-    )
-
-    const errorWarningIssues = result.issues.filter(
-      (i) => i.severity === 'error' || i.severity === 'warning'
-    )
-    const infoIssues = result.issues.filter((i) => i.severity === 'info')
-
-    if (errorWarningIssues.length === 0) {
-      console.log(`  ${colors.green}✓ All checks passed${colors.reset}`)
-    } else {
-      console.log(
-        `  ${colors.yellow}Issues found: ${errorWarningIssues.length}${colors.reset}`
-      )
-    }
-
-    // Group all issues by category (including info)
-    const issuesByCategory = result.issues.reduce((acc, issue) => {
-      if (!acc[issue.category]) {
-        acc[issue.category] = []
-      }
-      acc[issue.category].push(issue)
-      return acc
-    }, {} as Record<string, VerificationIssue[]>)
-
-    for (const [category, issues] of Object.entries(issuesByCategory)) {
-      const categoryLabel = categoryLabels[category] || category
-
-      console.log(`\n    ${colors.bold}${categoryLabel}:${colors.reset}`)
-      for (const issue of issues) {
-        const icon = severityIcons[issue.severity] || '?'
-        const color = severityColors[issue.severity] || colors.reset
-        console.log(`      ${color}${icon} ${issue.message}${colors.reset}`)
-      }
-    }
+    printChainResult(result)
   }
 
-  // Print summary
-  console.log(`\n${colors.bold}${colors.cyan}Summary${colors.reset}`)
-  if (totalIssues === 0) {
-    console.log(
-      `${colors.green}✓ All SynapseBridgeAdapter contracts are correctly configured!${colors.reset}\n`
-    )
-  } else {
-    console.log(
-      `${colors.yellow}⚠ Found ${totalIssues} issue(s) across ${chainsWithIssues} chain(s)${colors.reset}`
-    )
-    if (errors > 0) {
-      console.log(
-        `${colors.red}Please fix ${errors} error(s) before proceeding${colors.reset}\n`
-      )
-    } else {
-      console.log(
-        `${colors.yellow}Please review ${warnings} warning(s)${colors.reset}\n`
-      )
-    }
-  }
+  printSummary(stats)
 }
 
 async function main() {
@@ -1208,6 +1532,15 @@ async function main() {
   const securityConfig: SecurityConfig = JSON.parse(
     fs.readFileSync(securityConfigPath, 'utf8')
   )
+  const context: VerificationContext = {
+    chainsConfig,
+    tokensConfig,
+    dvnsConfig,
+    securityConfig,
+    allChains: Object.keys(chainIds).filter(
+      (chain) => chainsConfig[chain] !== undefined
+    ),
+  }
 
   console.log(
     `Loaded configuration for ${Object.keys(chainsConfig).length} chains`
@@ -1218,17 +1551,12 @@ async function main() {
     } chains, DVNs: ${securityConfig.DVNs.join(', ')}\n`
   )
 
-  // Get all chains with deployments
-  const allChains = Object.keys(chainIds).filter(
-    (chain) => chainsConfig[chain] !== undefined
-  )
-
   // Filter by command line arguments if provided
   const requestedChains = process.argv.slice(2)
   const chainsToVerify =
     requestedChains.length > 0
-      ? allChains.filter((chain) => requestedChains.includes(chain))
-      : allChains
+      ? context.allChains.filter((chain) => requestedChains.includes(chain))
+      : context.allChains
 
   if (requestedChains.length > 0 && chainsToVerify.length === 0) {
     console.error(
@@ -1238,7 +1566,7 @@ async function main() {
         ', '
       )}${colors.reset}`
     )
-    console.error(`Available chains: ${allChains.join(', ')}`)
+    console.error(`Available chains: ${context.allChains.join(', ')}`)
     process.exit(1)
   }
 
@@ -1260,16 +1588,7 @@ async function main() {
 
     console.log(`${colors.dim}Verifying ${chain}...${colors.reset}`)
 
-    const result = await verifyChain(
-      chain,
-      chainId,
-      deployment,
-      chainsConfig,
-      tokensConfig,
-      dvnsConfig,
-      securityConfig,
-      allChains
-    )
+    const result = await verifyChain(chain, chainId, deployment, context)
 
     results.push(result)
   }
@@ -1293,8 +1612,11 @@ async function main() {
   }
 }
 
-// Run the script
-main().catch((error) => {
-  console.error(`${colors.red}Error: ${error}${colors.reset}`)
-  process.exit(1)
-})
+void (async () => {
+  try {
+    await main()
+  } catch (error) {
+    console.error(`${colors.red}Error: ${formatError(error)}${colors.reset}`)
+    process.exit(1)
+  }
+})()
