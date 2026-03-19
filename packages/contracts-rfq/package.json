@@ -1,7 +1,7 @@
 {
   "name": "@synapsecns/contracts-rfq",
   "license": "MIT",
-  "version": "0.19.4",
+  "version": "0.19.5",
   "description": "FastBridge contracts.",
   "private": true,
   "files": [
@@ -12,7 +12,7 @@
     "@openzeppelin/contracts-4.5.0": "npm:@openzeppelin/contracts@4.5.0"
   },
   "devDependencies": {
-    "@synapsecns/solidity-devops": "^0.4.11",
+    "@synapsecns/solidity-devops": "^0.4.12",
     "solhint": "5.0.3"
   },
   "scripts": {
