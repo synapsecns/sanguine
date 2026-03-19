@@ -1,7 +1,7 @@
 {
   "name": "@synapsecns/sdk-router",
   "description": "An SDK for interacting with the Synapse Protocol",
-  "version": "0.20.8",
+  "version": "0.21.2",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -35,7 +35,8 @@
     "build:slither": " "
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
   },
   "typedoc": {
     "entryPoint": "./src/sdk.ts",

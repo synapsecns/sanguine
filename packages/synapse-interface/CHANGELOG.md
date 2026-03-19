@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.43.45](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.44...@synapsecns/synapse-interface@0.43.45) (2026-03-19)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.44](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.43...@synapsecns/synapse-interface@0.43.44) (2026-03-19)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.43](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.42...@synapsecns/synapse-interface@0.43.43) (2026-03-18)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.43.42](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.41...@synapsecns/synapse-interface@0.43.42) (2026-03-18)
+
+
+### Bug Fixes
+
+* **synapse-interface:** eta display ([#3979](https://github.com/synapsecns/sanguine/issues/3979)) ([6f80882](https://github.com/synapsecns/sanguine/commit/6f80882a36c7f78d64e63debe90cc4acfdaa5d1f))
+
+
+
+
+
+## [0.43.41](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.40...@synapsecns/synapse-interface@0.43.41) (2026-03-17)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.43.40](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.39...@synapsecns/synapse-interface@0.43.40) (2026-03-12)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface

@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-constants",
-  "version": "1.8.11",
+  "version": "1.8.12",
   "description": "This is an npm package that maintains all synapse constants",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -15,7 +15,8 @@
   },
   "homepage": "https://github.com/synapsecns/sanguine/blob/master/packages/synapse-constants/README.md",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
     "test:coverage": "echo 'No tests defined.'",
