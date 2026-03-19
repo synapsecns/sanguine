@@ -1,4 +1,4 @@
-import { AddressZero, Zero } from '@ethersproject/constants'
+import { Zero } from '@ethersproject/constants'
 import { BigNumber, BigNumberish } from 'ethers'
 import NodeCache from 'node-cache'
 
@@ -16,17 +16,13 @@ import {
 } from '../module'
 import { ChainProvider } from '../router'
 import { encodeZapData } from '../swap'
-import {
-  isNativeToken,
-  isSameAddress,
-  logExecutionTime,
-  logger,
-} from '../utils'
+import { isSameAddress, logExecutionTime, logger } from '../utils'
 import {
   getSbaChainMetadata,
   SBA_DEFAULT_DESTINATION_BLOCKS,
   SBA_ESTIMATED_TIME_CACHE_TTL,
 } from './metadata'
+import { getSbaRemoteToken, getSbaSupportedTokens } from './supportedTokens'
 import {
   SynapseBridgeAdapterBridgeParams,
   SynapseBridgeAdapterModule,
@@ -82,45 +78,20 @@ export class SynapseBridgeAdapterModuleSet extends SynapseModuleSet {
   public async getBridgeTokenCandidates({
     fromChainId,
     toChainId,
-    fromToken,
     toToken,
   }: GetBridgeTokenCandidatesParameters): Promise<BridgeTokenCandidate[]> {
     const originModule = this.modules[fromChainId]
+    const originMetadata = getSbaChainMetadata(fromChainId)
     const destMetadata = getSbaChainMetadata(toChainId)
-    if (!originModule || !this.modules[toChainId] || !destMetadata) {
+    if (
+      !originModule ||
+      !originMetadata ||
+      !this.modules[toChainId] ||
+      !destMetadata
+    ) {
       return []
     }
-    try {
-      const originBridgeToken = isNativeToken(fromToken)
-        ? await originModule.getWrappedNativeToken()
-        : fromToken
-      if (!originBridgeToken) {
-        return []
-      }
-      const remoteToken = await originModule.getRemoteAddress(
-        destMetadata.lzEid,
-        originBridgeToken
-      )
-      if (!remoteToken || isSameAddress(remoteToken, AddressZero)) {
-        return []
-      }
-      if (toToken && !isSameAddress(toToken, remoteToken)) {
-        return []
-      }
-      return [
-        {
-          originChainId: fromChainId,
-          destChainId: toChainId,
-          originToken: originBridgeToken,
-          destToken: remoteToken,
-        },
-      ]
-    } catch (error) {
-      logger.error(
-        `Failed to get SBA candidate for ${fromChainId} -> ${toChainId}: ${error}`
-      )
-      return []
-    }
+    return getSbaSupportedTokens(fromChainId, toChainId, toToken)
   }
 
   @logExecutionTime('SynapseBridgeAdapterModuleSet.getBridgeRouteV2')
@@ -130,28 +101,21 @@ export class SynapseBridgeAdapterModuleSet extends SynapseModuleSet {
     if (!this.validateBridgeRouteV2Params(params)) {
       return undefined
     }
-    const {
-      bridgeToken,
-      originSwapRoute,
-      fromSender,
-      toRecipient,
-      allowMultipleTxs,
-    } = params
+    const { bridgeToken, originSwapRoute, fromSender, toRecipient } = params
     const originModule = this.modules[bridgeToken.originChainId]
     const destMetadata = getSbaChainMetadata(bridgeToken.destChainId)
     if (!originModule || !destMetadata) {
       return undefined
     }
     try {
-      const remoteToken = await originModule.getRemoteAddress(
-        destMetadata.lzEid,
-        bridgeToken.originToken
+      const artifactDestToken = getSbaRemoteToken(
+        bridgeToken.originChainId,
+        bridgeToken.originToken,
+        bridgeToken.destChainId
       )
       if (
-        !remoteToken ||
-        isSameAddress(remoteToken, AddressZero) ||
-        !isSameAddress(remoteToken, bridgeToken.destToken) ||
-        (!allowMultipleTxs && !isSameAddress(remoteToken, params.toToken))
+        !artifactDestToken ||
+        !isSameAddress(artifactDestToken, bridgeToken.destToken)
       ) {
         return undefined
       }
@@ -172,11 +136,8 @@ export class SynapseBridgeAdapterModuleSet extends SynapseModuleSet {
         this.estimatedTimeCache.set(cacheKey, estimatedTime)
       }
       return {
-        bridgeToken: {
-          ...bridgeToken,
-          destToken: remoteToken,
-        },
-        toToken: remoteToken,
+        bridgeToken,
+        toToken: artifactDestToken,
         expectedToAmount,
         minToAmount:
           originSwapRoute.steps.length === 0

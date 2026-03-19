@@ -866,36 +866,42 @@ describe('SynapseSDK', () => {
   describe('SynapseBridgeAdapter V2 integration', () => {
     const mockEthProvider = mock<Provider>()
     const mockOpProvider = mock<Provider>()
-    const sbaOriginToken = '0x00000000000000000000000000000000000000a1'
-    const sbaRemoteToken = '0x00000000000000000000000000000000000000b1'
+    const sbaDirectOriginToken = '0x0f2D719407FdBeFF09D87557AbB7232601FD9F29'
+    const sbaDirectRemoteToken = '0x5A5fFf6F753d7C11A56A52FE47a177a87e431655'
+    const sbaNativeBridgeToken = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+    const sbaNativeRemoteToken = '0x809DC529f07651bD43A172e8dB6f4a7a0d771036'
+    const sbaWrappedNativeOriginToken =
+      '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB'
+    const sbaWrappedNativeRemoteToken =
+      '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
     const sbaFinalToken = '0x00000000000000000000000000000000000000c1'
     const sender = '0x0000000000000000000000000000000000000f01'
     const recipient = '0x0000000000000000000000000000000000000f02'
 
-    const noOpRoute = {
+    const createNoOpRoute = (chainId: number, token: string) => ({
       engineID: EngineID.NoOp,
       engineName: EngineID[EngineID.NoOp],
-      chainId: SupportedChainId.ETH,
-      fromToken: sbaOriginToken,
+      chainId,
+      fromToken: token,
       fromAmount: BigNumber.from(1000),
-      toToken: sbaOriginToken,
+      toToken: token,
       expectedToAmount: BigNumber.from(1000),
       minToAmount: BigNumber.from(1000),
       steps: [],
-    }
+    })
 
     const destinationSwapRoute = {
       engineID: EngineID.DefaultPools,
       engineName: EngineID[EngineID.DefaultPools],
       chainId: SupportedChainId.OPTIMISM,
-      fromToken: sbaRemoteToken,
+      fromToken: sbaDirectRemoteToken,
       fromAmount: BigNumber.from(1000),
       toToken: sbaFinalToken,
       expectedToAmount: BigNumber.from(900),
       minToAmount: BigNumber.from(880),
       steps: [
         {
-          token: sbaRemoteToken,
+          token: sbaDirectRemoteToken,
           amount: BigNumber.from(1000),
           msgValue: Zero,
           zapData: '0x1234',
@@ -915,12 +921,6 @@ describe('SynapseSDK', () => {
       jest
         .spyOn(
           synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.ETH],
-          'getRemoteAddress'
-        )
-        .mockResolvedValue(sbaRemoteToken)
-      jest
-        .spyOn(
-          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.ETH],
           'getNativeFee'
         )
         .mockResolvedValue(BigNumber.from(77))
@@ -935,14 +935,52 @@ describe('SynapseSDK', () => {
         .mockImplementation(async (input) => {
           if (
             input.chainId === SupportedChainId.ETH &&
-            input.fromToken.toLowerCase() === sbaOriginToken.toLowerCase() &&
-            input.toToken.toLowerCase() === sbaOriginToken.toLowerCase()
+            input.fromToken.toLowerCase() ===
+              sbaDirectOriginToken.toLowerCase() &&
+            input.toToken.toLowerCase() === sbaDirectOriginToken.toLowerCase()
           ) {
-            return noOpRoute as any
+            return createNoOpRoute(
+              SupportedChainId.ETH,
+              sbaDirectOriginToken
+            ) as any
+          }
+          if (
+            input.chainId === SupportedChainId.ETH &&
+            input.fromToken.toLowerCase() ===
+              sbaNativeBridgeToken.toLowerCase() &&
+            input.toToken.toLowerCase() === sbaNativeBridgeToken.toLowerCase()
+          ) {
+            return createNoOpRoute(
+              SupportedChainId.ETH,
+              sbaNativeBridgeToken
+            ) as any
+          }
+          if (
+            input.chainId === SupportedChainId.ETH &&
+            input.fromToken === ETH_NATIVE_TOKEN_ADDRESS &&
+            input.toToken.toLowerCase() === sbaNativeBridgeToken.toLowerCase()
+          ) {
+            return {
+              ...createNoOpRoute(SupportedChainId.ETH, sbaNativeBridgeToken),
+              engineID: EngineID.DefaultPools,
+              engineName: EngineID[EngineID.DefaultPools],
+              fromToken: ETH_NATIVE_TOKEN_ADDRESS,
+              expectedToAmount: BigNumber.from(1000),
+              minToAmount: BigNumber.from(950),
+              steps: [
+                {
+                  token: ETH_NATIVE_TOKEN_ADDRESS,
+                  amount: BigNumber.from(1000),
+                  msgValue: BigNumber.from(1000),
+                  zapData: '0x1234',
+                },
+              ],
+            } as any
           }
           if (
             input.chainId === SupportedChainId.OPTIMISM &&
-            input.fromToken.toLowerCase() === sbaRemoteToken.toLowerCase() &&
+            input.fromToken.toLowerCase() ===
+              sbaDirectRemoteToken.toLowerCase() &&
             input.toToken.toLowerCase() === sbaFinalToken.toLowerCase()
           ) {
             return destinationSwapRoute as any
@@ -1001,8 +1039,8 @@ describe('SynapseSDK', () => {
       const quotes: BridgeQuoteV2[] = await synapse.bridgeV2({
         fromChainId: SupportedChainId.ETH,
         toChainId: SupportedChainId.OPTIMISM,
-        fromToken: sbaOriginToken,
-        toToken: sbaRemoteToken,
+        fromToken: sbaDirectOriginToken,
+        toToken: sbaDirectRemoteToken,
         fromAmount: '1000',
         fromSender: sender,
         toRecipient: recipient,
@@ -1012,8 +1050,8 @@ describe('SynapseSDK', () => {
       expect(quotes[0]).toMatchObject({
         fromChainId: SupportedChainId.ETH,
         toChainId: SupportedChainId.OPTIMISM,
-        fromToken: sbaOriginToken,
-        toToken: sbaRemoteToken,
+        fromToken: sbaDirectOriginToken,
+        toToken: sbaDirectRemoteToken,
         expectedToAmount: '1000',
         minToAmount: '1000',
         routerAddress: SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.ETH],
@@ -1024,48 +1062,14 @@ describe('SynapseSDK', () => {
       expect(quotes[0].tx).toBeDefined()
     })
 
-    it('supports native-wrap origins in bridgeV2', async () => {
+    it('supports native-origin bridgeV2 quotes through the generic swap path', async () => {
       const synapse = setupSynapse()
-      jest
-        .spyOn(
-          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.ETH],
-          'getWrappedNativeToken'
-        )
-        .mockResolvedValue(sbaOriginToken)
-      jest
-        .spyOn(synapse.swapEngineSet, 'getBestQuote')
-        .mockImplementation(async (input) => {
-          if (
-            input.chainId === SupportedChainId.ETH &&
-            input.fromToken === ETH_NATIVE_TOKEN_ADDRESS &&
-            input.toToken.toLowerCase() === sbaOriginToken.toLowerCase()
-          ) {
-            return {
-              ...noOpRoute,
-              fromToken: ETH_NATIVE_TOKEN_ADDRESS,
-              expectedToAmount: BigNumber.from(1000),
-              minToAmount: BigNumber.from(950),
-              steps: [
-                {
-                  token: ETH_NATIVE_TOKEN_ADDRESS,
-                  amount: BigNumber.from(1000),
-                  msgValue: BigNumber.from(1000),
-                  zapData: '0x1234',
-                },
-              ],
-            } as any
-          }
-          return undefined as any
-        })
-      jest
-        .spyOn(synapse.swapEngineSet, 'generateRoute')
-        .mockImplementation(async (_input, quote) => quote as any)
 
       const quotes: BridgeQuoteV2[] = await synapse.bridgeV2({
         fromChainId: SupportedChainId.ETH,
         toChainId: SupportedChainId.OPTIMISM,
         fromToken: ETH_NATIVE_TOKEN_ADDRESS,
-        toToken: sbaRemoteToken,
+        toToken: sbaNativeRemoteToken,
         fromAmount: '1000',
         fromSender: sender,
         toRecipient: recipient,
@@ -1074,70 +1078,28 @@ describe('SynapseSDK', () => {
       expect(quotes).toHaveLength(1)
       expect(quotes[0]).toMatchObject({
         fromToken: ETH_NATIVE_TOKEN_ADDRESS,
-        toToken: sbaRemoteToken,
+        toToken: sbaNativeRemoteToken,
         expectedToAmount: '1000',
         minToAmount: '950',
-        moduleNames: [EngineID[EngineID.NoOp], 'SynapseBridgeAdapter'],
+        moduleNames: [EngineID[EngineID.DefaultPools], 'SynapseBridgeAdapter'],
         routerAddress: SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.ETH],
         nativeFee: '77',
       })
       expect(quotes[0].tx).toBeDefined()
     })
 
-    it('uses SBA as the bridge step inside multi-tx intents', async () => {
-      const synapse = setupSynapse()
-
-      const quotes: IntentQuote[] = await synapse.intent({
-        fromChainId: SupportedChainId.ETH,
-        toChainId: SupportedChainId.OPTIMISM,
-        fromToken: sbaOriginToken,
-        toToken: sbaFinalToken,
-        fromAmount: '1000',
-        fromSender: sender,
-        toRecipient: recipient,
-        allowMultipleTxs: true,
-      })
-
-      expect(quotes).toHaveLength(1)
-      expect(quotes[0].toToken).toEqual(sbaFinalToken)
-      expect(quotes[0].steps).toHaveLength(2)
-      expect(quotes[0].steps[0]).toMatchObject({
-        toToken: sbaRemoteToken,
-        moduleNames: ['SynapseBridgeAdapter'],
-        nativeFee: '77',
-      })
-      expect(quotes[0].steps[1]).toMatchObject({
-        toToken: sbaFinalToken,
-        moduleNames: [EngineID[EngineID.DefaultPools]],
-      })
-      expect(quotes[0].steps[0].tx).toBeDefined()
-      expect(quotes[0].steps[1].tx).toBeDefined()
-    })
-
-    it('supports Harmony as an SBA origin chain', async () => {
+    it('surfaces native output when SBA unwraps a wrapped-native destination token', async () => {
       const harmonyProvider = mock<Provider>()
-      const baseProvider = mock<Provider>()
-      const harmonyToken = '0x0000000000000000000000000000000000000d01'
-      const baseToken = '0x0000000000000000000000000000000000000b01'
-      const harmonySender = '0x0000000000000000000000000000000000000f11'
-      const harmonyRecipient = '0x0000000000000000000000000000000000000f12'
+      const ethProviderMock = mock<Provider>()
       const synapse = new SynapseSDK(
-        [SupportedChainId.HARMONY, SupportedChainId.BASE],
-        [harmonyProvider, baseProvider]
+        [SupportedChainId.HARMONY, SupportedChainId.ETH],
+        [harmonyProvider, ethProviderMock]
       )
 
       synapse.allModuleSets = [synapse.synapseBridgeAdapterModuleSet]
       jest
         .spyOn(synapse.synapseBridgeAdapterModuleSet, 'getGasDropAmount')
         .mockResolvedValue(Zero)
-      jest
-        .spyOn(
-          synapse.synapseBridgeAdapterModuleSet.modules[
-            SupportedChainId.HARMONY
-          ],
-          'getRemoteAddress'
-        )
-        .mockResolvedValue(baseToken)
       jest
         .spyOn(
           synapse.synapseBridgeAdapterModuleSet.modules[
@@ -1154,17 +1116,134 @@ describe('SynapseSDK', () => {
           'getEstimatedTime'
         )
         .mockResolvedValue(33)
-      jest.spyOn(synapse.swapEngineSet, 'getBestQuote').mockResolvedValue({
-        engineID: EngineID.NoOp,
-        engineName: EngineID[EngineID.NoOp],
-        chainId: SupportedChainId.HARMONY,
-        fromToken: harmonyToken,
-        fromAmount: BigNumber.from(1000),
-        toToken: harmonyToken,
-        expectedToAmount: BigNumber.from(1000),
-        minToAmount: BigNumber.from(1000),
-        steps: [],
-      } as any)
+      jest
+        .spyOn(synapse.swapEngineSet, 'getBestQuote')
+        .mockImplementation(async (input) => {
+          if (
+            input.chainId === SupportedChainId.HARMONY &&
+            input.fromToken.toLowerCase() ===
+              sbaWrappedNativeOriginToken.toLowerCase() &&
+            input.toToken.toLowerCase() ===
+              sbaWrappedNativeOriginToken.toLowerCase()
+          ) {
+            return createNoOpRoute(
+              SupportedChainId.HARMONY,
+              sbaWrappedNativeOriginToken
+            ) as any
+          }
+          return undefined as any
+        })
+      jest
+        .spyOn(synapse.swapEngineSet, 'generateRoute')
+        .mockImplementation(async (_input, quote) => quote as any)
+
+      const nativeQuotes = await synapse.bridgeV2({
+        fromChainId: SupportedChainId.HARMONY,
+        toChainId: SupportedChainId.ETH,
+        fromToken: sbaWrappedNativeOriginToken,
+        toToken: ETH_NATIVE_TOKEN_ADDRESS,
+        fromAmount: '1000',
+        fromSender: sender,
+        toRecipient: recipient,
+      })
+
+      expect(nativeQuotes).toHaveLength(1)
+      expect(nativeQuotes[0]).toMatchObject({
+        fromToken: sbaWrappedNativeOriginToken,
+        toToken: ETH_NATIVE_TOKEN_ADDRESS,
+        expectedToAmount: '1000',
+        minToAmount: '1000',
+        moduleNames: ['SynapseBridgeAdapter'],
+      })
+
+      await expect(
+        synapse.bridgeV2({
+          fromChainId: SupportedChainId.HARMONY,
+          toChainId: SupportedChainId.ETH,
+          fromToken: sbaWrappedNativeOriginToken,
+          toToken: sbaWrappedNativeRemoteToken,
+          fromAmount: '1000',
+        })
+      ).resolves.toEqual([])
+    })
+
+    it('uses SBA as the bridge step inside multi-tx intents', async () => {
+      const synapse = setupSynapse()
+
+      const quotes: IntentQuote[] = await synapse.intent({
+        fromChainId: SupportedChainId.ETH,
+        toChainId: SupportedChainId.OPTIMISM,
+        fromToken: sbaDirectOriginToken,
+        toToken: sbaFinalToken,
+        fromAmount: '1000',
+        fromSender: sender,
+        toRecipient: recipient,
+        allowMultipleTxs: true,
+      })
+
+      expect(quotes).toHaveLength(1)
+      expect(quotes[0].toToken).toEqual(sbaFinalToken)
+      expect(quotes[0].steps).toHaveLength(2)
+      expect(quotes[0].steps[0]).toMatchObject({
+        toToken: sbaDirectRemoteToken,
+        moduleNames: ['SynapseBridgeAdapter'],
+        nativeFee: '77',
+      })
+      expect(quotes[0].steps[1]).toMatchObject({
+        toToken: sbaFinalToken,
+        moduleNames: [EngineID[EngineID.DefaultPools]],
+      })
+      expect(quotes[0].steps[0].tx).toBeDefined()
+      expect(quotes[0].steps[1].tx).toBeDefined()
+    })
+
+    it('supports Harmony as an SBA origin chain', async () => {
+      const harmonyProvider = mock<Provider>()
+      const baseProvider = mock<Provider>()
+      const harmonyToken = '0xE55e19Fb4F2D85af758950957714292DAC1e25B2'
+      const baseToken = '0x432036208d2717394d2614d6697c46DF3Ed69540'
+      const harmonySender = '0x0000000000000000000000000000000000000f11'
+      const harmonyRecipient = '0x0000000000000000000000000000000000000f12'
+      const synapse = new SynapseSDK(
+        [SupportedChainId.HARMONY, SupportedChainId.BASE],
+        [harmonyProvider, baseProvider]
+      )
+
+      synapse.allModuleSets = [synapse.synapseBridgeAdapterModuleSet]
+      jest
+        .spyOn(synapse.synapseBridgeAdapterModuleSet, 'getGasDropAmount')
+        .mockResolvedValue(Zero)
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[
+            SupportedChainId.HARMONY
+          ],
+          'getNativeFee'
+        )
+        .mockResolvedValue(BigNumber.from(11))
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[
+            SupportedChainId.HARMONY
+          ],
+          'getEstimatedTime'
+        )
+        .mockResolvedValue(33)
+      jest
+        .spyOn(synapse.swapEngineSet, 'getBestQuote')
+        .mockImplementation(async (input) => {
+          if (
+            input.chainId === SupportedChainId.HARMONY &&
+            input.fromToken.toLowerCase() === harmonyToken.toLowerCase() &&
+            input.toToken.toLowerCase() === harmonyToken.toLowerCase()
+          ) {
+            return createNoOpRoute(
+              SupportedChainId.HARMONY,
+              harmonyToken
+            ) as any
+          }
+          return undefined as any
+        })
       jest
         .spyOn(synapse.swapEngineSet, 'generateRoute')
         .mockImplementation(async (_input, quote) => quote as any)
@@ -1189,8 +1268,8 @@ describe('SynapseSDK', () => {
     it('supports Harmony as an SBA destination chain', async () => {
       const ethProviderMock = mock<Provider>()
       const harmonyProvider = mock<Provider>()
-      const ethToken = '0x0000000000000000000000000000000000000e01'
-      const harmonyToken = '0x0000000000000000000000000000000000000d01'
+      const ethToken = '0x0f2D719407FdBeFF09D87557AbB7232601FD9F29'
+      const harmonyToken = '0xE55e19Fb4F2D85af758950957714292DAC1e25B2'
       const synapse = new SynapseSDK(
         [SupportedChainId.ETH, SupportedChainId.HARMONY],
         [ethProviderMock, harmonyProvider]
@@ -1203,12 +1282,6 @@ describe('SynapseSDK', () => {
       jest
         .spyOn(
           synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.ETH],
-          'getRemoteAddress'
-        )
-        .mockResolvedValue(harmonyToken)
-      jest
-        .spyOn(
-          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.ETH],
           'getNativeFee'
         )
         .mockResolvedValue(BigNumber.from(22))
@@ -1218,17 +1291,18 @@ describe('SynapseSDK', () => {
           'getEstimatedTime'
         )
         .mockResolvedValue(44)
-      jest.spyOn(synapse.swapEngineSet, 'getBestQuote').mockResolvedValue({
-        engineID: EngineID.NoOp,
-        engineName: EngineID[EngineID.NoOp],
-        chainId: SupportedChainId.ETH,
-        fromToken: ethToken,
-        fromAmount: BigNumber.from(1000),
-        toToken: ethToken,
-        expectedToAmount: BigNumber.from(1000),
-        minToAmount: BigNumber.from(1000),
-        steps: [],
-      } as any)
+      jest
+        .spyOn(synapse.swapEngineSet, 'getBestQuote')
+        .mockImplementation(async (input) => {
+          if (
+            input.chainId === SupportedChainId.ETH &&
+            input.fromToken.toLowerCase() === ethToken.toLowerCase() &&
+            input.toToken.toLowerCase() === ethToken.toLowerCase()
+          ) {
+            return createNoOpRoute(SupportedChainId.ETH, ethToken) as any
+          }
+          return undefined as any
+        })
       jest
         .spyOn(synapse.swapEngineSet, 'generateRoute')
         .mockImplementation(async (_input, quote) => quote as any)
