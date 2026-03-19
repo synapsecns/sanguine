@@ -277,31 +277,3 @@ const status: boolean = await synapseSDK.getBridgeTxStatus(
   synapseTxId
 )
 ```
-
-## SynapseBridgeAdapter support
-
-`@synapsecns/sdk-router` also supports `SynapseBridgeAdapter` as a `bridgeV2()` / cross-chain `intent()` module.
-
-Current SBA scope:
-
-- SBA is `bridgeV2`-only. It is not used by legacy `bridgeQuote()`, `allBridgeQuotes()`, or `bridge()`.
-- The shared intent path now includes DFK, Harmony, and Klaytn/Kaia for SBA routing, without implicitly enabling unsupported Gas.zip or Relay behavior on those chains.
-- SBA candidate discovery comes from a committed SDK-local supported-token artifact. For each supported chain pair, the artifact defines which origin SBA tokens can bridge and which destination token each maps to.
-- The origin input token does not need to already be an SBA token. `bridgeV2()` and cross-chain `intent()` reuse the existing origin-side swap engine path to reach any artifact-defined SBA origin token before the bridge step.
-- Single-transaction `bridgeV2()` quotes are only returned when the requested `toToken` exactly matches the effective SBA destination asset. If the snapshot marks the mapped remote token as wrapped native on the destination chain, SBA unwraps it and the SDK surfaces native output instead.
-- `intent({ allowMultipleTxs: true })` may still use SBA when the final token differs. In that case SBA bridges into the effective destination asset first, then the existing destination-side intent flow can append a follow-up swap.
-
-SBA transaction construction details:
-
-- SDK-populated SBA transactions still enter through `SynapseIntentRouter`, not through the adapter contract directly.
-- The SBA bridge step encodes `bridgeERC20(dstEid, to, token, amount, gasLimit)` into zap data for the origin adapter.
-- Phase 1 keeps the SBA LayerZero gas limit fixed at `200_000`. There is currently no public SDK override for this value.
-- SBA bridges ERC20s only. Native-origin SBA quotes depend on the shared origin swap engines being able to wrap or swap into an artifact-defined SBA origin token.
-
-SBA tracking and ETA behavior:
-
-- `getSynapseTxId(originChainId, 'SynapseBridgeAdapter', txHash)` returns the origin transaction hash unchanged.
-- `getBridgeTxStatus(destChainId, 'SynapseBridgeAdapter', txHash)` follows the same LayerZero scan API polling model used by the OFT module and treats `CONFIRMING` / `DELIVERED` as complete.
-- SBA ETA refreshes from LayerZero pathway data when available and caches the result.
-- If the LayerZero API is unavailable or the cache is cold, fallback ETA uses committed origin `blockConfirmations` from `contracts-adapter/configs/global/security.json` together with the SDK's shared `MEDIAN_TIME_BLOCK` timing table and the existing destination-side `3` block receive heuristic. This data can still drift from current on-chain deployments or security settings until the SDK snapshot is updated.
-- Because SBA discovery now relies on a committed snapshot, stale artifact data can cause false positives or false negatives until the SDK snapshot is refreshed manually.
