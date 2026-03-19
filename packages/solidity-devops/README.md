@@ -18,6 +18,14 @@ Forge docs are automatically deployed [here](https://solidity-devops.vercel.app)
 
 In order to use this package, it needs to be installed as a dependency in your project. It is recommended to install it as a dev dependency.
 
+This package is published to [GitHub Packages](https://github.com/synapsecns/sanguine/packages). Configure your `.npmrc` to use the GitHub registry for `@synapsecns` packages:
+
+```
+@synapsecns:registry=https://npm.pkg.github.com
+```
+
+Then install:
+
 ```bash
 npm install --save-dev @synapsecns/solidity-devops
 # Or, if you are using yarn
