@@ -8,6 +8,10 @@ on:
     branches:
       - master
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   publish:
     # TODO: remove true at the end
@@ -27,9 +31,10 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
 
-      - name: Authenticate with private NPM package
+      - name: Authenticate with GitHub Packages
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+          echo "@synapsecns:registry=https://npm.pkg.github.com" >> ~/.npmrc
           echo "always-auth=true" >> ~/.npmrc
 
       - name: 'Version and publish' # Interesting step

@@ -21,7 +21,8 @@
     "types/"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
   },
   "license": "MIT",
   "devDependencies": {
