@@ -2,7 +2,7 @@
 
 [![GitHub Package](https://img.shields.io/github/v/release/synapsecns/sanguine?filter=@synapsecns/synapse-constants*&style=flat-square&label=github%20packages)](https://github.com/synapsecns/sanguine/packages)
 
-This package contains the Synapse Protocol Token and Chain Constants.
+This package contains the Synapse Protocol token and chain constants.
 
 ## Installation
 
