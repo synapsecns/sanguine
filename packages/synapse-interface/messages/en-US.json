@@ -309,6 +309,8 @@
   "Time": {
     "Estimated Time": "Estimated Time",
     "d": "d",
+    "m": "m",
+    "s": "s",
     "min": "min",
     "Waiting": "Waiting",
     "Began": "Began",
