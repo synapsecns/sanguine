@@ -24,11 +24,11 @@ const BSC_BUSD = '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56'
 const ARB_GMX = '0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a'
 const ETH_NETH = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
 const OP_NETH = '0x809DC529f07651bD43A172e8dB6f4a7a0d771036'
-const ETH_SYN = '0x0f2D719407FdBeFF09D87557AbB7232601FD9F29'
 const OP_SYN = '0x5A5fFf6F753d7C11A56A52FE47a177a87e431655'
 const BASE_NETH = '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c'
 const HARMONY_NETH = '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB'
 const DFK_KLAY = '0x97855Ba65aa7ed2F65Ed832a776537268158B78a'
+const KLAYTN_KLAY = '0x5819b6af194A78511c79C85Ea68D2377a7e9335f'
 const OTHER_TOKEN = '0x00000000000000000000000000000000000000f1'
 const SENDER = '0x00000000000000000000000000000000000000a1'
 const RECIPIENT = '0x00000000000000000000000000000000000000b1'
@@ -52,7 +52,10 @@ const createNoOpRoute = (
 describe('SynapseBridgeAdapterModuleSet', () => {
   const ethProvider = mock<providers.Provider>()
   const opProvider = mock<providers.Provider>()
+  const baseProvider = mock<providers.Provider>()
+  const dfkProvider = mock<providers.Provider>()
   const harmonyProvider = mock<providers.Provider>()
+  const klaytnProvider = mock<providers.Provider>()
   const moduleSet = new SynapseBridgeAdapterModuleSet([
     {
       chainId: SupportedChainId.ETH,
@@ -63,15 +66,27 @@ describe('SynapseBridgeAdapterModuleSet', () => {
       provider: opProvider,
     },
     {
+      chainId: SupportedChainId.BASE,
+      provider: baseProvider,
+    },
+    {
+      chainId: SupportedChainId.DFK,
+      provider: dfkProvider,
+    },
+    {
       chainId: SupportedChainId.HARMONY,
       provider: harmonyProvider,
+    },
+    {
+      chainId: SupportedChainId.KLAYTN,
+      provider: klaytnProvider,
     },
   ])
   const originModule = moduleSet.modules[
     SupportedChainId.ETH
   ] as SynapseBridgeAdapterModule
-  const harmonyModule = moduleSet.modules[
-    SupportedChainId.HARMONY
+  const dfkModule = moduleSet.modules[
+    SupportedChainId.DFK
   ] as SynapseBridgeAdapterModule
 
   const bridgeToken: BridgeTokenCandidate = {
@@ -81,18 +96,25 @@ describe('SynapseBridgeAdapterModuleSet', () => {
     destToken: OP_NETH,
   }
 
-  const synBridgeToken: BridgeTokenCandidate = {
-    originChainId: SupportedChainId.ETH,
-    destChainId: SupportedChainId.OPTIMISM,
-    originToken: ETH_SYN,
-    destToken: OP_SYN,
+  const harmonyToBaseBridgeToken: BridgeTokenCandidate = {
+    originChainId: SupportedChainId.HARMONY,
+    destChainId: SupportedChainId.BASE,
+    originToken: HARMONY_NETH,
+    destToken: BASE_NETH,
   }
 
-  const harmonyToEthWrappedNativeBridgeToken: BridgeTokenCandidate = {
-    originChainId: SupportedChainId.HARMONY,
-    destChainId: SupportedChainId.ETH,
-    originToken: HARMONY_NETH,
+  const dfkToKlaytnWrappedNativeBridgeToken: BridgeTokenCandidate = {
+    originChainId: SupportedChainId.DFK,
+    destChainId: SupportedChainId.KLAYTN,
+    originToken: DFK_KLAY,
     destToken: ETH_NATIVE_TOKEN_ADDRESS,
+  }
+
+  const dfkToKlaytnWrappedBridgeToken: BridgeTokenCandidate = {
+    originChainId: SupportedChainId.DFK,
+    destChainId: SupportedChainId.KLAYTN,
+    originToken: DFK_KLAY,
+    destToken: KLAYTN_KLAY,
   }
 
   const getRouteParams = (
@@ -153,8 +175,18 @@ describe('SynapseBridgeAdapterModuleSet', () => {
   it('returns no candidates when the SBA module is missing on either chain', async () => {
     await expect(
       moduleSet.getBridgeTokenCandidates({
+        fromChainId: SupportedChainId.HARMONY,
+        toChainId: SupportedChainId.AVALANCHE,
+        fromToken: HARMONY_NETH,
+      })
+    ).resolves.toEqual([])
+  })
+
+  it('returns no candidates when the temporary SBA bridge allowlist excludes either chain', async () => {
+    await expect(
+      moduleSet.getBridgeTokenCandidates({
         fromChainId: SupportedChainId.ETH,
-        toChainId: SupportedChainId.BASE,
+        toChainId: SupportedChainId.OPTIMISM,
         fromToken: ETH_NETH,
       })
     ).resolves.toEqual([])
@@ -162,36 +194,36 @@ describe('SynapseBridgeAdapterModuleSet', () => {
 
   it('returns all artifact-backed candidates for supported pairs and ignores fromToken as a filter', async () => {
     const directCandidates = await moduleSet.getBridgeTokenCandidates({
-      fromChainId: SupportedChainId.ETH,
-      toChainId: SupportedChainId.OPTIMISM,
+      fromChainId: SupportedChainId.HARMONY,
+      toChainId: SupportedChainId.BASE,
       fromToken: OTHER_TOKEN,
     })
     const nativeCandidates = await moduleSet.getBridgeTokenCandidates({
-      fromChainId: SupportedChainId.ETH,
-      toChainId: SupportedChainId.OPTIMISM,
+      fromChainId: SupportedChainId.HARMONY,
+      toChainId: SupportedChainId.BASE,
       fromToken: ETH_NATIVE_TOKEN_ADDRESS,
     })
 
-    expect(directCandidates).toHaveLength(8)
     expect(directCandidates).toEqual(nativeCandidates)
     expect(directCandidates).toEqual(
-      expect.arrayContaining([bridgeToken, synBridgeToken])
+      getSbaSupportedTokens(SupportedChainId.HARMONY, SupportedChainId.BASE)
     )
+    expect(directCandidates).toContainEqual(harmonyToBaseBridgeToken)
   })
 
   it('filters candidates by the exact artifact-mapped destination token', async () => {
     await expect(
       moduleSet.getBridgeTokenCandidates({
-        fromChainId: SupportedChainId.ETH,
-        toChainId: SupportedChainId.OPTIMISM,
+        fromChainId: SupportedChainId.HARMONY,
+        toChainId: SupportedChainId.BASE,
         fromToken: OTHER_TOKEN,
-        toToken: OP_NETH,
+        toToken: BASE_NETH,
       })
-    ).resolves.toEqual([bridgeToken])
+    ).resolves.toEqual([harmonyToBaseBridgeToken])
     await expect(
       moduleSet.getBridgeTokenCandidates({
-        fromChainId: SupportedChainId.ETH,
-        toChainId: SupportedChainId.OPTIMISM,
+        fromChainId: SupportedChainId.HARMONY,
+        toChainId: SupportedChainId.BASE,
         fromToken: OTHER_TOKEN,
         toToken: OTHER_TOKEN,
       })
@@ -201,18 +233,18 @@ describe('SynapseBridgeAdapterModuleSet', () => {
   it('treats destination wrapped-native mappings as effective native outputs', async () => {
     await expect(
       moduleSet.getBridgeTokenCandidates({
-        fromChainId: SupportedChainId.HARMONY,
-        toChainId: SupportedChainId.ETH,
+        fromChainId: SupportedChainId.DFK,
+        toChainId: SupportedChainId.KLAYTN,
         fromToken: OTHER_TOKEN,
         toToken: ETH_NATIVE_TOKEN_ADDRESS,
       })
-    ).resolves.toEqual([harmonyToEthWrappedNativeBridgeToken])
+    ).resolves.toEqual([dfkToKlaytnWrappedNativeBridgeToken])
     await expect(
       moduleSet.getBridgeTokenCandidates({
-        fromChainId: SupportedChainId.HARMONY,
-        toChainId: SupportedChainId.ETH,
+        fromChainId: SupportedChainId.DFK,
+        toChainId: SupportedChainId.KLAYTN,
         fromToken: OTHER_TOKEN,
-        toToken: ETH_NETH,
+        toToken: KLAYTN_KLAY,
       })
     ).resolves.toEqual([])
   })
@@ -220,11 +252,11 @@ describe('SynapseBridgeAdapterModuleSet', () => {
   it('matches the helper lookup for candidate discovery', () => {
     expect(
       getSbaSupportedTokens(
-        SupportedChainId.ETH,
-        SupportedChainId.OPTIMISM,
-        OP_NETH
+        SupportedChainId.HARMONY,
+        SupportedChainId.BASE,
+        BASE_NETH
       )
-    ).toEqual([bridgeToken])
+    ).toEqual([harmonyToBaseBridgeToken])
   })
 
   it('accepts one-step origin routes and preserves their minimum amount', async () => {
@@ -350,24 +382,22 @@ describe('SynapseBridgeAdapterModuleSet', () => {
   })
 
   it('surfaces native output when the artifact destination token is wrapped native', async () => {
-    jest
-      .spyOn(harmonyModule, 'getNativeFee')
-      .mockResolvedValue(BigNumber.from(33))
-    jest.spyOn(harmonyModule, 'getEstimatedTime').mockResolvedValue(undefined)
+    jest.spyOn(dfkModule, 'getNativeFee').mockResolvedValue(BigNumber.from(33))
+    jest.spyOn(dfkModule, 'getEstimatedTime').mockResolvedValue(undefined)
 
     const route = await moduleSet.getBridgeRouteV2({
       originSwapRoute: createNoOpRoute(
-        HARMONY_NETH,
+        DFK_KLAY,
         BigNumber.from(1000),
-        SupportedChainId.HARMONY
+        SupportedChainId.DFK
       ),
-      bridgeToken: harmonyToEthWrappedNativeBridgeToken,
+      bridgeToken: dfkToKlaytnWrappedNativeBridgeToken,
       toToken: ETH_NATIVE_TOKEN_ADDRESS,
       allowMultipleTxs: false,
     })
 
     expect(route).toMatchObject({
-      bridgeToken: harmonyToEthWrappedNativeBridgeToken,
+      bridgeToken: dfkToKlaytnWrappedNativeBridgeToken,
       toToken: ETH_NATIVE_TOKEN_ADDRESS,
       expectedToAmount: BigNumber.from(1000),
       minToAmount: BigNumber.from(1000),
@@ -376,19 +406,17 @@ describe('SynapseBridgeAdapterModuleSet', () => {
   })
 
   it('does not quote wrapped-native destinations as ERC20 outputs', async () => {
-    jest
-      .spyOn(harmonyModule, 'getNativeFee')
-      .mockResolvedValue(BigNumber.from(33))
+    jest.spyOn(dfkModule, 'getNativeFee').mockResolvedValue(BigNumber.from(33))
 
     await expect(
       moduleSet.getBridgeRouteV2({
         originSwapRoute: createNoOpRoute(
-          HARMONY_NETH,
+          DFK_KLAY,
           BigNumber.from(1000),
-          SupportedChainId.HARMONY
+          SupportedChainId.DFK
         ),
-        bridgeToken: harmonyToEthWrappedNativeBridgeToken,
-        toToken: ETH_NETH,
+        bridgeToken: dfkToKlaytnWrappedNativeBridgeToken,
+        toToken: dfkToKlaytnWrappedBridgeToken.destToken,
         allowMultipleTxs: false,
       })
     ).resolves.toBeUndefined()

@@ -2,7 +2,7 @@ import { Zero } from '@ethersproject/constants'
 import { BigNumber, BigNumberish } from 'ethers'
 import NodeCache from 'node-cache'
 
-import { MEDIAN_TIME_BLOCK } from '../constants'
+import { MEDIAN_TIME_BLOCK, SupportedChainId } from '../constants'
 import {
   BridgeRoute,
   BridgeRouteV2,
@@ -27,6 +27,14 @@ import {
   SynapseBridgeAdapterBridgeParams,
   SynapseBridgeAdapterModule,
 } from './synapseBridgeAdapterModule'
+
+const SBA_BRIDGE_SUPPORTED_CHAINS = new Set<SupportedChainId>([
+  SupportedChainId.AVALANCHE,
+  SupportedChainId.BASE,
+  SupportedChainId.DFK,
+  SupportedChainId.HARMONY,
+  SupportedChainId.KLAYTN,
+])
 
 export class SynapseBridgeAdapterModuleSet extends SynapseModuleSet {
   public readonly moduleName = 'SynapseBridge'
@@ -80,6 +88,12 @@ export class SynapseBridgeAdapterModuleSet extends SynapseModuleSet {
     toChainId,
     toToken,
   }: GetBridgeTokenCandidatesParameters): Promise<BridgeTokenCandidate[]> {
+    if (
+      !SBA_BRIDGE_SUPPORTED_CHAINS.has(fromChainId as SupportedChainId) ||
+      !SBA_BRIDGE_SUPPORTED_CHAINS.has(toChainId as SupportedChainId)
+    ) {
+      return []
+    }
     const originModule = this.modules[fromChainId]
     const originMetadata = getSbaChainMetadata(fromChainId)
     const destMetadata = getSbaChainMetadata(toChainId)
