@@ -1,5 +1,5 @@
-import * as fs from 'fs'
-import * as path from 'path'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 import {
   createPublicClient,
   defineChain,
@@ -119,8 +119,11 @@ function loadChainIds(): Record<string, number> {
       continue
     }
 
-    const chainId = parseInt(fs.readFileSync(chainIdPath, 'utf8').trim(), 10)
-    if (!isNaN(chainId)) {
+    const chainId = Number.parseInt(
+      fs.readFileSync(chainIdPath, 'utf8').trim(),
+      10
+    )
+    if (!Number.isNaN(chainId)) {
       chainIds[dir] = chainId
     }
   }
@@ -206,7 +209,9 @@ async function fetchMultisigAddress(
   }
 
   throw new Error(
-    `Could not find DevMultisig deployment for ${chain}. Tried: ${failures.join(', ')}`
+    `Could not find DevMultisig deployment for ${chain}. Tried: ${failures.join(
+      ', '
+    )}`
   )
 }
 
@@ -228,6 +233,15 @@ function formatError(error: unknown): string {
   if (error instanceof Error) {
     return error.message
   }
+
+  if (typeof error === 'object' && error !== null) {
+    try {
+      return JSON.stringify(error)
+    } catch {
+      return 'Unknown object error'
+    }
+  }
+
   return String(error)
 }
 
@@ -305,7 +319,9 @@ async function fetchMultisigDetails(
 function sortMultisigConfig(config: MultisigConfig): MultisigConfig {
   const sorted: MultisigConfig = {}
 
-  for (const chain of Object.keys(config).sort()) {
+  for (const chain of Object.keys(config).sort((left, right) =>
+    left.localeCompare(right)
+  )) {
     sorted[chain] = config[chain]
   }
 
@@ -316,7 +332,9 @@ async function main() {
   const chains = getAdapterDeploymentChains()
   const chainIds = loadChainIds()
 
-  console.log(`Found ${chains.length} chains with SynapseBridgeAdapter deployments`)
+  console.log(
+    `Found ${chains.length} chains with SynapseBridgeAdapter deployments`
+  )
 
   const entries: Array<readonly [string, Address]> = []
 
@@ -351,7 +369,11 @@ async function main() {
   console.log(`Successfully wrote multisig config to ${outputPath}`)
 }
 
-main().catch((error) => {
-  console.error('Error:', error)
-  process.exit(1)
-})
+void (async () => {
+  try {
+    await main()
+  } catch (error) {
+    console.error(`Error: ${formatError(error)}`)
+    process.exit(1)
+  }
+})()

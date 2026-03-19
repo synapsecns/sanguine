@@ -1,6 +1,6 @@
 import { createPublicClient, http, defineChain, type PublicClient } from 'viem'
-import * as fs from 'fs'
-import * as path from 'path'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 
 // ANSI color codes for console output
 const colors = {
@@ -25,6 +25,22 @@ type ChainsConfig = {
   [chain: string]: ChainInfo
 }
 
+function formatError(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message
+  }
+
+  if (typeof error === 'object' && error !== null) {
+    try {
+      return JSON.stringify(error)
+    } catch {
+      return 'Unknown object error'
+    }
+  }
+
+  return String(error)
+}
+
 // Function to read chain IDs from deployment directories
 function loadChainIds(): Record<string, number> {
   const deploymentsPath = path.join(__dirname, '../../deployments')
@@ -41,16 +57,20 @@ function loadChainIds(): Record<string, number> {
 
     if (fs.existsSync(chainIdPath)) {
       try {
-        const chainId = parseInt(
+        const chainId = Number.parseInt(
           fs.readFileSync(chainIdPath, 'utf8').trim(),
           10
         )
-        if (!isNaN(chainId)) {
+        if (!Number.isNaN(chainId)) {
           chainIds[dir] = chainId
         }
       } catch (error) {
         console.warn(
-          `${colors.yellow}Warning: Failed to read chain ID for ${dir}${colors.reset}`
+          `${
+            colors.yellow
+          }Warning: Failed to read chain ID for ${dir}: ${formatError(error)}${
+            colors.reset
+          }`
         )
       }
     }
@@ -105,7 +125,9 @@ async function fetchAverageBlockTime(
   chainId: number
 ): Promise<number | null> {
   try {
-    console.log(`  ${colors.cyan}Fetching block time for ${chainName}...${colors.reset}`)
+    console.log(
+      `  ${colors.cyan}Fetching block time for ${chainName}...${colors.reset}`
+    )
 
     const client = createChainClient(chainId)
 
@@ -172,7 +194,11 @@ async function fetchAverageBlockTime(
     return roundedBlockTime
   } catch (error) {
     console.log(
-      `    ${colors.red}Error fetching block time for ${chainName}: ${error instanceof Error ? error.message : String(error)}${colors.reset}`
+      `    ${
+        colors.red
+      }Error fetching block time for ${chainName}: ${formatError(error)}${
+        colors.reset
+      }`
     )
     return null
   }
@@ -208,9 +234,7 @@ async function main() {
     (chain) => chainIds[chain] !== undefined
   )
 
-  console.log(
-    `Updating block times for ${chainsToUpdate.length} chains...\n`
-  )
+  console.log(`Updating block times for ${chainsToUpdate.length} chains...\n`)
 
   // Fetch block times
   const results: Record<
@@ -239,7 +263,9 @@ async function main() {
   const unchanged = Object.entries(results).filter(
     ([_, r]) => r.newBlockTime !== null && r.newBlockTime === r.oldBlockTime
   )
-  const failed = Object.entries(results).filter(([_, r]) => r.newBlockTime === null)
+  const failed = Object.entries(results).filter(
+    ([_, r]) => r.newBlockTime === null
+  )
 
   if (updated.length > 0) {
     console.log(`${colors.bold}Updated chains:${colors.reset}`)
@@ -287,8 +313,11 @@ async function main() {
   }
 }
 
-// Run the script
-main().catch((error) => {
-  console.error(`${colors.red}Error: ${error}${colors.reset}`)
-  process.exit(1)
-})
+void (async () => {
+  try {
+    await main()
+  } catch (error) {
+    console.error(`${colors.red}Error: ${formatError(error)}${colors.reset}`)
+    process.exit(1)
+  }
+})()

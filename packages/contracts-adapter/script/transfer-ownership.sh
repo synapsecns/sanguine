@@ -4,7 +4,7 @@
 trap "echo 'Transfer ownership script terminated by user'; exit" INT
 
 walletName=$1
-if [ -z "$walletName" ]; then
+if [[ -z "$walletName" ]]; then
   echo "Usage: ./script/transfer-ownership.sh <walletName> [...options]"
   exit 1
 fi
