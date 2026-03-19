@@ -18,7 +18,6 @@ import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer
 import { BridgeExchangeRateInfo } from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
-import { Warning } from '@/components/Warning'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
 import { PageHeader } from '@/components/PageHeader'
 import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
@@ -504,7 +503,6 @@ const StateManagedBridge = () => {
                 disabled={isWalletPending}
               />
               <OutputContainer isQuoteStale={isQuoteStale} />
-              <Warning />
               <BridgeMaintenanceWarningMessage />
               {!(
                 fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id

@@ -382,12 +382,5 @@
     "Discord": "ديسكورد",
     "Twitter": "تويتر"
   },
-  "Warning": {
-    "Warning! The Harmony bridge has been exploited": "تحذير! تم استغلال جسر هارموني.",
-    "Do not bridge via Harmony unless you understand the risks involved": "لا تقم بالجسر عبر هارموني إلا إذا كنت تفهم المخاطر المتضمنة.",
-    "Warning! The Fantom bridge has been exploited": "تحذير! تم استغلال جسر فانتوم.",
-    "Do not bridge via Fantom unless you understand the risks involved": "لا تقم بالجسر عبر فانتوم إلا إذا كنت تفهم المخاطر المتضمنة.",
-    "Alert: Transactions to Dogechain are temporarily paused": "تنبيه: تم إيقاف المعاملات إلى دوغتشين مؤقتًا.",
-    "You may still bridge funds from Dogechain to any supported destination chain": "لا يزال بإمكانك جسر الأموال من دوغتشين إلى أي سلسلة وجهة مدعومة."
-  }
+  "Warning": {}
 }

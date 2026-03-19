@@ -382,12 +382,5 @@
     "Discord": "Discord",
     "Twitter": "Twitter"
   },
-  "Warning": {
-    "Warning! The Harmony bridge has been exploited": "Uyarı! Harmony köprüsü sömürüldü.",
-    "Do not bridge via Harmony unless you understand the risks involved": "İlgili riskleri anlamadıkça Harmony üzerinden köprüleme yapmayın.",
-    "Warning! The Fantom bridge has been exploited": "Uyarı! Fantom köprüsü sömürüldü.",
-    "Do not bridge via Fantom unless you understand the risks involved": "İlgili riskleri anlamadıkça Fantom üzerinden köprüleme yapmayın.",
-    "Alert: Transactions to Dogechain are temporarily paused": "Uyarı: Dogechain'e işlemler geçici olarak duraklatıldı.",
-    "You may still bridge funds from Dogechain to any supported destination chain": "Hala Dogechain'den desteklenen herhangi bir hedef zincire fon köprüleyebilirsiniz."
-  }
+  "Warning": {}
 }

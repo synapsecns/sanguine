@@ -382,12 +382,5 @@
     "Discord": "Discord",
     "Twitter": "Twitter"
   },
-  "Warning": {
-    "Warning! The Harmony bridge has been exploited": "警告！Harmony桥接已被利用。",
-    "Do not bridge via Harmony unless you understand the risks involved": "除非您了解相关风险，否则不要通过Harmony进行桥接。",
-    "Warning! The Fantom bridge has been exploited": "警告！Fantom桥接已被利用。",
-    "Do not bridge via Fantom unless you understand the risks involved": "除非您了解相关风险，否则不要通过Fantom进行桥接。",
-    "Alert: Transactions to Dogechain are temporarily paused": "警报：Dogechain的交易已暂时暂停。",
-    "You may still bridge funds from Dogechain to any supported destination chain": "您仍可以将资金从Dogechain桥接到任何支持的目标链。"
-  }
+  "Warning": {}
 }
