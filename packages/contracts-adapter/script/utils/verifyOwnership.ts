@@ -6,8 +6,8 @@ import {
   defineChain,
   type Address,
 } from 'viem'
-import * as fs from 'fs'
-import * as path from 'path'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 
 // ANSI color codes for console output
 const colors = {
@@ -57,6 +57,182 @@ type ChainVerificationResult = {
   issues: VerificationIssue[]
 }
 
+type ResultStats = {
+  totalChains: number
+  chainsWithIssues: number
+  errors: number
+  warnings: number
+  totalIssues: number
+}
+
+const categoryLabels: Record<VerificationIssue['category'], string> = {
+  owner: 'Ownership',
+  error: 'Errors',
+}
+
+const severityIcons: Record<VerificationIssue['severity'], string> = {
+  error: '✗',
+  warning: '⚠',
+  info: '✓',
+}
+
+const severityColors: Record<VerificationIssue['severity'], string> = {
+  error: colors.red,
+  warning: colors.yellow,
+  info: colors.green,
+}
+
+function hasActionableIssue(issue: VerificationIssue): boolean {
+  return issue.severity === 'error' || issue.severity === 'warning'
+}
+
+function formatError(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message
+  }
+
+  if (typeof error === 'object' && error !== null) {
+    try {
+      return JSON.stringify(error)
+    } catch {
+      return 'Unknown object error'
+    }
+  }
+
+  return String(error)
+}
+
+function groupIssuesByCategory(
+  issues: VerificationIssue[]
+): Record<string, VerificationIssue[]> {
+  return issues.reduce((grouped, issue) => {
+    if (!grouped[issue.category]) {
+      grouped[issue.category] = []
+    }
+    grouped[issue.category].push(issue)
+    return grouped
+  }, {} as Record<string, VerificationIssue[]>)
+}
+
+function calculateResultStats(results: ChainVerificationResult[]): ResultStats {
+  const totalChains = results.length
+  const chainsWithIssues = results.filter((result) =>
+    result.issues.some(hasActionableIssue)
+  ).length
+  const errors = results.reduce(
+    (sum, result) =>
+      sum + result.issues.filter((issue) => issue.severity === 'error').length,
+    0
+  )
+  const warnings = results.reduce(
+    (sum, result) =>
+      sum +
+      result.issues.filter((issue) => issue.severity === 'warning').length,
+    0
+  )
+
+  return {
+    totalChains,
+    chainsWithIssues,
+    errors,
+    warnings,
+    totalIssues: errors + warnings,
+  }
+}
+
+function printOverview(stats: ResultStats) {
+  console.log(`Total chains verified: ${stats.totalChains}`)
+  console.log(
+    `${colors.green}✓ Chains without issues: ${
+      stats.totalChains - stats.chainsWithIssues
+    }${colors.reset}`
+  )
+
+  if (stats.chainsWithIssues === 0) {
+    return
+  }
+
+  console.log(
+    `${colors.yellow}⚠ Chains with issues: ${stats.chainsWithIssues}${colors.reset}`
+  )
+  console.log(`  Total issues: ${stats.totalIssues}`)
+
+  if (stats.errors > 0) {
+    console.log(`  ${colors.red}✗ Errors: ${stats.errors}${colors.reset}`)
+  }
+
+  if (stats.warnings > 0) {
+    console.log(
+      `  ${colors.yellow}⚠ Warnings: ${stats.warnings}${colors.reset}`
+    )
+  }
+}
+
+function printChainResult(result: ChainVerificationResult) {
+  console.log(
+    `\n${colors.bold}${colors.cyan}${result.chain} (Chain ID: ${result.chainId})${colors.reset}`
+  )
+  console.log(`  Deployment: ${result.deployment}`)
+  console.log(
+    `  Expected owner: ${
+      result.expectedOwner || colors.red + 'Missing' + colors.reset
+    }`
+  )
+  console.log(
+    `  Actual owner: ${
+      result.actualOwner || colors.red + 'Unknown' + colors.reset
+    }`
+  )
+
+  const errorWarningIssues = result.issues.filter(hasActionableIssue)
+  if (errorWarningIssues.length === 0) {
+    console.log(`  ${colors.green}✓ All checks passed${colors.reset}`)
+  } else {
+    console.log(
+      `  ${colors.yellow}Issues found: ${errorWarningIssues.length}${colors.reset}`
+    )
+  }
+
+  const issuesByCategory = groupIssuesByCategory(result.issues)
+  for (const [category, issues] of Object.entries(issuesByCategory)) {
+    const categoryLabel =
+      categoryLabels[category as VerificationIssue['category']] || category
+
+    console.log(`\n    ${colors.bold}${categoryLabel}:${colors.reset}`)
+    for (const issue of issues) {
+      const icon = severityIcons[issue.severity]
+      const color = severityColors[issue.severity]
+      console.log(`      ${color}${icon} ${issue.message}${colors.reset}`)
+    }
+  }
+}
+
+function printSummary(stats: ResultStats) {
+  console.log(`\n${colors.bold}${colors.cyan}Summary${colors.reset}`)
+
+  if (stats.totalIssues === 0) {
+    console.log(
+      `${colors.green}✓ All SynapseBridgeAdapter owners match multisig config!${colors.reset}\n`
+    )
+    return
+  }
+
+  console.log(
+    `${colors.yellow}⚠ Found ${stats.totalIssues} issue(s) across ${stats.chainsWithIssues} chain(s)${colors.reset}`
+  )
+
+  if (stats.errors > 0) {
+    console.log(
+      `${colors.red}Please fix ${stats.errors} error(s) before proceeding${colors.reset}\n`
+    )
+    return
+  }
+
+  console.log(
+    `${colors.yellow}Please review ${stats.warnings} warning(s)${colors.reset}\n`
+  )
+}
+
 // Function to load chain IDs from deployment directories
 function loadChainIds(): Record<string, number> {
   const deploymentsPath = path.join(__dirname, '../../deployments')
@@ -73,16 +249,20 @@ function loadChainIds(): Record<string, number> {
 
     if (fs.existsSync(chainIdPath)) {
       try {
-        const chainId = parseInt(
+        const chainId = Number.parseInt(
           fs.readFileSync(chainIdPath, 'utf8').trim(),
           10
         )
-        if (!isNaN(chainId)) {
+        if (!Number.isNaN(chainId)) {
           chainIds[dir] = chainId
         }
       } catch (error) {
         console.warn(
-          `${colors.yellow}Warning: Failed to read chain ID for ${dir}${colors.reset}`
+          `${
+            colors.yellow
+          }Warning: Failed to read chain ID for ${dir}: ${formatError(error)}${
+            colors.reset
+          }`
         )
       }
     }
@@ -111,7 +291,11 @@ function loadDeployment(chain: string): DeploymentInfo | null {
     }
   } catch (error) {
     console.warn(
-      `${colors.yellow}Warning: Failed to read deployment for ${chain}${colors.reset}`
+      `${
+        colors.yellow
+      }Warning: Failed to read deployment for ${chain}: ${formatError(error)}${
+        colors.reset
+      }`
     )
     return null
   }
@@ -127,7 +311,10 @@ function loadMultisigConfig(): MultisigConfig {
   ) as Record<string, string>
 
   return Object.fromEntries(
-    Object.entries(rawConfig).map(([chain, owner]) => [chain, getAddress(owner)])
+    Object.entries(rawConfig).map(([chain, owner]) => [
+      chain,
+      getAddress(owner),
+    ])
   )
 }
 
@@ -220,7 +407,7 @@ async function verifyChain(
       return result
     }
 
-    if (!result.expectedOwner) {
+    if (result.expectedOwner === null) {
       result.issues.push({
         chain,
         category: 'owner',
@@ -230,21 +417,22 @@ async function verifyChain(
       return result
     }
 
-    if (
-      result.actualOwner.toLowerCase() !== result.expectedOwner.toLowerCase()
-    ) {
-      result.issues.push({
-        chain,
-        category: 'owner',
-        severity: 'error',
-        message: `Owner mismatch: expected ${result.expectedOwner}, got ${result.actualOwner}`,
-      })
-    } else {
+    const ownersMatch =
+      result.actualOwner.toLowerCase() === result.expectedOwner.toLowerCase()
+
+    if (ownersMatch) {
       result.issues.push({
         chain,
         category: 'owner',
         severity: 'info',
         message: 'Owner matches multisig config',
+      })
+    } else {
+      result.issues.push({
+        chain,
+        category: 'owner',
+        severity: 'error',
+        message: `Owner mismatch: expected ${result.expectedOwner}, got ${result.actualOwner}`,
       })
     }
   } catch (error) {
@@ -252,9 +440,7 @@ async function verifyChain(
       chain,
       category: 'error',
       severity: 'error',
-      message: `RPC error: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
+      message: `RPC error: ${formatError(error)}`,
     })
   }
 
@@ -262,127 +448,18 @@ async function verifyChain(
 }
 
 function printResults(results: ChainVerificationResult[]) {
-  const categoryLabels: Record<string, string> = {
-    owner: 'Ownership',
-    error: 'Errors',
-  }
-
-  const severityIcons: Record<string, string> = {
-    error: '✗',
-    warning: '⚠',
-    info: '✓',
-  }
-
-  const severityColors: Record<string, string> = {
-    error: colors.red,
-    warning: colors.yellow,
-    info: colors.green,
-  }
-
   console.log(
     `\n${colors.bold}${colors.cyan}SynapseBridgeAdapter Ownership Verification Results${colors.reset}\n`
   )
 
-  const totalChains = results.length
-  const chainsWithIssues = results.filter((r) =>
-    r.issues.some((i) => i.severity === 'error' || i.severity === 'warning')
-  ).length
-  const errors = results.reduce(
-    (sum, r) => sum + r.issues.filter((i) => i.severity === 'error').length,
-    0
-  )
-  const warnings = results.reduce(
-    (sum, r) => sum + r.issues.filter((i) => i.severity === 'warning').length,
-    0
-  )
-  const totalIssues = errors + warnings
-
-  console.log(`Total chains verified: ${totalChains}`)
-  console.log(
-    `${colors.green}✓ Chains without issues: ${totalChains - chainsWithIssues}${
-      colors.reset
-    }`
-  )
-  if (chainsWithIssues > 0) {
-    console.log(
-      `${colors.yellow}⚠ Chains with issues: ${chainsWithIssues}${colors.reset}`
-    )
-    console.log(`  Total issues: ${totalIssues}`)
-    if (errors > 0) {
-      console.log(`  ${colors.red}✗ Errors: ${errors}${colors.reset}`)
-    }
-    if (warnings > 0) {
-      console.log(`  ${colors.yellow}⚠ Warnings: ${warnings}${colors.reset}`)
-    }
-  }
+  const stats = calculateResultStats(results)
+  printOverview(stats)
 
   for (const result of results) {
-    console.log(
-      `\n${colors.bold}${colors.cyan}${result.chain} (Chain ID: ${result.chainId})${colors.reset}`
-    )
-    console.log(`  Deployment: ${result.deployment}`)
-    console.log(
-      `  Expected owner: ${
-        result.expectedOwner || colors.red + 'Missing' + colors.reset
-      }`
-    )
-    console.log(
-      `  Actual owner: ${
-        result.actualOwner || colors.red + 'Unknown' + colors.reset
-      }`
-    )
-
-    const errorWarningIssues = result.issues.filter(
-      (i) => i.severity === 'error' || i.severity === 'warning'
-    )
-
-    if (errorWarningIssues.length === 0) {
-      console.log(`  ${colors.green}✓ All checks passed${colors.reset}`)
-    } else {
-      console.log(
-        `  ${colors.yellow}Issues found: ${errorWarningIssues.length}${colors.reset}`
-      )
-    }
-
-    const issuesByCategory = result.issues.reduce((acc, issue) => {
-      if (!acc[issue.category]) {
-        acc[issue.category] = []
-      }
-      acc[issue.category].push(issue)
-      return acc
-    }, {} as Record<string, VerificationIssue[]>)
-
-    for (const [category, issues] of Object.entries(issuesByCategory)) {
-      const categoryLabel = categoryLabels[category] || category
-
-      console.log(`\n    ${colors.bold}${categoryLabel}:${colors.reset}`)
-      for (const issue of issues) {
-        const icon = severityIcons[issue.severity] || '?'
-        const color = severityColors[issue.severity] || colors.reset
-        console.log(`      ${color}${icon} ${issue.message}${colors.reset}`)
-      }
-    }
+    printChainResult(result)
   }
 
-  console.log(`\n${colors.bold}${colors.cyan}Summary${colors.reset}`)
-  if (totalIssues === 0) {
-    console.log(
-      `${colors.green}✓ All SynapseBridgeAdapter owners match multisig config!${colors.reset}\n`
-    )
-  } else {
-    console.log(
-      `${colors.yellow}⚠ Found ${totalIssues} issue(s) across ${chainsWithIssues} chain(s)${colors.reset}`
-    )
-    if (errors > 0) {
-      console.log(
-        `${colors.red}Please fix ${errors} error(s) before proceeding${colors.reset}\n`
-      )
-    } else {
-      console.log(
-        `${colors.yellow}Please review ${warnings} warning(s)${colors.reset}\n`
-      )
-    }
-  }
+  printSummary(stats)
 }
 
 async function main() {
@@ -438,12 +515,7 @@ async function main() {
     }
 
     console.log(`${colors.dim}Verifying ${chain}...${colors.reset}`)
-    const result = await verifyChain(
-      chain,
-      chainId,
-      deployment,
-      multisigConfig
-    )
+    const result = await verifyChain(chain, chainId, deployment, multisigConfig)
     results.push(result)
   }
 
@@ -464,7 +536,11 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(`${colors.red}Error: ${error}${colors.reset}`)
-  process.exit(1)
-})
+void (async () => {
+  try {
+    await main()
+  } catch (error) {
+    console.error(`${colors.red}Error: ${formatError(error)}${colors.reset}`)
+    process.exit(1)
+  }
+})()
