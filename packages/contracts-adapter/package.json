@@ -1,7 +1,7 @@
 {
   "name": "@synapsecns/contracts-adapter",
   "license": "MIT",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "SynapseBridge Adapter contracts",
   "private": true,
   "files": [
@@ -15,7 +15,7 @@
     "solidity-bytes-utils": "0.8.3"
   },
   "devDependencies": {
-    "@synapsecns/solidity-devops": "^0.4.12",
+    "@synapsecns/solidity-devops": "^0.5.0",
     "@types/node": "24.0.7",
     "solhint": "5.0.3",
     "ts-node": "10.9.2",
@@ -36,6 +36,11 @@
     "solhint:check": "solhint '{src,script,test}/**/*.sol' --max-warnings 3",
     "extract-chain-info": "ts-node script/utils/extractChainInfo.ts",
     "extract-dvns": "ts-node script/utils/extractDVNs.ts",
-    "fetch-tokens": "ts-node script/utils/fetchBridgeTokens.ts"
+    "fetch-multisig": "ts-node script/utils/fetchMultisig.ts",
+    "fetch-tokens": "ts-node script/utils/fetchBridgeTokens.ts",
+    "fetch-block-times": "ts-node script/utils/fetchBlockTimes.ts",
+    "verify-ownership": "ts-node script/utils/verifyOwnership.ts",
+    "verify-tokens": "ts-node script/utils/verifyTokens.ts",
+    "verify-sba": "ts-node script/utils/verifySBA.ts"
   }
 }
