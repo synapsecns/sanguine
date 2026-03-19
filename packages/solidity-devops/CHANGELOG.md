@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.12...@synapsecns/solidity-devops@0.5.0) (2026-03-19)
+
+
+### Features
+
+* **solidity-devops:** etherscanV2 verifier support ([#3974](https://github.com/synapsecns/sanguine/issues/3974)) ([57900c5](https://github.com/synapsecns/sanguine/commit/57900c5ff8883e63b822449f1dbe9dfa475fd7bf))
+
+
+
+
+
 ## [0.4.12](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.11...@synapsecns/solidity-devops@0.4.12) (2026-03-19)
 
 **Note:** Version bump only for package @synapsecns/solidity-devops
