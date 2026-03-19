@@ -29,7 +29,7 @@ import {
 } from './synapseBridgeAdapterModule'
 
 export class SynapseBridgeAdapterModuleSet extends SynapseModuleSet {
-  public readonly moduleName = 'SynapseBridgeAdapter'
+  public readonly moduleName = 'SynapseBridge'
   public readonly allEvents = ['TokenSent', 'TokenReceived']
   public readonly isBridgeV2Supported = true
 

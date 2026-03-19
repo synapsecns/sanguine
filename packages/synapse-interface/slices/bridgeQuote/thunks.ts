@@ -77,7 +77,7 @@ export const fetchBridgeQuote = createAsyncThunk(
     }
 
     const preferredQuote = activeQuotes.find((quote) =>
-      quote.moduleNames.includes('SynapseBridgeAdapter')
+      quote.moduleNames.includes('SynapseBridge')
     )
     const quote = preferredQuote ?? activeQuotes[0]
 

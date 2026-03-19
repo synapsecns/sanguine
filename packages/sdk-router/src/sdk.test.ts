@@ -164,7 +164,7 @@ describe('SynapseSDK', () => {
       expect(synapse.synapseBridgeAdapterModuleSet).toBeDefined()
       expect(
         synapse.allModuleSets.some(
-          (moduleSet) => moduleSet.moduleName === 'SynapseBridgeAdapter'
+          (moduleSet) => moduleSet.moduleName === 'SynapseBridge'
         )
       ).toBe(true)
     })
@@ -843,14 +843,14 @@ describe('SynapseSDK', () => {
       })
     })
 
-    describe('SynapseBridgeAdapter events', () => {
+    describe('SynapseBridge SBA events', () => {
       ;['TokenSent', 'TokenReceived'].forEach((contractEvent) => {
         it(contractEvent, () => {
           expect(synapse.getBridgeModuleName(contractEvent)).toEqual(
-            'SynapseBridgeAdapter'
+            'SynapseBridge'
           )
           expect(synapse.getBridgeModuleName(`${contractEvent}Event`)).toEqual(
-            'SynapseBridgeAdapter'
+            'SynapseBridge'
           )
         })
       })
@@ -1005,11 +1005,7 @@ describe('SynapseSDK', () => {
       const txHash = '0x1234'
 
       await expect(
-        synapse.getSynapseTxId(
-          SupportedChainId.ETH,
-          'SynapseBridgeAdapter',
-          txHash
-        )
+        synapse.getSynapseTxId(SupportedChainId.ETH, 'SynapseBridge', txHash)
       ).resolves.toEqual(txHash)
     })
 
@@ -1027,7 +1023,7 @@ describe('SynapseSDK', () => {
       await expect(
         synapse.getBridgeTxStatus(
           SupportedChainId.OPTIMISM,
-          'SynapseBridgeAdapter',
+          'SynapseBridge',
           '0x1234'
         )
       ).resolves.toBe(true)
@@ -1055,7 +1051,7 @@ describe('SynapseSDK', () => {
         expectedToAmount: '1000',
         minToAmount: '1000',
         routerAddress: SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.ETH],
-        moduleNames: ['SynapseBridgeAdapter'],
+        moduleNames: ['SynapseBridge'],
         nativeFee: '77',
         gasDropAmount: '0',
       })
@@ -1081,7 +1077,7 @@ describe('SynapseSDK', () => {
         toToken: sbaNativeRemoteToken,
         expectedToAmount: '1000',
         minToAmount: '950',
-        moduleNames: [EngineID[EngineID.DefaultPools], 'SynapseBridgeAdapter'],
+        moduleNames: [EngineID[EngineID.DefaultPools], 'SynapseBridge'],
         routerAddress: SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.ETH],
         nativeFee: '77',
       })
@@ -1153,7 +1149,7 @@ describe('SynapseSDK', () => {
         toToken: ETH_NATIVE_TOKEN_ADDRESS,
         expectedToAmount: '1000',
         minToAmount: '1000',
-        moduleNames: ['SynapseBridgeAdapter'],
+        moduleNames: ['SynapseBridge'],
       })
 
       await expect(
@@ -1186,7 +1182,7 @@ describe('SynapseSDK', () => {
       expect(quotes[0].steps).toHaveLength(2)
       expect(quotes[0].steps[0]).toMatchObject({
         toToken: sbaDirectRemoteToken,
-        moduleNames: ['SynapseBridgeAdapter'],
+        moduleNames: ['SynapseBridge'],
         nativeFee: '77',
       })
       expect(quotes[0].steps[1]).toMatchObject({
@@ -1259,7 +1255,7 @@ describe('SynapseSDK', () => {
       })
 
       expect(quotes).toHaveLength(1)
-      expect(quotes[0].moduleNames).toEqual(['SynapseBridgeAdapter'])
+      expect(quotes[0].moduleNames).toEqual(['SynapseBridge'])
       expect(quotes[0].routerAddress).toEqual(
         SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.HARMONY]
       )
@@ -1316,7 +1312,7 @@ describe('SynapseSDK', () => {
       })
 
       expect(quotes).toHaveLength(1)
-      expect(quotes[0].moduleNames).toEqual(['SynapseBridgeAdapter'])
+      expect(quotes[0].moduleNames).toEqual(['SynapseBridge'])
       expect(quotes[0].toToken).toEqual(harmonyToken)
     })
   })
