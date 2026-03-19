@@ -137,16 +137,19 @@ export class SynapseBridgeAdapterModuleSet extends SynapseModuleSet {
         bridgeToken.originChainId,
         bridgeToken.destChainId
       )
-      const estimatedTimePromise = this.estimatedTimeCache.has(cacheKey)
-        ? Promise.resolve(undefined)
-        : originModule.getEstimatedTime(bridgeToken.destChainId)
+      const cachedEstimatedTime =
+        this.estimatedTimeCache.get<number>(cacheKey)
+      const estimatedTimePromise =
+        cachedEstimatedTime !== undefined
+          ? Promise.resolve(cachedEstimatedTime)
+          : originModule.getEstimatedTime(bridgeToken.destChainId)
       const nativeFee = await originModule.getNativeFee(destMetadata.lzEid)
       const expectedToAmount = originSwapRoute.expectedToAmount
       if (expectedToAmount.isZero()) {
         return undefined
       }
       const estimatedTime = await estimatedTimePromise
-      if (estimatedTime) {
+      if (cachedEstimatedTime === undefined && estimatedTime !== undefined) {
         this.estimatedTimeCache.set(cacheKey, estimatedTime)
       }
       return {

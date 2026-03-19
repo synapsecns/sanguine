@@ -499,8 +499,8 @@ describe('SynapseBridgeAdapterModuleSet', () => {
       .spyOn(originModule, 'getEstimatedTime')
       .mockResolvedValue(42)
 
-    await moduleSet.getBridgeRouteV2(getRouteParams())
-    await moduleSet.getBridgeRouteV2(getRouteParams())
+    const firstRoute = await moduleSet.getBridgeRouteV2(getRouteParams())
+    const secondRoute = await moduleSet.getBridgeRouteV2(getRouteParams())
 
     expect(
       moduleSet.getEstimatedTime(
@@ -508,6 +508,8 @@ describe('SynapseBridgeAdapterModuleSet', () => {
         SupportedChainId.OPTIMISM
       )
     ).toEqual(42)
+    expect(firstRoute?.estimatedTime).toEqual(42)
+    expect(secondRoute?.estimatedTime).toEqual(42)
     expect(estimatedTimeSpy).toHaveBeenCalledTimes(1)
   })
 
