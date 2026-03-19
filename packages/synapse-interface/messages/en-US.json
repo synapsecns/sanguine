@@ -382,12 +382,5 @@
     "Discord": "Discord",
     "Twitter": "Twitter"
   },
-  "Warning": {
-    "Warning! The Harmony bridge has been exploited": "Warning! The Harmony bridge has been exploited.",
-    "Do not bridge via Harmony unless you understand the risks involved": "Do not bridge via Harmony unless you understand the risks involved.",
-    "Warning! The Fantom bridge has been exploited": "Warning! The Fantom bridge has been exploited.",
-    "Do not bridge via Fantom unless you understand the risks involved": "Do not bridge via Fantom unless you understand the risks involved.",
-    "Alert: Transactions to Dogechain are temporarily paused": "Alert: Transactions to Dogechain are temporarily paused.",
-    "You may still bridge funds from Dogechain to any supported destination chain": "You may still bridge funds from Dogechain to any supported destination chain."
-  }
+  "Warning": {}
 }

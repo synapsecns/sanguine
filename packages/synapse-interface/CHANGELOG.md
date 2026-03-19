@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.43.46](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.45...@synapsecns/synapse-interface@0.43.46) (2026-03-19)
+
+
+### Bug Fixes
+
+* **synapse-interface:** chain pauses ([#3980](https://github.com/synapsecns/sanguine/issues/3980)) ([c2776ed](https://github.com/synapsecns/sanguine/commit/c2776ed1407b1d27ce1f5c2bde0192b89264adb2))
+
+
+
+
+
 ## [0.43.45](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.44...@synapsecns/synapse-interface@0.43.45) (2026-03-19)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
