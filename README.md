@@ -10,7 +10,7 @@
 [![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/y/synapsecns/sanguine?style=flat-square)](https://github.com/synapsecns/sanguine/commits/)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/synapsecns/sanguine)
 [![Codecov](https://img.shields.io/codecov/c/github/synapsecns/sanguine?style=flat-square&logo=codecov&link=https%3A%2F%2Fapp.codecov.io%2Fgh%2Fsynapsecns%2Fsanguine)](https://app.codecov.io/gh/synapsecns/sanguine)
-[![Qlty maintainability](https://qlty.sh/badges/synapsecns/sanguine/maintainability.svg)](https://qlty.sh/gh/synapsecns/sanguine)
+[![Maintainability](https://qlty.sh/gh/synapsecns/projects/sanguine/maintainability.svg)](https://qlty.sh/gh/synapsecns/projects/sanguine)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/b119a0b147be4aeb8e8c8c37db9c83ee)](https://app.codacy.com/gh/synapsecns/sanguine/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 
