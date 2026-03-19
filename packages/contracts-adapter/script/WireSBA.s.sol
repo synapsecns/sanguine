@@ -5,6 +5,7 @@ import {SynapseBridgeAdapter} from "../src/SynapseBridgeAdapter.sol";
 
 import {UlnConfig} from "@layerzerolabs/lz-evm-messagelib-v2/contracts/uln/UlnBase.sol";
 import {ILayerZeroEndpointV2} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
+import {IMessageLib} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/IMessageLib.sol";
 import {SetConfigParam} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/IMessageLibManager.sol";
 import {AddressCast} from "@layerzerolabs/lz-evm-protocol-v2/contracts/libs/AddressCast.sol";
 import {StringUtils, SynapseScript, stdJson} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
@@ -31,10 +32,11 @@ contract WireSBA is SynapseScript {
     string[] internal allChains;
     mapping(string => uint32) internal eidByChainName;
 
+    mapping(uint32 => bool) internal eidSkipped;
+
     string internal dvnsConfig;
 
     string internal securityConfig;
-    uint256 internal confirmationTimeMs;
     address[] internal requiredDVNs;
 
     /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
@@ -42,6 +44,7 @@ contract WireSBA is SynapseScript {
 
     function run() external broadcastWithHooks {
         loadConfigs();
+        loadSkippedEids();
         address deployment = getDeploymentAddress({contractName: "SynapseBridgeAdapter", revertIfNotFound: true});
         sba = SynapseBridgeAdapter(deployment);
         // Every action below will be skipped if already done
@@ -62,14 +65,12 @@ contract WireSBA is SynapseScript {
     }
 
     function getChainConfirmations(string memory chain) internal view returns (uint64 confirmations) {
-        if (confirmationTimeMs == 0) {
-            printFailWithIndent("Confirmation time not set");
+        string memory configPath = string.concat(".blockConfirmations.", chain);
+        if (!securityConfig.keyExists(configPath)) {
+            printFailWithIndent(string.concat("Block confirmations not set for chain: ", chain));
             assert(false);
         }
-        uint256 blockTimeMs = chainsConfig.readUint(string.concat(".", chain, ".blockTime"));
-        confirmations = uint64(confirmationTimeMs / blockTimeMs);
-        // Round up to be a multiple of 10
-        confirmations = (confirmations + 9) / 10 * 10;
+        confirmations = uint64(securityConfig.readUint(configPath));
     }
 
     function getUlnConfig(uint64 confirmations) internal view returns (UlnConfig memory) {
@@ -87,7 +88,6 @@ contract WireSBA is SynapseScript {
         dvnsConfig = readGlobalDeployProdConfig("dvns", true);
 
         securityConfig = readGlobalDeployProdConfig("security", true);
-        confirmationTimeMs = readConfirmationTimeMs();
         string[] memory dvnNames = securityConfig.readStringArray(".DVNs");
         for (uint256 i = 0; i < dvnNames.length; ++i) {
             requiredDVNs.push(dvnsConfig.readAddress(string.concat(".", activeChain, ".", dvnNames[i])));
@@ -116,20 +116,17 @@ contract WireSBA is SynapseScript {
         sendLibrary = chainsConfig.readAddress(string.concat(".", activeChain, ".sendUln302"));
     }
 
-    function readConfirmationTimeMs() internal view returns (uint256) {
-        uint256 confirmationTimeSeconds = securityConfig.readUint(".confirmationTimeSeconds");
-        logTime(confirmationTimeSeconds, 1 days, "days") || logTime(confirmationTimeSeconds, 1 hours, "hours")
-            || logTime(confirmationTimeSeconds, 1 minutes, "minutes")
-            || logTime(confirmationTimeSeconds, 1 seconds, "seconds");
-        return confirmationTimeSeconds * 1000;
-    }
-
-    function logTime(uint256 time, uint256 period, string memory unit) internal view returns (bool logged) {
-        if (time % period == 0) {
-            printInfo(string.concat("Confirmation time: ", vm.toString(time / period), " ", unit));
-            return true;
+    function loadSkippedEids() internal {
+        for (uint256 i = 0; i < allChains.length; ++i) {
+            string memory chain = allChains[i];
+            uint32 eid = eidByChainName[chain];
+            if (!IMessageLib(sendLibrary).isSupportedEid(eid) || !IMessageLib(receiveLibrary).isSupportedEid(eid)) {
+                eidSkipped[eid] = true;
+                printLogWithIndent(
+                    string.concat(unicode"⚠️ ", chain, " is not supported (eid: ", vm.toString(eid), ")")
+                );
+            }
         }
-        return false;
     }
 
     function sortAddresses(address[] memory addresses) internal returns (address[] memory sorted) {
@@ -159,6 +156,10 @@ contract WireSBA is SynapseScript {
             }
             bytes32 peer = remoteSBA.toBytes32();
             uint32 eid = eidByChainName[chain];
+            if (eidSkipped[eid]) {
+                printSkipWithIndent(string.concat(chain, " is not supported"));
+                continue;
+            }
             if (sba.peers(eid) == peer) {
                 printSkipWithIndent(string.concat(chain, " already has peer set"));
                 continue;
@@ -176,6 +177,10 @@ contract WireSBA is SynapseScript {
                 continue;
             }
             uint32 eid = eidByChainName[chain];
+            if (eidSkipped[eid]) {
+                printSkipWithIndent(string.concat(chain, " is not supported"));
+                continue;
+            }
             address curSendLibrary = endpoint.getSendLibrary(address(sba), eid);
             bool isDefault = endpoint.isDefaultSendLibrary(address(sba), eid);
             if (curSendLibrary == sendLibrary && !isDefault) {
@@ -195,6 +200,10 @@ contract WireSBA is SynapseScript {
                 continue;
             }
             uint32 eid = eidByChainName[chain];
+            if (eidSkipped[eid]) {
+                printSkipWithIndent(string.concat(chain, " is not supported"));
+                continue;
+            }
             (address curReceiveLibrary, bool isDefault) = endpoint.getReceiveLibrary(address(sba), eid);
             if (curReceiveLibrary == receiveLibrary && !isDefault) {
                 printSkipWithIndent(string.concat(chain, " already has receive library set"));
@@ -213,6 +222,10 @@ contract WireSBA is SynapseScript {
             assert(false);
         }
         uint32 eid = eidByChainName[chain];
+        if (eidSkipped[eid]) {
+            printSkipWithIndent(string.concat(chain, " is not supported"));
+            return;
+        }
         bytes memory curConfig =
             endpoint.getConfig({_oapp: address(sba), _lib: lib, _eid: eid, _configType: CONFIG_TYPE_ULN});
         if (keccak256(curConfig) == keccak256(abi.encode(ulnConfig))) {
