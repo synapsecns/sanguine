@@ -15,7 +15,7 @@ import (
 
 //nolint:gosec
 func main() {
-	fmt.Println("Enter Sending Chain URL (eg https://polygon-rpc.com, https://api.avax.network/ext/bc/C/rpc, https://optimism-mainnet.public.blastapi.io): ")
+	fmt.Println("Enter Sending Chain URL (eg https://polygon-rpc.com, https://api.avax.network/ext/bc/C/rpc, https://optimism-mainnet.core.chainstack.com): ")
 	var sendingChainURL string
 	fmt.Scanln(&sendingChainURL)
 
