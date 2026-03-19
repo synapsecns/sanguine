@@ -1,8 +1,18 @@
 # Change Log
 
 All notable changes to this project will be documented in this file.
-
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## [0.21.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.21.1...@synapsecns/sdk-router@0.21.2) (2026-03-19)
+
+
+### Bug Fixes
+
+* add workflow_dispatch to publish workflow and trigger publish ([#3993](https://github.com/synapsecns/sanguine/issues/3993)) ([5aed8ab](https://github.com/synapsecns/sanguine/commit/5aed8ab244cf4aa26bff7701b0f09bb2464a4aed))
+
+
+
+
 
 ## [0.21.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.21.0...@synapsecns/sdk-router@0.21.1) (2026-03-19)
 

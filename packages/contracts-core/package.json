@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/contracts-core",
-  "version": "1.0.36",
+  "version": "1.0.37",
   "description": "",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.17](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.6.16...@synapsecns/bridge-docs@0.6.17) (2026-03-19)
+
+
+### Bug Fixes
+
+* **omnirpc:** replace defunct Blast API references with Chainstack ([#3985](https://github.com/synapsecns/sanguine/issues/3985)) ([502d5b8](https://github.com/synapsecns/sanguine/commit/502d5b8504a225075f151b87259df3a00db03d4b)), closes [#3806](https://github.com/synapsecns/sanguine/issues/3806)
+
+
+
+
+
 ## [0.6.16](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.6.15...@synapsecns/bridge-docs@0.6.16) (2026-03-19)
 
 **Note:** Version bump only for package @synapsecns/bridge-docs
