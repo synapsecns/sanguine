@@ -1,6 +1,7 @@
 # Change Log
 
 All notable changes to this project will be documented in this file.
+
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
 ## [0.21.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.21.0...@synapsecns/sdk-router@0.21.1) (2026-03-19)
