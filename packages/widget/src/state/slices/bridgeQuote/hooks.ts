@@ -5,7 +5,6 @@ import { BridgeableToken } from 'types'
 import { useAppSelector } from '@/state/hooks'
 import { RootState } from '@/state/store'
 import { stringToBigInt } from '@/utils/stringToBigInt'
-import { powBigInt } from '@/utils/powBigInt'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { getBridgeModuleNames } from '@/utils/getBridgeModuleNames'
@@ -16,36 +15,58 @@ export const useBridgeQuoteState = (): RootState['bridgeQuote'] => {
 
 export const fetchBridgeQuote = createAsyncThunk(
   'bridgeQuote/fetchBridgeQuote',
-  async ({
-    originChainId,
-    destinationChainId,
-    originToken,
-    destinationToken,
-    amount,
-    debouncedInputAmount,
-    synapseSDK,
-    requestId,
-    pausedModules,
-    timestamp,
-  }: {
-    originChainId: number
-    destinationChainId: number
-    originToken: BridgeableToken
-    destinationToken: BridgeableToken
-    amount: bigint
-    debouncedInputAmount: string
-    synapseSDK: any
-    requestId: number
-    pausedModules: any
-    timestamp: number
-  }) => {
-    const allQuotes = await synapseSDK.allBridgeQuotes(
+  async (
+    {
       originChainId,
       destinationChainId,
-      originToken.addresses[originChainId],
-      destinationToken.addresses[destinationChainId],
-      amount
-    )
+      originToken,
+      destinationToken,
+      amount,
+      debouncedInputAmount,
+      synapseSDK,
+      requestId,
+      pausedModules,
+      timestamp,
+      connectedAddress,
+    }: {
+      originChainId: number
+      destinationChainId: number
+      originToken: BridgeableToken
+      destinationToken: BridgeableToken
+      amount: bigint
+      debouncedInputAmount: string
+      synapseSDK: any
+      requestId: number
+      pausedModules: any
+      timestamp: number
+      connectedAddress?: string
+    },
+    { rejectWithValue }
+  ) => {
+    const quoteParams: {
+      fromChainId: number
+      toChainId: number
+      fromToken: string
+      toToken: string
+      fromAmount: string
+      slippagePercentage: number
+      fromSender?: string
+      toRecipient?: string
+    } = {
+      fromChainId: originChainId,
+      toChainId: destinationChainId,
+      fromToken: originToken.addresses[originChainId],
+      toToken: destinationToken.addresses[destinationChainId],
+      fromAmount: amount.toString(),
+      slippagePercentage: 0.1,
+    }
+
+    if (connectedAddress) {
+      quoteParams.fromSender = connectedAddress
+      quoteParams.toRecipient = connectedAddress
+    }
+
+    const allQuotes = await synapseSDK.bridgeV2(quoteParams)
 
     const pausedBridgeModules = new Set(
       pausedModules
@@ -56,45 +77,24 @@ export const fetchBridgeQuote = createAsyncThunk(
     )
 
     const activeQuotes = allQuotes.filter(
-      (fetchedQuote) => !pausedBridgeModules.has(fetchedQuote.bridgeModuleName)
+      (fetchedQuote) =>
+        !fetchedQuote.moduleNames.some((moduleName) =>
+          pausedBridgeModules.has(moduleName)
+        )
     )
 
-    const rfqQuote = activeQuotes.find(
-      (q) => q.bridgeModuleName === 'SynapseRFQ'
+    const rfqQuote = activeQuotes.find((activeQuote) =>
+      activeQuote.moduleNames.includes('SynapseRFQ')
     )
 
-    let quote
+    const quote = rfqQuote ?? activeQuotes[0]
 
-    if (rfqQuote) {
-      quote = rfqQuote
-    } else {
-      /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
-      quote = activeQuotes[0]
+    if (!quote) {
+      return rejectWithValue('No active bridge quotes available')
     }
 
-    const {
-      feeAmount,
-      routerAddress,
-      maxAmountOut,
-      originQuery,
-      destQuery,
-      estimatedTime,
-      bridgeModuleName,
-    } = quote
-
-    const toValueBigInt = BigInt(maxAmountOut.toString()) ?? 0n
-
-    const originTokenDecimals = originToken?.decimals[originChainId]
-    const adjustedFeeAmount =
-      BigInt(feeAmount) <
-      stringToBigInt(debouncedInputAmount, originToken?.decimals[originChainId])
-        ? BigInt(feeAmount)
-        : BigInt(feeAmount) / powBigInt(10n, BigInt(18 - originTokenDecimals))
-
-    const {
-      originQuery: originQueryWithSlippage,
-      destQuery: destQueryWithSlippage,
-    } = synapseSDK.applyBridgeSlippage(bridgeModuleName, originQuery, destQuery)
+    const bridgeModuleName = quote.moduleNames[quote.moduleNames.length - 1]
+    const toValueBigInt = BigInt(quote.expectedToAmount)
 
     return {
       outputAmount: toValueBigInt,
@@ -105,22 +105,21 @@ export const fetchBridgeQuote = createAsyncThunk(
           8
         )
       ),
-      routerAddress,
+      routerAddress: quote.routerAddress,
       exchangeRate: calculateExchangeRate(
         stringToBigInt(
           debouncedInputAmount,
           originToken?.decimals[originChainId]
-        ) - BigInt(adjustedFeeAmount),
+        ),
         originToken?.decimals[originChainId],
         toValueBigInt,
         destinationToken.decimals[destinationChainId]
       ),
-      feeAmount,
-      delta: BigInt(maxAmountOut.toString()),
-      originQuery: originQueryWithSlippage,
-      destQuery: destQueryWithSlippage,
-      estimatedTime,
+      feeAmount: 0n,
+      delta: toValueBigInt,
+      estimatedTime: quote.estimatedTime,
       bridgeModuleName,
+      tx: quote.tx ?? null,
       requestId,
       timestamp,
     }

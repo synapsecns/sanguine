@@ -110,6 +110,10 @@ export const Widget = ({
     BridgeMaintenanceProgressBar,
     BridgeMaintenanceWarningMessage,
   } = useMaintenance()
+  const pausedModulesKey = useMemo(
+    () => JSON.stringify(pausedModulesList),
+    [pausedModulesList]
+  )
 
   const allTokens = useMemo(() => {
     return getFromTokens({
@@ -180,6 +184,7 @@ export const Widget = ({
   /** Fetch and store token allowance */
   useEffect(() => {
     if (
+      connectedAddress &&
       originToken?.addresses[originChainId] !== ZeroAddress &&
       bridgeQuote?.routerAddress
     ) {
@@ -200,7 +205,7 @@ export const Widget = ({
     bridgeQuote?.routerAddress,
   ])
 
-  const fetchAndStoreBridgeQuote = async () => {
+  const fetchAndStoreBridgeQuote = useCallback(async () => {
     currentSDKRequestID.current += 1
     const thisRequestId = currentSDKRequestID.current
 
@@ -223,10 +228,21 @@ export const Widget = ({
           requestId: thisRequestId,
           pausedModules: pausedModulesList,
           timestamp: currentTimestamp,
+          connectedAddress: connectedAddress || undefined,
         })
       )
     }
-  }
+  }, [
+    connectedAddress,
+    debouncedInputAmount,
+    destinationChainId,
+    destinationToken,
+    dispatch,
+    originChainId,
+    originToken,
+    pausedModulesKey,
+    synapseSDK,
+  ])
 
   /** Handle refreshing quotes */
   useEffect(() => {
@@ -235,15 +251,7 @@ export const Widget = ({
     } else {
       dispatch(resetQuote())
     }
-  }, [
-    debouncedInputAmount,
-    originToken?.routeSymbol,
-    destinationToken?.routeSymbol,
-    originChainId,
-    destinationChainId,
-    isInputValid,
-    hasValidSelections,
-  ])
+  }, [dispatch, fetchAndStoreBridgeQuote, hasValidSelections, isInputValid])
 
   useBridgeQuoteUpdater(
     bridgeQuote,
@@ -325,24 +333,21 @@ export const Widget = ({
   const executeBridge = async () => {
     try {
       dispatch(setIsWalletPending(true))
+      const quoteTx = bridgeQuote?.tx
+
+      if (!quoteTx) {
+        return
+      }
+
       const action = await dispatch(
         executeBridgeTxn({
-          destinationAddress: connectedAddress,
-          originRouterAddress: bridgeQuote?.routerAddress,
           originChainId,
           destinationChainId,
-          tokenAddress: originToken?.addresses[originChainId],
-          amount: stringToBigInt(
-            debouncedInputAmount,
-            originToken?.decimals[originChainId]
-          ),
           parsedOriginAmount: debouncedInputAmount,
           originTokenSymbol: originToken?.symbol,
-          originQuery: bridgeQuote?.originQuery,
-          destQuery: bridgeQuote?.destQuery,
           bridgeModuleName: bridgeQuote?.bridgeModuleName,
           estimatedTime: bridgeQuote?.estimatedTime,
-          synapseSDK,
+          quoteTx,
           signer,
         })
       )
@@ -395,6 +400,13 @@ export const Widget = ({
 
   const isCurrentRequestedQuote =
     bridgeQuote?.requestId === currentSDKRequestID.current
+  const hasExecutableQuote =
+    !connectedAddress || Boolean(bridgeQuote?.tx?.to && bridgeQuote?.tx?.data)
+  const isValidBridgeQuote =
+    Boolean(bridgeQuote) &&
+    bridgeQuote !== EMPTY_BRIDGE_QUOTE &&
+    isCurrentRequestedQuote &&
+    hasExecutableQuote
 
   const destinationValue = useMemo(() => {
     if (isLoading) {
@@ -507,9 +519,7 @@ export const Widget = ({
         />
         <BridgeButton
           originChain={CHAINS_BY_ID[originChainId]}
-          isValidQuote={
-            Boolean(bridgeQuote) && bridgeQuote !== EMPTY_BRIDGE_QUOTE
-          }
+          isValidQuote={isValidBridgeQuote}
           handleApprove={executeApproval}
           handleBridge={executeBridge}
           isApprovalPending={

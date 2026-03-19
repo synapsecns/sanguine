@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit'
 
 import { fetchBridgeQuote } from './hooks'
 
@@ -9,12 +9,10 @@ export enum FetchState {
   INVALID = 'invalid',
 }
 
-type QuoteQuery = {
-  deadline: bigint
-  minAmountOut: bigint
-  rawParams: string
-  swapAdapter: string
-  tokenOut: string
+export type BridgeQuoteTransaction = {
+  data: string
+  to: string
+  value?: string | null
 }
 
 export type BridgeQuote = {
@@ -24,25 +22,23 @@ export type BridgeQuote = {
   exchangeRate: bigint
   feeAmount: bigint
   delta: bigint
-  originQuery: QuoteQuery
-  destQuery: QuoteQuery
-  estimatedTime: number
-  bridgeModuleName: string
-  requestId: number
-  timestamp: number
+  estimatedTime: number | null
+  bridgeModuleName: string | null
+  tx: BridgeQuoteTransaction | null
+  requestId: number | null
+  timestamp: number | null
 }
 
-export const EMPTY_BRIDGE_QUOTE = {
+export const EMPTY_BRIDGE_QUOTE: BridgeQuote = {
   outputAmount: 0n,
   outputAmountString: '',
   routerAddress: '',
   exchangeRate: 0n,
   feeAmount: 0n,
   delta: 0n,
-  originQuery: null,
-  destQuery: null,
   estimatedTime: null,
   bridgeModuleName: null,
+  tx: null,
   requestId: null,
   timestamp: null,
 }
@@ -50,6 +46,7 @@ export const EMPTY_BRIDGE_QUOTE = {
 export interface BridgeQuoteState {
   isLoading: boolean
   bridgeQuote: BridgeQuote
+  currentRequestId: number | null
   status: string
   error: any
 }
@@ -57,6 +54,7 @@ export interface BridgeQuoteState {
 const initialState: BridgeQuoteState = {
   isLoading: false,
   bridgeQuote: EMPTY_BRIDGE_QUOTE,
+  currentRequestId: null,
   status: FetchState.IDLE,
   error: null,
 }
@@ -67,6 +65,7 @@ export const bridgeQuoteSlice = createSlice({
   reducers: {
     resetQuote: (state) => {
       state.bridgeQuote = EMPTY_BRIDGE_QUOTE
+      state.currentRequestId = null
       state.status = FetchState.IDLE
       state.error = null
       state.isLoading = false
@@ -74,21 +73,29 @@ export const bridgeQuoteSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchBridgeQuote.pending, (state) => {
+      .addCase(fetchBridgeQuote.pending, (state, action) => {
+        state.currentRequestId = action.meta.arg.requestId
         state.status = FetchState.LOADING
         state.isLoading = true
       })
-      .addCase(
-        fetchBridgeQuote.fulfilled,
-        (state, action: PayloadAction<BridgeQuote>) => {
-          state.bridgeQuote = action.payload
-          state.status = FetchState.VALID
-          state.isLoading = false
+      .addCase(fetchBridgeQuote.fulfilled, (state, action) => {
+        if (state.currentRequestId !== action.payload.requestId) {
+          return
         }
-      )
+
+        state.bridgeQuote = action.payload
+        state.currentRequestId = null
+        state.status = FetchState.VALID
+        state.isLoading = false
+      })
       .addCase(fetchBridgeQuote.rejected, (state, action) => {
+        if (state.currentRequestId !== action.meta.arg.requestId) {
+          return
+        }
+
         state.error = action.payload
         state.bridgeQuote = EMPTY_BRIDGE_QUOTE
+        state.currentRequestId = null
         state.status = FetchState.INVALID
         state.isLoading = false
       })
