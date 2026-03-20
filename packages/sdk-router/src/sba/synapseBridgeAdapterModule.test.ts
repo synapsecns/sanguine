@@ -77,8 +77,7 @@ describe('SynapseBridgeAdapterModule', () => {
       }),
     })
     const expectedEstimatedTime =
-      2 * MEDIAN_TIME_BLOCK[SupportedChainId.ETH] +
-      3 * MEDIAN_TIME_BLOCK[SupportedChainId.OPTIMISM]
+      2 * MEDIAN_TIME_BLOCK[SupportedChainId.ETH] + 60
     await expect(
       module.getEstimatedTime(SupportedChainId.OPTIMISM)
     ).resolves.toBeCloseTo(expectedEstimatedTime)

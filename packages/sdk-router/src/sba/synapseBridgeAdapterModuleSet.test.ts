@@ -482,8 +482,7 @@ describe('SynapseBridgeAdapterModuleSet', () => {
 
   it('uses fallback ETA until a live pathway estimate is cached', async () => {
     const expectedFallbackEta = Math.ceil(
-      64 * MEDIAN_TIME_BLOCK[SupportedChainId.ETH] +
-        3 * MEDIAN_TIME_BLOCK[SupportedChainId.OPTIMISM]
+      64 * MEDIAN_TIME_BLOCK[SupportedChainId.ETH] + 60
     )
     expect(
       moduleSet.getEstimatedTime(

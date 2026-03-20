@@ -9,7 +9,7 @@ import { SynapseModule } from '../module'
 import { getWithTimeout } from '../utils'
 import {
   getSbaChainMetadata,
-  SBA_DEFAULT_DESTINATION_BLOCKS,
+  SBA_EXECUTION_BUFFER_SECONDS,
   SBA_MIN_GAS_LIMIT,
 } from './metadata'
 
@@ -126,10 +126,7 @@ export class SynapseBridgeAdapterModule implements SynapseModule {
     if (!confirmations) {
       return undefined
     }
-    return (
-      confirmations * fromBlockTime +
-      SBA_DEFAULT_DESTINATION_BLOCKS * toBlockTime
-    )
+    return confirmations * fromBlockTime + SBA_EXECUTION_BUFFER_SECONDS
   }
 
   public async getNativeFee(dstEid: number): Promise<BigNumber> {
