@@ -76,7 +76,7 @@ const readEtherscanOptions = (chainName) => {
   const url = tryReadEnv(chainName, 'VERIFIER_URL')
   const key =
     tryReadEnv(chainName, 'VERIFIER_KEY') ?? readEnv('ETHERSCAN_V2_KEY')
-  return `--verifier etherscan --etherscan-api-key ${key} ${optionalParam(
+  return `--verifier etherscan --verifier-api-key ${key} ${optionalParam(
     '--verifier-url',
     url
   )}`
@@ -86,7 +86,7 @@ const readBlockscoutOptions = (chainName) => {
   const url = readEnv(chainName, 'VERIFIER_URL')
   const key = tryReadEnv(chainName, 'VERIFIER_KEY')
   return `--verifier blockscout --verifier-url ${url} ${optionalParam(
-    '--verifier-key',
+    '--verifier-api-key',
     key
   )}`
 }
