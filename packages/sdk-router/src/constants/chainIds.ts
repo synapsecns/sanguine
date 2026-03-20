@@ -112,6 +112,7 @@ export const INTENTS_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.HYPEREVM,
   SupportedChainId.KLAYTN,
   SupportedChainId.LINEA,
+  SupportedChainId.METIS,
   SupportedChainId.OPTIMISM,
   SupportedChainId.POLYGON,
   SupportedChainId.SCROLL,
