@@ -28,6 +28,23 @@ const synapseBridgeAdapterAbi = [
     inputs: [],
     outputs: [{ name: '', type: 'address' }],
   },
+  {
+    name: 'endpoint',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'address' }],
+  },
+] as const
+
+const layerZeroEndpointAbi = [
+  {
+    name: 'delegates',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: '_oapp', type: 'address' }],
+    outputs: [{ name: '', type: 'address' }],
+  },
 ] as const
 
 // Multicall3 address (universal deployment)
@@ -43,7 +60,7 @@ type MultisigConfig = {
 
 type VerificationIssue = {
   chain: string
-  category: 'owner' | 'error'
+  category: 'owner' | 'delegate' | 'error'
   severity: 'error' | 'warning' | 'info'
   message: string
 }
@@ -53,6 +70,7 @@ type ChainVerificationResult = {
   chainId: number
   deployment: Address
   actualOwner: Address | null
+  actualDelegate: Address | null
   expectedOwner: Address | null
   issues: VerificationIssue[]
 }
@@ -67,6 +85,7 @@ type ResultStats = {
 
 const categoryLabels: Record<VerificationIssue['category'], string> = {
   owner: 'Ownership',
+  delegate: 'Delegate',
   error: 'Errors',
 }
 
@@ -174,13 +193,18 @@ function printChainResult(result: ChainVerificationResult) {
   )
   console.log(`  Deployment: ${result.deployment}`)
   console.log(
-    `  Expected owner: ${
+    `  Expected multisig: ${
       result.expectedOwner || colors.red + 'Missing' + colors.reset
     }`
   )
   console.log(
     `  Actual owner: ${
       result.actualOwner || colors.red + 'Unknown' + colors.reset
+    }`
+  )
+  console.log(
+    `  Actual delegate: ${
+      result.actualDelegate || colors.red + 'Unknown' + colors.reset
     }`
   )
 
@@ -212,7 +236,7 @@ function printSummary(stats: ResultStats) {
 
   if (stats.totalIssues === 0) {
     console.log(
-      `${colors.green}✓ All SynapseBridgeAdapter owners match multisig config!${colors.reset}\n`
+      `${colors.green}✓ All SynapseBridgeAdapter owners and delegates match multisig config!${colors.reset}\n`
     )
     return
   }
@@ -378,25 +402,31 @@ async function verifyChain(
     chainId,
     deployment: deployment.address,
     actualOwner: null,
+    actualDelegate: null,
     expectedOwner: multisigConfig[chain] || null,
     issues: [],
   }
 
   try {
     const client = createChainClient(chainId)
-    const ownerResult = await client.multicall({
+    const [ownerResult, endpointResult] = await client.multicall({
       contracts: [
         {
           address: deployment.address,
           abi: synapseBridgeAdapterAbi,
           functionName: 'owner',
         },
+        {
+          address: deployment.address,
+          abi: synapseBridgeAdapterAbi,
+          functionName: 'endpoint',
+        },
       ],
       allowFailure: true,
     })
 
-    if (ownerResult[0].status === 'success' && ownerResult[0].result) {
-      result.actualOwner = ownerResult[0].result
+    if (ownerResult.status === 'success' && ownerResult.result) {
+      result.actualOwner = ownerResult.result
     } else {
       result.issues.push({
         chain,
@@ -404,7 +434,43 @@ async function verifyChain(
         severity: 'error',
         message: 'Failed to fetch current owner',
       })
-      return result
+    }
+
+    let endpointAddress: Address | null = null
+    if (endpointResult.status === 'success' && endpointResult.result) {
+      endpointAddress = endpointResult.result
+    } else {
+      result.issues.push({
+        chain,
+        category: 'error',
+        severity: 'error',
+        message: 'Failed to fetch app endpoint',
+      })
+    }
+
+    if (endpointAddress !== null) {
+      const delegateResult = await client.multicall({
+        contracts: [
+          {
+            address: endpointAddress,
+            abi: layerZeroEndpointAbi,
+            functionName: 'delegates',
+            args: [deployment.address],
+          },
+        ],
+        allowFailure: true,
+      })
+
+      if (delegateResult[0].status === 'success' && delegateResult[0].result) {
+        result.actualDelegate = delegateResult[0].result
+      } else {
+        result.issues.push({
+          chain,
+          category: 'error',
+          severity: 'error',
+          message: 'Failed to fetch current delegate',
+        })
+      }
     }
 
     if (result.expectedOwner === null) {
@@ -414,26 +480,55 @@ async function verifyChain(
         severity: 'error',
         message: 'Missing expected owner in multisig config',
       })
+      result.issues.push({
+        chain,
+        category: 'delegate',
+        severity: 'error',
+        message: 'Missing expected delegate in multisig config',
+      })
       return result
     }
 
-    const ownersMatch =
-      result.actualOwner.toLowerCase() === result.expectedOwner.toLowerCase()
+    if (result.actualOwner !== null) {
+      const ownersMatch =
+        result.actualOwner.toLowerCase() === result.expectedOwner.toLowerCase()
 
-    if (ownersMatch) {
-      result.issues.push({
-        chain,
-        category: 'owner',
-        severity: 'info',
-        message: 'Owner matches multisig config',
-      })
-    } else {
-      result.issues.push({
-        chain,
-        category: 'owner',
-        severity: 'error',
-        message: `Owner mismatch: expected ${result.expectedOwner}, got ${result.actualOwner}`,
-      })
+      if (ownersMatch) {
+        result.issues.push({
+          chain,
+          category: 'owner',
+          severity: 'info',
+          message: 'Owner matches multisig config',
+        })
+      } else {
+        result.issues.push({
+          chain,
+          category: 'owner',
+          severity: 'error',
+          message: `Owner mismatch: expected ${result.expectedOwner}, got ${result.actualOwner}`,
+        })
+      }
+    }
+
+    if (result.actualDelegate !== null) {
+      const delegatesMatch =
+        result.actualDelegate.toLowerCase() === result.expectedOwner.toLowerCase()
+
+      if (delegatesMatch) {
+        result.issues.push({
+          chain,
+          category: 'delegate',
+          severity: 'info',
+          message: 'Delegate matches multisig config',
+        })
+      } else {
+        result.issues.push({
+          chain,
+          category: 'delegate',
+          severity: 'error',
+          message: `Delegate mismatch: expected ${result.expectedOwner}, got ${result.actualDelegate}`,
+        })
+      }
     }
   } catch (error) {
     result.issues.push({
@@ -449,7 +544,7 @@ async function verifyChain(
 
 function printResults(results: ChainVerificationResult[]) {
   console.log(
-    `\n${colors.bold}${colors.cyan}SynapseBridgeAdapter Ownership Verification Results${colors.reset}\n`
+    `\n${colors.bold}${colors.cyan}SynapseBridgeAdapter Ownership & Delegate Verification Results${colors.reset}\n`
   )
 
   const stats = calculateResultStats(results)
