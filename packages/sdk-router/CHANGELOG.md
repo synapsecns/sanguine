@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.22.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.22.0...@synapsecns/sdk-router@0.22.1) (2026-03-20)
+
+
+### Bug Fixes
+
+* **sdk-router:** sba estimated time ([#4000](https://github.com/synapsecns/sanguine/issues/4000)) ([8a454cd](https://github.com/synapsecns/sanguine/commit/8a454cd638dae94e52eea955c34b02786093950d))
+* **widget:** quote flickering ([#3999](https://github.com/synapsecns/sanguine/issues/3999)) ([6eda6d8](https://github.com/synapsecns/sanguine/commit/6eda6d8bb7222866e5be19fd964835392ad20e62))
+
+
+
+
+
 # [0.22.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.21.2...@synapsecns/sdk-router@0.22.0) (2026-03-20)
 
 

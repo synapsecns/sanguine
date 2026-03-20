@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.10.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.10.1...@synapsecns/widget@0.10.2) (2026-03-20)
+
+
+### Bug Fixes
+
+* **widget:** quote flickering ([#3999](https://github.com/synapsecns/sanguine/issues/3999)) ([6eda6d8](https://github.com/synapsecns/sanguine/commit/6eda6d8bb7222866e5be19fd964835392ad20e62))
+
+
+
+
+
 ## [0.10.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.10.0...@synapsecns/widget@0.10.1) (2026-03-20)
 
 **Note:** Version bump only for package @synapsecns/widget

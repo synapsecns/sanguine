@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.5.0...@synapsecns/solidity-devops@0.5.1) (2026-03-20)
+
+
+### Bug Fixes
+
+* **solidity-devops:** correct param name for verifier key ([#3998](https://github.com/synapsecns/sanguine/issues/3998)) ([8fc7012](https://github.com/synapsecns/sanguine/commit/8fc7012604b45748992f0b600e9bc017ea226ebb))
+
+
+
+
+
 # [0.5.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.12...@synapsecns/solidity-devops@0.5.0) (2026-03-19)
 
 
