@@ -26,9 +26,7 @@ const dispatchMouseMove = () => {
 
 type EventListenerSpy = {
   mock: {
-    calls: Array<
-      [string, EventListenerOrEventListenerObject, ...unknown[]]
-    >
+    calls: Array<[string, EventListenerOrEventListenerObject, ...unknown[]]>
   }
 }
 
@@ -53,11 +51,20 @@ describe('useBridgeQuoteUpdater', () => {
   it('keeps a fresh quote fresh for a full timeout from arrival', () => {
     const refreshQuote = jest.fn(async () => undefined)
 
-    renderHook(({ quote }) => {
-      useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
-    }, {
-      initialProps: { quote: createQuote() },
-    })
+    renderHook(
+      ({ quote: currentQuote }) => {
+        useBridgeQuoteUpdater(
+          currentQuote,
+          refreshQuote,
+          false,
+          false,
+          STALE_TIMEOUT
+        )
+      },
+      {
+        initialProps: { quote: createQuote() },
+      }
+    )
 
     dispatchMouseMove()
     expect(refreshQuote).not.toHaveBeenCalled()
@@ -77,11 +84,20 @@ describe('useBridgeQuoteUpdater', () => {
 
   it('gives the first valid quote a full fresh window after a long idle period', () => {
     const refreshQuote = jest.fn(async () => undefined)
-    const { rerender } = renderHook(({ quote }) => {
-      useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
-    }, {
-      initialProps: { quote: EMPTY_BRIDGE_QUOTE },
-    })
+    const { rerender } = renderHook(
+      ({ quote: currentQuote }) => {
+        useBridgeQuoteUpdater(
+          currentQuote,
+          refreshQuote,
+          false,
+          false,
+          STALE_TIMEOUT
+        )
+      },
+      {
+        initialProps: { quote: EMPTY_BRIDGE_QUOTE },
+      }
+    )
 
     act(() => {
       jest.advanceTimersByTime(5000)
@@ -104,11 +120,20 @@ describe('useBridgeQuoteUpdater', () => {
   it('fires exactly one refresh for each stale cycle', () => {
     const refreshQuote = jest.fn(async () => undefined)
 
-    renderHook(({ quote }) => {
-      useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
-    }, {
-      initialProps: { quote: createQuote() },
-    })
+    renderHook(
+      ({ quote: currentQuote }) => {
+        useBridgeQuoteUpdater(
+          currentQuote,
+          refreshQuote,
+          false,
+          false,
+          STALE_TIMEOUT
+        )
+      },
+      {
+        initialProps: { quote: createQuote() },
+      }
+    )
 
     act(() => {
       jest.advanceTimersByTime(STALE_TIMEOUT)
@@ -124,11 +149,20 @@ describe('useBridgeQuoteUpdater', () => {
     const refreshQuote = jest.fn(async () => undefined)
     const quoteA = createQuote({ requestId: 1, timestamp: 1 })
     const quoteB = createQuote({ requestId: 2, timestamp: 2 })
-    const { rerender } = renderHook(({ quote }) => {
-      useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
-    }, {
-      initialProps: { quote: quoteA },
-    })
+    const { rerender } = renderHook(
+      ({ quote: currentQuote }) => {
+        useBridgeQuoteUpdater(
+          currentQuote,
+          refreshQuote,
+          false,
+          false,
+          STALE_TIMEOUT
+        )
+      },
+      {
+        initialProps: { quote: quoteA },
+      }
+    )
 
     act(() => {
       jest.advanceTimersByTime(STALE_TIMEOUT)
@@ -153,9 +187,9 @@ describe('useBridgeQuoteUpdater', () => {
     const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener')
     const quote = createQuote()
     const { rerender } = renderHook(
-      ({ quote, isQuoteLoading }) => {
+      ({ quote: currentQuote, isQuoteLoading }) => {
         useBridgeQuoteUpdater(
-          quote,
+          currentQuote,
           refreshQuote,
           isQuoteLoading,
           false,
@@ -203,9 +237,9 @@ describe('useBridgeQuoteUpdater', () => {
     const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener')
     const quote = createQuote()
     const { rerender } = renderHook(
-      ({ quote, isWalletPending }) => {
+      ({ quote: currentQuote, isWalletPending }) => {
         useBridgeQuoteUpdater(
-          quote,
+          currentQuote,
           refreshQuote,
           false,
           isWalletPending,
@@ -252,9 +286,9 @@ describe('useBridgeQuoteUpdater', () => {
     const addEventListenerSpy = jest.spyOn(document, 'addEventListener')
     const quote = createQuote()
     const { rerender } = renderHook(
-      ({ quote, isWalletPending }) => {
+      ({ quote: currentQuote, isWalletPending }) => {
         useBridgeQuoteUpdater(
-          quote,
+          currentQuote,
           refreshQuote,
           false,
           isWalletPending,
@@ -306,9 +340,9 @@ describe('useBridgeQuoteUpdater', () => {
     const addEventListenerSpy = jest.spyOn(document, 'addEventListener')
     const quote = createQuote()
     const { rerender } = renderHook(
-      ({ quote, isQuoteLoading }) => {
+      ({ quote: currentQuote, isQuoteLoading }) => {
         useBridgeQuoteUpdater(
-          quote,
+          currentQuote,
           refreshQuote,
           isQuoteLoading,
           false,
@@ -360,11 +394,20 @@ describe('useBridgeQuoteUpdater', () => {
     const addEventListenerSpy = jest.spyOn(document, 'addEventListener')
     const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener')
     const quote = createQuote()
-    const { rerender } = renderHook(({ quote }) => {
-      useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
-    }, {
-      initialProps: { quote },
-    })
+    const { rerender } = renderHook(
+      ({ quote: currentQuote }) => {
+        useBridgeQuoteUpdater(
+          currentQuote,
+          refreshQuote,
+          false,
+          false,
+          STALE_TIMEOUT
+        )
+      },
+      {
+        initialProps: { quote },
+      }
+    )
 
     act(() => {
       jest.advanceTimersByTime(STALE_TIMEOUT)
@@ -390,11 +433,20 @@ describe('useBridgeQuoteUpdater', () => {
     const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener')
     const quoteA = createQuote({ requestId: 1, timestamp: 1 })
     const quoteB = createQuote({ requestId: 2, timestamp: 2 })
-    const { rerender } = renderHook(({ quote }) => {
-      useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
-    }, {
-      initialProps: { quote: quoteA },
-    })
+    const { rerender } = renderHook(
+      ({ quote: currentQuote }) => {
+        useBridgeQuoteUpdater(
+          currentQuote,
+          refreshQuote,
+          false,
+          false,
+          STALE_TIMEOUT
+        )
+      },
+      {
+        initialProps: { quote: quoteA },
+      }
+    )
 
     act(() => {
       jest.advanceTimersByTime(STALE_TIMEOUT)
@@ -424,11 +476,20 @@ describe('useBridgeQuoteUpdater', () => {
     const addEventListenerSpy = jest.spyOn(document, 'addEventListener')
     const quoteA = createQuote({ requestId: 1, timestamp: 1 })
     const quoteB = createQuote({ requestId: 2, timestamp: 2 })
-    const { rerender } = renderHook(({ quote }) => {
-      useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
-    }, {
-      initialProps: { quote: quoteA },
-    })
+    const { rerender } = renderHook(
+      ({ quote: currentQuote }) => {
+        useBridgeQuoteUpdater(
+          currentQuote,
+          refreshQuote,
+          false,
+          false,
+          STALE_TIMEOUT
+        )
+      },
+      {
+        initialProps: { quote: quoteA },
+      }
+    )
 
     act(() => {
       jest.advanceTimersByTime(STALE_TIMEOUT - 100)
@@ -457,9 +518,15 @@ describe('useBridgeQuoteUpdater', () => {
     const refreshQuote = jest.fn(async () => undefined)
     const quote = createQuote()
     const { rerender } = renderHook(
-      ({ quote, rerenderTick }) => {
+      ({ quote: currentQuote, rerenderTick }) => {
         void rerenderTick
-        useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
+        useBridgeQuoteUpdater(
+          currentQuote,
+          refreshQuote,
+          false,
+          false,
+          STALE_TIMEOUT
+        )
       },
       {
         initialProps: { quote, rerenderTick: 0 },
@@ -484,11 +551,20 @@ describe('useBridgeQuoteUpdater', () => {
   it('cleans up stale timers and listeners on unmount', () => {
     const refreshQuote = jest.fn(async () => undefined)
     const quote = createQuote()
-    const { unmount } = renderHook(({ quote }) => {
-      useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
-    }, {
-      initialProps: { quote },
-    })
+    const { unmount } = renderHook(
+      ({ quote: currentQuote }) => {
+        useBridgeQuoteUpdater(
+          currentQuote,
+          refreshQuote,
+          false,
+          false,
+          STALE_TIMEOUT
+        )
+      },
+      {
+        initialProps: { quote },
+      }
+    )
 
     expect(jest.getTimerCount()).toBe(1)
     unmount()
@@ -497,11 +573,20 @@ describe('useBridgeQuoteUpdater', () => {
     dispatchMouseMove()
     expect(refreshQuote).not.toHaveBeenCalled()
 
-    const staleHook = renderHook(({ quote }) => {
-      useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
-    }, {
-      initialProps: { quote },
-    })
+    const staleHook = renderHook(
+      ({ quote: currentQuote }) => {
+        useBridgeQuoteUpdater(
+          currentQuote,
+          refreshQuote,
+          false,
+          false,
+          STALE_TIMEOUT
+        )
+      },
+      {
+        initialProps: { quote },
+      }
+    )
 
     act(() => {
       jest.advanceTimersByTime(STALE_TIMEOUT)
@@ -516,9 +601,15 @@ describe('useBridgeQuoteUpdater', () => {
     const refreshQuote = jest.fn(async () => undefined)
     const quote = createQuote()
     const { rerender } = renderHook(
-      ({ quote, rerenderTick }) => {
+      ({ quote: currentQuote, rerenderTick }) => {
         void rerenderTick
-        useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
+        useBridgeQuoteUpdater(
+          currentQuote,
+          refreshQuote,
+          false,
+          false,
+          STALE_TIMEOUT
+        )
       },
       {
         initialProps: { quote, rerenderTick: 0 },
@@ -543,8 +634,14 @@ describe('useBridgeQuoteUpdater', () => {
     const updatedRefreshQuote = jest.fn(async () => undefined)
     const quote = createQuote()
     const { rerender } = renderHook(
-      ({ quote, refreshQuote }) => {
-        useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
+      ({ quote: currentQuote, refreshQuote }) => {
+        useBridgeQuoteUpdater(
+          currentQuote,
+          refreshQuote,
+          false,
+          false,
+          STALE_TIMEOUT
+        )
       },
       {
         initialProps: { quote, refreshQuote: initialRefreshQuote },
@@ -570,11 +667,20 @@ describe('useBridgeQuoteUpdater', () => {
       return rejectedPromise
     })
 
-    renderHook(({ quote }) => {
-      useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
-    }, {
-      initialProps: { quote: createQuote() },
-    })
+    renderHook(
+      ({ quote: currentQuote }) => {
+        useBridgeQuoteUpdater(
+          currentQuote,
+          refreshQuote,
+          false,
+          false,
+          STALE_TIMEOUT
+        )
+      },
+      {
+        initialProps: { quote: createQuote() },
+      }
+    )
 
     act(() => {
       jest.advanceTimersByTime(STALE_TIMEOUT)

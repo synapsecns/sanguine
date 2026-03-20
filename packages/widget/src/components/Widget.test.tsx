@@ -39,7 +39,9 @@ jest.mock('@/state/slices/bridgeTransaction/hooks')
 jest.mock('@/state/slices/approveTransaction/hooks')
 jest.mock('@/components/Receipt', () => ({ Receipt: () => null }))
 jest.mock('@/components/BridgeButton', () => ({ BridgeButton: () => null }))
-jest.mock('@/components/AvailableBalance', () => ({ AvailableBalance: () => null }))
+jest.mock('@/components/AvailableBalance', () => ({
+  AvailableBalance: () => null,
+}))
 jest.mock('@/components/Transactions', () => ({ Transactions: () => null }))
 jest.mock('@/components/ui/ChainSelect', () => ({ ChainSelect: () => null }))
 jest.mock('@/components/ui/TokenSelect', () => ({ TokenSelect: () => null }))
@@ -48,7 +50,7 @@ jest.mock('@/utils/routeMaker/getFromTokens', () => ({
   getFromTokens: () => [{ routeSymbol: 'USDC' }],
 }))
 jest.mock('@/utils/routeMaker/generateRoutePossibilities', () => ({
-  getSymbol: (token: { routeSymbol: string }) => token.routeSymbol,
+  getSymbol: (routeToken: { routeSymbol: string }) => routeToken.routeSymbol,
 }))
 jest.mock('@/utils/findTokenByRouteSymbol', () => ({
   findTokenByRouteSymbol: () => ({
@@ -170,7 +172,6 @@ describe('Widget quote refresh wiring', () => {
       hasValidSelections: true,
       isInputValid: false,
     }
-
     ;(useAppDispatch as jest.Mock).mockReturnValue(dispatchMock)
     ;(useBridgeState as jest.Mock).mockImplementation(() => mockBridgeState)
     ;(useBridgeQuoteState as jest.Mock).mockImplementation(() => mockQuoteState)
