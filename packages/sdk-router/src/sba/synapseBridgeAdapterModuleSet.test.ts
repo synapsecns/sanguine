@@ -25,8 +25,8 @@ const ARB_GMX = '0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a'
 const ETH_NETH = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
 const OP_NETH = '0x809DC529f07651bD43A172e8dB6f4a7a0d771036'
 const OP_SYN = '0x5A5fFf6F753d7C11A56A52FE47a177a87e431655'
-const BASE_NETH = '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c'
 const HARMONY_NETH = '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB'
+const KLAYTN_NETH = '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86'
 const DFK_KLAY = '0x97855Ba65aa7ed2F65Ed832a776537268158B78a'
 const KLAYTN_KLAY = '0x5819b6af194A78511c79C85Ea68D2377a7e9335f'
 const OTHER_TOKEN = '0x00000000000000000000000000000000000000f1'
@@ -96,11 +96,11 @@ describe('SynapseBridgeAdapterModuleSet', () => {
     destToken: OP_NETH,
   }
 
-  const harmonyToBaseBridgeToken: BridgeTokenCandidate = {
+  const harmonyToKlaytnBridgeToken: BridgeTokenCandidate = {
     originChainId: SupportedChainId.HARMONY,
-    destChainId: SupportedChainId.BASE,
+    destChainId: SupportedChainId.KLAYTN,
     originToken: HARMONY_NETH,
-    destToken: BASE_NETH,
+    destToken: KLAYTN_NETH,
   }
 
   const dfkToKlaytnWrappedNativeBridgeToken: BridgeTokenCandidate = {
@@ -150,9 +150,9 @@ describe('SynapseBridgeAdapterModuleSet', () => {
       getSbaRemoteToken(
         SupportedChainId.HARMONY,
         HARMONY_NETH,
-        SupportedChainId.BASE
+        SupportedChainId.KLAYTN
       )
-    ).toEqual(BASE_NETH)
+    ).toEqual(KLAYTN_NETH)
     expect(
       getSbaRemoteToken(
         SupportedChainId.HARMONY,
@@ -195,35 +195,35 @@ describe('SynapseBridgeAdapterModuleSet', () => {
   it('returns all artifact-backed candidates for supported pairs and ignores fromToken as a filter', async () => {
     const directCandidates = await moduleSet.getBridgeTokenCandidates({
       fromChainId: SupportedChainId.HARMONY,
-      toChainId: SupportedChainId.BASE,
+      toChainId: SupportedChainId.KLAYTN,
       fromToken: OTHER_TOKEN,
     })
     const nativeCandidates = await moduleSet.getBridgeTokenCandidates({
       fromChainId: SupportedChainId.HARMONY,
-      toChainId: SupportedChainId.BASE,
+      toChainId: SupportedChainId.KLAYTN,
       fromToken: ETH_NATIVE_TOKEN_ADDRESS,
     })
 
     expect(directCandidates).toEqual(nativeCandidates)
     expect(directCandidates).toEqual(
-      getSbaSupportedTokens(SupportedChainId.HARMONY, SupportedChainId.BASE)
+      getSbaSupportedTokens(SupportedChainId.HARMONY, SupportedChainId.KLAYTN)
     )
-    expect(directCandidates).toContainEqual(harmonyToBaseBridgeToken)
+    expect(directCandidates).toContainEqual(harmonyToKlaytnBridgeToken)
   })
 
   it('filters candidates by the exact artifact-mapped destination token', async () => {
     await expect(
       moduleSet.getBridgeTokenCandidates({
         fromChainId: SupportedChainId.HARMONY,
-        toChainId: SupportedChainId.BASE,
+        toChainId: SupportedChainId.KLAYTN,
         fromToken: OTHER_TOKEN,
-        toToken: BASE_NETH,
+        toToken: KLAYTN_NETH,
       })
-    ).resolves.toEqual([harmonyToBaseBridgeToken])
+    ).resolves.toEqual([harmonyToKlaytnBridgeToken])
     await expect(
       moduleSet.getBridgeTokenCandidates({
         fromChainId: SupportedChainId.HARMONY,
-        toChainId: SupportedChainId.BASE,
+        toChainId: SupportedChainId.KLAYTN,
         fromToken: OTHER_TOKEN,
         toToken: OTHER_TOKEN,
       })
@@ -253,10 +253,10 @@ describe('SynapseBridgeAdapterModuleSet', () => {
     expect(
       getSbaSupportedTokens(
         SupportedChainId.HARMONY,
-        SupportedChainId.BASE,
-        BASE_NETH
+        SupportedChainId.KLAYTN,
+        KLAYTN_NETH
       )
-    ).toEqual([harmonyToBaseBridgeToken])
+    ).toEqual([harmonyToKlaytnBridgeToken])
   })
 
   it('accepts one-step origin routes and preserves their minimum amount', async () => {

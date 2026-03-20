@@ -29,8 +29,6 @@ import {
 } from './synapseBridgeAdapterModule'
 
 const SBA_BRIDGE_SUPPORTED_CHAINS = new Set<SupportedChainId>([
-  SupportedChainId.AVALANCHE,
-  SupportedChainId.BASE,
   SupportedChainId.DFK,
   SupportedChainId.HARMONY,
   SupportedChainId.KLAYTN,

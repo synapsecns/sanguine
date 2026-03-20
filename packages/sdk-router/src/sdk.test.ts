@@ -529,11 +529,10 @@ describe('SynapseSDK', () => {
 
   describe('SynapseBridgeAdapter V2 integration', () => {
     const mockHarmonyProvider = mock<Provider>()
-    const mockBaseProvider = mock<Provider>()
     const mockDfkProvider = mock<Provider>()
     const mockKlaytnProvider = mock<Provider>()
-    const sbaDirectOriginToken = '0xE55e19Fb4F2D85af758950957714292DAC1e25B2'
-    const sbaDirectRemoteToken = '0x432036208d2717394d2614d6697c46DF3Ed69540'
+    const sbaDirectOriginToken = '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB'
+    const sbaDirectRemoteToken = '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86'
     const sbaNativeBridgeToken = sbaDirectOriginToken
     const sbaNativeRemoteToken = sbaDirectRemoteToken
     const sbaWrappedNativeOriginToken =
@@ -559,7 +558,7 @@ describe('SynapseSDK', () => {
     const destinationSwapRoute = {
       engineID: EngineID.DefaultPools,
       engineName: EngineID[EngineID.DefaultPools],
-      chainId: SupportedChainId.BASE,
+      chainId: SupportedChainId.KLAYTN,
       fromToken: sbaDirectRemoteToken,
       fromAmount: BigNumber.from(1000),
       toToken: sbaFinalToken,
@@ -577,8 +576,8 @@ describe('SynapseSDK', () => {
 
     const setupSynapse = () => {
       const synapse = new SynapseSDK(
-        [SupportedChainId.HARMONY, SupportedChainId.BASE],
-        [mockHarmonyProvider, mockBaseProvider]
+        [SupportedChainId.HARMONY, SupportedChainId.KLAYTN],
+        [mockHarmonyProvider, mockKlaytnProvider]
       )
       synapse.allModuleSets = [synapse.synapseBridgeAdapterModuleSet]
       jest
@@ -651,7 +650,7 @@ describe('SynapseSDK', () => {
             } as any
           }
           if (
-            input.chainId === SupportedChainId.BASE &&
+            input.chainId === SupportedChainId.KLAYTN &&
             input.fromToken.toLowerCase() ===
               sbaDirectRemoteToken.toLowerCase() &&
             input.toToken.toLowerCase() === sbaFinalToken.toLowerCase()
@@ -690,14 +689,14 @@ describe('SynapseSDK', () => {
       const synapse = setupSynapse()
       jest
         .spyOn(
-          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.BASE],
+          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.KLAYTN],
           'getBridgeTxStatus'
         )
         .mockResolvedValue(true)
 
       await expect(
         synapse.getBridgeTxStatus(
-          SupportedChainId.BASE,
+          SupportedChainId.KLAYTN,
           'SynapseBridge',
           '0x1234'
         )
@@ -709,7 +708,7 @@ describe('SynapseSDK', () => {
 
       const quotes: BridgeQuoteV2[] = await synapse.bridgeV2({
         fromChainId: SupportedChainId.HARMONY,
-        toChainId: SupportedChainId.BASE,
+        toChainId: SupportedChainId.KLAYTN,
         fromToken: sbaDirectOriginToken,
         toToken: sbaDirectRemoteToken,
         fromAmount: '1000',
@@ -720,7 +719,7 @@ describe('SynapseSDK', () => {
       expect(quotes).toHaveLength(1)
       expect(quotes[0]).toMatchObject({
         fromChainId: SupportedChainId.HARMONY,
-        toChainId: SupportedChainId.BASE,
+        toChainId: SupportedChainId.KLAYTN,
         fromToken: sbaDirectOriginToken,
         toToken: sbaDirectRemoteToken,
         expectedToAmount: '1000',
@@ -758,7 +757,7 @@ describe('SynapseSDK', () => {
 
       const quotes: BridgeQuoteV2[] = await synapse.bridgeV2({
         fromChainId: SupportedChainId.HARMONY,
-        toChainId: SupportedChainId.BASE,
+        toChainId: SupportedChainId.KLAYTN,
         fromToken: ETH_NATIVE_TOKEN_ADDRESS,
         toToken: sbaNativeRemoteToken,
         fromAmount: '1000',
@@ -858,7 +857,7 @@ describe('SynapseSDK', () => {
 
       const quotes: IntentQuote[] = await synapse.intent({
         fromChainId: SupportedChainId.HARMONY,
-        toChainId: SupportedChainId.BASE,
+        toChainId: SupportedChainId.KLAYTN,
         fromToken: sbaDirectOriginToken,
         toToken: sbaFinalToken,
         fromAmount: '1000',
@@ -885,14 +884,14 @@ describe('SynapseSDK', () => {
 
     it('supports Harmony as an SBA origin chain', async () => {
       const harmonyProvider = mock<Provider>()
-      const baseProvider = mock<Provider>()
-      const harmonyToken = '0xE55e19Fb4F2D85af758950957714292DAC1e25B2'
-      const baseToken = '0x432036208d2717394d2614d6697c46DF3Ed69540'
+      const klaytnProvider = mock<Provider>()
+      const harmonyToken = '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB'
+      const klaytnToken = '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86'
       const harmonySender = '0x0000000000000000000000000000000000000f11'
       const harmonyRecipient = '0x0000000000000000000000000000000000000f12'
       const synapse = new SynapseSDK(
-        [SupportedChainId.HARMONY, SupportedChainId.BASE],
-        [harmonyProvider, baseProvider]
+        [SupportedChainId.HARMONY, SupportedChainId.KLAYTN],
+        [harmonyProvider, klaytnProvider]
       )
 
       synapse.allModuleSets = [synapse.synapseBridgeAdapterModuleSet]
@@ -936,9 +935,9 @@ describe('SynapseSDK', () => {
 
       const quotes = await synapse.bridgeV2({
         fromChainId: SupportedChainId.HARMONY,
-        toChainId: SupportedChainId.BASE,
+        toChainId: SupportedChainId.KLAYTN,
         fromToken: harmonyToken,
-        toToken: baseToken,
+        toToken: klaytnToken,
         fromAmount: '1000',
         fromSender: harmonySender,
         toRecipient: harmonyRecipient,
@@ -952,13 +951,13 @@ describe('SynapseSDK', () => {
     })
 
     it('supports Harmony as an SBA destination chain', async () => {
-      const ethProviderMock = mock<Provider>()
+      const klaytnProviderMock = mock<Provider>()
       const harmonyProvider = mock<Provider>()
-      const baseToken = '0x432036208d2717394d2614d6697c46DF3Ed69540'
-      const harmonyToken = '0xE55e19Fb4F2D85af758950957714292DAC1e25B2'
+      const klaytnToken = '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86'
+      const harmonyToken = '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB'
       const synapse = new SynapseSDK(
-        [SupportedChainId.BASE, SupportedChainId.HARMONY],
-        [ethProviderMock, harmonyProvider]
+        [SupportedChainId.KLAYTN, SupportedChainId.HARMONY],
+        [klaytnProviderMock, harmonyProvider]
       )
 
       synapse.allModuleSets = [synapse.synapseBridgeAdapterModuleSet]
@@ -967,13 +966,13 @@ describe('SynapseSDK', () => {
         .mockResolvedValue(Zero)
       jest
         .spyOn(
-          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.BASE],
+          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.KLAYTN],
           'getNativeFee'
         )
         .mockResolvedValue(BigNumber.from(22))
       jest
         .spyOn(
-          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.BASE],
+          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.KLAYTN],
           'getEstimatedTime'
         )
         .mockResolvedValue(44)
@@ -981,11 +980,11 @@ describe('SynapseSDK', () => {
         .spyOn(synapse.swapEngineSet, 'getBestQuote')
         .mockImplementation(async (input) => {
           if (
-            input.chainId === SupportedChainId.BASE &&
-            input.fromToken.toLowerCase() === baseToken.toLowerCase() &&
-            input.toToken.toLowerCase() === baseToken.toLowerCase()
+            input.chainId === SupportedChainId.KLAYTN &&
+            input.fromToken.toLowerCase() === klaytnToken.toLowerCase() &&
+            input.toToken.toLowerCase() === klaytnToken.toLowerCase()
           ) {
-            return createNoOpRoute(SupportedChainId.BASE, baseToken) as any
+            return createNoOpRoute(SupportedChainId.KLAYTN, klaytnToken) as any
           }
           return undefined as any
         })
@@ -994,9 +993,9 @@ describe('SynapseSDK', () => {
         .mockImplementation(async (_input, quote) => quote as any)
 
       const quotes = await synapse.bridgeV2({
-        fromChainId: SupportedChainId.BASE,
+        fromChainId: SupportedChainId.KLAYTN,
         toChainId: SupportedChainId.HARMONY,
-        fromToken: baseToken,
+        fromToken: klaytnToken,
         toToken: harmonyToken,
         fromAmount: '1000',
       })
