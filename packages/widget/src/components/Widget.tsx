@@ -79,6 +79,17 @@ interface WidgetProps {
   protocolName?: string
 }
 
+const formatReceiptAmount = (
+  amount: string | undefined,
+  tokenSymbol?: string
+): string | undefined => {
+  if (!amount) {
+    return amount
+  }
+
+  return tokenSymbol ? `${amount} ${tokenSymbol}` : amount
+}
+
 export const Widget = ({
   customTheme,
   container = false,
@@ -510,18 +521,24 @@ export const Widget = ({
         <Receipt
           quote={bridgeQuote ?? null}
           loading={isLoading}
-          send={formatBigIntToString(
-            stringToBigInt(
-              debouncedInputAmount,
-              originToken?.decimals[originChainId]
+          send={formatReceiptAmount(
+            formatBigIntToString(
+              stringToBigInt(
+                debouncedInputAmount,
+                originToken?.decimals[originChainId]
+              ),
+              originToken?.decimals[originChainId],
+              4
             ),
-            originToken?.decimals[originChainId],
-            4
+            originToken?.symbol
           )}
-          receive={formatBigIntToString(
-            bridgeQuote?.delta,
-            destinationToken?.decimals[destinationChainId],
-            4
+          receive={formatReceiptAmount(
+            formatBigIntToString(
+              bridgeQuote?.delta,
+              destinationToken?.decimals[destinationChainId],
+              4
+            ),
+            destinationToken?.symbol
           )}
         />
         <BridgeButton
