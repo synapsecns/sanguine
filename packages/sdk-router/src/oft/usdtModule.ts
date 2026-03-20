@@ -29,7 +29,7 @@ const LZ_API_URL = 'https://scan.layerzero-api.com/v1'
 const LZ_API_TIMEOUT = 5000
 const LZ_COMPLETED_STATUSES = ['CONFIRMING', 'DELIVERED']
 
-const AVG_DST_BLOCK_TARGET = 3
+const EXECUTION_TIME_BUFFER_SECONDS = 60
 const MEDIAN_TIME_GRANULARITY = 30
 
 interface LZResponse {
@@ -139,7 +139,7 @@ export class UsdtModule implements SynapseModule {
     }
     const expectedTime =
       confirmations * MEDIAN_TIME_BLOCK[this.chainId] +
-      AVG_DST_BLOCK_TARGET * MEDIAN_TIME_BLOCK[toChainId]
+      EXECUTION_TIME_BUFFER_SECONDS
     // Round up to be a multiple of MEDIAN_TIME_GRANULARITY
     return (
       Math.ceil(expectedTime / MEDIAN_TIME_GRANULARITY) *
