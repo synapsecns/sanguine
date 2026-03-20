@@ -1,3 +1,4 @@
+import { useEffect, useLayoutEffect } from 'react'
 import { act, renderHook } from '@testing-library/react'
 
 import { useBridgeQuoteUpdater } from '@/hooks/useBridgeQuoteUpdater'
@@ -652,6 +653,92 @@ describe('useBridgeQuoteUpdater', () => {
 
     rerender({ quote, refreshQuote: updatedRefreshQuote })
     dispatchMouseMove()
+
+    expect(initialRefreshQuote).not.toHaveBeenCalled()
+    expect(updatedRefreshQuote).toHaveBeenCalledTimes(1)
+  })
+
+  it('uses the latest refresh callback for layout-phase activity after a callback rerender', () => {
+    const initialRefreshQuote = jest.fn(async () => undefined)
+    const updatedRefreshQuote = jest.fn(async () => undefined)
+    const quote = createQuote()
+    const { rerender } = renderHook(
+      ({ quote: currentQuote, refreshQuote, triggerLayoutActivity }) => {
+        useBridgeQuoteUpdater(
+          currentQuote,
+          refreshQuote,
+          false,
+          false,
+          STALE_TIMEOUT
+        )
+
+        useLayoutEffect(() => {
+          if (triggerLayoutActivity) {
+            document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }))
+          }
+        }, [triggerLayoutActivity])
+      },
+      {
+        initialProps: {
+          quote,
+          refreshQuote: initialRefreshQuote,
+          triggerLayoutActivity: false,
+        },
+      }
+    )
+
+    act(() => {
+      jest.advanceTimersByTime(STALE_TIMEOUT)
+    })
+
+    rerender({
+      quote,
+      refreshQuote: updatedRefreshQuote,
+      triggerLayoutActivity: true,
+    })
+
+    expect(initialRefreshQuote).not.toHaveBeenCalled()
+    expect(updatedRefreshQuote).toHaveBeenCalledTimes(1)
+  })
+
+  it('uses the latest refresh callback for passive-effect activity after a callback rerender', () => {
+    const initialRefreshQuote = jest.fn(async () => undefined)
+    const updatedRefreshQuote = jest.fn(async () => undefined)
+    const quote = createQuote()
+    const { rerender } = renderHook(
+      ({ quote: currentQuote, refreshQuote, triggerPassiveActivity }) => {
+        useBridgeQuoteUpdater(
+          currentQuote,
+          refreshQuote,
+          false,
+          false,
+          STALE_TIMEOUT
+        )
+
+        useEffect(() => {
+          if (triggerPassiveActivity) {
+            document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }))
+          }
+        }, [triggerPassiveActivity])
+      },
+      {
+        initialProps: {
+          quote,
+          refreshQuote: initialRefreshQuote,
+          triggerPassiveActivity: false,
+        },
+      }
+    )
+
+    act(() => {
+      jest.advanceTimersByTime(STALE_TIMEOUT)
+    })
+
+    rerender({
+      quote,
+      refreshQuote: updatedRefreshQuote,
+      triggerPassiveActivity: true,
+    })
 
     expect(initialRefreshQuote).not.toHaveBeenCalled()
     expect(updatedRefreshQuote).toHaveBeenCalledTimes(1)

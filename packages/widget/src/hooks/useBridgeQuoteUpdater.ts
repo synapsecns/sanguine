@@ -1,5 +1,5 @@
 import { isNull, isNumber } from 'lodash'
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 
 import { type BridgeQuote } from '@/state/slices/bridgeQuote/reducer'
 
@@ -75,7 +75,7 @@ export const useBridgeQuoteUpdater = (
     })
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     refreshQuoteCallbackRef.current = refreshQuoteCallback
   }, [refreshQuoteCallback])
 
