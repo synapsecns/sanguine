@@ -81,6 +81,7 @@ describe('fetchBridgeQuote nativeFee normalization', () => {
       const { state, bridgeV2 } = await runFetchBridgeQuote(nativeFee)
 
       expect(bridgeV2).toHaveBeenCalledTimes(1)
+      expect(state.bridgeQuote.id).toBeNull()
       expect(state.bridgeQuote.nativeFee).toBe(expected)
     }
   )
