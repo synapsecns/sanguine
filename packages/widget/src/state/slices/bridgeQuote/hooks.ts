@@ -13,6 +13,22 @@ export const useBridgeQuoteState = (): RootState['bridgeQuote'] => {
   return useAppSelector((state) => state.bridgeQuote)
 }
 
+const parseNativeFee = (nativeFee: unknown): bigint => {
+  try {
+    if (typeof nativeFee === 'bigint') {
+      return nativeFee
+    }
+
+    if (typeof nativeFee === 'string') {
+      return BigInt(nativeFee)
+    }
+  } catch (_error) {
+    return 0n
+  }
+
+  return 0n
+}
+
 export const fetchBridgeQuote = createAsyncThunk(
   'bridgeQuote/fetchBridgeQuote',
   async (
@@ -117,6 +133,7 @@ export const fetchBridgeQuote = createAsyncThunk(
         destinationToken.decimals[destinationChainId]
       ),
       feeAmount: 0n,
+      nativeFee: parseNativeFee(quote.nativeFee),
       delta: toValueBigInt,
       estimatedTime: quote.estimatedTime,
       bridgeModuleName,
