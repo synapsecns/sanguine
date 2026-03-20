@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.43.47](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.46...@synapsecns/synapse-interface@0.43.47) (2026-03-20)
+
+
+### Bug Fixes
+
+* **synapse-interface:** bump next to 14.2.35 ([#3966](https://github.com/synapsecns/sanguine/issues/3966)) ([b137228](https://github.com/synapsecns/sanguine/commit/b137228d7b833cfd773ededcbaabe92bf147539f))
+
+
+
+
+
 ## [0.43.46](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.45...@synapsecns/synapse-interface@0.43.46) (2026-03-19)
 
 
