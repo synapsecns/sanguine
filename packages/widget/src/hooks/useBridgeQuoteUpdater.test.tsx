@@ -674,7 +674,9 @@ describe('useBridgeQuoteUpdater', () => {
 
         useLayoutEffect(() => {
           if (triggerLayoutActivity) {
-            document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }))
+            document.dispatchEvent(
+              new MouseEvent('mousemove', { bubbles: true })
+            )
           }
         }, [triggerLayoutActivity])
       },
@@ -717,7 +719,9 @@ describe('useBridgeQuoteUpdater', () => {
 
         useEffect(() => {
           if (triggerPassiveActivity) {
-            document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }))
+            document.dispatchEvent(
+              new MouseEvent('mousemove', { bubbles: true })
+            )
           }
         }, [triggerPassiveActivity])
       },
