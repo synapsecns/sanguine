@@ -142,6 +142,12 @@ const rerenderWidget = (view: ReturnType<typeof renderWidget>) => {
   })
 }
 
+const dispatchMouseMove = () => {
+  act(() => {
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }))
+  })
+}
+
 describe('Widget quote refresh wiring', () => {
   beforeEach(() => {
     jest.useFakeTimers()
@@ -223,6 +229,7 @@ describe('Widget quote refresh wiring', () => {
   afterEach(() => {
     jest.clearAllTimers()
     jest.useRealTimers()
+    jest.restoreAllMocks()
     jest.clearAllMocks()
   })
 
@@ -313,7 +320,7 @@ describe('Widget quote refresh wiring', () => {
       },
     },
   ])(
-    'suppresses stale mousemove refreshes while $busyState is active',
+    'does not allow immediate stale refreshes after $busyState resumes',
     ({ startBusy, endBusy }) => {
       const view = renderWidget()
 
@@ -342,18 +349,34 @@ describe('Widget quote refresh wiring', () => {
       startBusy()
       rerenderWidget(view)
 
-      act(() => {
-        document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }))
-      })
+      dispatchMouseMove()
       expect(fetchBridgeQuote).toHaveBeenCalledTimes(1)
 
       endBusy()
       rerenderWidget(view)
 
+      dispatchMouseMove()
+      expect(fetchBridgeQuote).toHaveBeenCalledTimes(1)
+
       act(() => {
-        document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }))
+        jest.advanceTimersByTime(14999)
       })
+
+      dispatchMouseMove()
+      expect(fetchBridgeQuote).toHaveBeenCalledTimes(1)
+
+      act(() => {
+        jest.advanceTimersByTime(1)
+      })
+
+      dispatchMouseMove()
       expect(fetchBridgeQuote).toHaveBeenCalledTimes(2)
+      expect(fetchBridgeQuoteMock.mock.calls[1][0]).toEqual(
+        expect.objectContaining({
+          debouncedInputAmount: '1',
+          requestId: 2,
+        })
+      )
     }
   )
 })

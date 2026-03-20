@@ -24,6 +24,20 @@ const dispatchMouseMove = () => {
   })
 }
 
+type EventListenerSpy = {
+  mock: {
+    calls: Array<
+      [string, EventListenerOrEventListenerObject, ...unknown[]]
+    >
+  }
+}
+
+const getMouseMoveListenerCalls = (spy: EventListenerSpy) =>
+  spy.mock.calls.filter(([eventName]) => eventName === 'mousemove')
+
+const getLatestMouseMoveListener = (spy: EventListenerSpy) =>
+  getMouseMoveListenerCalls(spy).at(-1)?.[1]
+
 describe('useBridgeQuoteUpdater', () => {
   beforeEach(() => {
     jest.useFakeTimers()
@@ -32,6 +46,7 @@ describe('useBridgeQuoteUpdater', () => {
   afterEach(() => {
     jest.clearAllTimers()
     jest.useRealTimers()
+    jest.restoreAllMocks()
     jest.clearAllMocks()
   })
 
@@ -134,6 +149,8 @@ describe('useBridgeQuoteUpdater', () => {
 
   it('clears stale listeners and timers when quote loading starts', () => {
     const refreshQuote = jest.fn(async () => undefined)
+    const addEventListenerSpy = jest.spyOn(document, 'addEventListener')
+    const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener')
     const quote = createQuote()
     const { rerender } = renderHook(
       ({ quote, isQuoteLoading }) => {
@@ -154,15 +171,36 @@ describe('useBridgeQuoteUpdater', () => {
       jest.advanceTimersByTime(STALE_TIMEOUT)
     })
 
+    const staleListener = getLatestMouseMoveListener(addEventListenerSpy)
+
     rerender({ quote, isQuoteLoading: true })
     dispatchMouseMove()
 
+    expect(staleListener).toBeDefined()
+    expect(getMouseMoveListenerCalls(removeEventListenerSpy)).toContainEqual([
+      'mousemove',
+      staleListener,
+    ])
     expect(jest.getTimerCount()).toBe(0)
     expect(refreshQuote).not.toHaveBeenCalled()
+
+    rerender({ quote, isQuoteLoading: false })
+    dispatchMouseMove()
+
+    expect(refreshQuote).not.toHaveBeenCalled()
+
+    act(() => {
+      jest.advanceTimersByTime(STALE_TIMEOUT)
+    })
+    dispatchMouseMove()
+
+    expect(refreshQuote).toHaveBeenCalledTimes(1)
   })
 
   it('clears stale listeners and timers when wallet pending starts', () => {
     const refreshQuote = jest.fn(async () => undefined)
+    const addEventListenerSpy = jest.spyOn(document, 'addEventListener')
+    const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener')
     const quote = createQuote()
     const { rerender } = renderHook(
       ({ quote, isWalletPending }) => {
@@ -183,15 +221,35 @@ describe('useBridgeQuoteUpdater', () => {
       jest.advanceTimersByTime(STALE_TIMEOUT)
     })
 
+    const staleListener = getLatestMouseMoveListener(addEventListenerSpy)
+
     rerender({ quote, isWalletPending: true })
     dispatchMouseMove()
 
+    expect(staleListener).toBeDefined()
+    expect(getMouseMoveListenerCalls(removeEventListenerSpy)).toContainEqual([
+      'mousemove',
+      staleListener,
+    ])
     expect(jest.getTimerCount()).toBe(0)
     expect(refreshQuote).not.toHaveBeenCalled()
+
+    rerender({ quote, isWalletPending: false })
+    dispatchMouseMove()
+
+    expect(refreshQuote).not.toHaveBeenCalled()
+
+    act(() => {
+      jest.advanceTimersByTime(STALE_TIMEOUT)
+    })
+    dispatchMouseMove()
+
+    expect(refreshQuote).toHaveBeenCalledTimes(1)
   })
 
-  it('preserves the original stale deadline across wallet pending interruptions', () => {
+  it('gives wallet pending interruptions a new full stale window on resume', () => {
     const refreshQuote = jest.fn(async () => undefined)
+    const addEventListenerSpy = jest.spyOn(document, 'addEventListener')
     const quote = createQuote()
     const { rerender } = renderHook(
       ({ quote, isWalletPending }) => {
@@ -218,17 +276,34 @@ describe('useBridgeQuoteUpdater', () => {
       jest.advanceTimersByTime(200)
     })
 
+    expect(getMouseMoveListenerCalls(addEventListenerSpy)).toHaveLength(0)
     dispatchMouseMove()
     expect(refreshQuote).not.toHaveBeenCalled()
 
     rerender({ quote, isWalletPending: false })
 
     dispatchMouseMove()
+    expect(getMouseMoveListenerCalls(addEventListenerSpy)).toHaveLength(0)
+    expect(refreshQuote).not.toHaveBeenCalled()
+
+    act(() => {
+      jest.advanceTimersByTime(STALE_TIMEOUT - 1)
+    })
+
+    dispatchMouseMove()
+    expect(refreshQuote).not.toHaveBeenCalled()
+
+    act(() => {
+      jest.advanceTimersByTime(1)
+    })
+
+    dispatchMouseMove()
     expect(refreshQuote).toHaveBeenCalledTimes(1)
   })
 
-  it('preserves the original stale deadline across quote loading interruptions', () => {
+  it('gives quote loading interruptions a new full stale window on resume', () => {
     const refreshQuote = jest.fn(async () => undefined)
+    const addEventListenerSpy = jest.spyOn(document, 'addEventListener')
     const quote = createQuote()
     const { rerender } = renderHook(
       ({ quote, isQuoteLoading }) => {
@@ -255,17 +330,35 @@ describe('useBridgeQuoteUpdater', () => {
       jest.advanceTimersByTime(200)
     })
 
+    expect(getMouseMoveListenerCalls(addEventListenerSpy)).toHaveLength(0)
     dispatchMouseMove()
     expect(refreshQuote).not.toHaveBeenCalled()
 
     rerender({ quote, isQuoteLoading: false })
 
     dispatchMouseMove()
+    expect(getMouseMoveListenerCalls(addEventListenerSpy)).toHaveLength(0)
+    expect(refreshQuote).not.toHaveBeenCalled()
+
+    act(() => {
+      jest.advanceTimersByTime(STALE_TIMEOUT - 1)
+    })
+
+    dispatchMouseMove()
+    expect(refreshQuote).not.toHaveBeenCalled()
+
+    act(() => {
+      jest.advanceTimersByTime(1)
+    })
+
+    dispatchMouseMove()
     expect(refreshQuote).toHaveBeenCalledTimes(1)
   })
 
-  it('clears stale work when the quote becomes invalid', () => {
+  it('removes the stale listener when the quote becomes invalid', () => {
     const refreshQuote = jest.fn(async () => undefined)
+    const addEventListenerSpy = jest.spyOn(document, 'addEventListener')
+    const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener')
     const quote = createQuote()
     const { rerender } = renderHook(({ quote }) => {
       useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
@@ -274,18 +367,27 @@ describe('useBridgeQuoteUpdater', () => {
     })
 
     act(() => {
-      jest.advanceTimersByTime(STALE_TIMEOUT / 2)
+      jest.advanceTimersByTime(STALE_TIMEOUT)
     })
+
+    const staleListener = getLatestMouseMoveListener(addEventListenerSpy)
 
     rerender({ quote: EMPTY_BRIDGE_QUOTE })
     dispatchMouseMove()
 
+    expect(staleListener).toBeDefined()
+    expect(getMouseMoveListenerCalls(removeEventListenerSpy)).toContainEqual([
+      'mousemove',
+      staleListener,
+    ])
     expect(jest.getTimerCount()).toBe(0)
     expect(refreshQuote).not.toHaveBeenCalled()
   })
 
   it('closes the old stale cycle when the active quote is replaced', () => {
     const refreshQuote = jest.fn(async () => undefined)
+    const addEventListenerSpy = jest.spyOn(document, 'addEventListener')
+    const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener')
     const quoteA = createQuote({ requestId: 1, timestamp: 1 })
     const quoteB = createQuote({ requestId: 2, timestamp: 2 })
     const { rerender } = renderHook(({ quote }) => {
@@ -298,13 +400,55 @@ describe('useBridgeQuoteUpdater', () => {
       jest.advanceTimersByTime(STALE_TIMEOUT)
     })
 
+    const staleListener = getLatestMouseMoveListener(addEventListenerSpy)
+
     rerender({ quote: quoteB })
     dispatchMouseMove()
+
+    expect(staleListener).toBeDefined()
+    expect(getMouseMoveListenerCalls(removeEventListenerSpy)).toContainEqual([
+      'mousemove',
+      staleListener,
+    ])
     expect(refreshQuote).not.toHaveBeenCalled()
 
     act(() => {
       jest.advanceTimersByTime(STALE_TIMEOUT)
     })
+    dispatchMouseMove()
+    expect(refreshQuote).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not let quote A arm stale work after quote B replaces it before A becomes stale', () => {
+    const refreshQuote = jest.fn(async () => undefined)
+    const addEventListenerSpy = jest.spyOn(document, 'addEventListener')
+    const quoteA = createQuote({ requestId: 1, timestamp: 1 })
+    const quoteB = createQuote({ requestId: 2, timestamp: 2 })
+    const { rerender } = renderHook(({ quote }) => {
+      useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
+    }, {
+      initialProps: { quote: quoteA },
+    })
+
+    act(() => {
+      jest.advanceTimersByTime(STALE_TIMEOUT - 100)
+    })
+
+    rerender({ quote: quoteB })
+
+    act(() => {
+      jest.advanceTimersByTime(100)
+    })
+
+    expect(getMouseMoveListenerCalls(addEventListenerSpy)).toHaveLength(0)
+
+    dispatchMouseMove()
+    expect(refreshQuote).not.toHaveBeenCalled()
+
+    act(() => {
+      jest.advanceTimersByTime(STALE_TIMEOUT - 100)
+    })
+
     dispatchMouseMove()
     expect(refreshQuote).toHaveBeenCalledTimes(1)
   })
