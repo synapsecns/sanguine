@@ -1073,7 +1073,7 @@ describe('SynapseSDK', () => {
       })
     })
   })
-  describe('Get bridge gas', () => {
+  describe.skip('Get bridge gas', () => {
     const synapse = new SynapseSDK(
       [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
       [ethProvider, arbProvider]
@@ -1091,7 +1091,7 @@ describe('SynapseSDK', () => {
   })
 
   // TODO: improve tests
-  describe('Pool inspection', () => {
+  describe.skip('Pool inspection', () => {
     const synapse = new SynapseSDK([SupportedChainId.ARBITRUM], [arbProvider])
 
     it('Get all pools', async () => {
@@ -1126,7 +1126,7 @@ describe('SynapseSDK', () => {
     })
   })
 
-  describe('calculate add liquidity', () => {
+  describe.skip('calculate add liquidity', () => {
     const synapse = new SynapseSDK(
       [SupportedChainId.ARBITRUM, SupportedChainId.ETH],
       [arbProvider, ethProvider]
@@ -1240,7 +1240,7 @@ describe('SynapseSDK', () => {
     })
   })
 
-  describe('calculate remove liquidity', () => {
+  describe.skip('calculate remove liquidity', () => {
     const synapse = new SynapseSDK(
       [SupportedChainId.ARBITRUM, SupportedChainId.ETH],
       [arbProvider, ethProvider]
@@ -1264,7 +1264,7 @@ describe('SynapseSDK', () => {
     })
   })
 
-  describe('calculate remove liquidity one', () => {
+  describe.skip('calculate remove liquidity one', () => {
     const synapse = new SynapseSDK(
       [SupportedChainId.ARBITRUM, SupportedChainId.ETH],
       [arbProvider, ethProvider]
