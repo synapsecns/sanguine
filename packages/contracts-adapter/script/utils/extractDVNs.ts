@@ -8,6 +8,7 @@ interface DVNInfo {
   canonicalName: string
   id: string
   deprecated?: boolean
+  lzReadCompatible?: boolean
 }
 
 interface ChainMetadata {
@@ -82,8 +83,8 @@ async function extractDVNs(): Promise<void> {
     if (!ourChainName || !chainData.dvns) continue
 
     for (const [dvnAddress, dvnInfo] of Object.entries(chainData.dvns)) {
-      // Skip deprecated DVNs
-      if (dvnInfo.deprecated) continue
+      // Skip deprecated or lzRead-compatible DVNs, which are not suitable for standard pathway config.
+      if (dvnInfo.deprecated || dvnInfo.lzReadCompatible) continue
 
       // Use canonicalName as the DVN identifier
       // Imagine putting spaces in JSON keys
