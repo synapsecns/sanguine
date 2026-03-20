@@ -83,6 +83,11 @@ type ResultStats = {
   totalIssues: number
 }
 
+type AddressCallResult = {
+  status: 'success' | 'failure'
+  result?: Address
+}
+
 const categoryLabels: Record<VerificationIssue['category'], string> = {
   owner: 'Ownership',
   delegate: 'Delegate',
@@ -387,8 +392,98 @@ function createChainClient(chainId: number): PublicClient {
   })
 }
 
-function pluralize(count: number, word: string): string {
-  return `${count} ${word}${count === 1 ? '' : 's'}`
+function createIssue(
+  chain: string,
+  category: VerificationIssue['category'],
+  severity: VerificationIssue['severity'],
+  message: string
+): VerificationIssue {
+  return { chain, category, severity, message }
+}
+
+function addIssue(
+  result: ChainVerificationResult,
+  category: VerificationIssue['category'],
+  severity: VerificationIssue['severity'],
+  message: string
+) {
+  result.issues.push(createIssue(result.chain, category, severity, message))
+}
+
+function assignAddressFromCall(
+  result: ChainVerificationResult,
+  callResult: AddressCallResult,
+  failureMessage: string,
+  assignAddress: (address: Address) => void
+): Address | null {
+  if (callResult.status !== 'success' || !callResult.result) {
+    addIssue(result, 'error', 'error', failureMessage)
+    return null
+  }
+
+  assignAddress(callResult.result)
+  return callResult.result
+}
+
+function addMissingExpectedOwnerIssues(result: ChainVerificationResult) {
+  result.issues.push(
+    createIssue(
+      result.chain,
+      'owner',
+      'error',
+      'Missing expected owner in multisig config'
+    ),
+    createIssue(
+      result.chain,
+      'delegate',
+      'error',
+      'Missing expected delegate in multisig config'
+    )
+  )
+}
+
+function addAddressMatchIssue(
+  result: ChainVerificationResult,
+  category: 'owner' | 'delegate',
+  expectedAddress: Address,
+  actualAddress: Address | null,
+  label: 'Owner' | 'Delegate'
+) {
+  if (actualAddress === null) {
+    return
+  }
+
+  const addressesMatch =
+    actualAddress.toLowerCase() === expectedAddress.toLowerCase()
+
+  addIssue(
+    result,
+    category,
+    addressesMatch ? 'info' : 'error',
+    addressesMatch
+      ? `${label} matches multisig config`
+      : `${label} mismatch: expected ${expectedAddress}, got ${actualAddress}`
+  )
+}
+
+async function fetchDelegateCallResult(
+  client: PublicClient,
+  endpointAddress: Address,
+  deploymentAddress: Address
+): Promise<AddressCallResult> {
+  const [delegateResult] = await client.multicall({
+    contracts: [
+      {
+        address: endpointAddress,
+        abi: layerZeroEndpointAbi,
+        functionName: 'delegates',
+        args: [deploymentAddress],
+      },
+    ],
+    allowFailure: true,
+  })
+
+  return delegateResult
 }
 
 async function verifyChain(
@@ -425,118 +520,60 @@ async function verifyChain(
       allowFailure: true,
     })
 
-    if (ownerResult.status === 'success' && ownerResult.result) {
-      result.actualOwner = ownerResult.result
-    } else {
-      result.issues.push({
-        chain,
-        category: 'error',
-        severity: 'error',
-        message: 'Failed to fetch current owner',
-      })
-    }
+    assignAddressFromCall(
+      result,
+      ownerResult,
+      'Failed to fetch current owner',
+      (ownerAddress) => {
+        result.actualOwner = ownerAddress
+      }
+    )
 
-    let endpointAddress: Address | null = null
-    if (endpointResult.status === 'success' && endpointResult.result) {
-      endpointAddress = endpointResult.result
-    } else {
-      result.issues.push({
-        chain,
-        category: 'error',
-        severity: 'error',
-        message: 'Failed to fetch app endpoint',
-      })
-    }
+    const endpointAddress = assignAddressFromCall(
+      result,
+      endpointResult,
+      'Failed to fetch app endpoint',
+      () => undefined
+    )
 
     if (endpointAddress !== null) {
-      const delegateResult = await client.multicall({
-        contracts: [
-          {
-            address: endpointAddress,
-            abi: layerZeroEndpointAbi,
-            functionName: 'delegates',
-            args: [deployment.address],
-          },
-        ],
-        allowFailure: true,
-      })
+      const delegateResult = await fetchDelegateCallResult(
+        client,
+        endpointAddress,
+        deployment.address
+      )
 
-      if (delegateResult[0].status === 'success' && delegateResult[0].result) {
-        result.actualDelegate = delegateResult[0].result
-      } else {
-        result.issues.push({
-          chain,
-          category: 'error',
-          severity: 'error',
-          message: 'Failed to fetch current delegate',
-        })
-      }
+      assignAddressFromCall(
+        result,
+        delegateResult,
+        'Failed to fetch current delegate',
+        (delegateAddress) => {
+          result.actualDelegate = delegateAddress
+        }
+      )
     }
 
     if (result.expectedOwner === null) {
-      result.issues.push({
-        chain,
-        category: 'owner',
-        severity: 'error',
-        message: 'Missing expected owner in multisig config',
-      })
-      result.issues.push({
-        chain,
-        category: 'delegate',
-        severity: 'error',
-        message: 'Missing expected delegate in multisig config',
-      })
+      addMissingExpectedOwnerIssues(result)
       return result
     }
 
-    if (result.actualOwner !== null) {
-      const ownersMatch =
-        result.actualOwner.toLowerCase() === result.expectedOwner.toLowerCase()
-
-      if (ownersMatch) {
-        result.issues.push({
-          chain,
-          category: 'owner',
-          severity: 'info',
-          message: 'Owner matches multisig config',
-        })
-      } else {
-        result.issues.push({
-          chain,
-          category: 'owner',
-          severity: 'error',
-          message: `Owner mismatch: expected ${result.expectedOwner}, got ${result.actualOwner}`,
-        })
-      }
-    }
-
-    if (result.actualDelegate !== null) {
-      const delegatesMatch =
-        result.actualDelegate.toLowerCase() === result.expectedOwner.toLowerCase()
-
-      if (delegatesMatch) {
-        result.issues.push({
-          chain,
-          category: 'delegate',
-          severity: 'info',
-          message: 'Delegate matches multisig config',
-        })
-      } else {
-        result.issues.push({
-          chain,
-          category: 'delegate',
-          severity: 'error',
-          message: `Delegate mismatch: expected ${result.expectedOwner}, got ${result.actualDelegate}`,
-        })
-      }
-    }
+    addAddressMatchIssue(
+      result,
+      'owner',
+      result.expectedOwner,
+      result.actualOwner,
+      'Owner'
+    )
+    addAddressMatchIssue(
+      result,
+      'delegate',
+      result.expectedOwner,
+      result.actualDelegate,
+      'Delegate'
+    )
   } catch (error) {
-    result.issues.push({
-      chain,
-      category: 'error',
-      severity: 'error',
-      message: `RPC error: ${formatError(error)}`,
-    })
+    addIssue(result, 'error', 'error', `RPC error: ${formatError(error)}`)
   }
 
   return result

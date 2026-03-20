@@ -32,6 +32,10 @@ interface DVNConfig {
   }
 }
 
+function compareAlphabetically(left: string, right: string): number {
+  return left.localeCompare(right)
+}
+
 // Type guard to validate DVN metadata structure
 function isDVNMetadataResponse(data: unknown): data is DVNMetadataResponse {
   return typeof data === 'object' && data !== null
@@ -81,11 +85,15 @@ async function extractDVNs(): Promise<void> {
   for (const [lzChainName, chainData] of Object.entries(metadata)) {
     const ourChainName = lzToOurChainMap[lzChainName]
 
-    if (!ourChainName || !chainData.dvns) continue
+    if (!ourChainName || !chainData.dvns) {
+      continue
+    }
 
     for (const [dvnAddress, dvnInfo] of Object.entries(chainData.dvns)) {
       // Skip deprecated or lzRead-compatible DVNs, which are not suitable for standard pathway config.
-      if (dvnInfo.deprecated || dvnInfo.lzReadCompatible) continue
+      if (dvnInfo.deprecated || dvnInfo.lzReadCompatible) {
+        continue
+      }
 
       // Use canonicalName as the DVN identifier
       // Imagine putting spaces in JSON keys
@@ -145,11 +153,16 @@ async function extractDVNs(): Promise<void> {
     }
   }
 
+  const sortedCheckedUniversalDVNs = [...checkedUniversalDVNs].sort(
+    compareAlphabetically
+  )
+  const sortedUniversalDVNs = [...universalDVNs].sort(compareAlphabetically)
+
   console.log(`Found ${universalDVNs.length} DVNs with full chain coverage`)
   console.log(
-    `Verified unique active addresses for universal DVNs: ${checkedUniversalDVNs
-      .sort()
-      .join(', ')}`
+    `Verified unique active addresses for universal DVNs: ${sortedCheckedUniversalDVNs.join(
+      ', '
+    )}`
   )
 
   // Save result
@@ -163,7 +176,10 @@ async function extractDVNs(): Promise<void> {
   )
 
   // Log summary
-  console.log(`\nUniversal DVNs included: ${universalDVNs.sort().join(', ')}`)
+  console.log(`\nUniversal DVNs included: ${sortedUniversalDVNs.join(', ')}`)
 }
 
-extractDVNs().catch(console.error)
+extractDVNs().catch((error) => {
+  console.error(error)
+  process.exitCode = 1
+})

@@ -23,7 +23,13 @@ for chain in $chains; do
   log_file=$(mktemp)
   # Pass the rest of the options to forge-script-run utility
   if ! npx fsr ./script/WireSBA.s.sol "$chain" "$walletName" "$@" 2>&1 | tee "$log_file"; then
-    status=${PIPESTATUS[0]}
+    status=1
+    for pipeline_status in "${PIPESTATUS[@]}"; do
+      if [ "$pipeline_status" -ne 0 ]; then
+        status=$pipeline_status
+        break
+      fi
+    done
     rm -f "$log_file"
     exit "$status"
   fi
