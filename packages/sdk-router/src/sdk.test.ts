@@ -689,7 +689,9 @@ describe('SynapseSDK', () => {
       const synapse = setupSynapse()
       jest
         .spyOn(
-          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.KLAYTN],
+          synapse.synapseBridgeAdapterModuleSet.modules[
+            SupportedChainId.KLAYTN
+          ],
           'getBridgeTxStatus'
         )
         .mockResolvedValue(true)
@@ -966,13 +968,17 @@ describe('SynapseSDK', () => {
         .mockResolvedValue(Zero)
       jest
         .spyOn(
-          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.KLAYTN],
+          synapse.synapseBridgeAdapterModuleSet.modules[
+            SupportedChainId.KLAYTN
+          ],
           'getNativeFee'
         )
         .mockResolvedValue(BigNumber.from(22))
       jest
         .spyOn(
-          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.KLAYTN],
+          synapse.synapseBridgeAdapterModuleSet.modules[
+            SupportedChainId.KLAYTN
+          ],
           'getEstimatedTime'
         )
         .mockResolvedValue(44)

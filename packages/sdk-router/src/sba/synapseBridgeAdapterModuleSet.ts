@@ -135,8 +135,7 @@ export class SynapseBridgeAdapterModuleSet extends SynapseModuleSet {
         bridgeToken.originChainId,
         bridgeToken.destChainId
       )
-      const cachedEstimatedTime =
-        this.estimatedTimeCache.get<number>(cacheKey)
+      const cachedEstimatedTime = this.estimatedTimeCache.get<number>(cacheKey)
       const estimatedTimePromise =
         cachedEstimatedTime !== undefined
           ? Promise.resolve(cachedEstimatedTime)
