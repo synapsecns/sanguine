@@ -301,4 +301,26 @@ describe('Widget receipt integration', () => {
 
     expect(screen.queryByText('0.00042 BNB')).not.toBeInTheDocument()
   })
+
+  it('does not keep stale receive and bridge fee values after only the amount changes', () => {
+    const view = renderWidget()
+
+    expect(getRowValue('Send')).toBe('1.0000 USDC')
+    expect(getRowValue('Bridge fee')).toBe('0.00042 ETH')
+    expect(getRowValue('Receive')).toBe('1.5000 USDT')
+
+    mockBridgeState = {
+      ...mockBridgeState,
+      debouncedInputAmount: '2',
+    }
+
+    rerenderWidget(view)
+
+    expect(getRowValue('Send')).toBe('-')
+    expect(screen.queryByText('Bridge fee')).not.toBeInTheDocument()
+    expect(getRowValue('Receive')).toBe('-')
+    expect(screen.queryByText('2.0000 USDC')).not.toBeInTheDocument()
+    expect(screen.queryByText('1.5000 USDT')).not.toBeInTheDocument()
+    expect(screen.queryByText('0.00042 ETH')).not.toBeInTheDocument()
+  })
 })

@@ -106,6 +106,7 @@ export const Widget = ({
     destinationChainId: number
     originTokenRouteSymbol: string | undefined
     destinationTokenRouteSymbol: string | undefined
+    debouncedInputAmount: string
   } | null>(null)
 
   const { synapseSDK, synapseProviders } = useSynapseContext()
@@ -173,6 +174,7 @@ export const Widget = ({
       destinationChainId,
       originTokenRouteSymbol,
       destinationTokenRouteSymbol,
+      debouncedInputAmount,
     }
   }
 
@@ -185,7 +187,8 @@ export const Widget = ({
     receiptQuoteSelection?.destinationChainId === destinationChainId &&
     receiptQuoteSelection?.originTokenRouteSymbol === originTokenRouteSymbol &&
     receiptQuoteSelection?.destinationTokenRouteSymbol ===
-      destinationTokenRouteSymbol
+      destinationTokenRouteSymbol &&
+    receiptQuoteSelection?.debouncedInputAmount === debouncedInputAmount
   const receiptQuote = hasMatchingReceiptQuoteSelection
     ? bridgeQuote
     : EMPTY_BRIDGE_QUOTE
