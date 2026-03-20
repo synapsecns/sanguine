@@ -114,6 +114,7 @@ export const fetchBridgeQuote = createAsyncThunk(
     const hasExecutableQuoteTx = Boolean(quote.tx?.to && quote.tx?.data)
 
     return {
+      id: quote.id,
       outputAmount: toValueBigInt,
       outputAmountString: commify(
         formatBigIntToString(

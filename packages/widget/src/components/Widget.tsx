@@ -46,6 +46,7 @@ import {
   useBridgeQuoteState,
 } from '@/state/slices/bridgeQuote/hooks'
 import {
+  type BridgeQuote,
   EMPTY_BRIDGE_QUOTE,
   resetQuote,
 } from '@/state/slices/bridgeQuote/reducer'
@@ -99,6 +100,13 @@ export const Widget = ({
 }: WidgetProps) => {
   const dispatch = useAppDispatch()
   const currentSDKRequestID = useRef(0)
+  const receiptQuoteSelectionRef = useRef<{
+    quoteKey: string | BridgeQuote
+    originChainId: number
+    destinationChainId: number
+    originTokenRouteSymbol: string | undefined
+    destinationTokenRouteSymbol: string | undefined
+  } | null>(null)
 
   const { synapseSDK, synapseProviders } = useSynapseContext()
 
@@ -151,6 +159,36 @@ export const Widget = ({
       (p) => Number(p?._network?.chainId) === originChainId
     )
   }, [originChainId])
+
+  const originTokenRouteSymbol = originToken?.routeSymbol
+  const destinationTokenRouteSymbol = destinationToken?.routeSymbol
+  const receiptQuoteKey = bridgeQuote.id ?? bridgeQuote
+
+  if (bridgeQuote === EMPTY_BRIDGE_QUOTE) {
+    receiptQuoteSelectionRef.current = null
+  } else if (receiptQuoteSelectionRef.current?.quoteKey !== receiptQuoteKey) {
+    receiptQuoteSelectionRef.current = {
+      quoteKey: receiptQuoteKey,
+      originChainId,
+      destinationChainId,
+      originTokenRouteSymbol,
+      destinationTokenRouteSymbol,
+    }
+  }
+
+  const receiptQuoteSelection =
+    receiptQuoteSelectionRef.current?.quoteKey === receiptQuoteKey
+      ? receiptQuoteSelectionRef.current
+      : null
+  const hasMatchingReceiptQuoteSelection =
+    receiptQuoteSelection?.originChainId === originChainId &&
+    receiptQuoteSelection?.destinationChainId === destinationChainId &&
+    receiptQuoteSelection?.originTokenRouteSymbol === originTokenRouteSymbol &&
+    receiptQuoteSelection?.destinationTokenRouteSymbol ===
+      destinationTokenRouteSymbol
+  const receiptQuote = hasMatchingReceiptQuoteSelection
+    ? bridgeQuote
+    : EMPTY_BRIDGE_QUOTE
 
   useEffect(() => {
     dispatch(setOriginChainId(networkId))
@@ -519,27 +557,35 @@ export const Widget = ({
         </section>
         <BridgeMaintenanceWarningMessage />
         <Receipt
-          quote={bridgeQuote ?? null}
+          quote={receiptQuote}
           loading={isLoading}
-          send={formatReceiptAmount(
-            formatBigIntToString(
-              stringToBigInt(
-                debouncedInputAmount,
-                originToken?.decimals[originChainId]
-              ),
-              originToken?.decimals[originChainId],
-              4
-            ),
-            originToken?.symbol
-          )}
-          receive={formatReceiptAmount(
-            formatBigIntToString(
-              bridgeQuote?.delta,
-              destinationToken?.decimals[destinationChainId],
-              4
-            ),
-            destinationToken?.symbol
-          )}
+          send={
+            hasMatchingReceiptQuoteSelection
+              ? formatReceiptAmount(
+                  formatBigIntToString(
+                    stringToBigInt(
+                      debouncedInputAmount,
+                      originToken?.decimals[originChainId]
+                    ),
+                    originToken?.decimals[originChainId],
+                    4
+                  ),
+                  originToken?.symbol
+                )
+              : undefined
+          }
+          receive={
+            hasMatchingReceiptQuoteSelection
+              ? formatReceiptAmount(
+                  formatBigIntToString(
+                    bridgeQuote?.delta,
+                    destinationToken?.decimals[destinationChainId],
+                    4
+                  ),
+                  destinationToken?.symbol
+                )
+              : undefined
+          }
         />
         <BridgeButton
           originChain={CHAINS_BY_ID[originChainId]}
