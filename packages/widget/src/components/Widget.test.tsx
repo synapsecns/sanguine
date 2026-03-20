@@ -122,6 +122,26 @@ const renderWidget = () => {
   )
 }
 
+const rerenderWidget = (view: ReturnType<typeof renderWidget>) => {
+  act(() => {
+    view.rerender(
+      <Web3Context.Provider
+        value={{
+          web3Provider: {
+            connectedAddress: '',
+            networkId: 1,
+            signer: null,
+            provider: null,
+          },
+          setWeb3Provider: jest.fn() as any,
+        }}
+      >
+        <Widget customTheme={{} as any} />
+      </Web3Context.Provider>
+    )
+  })
+}
+
 describe('Widget quote refresh wiring', () => {
   beforeEach(() => {
     jest.useFakeTimers()
@@ -218,23 +238,7 @@ describe('Widget quote refresh wiring', () => {
       jest.advanceTimersByTime(300)
     })
 
-    act(() => {
-      view.rerender(
-        <Web3Context.Provider
-          value={{
-            web3Provider: {
-              connectedAddress: '',
-              networkId: 1,
-              signer: null,
-              provider: null,
-            },
-            setWeb3Provider: jest.fn() as any,
-          }}
-        >
-          <Widget customTheme={{} as any} />
-        </Web3Context.Provider>
-      )
-    })
+    rerenderWidget(view)
 
     expect(fetchBridgeQuote).toHaveBeenCalledTimes(1)
     expect(fetchBridgeQuoteMock.mock.calls[0][0]).toEqual(
@@ -249,23 +253,7 @@ describe('Widget quote refresh wiring', () => {
       isLoading: false,
     }
 
-    act(() => {
-      view.rerender(
-        <Web3Context.Provider
-          value={{
-            web3Provider: {
-              connectedAddress: '',
-              networkId: 1,
-              signer: null,
-              provider: null,
-            },
-            setWeb3Provider: jest.fn() as any,
-          }}
-        >
-          <Widget customTheme={{} as any} />
-        </Web3Context.Provider>
-      )
-    })
+    rerenderWidget(view)
 
     act(() => {
       document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }))
@@ -292,4 +280,80 @@ describe('Widget quote refresh wiring', () => {
     })
     expect(fetchBridgeQuote).toHaveBeenCalledTimes(2)
   })
+
+  it.each([
+    {
+      busyState: 'quote loading',
+      startBusy: () => {
+        mockQuoteState = {
+          ...mockQuoteState,
+          isLoading: true,
+        }
+      },
+      endBusy: () => {
+        mockQuoteState = {
+          ...mockQuoteState,
+          isLoading: false,
+        }
+      },
+    },
+    {
+      busyState: 'wallet pending',
+      startBusy: () => {
+        mockWalletState = {
+          ...mockWalletState,
+          isWalletPending: true,
+        }
+      },
+      endBusy: () => {
+        mockWalletState = {
+          ...mockWalletState,
+          isWalletPending: false,
+        }
+      },
+    },
+  ])(
+    'suppresses stale mousemove refreshes while $busyState is active',
+    ({ startBusy, endBusy }) => {
+      const view = renderWidget()
+
+      act(() => {
+        fireEvent.change(screen.getByPlaceholderText('0'), {
+          target: { value: '1' },
+        })
+        jest.advanceTimersByTime(300)
+      })
+
+      rerenderWidget(view)
+
+      expect(fetchBridgeQuote).toHaveBeenCalledTimes(1)
+
+      mockQuoteState = {
+        bridgeQuote: createQuote({ requestId: 1, timestamp: 1 }),
+        isLoading: false,
+      }
+
+      rerenderWidget(view)
+
+      act(() => {
+        jest.advanceTimersByTime(15000)
+      })
+
+      startBusy()
+      rerenderWidget(view)
+
+      act(() => {
+        document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }))
+      })
+      expect(fetchBridgeQuote).toHaveBeenCalledTimes(1)
+
+      endBusy()
+      rerenderWidget(view)
+
+      act(() => {
+        document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }))
+      })
+      expect(fetchBridgeQuote).toHaveBeenCalledTimes(2)
+    }
+  )
 })

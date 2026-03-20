@@ -336,4 +336,109 @@ describe('useBridgeQuoteUpdater', () => {
     dispatchMouseMove()
     expect(refreshQuote).toHaveBeenCalledTimes(1)
   })
+
+  it('cleans up stale timers and listeners on unmount', () => {
+    const refreshQuote = jest.fn(async () => undefined)
+    const quote = createQuote()
+    const { unmount } = renderHook(({ quote }) => {
+      useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
+    }, {
+      initialProps: { quote },
+    })
+
+    expect(jest.getTimerCount()).toBe(1)
+    unmount()
+
+    expect(jest.getTimerCount()).toBe(0)
+    dispatchMouseMove()
+    expect(refreshQuote).not.toHaveBeenCalled()
+
+    const staleHook = renderHook(({ quote }) => {
+      useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
+    }, {
+      initialProps: { quote },
+    })
+
+    act(() => {
+      jest.advanceTimersByTime(STALE_TIMEOUT)
+    })
+
+    staleHook.unmount()
+    dispatchMouseMove()
+    expect(refreshQuote).not.toHaveBeenCalled()
+  })
+
+  it('does not duplicate refreshes when rerenders happen after the quote is stale', () => {
+    const refreshQuote = jest.fn(async () => undefined)
+    const quote = createQuote()
+    const { rerender } = renderHook(
+      ({ quote, rerenderTick }) => {
+        void rerenderTick
+        useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
+      },
+      {
+        initialProps: { quote, rerenderTick: 0 },
+      }
+    )
+
+    act(() => {
+      jest.advanceTimersByTime(STALE_TIMEOUT)
+    })
+
+    rerender({ quote, rerenderTick: 1 })
+    rerender({ quote, rerenderTick: 2 })
+
+    dispatchMouseMove()
+    dispatchMouseMove()
+
+    expect(refreshQuote).toHaveBeenCalledTimes(1)
+  })
+
+  it('uses the latest refresh callback for an already stale quote', () => {
+    const initialRefreshQuote = jest.fn(async () => undefined)
+    const updatedRefreshQuote = jest.fn(async () => undefined)
+    const quote = createQuote()
+    const { rerender } = renderHook(
+      ({ quote, refreshQuote }) => {
+        useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
+      },
+      {
+        initialProps: { quote, refreshQuote: initialRefreshQuote },
+      }
+    )
+
+    act(() => {
+      jest.advanceTimersByTime(STALE_TIMEOUT)
+    })
+
+    rerender({ quote, refreshQuote: updatedRefreshQuote })
+    dispatchMouseMove()
+
+    expect(initialRefreshQuote).not.toHaveBeenCalled()
+    expect(updatedRefreshQuote).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps a rejected stale refresh one-shot until a new quote arrives', () => {
+    const refreshError = new Error('refresh failed')
+    const refreshQuote = jest.fn(() => {
+      const rejectedPromise = Promise.reject(refreshError)
+      rejectedPromise.catch(() => undefined)
+      return rejectedPromise
+    })
+
+    renderHook(({ quote }) => {
+      useBridgeQuoteUpdater(quote, refreshQuote, false, false, STALE_TIMEOUT)
+    }, {
+      initialProps: { quote: createQuote() },
+    })
+
+    act(() => {
+      jest.advanceTimersByTime(STALE_TIMEOUT)
+    })
+
+    dispatchMouseMove()
+    dispatchMouseMove()
+
+    expect(refreshQuote).toHaveBeenCalledTimes(1)
+  })
 })
