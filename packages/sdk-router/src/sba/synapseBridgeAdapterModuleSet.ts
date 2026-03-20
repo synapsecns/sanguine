@@ -19,8 +19,8 @@ import { encodeZapData } from '../swap'
 import { isSameAddress, logExecutionTime, logger } from '../utils'
 import {
   getSbaChainMetadata,
-  SBA_DEFAULT_DESTINATION_BLOCKS,
   SBA_ESTIMATED_TIME_CACHE_TTL,
+  SBA_EXECUTION_BUFFER_SECONDS,
 } from './metadata'
 import { getSbaRemoteToken, getSbaSupportedTokens } from './supportedTokens'
 import {
@@ -262,7 +262,7 @@ export class SynapseBridgeAdapterModuleSet extends SynapseModuleSet {
     }
     return Math.ceil(
       fromMetadata.originBlockConfirmations * fromBlockTime +
-        SBA_DEFAULT_DESTINATION_BLOCKS * destBlockTime
+        SBA_EXECUTION_BUFFER_SECONDS
     )
   }
 

@@ -10,6 +10,7 @@ import {
   SupportedChainId,
   SYNAPSE_INTENT_ROUTER_ADDRESS_MAP,
 } from './constants'
+import { SBA_CHAIN_METADATA, SBA_EXECUTION_BUFFER_SECONDS } from './sba'
 import { getTestProvider } from './constants/testProviders'
 import {
   ARB_NETH,
@@ -1018,10 +1019,14 @@ describe('SynapseSDK', () => {
       [ethProvider, bscProvider]
     )
     const expectedEthSbaEta = Math.ceil(
-      67 * MEDIAN_TIME_BLOCK[SupportedChainId.ETH]
+      SBA_CHAIN_METADATA[SupportedChainId.ETH]!.originBlockConfirmations *
+        MEDIAN_TIME_BLOCK[SupportedChainId.ETH] +
+        SBA_EXECUTION_BUFFER_SECONDS
     )
     const expectedBscSbaEta = Math.ceil(
-      103 * MEDIAN_TIME_BLOCK[SupportedChainId.BSC]
+      SBA_CHAIN_METADATA[SupportedChainId.BSC]!.originBlockConfirmations *
+        MEDIAN_TIME_BLOCK[SupportedChainId.BSC] +
+        SBA_EXECUTION_BUFFER_SECONDS
     )
 
     describe('Chain with a provider', () => {

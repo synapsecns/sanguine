@@ -9,7 +9,7 @@ import { SynapseModule } from '../module'
 import { getWithTimeout } from '../utils'
 import {
   getSbaChainMetadata,
-  SBA_DEFAULT_DESTINATION_BLOCKS,
+  SBA_EXECUTION_BUFFER_SECONDS,
   SBA_MIN_GAS_LIMIT,
 } from './metadata'
 
@@ -128,7 +128,7 @@ export class SynapseBridgeAdapterModule implements SynapseModule {
     }
     return (
       confirmations * fromBlockTime +
-      SBA_DEFAULT_DESTINATION_BLOCKS * toBlockTime
+      SBA_EXECUTION_BUFFER_SECONDS
     )
   }
 

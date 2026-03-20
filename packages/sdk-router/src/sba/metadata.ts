@@ -2,7 +2,7 @@ import { SupportedChainId } from '../constants'
 
 export const SBA_MIN_GAS_LIMIT = 200_000
 export const SBA_ESTIMATED_TIME_CACHE_TTL = 60 * 60
-export const SBA_DEFAULT_DESTINATION_BLOCKS = 3
+export const SBA_EXECUTION_BUFFER_SECONDS = 60
 
 export type SynapseBridgeAdapterChainMetadata = {
   adapterAddress: string
