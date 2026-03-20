@@ -21,7 +21,9 @@ export const useBridgeQuoteUpdater = (
   const refreshQuoteCallbackRef = useRef(refreshQuoteCallback)
   const staleCycleClosedRef = useRef(false)
   const staleCycleTokenRef = useRef(0)
-  const staleTimeoutRef = useRef<number | null>(null)
+  const staleTimeoutRef = useRef<ReturnType<
+    typeof globalThis.setTimeout
+  > | null>(null)
 
   const clearEventListener = () => {
     if (eventListenerRef.current) {
@@ -32,7 +34,7 @@ export const useBridgeQuoteUpdater = (
 
   const clearStaleTimeout = () => {
     if (staleTimeoutRef.current !== null) {
-      window.clearTimeout(staleTimeoutRef.current)
+      globalThis.clearTimeout(staleTimeoutRef.current)
       staleTimeoutRef.current = null
     }
   }
@@ -63,7 +65,8 @@ export const useBridgeQuoteUpdater = (
 
       staleCycleClosedRef.current = true
       clearEventListener()
-      void refreshQuoteCallbackRef.current()
+      const refreshQuotePromise = refreshQuoteCallbackRef.current()
+      refreshQuotePromise.catch(() => undefined)
     }
 
     eventListenerRef.current = newEventListener
@@ -97,7 +100,7 @@ export const useBridgeQuoteUpdater = (
     }
 
     const staleCycleToken = staleCycleTokenRef.current
-    staleTimeoutRef.current = window.setTimeout(() => {
+    staleTimeoutRef.current = globalThis.setTimeout(() => {
       staleTimeoutRef.current = null
 
       if (

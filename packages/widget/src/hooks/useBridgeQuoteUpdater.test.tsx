@@ -518,10 +518,9 @@ describe('useBridgeQuoteUpdater', () => {
     const refreshQuote = jest.fn(async () => undefined)
     const quote = createQuote()
     const { rerender } = renderHook(
-      ({ quote: currentQuote, rerenderTick }) => {
-        void rerenderTick
+      (props) => {
         useBridgeQuoteUpdater(
-          currentQuote,
+          props.quote,
           refreshQuote,
           false,
           false,
@@ -601,10 +600,9 @@ describe('useBridgeQuoteUpdater', () => {
     const refreshQuote = jest.fn(async () => undefined)
     const quote = createQuote()
     const { rerender } = renderHook(
-      ({ quote: currentQuote, rerenderTick }) => {
-        void rerenderTick
+      (props) => {
         useBridgeQuoteUpdater(
-          currentQuote,
+          props.quote,
           refreshQuote,
           false,
           false,
