@@ -36,6 +36,8 @@ const SBA_BRIDGE_SUPPORTED_CHAINS = new Set<SupportedChainId>([
   SupportedChainId.DFK,
   SupportedChainId.HARMONY,
   SupportedChainId.KLAYTN,
+  SupportedChainId.METIS,
+  SupportedChainId.OPTIMISM,
   SupportedChainId.POLYGON,
 ])
 
