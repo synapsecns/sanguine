@@ -96,10 +96,56 @@ export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
 
 /**
  * List of chain ids where SynapseIntentRouter is deployed, ordered lexicographically.
- * Note: this is currently serving as an entry point for swaps between arbitrary tokens,
- * but will also support bridge modules in the future.
+ * Note: this serves the shared intent path used by swapV2 / bridgeV2 modules.
+ * Some chains may still remain globally paused for legacy bridge routing.
  */
 export const INTENTS_SUPPORTED_CHAIN_IDS: number[] = [
+  SupportedChainId.ARBITRUM,
+  SupportedChainId.AVALANCHE,
+  SupportedChainId.BASE,
+  SupportedChainId.BERACHAIN,
+  SupportedChainId.BLAST,
+  SupportedChainId.BSC,
+  SupportedChainId.DFK,
+  SupportedChainId.ETH,
+  SupportedChainId.HARMONY,
+  SupportedChainId.HYPEREVM,
+  SupportedChainId.KLAYTN,
+  SupportedChainId.LINEA,
+  SupportedChainId.OPTIMISM,
+  SupportedChainId.POLYGON,
+  SupportedChainId.SCROLL,
+  SupportedChainId.UNICHAIN,
+  SupportedChainId.WORLDCHAIN,
+]
+
+/**
+ * List of chain ids where both the shared intent path and GasZip are deployed.
+ * Note: this intentionally does not mirror INTENTS_SUPPORTED_CHAIN_IDS exactly.
+ */
+export const GASZIP_SUPPORTED_CHAIN_IDS: number[] = [
+  SupportedChainId.ARBITRUM,
+  SupportedChainId.AVALANCHE,
+  SupportedChainId.BASE,
+  SupportedChainId.BERACHAIN,
+  SupportedChainId.BLAST,
+  SupportedChainId.BSC,
+  SupportedChainId.ETH,
+  SupportedChainId.HYPEREVM,
+  SupportedChainId.KLAYTN,
+  SupportedChainId.LINEA,
+  SupportedChainId.OPTIMISM,
+  SupportedChainId.POLYGON,
+  SupportedChainId.SCROLL,
+  SupportedChainId.UNICHAIN,
+  SupportedChainId.WORLDCHAIN,
+]
+
+/**
+ * List of chain ids where both the shared intent path and Relay are deployed.
+ * Note: this intentionally does not mirror INTENTS_SUPPORTED_CHAIN_IDS exactly.
+ */
+export const RELAY_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.ARBITRUM,
   SupportedChainId.AVALANCHE,
   SupportedChainId.BASE,
@@ -114,19 +160,7 @@ export const INTENTS_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.SCROLL,
   SupportedChainId.UNICHAIN,
   SupportedChainId.WORLDCHAIN,
-].filter((chainId) => !PAUSED_CHAIN_IDS.includes(chainId))
-
-/**
- * List of chain ids where both Intents and GasZip are deployed.
- * Note: make sure to exclude any chain ids where Intents are deployed, but GasZip is not.
- */
-export const GASZIP_SUPPORTED_CHAIN_IDS = INTENTS_SUPPORTED_CHAIN_IDS
-
-/**
- * List of chain ids where both Intents and Relay are deployed.
- * Note: make sure to exclude any chain ids where Intents are deployed, but Relay is not.
- */
-export const RELAY_SUPPORTED_CHAIN_IDS = INTENTS_SUPPORTED_CHAIN_IDS
+]
 
 /**
  * List of chain ids where hydrating on constructor is supported , ordered by monke

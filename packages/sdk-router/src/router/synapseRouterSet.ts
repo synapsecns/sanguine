@@ -12,7 +12,7 @@ import { logExecutionTime } from '../utils'
  * Wrapper class for interacting with a SynapseRouter contracts deployed on multiple chains.
  */
 export class SynapseRouterSet extends RouterSet {
-  public readonly moduleName = 'SynapseBridge'
+  public readonly moduleName = 'SynapseBridgeLegacy'
   public readonly allEvents = [
     'DepositEvent',
     'RedeemEvent',
