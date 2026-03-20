@@ -1,5 +1,5 @@
 import { isNull, isNumber } from 'lodash'
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 
 import { type BridgeQuote } from '@/state/slices/bridgeQuote/reducer'
 
@@ -16,10 +16,11 @@ export const useBridgeQuoteUpdater = (
 ) => {
   const activeQuoteRequestIdRef = useRef<number | null>(null)
   const eventListenerRef = useRef<null | (() => void)>(null)
+  const isQuoteLoadingRef = useRef(isQuoteLoading)
+  const isWalletPendingRef = useRef(isWalletPending)
   const refreshQuoteCallbackRef = useRef(refreshQuoteCallback)
-  const staleCycleRef = useRef(false)
   const staleCycleClosedRef = useRef(false)
-  const staleDeadlineRef = useRef<number | null>(null)
+  const staleCycleTokenRef = useRef(0)
   const staleTimeoutRef = useRef<number | null>(null)
 
   const clearEventListener = () => {
@@ -37,27 +38,29 @@ export const useBridgeQuoteUpdater = (
   }
 
   const resetStaleCycle = () => {
-    staleCycleRef.current = false
     clearStaleTimeout()
     clearEventListener()
   }
 
-  const armStaleListener = (activeQuoteRequestId: number) => {
+  const armStaleListener = (
+    activeQuoteRequestId: number,
+    staleCycleToken: number
+  ) => {
     if (staleCycleClosedRef.current) {
       return
     }
 
-    staleCycleRef.current = true
-
     const newEventListener = () => {
       if (
-        !staleCycleRef.current ||
-        activeQuoteRequestIdRef.current !== activeQuoteRequestId
+        staleCycleClosedRef.current ||
+        staleCycleTokenRef.current !== staleCycleToken ||
+        activeQuoteRequestIdRef.current !== activeQuoteRequestId ||
+        isQuoteLoadingRef.current ||
+        isWalletPendingRef.current
       ) {
         return
       }
 
-      staleCycleRef.current = false
       staleCycleClosedRef.current = true
       clearEventListener()
       void refreshQuoteCallbackRef.current()
@@ -73,68 +76,48 @@ export const useBridgeQuoteUpdater = (
     refreshQuoteCallbackRef.current = refreshQuoteCallback
   }, [refreshQuoteCallback])
 
-  useEffect(() => {
-    return () => {
-      activeQuoteRequestIdRef.current = null
-      staleCycleClosedRef.current = false
-      staleDeadlineRef.current = null
-      resetStaleCycle()
-    }
-  }, [])
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     const activeQuoteRequestId = quote?.requestId
     const isValidQuote =
       isNumber(activeQuoteRequestId) && !isNull(activeQuoteRequestId)
 
-    if (!isValidQuote) {
-      activeQuoteRequestIdRef.current = null
-      staleCycleClosedRef.current = false
-      staleDeadlineRef.current = null
+    activeQuoteRequestIdRef.current = isValidQuote ? activeQuoteRequestId : null
+    isQuoteLoadingRef.current = isQuoteLoading
+    isWalletPendingRef.current = isWalletPending
+    staleCycleClosedRef.current = false
+
+    if (!isValidQuote || isQuoteLoading || isWalletPending) {
       resetStaleCycle()
-      return
-    }
-
-    if (activeQuoteRequestIdRef.current !== activeQuoteRequestId) {
-      activeQuoteRequestIdRef.current = activeQuoteRequestId
-      staleCycleClosedRef.current = false
-      staleDeadlineRef.current = Date.now() + staleTimeout
-      resetStaleCycle()
-    }
-
-    if (isQuoteLoading || isWalletPending) {
-      resetStaleCycle()
-      return
-    }
-
-    if (
-      staleCycleClosedRef.current ||
-      staleDeadlineRef.current === null ||
-      staleCycleRef.current ||
-      staleTimeoutRef.current !== null
-    ) {
-      return
-    }
-
-    const remainingStaleTime = staleDeadlineRef.current - Date.now()
-
-    if (remainingStaleTime <= 0) {
-      armStaleListener(activeQuoteRequestId)
-      return
-    }
-
-    staleTimeoutRef.current = window.setTimeout(() => {
-      if (activeQuoteRequestIdRef.current !== activeQuoteRequestId) {
-        return
+      return () => {
+        staleCycleTokenRef.current += 1
+        activeQuoteRequestIdRef.current = null
+        staleCycleClosedRef.current = false
+        resetStaleCycle()
       }
+    }
 
+    const staleCycleToken = staleCycleTokenRef.current
+    staleTimeoutRef.current = window.setTimeout(() => {
       staleTimeoutRef.current = null
 
-      if (staleCycleClosedRef.current) {
+      if (
+        staleCycleTokenRef.current !== staleCycleToken ||
+        activeQuoteRequestIdRef.current !== activeQuoteRequestId ||
+        staleCycleClosedRef.current ||
+        isQuoteLoadingRef.current ||
+        isWalletPendingRef.current
+      ) {
         return
       }
 
-      armStaleListener(activeQuoteRequestId)
-    }, remainingStaleTime)
+      armStaleListener(activeQuoteRequestId, staleCycleToken)
+    }, staleTimeout)
+
+    return () => {
+      staleCycleTokenRef.current += 1
+      activeQuoteRequestIdRef.current = null
+      staleCycleClosedRef.current = false
+      resetStaleCycle()
+    }
   }, [quote?.requestId, isQuoteLoading, isWalletPending, staleTimeout])
 }
