@@ -1,7 +1,11 @@
 import { providers } from 'ethers'
 import { mock } from 'jest-mock-extended'
 
-import { MEDIAN_TIME_BLOCK, SupportedChainId, USDT_OFT_ADDRESS_MAP } from '../constants'
+import {
+  MEDIAN_TIME_BLOCK,
+  SupportedChainId,
+  USDT_OFT_ADDRESS_MAP,
+} from '../constants'
 import { UsdtModule } from './usdtModule'
 
 describe('UsdtModule', () => {
@@ -38,6 +42,8 @@ describe('UsdtModule', () => {
   })
 
   it('returns undefined estimated time when querying the same chain', async () => {
-    await expect(module.getEstimatedTime(SupportedChainId.ETH)).resolves.toBeUndefined()
+    await expect(
+      module.getEstimatedTime(SupportedChainId.ETH)
+    ).resolves.toBeUndefined()
   })
 })

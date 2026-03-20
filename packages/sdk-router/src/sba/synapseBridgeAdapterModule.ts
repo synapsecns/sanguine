@@ -126,10 +126,7 @@ export class SynapseBridgeAdapterModule implements SynapseModule {
     if (!confirmations) {
       return undefined
     }
-    return (
-      confirmations * fromBlockTime +
-      SBA_EXECUTION_BUFFER_SECONDS
-    )
+    return confirmations * fromBlockTime + SBA_EXECUTION_BUFFER_SECONDS
   }
 
   public async getNativeFee(dstEid: number): Promise<BigNumber> {

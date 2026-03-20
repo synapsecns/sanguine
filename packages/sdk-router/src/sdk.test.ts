@@ -10,7 +10,6 @@ import {
   SupportedChainId,
   SYNAPSE_INTENT_ROUTER_ADDRESS_MAP,
 } from './constants'
-import { SBA_CHAIN_METADATA, SBA_EXECUTION_BUFFER_SECONDS } from './sba'
 import { getTestProvider } from './constants/testProviders'
 import {
   ARB_NETH,
@@ -32,6 +31,7 @@ import {
   NATIVE_ADDRESS,
 } from './constants/testValues'
 import { Query, RouterQuery } from './module'
+import { SBA_CHAIN_METADATA, SBA_EXECUTION_BUFFER_SECONDS } from './sba'
 import { SynapseSDK } from './sdk'
 import { EngineID } from './swap'
 import { BridgeQuoteV2, IntentQuote, SwapQuote } from './types'
