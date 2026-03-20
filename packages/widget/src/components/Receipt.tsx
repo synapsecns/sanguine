@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { DoubleDownArrow } from '@/components/icons/DoubleDownArrow'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
@@ -40,39 +38,54 @@ const formatBridgeFee = (
   return visibleFraction ? `${whole}.${visibleFraction}` : whole
 }
 
+const getEstimatedTimeLabel = (estimatedTime?: number | null) => {
+  if (!estimatedTime) {
+    return null
+  }
+
+  if (estimatedTime > 60) {
+    return `${Math.ceil(estimatedTime / 60)} minutes`
+  }
+
+  return `${estimatedTime} seconds`
+}
+
+const getFormattedBridgeFee = ({
+  nativeFee,
+  originChainId,
+  isValidQuote,
+  loading,
+}: {
+  nativeFee: bigint | undefined
+  originChainId?: number
+  isValidQuote: boolean
+  loading: boolean
+}) => {
+  if (!originChainId || !isValidQuote || loading) {
+    return null
+  }
+
+  return formatBridgeFee(
+    nativeFee,
+    CHAINS_BY_ID[originChainId]?.nativeCurrency.decimals
+  )
+}
+
 export const Receipt = ({ quote, loading, send, receive }) => {
   const { originChainId, destinationChainId } = useBridgeState()
 
-  const estTime = useMemo(() => {
-    if (!quote.estimatedTime) {
-      return null
-    }
-
-    if (quote?.estimatedTime > 60) {
-      return Math.ceil(quote?.estimatedTime / 60) + ' minutes'
-    } else {
-      return quote?.estimatedTime + ' seconds'
-    }
-  }, [quote])
-
+  const estTime = getEstimatedTimeLabel(quote?.estimatedTime)
   const isValidQuote = Boolean(quote.outputAmount)
   const nativeFeeSymbol = originChainId
     ? CHAINS_BY_ID[originChainId]?.nativeCurrency.symbol
     : null
-  const formattedBridgeFee = useMemo(() => {
-    if (!originChainId || !isValidQuote || loading) {
-      return null
-    }
-
-    return formatBridgeFee(
-      quote?.nativeFee,
-      CHAINS_BY_ID[originChainId]?.nativeCurrency.decimals
-    )
-  }, [originChainId, isValidQuote, loading, quote])
-  const shouldShowBridgeFee =
-    Boolean(formattedBridgeFee) && typeof quote?.nativeFee === 'bigint'
-      ? quote.nativeFee > 0n
-      : false
+  const formattedBridgeFee = getFormattedBridgeFee({
+    nativeFee: quote?.nativeFee,
+    originChainId,
+    isValidQuote,
+    loading,
+  })
+  const shouldShowBridgeFee = Boolean(formattedBridgeFee)
 
   return (
     <details className="text-sm text-right group">

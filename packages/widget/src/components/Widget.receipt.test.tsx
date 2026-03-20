@@ -257,8 +257,8 @@ describe('Widget receipt integration', () => {
   it('falls back to amount-only Send and Receive rows when token symbols are unavailable', () => {
     mockBridgeState = {
       ...mockBridgeState,
-      originToken: createToken(undefined),
-      destinationToken: createToken(undefined),
+      originToken: createToken(),
+      destinationToken: createToken(),
     }
 
     renderWidget()

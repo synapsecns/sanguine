@@ -13,17 +13,19 @@ export const useBridgeQuoteState = (): RootState['bridgeQuote'] => {
   return useAppSelector((state) => state.bridgeQuote)
 }
 
-const parseNativeFee = (nativeFee: unknown): bigint => {
-  try {
-    if (typeof nativeFee === 'bigint') {
-      return nativeFee
-    }
+const DECIMAL_BIGINT_PATTERN = /^-?\d+$/
 
-    if (typeof nativeFee === 'string') {
-      return BigInt(nativeFee)
+const parseNativeFee = (nativeFee: unknown): bigint => {
+  if (typeof nativeFee === 'bigint') {
+    return nativeFee
+  }
+
+  if (typeof nativeFee === 'string') {
+    const normalizedNativeFee = nativeFee.trim()
+
+    if (DECIMAL_BIGINT_PATTERN.test(normalizedNativeFee)) {
+      return BigInt(normalizedNativeFee)
     }
-  } catch (_error) {
-    return 0n
   }
 
   return 0n

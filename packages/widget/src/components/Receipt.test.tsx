@@ -57,8 +57,8 @@ const renderReceipt = ({
 }: {
   quote?: BridgeQuote
   loading?: boolean
-  send?: string | undefined
-  receive?: string | undefined
+  send?: string
+  receive?: string
 } = {}) => {
   return render(
     <Receipt
