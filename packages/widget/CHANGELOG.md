@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.11.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.10.3...@synapsecns/widget@0.11.0) (2026-03-21)
+
+
+### Features
+
+* **widget:** add bridge fee to receipt ([#4001](https://github.com/synapsecns/sanguine/issues/4001)) ([98acbae](https://github.com/synapsecns/sanguine/commit/98acbae2c1f44c17835f9c60c37377a03b96ed84))
+
+
+
+
+
 ## [0.10.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.10.2...@synapsecns/widget@0.10.3) (2026-03-21)
 
 **Note:** Version bump only for package @synapsecns/widget
