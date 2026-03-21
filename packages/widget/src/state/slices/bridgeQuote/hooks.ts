@@ -13,6 +13,24 @@ export const useBridgeQuoteState = (): RootState['bridgeQuote'] => {
   return useAppSelector((state) => state.bridgeQuote)
 }
 
+const DECIMAL_BIGINT_PATTERN = /^-?\d+$/
+
+const parseNativeFee = (nativeFee: unknown): bigint => {
+  if (typeof nativeFee === 'bigint') {
+    return nativeFee
+  }
+
+  if (typeof nativeFee === 'string') {
+    const normalizedNativeFee = nativeFee.trim()
+
+    if (DECIMAL_BIGINT_PATTERN.test(normalizedNativeFee)) {
+      return BigInt(normalizedNativeFee)
+    }
+  }
+
+  return 0n
+}
+
 export const fetchBridgeQuote = createAsyncThunk(
   'bridgeQuote/fetchBridgeQuote',
   async (
@@ -98,6 +116,7 @@ export const fetchBridgeQuote = createAsyncThunk(
     const hasExecutableQuoteTx = Boolean(quote.tx?.to && quote.tx?.data)
 
     return {
+      id: quote.id ?? null,
       outputAmount: toValueBigInt,
       outputAmountString: commify(
         formatBigIntToString(
@@ -117,6 +136,7 @@ export const fetchBridgeQuote = createAsyncThunk(
         destinationToken.decimals[destinationChainId]
       ),
       feeAmount: 0n,
+      nativeFee: parseNativeFee(quote.nativeFee),
       delta: toValueBigInt,
       estimatedTime: quote.estimatedTime,
       bridgeModuleName,

@@ -16,11 +16,13 @@ export type BridgeQuoteTransaction = {
 }
 
 export type BridgeQuote = {
+  id: string | null
   outputAmount: bigint
   outputAmountString: string
   routerAddress: string
   exchangeRate: bigint
   feeAmount: bigint
+  nativeFee: bigint
   delta: bigint
   estimatedTime: number | null
   bridgeModuleName: string | null
@@ -31,11 +33,13 @@ export type BridgeQuote = {
 }
 
 export const EMPTY_BRIDGE_QUOTE: BridgeQuote = {
+  id: null,
   outputAmount: 0n,
   outputAmountString: '',
   routerAddress: '',
   exchangeRate: 0n,
   feeAmount: 0n,
+  nativeFee: 0n,
   delta: 0n,
   estimatedTime: null,
   bridgeModuleName: null,
