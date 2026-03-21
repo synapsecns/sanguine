@@ -28,6 +28,23 @@ const synapseBridgeAdapterAbi = [
     inputs: [],
     outputs: [{ name: '', type: 'address' }],
   },
+  {
+    name: 'endpoint',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'address' }],
+  },
+] as const
+
+const layerZeroEndpointAbi = [
+  {
+    name: 'delegates',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: '_oapp', type: 'address' }],
+    outputs: [{ name: '', type: 'address' }],
+  },
 ] as const
 
 // Multicall3 address (universal deployment)
@@ -43,7 +60,7 @@ type MultisigConfig = {
 
 type VerificationIssue = {
   chain: string
-  category: 'owner' | 'error'
+  category: 'owner' | 'delegate' | 'error'
   severity: 'error' | 'warning' | 'info'
   message: string
 }
@@ -53,6 +70,7 @@ type ChainVerificationResult = {
   chainId: number
   deployment: Address
   actualOwner: Address | null
+  actualDelegate: Address | null
   expectedOwner: Address | null
   issues: VerificationIssue[]
 }
@@ -65,8 +83,14 @@ type ResultStats = {
   totalIssues: number
 }
 
+type AddressCallResult = {
+  status: 'success' | 'failure'
+  result?: Address
+}
+
 const categoryLabels: Record<VerificationIssue['category'], string> = {
   owner: 'Ownership',
+  delegate: 'Delegate',
   error: 'Errors',
 }
 
@@ -174,13 +198,18 @@ function printChainResult(result: ChainVerificationResult) {
   )
   console.log(`  Deployment: ${result.deployment}`)
   console.log(
-    `  Expected owner: ${
+    `  Expected multisig: ${
       result.expectedOwner || colors.red + 'Missing' + colors.reset
     }`
   )
   console.log(
     `  Actual owner: ${
       result.actualOwner || colors.red + 'Unknown' + colors.reset
+    }`
+  )
+  console.log(
+    `  Actual delegate: ${
+      result.actualDelegate || colors.red + 'Unknown' + colors.reset
     }`
   )
 
@@ -212,7 +241,7 @@ function printSummary(stats: ResultStats) {
 
   if (stats.totalIssues === 0) {
     console.log(
-      `${colors.green}✓ All SynapseBridgeAdapter owners match multisig config!${colors.reset}\n`
+      `${colors.green}✓ All SynapseBridgeAdapter owners and delegates match multisig config!${colors.reset}\n`
     )
     return
   }
@@ -363,8 +392,98 @@ function createChainClient(chainId: number): PublicClient {
   })
 }
 
-function pluralize(count: number, word: string): string {
-  return `${count} ${word}${count === 1 ? '' : 's'}`
+function createIssue(
+  chain: string,
+  category: VerificationIssue['category'],
+  severity: VerificationIssue['severity'],
+  message: string
+): VerificationIssue {
+  return { chain, category, severity, message }
+}
+
+function addIssue(
+  result: ChainVerificationResult,
+  category: VerificationIssue['category'],
+  severity: VerificationIssue['severity'],
+  message: string
+) {
+  result.issues.push(createIssue(result.chain, category, severity, message))
+}
+
+function assignAddressFromCall(
+  result: ChainVerificationResult,
+  callResult: AddressCallResult,
+  failureMessage: string,
+  assignAddress: (address: Address) => void
+): Address | null {
+  if (callResult.status !== 'success' || !callResult.result) {
+    addIssue(result, 'error', 'error', failureMessage)
+    return null
+  }
+
+  assignAddress(callResult.result)
+  return callResult.result
+}
+
+function addMissingExpectedOwnerIssues(result: ChainVerificationResult) {
+  result.issues.push(
+    createIssue(
+      result.chain,
+      'owner',
+      'error',
+      'Missing expected owner in multisig config'
+    ),
+    createIssue(
+      result.chain,
+      'delegate',
+      'error',
+      'Missing expected delegate in multisig config'
+    )
+  )
+}
+
+function addAddressMatchIssue(
+  result: ChainVerificationResult,
+  category: 'owner' | 'delegate',
+  expectedAddress: Address,
+  actualAddress: Address | null,
+  label: 'Owner' | 'Delegate'
+) {
+  if (actualAddress === null) {
+    return
+  }
+
+  const addressesMatch =
+    actualAddress.toLowerCase() === expectedAddress.toLowerCase()
+
+  addIssue(
+    result,
+    category,
+    addressesMatch ? 'info' : 'error',
+    addressesMatch
+      ? `${label} matches multisig config`
+      : `${label} mismatch: expected ${expectedAddress}, got ${actualAddress}`
+  )
+}
+
+async function fetchDelegateCallResult(
+  client: PublicClient,
+  endpointAddress: Address,
+  deploymentAddress: Address
+): Promise<AddressCallResult> {
+  const [delegateResult] = await client.multicall({
+    contracts: [
+      {
+        address: endpointAddress,
+        abi: layerZeroEndpointAbi,
+        functionName: 'delegates',
+        args: [deploymentAddress],
+      },
+    ],
+    allowFailure: true,
+  })
+
+  return delegateResult
 }
 
 async function verifyChain(
@@ -378,70 +497,83 @@ async function verifyChain(
     chainId,
     deployment: deployment.address,
     actualOwner: null,
+    actualDelegate: null,
     expectedOwner: multisigConfig[chain] || null,
     issues: [],
   }
 
   try {
     const client = createChainClient(chainId)
-    const ownerResult = await client.multicall({
+    const [ownerResult, endpointResult] = await client.multicall({
       contracts: [
         {
           address: deployment.address,
           abi: synapseBridgeAdapterAbi,
           functionName: 'owner',
         },
+        {
+          address: deployment.address,
+          abi: synapseBridgeAdapterAbi,
+          functionName: 'endpoint',
+        },
       ],
       allowFailure: true,
     })
 
-    if (ownerResult[0].status === 'success' && ownerResult[0].result) {
-      result.actualOwner = ownerResult[0].result
-    } else {
-      result.issues.push({
-        chain,
-        category: 'error',
-        severity: 'error',
-        message: 'Failed to fetch current owner',
-      })
-      return result
+    assignAddressFromCall(
+      result,
+      ownerResult,
+      'Failed to fetch current owner',
+      (ownerAddress) => {
+        result.actualOwner = ownerAddress
+      }
+    )
+
+    const endpointAddress = assignAddressFromCall(
+      result,
+      endpointResult,
+      'Failed to fetch app endpoint',
+      () => undefined
+    )
+
+    if (endpointAddress !== null) {
+      const delegateResult = await fetchDelegateCallResult(
+        client,
+        endpointAddress,
+        deployment.address
+      )
+
+      assignAddressFromCall(
+        result,
+        delegateResult,
+        'Failed to fetch current delegate',
+        (delegateAddress) => {
+          result.actualDelegate = delegateAddress
+        }
+      )
     }
 
     if (result.expectedOwner === null) {
-      result.issues.push({
-        chain,
-        category: 'owner',
-        severity: 'error',
-        message: 'Missing expected owner in multisig config',
-      })
+      addMissingExpectedOwnerIssues(result)
       return result
     }
 
-    const ownersMatch =
-      result.actualOwner.toLowerCase() === result.expectedOwner.toLowerCase()
-
-    if (ownersMatch) {
-      result.issues.push({
-        chain,
-        category: 'owner',
-        severity: 'info',
-        message: 'Owner matches multisig config',
-      })
-    } else {
-      result.issues.push({
-        chain,
-        category: 'owner',
-        severity: 'error',
-        message: `Owner mismatch: expected ${result.expectedOwner}, got ${result.actualOwner}`,
-      })
-    }
+    addAddressMatchIssue(
+      result,
+      'owner',
+      result.expectedOwner,
+      result.actualOwner,
+      'Owner'
+    )
+    addAddressMatchIssue(
+      result,
+      'delegate',
+      result.expectedOwner,
+      result.actualDelegate,
+      'Delegate'
+    )
   } catch (error) {
-    result.issues.push({
-      chain,
-      category: 'error',
-      severity: 'error',
-      message: `RPC error: ${formatError(error)}`,
-    })
+    addIssue(result, 'error', 'error', `RPC error: ${formatError(error)}`)
   }
 
   return result
@@ -449,7 +581,7 @@ async function verifyChain(
 
 function printResults(results: ChainVerificationResult[]) {
   console.log(
-    `\n${colors.bold}${colors.cyan}SynapseBridgeAdapter Ownership Verification Results${colors.reset}\n`
+    `\n${colors.bold}${colors.cyan}SynapseBridgeAdapter Ownership & Delegate Verification Results${colors.reset}\n`
   )
 
   const stats = calculateResultStats(results)

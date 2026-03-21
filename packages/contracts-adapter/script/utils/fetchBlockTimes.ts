@@ -91,7 +91,7 @@ function getRpcUrl(chainId: number): string {
 
   // Special case for Moonbeam (chainId 1284)
   if (chainId === 1284) {
-    return 'https://moonbeam.unitedbloc.com'
+    return 'https://rpc.api.moonbeam.network'
   }
 
   return `${baseUrl}/${chainId}`
