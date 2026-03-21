@@ -4,10 +4,20 @@ pragma solidity 0.8.24;
 import {SynapseBridgeAdapter} from "../src/SynapseBridgeAdapter.sol";
 
 import {UlnConfig} from "@layerzerolabs/lz-evm-messagelib-v2/contracts/uln/UlnBase.sol";
-import {ILayerZeroEndpointV2} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
-import {SetConfigParam} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/IMessageLibManager.sol";
+import {ILayerZeroEndpointV2 as ILZEV2} from
+    "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
+import {IMessageLib} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/IMessageLib.sol";
+import {
+    IMessageLibManager,
+    SetConfigParam
+} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/IMessageLibManager.sol";
 import {AddressCast} from "@layerzerolabs/lz-evm-protocol-v2/contracts/libs/AddressCast.sol";
+import {IOAppCore} from "@layerzerolabs/oapp-evm/contracts/oapp/interfaces/IOAppCore.sol";
 import {StringUtils, SynapseScript, stdJson} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
+
+interface ILayerZeroEndpointV2 is ILZEV2 {
+    function delegates(address _oapp) external view returns (address);
+}
 
 // solhint-disable no-empty-blocks, ordering
 contract WireSBA is SynapseScript {
@@ -27,14 +37,16 @@ contract WireSBA is SynapseScript {
     address internal receiveLibrary;
     address internal sendLibrary;
     mapping(address => SetConfigParam[]) internal setConfigParams;
+    bool internal printMultisigTxs;
 
     string[] internal allChains;
     mapping(string => uint32) internal eidByChainName;
 
+    mapping(uint32 => bool) internal eidSkipped;
+
     string internal dvnsConfig;
 
     string internal securityConfig;
-    uint256 internal confirmationTimeMs;
     address[] internal requiredDVNs;
 
     /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
@@ -42,8 +54,10 @@ contract WireSBA is SynapseScript {
 
     function run() external broadcastWithHooks {
         loadConfigs();
+        loadSkippedEids();
         address deployment = getDeploymentAddress({contractName: "SynapseBridgeAdapter", revertIfNotFound: true});
         sba = SynapseBridgeAdapter(deployment);
+        setPrintMultisigTxs();
         // Every action below will be skipped if already done
         setPeers();
         setSendLibrary();
@@ -62,14 +76,12 @@ contract WireSBA is SynapseScript {
     }
 
     function getChainConfirmations(string memory chain) internal view returns (uint64 confirmations) {
-        if (confirmationTimeMs == 0) {
-            printFailWithIndent("Confirmation time not set");
+        string memory configPath = string.concat(".blockConfirmations.", chain);
+        if (!securityConfig.keyExists(configPath)) {
+            printFailWithIndent(string.concat("Block confirmations not set for chain: ", chain));
             assert(false);
         }
-        uint256 blockTimeMs = chainsConfig.readUint(string.concat(".", chain, ".blockTime"));
-        confirmations = uint64(confirmationTimeMs / blockTimeMs);
-        // Round up to be a multiple of 10
-        confirmations = (confirmations + 9) / 10 * 10;
+        confirmations = uint64(securityConfig.readUint(configPath));
     }
 
     function getUlnConfig(uint64 confirmations) internal view returns (UlnConfig memory) {
@@ -87,7 +99,6 @@ contract WireSBA is SynapseScript {
         dvnsConfig = readGlobalDeployProdConfig("dvns", true);
 
         securityConfig = readGlobalDeployProdConfig("security", true);
-        confirmationTimeMs = readConfirmationTimeMs();
         string[] memory dvnNames = securityConfig.readStringArray(".DVNs");
         for (uint256 i = 0; i < dvnNames.length; ++i) {
             requiredDVNs.push(dvnsConfig.readAddress(string.concat(".", activeChain, ".", dvnNames[i])));
@@ -116,20 +127,17 @@ contract WireSBA is SynapseScript {
         sendLibrary = chainsConfig.readAddress(string.concat(".", activeChain, ".sendUln302"));
     }
 
-    function readConfirmationTimeMs() internal view returns (uint256) {
-        uint256 confirmationTimeSeconds = securityConfig.readUint(".confirmationTimeSeconds");
-        logTime(confirmationTimeSeconds, 1 days, "days") || logTime(confirmationTimeSeconds, 1 hours, "hours")
-            || logTime(confirmationTimeSeconds, 1 minutes, "minutes")
-            || logTime(confirmationTimeSeconds, 1 seconds, "seconds");
-        return confirmationTimeSeconds * 1000;
-    }
-
-    function logTime(uint256 time, uint256 period, string memory unit) internal view returns (bool logged) {
-        if (time % period == 0) {
-            printInfo(string.concat("Confirmation time: ", vm.toString(time / period), " ", unit));
-            return true;
+    function loadSkippedEids() internal {
+        for (uint256 i = 0; i < allChains.length; ++i) {
+            string memory chain = allChains[i];
+            uint32 eid = eidByChainName[chain];
+            if (!IMessageLib(sendLibrary).isSupportedEid(eid) || !IMessageLib(receiveLibrary).isSupportedEid(eid)) {
+                eidSkipped[eid] = true;
+                printLogWithIndent(
+                    string.concat(unicode"⚠️ ", chain, " is not supported (eid: ", vm.toString(eid), ")")
+                );
+            }
         }
-        return false;
     }
 
     function sortAddresses(address[] memory addresses) internal returns (address[] memory sorted) {
@@ -142,6 +150,24 @@ contract WireSBA is SynapseScript {
         for (uint256 i = 0; i < addresses.length; ++i) {
             sorted[i] = address(uint160(uint256(tmp[i])));
         }
+    }
+
+    function setPrintMultisigTxs() internal {
+        address delegate = endpoint.delegates(address(sba));
+        if (msg.sender == delegate) {
+            return;
+        }
+        printMultisigTxs = true;
+        printInfo("Broadcast wallet is not the app delegate, printing multisig calldata instead of submitting txs");
+        printLogWithIndent(string.concat("App:         ", vm.toString(address(sba))));
+        printLogWithIndent(string.concat("Delegate:    ", vm.toString(delegate)));
+        printLogWithIndent(string.concat("Broadcaster: ", vm.toString(msg.sender)));
+    }
+
+    function printMultisigTx(string memory action, address to, bytes memory data) internal view {
+        printLogWithIndent(action);
+        printLogWithIndent(string.concat("to:   ", vm.toString(to)));
+        printLogWithIndent(string.concat("data: ", vm.toString(data)));
     }
 
     function setPeers() internal {
@@ -159,8 +185,20 @@ contract WireSBA is SynapseScript {
             }
             bytes32 peer = remoteSBA.toBytes32();
             uint32 eid = eidByChainName[chain];
+            if (eidSkipped[eid]) {
+                printSkipWithIndent(string.concat(chain, " is not supported"));
+                continue;
+            }
             if (sba.peers(eid) == peer) {
                 printSkipWithIndent(string.concat(chain, " already has peer set"));
+                continue;
+            }
+            if (printMultisigTxs) {
+                printMultisigTx(
+                    string.concat(formatChainName(chain), "set peer"),
+                    address(sba),
+                    abi.encodeCall(IOAppCore.setPeer, (eid, peer))
+                );
                 continue;
             }
             sba.setPeer(eid, peer);
@@ -176,10 +214,22 @@ contract WireSBA is SynapseScript {
                 continue;
             }
             uint32 eid = eidByChainName[chain];
+            if (eidSkipped[eid]) {
+                printSkipWithIndent(string.concat(chain, " is not supported"));
+                continue;
+            }
             address curSendLibrary = endpoint.getSendLibrary(address(sba), eid);
             bool isDefault = endpoint.isDefaultSendLibrary(address(sba), eid);
             if (curSendLibrary == sendLibrary && !isDefault) {
                 printSkipWithIndent(string.concat(chain, " already has send library set"));
+                continue;
+            }
+            if (printMultisigTxs) {
+                printMultisigTx(
+                    string.concat(formatChainName(chain), "set send library"),
+                    address(endpoint),
+                    abi.encodeCall(IMessageLibManager.setSendLibrary, (address(sba), eid, sendLibrary))
+                );
                 continue;
             }
             endpoint.setSendLibrary(address(sba), eid, sendLibrary);
@@ -195,12 +245,24 @@ contract WireSBA is SynapseScript {
                 continue;
             }
             uint32 eid = eidByChainName[chain];
+            if (eidSkipped[eid]) {
+                printSkipWithIndent(string.concat(chain, " is not supported"));
+                continue;
+            }
             (address curReceiveLibrary, bool isDefault) = endpoint.getReceiveLibrary(address(sba), eid);
             if (curReceiveLibrary == receiveLibrary && !isDefault) {
                 printSkipWithIndent(string.concat(chain, " already has receive library set"));
                 continue;
             }
             // Note: we don't need to use the grace period here
+            if (printMultisigTxs) {
+                printMultisigTx(
+                    string.concat(formatChainName(chain), "set receive library"),
+                    address(endpoint),
+                    abi.encodeCall(IMessageLibManager.setReceiveLibrary, (address(sba), eid, receiveLibrary, 0))
+                );
+                continue;
+            }
             endpoint.setReceiveLibrary(address(sba), eid, receiveLibrary, 0);
             printSuccessWithIndent(string.concat(formatChainName(chain), vm.toString(receiveLibrary)));
         }
@@ -213,6 +275,10 @@ contract WireSBA is SynapseScript {
             assert(false);
         }
         uint32 eid = eidByChainName[chain];
+        if (eidSkipped[eid]) {
+            printSkipWithIndent(string.concat(chain, " is not supported"));
+            return;
+        }
         bytes memory curConfig =
             endpoint.getConfig({_oapp: address(sba), _lib: lib, _eid: eid, _configType: CONFIG_TYPE_ULN});
         if (keccak256(curConfig) == keccak256(abi.encode(ulnConfig))) {
@@ -246,7 +312,16 @@ contract WireSBA is SynapseScript {
             prepareUlnConfig(chain, "send", ulnConfig);
         }
         if (setConfigParams[sendLibrary].length > 0) {
-            endpoint.setConfig({_oapp: address(sba), _lib: sendLibrary, _params: setConfigParams[sendLibrary]});
+            SetConfigParam[] memory params = setConfigParams[sendLibrary];
+            if (printMultisigTxs) {
+                printMultisigTx(
+                    "set send config",
+                    address(endpoint),
+                    abi.encodeCall(IMessageLibManager.setConfig, (address(sba), sendLibrary, params))
+                );
+                return;
+            }
+            endpoint.setConfig({_oapp: address(sba), _lib: sendLibrary, _params: params});
         }
     }
 
@@ -263,7 +338,16 @@ contract WireSBA is SynapseScript {
             prepareUlnConfig(chain, "receive", ulnConfig);
         }
         if (setConfigParams[receiveLibrary].length > 0) {
-            endpoint.setConfig({_oapp: address(sba), _lib: receiveLibrary, _params: setConfigParams[receiveLibrary]});
+            SetConfigParam[] memory params = setConfigParams[receiveLibrary];
+            if (printMultisigTxs) {
+                printMultisigTx(
+                    "set receive config",
+                    address(endpoint),
+                    abi.encodeCall(IMessageLibManager.setConfig, (address(sba), receiveLibrary, params))
+                );
+                return;
+            }
+            endpoint.setConfig({_oapp: address(sba), _lib: receiveLibrary, _params: params});
         }
     }
 }

@@ -9,6 +9,7 @@ import * as operations from './operations'
 import { RelayModuleSet } from './relay'
 import { FastBridgeRouterSet } from './rfq'
 import { SynapseRouterSet, SynapseCCTPRouterSet, ChainProvider } from './router'
+import { SynapseBridgeAdapterModuleSet } from './sba'
 import { SynapseIntentRouterSet } from './sir/synapseIntentRouterSet'
 import { SwapEngineSet } from './swap/swapEngineSet'
 import { TokenMetadataFetcher } from './utils'
@@ -21,6 +22,7 @@ class SynapseSDK {
   public gasZipModuleSet: GasZipModuleSet
   public relayModuleSet: RelayModuleSet
   public usdtModuleSet: UsdtModuleSet
+  public synapseBridgeAdapterModuleSet: SynapseBridgeAdapterModuleSet
 
   public sirSet: SynapseIntentRouterSet
   public swapEngineSet: SwapEngineSet
@@ -59,13 +61,15 @@ class SynapseSDK {
     this.gasZipModuleSet = new GasZipModuleSet(chainProviders)
     this.relayModuleSet = new RelayModuleSet(chainProviders)
     this.usdtModuleSet = new UsdtModuleSet(chainProviders)
+    this.synapseBridgeAdapterModuleSet = new SynapseBridgeAdapterModuleSet(
+      chainProviders
+    )
     this.allModuleSets = [
-      this.synapseRouterSet,
-      this.synapseCCTPRouterSet,
       this.fastBridgeRouterSet,
       this.gasZipModuleSet,
       this.relayModuleSet,
       this.usdtModuleSet,
+      this.synapseBridgeAdapterModuleSet,
     ]
     this.sirSet = new SynapseIntentRouterSet(chainProviders)
     this.swapEngineSet = new SwapEngineSet(

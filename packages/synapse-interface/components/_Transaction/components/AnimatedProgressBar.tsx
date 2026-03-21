@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { getUnixTimeMinutesBeforeNow } from '@/utils/time'
+import { getUnixTimeSecondsNow } from '@/utils/time'
 
 /**
  * @param {string} id - The unique ID of a rendered instance.
@@ -19,7 +19,7 @@ export const AnimatedProgressBar = memo(
     estDuration: number
     status: 'pending' | 'completed' | 'reverted' | 'refunded'
   }) => {
-    const currentTime = getUnixTimeMinutesBeforeNow(0)
+    const currentTime = getUnixTimeSecondsNow()
     const elapsedTime = currentTime - startTime
     const remainingTime = estDuration - elapsedTime
     const percentElapsed = (elapsedTime / estDuration) * 100

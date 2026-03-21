@@ -9,15 +9,23 @@
 [![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/synapsecns/sanguine/foundry-tests.yml?style=flat-square&label=Forge%20Tests)](https://github.com/synapsecns/sanguine/actions/workflows/foundry-tests.yml)
 [![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/synapsecns/sanguine/solidity.yml?style=flat-square&label=Slither)](https://github.com/synapsecns/sanguine/actions/workflows/solidity.yml)
 [![Static Badge](https://img.shields.io/badge/Forge-Docs-f?style=flat-square&logo=gitbook)](https://interchain-contracts.synapseprotocol.com/)
-[![npm](https://img.shields.io/npm/v/%40synapsecns%2Fcontracts-core?style=flat-square)](https://www.npmjs.com/package/@synapsecns/contracts-core)
+[![GitHub Package](https://img.shields.io/github/v/release/synapsecns/sanguine?filter=@synapsecns/contracts-core*&style=flat-square&label=github%20packages)](https://github.com/synapsecns/sanguine/packages)
 
 `@synapsecns/contracts-core` contain the Solidity contracts used within the Synapse Interchain Network messaging system.
 
 # Usage
 
-These contracts can be installed with:
+This package is published to [GitHub Packages](https://github.com/synapsecns/sanguine/packages). Configure your `.npmrc` to use the GitHub registry for `@synapsecns` packages:
 
-`npm i @synapsecns/contracts-core`
+```
+@synapsecns:registry=https://npm.pkg.github.com
+```
+
+Then install:
+
+```bash
+npm i @synapsecns/contracts-core
+```
 
 Please refer to our [usage guide](https://docs.synapseprotocol.com/synapse-interchain-network-sin/build-on-the-synapse-interchain-network) or [examples](contracts/client/TestClient.sol)
 

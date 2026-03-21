@@ -3,6 +3,103 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.23.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.22.2...@synapsecns/sdk-router@0.23.0) (2026-03-21)
+
+
+### Features
+
+* **widget:** add bridge fee to receipt ([#4001](https://github.com/synapsecns/sanguine/issues/4001)) ([98acbae](https://github.com/synapsecns/sanguine/commit/98acbae2c1f44c17835f9c60c37377a03b96ed84))
+
+
+
+
+
+## [0.22.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.22.1...@synapsecns/sdk-router@0.22.2) (2026-03-21)
+
+
+### Bug Fixes
+
+* **sdk-router:** SBA more chains ([#4002](https://github.com/synapsecns/sanguine/issues/4002)) ([cedb467](https://github.com/synapsecns/sanguine/commit/cedb4679d0e153a36779250dd797ea3c65074931))
+
+
+
+
+
+## [0.22.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.22.0...@synapsecns/sdk-router@0.22.1) (2026-03-20)
+
+
+### Bug Fixes
+
+* **sdk-router:** sba estimated time ([#4000](https://github.com/synapsecns/sanguine/issues/4000)) ([8a454cd](https://github.com/synapsecns/sanguine/commit/8a454cd638dae94e52eea955c34b02786093950d))
+* **widget:** quote flickering ([#3999](https://github.com/synapsecns/sanguine/issues/3999)) ([6eda6d8](https://github.com/synapsecns/sanguine/commit/6eda6d8bb7222866e5be19fd964835392ad20e62))
+
+
+
+
+
+# [0.22.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.21.2...@synapsecns/sdk-router@0.22.0) (2026-03-20)
+
+
+### Features
+
+* **sdk-router:** SBA support ([#3996](https://github.com/synapsecns/sanguine/issues/3996)) ([5384638](https://github.com/synapsecns/sanguine/commit/5384638fbcd6334a2bc22e9b6199351710780a11))
+
+
+
+
+
+## [0.21.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.21.1...@synapsecns/sdk-router@0.21.2) (2026-03-19)
+
+
+### Bug Fixes
+
+* add workflow_dispatch to publish workflow and trigger publish ([#3993](https://github.com/synapsecns/sanguine/issues/3993)) ([5aed8ab](https://github.com/synapsecns/sanguine/commit/5aed8ab244cf4aa26bff7701b0f09bb2464a4aed))
+
+
+
+
+
+## [0.21.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.21.0...@synapsecns/sdk-router@0.21.1) (2026-03-19)
+
+**Note:** Version bump only for package @synapsecns/sdk-router
+
+
+
+
+
+# [0.21.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.9...@synapsecns/sdk-router@0.21.0) (2026-03-18)
+
+
+### Features
+
+* **sdk-router:** remove bridgeV1 support for gasZip, synapseRFQ ([#3982](https://github.com/synapsecns/sanguine/issues/3982)) ([35f333a](https://github.com/synapsecns/sanguine/commit/35f333a7f5248570199ed8555a4f5941fa760520))
+
+
+
+
+
+## [0.20.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.8...@synapsecns/sdk-router@0.20.9) (2026-03-17)
+
+
+### Bug Fixes
+
+* **sdk-router:** skip router integration suites ([#3978](https://github.com/synapsecns/sanguine/issues/3978)) ([76b6754](https://github.com/synapsecns/sanguine/commit/76b6754832ff382011d1f7cabbf2f4b927098b54))
+
+
+
+
+
+## [0.20.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.7...@synapsecns/sdk-router@0.20.8) (2026-03-12)
+
+
+### Bug Fixes
+
+* **sdk-router:** pauses ([#3964](https://github.com/synapsecns/sanguine/issues/3964)) ([2cfb7a6](https://github.com/synapsecns/sanguine/commit/2cfb7a6322dff14a2971ec34a644528498221134))
+
+
+
+
+
 ## [0.20.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.20.6...@synapsecns/sdk-router@0.20.7) (2025-12-02)
 
 

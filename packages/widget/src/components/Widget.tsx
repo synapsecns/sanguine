@@ -46,6 +46,7 @@ import {
   useBridgeQuoteState,
 } from '@/state/slices/bridgeQuote/hooks'
 import {
+  type BridgeQuote,
   EMPTY_BRIDGE_QUOTE,
   resetQuote,
 } from '@/state/slices/bridgeQuote/reducer'
@@ -79,6 +80,17 @@ interface WidgetProps {
   protocolName?: string
 }
 
+const formatReceiptAmount = (
+  amount: string | undefined,
+  tokenSymbol?: string
+): string | undefined => {
+  if (!amount) {
+    return amount
+  }
+
+  return tokenSymbol ? `${amount} ${tokenSymbol}` : amount
+}
+
 export const Widget = ({
   customTheme,
   container = false,
@@ -88,6 +100,14 @@ export const Widget = ({
 }: WidgetProps) => {
   const dispatch = useAppDispatch()
   const currentSDKRequestID = useRef(0)
+  const receiptQuoteSelectionRef = useRef<{
+    quoteKey: string | BridgeQuote
+    originChainId: number
+    destinationChainId: number
+    originTokenRouteSymbol: string | undefined
+    destinationTokenRouteSymbol: string | undefined
+    debouncedInputAmount: string
+  } | null>(null)
 
   const { synapseSDK, synapseProviders } = useSynapseContext()
 
@@ -110,6 +130,10 @@ export const Widget = ({
     BridgeMaintenanceProgressBar,
     BridgeMaintenanceWarningMessage,
   } = useMaintenance()
+  const pausedModulesKey = useMemo(
+    () => JSON.stringify(pausedModulesList),
+    [pausedModulesList]
+  )
 
   const allTokens = useMemo(() => {
     return getFromTokens({
@@ -136,6 +160,38 @@ export const Widget = ({
       (p) => Number(p?._network?.chainId) === originChainId
     )
   }, [originChainId])
+
+  const originTokenRouteSymbol = originToken?.routeSymbol
+  const destinationTokenRouteSymbol = destinationToken?.routeSymbol
+  const receiptQuoteKey = bridgeQuote.id ?? bridgeQuote
+
+  if (bridgeQuote === EMPTY_BRIDGE_QUOTE) {
+    receiptQuoteSelectionRef.current = null
+  } else if (receiptQuoteSelectionRef.current?.quoteKey !== receiptQuoteKey) {
+    receiptQuoteSelectionRef.current = {
+      quoteKey: receiptQuoteKey,
+      originChainId,
+      destinationChainId,
+      originTokenRouteSymbol,
+      destinationTokenRouteSymbol,
+      debouncedInputAmount,
+    }
+  }
+
+  const receiptQuoteSelection =
+    receiptQuoteSelectionRef.current?.quoteKey === receiptQuoteKey
+      ? receiptQuoteSelectionRef.current
+      : null
+  const hasMatchingReceiptQuoteSelection =
+    receiptQuoteSelection?.originChainId === originChainId &&
+    receiptQuoteSelection?.destinationChainId === destinationChainId &&
+    receiptQuoteSelection?.originTokenRouteSymbol === originTokenRouteSymbol &&
+    receiptQuoteSelection?.destinationTokenRouteSymbol ===
+      destinationTokenRouteSymbol &&
+    receiptQuoteSelection?.debouncedInputAmount === debouncedInputAmount
+  const receiptQuote = hasMatchingReceiptQuoteSelection
+    ? bridgeQuote
+    : EMPTY_BRIDGE_QUOTE
 
   useEffect(() => {
     dispatch(setOriginChainId(networkId))
@@ -180,6 +236,7 @@ export const Widget = ({
   /** Fetch and store token allowance */
   useEffect(() => {
     if (
+      connectedAddress &&
       originToken?.addresses[originChainId] !== ZeroAddress &&
       bridgeQuote?.routerAddress
     ) {
@@ -200,7 +257,7 @@ export const Widget = ({
     bridgeQuote?.routerAddress,
   ])
 
-  const fetchAndStoreBridgeQuote = async () => {
+  const fetchAndStoreBridgeQuote = useCallback(async () => {
     currentSDKRequestID.current += 1
     const thisRequestId = currentSDKRequestID.current
 
@@ -223,10 +280,21 @@ export const Widget = ({
           requestId: thisRequestId,
           pausedModules: pausedModulesList,
           timestamp: currentTimestamp,
+          connectedAddress: connectedAddress || undefined,
         })
       )
     }
-  }
+  }, [
+    connectedAddress,
+    debouncedInputAmount,
+    destinationChainId,
+    destinationToken,
+    dispatch,
+    originChainId,
+    originToken,
+    pausedModulesKey,
+    synapseSDK,
+  ])
 
   /** Handle refreshing quotes */
   useEffect(() => {
@@ -235,15 +303,7 @@ export const Widget = ({
     } else {
       dispatch(resetQuote())
     }
-  }, [
-    debouncedInputAmount,
-    originToken?.routeSymbol,
-    destinationToken?.routeSymbol,
-    originChainId,
-    destinationChainId,
-    isInputValid,
-    hasValidSelections,
-  ])
+  }, [dispatch, fetchAndStoreBridgeQuote, hasValidSelections, isInputValid])
 
   useBridgeQuoteUpdater(
     bridgeQuote,
@@ -323,26 +383,28 @@ export const Widget = ({
   }
 
   const executeBridge = async () => {
+    const quoteTx = bridgeQuote?.tx
+    const canExecuteConnectedQuote =
+      Boolean(connectedAddress && signer) &&
+      bridgeQuote?.quoteAddress === connectedAddress &&
+      Boolean(quoteTx?.to && quoteTx?.data)
+
+    if (!canExecuteConnectedQuote || !quoteTx) {
+      return
+    }
+
     try {
       dispatch(setIsWalletPending(true))
+
       const action = await dispatch(
         executeBridgeTxn({
-          destinationAddress: connectedAddress,
-          originRouterAddress: bridgeQuote?.routerAddress,
           originChainId,
           destinationChainId,
-          tokenAddress: originToken?.addresses[originChainId],
-          amount: stringToBigInt(
-            debouncedInputAmount,
-            originToken?.decimals[originChainId]
-          ),
           parsedOriginAmount: debouncedInputAmount,
           originTokenSymbol: originToken?.symbol,
-          originQuery: bridgeQuote?.originQuery,
-          destQuery: bridgeQuote?.destQuery,
           bridgeModuleName: bridgeQuote?.bridgeModuleName,
           estimatedTime: bridgeQuote?.estimatedTime,
-          synapseSDK,
+          quoteTx,
           signer,
         })
       )
@@ -395,6 +457,15 @@ export const Widget = ({
 
   const isCurrentRequestedQuote =
     bridgeQuote?.requestId === currentSDKRequestID.current
+  const hasMatchingConnectedQuote =
+    !connectedAddress ||
+    (bridgeQuote?.quoteAddress === connectedAddress &&
+      Boolean(bridgeQuote?.tx?.to && bridgeQuote?.tx?.data))
+  const isValidBridgeQuote =
+    Boolean(bridgeQuote) &&
+    bridgeQuote !== EMPTY_BRIDGE_QUOTE &&
+    isCurrentRequestedQuote &&
+    hasMatchingConnectedQuote
 
   const destinationValue = useMemo(() => {
     if (isLoading) {
@@ -489,27 +560,39 @@ export const Widget = ({
         </section>
         <BridgeMaintenanceWarningMessage />
         <Receipt
-          quote={bridgeQuote ?? null}
+          quote={receiptQuote}
           loading={isLoading}
-          send={formatBigIntToString(
-            stringToBigInt(
-              debouncedInputAmount,
-              originToken?.decimals[originChainId]
-            ),
-            originToken?.decimals[originChainId],
-            4
-          )}
-          receive={formatBigIntToString(
-            bridgeQuote?.delta,
-            destinationToken?.decimals[destinationChainId],
-            4
-          )}
+          send={
+            hasMatchingReceiptQuoteSelection
+              ? formatReceiptAmount(
+                  formatBigIntToString(
+                    stringToBigInt(
+                      debouncedInputAmount,
+                      originToken?.decimals[originChainId]
+                    ),
+                    originToken?.decimals[originChainId],
+                    4
+                  ),
+                  originToken?.symbol
+                )
+              : undefined
+          }
+          receive={
+            hasMatchingReceiptQuoteSelection
+              ? formatReceiptAmount(
+                  formatBigIntToString(
+                    bridgeQuote?.delta,
+                    destinationToken?.decimals[destinationChainId],
+                    4
+                  ),
+                  destinationToken?.symbol
+                )
+              : undefined
+          }
         />
         <BridgeButton
           originChain={CHAINS_BY_ID[originChainId]}
-          isValidQuote={
-            Boolean(bridgeQuote) && bridgeQuote !== EMPTY_BRIDGE_QUOTE
-          }
+          isValidQuote={isValidBridgeQuote}
           handleApprove={executeApproval}
           handleBridge={executeBridge}
           isApprovalPending={

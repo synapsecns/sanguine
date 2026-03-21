@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.37](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-core@1.0.36...@synapsecns/contracts-core@1.0.37) (2026-03-19)
+
+
+### Bug Fixes
+
+* pin Foundry and narrow typechain glob to unblock publishing ([#3991](https://github.com/synapsecns/sanguine/issues/3991)) ([2166d55](https://github.com/synapsecns/sanguine/commit/2166d551f5ac8c03b121fcab6ea75309265d1756))
+
+
+
+
+
+## [1.0.36](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-core@1.0.35...@synapsecns/contracts-core@1.0.36) (2026-03-19)
+
+**Note:** Version bump only for package @synapsecns/contracts-core
+
+
+
+
+
 ## [1.0.35](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-core@1.0.34...@synapsecns/contracts-core@1.0.35) (2024-10-09)
 
 **Note:** Version bump only for package @synapsecns/contracts-core

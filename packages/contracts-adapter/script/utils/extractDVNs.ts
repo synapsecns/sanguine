@@ -8,6 +8,7 @@ interface DVNInfo {
   canonicalName: string
   id: string
   deprecated?: boolean
+  lzReadCompatible?: boolean
 }
 
 interface ChainMetadata {
@@ -29,6 +30,10 @@ interface DVNConfig {
   [chain: string]: {
     [dvnName: string]: Address
   }
+}
+
+function compareAlphabetically(left: string, right: string): number {
+  return left.localeCompare(right)
 }
 
 // Type guard to validate DVN metadata structure
@@ -75,19 +80,34 @@ async function extractDVNs(): Promise<void> {
 
   // Process DVN data - collect DVN coverage across chains
   const dvnCoverage: Map<string, Map<string, string>> = new Map()
+  const activeDvnAddresses: Map<string, Map<string, Set<string>>> = new Map()
 
   for (const [lzChainName, chainData] of Object.entries(metadata)) {
     const ourChainName = lzToOurChainMap[lzChainName]
 
-    if (!ourChainName || !chainData.dvns) continue
+    if (!ourChainName || !chainData.dvns) {
+      continue
+    }
 
     for (const [dvnAddress, dvnInfo] of Object.entries(chainData.dvns)) {
-      // Skip deprecated DVNs
-      if (dvnInfo.deprecated) continue
+      // Skip deprecated or lzRead-compatible DVNs, which are not suitable for standard pathway config.
+      if (dvnInfo.deprecated || dvnInfo.lzReadCompatible) {
+        continue
+      }
 
       // Use canonicalName as the DVN identifier
       // Imagine putting spaces in JSON keys
       const dvnName = dvnInfo.canonicalName.replace(/ /g, '_')
+
+      if (!activeDvnAddresses.has(dvnName)) {
+        activeDvnAddresses.set(dvnName, new Map())
+      }
+      if (!activeDvnAddresses.get(dvnName)!.has(ourChainName)) {
+        activeDvnAddresses.get(dvnName)!.set(ourChainName, new Set())
+      }
+      activeDvnAddresses.get(dvnName)!.get(ourChainName)!.add(
+        getAddress(dvnAddress)
+      )
 
       if (!dvnCoverage.has(dvnName)) {
         dvnCoverage.set(dvnName, new Map())
@@ -100,6 +120,7 @@ async function extractDVNs(): Promise<void> {
   // Filter DVNs that are present on all required chains and build output
   const dvnsByChain: DVNConfig = {}
   const universalDVNs: string[] = []
+  const checkedUniversalDVNs: string[] = []
 
   // Initialize chain objects
   for (const chain of allChains) {
@@ -109,6 +130,21 @@ async function extractDVNs(): Promise<void> {
   // Add DVNs that exist on all chains
   for (const [dvnName, chainMap] of dvnCoverage) {
     if (allChains.every((chain) => chainMap.has(chain))) {
+      for (const chain of allChains) {
+        const addresses = [
+          ...(activeDvnAddresses.get(dvnName)?.get(chain) ?? new Set()),
+        ]
+
+        if (addresses.length > 1) {
+          throw new Error(
+            `Universal DVN ${dvnName} has multiple active addresses on ${chain}: ${addresses.join(
+              ', '
+            )}`
+          )
+        }
+      }
+
+      checkedUniversalDVNs.push(dvnName)
       universalDVNs.push(dvnName)
 
       for (const chain of allChains) {
@@ -117,7 +153,17 @@ async function extractDVNs(): Promise<void> {
     }
   }
 
+  const sortedCheckedUniversalDVNs = [...checkedUniversalDVNs].sort(
+    compareAlphabetically
+  )
+  const sortedUniversalDVNs = [...universalDVNs].sort(compareAlphabetically)
+
   console.log(`Found ${universalDVNs.length} DVNs with full chain coverage`)
+  console.log(
+    `Verified unique active addresses for universal DVNs: ${sortedCheckedUniversalDVNs.join(
+      ', '
+    )}`
+  )
 
   // Save result
   fs.mkdirSync(path.dirname(outputPath), { recursive: true })
@@ -130,7 +176,10 @@ async function extractDVNs(): Promise<void> {
   )
 
   // Log summary
-  console.log(`\nUniversal DVNs included: ${universalDVNs.sort().join(', ')}`)
+  console.log(`\nUniversal DVNs included: ${sortedUniversalDVNs.join(', ')}`)
 }
 
-extractDVNs().catch(console.error)
+extractDVNs().catch((error) => {
+  console.error(error)
+  process.exitCode = 1
+})

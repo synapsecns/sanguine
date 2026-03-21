@@ -1,12 +1,18 @@
 # Synapse Constants
 
-[![npm](https://img.shields.io/npm/v/synapse-constants?style=flat-square)](https://www.npmjs.com/package/synapse-constants)
+[![GitHub Package](https://img.shields.io/github/v/release/synapsecns/sanguine?filter=@synapsecns/synapse-constants*&style=flat-square&label=github%20packages)](https://github.com/synapsecns/sanguine/packages)
 
-This package contains the Synapse Protocol Token and Chain Constants.
+This package contains the Synapse Protocol token and chain constants.
 
 ## Installation
 
-With Yarn:
+This package is published to [GitHub Packages](https://github.com/synapsecns/sanguine/packages). Configure your `.npmrc` to use the GitHub registry for `@synapsecns` packages:
+
+```
+@synapsecns:registry=https://npm.pkg.github.com
+```
+
+Then install with Yarn:
 
 ```bash
 yarn add @synapsecns/synapse-constants

@@ -25,7 +25,7 @@ chains:
       - https://rpc.ankr.com/eth
       - https://eth-rpc.gateway.pokt.network
       - https://main-light.eth.linkpool.io
-      - https://eth-mainnet.public.blastapi.io
+      - https://ethereum-mainnet.core.chainstack.com
       - http://18.211.207.34:8545
       - https://eth-mainnet.nodereal.io/v1/1659dfb40aa24bbb8153a677b98064d7
       - wss://eth-mainnet.nodereal.io/ws/v1/1659dfb40aa24bbb8153a677b98064d7
