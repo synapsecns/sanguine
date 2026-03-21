@@ -23,7 +23,7 @@ export const MEDIAN_TIME_BLOCK: Record<SupportedChainId, number> = {
   [SupportedChainId.HYPEREVM]: 1,
   [SupportedChainId.KLAYTN]: 1,
   [SupportedChainId.LINEA]: 2,
-  [SupportedChainId.METIS]: 2,
+  [SupportedChainId.METIS]: 14,
   [SupportedChainId.MOONBEAM]: 6,
   [SupportedChainId.MOONRIVER]: 6,
   [SupportedChainId.OPTIMISM]: 2,

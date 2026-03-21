@@ -29,9 +29,16 @@ import {
 } from './synapseBridgeAdapterModule'
 
 const SBA_BRIDGE_SUPPORTED_CHAINS = new Set<SupportedChainId>([
+  SupportedChainId.ARBITRUM,
+  SupportedChainId.AVALANCHE,
+  SupportedChainId.BASE,
+  SupportedChainId.BSC,
   SupportedChainId.DFK,
   SupportedChainId.HARMONY,
   SupportedChainId.KLAYTN,
+  SupportedChainId.METIS,
+  SupportedChainId.OPTIMISM,
+  SupportedChainId.POLYGON,
 ])
 
 export class SynapseBridgeAdapterModuleSet extends SynapseModuleSet {
