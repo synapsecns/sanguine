@@ -16,15 +16,17 @@ This guide shows how to customize the widget to seamlessly blend with your app's
 
 ## Installation
 
-The widget is available on npm or yarn.
+The widget is published to [GitHub Packages](https://github.com/synapsecns/sanguine/packages). Configure your `.npmrc` to use the GitHub registry for `@synapsecns` packages:
 
-npm:
+```
+@synapsecns:registry=https://npm.pkg.github.com
+```
+
+Then install with npm or yarn:
 
 ```bash
 npm install @synapsecns/widget
 ```
-
-yarn:
 
 ```bash
 yarn add @synapsecns/widget

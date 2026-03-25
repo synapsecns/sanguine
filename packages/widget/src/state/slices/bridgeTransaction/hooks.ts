@@ -1,9 +1,9 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { ZeroAddress } from 'ethers'
 
 import { useAppSelector } from '@/state/hooks'
 import { RootState } from '@/state/store'
 import { getTimeMinutesFromNow } from '@/utils/getTimeMinutesFromNow'
+import { type BridgeQuoteTransaction } from '@/state/slices/bridgeQuote/reducer'
 
 export const useBridgeTransactionState = (): RootState['bridgeTransaction'] => {
   return useAppSelector((state) => state.bridgeTransaction)
@@ -12,58 +12,35 @@ export const useBridgeTransactionState = (): RootState['bridgeTransaction'] => {
 export const executeBridgeTxn = createAsyncThunk(
   'bridgeTransaction/executeBridgeTxn',
   async ({
-    destinationAddress,
-    originRouterAddress,
     originChainId,
     destinationChainId,
-    tokenAddress,
-    amount,
     parsedOriginAmount,
     originTokenSymbol,
-    originQuery,
-    destQuery,
     bridgeModuleName,
     estimatedTime,
+    quoteTx,
     signer,
-    synapseSDK,
   }: {
-    destinationAddress: string
-    originRouterAddress: string
     originChainId: number
     destinationChainId: number
-    tokenAddress: string
-    amount: bigint
     parsedOriginAmount: string
     originTokenSymbol: string
-    originQuery: {}
-    destQuery: {}
     estimatedTime: number
     bridgeModuleName: string
+    quoteTx: BridgeQuoteTransaction
     signer: any
-    synapseSDK: any
   }) => {
-    const data = await synapseSDK.bridge(
-      destinationAddress,
-      originRouterAddress,
-      originChainId,
-      destinationChainId,
-      tokenAddress,
-      amount,
-      originQuery,
-      destQuery
-    )
+    if (!quoteTx?.to || !quoteTx?.data) {
+      throw new Error('Bridge quote transaction missing')
+    }
 
-    const payload =
-      tokenAddress === ZeroAddress
-        ? {
-            data: data.data,
-            to: data.to,
-            value: amount,
-          }
-        : {
-            data: data.data,
-            to: data.to,
-          }
+    const payload = {
+      data: quoteTx.data,
+      to: quoteTx.to,
+      ...(quoteTx.value !== undefined && quoteTx.value !== null
+        ? { value: quoteTx.value }
+        : {}),
+    }
 
     const tx = await signer.sendTransaction(payload)
 

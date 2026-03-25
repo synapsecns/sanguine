@@ -31,6 +31,11 @@ export type CctpV2BurnParams = {
   minFinalityThreshold: number
 }
 
+type PopulatedTransactionWithData = PopulatedTransaction & {
+  data: string
+  to: string
+}
+
 export class CCTPv2Module implements SynapseModule {
   public static readonly tokenMessengerV2Interface = new Interface(
     TOKEN_MESSENGER_V2_ABI
@@ -80,7 +85,7 @@ export class CCTPv2Module implements SynapseModule {
 
   public populateDepositForBurnWithHook(
     params: CctpV2BurnParams
-  ): PopulatedTransaction {
+  ): PopulatedTransactionWithData {
     const data = CCTPv2Module.tokenMessengerV2Interface.encodeFunctionData(
       'depositForBurnWithHook',
       [
