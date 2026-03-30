@@ -82,6 +82,18 @@ describe('AvailableBalance', () => {
 
   it.each([
     [
+      'idle',
+      {
+        amountWei: null,
+        fillAmount: null,
+        isClickable: false,
+        isNativeOriginToken: true,
+        labelAmount: null,
+        status: 'idle' as const,
+      },
+      'Available 1.5000',
+    ],
+    [
       'loading',
       {
         amountWei: null,
@@ -91,7 +103,7 @@ describe('AvailableBalance', () => {
         labelAmount: null,
         status: 'loading' as const,
       },
-      'Bridgeable loading...',
+      'Available 1.5000',
     ],
     [
       'unavailable',
@@ -103,7 +115,7 @@ describe('AvailableBalance', () => {
         labelAmount: null,
         status: 'unavailable' as const,
       },
-      'Bridgeable unavailable',
+      'Available 1.5000',
     ],
     [
       'zero',
@@ -133,4 +145,27 @@ describe('AvailableBalance', () => {
       expect(setInputAmount).not.toHaveBeenCalled()
     }
   )
+
+  it('mirrors the non-native loading label for native assets while the wallet balance is still loading', () => {
+    ;(useWalletState as jest.Mock).mockReturnValue({
+      balancesFetchStatus: FetchState.LOADING,
+    })
+
+    render(
+      <AvailableBalance
+        connectedAddress="0xabc"
+        nativeSafeMax={{
+          amountWei: null,
+          fillAmount: null,
+          isClickable: false,
+          isNativeOriginToken: true,
+          labelAmount: null,
+          status: 'loading',
+        }}
+        setInputAmount={setInputAmount}
+      />
+    )
+
+    expect(screen.getByText('loading...')).toBeInTheDocument()
+  })
 })

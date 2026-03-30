@@ -113,7 +113,7 @@ describe('useNativeSafeMax', () => {
     jest.clearAllMocks()
   })
 
-  it('bootstraps with the full balance, refines once, and prefers maxFeePerGas', async () => {
+  it('bootstraps with half the balance, refines once, and prefers maxFeePerGas', async () => {
     const bridgeV2 = jest
       .fn()
       .mockResolvedValueOnce([
@@ -142,7 +142,7 @@ describe('useNativeSafeMax', () => {
     expect(bridgeV2).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
-        fromAmount: '1000000000000000000',
+        fromAmount: '500000000000000000',
         fromSender: '0xabc',
         toRecipient: '0xabc',
       })

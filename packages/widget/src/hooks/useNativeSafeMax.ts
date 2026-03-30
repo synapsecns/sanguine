@@ -114,6 +114,14 @@ const calculateSafeMaxWei = (
   return rawBalanceWei > reservedWei ? rawBalanceWei - reservedWei : 0n
 }
 
+const getBootstrapQuoteAmountWei = (rawBalanceWei: bigint): bigint => {
+  if (rawBalanceWei <= 1n) {
+    return rawBalanceWei
+  }
+
+  return rawBalanceWei / 2n
+}
+
 const getDisplayAmount = (amountWei: bigint, decimals: number): string => {
   return formatBigIntToString(amountWei, decimals, DISPLAY_DECIMALS) ?? '0.0'
 }
@@ -289,7 +297,13 @@ export const useNativeSafeMax = ({
     const estimateBufferedGasFeeWei = async (
       transaction: BridgeQuoteTransactionLike
     ): Promise<bigint | null> => {
-      const feeData = await originChainProvider.getFeeData()
+      let feeData: FeeDataLike
+
+      try {
+        feeData = await originChainProvider.getFeeData()
+      } catch {
+        return null
+      }
 
       if (!isCurrentRequest()) {
         return null
@@ -302,14 +316,20 @@ export const useNativeSafeMax = ({
         return null
       }
 
-      const gasLimit = await originChainProvider.estimateGas({
-        data: transaction.data!,
-        from: connectedAddress,
-        to: transaction.to!,
-        value: transaction.value
-          ? BigInt(transaction.value).toString()
-          : undefined,
-      })
+      let gasLimit: BigIntLike
+
+      try {
+        gasLimit = await originChainProvider.estimateGas({
+          data: transaction.data!,
+          from: connectedAddress,
+          to: transaction.to!,
+          value: transaction.value
+            ? BigInt(transaction.value).toString()
+            : undefined,
+        })
+      } catch {
+        return null
+      }
 
       if (!isCurrentRequest()) {
         return null
@@ -327,16 +347,22 @@ export const useNativeSafeMax = ({
     const fetchSelectedQuote = async (
       amountWei: bigint
     ): Promise<BridgeQuoteLike | null> => {
-      const quotes = await synapseSDK.bridgeV2({
-        fromAmount: amountWei.toString(),
-        fromChainId: originChainId,
-        fromSender: connectedAddress,
-        fromToken: originToken.addresses[originChainId],
-        slippagePercentage: 0.1,
-        toChainId: destinationChainId,
-        toRecipient: connectedAddress,
-        toToken: destinationToken.addresses[destinationChainId],
-      })
+      let quotes: BridgeQuoteLike[]
+
+      try {
+        quotes = await synapseSDK.bridgeV2({
+          fromAmount: amountWei.toString(),
+          fromChainId: originChainId,
+          fromSender: connectedAddress,
+          fromToken: originToken.addresses[originChainId],
+          slippagePercentage: 0.1,
+          toChainId: destinationChainId,
+          toRecipient: connectedAddress,
+          toToken: destinationToken.addresses[destinationChainId],
+        })
+      } catch {
+        return null
+      }
 
       if (!isCurrentRequest()) {
         return null
@@ -357,9 +383,14 @@ export const useNativeSafeMax = ({
 
     void (async () => {
       try {
-        const bootstrapQuote = await fetchSelectedQuote(rawBalanceWei)
+        const bootstrapQuoteAmountWei = getBootstrapQuoteAmountWei(rawBalanceWei)
+        const bootstrapQuote = await fetchSelectedQuote(bootstrapQuoteAmountWei)
 
         if (!bootstrapQuote) {
+          if (!isCurrentRequest()) {
+            return
+          }
+
           finalizeState(UNAVAILABLE_NATIVE_SAFE_MAX_STATE)
           return
         }
@@ -369,13 +400,19 @@ export const useNativeSafeMax = ({
         )
 
         if (bootstrapBufferedGasFeeWei === null) {
+          if (!isCurrentRequest()) {
+            return
+          }
+
           finalizeState(UNAVAILABLE_NATIVE_SAFE_MAX_STATE)
           return
         }
 
+        const bootstrapNativeFeeWei =
+          parseBigIntValue(bootstrapQuote.nativeFee) ?? 0n
         const bootstrapSafeMaxWei = calculateSafeMaxWei(
           rawBalanceWei,
-          parseBigIntValue(bootstrapQuote.nativeFee) ?? 0n,
+          bootstrapNativeFeeWei,
           bootstrapBufferedGasFeeWei
         )
 
@@ -387,6 +424,10 @@ export const useNativeSafeMax = ({
         const refinedQuote = await fetchSelectedQuote(bootstrapSafeMaxWei)
 
         if (!refinedQuote) {
+          if (!isCurrentRequest()) {
+            return
+          }
+
           finalizeState(UNAVAILABLE_NATIVE_SAFE_MAX_STATE)
           return
         }
@@ -396,13 +437,19 @@ export const useNativeSafeMax = ({
         )
 
         if (refinedBufferedGasFeeWei === null) {
+          if (!isCurrentRequest()) {
+            return
+          }
+
           finalizeState(UNAVAILABLE_NATIVE_SAFE_MAX_STATE)
           return
         }
 
+        const refinedNativeFeeWei =
+          parseBigIntValue(refinedQuote.nativeFee) ?? 0n
         const refinedSafeMaxWei = calculateSafeMaxWei(
           rawBalanceWei,
-          parseBigIntValue(refinedQuote.nativeFee) ?? 0n,
+          refinedNativeFeeWei,
           refinedBufferedGasFeeWei
         )
 

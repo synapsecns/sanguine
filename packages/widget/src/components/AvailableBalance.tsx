@@ -75,11 +75,9 @@ export const AvailableBalance = ({
   }
 
   const nativeBalanceLabel =
-    nativeSafeMax.status === 'loading' || nativeSafeMax.status === 'idle'
-      ? 'Bridgeable loading...'
-      : nativeSafeMax.status === 'unavailable'
-      ? 'Bridgeable unavailable'
-      : `Bridgeable ${nativeSafeMax.labelAmount ?? '0.0'}`
+    nativeSafeMax.status === 'ready'
+      ? `Bridgeable ${nativeSafeMax.labelAmount ?? '0.0'}`
+      : `Available ${tokenBalance.parsedBalance ?? '0.0'}`
 
   const balanceLabel = nativeSafeMax.isNativeOriginToken
     ? nativeBalanceLabel
@@ -97,11 +95,7 @@ export const AvailableBalance = ({
     `}
     >
       {isFetchingBalance ? (
-        <div>
-          {nativeSafeMax.isNativeOriginToken
-            ? 'Bridgeable loading...'
-            : 'loading...'}
-        </div>
+        <div>loading...</div>
       ) : (
         <div
           onClick={isClickable ? handleAvailableBalanceClick : undefined}

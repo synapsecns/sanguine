@@ -214,7 +214,7 @@ describe('Widget native balance control integration', () => {
       </Web3Context.Provider>
     )
 
-    expect(screen.getByText('Bridgeable loading...')).toBeInTheDocument()
+    expect(screen.getByText('Available 1.0000')).toBeInTheDocument()
 
     await waitFor(() => {
       expect(screen.getByText('Bridgeable 0.7998')).toBeInTheDocument()
@@ -227,7 +227,7 @@ describe('Widget native balance control integration', () => {
     expect(mockBridgeV2).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
-        fromAmount: '1000000000000000000',
+        fromAmount: '500000000000000000',
         fromSender: '0xabc',
         toRecipient: '0xabc',
       })
