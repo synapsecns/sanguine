@@ -1,0 +1,35 @@
+{
+  "name": "@synapsecns/widget-example",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal Next.js consumer app for the Synapse widget",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:check": "eslint . --max-warnings=0",
+    "ci:lint": "npm run lint:check",
+    "test:coverage": "echo 'No tests defined.'",
+    "build:go": " ",
+    "build:slither": " "
+  },
+  "dependencies": {
+    "@synapsecns/widget": "^0.11.0",
+    "ethers": "^6.9.1",
+    "next": "^14.2.35",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.35",
+    "typescript": "^5.3.3"
+  }
+}
