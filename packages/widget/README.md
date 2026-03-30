@@ -50,6 +50,14 @@ const MyApp = () => {
 
 Your site should now display a fully operational bridge widget integrating the routes and tokens supported by the Synapse protocol. By utilizing Synapse's multiple routers, you will be able to find the best quotes to support your bridging use case.
 
+## Native Source Token Balance Control
+
+The widget keeps the existing `Available` balance behavior for non-native source tokens.
+
+For native source tokens such as ETH, AVAX, or MATIC, the balance control now shows the bridgeable amount instead of the raw wallet balance. The widget derives this value from widget-local quote lookups for the current selections, combining each selected quote's `nativeFee` with a buffered origin-chain gas estimate so clicking the balance control pre-fills a safer max amount and leaves room for transaction execution.
+
+While the native safe max is being calculated, or if the widget cannot produce a quote plus gas estimate for the current selection, the control stays non-clickable and shows a loading or unavailable state instead of falling back to the raw native balance. Manual input is still allowed above the suggested native safe max; this behavior only changes the balance-control prefill.
+
 ## Bridge Widget Props
 
 The widget accepts a number of props to customize its functionality and appearance. Below is a quick summary with more detailed explanations later on.
