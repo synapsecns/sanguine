@@ -7,28 +7,25 @@ import { RootState } from '@/state/store'
 import { stringToBigInt } from '@/utils/stringToBigInt'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
-import { getBridgeModuleNames } from '@/utils/getBridgeModuleNames'
+import { parseBigIntValue } from '@/utils/parseBigIntValue'
+import { selectBridgeQuote } from '@/utils/selectBridgeQuote'
 
 export const useBridgeQuoteState = (): RootState['bridgeQuote'] => {
   return useAppSelector((state) => state.bridgeQuote)
 }
 
-const DECIMAL_BIGINT_PATTERN = /^-?\d+$/
-
-const parseNativeFee = (nativeFee: unknown): bigint => {
-  if (typeof nativeFee === 'bigint') {
-    return nativeFee
-  }
-
-  if (typeof nativeFee === 'string') {
-    const normalizedNativeFee = nativeFee.trim()
-
-    if (DECIMAL_BIGINT_PATTERN.test(normalizedNativeFee)) {
-      return BigInt(normalizedNativeFee)
-    }
-  }
-
-  return 0n
+type SelectedBridgeQuote = {
+  expectedToAmount: string
+  estimatedTime: number | null
+  id?: string | null
+  moduleNames: string[]
+  nativeFee?: unknown
+  routerAddress: string
+  tx?: {
+    data?: string
+    to?: string
+    value?: string | null
+  } | null
 }
 
 export const fetchBridgeQuote = createAsyncThunk(
@@ -85,27 +82,11 @@ export const fetchBridgeQuote = createAsyncThunk(
     }
 
     const allQuotes = await synapseSDK.bridgeV2(quoteParams)
-
-    const pausedBridgeModules = new Set(
-      pausedModules
-        .filter((module) =>
-          module.chainId ? module.chainId === originChainId : true
-        )
-        .flatMap(getBridgeModuleNames)
-    )
-
-    const activeQuotes = allQuotes.filter(
-      (fetchedQuote) =>
-        !fetchedQuote.moduleNames.some((moduleName) =>
-          pausedBridgeModules.has(moduleName)
-        )
-    )
-
-    const rfqQuote = activeQuotes.find((activeQuote) =>
-      activeQuote.moduleNames.includes('SynapseRFQ')
-    )
-
-    const quote = rfqQuote ?? activeQuotes[0]
+    const quote = selectBridgeQuote<SelectedBridgeQuote>({
+      quotes: allQuotes,
+      originChainId,
+      pausedModules,
+    })
 
     if (!quote) {
       return rejectWithValue('No active bridge quotes available')
@@ -114,6 +95,13 @@ export const fetchBridgeQuote = createAsyncThunk(
     const bridgeModuleName = quote.moduleNames[quote.moduleNames.length - 1]
     const toValueBigInt = BigInt(quote.expectedToAmount)
     const hasExecutableQuoteTx = Boolean(quote.tx?.to && quote.tx?.data)
+    const normalizedQuoteTx = hasExecutableQuoteTx
+      ? {
+          data: quote.tx!.data!,
+          to: quote.tx!.to!,
+          value: quote.tx?.value ?? null,
+        }
+      : null
 
     return {
       id: quote.id ?? null,
@@ -136,11 +124,11 @@ export const fetchBridgeQuote = createAsyncThunk(
         destinationToken.decimals[destinationChainId]
       ),
       feeAmount: 0n,
-      nativeFee: parseNativeFee(quote.nativeFee),
+      nativeFee: parseBigIntValue(quote.nativeFee) ?? 0n,
       delta: toValueBigInt,
       estimatedTime: quote.estimatedTime,
       bridgeModuleName,
-      tx: quote.tx ?? null,
+      tx: normalizedQuoteTx,
       quoteAddress:
         hasExecutableQuoteTx && connectedAddress ? connectedAddress : null,
       requestId,
