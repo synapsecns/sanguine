@@ -1,6 +1,8 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import { useValidations } from '@/hooks/useValidations'
+import { useCurrentTokenBalance } from '@/hooks/useCurrentTokenBalance'
+import { useNativeSafeMax } from '@/hooks/useNativeSafeMax'
 import { useThemeVariables } from '@/hooks/useThemeVariables'
 import { useAppDispatch } from '@/state/hooks'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
@@ -24,6 +26,8 @@ import { useApproveTransactionState } from '@/state/slices/approveTransaction/ho
 import { useBridgeTransactionState } from '@/state/slices/bridgeTransaction/hooks'
 import { Widget } from '@/components/Widget'
 
+const mockAvailableBalance = jest.fn((_props?: unknown) => null)
+
 jest.mock('ethers', () => ({
   ZeroAddress: '0x0000000000000000000000000000000000000000',
 }))
@@ -31,6 +35,8 @@ jest.mock('@/state/hooks')
 jest.mock('@/state/slices/bridge/hooks')
 jest.mock('@/state/slices/bridgeQuote/hooks')
 jest.mock('@/state/slices/wallet/hooks')
+jest.mock('@/hooks/useCurrentTokenBalance')
+jest.mock('@/hooks/useNativeSafeMax')
 jest.mock('@/hooks/useValidations')
 jest.mock('@/providers/SynapseProvider')
 jest.mock('@/components/Maintenance/Maintenance')
@@ -40,7 +46,7 @@ jest.mock('@/state/slices/approveTransaction/hooks')
 jest.mock('@/components/Receipt', () => ({ Receipt: () => null }))
 jest.mock('@/components/BridgeButton', () => ({ BridgeButton: () => null }))
 jest.mock('@/components/AvailableBalance', () => ({
-  AvailableBalance: () => null,
+  AvailableBalance: (props: unknown) => mockAvailableBalance(props),
 }))
 jest.mock('@/components/Transactions', () => ({ Transactions: () => null }))
 jest.mock('@/components/ui/ChainSelect', () => ({ ChainSelect: () => null }))
@@ -78,6 +84,9 @@ const fetchAndStoreTokenBalancesMock =
   fetchAndStoreTokenBalances as unknown as jest.Mock
 const fetchAndStoreAllowanceMock =
   fetchAndStoreAllowance as unknown as jest.Mock
+const useCurrentTokenBalanceMock =
+  useCurrentTokenBalance as unknown as jest.Mock
+const useNativeSafeMaxMock = useNativeSafeMax as unknown as jest.Mock
 
 const token = {
   addresses: { 1: '0x1', 2: '0x2' },
@@ -197,6 +206,19 @@ describe('Widget quote refresh wiring', () => {
     ;(useApproveTransactionState as jest.Mock).mockReturnValue({
       approveTxnStatus: null,
     })
+    useCurrentTokenBalanceMock.mockReturnValue({
+      rawBalance: '1000000',
+      parsedBalance: '1.0000',
+      decimals: 6,
+    })
+    useNativeSafeMaxMock.mockReturnValue({
+      amountWei: null,
+      fillAmount: null,
+      isClickable: false,
+      isNativeOriginToken: false,
+      labelAmount: null,
+      status: 'idle',
+    })
     fetchBridgeQuoteMock.mockImplementation((args) => ({
       type: 'bridgeQuote/fetchBridgeQuote',
       meta: { arg: args },
@@ -211,6 +233,7 @@ describe('Widget quote refresh wiring', () => {
     }))
 
     dispatchMock.mockReset()
+    mockAvailableBalance.mockClear()
     dispatchMock.mockImplementation((action) => {
       if (action?.type === 'bridge/setDebouncedInputAmount') {
         mockBridgeState = {
@@ -232,6 +255,38 @@ describe('Widget quote refresh wiring', () => {
     jest.useRealTimers()
     jest.restoreAllMocks()
     jest.clearAllMocks()
+  })
+
+  it('keeps manual input above the native safe max available to the user', () => {
+    useNativeSafeMaxMock.mockReturnValue({
+      amountWei: 500000n,
+      fillAmount: '0.5',
+      isClickable: true,
+      isNativeOriginToken: true,
+      labelAmount: '0.5',
+      status: 'ready',
+    })
+
+    renderWidget()
+
+    fireEvent.change(screen.getByPlaceholderText('0'), {
+      target: { value: '9' },
+    })
+
+    expect(screen.getByDisplayValue('9')).toBeInTheDocument()
+    expect(useNativeSafeMaxMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        amountKey: '9',
+      })
+    )
+    expect(mockAvailableBalance).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        nativeSafeMax: expect.objectContaining({
+          fillAmount: '0.5',
+          isNativeOriginToken: true,
+        }),
+      })
+    )
   })
 
   it('keeps normal input-driven fetches and only refreshes stale quotes on mousemove', () => {

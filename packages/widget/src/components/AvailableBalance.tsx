@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { useAppDispatch } from '@/state/hooks'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { Warning } from '@/components/icons/Warning'
 import { Tooltip } from '@/components/ui/Tooltip'
@@ -12,24 +11,35 @@ import { FetchState } from '@/state/slices/wallet/reducer'
 
 export const AvailableBalance = ({
   connectedAddress,
+  nativeSafeMax,
   setInputAmount,
 }: {
   connectedAddress: string
+  nativeSafeMax: {
+    amountWei: bigint | null
+    fillAmount: string | null
+    isClickable: boolean
+    isNativeOriginToken: boolean
+    labelAmount: string | null
+    status: 'idle' | 'loading' | 'ready' | 'unavailable'
+  }
   setInputAmount: React.Dispatch<React.SetStateAction<string>>
 }) => {
-  const dispatch = useAppDispatch()
-
   const { originChainId, originToken } = useBridgeState()
-
   const { balancesFetchStatus } = useWalletState()
-
   const isFetchingBalance = balancesFetchStatus === FetchState.LOADING
-
   const tokenBalance = useCurrentTokenBalance()
-
   const { hasEnoughBalance } = useValidations()
 
   const handleAvailableBalanceClick = useCallback(() => {
+    if (nativeSafeMax.isNativeOriginToken) {
+      if (nativeSafeMax.isClickable && nativeSafeMax.fillAmount) {
+        setInputAmount(nativeSafeMax.fillAmount)
+      }
+
+      return
+    }
+
     const maxAmount: string =
       formatBigIntToString(
         BigInt(tokenBalance.rawBalance ?? 0),
@@ -37,7 +47,12 @@ export const AvailableBalance = ({
         18
       ) ?? '0.0'
     setInputAmount(maxAmount)
-  }, [dispatch, tokenBalance, originToken, originChainId])
+  }, [
+    nativeSafeMax,
+    setInputAmount,
+    tokenBalance.rawBalance,
+    tokenBalance.decimals,
+  ])
 
   if (!connectedAddress) {
     return
@@ -59,6 +74,21 @@ export const AvailableBalance = ({
     )
   }
 
+  const nativeBalanceLabel =
+    nativeSafeMax.status === 'loading' || nativeSafeMax.status === 'idle'
+      ? 'Bridgeable loading...'
+      : nativeSafeMax.status === 'unavailable'
+      ? 'Bridgeable unavailable'
+      : `Bridgeable ${nativeSafeMax.labelAmount ?? '0.0'}`
+
+  const balanceLabel = nativeSafeMax.isNativeOriginToken
+    ? nativeBalanceLabel
+    : `Available ${tokenBalance.parsedBalance ?? '0.0'}`
+
+  const isClickable =
+    !isFetchingBalance &&
+    (!nativeSafeMax.isNativeOriginToken || nativeSafeMax.isClickable)
+
   return (
     <div
       className={`
@@ -67,13 +97,21 @@ export const AvailableBalance = ({
     `}
     >
       {isFetchingBalance ? (
-        <div>loading...</div>
+        <div>
+          {nativeSafeMax.isNativeOriginToken
+            ? 'Bridgeable loading...'
+            : 'loading...'}
+        </div>
       ) : (
         <div
-          onClick={handleAvailableBalanceClick}
-          className="cursor-pointer hover:underline active:opacity-40 text-[--synapse-secondary] whitespace-nowrap"
+          onClick={isClickable ? handleAvailableBalanceClick : undefined}
+          className={`text-[--synapse-secondary] whitespace-nowrap ${
+            isClickable
+              ? 'cursor-pointer hover:underline active:opacity-40'
+              : 'cursor-default'
+          }`}
         >
-          Available {tokenBalance.parsedBalance ?? '0.0'}
+          {balanceLabel}
         </div>
       )}
       {tokenBalance.parsedBalance && !hasEnoughBalance && (

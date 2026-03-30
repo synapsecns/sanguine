@@ -71,6 +71,8 @@ import { useMaintenance } from '@/components/Maintenance/Maintenance'
 import { getTimeMinutesFromNow } from '@/utils/getTimeMinutesFromNow'
 import { useBridgeQuoteUpdater } from '@/hooks/useBridgeQuoteUpdater'
 import { SwitchButton } from '@/components/ui/SwitchButton'
+import { useCurrentTokenBalance } from '@/hooks/useCurrentTokenBalance'
+import { useNativeSafeMax } from '@/hooks/useNativeSafeMax'
 
 interface WidgetProps {
   customTheme: CustomThemeVariables
@@ -149,6 +151,7 @@ export const Widget = ({
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
   const { isInputValid, hasValidSelections } = useValidations()
   const { isWalletPending } = useWalletState()
+  const tokenBalance = useCurrentTokenBalance()
 
   const { bridgeTxnStatus } = useBridgeTransactionState()
   const { approveTxnStatus } = useApproveTransactionState()
@@ -159,7 +162,7 @@ export const Widget = ({
     return synapseProviders.find(
       (p) => Number(p?._network?.chainId) === originChainId
     )
-  }, [originChainId])
+  }, [originChainId, synapseProviders])
 
   const originTokenRouteSymbol = originToken?.routeSymbol
   const destinationTokenRouteSymbol = destinationToken?.routeSymbol
@@ -483,6 +486,20 @@ export const Widget = ({
     return bridgeQuote.outputAmountString
   }, [isLoading, bridgeQuote, isCurrentRequestedQuote, hasValidSelections])
 
+  const nativeSafeMax = useNativeSafeMax({
+    amountKey: inputAmount,
+    connectedAddress: connectedAddress || undefined,
+    destinationChainId,
+    destinationToken,
+    isWalletPending,
+    originChainId,
+    originChainProvider,
+    originToken,
+    pausedModules: pausedModulesList,
+    rawBalance: tokenBalance.rawBalance,
+    synapseSDK,
+  })
+
   return (
     <div
       style={themeVariables}
@@ -520,6 +537,7 @@ export const Widget = ({
               />
               <AvailableBalance
                 connectedAddress={connectedAddress}
+                nativeSafeMax={nativeSafeMax}
                 setInputAmount={setInputAmount}
               />
             </div>
