@@ -1,0 +1,118 @@
+:root {
+  color-scheme: light;
+  font-family:
+    "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(140, 208, 255, 0.24), transparent 34%),
+    linear-gradient(180deg, #f6fbff 0%, #eef4fb 100%);
+  color: #122033;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#__next {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+.page-shell {
+  min-height: 100vh;
+  padding: 32px 16px 48px;
+}
+
+.content-shell {
+  display: grid;
+  gap: 24px;
+  width: min(100%, 520px);
+  margin: 0 auto;
+}
+
+.hero-copy {
+  display: grid;
+  gap: 12px;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #58708e;
+}
+
+.hero-copy h1,
+.widget-status-panel h2 {
+  margin: 0;
+}
+
+.lede,
+.widget-status-panel p {
+  margin: 0;
+  line-height: 1.6;
+  color: #445a75;
+}
+
+.widget-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.wallet-meta,
+.wallet-note,
+.widget-status-panel {
+  border: 1px solid rgba(74, 107, 143, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 20px 50px rgba(18, 32, 51, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.wallet-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  color: #354a62;
+}
+
+.wallet-note {
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #4a5d73;
+}
+
+.widget-status-panel {
+  display: grid;
+  gap: 12px;
+  padding: 24px;
+}
+
+.widget-frame {
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .page-shell {
+    padding: 24px 12px 36px;
+  }
+
+  .wallet-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
