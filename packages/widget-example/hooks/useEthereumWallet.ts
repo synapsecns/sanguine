@@ -24,16 +24,6 @@ type WalletProvider = {
 
 type WidgetWeb3Provider = BridgeProps['web3Provider']
 
-type EthersWithCompat = typeof ethers & {
-  BrowserProvider?: new (provider: EthereumProvider) => WalletProvider
-  providers?: {
-    Web3Provider?: new (
-      provider: EthereumProvider,
-      network?: string
-    ) => WalletProvider
-  }
-}
-
 declare global {
   interface Window {
     ethereum?: EthereumProvider
@@ -52,11 +42,11 @@ export const useEthereumWallet = () => {
   )
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
+    if (typeof globalThis.window === 'undefined') {
       return undefined
     }
 
-    const injectedProvider = window.ethereum
+    const injectedProvider = globalThis.window.ethereum
 
     if (!injectedProvider) {
       setHasInjectedWallet(false)
@@ -71,14 +61,12 @@ export const useEthereumWallet = () => {
     setHasInjectedWallet(true)
 
     const createProvider = (): WalletProvider => {
-      const ethersCompat = ethers as EthersWithCompat
-
-      if (typeof ethersCompat.BrowserProvider === 'function') {
-        return new ethersCompat.BrowserProvider(injectedProvider)
+      if (typeof ethers.BrowserProvider === 'function') {
+        return new ethers.BrowserProvider(injectedProvider)
       }
 
-      if (typeof ethersCompat.providers?.Web3Provider === 'function') {
-        return new ethersCompat.providers.Web3Provider(injectedProvider, 'any')
+      if (typeof ethers.providers?.Web3Provider === 'function') {
+        return new ethers.providers.Web3Provider(injectedProvider, 'any')
       }
 
       throw new Error('No compatible ethers provider constructor was found.')
