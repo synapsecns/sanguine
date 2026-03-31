@@ -42,7 +42,7 @@ export const useEthereumWallet = () => {
   )
 
   useEffect(() => {
-    if (typeof globalThis.window === 'undefined') {
+    if (globalThis.window === undefined) {
       return undefined
     }
 
