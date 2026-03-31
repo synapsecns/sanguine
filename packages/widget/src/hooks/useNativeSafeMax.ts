@@ -383,7 +383,8 @@ export const useNativeSafeMax = ({
 
     void (async () => {
       try {
-        const bootstrapQuoteAmountWei = getBootstrapQuoteAmountWei(rawBalanceWei)
+        const bootstrapQuoteAmountWei =
+          getBootstrapQuoteAmountWei(rawBalanceWei)
         const bootstrapQuote = await fetchSelectedQuote(bootstrapQuoteAmountWei)
 
         if (!bootstrapQuote) {

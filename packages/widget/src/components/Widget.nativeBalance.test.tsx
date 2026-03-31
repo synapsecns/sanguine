@@ -143,7 +143,6 @@ describe('Widget native balance control integration', () => {
         },
       ])
       .mockResolvedValueOnce([createQuote('200000000000000000')])
-
     ;(useAppDispatch as jest.Mock).mockReturnValue(dispatchMock)
     ;(useBridgeState as jest.Mock).mockReturnValue({
       debouncedInputAmount: '',
