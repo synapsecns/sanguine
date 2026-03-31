@@ -12,6 +12,15 @@ const WidgetExampleClient = () => {
     web3Provider,
   } = useEthereumWallet()
 
+  if (isInitializing) {
+    return (
+      <div className="widget-status-panel">
+        <h2>Preparing browser wallet</h2>
+        <p>Initializing the injected provider for the bridge widget.</p>
+      </div>
+    )
+  }
+
   if (!hasInjectedWallet) {
     return (
       <div className="widget-status-panel">
@@ -20,15 +29,6 @@ const WidgetExampleClient = () => {
           Install or enable an injected Ethereum wallet such as MetaMask, then
           reload the page to render the widget.
         </p>
-      </div>
-    )
-  }
-
-  if (isInitializing) {
-    return (
-      <div className="widget-status-panel">
-        <h2>Preparing browser wallet</h2>
-        <p>Initializing the injected provider for the bridge widget.</p>
       </div>
     )
   }
