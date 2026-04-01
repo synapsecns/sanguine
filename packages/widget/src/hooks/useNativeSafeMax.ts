@@ -20,10 +20,19 @@ type BridgeQuoteTransactionLike = {
   value?: string | null
 }
 
+type ExecutableBridgeQuoteTransactionLike = Required<
+  Pick<BridgeQuoteTransactionLike, 'data' | 'to'>
+> &
+  BridgeQuoteTransactionLike
+
 type BridgeQuoteLike = {
   moduleNames: string[]
   nativeFee?: unknown
   tx?: BridgeQuoteTransactionLike | null
+}
+
+type ExecutableBridgeQuoteLike = BridgeQuoteLike & {
+  tx: ExecutableBridgeQuoteTransactionLike
 }
 
 type FeeDataLike = {
@@ -75,8 +84,7 @@ const UNAVAILABLE_NATIVE_SAFE_MAX_STATE: NativeSafeMaxState = {
 
 const hasExecutableQuoteTx = (
   transaction: BridgeQuoteTransactionLike | null | undefined
-): transaction is Required<Pick<BridgeQuoteTransactionLike, 'data' | 'to'>> &
-  BridgeQuoteTransactionLike => {
+): transaction is ExecutableBridgeQuoteTransactionLike => {
   return Boolean(transaction?.to && transaction?.data)
 }
 
@@ -296,7 +304,7 @@ export const useNativeSafeMax = ({
     setState(LOADING_NATIVE_SAFE_MAX_STATE)
 
     const estimateBufferedGasFeeWei = async (
-      transaction: BridgeQuoteTransactionLike
+      transaction: ExecutableBridgeQuoteTransactionLike
     ): Promise<bigint | null> => {
       let feeData: FeeDataLike
 
@@ -321,9 +329,9 @@ export const useNativeSafeMax = ({
 
       try {
         gasLimit = await originChainProvider.estimateGas({
-          data: transaction.data!,
+          data: transaction.data,
           from: connectedAddress,
-          to: transaction.to!,
+          to: transaction.to,
           value: transaction.value
             ? BigInt(transaction.value).toString()
             : undefined,
@@ -347,7 +355,7 @@ export const useNativeSafeMax = ({
 
     const fetchSelectedQuote = async (
       amountWei: bigint
-    ): Promise<BridgeQuoteLike | null> => {
+    ): Promise<ExecutableBridgeQuoteLike | null> => {
       let quotes: BridgeQuoteLike[]
 
       try {
@@ -380,7 +388,12 @@ export const useNativeSafeMax = ({
         return null
       }
 
-      return selectedQuote
+      const executableQuoteTx = selectedQuote.tx
+
+      return {
+        ...selectedQuote,
+        tx: executableQuoteTx,
+      }
     }
 
     void (async () => {
@@ -399,7 +412,7 @@ export const useNativeSafeMax = ({
         }
 
         const bootstrapBufferedGasFeeWei = await estimateBufferedGasFeeWei(
-          bootstrapQuote.tx!
+          bootstrapQuote.tx
         )
 
         if (bootstrapBufferedGasFeeWei === null) {
@@ -436,7 +449,7 @@ export const useNativeSafeMax = ({
         }
 
         const refinedBufferedGasFeeWei = await estimateBufferedGasFeeWei(
-          refinedQuote.tx!
+          refinedQuote.tx
         )
 
         if (refinedBufferedGasFeeWei === null) {

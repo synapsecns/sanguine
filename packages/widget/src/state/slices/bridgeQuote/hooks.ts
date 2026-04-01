@@ -29,6 +29,17 @@ type SelectedBridgeQuote = {
   } | null
 }
 
+type ExecutableSelectedBridgeQuoteTx = Required<
+  Pick<NonNullable<SelectedBridgeQuote['tx']>, 'data' | 'to'>
+> &
+  NonNullable<SelectedBridgeQuote['tx']>
+
+const hasExecutableQuoteTx = (
+  transaction: SelectedBridgeQuote['tx']
+): transaction is ExecutableSelectedBridgeQuoteTx => {
+  return Boolean(transaction?.to && transaction?.data)
+}
+
 export const fetchBridgeQuote = createAsyncThunk(
   'bridgeQuote/fetchBridgeQuote',
   async (
@@ -102,12 +113,12 @@ export const fetchBridgeQuote = createAsyncThunk(
       return rejectWithValue('No active bridge quotes available')
     }
 
-    const hasExecutableQuoteTx = Boolean(quote.tx?.to && quote.tx?.data)
-    const normalizedQuoteTx = hasExecutableQuoteTx
+    const executableQuoteTx = hasExecutableQuoteTx(quote.tx) ? quote.tx : null
+    const normalizedQuoteTx = executableQuoteTx
       ? {
-          data: quote.tx!.data!,
-          to: quote.tx!.to!,
-          value: quote.tx?.value ?? null,
+          data: executableQuoteTx.data,
+          to: executableQuoteTx.to,
+          value: executableQuoteTx.value ?? null,
         }
       : null
 
@@ -138,7 +149,7 @@ export const fetchBridgeQuote = createAsyncThunk(
       bridgeModuleName,
       tx: normalizedQuoteTx,
       quoteAddress:
-        hasExecutableQuoteTx && connectedAddress ? connectedAddress : null,
+        executableQuoteTx && connectedAddress ? connectedAddress : null,
       requestId,
       timestamp,
     }
