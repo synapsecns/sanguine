@@ -7,6 +7,7 @@ import { RootState } from '@/state/store'
 import { stringToBigInt } from '@/utils/stringToBigInt'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
+import { isValidBridgeQuote } from '@/utils/isValidBridgeQuote'
 import { parseBigIntValue } from '@/utils/parseBigIntValue'
 import { selectBridgeQuote } from '@/utils/selectBridgeQuote'
 
@@ -82,8 +83,9 @@ export const fetchBridgeQuote = createAsyncThunk(
     }
 
     const allQuotes = await synapseSDK.bridgeV2(quoteParams)
+    const validQuotes = allQuotes.filter(isValidBridgeQuote)
     const quote = selectBridgeQuote<SelectedBridgeQuote>({
-      quotes: allQuotes,
+      quotes: validQuotes,
       originChainId,
       pausedModules,
     })
@@ -94,6 +96,12 @@ export const fetchBridgeQuote = createAsyncThunk(
 
     const bridgeModuleName = quote.moduleNames[quote.moduleNames.length - 1]
     const toValueBigInt = BigInt(quote.expectedToAmount)
+    const nativeFee = parseBigIntValue(quote.nativeFee)
+
+    if (nativeFee === null || nativeFee < 0n) {
+      return rejectWithValue('No active bridge quotes available')
+    }
+
     const hasExecutableQuoteTx = Boolean(quote.tx?.to && quote.tx?.data)
     const normalizedQuoteTx = hasExecutableQuoteTx
       ? {
@@ -124,7 +132,7 @@ export const fetchBridgeQuote = createAsyncThunk(
         destinationToken.decimals[destinationChainId]
       ),
       feeAmount: 0n,
-      nativeFee: parseBigIntValue(quote.nativeFee) ?? 0n,
+      nativeFee,
       delta: toValueBigInt,
       estimatedTime: quote.estimatedTime,
       bridgeModuleName,

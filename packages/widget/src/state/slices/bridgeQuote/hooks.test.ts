@@ -88,32 +88,47 @@ const runFetchBridgeQuote = async ({
     undefined
   )
 
-  expect(fetchBridgeQuote.fulfilled.match(action)).toBe(true)
-
   state = reducer(state, action as any)
 
   return { action, state, bridgeV2: args.synapseSDK.bridgeV2 }
 }
 
-describe('fetchBridgeQuote nativeFee normalization', () => {
+describe('fetchBridgeQuote quote filtering', () => {
   it.each([
     ['zero string fees', '0', 0n],
     ['positive string fees', '77', 77n],
-    ['missing fees', undefined, 0n],
-    ['malformed fees', 'abc', 0n],
   ])(
     'stores %s as the expected bigint',
     async (_scenario, nativeFee, expected) => {
-      const { state, bridgeV2 } = await runFetchBridgeQuote({ nativeFee })
+      const { action, state, bridgeV2 } = await runFetchBridgeQuote({
+        nativeFee,
+      })
 
+      expect(fetchBridgeQuote.fulfilled.match(action)).toBe(true)
       expect(bridgeV2).toHaveBeenCalledTimes(1)
       expect(state.bridgeQuote.id).toBeNull()
       expect(state.bridgeQuote.nativeFee).toBe(expected)
     }
   )
 
-  it('keeps the widget RFQ-first selection behavior after helper extraction', async () => {
-    const { state } = await runFetchBridgeQuote({
+  it.each([
+    ['missing fees', undefined],
+    ['malformed fees', 'abc'],
+    ['negative fees', '-1'],
+  ])('rejects quotes with %s', async (_scenario, nativeFee) => {
+    const { action, state, bridgeV2 } = await runFetchBridgeQuote({
+      nativeFee,
+    })
+
+    expect(fetchBridgeQuote.rejected.match(action)).toBe(true)
+    expect(action.payload).toBe('No active bridge quotes available')
+    expect(bridgeV2).toHaveBeenCalledTimes(1)
+    expect(state.status).toBe('invalid')
+    expect(state.bridgeQuote.nativeFee).toBe(0n)
+  })
+
+  it('keeps the widget RFQ-first selection behavior after filtering invalid quotes', async () => {
+    const { action, state } = await runFetchBridgeQuote({
       nativeFee: '77',
       quotes: [
         createSdkQuote({
@@ -127,12 +142,39 @@ describe('fetchBridgeQuote nativeFee normalization', () => {
       ],
     })
 
+    expect(fetchBridgeQuote.fulfilled.match(action)).toBe(true)
     expect(state.bridgeQuote.bridgeModuleName).toBe('SynapseRFQ')
     expect(state.bridgeQuote.nativeFee).toBe(77n)
   })
 
+  it.each([
+    ['malformed nativeFee', 'abc'],
+    ['negative nativeFee', '-1'],
+  ])(
+    'skips an invalid RFQ quote with %s and selects the next valid active quote',
+    async (_scenario, nativeFee) => {
+      const { action, state } = await runFetchBridgeQuote({
+        nativeFee,
+        quotes: [
+          createSdkQuote({
+            moduleNames: ['SynapseRFQ'],
+            nativeFee,
+          }),
+          createSdkQuote({
+            moduleNames: ['SynapseBridge'],
+            nativeFee: '12',
+          }),
+        ],
+      })
+
+      expect(fetchBridgeQuote.fulfilled.match(action)).toBe(true)
+      expect(state.bridgeQuote.bridgeModuleName).toBe('SynapseBridge')
+      expect(state.bridgeQuote.nativeFee).toBe(12n)
+    }
+  )
+
   it('filters paused bridge modules before selecting the active quote', async () => {
-    const { state } = await runFetchBridgeQuote({
+    const { action, state } = await runFetchBridgeQuote({
       nativeFee: '12',
       pausedModules: [
         {
@@ -152,6 +194,7 @@ describe('fetchBridgeQuote nativeFee normalization', () => {
       ],
     })
 
+    expect(fetchBridgeQuote.fulfilled.match(action)).toBe(true)
     expect(state.bridgeQuote.bridgeModuleName).toBe('SynapseBridge')
     expect(state.bridgeQuote.nativeFee).toBe(12n)
   })

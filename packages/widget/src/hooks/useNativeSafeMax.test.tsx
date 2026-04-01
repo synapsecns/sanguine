@@ -191,6 +191,79 @@ describe('useNativeSafeMax', () => {
     expect(result.current.labelAmount).toBeNull()
   })
 
+  it.each([
+    ['malformed nativeFee', 'abc'],
+    ['negative nativeFee', '-1'],
+  ])(
+    'skips an invalid RFQ quote with %s and uses the next valid quote',
+    async (_scenario, nativeFee) => {
+      const bridgeV2 = jest
+        .fn()
+        .mockResolvedValueOnce([
+          createQuote({ moduleNames: ['SynapseRFQ'], nativeFee }),
+          createQuote({
+            moduleNames: ['SynapseBridge'],
+            nativeFee: '100000000000000000',
+          }),
+        ])
+        .mockResolvedValueOnce([
+          createQuote({ moduleNames: ['SynapseRFQ'], nativeFee }),
+          createQuote({
+            moduleNames: ['SynapseBridge'],
+            nativeFee: '200000000000000000',
+          }),
+        ])
+      const originChainProvider = createProvider()
+      const initialProps = createProps({
+        originChainProvider: originChainProvider as any,
+        synapseSDK: { bridgeV2 },
+      })
+      const { result } = renderHook(
+        (props: Parameters<typeof useNativeSafeMax>[0]) =>
+          useNativeSafeMax(props),
+        {
+          initialProps,
+        }
+      )
+
+      await waitFor(() => {
+        expect(result.current.status).toBe('ready')
+      })
+
+      expect(result.current.amountWei).toBe(799880000000000000n)
+      expect(result.current.isClickable).toBe(true)
+    }
+  )
+
+  it.each([
+    ['malformed nativeFee', 'abc'],
+    ['negative nativeFee', '-1'],
+  ])(
+    'becomes unavailable when only quotes with %s are returned',
+    async (_scenario, nativeFee) => {
+      const initialProps = createProps({
+        synapseSDK: {
+          bridgeV2: jest.fn().mockResolvedValue([createQuote({ nativeFee })]),
+        },
+      })
+      const { result } = renderHook(
+        (props: Parameters<typeof useNativeSafeMax>[0]) =>
+          useNativeSafeMax(props),
+        {
+          initialProps,
+        }
+      )
+
+      await waitFor(() => {
+        expect(result.current.status).toBe('unavailable')
+      })
+
+      expect(result.current.fillAmount).toBeNull()
+      expect(result.current.isClickable).toBe(false)
+      expect(result.current.labelAmount).toBeNull()
+    }
+  )
+
   it('becomes unavailable when gas estimation cannot complete', async () => {
     const originChainProvider = {
       estimateGas: jest.fn().mockRejectedValue(new Error('estimateGas failed')),

@@ -3,6 +3,7 @@ import { ZeroAddress } from 'ethers'
 import { type BridgeableToken } from 'types'
 
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
+import { isValidBridgeQuote } from '@/utils/isValidBridgeQuote'
 import { parseBigIntValue } from '@/utils/parseBigIntValue'
 import { selectBridgeQuote } from '@/utils/selectBridgeQuote'
 
@@ -360,6 +361,7 @@ export const useNativeSafeMax = ({
           toRecipient: connectedAddress,
           toToken: destinationToken.addresses[destinationChainId],
         })
+        quotes = quotes.filter(isValidBridgeQuote)
       } catch {
         return null
       }
