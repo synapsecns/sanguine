@@ -59,6 +59,13 @@ export const BridgeButton = ({
   }
 
   const tooltipPositionStyle = '-top-8'
+  let insufficientNativeBalanceLabel = 'Approve & Sign'
+
+  if (isApproved) {
+    insufficientNativeBalanceLabel = 'Send'
+  } else if (isApprovalPending) {
+    insufficientNativeBalanceLabel = 'Approve in Wallet'
+  }
 
   if (isBridgePaused) {
     return (
@@ -143,11 +150,7 @@ export const BridgeButton = ({
         positionStyles={tooltipPositionStyle}
       >
         <button className={buttonClassName} style={buttonStyle} disabled>
-          {isApproved
-            ? 'Send'
-            : isApprovalPending
-            ? 'Approve in Wallet'
-            : 'Approve & Sign'}
+          {insufficientNativeBalanceLabel}
         </button>
       </Tooltip>
     )
