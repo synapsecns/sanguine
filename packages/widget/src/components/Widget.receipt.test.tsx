@@ -1,6 +1,8 @@
 import { act, render, screen } from '@testing-library/react'
 
 import { useValidations } from '@/hooks/useValidations'
+import { useCurrentTokenBalance } from '@/hooks/useCurrentTokenBalance'
+import { useNativeSafeMax } from '@/hooks/useNativeSafeMax'
 import { useThemeVariables } from '@/hooks/useThemeVariables'
 import { useBridgeQuoteUpdater } from '@/hooks/useBridgeQuoteUpdater'
 import { useAppDispatch } from '@/state/hooks'
@@ -32,6 +34,8 @@ jest.mock('@/state/hooks')
 jest.mock('@/state/slices/bridge/hooks')
 jest.mock('@/state/slices/bridgeQuote/hooks')
 jest.mock('@/state/slices/wallet/hooks')
+jest.mock('@/hooks/useCurrentTokenBalance')
+jest.mock('@/hooks/useNativeSafeMax')
 jest.mock('@/hooks/useValidations')
 jest.mock('@/providers/SynapseProvider')
 jest.mock('@/components/Maintenance/Maintenance')
@@ -101,6 +105,9 @@ const fetchAndStoreTokenBalancesMock =
   fetchAndStoreTokenBalances as unknown as jest.Mock
 const fetchAndStoreAllowanceMock =
   fetchAndStoreAllowance as unknown as jest.Mock
+const useCurrentTokenBalanceMock =
+  useCurrentTokenBalance as unknown as jest.Mock
+const useNativeSafeMaxMock = useNativeSafeMax as unknown as jest.Mock
 
 const createToken = (symbol?: string) => ({
   addresses: { 1: '0x1', 2: '0x2', 56: '0x56' },
@@ -224,6 +231,19 @@ describe('Widget receipt integration', () => {
     })
     ;(useApproveTransactionState as jest.Mock).mockReturnValue({
       approveTxnStatus: null,
+    })
+    useCurrentTokenBalanceMock.mockReturnValue({
+      rawBalance: '1000000',
+      parsedBalance: '1.0000',
+      decimals: 6,
+    })
+    useNativeSafeMaxMock.mockReturnValue({
+      amountWei: null,
+      fillAmount: null,
+      isClickable: false,
+      isNativeOriginToken: false,
+      labelAmount: null,
+      status: 'idle',
     })
 
     fetchBridgeQuoteMock.mockImplementation((args) => ({

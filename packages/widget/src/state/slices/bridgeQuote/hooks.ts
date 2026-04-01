@@ -7,28 +7,37 @@ import { RootState } from '@/state/store'
 import { stringToBigInt } from '@/utils/stringToBigInt'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
-import { getBridgeModuleNames } from '@/utils/getBridgeModuleNames'
+import { isValidBridgeQuote } from '@/utils/isValidBridgeQuote'
+import { parseBigIntValue } from '@/utils/parseBigIntValue'
+import { selectBridgeQuote } from '@/utils/selectBridgeQuote'
 
 export const useBridgeQuoteState = (): RootState['bridgeQuote'] => {
   return useAppSelector((state) => state.bridgeQuote)
 }
 
-const DECIMAL_BIGINT_PATTERN = /^-?\d+$/
+type SelectedBridgeQuote = {
+  expectedToAmount: string
+  estimatedTime: number | null
+  id?: string | null
+  moduleNames: string[]
+  nativeFee?: unknown
+  routerAddress: string
+  tx?: {
+    data?: string
+    to?: string
+    value?: string | null
+  } | null
+}
 
-const parseNativeFee = (nativeFee: unknown): bigint => {
-  if (typeof nativeFee === 'bigint') {
-    return nativeFee
-  }
+type ExecutableSelectedBridgeQuoteTx = Required<
+  Pick<NonNullable<SelectedBridgeQuote['tx']>, 'data' | 'to'>
+> &
+  NonNullable<SelectedBridgeQuote['tx']>
 
-  if (typeof nativeFee === 'string') {
-    const normalizedNativeFee = nativeFee.trim()
-
-    if (DECIMAL_BIGINT_PATTERN.test(normalizedNativeFee)) {
-      return BigInt(normalizedNativeFee)
-    }
-  }
-
-  return 0n
+const hasExecutableQuoteTx = (
+  transaction: SelectedBridgeQuote['tx']
+): transaction is ExecutableSelectedBridgeQuoteTx => {
+  return Boolean(transaction?.to && transaction?.data)
 }
 
 export const fetchBridgeQuote = createAsyncThunk(
@@ -85,27 +94,12 @@ export const fetchBridgeQuote = createAsyncThunk(
     }
 
     const allQuotes = await synapseSDK.bridgeV2(quoteParams)
-
-    const pausedBridgeModules = new Set(
-      pausedModules
-        .filter((module) =>
-          module.chainId ? module.chainId === originChainId : true
-        )
-        .flatMap(getBridgeModuleNames)
-    )
-
-    const activeQuotes = allQuotes.filter(
-      (fetchedQuote) =>
-        !fetchedQuote.moduleNames.some((moduleName) =>
-          pausedBridgeModules.has(moduleName)
-        )
-    )
-
-    const rfqQuote = activeQuotes.find((activeQuote) =>
-      activeQuote.moduleNames.includes('SynapseRFQ')
-    )
-
-    const quote = rfqQuote ?? activeQuotes[0]
+    const validQuotes = allQuotes.filter(isValidBridgeQuote)
+    const quote = selectBridgeQuote<SelectedBridgeQuote>({
+      quotes: validQuotes,
+      originChainId,
+      pausedModules,
+    })
 
     if (!quote) {
       return rejectWithValue('No active bridge quotes available')
@@ -113,7 +107,20 @@ export const fetchBridgeQuote = createAsyncThunk(
 
     const bridgeModuleName = quote.moduleNames[quote.moduleNames.length - 1]
     const toValueBigInt = BigInt(quote.expectedToAmount)
-    const hasExecutableQuoteTx = Boolean(quote.tx?.to && quote.tx?.data)
+    const nativeFee = parseBigIntValue(quote.nativeFee)
+
+    if (nativeFee === null || nativeFee < 0n) {
+      return rejectWithValue('No active bridge quotes available')
+    }
+
+    const executableQuoteTx = hasExecutableQuoteTx(quote.tx) ? quote.tx : null
+    const normalizedQuoteTx = executableQuoteTx
+      ? {
+          data: executableQuoteTx.data,
+          to: executableQuoteTx.to,
+          value: executableQuoteTx.value ?? null,
+        }
+      : null
 
     return {
       id: quote.id ?? null,
@@ -136,13 +143,13 @@ export const fetchBridgeQuote = createAsyncThunk(
         destinationToken.decimals[destinationChainId]
       ),
       feeAmount: 0n,
-      nativeFee: parseNativeFee(quote.nativeFee),
+      nativeFee,
       delta: toValueBigInt,
       estimatedTime: quote.estimatedTime,
       bridgeModuleName,
-      tx: quote.tx ?? null,
+      tx: normalizedQuoteTx,
       quoteAddress:
-        hasExecutableQuoteTx && connectedAddress ? connectedAddress : null,
+        executableQuoteTx && connectedAddress ? connectedAddress : null,
       requestId,
       timestamp,
     }

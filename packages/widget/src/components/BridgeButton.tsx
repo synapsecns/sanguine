@@ -6,6 +6,10 @@ import { Tooltip } from '@/components/ui/Tooltip'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { switchNetwork } from '@/utils/actions/switchNetwork'
 import { useValidations } from '@/hooks/useValidations'
+import {
+  DEFAULT_NATIVE_FEE_VALIDATION_MESSAGE,
+  useNativeFeeValidation,
+} from '@/hooks/useNativeFeeValidation'
 
 interface BridgeButtonProps {
   originChain: Chain
@@ -34,6 +38,8 @@ export const BridgeButton = ({
 
   const { hasEnoughBalance, isInputValid, onSelectedChain, isApproved } =
     useValidations()
+  const { hasEnoughNativeBalanceForQuoteFee, nativeFeeValidationMessage } =
+    useNativeFeeValidation()
 
   const handleSwitchNetwork = useCallback(async () => {
     switchNetwork(originChainId, provider)
@@ -53,6 +59,13 @@ export const BridgeButton = ({
   }
 
   const tooltipPositionStyle = '-top-8'
+  let insufficientNativeBalanceLabel = 'Approve & Sign'
+
+  if (isApproved) {
+    insufficientNativeBalanceLabel = 'Send'
+  } else if (isApprovalPending) {
+    insufficientNativeBalanceLabel = 'Approve in Wallet'
+  }
 
   if (isBridgePaused) {
     return (
@@ -127,6 +140,22 @@ export const BridgeButton = ({
       </button>
     )
   }
+
+  if (!hasEnoughNativeBalanceForQuoteFee) {
+    return (
+      <Tooltip
+        hoverText={
+          nativeFeeValidationMessage ?? DEFAULT_NATIVE_FEE_VALIDATION_MESSAGE
+        }
+        positionStyles={tooltipPositionStyle}
+      >
+        <button className={buttonClassName} style={buttonStyle} disabled>
+          {insufficientNativeBalanceLabel}
+        </button>
+      </Tooltip>
+    )
+  }
+
   return (
     <div data-test-id="bridge-button">
       {isApproved ? (
