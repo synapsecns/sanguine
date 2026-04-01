@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.11.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.11.0...@synapsecns/widget@0.11.1) (2026-04-01)
+
+
+### Bug Fixes
+
+* **widget:** native token max ([#4005](https://github.com/synapsecns/sanguine/issues/4005)) ([64e8d56](https://github.com/synapsecns/sanguine/commit/64e8d56a977ed970f5e3a16c947cb9d32c942dd6))
+
+
+
+
+
 # [0.11.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.10.3...@synapsecns/widget@0.11.0) (2026-03-21)
 
 
