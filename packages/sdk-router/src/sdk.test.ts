@@ -1277,10 +1277,9 @@ describe('SynapseSDK', () => {
       [arbProvider, ethProvider]
     )
     describe('getModuleSet', () => {
-      it('Throws for paused SynapseBridge', () => {
-        expect(() =>
-          operations.getModuleSet.call(synapse, 'SynapseBridge')
-        ).toThrow('Unknown bridge module')
+      it('Returns correct set for SynapseBridge', () => {
+        const routerSet = operations.getModuleSet.call(synapse, 'SynapseBridge')
+        expect(routerSet).toEqual(synapse.synapseBridgeAdapterModuleSet)
       })
 
       it('Throws for paused SynapseCCTP', () => {

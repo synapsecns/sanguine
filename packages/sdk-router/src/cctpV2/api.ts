@@ -75,7 +75,7 @@ const parseFeeResponse = (data: unknown): CctpV2Fee[] | null => {
       if (finalityThreshold === undefined || minimumFee === undefined) {
         return null
       }
-      if (!Object.hasOwn(item, 'forwardFee')) {
+      if (!Object.prototype.hasOwnProperty.call(item, 'forwardFee')) {
         return {
           finalityThreshold,
           minimumFee,
