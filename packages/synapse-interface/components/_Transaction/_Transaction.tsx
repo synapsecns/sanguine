@@ -21,6 +21,7 @@ import { Address } from 'viem'
 import { useIsTxReverted } from './helpers/useIsTxReverted'
 import { useTxRefundStatus } from './helpers/useTxRefundStatus'
 import { HYPERLIQUID } from '@/constants/chains/master'
+import { DISCORD_URL } from '@/constants/urls'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -200,7 +201,7 @@ export const _Transaction = ({
               )}
             <MenuItem
               text={t('Contact Support (Discord)')}
-              link="https://discord.gg/4rMzuEnKqe"
+              link={DISCORD_URL}
             />
             {status !== 'pending' && (
               <MenuItem
