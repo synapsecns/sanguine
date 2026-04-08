@@ -2,7 +2,11 @@ export const config = {
   runtime: 'edge',
 }
 
-const ALLOWED_DOMAINS = ['synapseprotocol.com', 'cortexprotocol.com']
+const ALLOWED_DOMAINS = [
+  'synapseprotocol.com',
+  'cortexprotocol.com',
+  'hypercall.xyz',
+]
 
 function isDomainAllowed(headerValue: string | null): boolean {
   if (!headerValue) return false
@@ -24,10 +28,19 @@ export default async function handler(req: Request) {
   const origin = req.headers.get('origin')
   const referer = req.headers.get('referer')
   const host = req.headers.get('host')
+  const bypassKey = req.headers.get('x-admin-bypass')
 
+  const adminBypass =
+    process.env.ADMIN_RPC_BYPASS &&
+    bypassKey === process.env.ADMIN_RPC_BYPASS
   const isSameOrigin = origin === `https://${host}`
 
-  if (!isSameOrigin && !isDomainAllowed(origin) && !isDomainAllowed(referer)) {
+  if (
+    !adminBypass &&
+    !isSameOrigin &&
+    !isDomainAllowed(origin) &&
+    !isDomainAllowed(referer)
+  ) {
     return new Response('Forbidden', { status: 403 })
   }
 
