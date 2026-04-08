@@ -33,12 +33,7 @@ export default async function handler(req: Request) {
   const host = req.headers.get('host')
   const bypassKey = req.headers.get('x-admin-bypass')
 
-  let env: Record<string, string>
-  try {
-    env = getRequestContext().env as Record<string, string>
-  } catch {
-    env = process.env as Record<string, string>
-  }
+  const { env } = getRequestContext()
 
   const adminBypass =
     env.ADMIN_RPC_BYPASS && bypassKey === env.ADMIN_RPC_BYPASS
