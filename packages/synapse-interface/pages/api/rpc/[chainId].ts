@@ -1,3 +1,5 @@
+import { getRequestContext } from '@cloudflare/next-on-pages'
+
 export const config = {
   runtime: 'edge',
 }
@@ -30,9 +32,10 @@ export default async function handler(req: Request) {
   const host = req.headers.get('host')
   const bypassKey = req.headers.get('x-admin-bypass')
 
+  const { env } = getRequestContext()
+
   const adminBypass =
-    process.env.ADMIN_RPC_BYPASS &&
-    bypassKey === process.env.ADMIN_RPC_BYPASS
+    env.ADMIN_RPC_BYPASS && bypassKey === env.ADMIN_RPC_BYPASS
   const isSameOrigin = origin === `https://${host}`
 
   if (
@@ -44,7 +47,7 @@ export default async function handler(req: Request) {
     return new Response('Forbidden', { status: 403 })
   }
 
-  const secret = process.env.GOLDSKY_RPC_SECRET
+  const secret = env.GOLDSKY_RPC_SECRET as string
   if (!secret) {
     return new Response('RPC proxy not configured', { status: 500 })
   }
