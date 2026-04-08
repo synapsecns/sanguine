@@ -23,9 +23,9 @@ export default async function handler(req: Request) {
 
   const origin = req.headers.get('origin')
   const referer = req.headers.get('referer')
-  const requestHost = new URL(req.url).origin
+  const host = req.headers.get('host')
 
-  const isSameOrigin = origin === requestHost
+  const isSameOrigin = origin === `https://${host}`
 
   if (!isSameOrigin && !isDomainAllowed(origin) && !isDomainAllowed(referer)) {
     return new Response('Forbidden', { status: 403 })
