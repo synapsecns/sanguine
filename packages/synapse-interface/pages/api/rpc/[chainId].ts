@@ -1,7 +1,16 @@
-import { getRequestContext } from '@cloudflare/next-on-pages'
-
 export const config = {
   runtime: 'edge',
+}
+
+function getEnv(): Record<string, string> {
+  try {
+    // Cloudflare Pages: runtime secrets are on the request context, not process.env
+    const { getRequestContext } = require('@cloudflare/next-on-pages')
+    return getRequestContext().env
+  } catch {
+    // Fallback for non-CF environments (Vercel, local dev)
+    return process.env as Record<string, string>
+  }
 }
 
 const ALLOWED_DOMAINS = [
@@ -32,7 +41,7 @@ export default async function handler(req: Request) {
   const host = req.headers.get('host')
   const bypassKey = req.headers.get('x-admin-bypass')
 
-  const { env } = getRequestContext()
+  const env = getEnv()
 
   const adminBypass =
     env.ADMIN_RPC_BYPASS && bypassKey === env.ADMIN_RPC_BYPASS
