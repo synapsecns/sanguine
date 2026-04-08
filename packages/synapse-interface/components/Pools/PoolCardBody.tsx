@@ -93,10 +93,7 @@ const ApyDisplay = ({ pool, poolApyData }) => {
     return ''
   }
 
-  if (
-    isNaN(Number(poolApyData.fullCompoundedAPYStr)) ||
-    poolApyData.fullCompoundedAPYStr === '0.00'
-  ) {
+  if (poolApyData.fullCompoundedAPY === undefined) {
     return <LoaderIcon />
   }
 
