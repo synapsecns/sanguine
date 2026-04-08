@@ -104,7 +104,7 @@ const ApyDisplay = ({ pool, poolApyData }) => {
           ? `${numeral(apy / 100).format('0,0%')}${
               poolApyData.fullCompoundedAPY > 10000 ? '+' : ''
             }`
-          : `-%`}
+          : `0%`}
       </div>
       <div className=" text-[#BFBCC2] text-right">APY</div>
     </div>
