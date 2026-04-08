@@ -48,9 +48,23 @@ export default async function handler(req: Request) {
     return new Response('Forbidden', { status: 403 })
   }
 
-  const secret = env.GOLDSKY_RPC_SECRET as string
+  // DEBUG: figure out where the secret lives, remove after testing
+  const ctxKeys = Object.keys(env || {})
+  const procKeys = Object.keys(process.env || {}).filter((k) =>
+    k.includes('GOLDSKY')
+  )
+  const secret =
+    (env.GOLDSKY_RPC_SECRET as string) || process.env.GOLDSKY_RPC_SECRET
   if (!secret) {
-    return new Response('RPC proxy not configured', { status: 500 })
+    return new Response(
+      JSON.stringify({
+        error: 'RPC proxy not configured',
+        ctxEnvKeys: ctxKeys,
+        processEnvMatch: procKeys,
+        hasCtx: !!env,
+      }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    )
   }
 
   const chainId = new URL(req.url).pathname.split('/').pop()
