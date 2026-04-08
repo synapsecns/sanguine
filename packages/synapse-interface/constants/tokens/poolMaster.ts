@@ -89,7 +89,7 @@ export const BSC_POOL_SWAP_TOKEN = new Token({
   priceUnits: 'USD',
   priorityRank: 6,
   chainId: CHAINS.BNB.id,
-  incentivized: true,
+  incentivized: false,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.BNB.id],
 })
 
@@ -114,7 +114,7 @@ export const OPTIMISM_POOL_SWAP_TOKEN = new Token({
   priorityPool: true,
   priorityRank: 6,
   chainId: CHAINS.OPTIMISM.id,
-  incentivized: true,
+  incentivized: false,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.OPTIMISM.id],
 })
 
@@ -166,7 +166,7 @@ export const POLYGON_POOL_SWAP_TOKEN = new Token({
   priceUnits: 'USD',
   priorityRank: 6,
   chainId: CHAINS.POLYGON.id,
-  incentivized: true,
+  incentivized: false,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.POLYGON.id],
 })
 
@@ -191,7 +191,7 @@ export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 3pool stableswap LP token on Avalanche",
   priorityRank: 6,
   chainId: CHAINS.AVALANCHE.id,
-  incentivized: true,
+  incentivized: false,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.AVALANCHE.id],
 })
 
@@ -373,7 +373,7 @@ export const AURORA_TS_POOL_SWAP_TOKEN = new Token({
   priceUnits: 'USD',
   priorityRank: 6,
   chainId: CHAINS.AURORA.id,
-  incentivized: true,
+  incentivized: false,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.AURORA.id],
 })
 
@@ -399,7 +399,7 @@ export const ARBITRUM_3POOL_SWAP_TOKEN = new Token({
   priceUnits: 'USD',
   priorityRank: 6,
   chainId: CHAINS.ARBITRUM.id,
-  incentivized: true,
+  incentivized: false,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.ARBITRUM.id],
 })
 
@@ -450,7 +450,7 @@ export const METIS_POOL_SWAP_TOKEN = new Token({
   priorityPool: true,
   priorityRank: 6,
   chainId: CHAINS.METIS.id,
-  incentivized: true,
+  incentivized: false,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.METIS.id],
 })
 
@@ -606,7 +606,7 @@ export const ARBITRUM_ETH_SWAP_TOKEN = new Token({
   priceUnits: 'ETH',
   priorityRank: 6,
   chainId: CHAINS.ARBITRUM.id,
-  incentivized: true,
+  incentivized: false,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.ARBITRUM.id],
 })
 
@@ -637,7 +637,7 @@ export const OPTIMISM_ETH_SWAP_TOKEN = new Token({
   priceUnits: 'ETH',
   priorityRank: 6,
   chainId: CHAINS.OPTIMISM.id,
-  incentivized: true,
+  incentivized: false,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.OPTIMISM.id],
 })
 
@@ -781,7 +781,7 @@ export const METIS_WETH_SWAP_TOKEN = new Token({
   priceUnits: 'ETH',
   priorityRank: 6,
   chainId: CHAINS.METIS.id,
-  incentivized: true,
+  incentivized: false,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.METIS.id],
 })
 
@@ -832,7 +832,7 @@ export const HARMONY_JEWEL_SWAP_TOKEN = new Token({
   priorityPool: true,
   priorityRank: 6,
   chainId: CHAINS.HARMONY.id,
-  incentivized: true,
+  incentivized: false,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.HARMONY.id],
 })
 
@@ -863,7 +863,7 @@ export const BASE_ETH_SWAP_TOKEN = new Token({
   priceUnits: 'ETH',
   priorityRank: 6,
   chainId: CHAINS.BASE.id,
-  incentivized: true,
+  incentivized: false,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.BASE.id],
 })
 
