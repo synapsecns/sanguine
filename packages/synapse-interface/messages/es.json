@@ -353,6 +353,10 @@
     "Telegram": "Telegram",
     "Functions": "Funciones",
     "Developers": "Desarrolladores",
+    "Products": "Productos",
+    "Synapse": "Synapse",
+    "Hypercall": "Hypercall",
+    "Cortex": "Cortex",
     "$SYN": "$SYN",
     "Support": "Soporte"
   },
