@@ -1,7 +1,6 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
-import { BigNumberish } from 'ethers'
 import NodeCache from 'node-cache'
 
 import {
@@ -17,8 +16,6 @@ import {
   Query,
   SynapseModule,
   SynapseModuleSet,
-  createNoSwapQuery,
-  applySlippageToQuery,
   BridgeTokenCandidate,
   BridgeRouteV2,
   GetBridgeTokenCandidatesParameters,
@@ -204,86 +201,25 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
    * @inheritdoc SynapseModuleSet.getBridgeRoutes
    */
   @logExecutionTime('FastBridgeRouterSet.getBridgeRoutes')
-  public async getBridgeRoutes(
-    originChainId: number,
-    destChainId: number,
-    tokenIn: string,
-    tokenOut: string,
-    amountIn: BigNumberish,
-    originUserAddress?: string
-  ): Promise<BridgeRoute[]> {
-    // Check that Routers exist on both chains
-    if (!this.getModule(originChainId) || !this.getModule(destChainId)) {
-      return []
-    }
-    // Get all quotes that result in the final token
-    const allQuotes: FastBridgeQuote[] = await this.getQuotes(
-      CacheDuration.Short, // Use short cache duration for most recent quotes
-      originChainId,
-      destChainId,
-      tokenOut
-    )
-    // Get queries for swaps on the origin chain into the "RFQ-supported token"
-    const filteredQuotes = await this.filterOriginQuotes(
-      originChainId,
-      tokenIn,
-      amountIn,
-      allQuotes
-    )
-    const protocolFeeRate = await this.getFastBridgeRouter(
-      originChainId
-    ).getProtocolFeeRate()
-    return filteredQuotes
-      .map(({ quote, originQuery }) => ({
-        quote,
-        originQuery,
-        // Apply quote to the proceeds of the origin swap with protocol fee applied
-        // TODO: handle optional gas airdrop pricing
-        destAmountOut: applyQuote(
-          quote,
-          this.applyProtocolFeeRate(originQuery.minAmountOut, protocolFeeRate)
-        ),
-      }))
-      .filter(({ destAmountOut }) => destAmountOut.gt(0))
-      .map(({ quote, originQuery, destAmountOut }) => ({
-        originChainId,
-        destChainId,
-        bridgeToken: {
-          symbol: marshallTicker(quote.ticker),
-          token: quote.ticker.destToken.token,
-        },
-        originQuery,
-        destQuery: FastBridgeRouterSet.createRFQDestQuery(
-          tokenOut,
-          destAmountOut,
-          originUserAddress
-        ),
-        bridgeModuleName: this.moduleName,
-      }))
+  public async getBridgeRoutes(): Promise<BridgeRoute[]> {
+    // Bridge V1 is not supported
+    return []
   }
 
   /**
    * @inheritdoc SynapseModuleSet.getFeeData
    */
-  public async getFeeData(bridgeRoute: BridgeRoute): Promise<{
+  public async getFeeData(): Promise<{
     feeAmount: BigNumber
     feeConfig: FeeConfig
   }> {
-    // TODO: do we actually need to return non-zero alues here?
-    // Origin Out vs Dest Out is the effective fee if amountOut is within 1% of amountIn.
-    // Otherwise origin and destination tokens are different, so the SDK has no means to determine the effective fee.
-    const amountIn = bridgeRoute.originQuery.minAmountOut
-    const amountOut = bridgeRoute.destQuery.minAmountOut
-    const feeAmount =
-      amountOut.gte(amountIn.mul(99).div(100)) && amountOut.lte(amountIn)
-        ? amountIn.sub(amountOut)
-        : Zero
+    // Bridge V1 is not supported
     return {
-      feeAmount,
+      feeAmount: Zero,
       feeConfig: {
         bridgeFee: 0,
-        minFee: BigNumber.from(0),
-        maxFee: BigNumber.from(0),
+        minFee: Zero,
+        maxFee: Zero,
       },
     }
   }
@@ -306,37 +242,11 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
    */
   public applySlippage(
     originQueryPrecise: Query,
-    destQueryPrecise: Query,
-    slipNumerator: number,
-    slipDenominator: number
+    destQueryPrecise: Query
   ): { originQuery: Query; destQuery: Query } {
-    // Max slippage for origin swap is 5% of the fixed fee
-    // Relayer is using a 10% buffer for the fixed fee, so if origin swap slippage
-    // is under 5% of the fixed fee, the relayer will still honor the quote.
-    let maxOriginSlippage = originQueryPrecise.minAmountOut
-      .sub(destQueryPrecise.minAmountOut)
-      .div(20)
-    // TODO: figure out a better way to handle destAmount > originAmount
-    if (maxOriginSlippage.isNegative()) {
-      maxOriginSlippage = BigNumber.from(0)
-    }
-    const originQuery = applySlippageToQuery(
-      originQueryPrecise,
-      slipNumerator,
-      slipDenominator
-    )
-    if (
-      originQuery.minAmountOut
-        .add(maxOriginSlippage)
-        .lt(originQueryPrecise.minAmountOut)
-    ) {
-      originQuery.minAmountOut =
-        originQueryPrecise.minAmountOut.sub(maxOriginSlippage)
-    }
-    // Never modify the dest query, as the exact amount from it will always be used by the Relayer
-    // So applying slippage there will only reduce the user proceeds on the destination chain
+    // Bridge V1 is not supported
     return {
-      originQuery,
+      originQuery: originQueryPrecise,
       destQuery: destQueryPrecise,
     }
   }
@@ -371,34 +281,6 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   ): BigNumber {
     const protocolFee = amount.mul(protocolFeeRate).div(1_000_000)
     return amount.sub(protocolFee)
-  }
-
-  /**
-   * Filters the list of quotes to only include those that can be used for given amount of input token.
-   * For every filtered quote, the origin query is returned with the information for tokenIn -> RFQ token swaps.
-   */
-  private async filterOriginQuotes(
-    originChainId: number,
-    tokenIn: string,
-    amountIn: BigNumberish,
-    allQuotes: FastBridgeQuote[]
-  ): Promise<{ quote: FastBridgeQuote; originQuery: Query }[]> {
-    // Get queries for swaps on the origin chain into the "RFQ-supported token"
-    const originQueries = await this.getFastBridgeRouter(
-      originChainId
-    ).getOriginAmountOut(
-      tokenIn,
-      allQuotes.map((quote) => quote.ticker.originToken.token),
-      amountIn
-    )
-    // Note: allQuotes.length === originQueries.length
-    // Zip the quotes and queries together, filter out "no path found" queries
-    return allQuotes
-      .map((quote, index) => ({
-        quote,
-        originQuery: originQueries[index],
-      }))
-      .filter(({ originQuery }) => originQuery.minAmountOut.gt(0))
   }
 
   /**
@@ -463,24 +345,6 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
         const age = Date.now() - quote.updatedAt
         return 0 <= age && age < FastBridgeRouterSet.MAX_QUOTE_AGE_MILLISECONDS
       })
-  }
-
-  public static createRFQDestQuery(
-    tokenOut: string,
-    amountOut: BigNumber,
-    originUserAddress?: string
-  ): Query {
-    // On-chain swaps are not supported for RFQ on the destination chain
-    const destQuery = createNoSwapQuery(tokenOut, amountOut)
-    // Don't modify the Query if user address is undefined
-    if (!originUserAddress) {
-      return destQuery
-    }
-    // Make sure the rebate flag is always included if user address is defined.
-    // 0x00 is a single byte that indicates the rebate flag is turned off.
-    // Concatenate the originUserAddress (without 0x prefix) to the end of the rawParams.
-    destQuery.rawParams = '0x00' + originUserAddress.slice(2)
-    return destQuery
   }
 
   private async getBridgeZapData(

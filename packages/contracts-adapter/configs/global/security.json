@@ -1,4 +1,23 @@
 {
-  "confirmationTimeSeconds": 3600,
+  "blockConfirmations": {
+    "arbitrum": 100,
+    "aurora": 100,
+    "avalanche": 100,
+    "base": 100,
+    "blast": 100,
+    "bnb": 100,
+    "canto": 100,
+    "cronos": 100,
+    "dfk": 100,
+    "ethereum": 64,
+    "fantom": 100,
+    "harmony": 100,
+    "kaia": 100,
+    "metis": 100,
+    "moonbeam": 100,
+    "moonriver": 100,
+    "optimism": 100,
+    "polygon": 200
+  },
   "DVNs": ["LayerZero_Labs", "Nethermind"]
 }

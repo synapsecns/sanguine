@@ -3,6 +3,106 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.11.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.11.0...@synapsecns/widget@0.11.1) (2026-04-01)
+
+
+### Bug Fixes
+
+* **widget:** native token max ([#4005](https://github.com/synapsecns/sanguine/issues/4005)) ([64e8d56](https://github.com/synapsecns/sanguine/commit/64e8d56a977ed970f5e3a16c947cb9d32c942dd6))
+
+
+
+
+
+# [0.11.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.10.3...@synapsecns/widget@0.11.0) (2026-03-21)
+
+
+### Features
+
+* **widget:** add bridge fee to receipt ([#4001](https://github.com/synapsecns/sanguine/issues/4001)) ([98acbae](https://github.com/synapsecns/sanguine/commit/98acbae2c1f44c17835f9c60c37377a03b96ed84))
+
+
+
+
+
+## [0.10.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.10.2...@synapsecns/widget@0.10.3) (2026-03-21)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.10.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.10.1...@synapsecns/widget@0.10.2) (2026-03-20)
+
+
+### Bug Fixes
+
+* **widget:** quote flickering ([#3999](https://github.com/synapsecns/sanguine/issues/3999)) ([6eda6d8](https://github.com/synapsecns/sanguine/commit/6eda6d8bb7222866e5be19fd964835392ad20e62))
+
+
+
+
+
+## [0.10.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.10.0...@synapsecns/widget@0.10.1) (2026-03-20)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+# [0.10.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.55...@synapsecns/widget@0.10.0) (2026-03-19)
+
+
+### Features
+
+* **widget:** Update to use bridgeV2 flows ([#3995](https://github.com/synapsecns/sanguine/issues/3995)) ([c9c8b47](https://github.com/synapsecns/sanguine/commit/c9c8b4778454adb60d2cec46056187836cd4098c))
+
+
+
+
+
+## [0.9.55](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.54...@synapsecns/widget@0.9.55) (2026-03-19)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.54](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.53...@synapsecns/widget@0.9.54) (2026-03-19)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.53](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.52...@synapsecns/widget@0.9.53) (2026-03-18)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.52](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.51...@synapsecns/widget@0.9.52) (2026-03-17)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.9.51](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.50...@synapsecns/widget@0.9.51) (2026-03-12)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
 ## [0.9.50](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.9.49...@synapsecns/widget@0.9.50) (2026-02-13)
 
 **Note:** Version bump only for package @synapsecns/widget

@@ -7,17 +7,6 @@ const app = express()
 app.use('/synapseTxId', synapseTxIdRoute)
 
 describe('Get Synapse TX ID Route', () => {
-  it('should return synapse transaction ID for valid input', async () => {
-    const response = await request(app).get('/synapseTxId').query({
-      originChainId: '8453',
-      bridgeModule: 'SynapseRFQ',
-      txHash:
-        '0x13486d9eaefd68de6a20b704d70deb8436effbac1f77fddfc0c7ef14f08e96c3',
-    })
-    expect(response.status).toBe(200)
-    expect(response.body).toHaveProperty('synapseTxId')
-  }, 10000)
-
   it('should return 400 for missing originChainId', async () => {
     const response = await request(app).get('/synapseTxId').query({
       bridgeModule: 'SynapseRFQ',

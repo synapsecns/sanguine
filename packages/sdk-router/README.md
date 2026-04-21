@@ -1,6 +1,6 @@
 # Synapse Router SDK
 
-[![npm](https://img.shields.io/npm/v/%40synapsecns%2Fsdk-router?style=flat-square)](https://www.npmjs.com/package/@synapsecns/sdk-router)
+[![GitHub Package](https://img.shields.io/github/v/release/synapsecns/sanguine?filter=@synapsecns/sdk-router*&style=flat-square&label=github%20packages)](https://github.com/synapsecns/sanguine/packages)
 
 This package contains the Synapse Protocol Cross-Chain Swap and Bridging SDK.
 
@@ -28,6 +28,14 @@ The Synapse SDK allows you to interact with [Synapse Protocol](https://synapsepr
 - Utilities for getting miscellaneous data related to protocol, fees, and chains
 
 ## SDK Installation
+
+This package is published to [GitHub Packages](https://github.com/synapsecns/sanguine/packages). Configure your `.npmrc` to use the GitHub registry for `@synapsecns` packages:
+
+```
+@synapsecns:registry=https://npm.pkg.github.com
+```
+
+Then install:
 
 ```bash
 npm install @synapsecns/sdk-router

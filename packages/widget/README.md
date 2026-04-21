@@ -16,15 +16,17 @@ This guide shows how to customize the widget to seamlessly blend with your app's
 
 ## Installation
 
-The widget is available on npm or yarn.
+The widget is published to [GitHub Packages](https://github.com/synapsecns/sanguine/packages). Configure your `.npmrc` to use the GitHub registry for `@synapsecns` packages:
 
-npm:
+```
+@synapsecns:registry=https://npm.pkg.github.com
+```
+
+Then install with npm or yarn:
 
 ```bash
 npm install @synapsecns/widget
 ```
-
-yarn:
 
 ```bash
 yarn add @synapsecns/widget
@@ -47,6 +49,14 @@ const MyApp = () => {
 ```
 
 Your site should now display a fully operational bridge widget integrating the routes and tokens supported by the Synapse protocol. By utilizing Synapse's multiple routers, you will be able to find the best quotes to support your bridging use case.
+
+## Native Source Token Balance Control
+
+The widget keeps the existing `Available` balance behavior for non-native source tokens.
+
+For native source tokens such as ETH, AVAX, or MATIC, the balance control now shows the bridgeable amount instead of the raw wallet balance. The widget derives this value from widget-local quote lookups for the current selections, combining each selected quote's `nativeFee` with a buffered origin-chain gas estimate so clicking the balance control prefills a safer max amount and leaves room for transaction execution.
+
+While the native safe max is being calculated, or if the widget cannot produce a quote plus gas estimate for the current selection, the control mirrors the usual `Available {balance}` display behavior but stays non-clickable. Once the bridgeable amount is ready, the label switches to `Bridgeable ...` and clicking fills the reduced amount. Manual input is still allowed above the suggested native safe max; this behavior only changes the balance-control prefill.
 
 ## Bridge Widget Props
 

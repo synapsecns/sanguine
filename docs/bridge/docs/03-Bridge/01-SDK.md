@@ -25,6 +25,12 @@ The SDK has only been fully tested on Node 16+ or greater. Earlier versions are 
 
 Requires either the `npm` or `yarn` package manager.
 
+`@synapsecns` packages are published to [GitHub Packages](https://github.com/synapsecns/sanguine/packages). Add the following to your project's `.npmrc`:
+
+```
+@synapsecns:registry=https://npm.pkg.github.com
+```
+
 | Options
 |-
 | `npm install @synapsecns/sdk-router`
