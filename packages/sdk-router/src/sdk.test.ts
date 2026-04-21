@@ -2,41 +2,30 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { parseFixed } from '@ethersproject/bignumber'
 import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber, PopulatedTransaction } from 'ethers'
+import { mock } from 'jest-mock-extended'
 
 import {
-  CCTP_ROUTER_ADDRESS_MAP,
-  MEDIAN_TIME_BRIDGE,
-  MEDIAN_TIME_CCTP,
+  MEDIAN_TIME_BLOCK,
   ROUTER_ADDRESS_MAP,
   SupportedChainId,
+  SYNAPSE_INTENT_ROUTER_ADDRESS_MAP,
 } from './constants'
 import { getTestProvider } from './constants/testProviders'
 import {
-  ARB_NETH,
-  ARB_NUSD,
-  ARB_POOL_ETH_WRAPPER,
-  ARB_POOL_NETH,
-  ARB_POOL_NUSD,
   ARB_USDC,
   ARB_USDC_E,
-  ARB_USDT,
-  ARB_WETH,
-  AVAX_GOHM,
-  AVAX_USDC,
   AVAX_USDC_E,
   BOBA_USDC,
-  BSC_GOHM,
   BSC_USDC,
-  ETH_DAI,
-  ETH_POOL_NUSD,
   ETH_USDC,
-  ETH_USDT,
   NATIVE_ADDRESS,
 } from './constants/testValues'
-import { FeeConfig, Query, RouterQuery, SynapseModuleSet } from './module'
-import * as operations from './operations'
+import { Query, RouterQuery } from './module'
+import { SBA_CHAIN_METADATA, SBA_EXECUTION_BUFFER_SECONDS } from './sba'
 import { SynapseSDK } from './sdk'
-import { BridgeQuote, SwapQuote } from './types'
+import { EngineID } from './swap'
+import { BridgeQuoteV2, IntentQuote, SwapQuote } from './types'
+import { ETH_NATIVE_TOKEN_ADDRESS } from './utils'
 
 // Override fetch to exclude RFQ from tests
 global.fetch = jest.fn(() =>
@@ -49,32 +38,6 @@ global.fetch = jest.fn(() =>
 // Retry the flaky tests up to 3 times
 jest.retryTimes(3)
 
-const EXPECTED_GAS_DROP: { [chainId: number]: BigNumber } = {
-  [SupportedChainId.ETH]: BigNumber.from(0),
-  [SupportedChainId.ARBITRUM]: parseFixed('0.00001', 18),
-  [SupportedChainId.BSC]: parseFixed('0.0004', 18),
-  [SupportedChainId.AVALANCHE]: parseFixed('0.025', 18),
-}
-
-const expectCorrectFeeConfig = (feeConfig: FeeConfig) => {
-  expect(feeConfig).toBeDefined()
-  expect(feeConfig.bridgeFee).toBeGreaterThan(0)
-  expect(feeConfig.minFee.gt(0)).toBe(true)
-  expect(feeConfig.maxFee.gt(0)).toBe(true)
-}
-
-const expectCorrectBridgeQuote = (bridgeQuote: BridgeQuote) => {
-  expect(bridgeQuote).toBeDefined()
-  expect(bridgeQuote.feeAmount.gt(0)).toBe(true)
-  expectCorrectFeeConfig(bridgeQuote.feeConfig)
-  expect(bridgeQuote.routerAddress?.length).toBeGreaterThan(0)
-  expect(bridgeQuote.maxAmountOut.gt(0)).toBe(true)
-  expect(bridgeQuote.originQuery).toBeDefined()
-  expect(bridgeQuote.destQuery).toBeDefined()
-  expect(bridgeQuote.originChainId).toBeDefined()
-  expect(bridgeQuote.destChainId).toBeDefined()
-}
-
 const expectCorrectPopulatedTransaction = (
   populatedTransaction: PopulatedTransaction,
   expectedValue: BigNumber = Zero
@@ -83,43 +46,6 @@ const expectCorrectPopulatedTransaction = (
   expect(populatedTransaction.data?.length).toBeGreaterThan(0)
   expect(populatedTransaction.to?.length).toBeGreaterThan(0)
   expect(populatedTransaction.value).toEqual(expectedValue)
-}
-
-const createBridgeQuoteTests = (
-  synapse: SynapseSDK,
-  originChainId: number,
-  destChainId: number,
-  token: string,
-  amount: BigNumber,
-  resultPromise: Promise<BridgeQuote>
-) => {
-  let result: BridgeQuote
-  beforeAll(async () => {
-    result = await resultPromise
-  })
-
-  it('Generates a bridge quote with valid uuid', async () => {
-    expect(typeof result.id).toBe('string')
-  })
-
-  it('Fetches a bridge quote', async () => {
-    expectCorrectBridgeQuote(result)
-  })
-
-  it('Could be used for bridging', async () => {
-    const expectedValue = token === NATIVE_ADDRESS ? amount : Zero
-    const data = await synapse.bridge(
-      '0x0000000000000000000000000000000000001337',
-      result.routerAddress,
-      originChainId,
-      destChainId,
-      token,
-      amount,
-      result.originQuery,
-      result.destQuery
-    )
-    expectCorrectPopulatedTransaction(data, expectedValue)
-  })
 }
 
 const createSwapQuoteTests = (
@@ -160,8 +86,6 @@ describe('SynapseSDK', () => {
   const arbProvider: Provider = getTestProvider(SupportedChainId.ARBITRUM)
 
   const opProvider: Provider = getTestProvider(SupportedChainId.OPTIMISM)
-
-  const avaxProvider: Provider = getTestProvider(SupportedChainId.AVALANCHE)
 
   const bscProvider: Provider = getTestProvider(SupportedChainId.BSC)
 
@@ -225,579 +149,51 @@ describe('SynapseSDK', () => {
       expect(synapse.providers[SupportedChainId.ARBITRUM]).toBe(arbProvider)
       expect(synapse.providers[SupportedChainId.BSC]).toBe(bscProvider)
     })
-  })
 
-  describe('Bridging: ETH -> ARB', () => {
-    const synapse = new SynapseSDK(
-      [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
-      [ethProvider, arbProvider]
-    )
-
-    describe('ETH USDC -> ARB USDC', () => {
-      const amount = BigNumber.from(10).pow(9)
-      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
-        SupportedChainId.ETH,
-        SupportedChainId.ARBITRUM,
-        ETH_USDC,
-        ARB_USDC,
-        amount
-      )
-
-      createBridgeQuoteTests(
-        synapse,
-        SupportedChainId.ETH,
-        SupportedChainId.ARBITRUM,
-        ETH_USDC,
-        amount,
-        resultPromise
-      )
-    })
-
-    describe('ETH Native -> ARB Native', () => {
-      const amount = BigNumber.from(10).pow(18)
-      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
-        SupportedChainId.ETH,
-        SupportedChainId.ARBITRUM,
-        NATIVE_ADDRESS,
-        NATIVE_ADDRESS,
-        amount
-      )
-
-      createBridgeQuoteTests(
-        synapse,
-        SupportedChainId.ETH,
-        SupportedChainId.ARBITRUM,
-        NATIVE_ADDRESS,
-        amount,
-        resultPromise
-      )
-
-      it('Fetches a Synapse bridge quote', async () => {
-        const result = await resultPromise
-        expect(result.routerAddress).toEqual(
-          ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
-        )
-        // SynapseRouterQuery has swapAdapter property
-        expect(result.originQuery.swapAdapter).toBeDefined()
-        // Estimated time must match the SynapseBridge median time
-        expect(result.estimatedTime).toEqual(
-          MEDIAN_TIME_BRIDGE[SupportedChainId.ETH]
-        )
-        expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toEqual(
-          EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
-        )
-        expect(result.originChainId).toEqual(SupportedChainId.ETH)
-        expect(result.destChainId).toEqual(SupportedChainId.ARBITRUM)
-      })
-    })
-  })
-
-  describe('Bridging: AVAX -> BSC', () => {
-    const synapse = new SynapseSDK(
-      [SupportedChainId.AVALANCHE, SupportedChainId.BSC],
-      [avaxProvider, bscProvider]
-    )
-
-    describe('AVAX USDC.e -> BSC USDC', () => {
-      const amount = BigNumber.from(10).pow(9)
-      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
-        SupportedChainId.AVALANCHE,
-        SupportedChainId.BSC,
-        AVAX_USDC_E,
-        BSC_USDC,
-        amount
-      )
-
-      createBridgeQuoteTests(
-        synapse,
-        SupportedChainId.AVALANCHE,
-        SupportedChainId.BSC,
-        AVAX_USDC_E,
-        amount,
-        resultPromise
-      )
-
-      it('Fetches a Synapse bridge quote', async () => {
-        const result = await resultPromise
-        expect(result.routerAddress).toEqual(
-          ROUTER_ADDRESS_MAP[SupportedChainId.AVALANCHE]
-        )
-        // SynapseRouterQuery has swapAdapter property
-        expect(result.originQuery.swapAdapter).toBeDefined()
-        // Estimated time must match the SynapseBridge median time
-        expect(result.estimatedTime).toEqual(
-          MEDIAN_TIME_BRIDGE[SupportedChainId.AVALANCHE]
-        )
-        expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toEqual(
-          EXPECTED_GAS_DROP[SupportedChainId.BSC]
-        )
-        expect(result.originChainId).toEqual(SupportedChainId.AVALANCHE)
-        expect(result.destChainId).toEqual(SupportedChainId.BSC)
-      })
-    })
-
-    describe('AVAX gOHM -> BSC gOHM', () => {
-      const amount = BigNumber.from(10).pow(21)
-      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
-        SupportedChainId.AVALANCHE,
-        SupportedChainId.BSC,
-        AVAX_GOHM,
-        BSC_GOHM,
-        amount
-      )
-
-      createBridgeQuoteTests(
-        synapse,
-        SupportedChainId.AVALANCHE,
-        SupportedChainId.BSC,
-        AVAX_GOHM,
-        amount,
-        resultPromise
-      )
-
-      it('Fetches a Synapse bridge quote', async () => {
-        const result = await resultPromise
-        expect(result.routerAddress).toEqual(
-          ROUTER_ADDRESS_MAP[SupportedChainId.AVALANCHE]
-        )
-        // SynapseRouterQuery has swapAdapter property
-        expect(result.originQuery.swapAdapter).toBeDefined()
-        // Estimated time must match the SynapseBridge median time
-        expect(result.estimatedTime).toEqual(
-          MEDIAN_TIME_BRIDGE[SupportedChainId.AVALANCHE]
-        )
-        expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toEqual(
-          EXPECTED_GAS_DROP[SupportedChainId.BSC]
-        )
-        expect(result.originChainId).toEqual(SupportedChainId.AVALANCHE)
-        expect(result.destChainId).toEqual(SupportedChainId.BSC)
-      })
-    })
-  })
-
-  describe('Bridging: ARB -> ETH', () => {
-    const synapse = new SynapseSDK(
-      [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
-      [ethProvider, arbProvider]
-    )
-
-    describe('ARB USDC -> ETH USDC (using Bridge)', () => {
-      const amount = BigNumber.from(10).pow(12).add(1)
-      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
-        SupportedChainId.ARBITRUM,
-        SupportedChainId.ETH,
-        ARB_USDC,
-        ETH_USDC,
-        amount
-      )
-
-      const secondResultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
-        SupportedChainId.ARBITRUM,
-        SupportedChainId.ETH,
-        ARB_USDC,
-        ETH_USDC,
-        amount
-      )
-
-      createBridgeQuoteTests(
-        synapse,
-        SupportedChainId.ARBITRUM,
-        SupportedChainId.ETH,
-        ETH_USDC,
-        amount,
-        resultPromise
-      )
-
-      it('Fetches a Synapse bridge quote', async () => {
-        const result = await resultPromise
-        expect(result.routerAddress).toEqual(
-          ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
-        )
-        // SynapseRouterQuery has swapAdapter property
-        expect(result.originQuery.swapAdapter).toBeDefined()
-        // Estimated time must match the SynapseBridge median time
-        expect(result.estimatedTime).toEqual(
-          MEDIAN_TIME_BRIDGE[SupportedChainId.ARBITRUM]
-        )
-        expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toEqual(
-          EXPECTED_GAS_DROP[SupportedChainId.ETH]
-        )
-        expect(result.originChainId).toEqual(SupportedChainId.ARBITRUM)
-        expect(result.destChainId).toEqual(SupportedChainId.ETH)
-      })
-
-      it('Fetches a second Synapse bridge quote with a different ID', async () => {
-        const firstQuote = await resultPromise
-        const secondQuote = await secondResultPromise
-
-        expect(firstQuote.id).not.toEqual(secondQuote.id)
-      })
-    })
-
-    describe('ARB USDC -> ETH USDC (using CCTP)', () => {
-      const amount = BigNumber.from(10).pow(12)
-      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
-        SupportedChainId.ARBITRUM,
-        SupportedChainId.ETH,
-        ARB_USDC,
-        ETH_USDC,
-        amount
-      )
-
-      createBridgeQuoteTests(
-        synapse,
-        SupportedChainId.ARBITRUM,
-        SupportedChainId.ETH,
-        ETH_USDC,
-        amount,
-        resultPromise
-      )
-
-      it('Fetches a CCTP bridge quote', async () => {
-        const result = await resultPromise
-        expect(result.routerAddress).toEqual(
-          CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
-        )
-        // SynapseCCTPRouterQuery has routerAdapter property
-        expect(result.originQuery.routerAdapter).toBeDefined()
-        // Estimated time must match the SynapseCCTP median time
-        expect(result.estimatedTime).toEqual(
-          MEDIAN_TIME_CCTP[SupportedChainId.ARBITRUM]
-        )
-        expect(result.bridgeModuleName).toEqual('SynapseCCTP')
-        expect(result.gasDropAmount).toEqual(
-          EXPECTED_GAS_DROP[SupportedChainId.ETH]
-        )
-        expect(result.originChainId).toEqual(SupportedChainId.ARBITRUM)
-        expect(result.destChainId).toEqual(SupportedChainId.ETH)
-      })
-    })
-
-    describe('ARB USDT -> ETH USDC (excludeCCTP flag tests)', () => {
-      // Use $1000 USDT as amount. SynapseCCTP requires less gas on Ethereum to be completed,
-      // when USDC is used as a tokenOut (compared to SynapseBridge route).
-      // Therefore we can expect that the min fees would be lower. Meaning for amount this low,
-      // we should get a CCTP quote unless we explicitly exclude CCTP.
-      const amount = BigNumber.from(10).pow(9)
-
-      describe('excludeCCTP flag omitted', () => {
-        const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
-          SupportedChainId.ARBITRUM,
-          SupportedChainId.ETH,
-          ARB_USDT,
-          ETH_USDC,
-          amount
-        )
-
-        createBridgeQuoteTests(
-          synapse,
-          SupportedChainId.ARBITRUM,
-          SupportedChainId.ETH,
-          ETH_USDC,
-          amount,
-          resultPromise
-        )
-
-        it('Fetches a CCTP bridge quote', async () => {
-          const result = await resultPromise
-          expect(result.routerAddress).toEqual(
-            CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
-          )
-          // SynapseCCTPRouterQuery has routerAdapter property
-          expect(result.originQuery.routerAdapter).toBeDefined()
-          // Estimated time must match the SynapseCCTP median time
-          expect(result.estimatedTime).toEqual(
-            MEDIAN_TIME_CCTP[SupportedChainId.ARBITRUM]
-          )
-          expect(result.bridgeModuleName).toEqual('SynapseCCTP')
-          expect(result.gasDropAmount).toEqual(
-            EXPECTED_GAS_DROP[SupportedChainId.ETH]
-          )
-          expect(result.originChainId).toEqual(SupportedChainId.ARBITRUM)
-          expect(result.destChainId).toEqual(SupportedChainId.ETH)
-        })
-      })
-
-      describe('excludeCCTP flag off', () => {
-        const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
-          SupportedChainId.ARBITRUM,
-          SupportedChainId.ETH,
-          ARB_USDT,
-          ETH_USDC,
-          amount
-        )
-
-        createBridgeQuoteTests(
-          synapse,
-          SupportedChainId.ARBITRUM,
-          SupportedChainId.ETH,
-          ETH_USDC,
-          amount,
-          resultPromise
-        )
-
-        it('Fetches a CCTP bridge quote', async () => {
-          const result = await resultPromise
-          expect(result.routerAddress).toEqual(
-            CCTP_ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
-          )
-          // SynapseCCTPRouterQuery has routerAdapter property
-          expect(result.originQuery.routerAdapter).toBeDefined()
-          // Estimated time must match the SynapseCCTP median time
-          expect(result.estimatedTime).toEqual(
-            MEDIAN_TIME_CCTP[SupportedChainId.ARBITRUM]
-          )
-          expect(result.bridgeModuleName).toEqual('SynapseCCTP')
-          expect(result.gasDropAmount).toEqual(
-            EXPECTED_GAS_DROP[SupportedChainId.ETH]
-          )
-          expect(result.originChainId).toEqual(SupportedChainId.ARBITRUM)
-          expect(result.destChainId).toEqual(SupportedChainId.ETH)
-        })
-      })
-
-      describe('excludeCCTP flag on', () => {
-        const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
-          SupportedChainId.ARBITRUM,
-          SupportedChainId.ETH,
-          ARB_USDT,
-          ETH_USDC,
-          amount,
-          {
-            excludedModules: ['SynapseCCTP'],
-          }
-        )
-
-        createBridgeQuoteTests(
-          synapse,
-          SupportedChainId.ARBITRUM,
-          SupportedChainId.ETH,
-          ETH_USDC,
-          amount,
-          resultPromise
-        )
-
-        it('Fetches a Synapse bridge quote', async () => {
-          const result = await resultPromise
-          expect(result.routerAddress).toEqual(
-            ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
-          )
-          // SynapseRouterQuery has swapAdapter property
-          expect(result.originQuery.swapAdapter).toBeDefined()
-          // Estimated time must match the SynapseBridge median time
-          expect(result.estimatedTime).toEqual(
-            MEDIAN_TIME_BRIDGE[SupportedChainId.ARBITRUM]
-          )
-          expect(result.bridgeModuleName).toEqual('SynapseBridge')
-          expect(result.gasDropAmount).toEqual(
-            EXPECTED_GAS_DROP[SupportedChainId.ETH]
-          )
-          expect(result.originChainId).toEqual(SupportedChainId.ARBITRUM)
-          expect(result.destChainId).toEqual(SupportedChainId.ETH)
-        })
-      })
-    })
-
-    describe('ARB Native -> ETH Native', () => {
-      const amount = BigNumber.from(10).pow(18)
-      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
-        SupportedChainId.ARBITRUM,
-        SupportedChainId.ETH,
-        NATIVE_ADDRESS,
-        NATIVE_ADDRESS,
-        amount
-      )
-
-      createBridgeQuoteTests(
-        synapse,
-        SupportedChainId.ARBITRUM,
-        SupportedChainId.ETH,
-        NATIVE_ADDRESS,
-        amount,
-        resultPromise
-      )
-
-      it('Fetches a Synapse bridge quote', async () => {
-        const result = await resultPromise
-        expect(result.routerAddress).toEqual(
-          ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
-        )
-        // SynapseRouterQuery has swapAdapter property
-        expect(result.originQuery.swapAdapter).toBeDefined()
-        // Estimated time must match the SynapseBridge median time
-        expect(result.estimatedTime).toEqual(
-          MEDIAN_TIME_BRIDGE[SupportedChainId.ARBITRUM]
-        )
-        expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toEqual(
-          EXPECTED_GAS_DROP[SupportedChainId.ETH]
-        )
-        expect(result.originChainId).toEqual(SupportedChainId.ARBITRUM)
-        expect(result.destChainId).toEqual(SupportedChainId.ETH)
-      })
-    })
-  })
-
-  describe('Bridging: BSC -> AVAX', () => {
-    const synapse = new SynapseSDK(
-      [SupportedChainId.AVALANCHE, SupportedChainId.BSC],
-      [avaxProvider, bscProvider]
-    )
-
-    describe('BSC USDC -> AVAX USDC', () => {
-      // USDC has 18 decimals on BSC. Don't ask me why.
-      const amount = BigNumber.from(10).pow(21)
-      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
-        SupportedChainId.BSC,
-        SupportedChainId.AVALANCHE,
-        BSC_USDC,
-        AVAX_USDC,
-        amount
-      )
-
-      createBridgeQuoteTests(
-        synapse,
-        SupportedChainId.BSC,
-        SupportedChainId.AVALANCHE,
-        AVAX_USDC,
-        amount,
-        resultPromise
-      )
-
-      it('Fetches a Synapse bridge quote', async () => {
-        const result = await resultPromise
-        expect(result.routerAddress).toEqual(
-          ROUTER_ADDRESS_MAP[SupportedChainId.BSC]
-        )
-        // SynapseRouterQuery has swapAdapter property
-        expect(result.originQuery.swapAdapter).toBeDefined()
-        // Estimated time must match the SynapseBridge median time
-        expect(result.estimatedTime).toEqual(
-          MEDIAN_TIME_BRIDGE[SupportedChainId.BSC]
-        )
-        expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toEqual(
-          EXPECTED_GAS_DROP[SupportedChainId.AVALANCHE]
-        )
-        expect(result.originChainId).toEqual(SupportedChainId.BSC)
-        expect(result.destChainId).toEqual(SupportedChainId.AVALANCHE)
-      })
-    })
-
-    describe('BSC gOHM -> AVAX gOHM', () => {
-      const amount = BigNumber.from(10).pow(21)
-      const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
-        SupportedChainId.BSC,
-        SupportedChainId.AVALANCHE,
-        BSC_GOHM,
-        AVAX_GOHM,
-        amount
-      )
-
-      createBridgeQuoteTests(
-        synapse,
-        SupportedChainId.BSC,
-        SupportedChainId.AVALANCHE,
-        AVAX_GOHM,
-        amount,
-        resultPromise
-      )
-
-      it('Fetches a Synapse bridge quote', async () => {
-        const result = await resultPromise
-        expect(result.routerAddress).toEqual(
-          ROUTER_ADDRESS_MAP[SupportedChainId.BSC]
-        )
-        // SynapseRouterQuery has swapAdapter property
-        expect(result.originQuery.swapAdapter).toBeDefined()
-        // Estimated time must match the SynapseBridge median time
-        expect(result.estimatedTime).toEqual(
-          MEDIAN_TIME_BRIDGE[SupportedChainId.BSC]
-        )
-        expect(result.bridgeModuleName).toEqual('SynapseBridge')
-        expect(result.gasDropAmount).toEqual(
-          EXPECTED_GAS_DROP[SupportedChainId.AVALANCHE]
-        )
-        expect(result.originChainId).toEqual(SupportedChainId.BSC)
-        expect(result.destChainId).toEqual(SupportedChainId.AVALANCHE)
-      })
-    })
-  })
-
-  describe('allBridgeQuotes', () => {
-    const synapse = new SynapseSDK(
-      [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
-      [ethProvider, arbProvider]
-    )
-
-    it('Fetches SynapseBridge and SynapseCCTP quotes for USDC', async () => {
-      const allQuotes = await synapse.allBridgeQuotes(
-        SupportedChainId.ETH,
-        SupportedChainId.ARBITRUM,
-        ETH_USDC,
-        ARB_USDT,
-        BigNumber.from(10).pow(9)
-      )
-      expect(allQuotes.length).toEqual(2)
-      expectCorrectBridgeQuote(allQuotes[0])
-      expectCorrectBridgeQuote(allQuotes[1])
-      // First quote should have better quote
-      expect(allQuotes[0].maxAmountOut.gte(allQuotes[1].maxAmountOut)).toBe(
-        true
-      )
-      // One should be SynapseBridge and the other SynapseCCTP
-      expect(allQuotes[0].bridgeModuleName).not.toEqual(
-        allQuotes[1].bridgeModuleName
-      )
+    it('Registers the SynapseBridgeAdapter module set', () => {
+      expect(synapse.synapseBridgeAdapterModuleSet).toBeDefined()
       expect(
-        allQuotes[0].bridgeModuleName === 'SynapseBridge' ||
-          allQuotes[1].bridgeModuleName === 'SynapseBridge'
+        synapse.allModuleSets.some(
+          (moduleSet) => moduleSet.moduleName === 'SynapseBridge'
+        )
       ).toBe(true)
+    })
+
+    it('builds the shared intent path for DFK, Harmony, and Klaytn', () => {
+      const dfkProvider = mock<Provider>()
+      const harmonyProvider = mock<Provider>()
+      const klaytnProvider = mock<Provider>()
+
+      const intentsSynapse = new SynapseSDK(
+        [
+          SupportedChainId.DFK,
+          SupportedChainId.HARMONY,
+          SupportedChainId.KLAYTN,
+        ],
+        [dfkProvider, harmonyProvider, klaytnProvider]
+      )
+
       expect(
-        allQuotes[0].bridgeModuleName === 'SynapseCCTP' ||
-          allQuotes[1].bridgeModuleName === 'SynapseCCTP'
-      ).toBe(true)
-      expect(allQuotes[0].gasDropAmount).toEqual(
-        EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
-      )
-      expect(allQuotes[1].gasDropAmount).toEqual(
-        EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
-      )
-      expect(allQuotes[0].originChainId).toEqual(SupportedChainId.ETH)
-      expect(allQuotes[0].destChainId).toEqual(SupportedChainId.ARBITRUM)
-      expect(allQuotes[1].originChainId).toEqual(SupportedChainId.ETH)
-      expect(allQuotes[1].destChainId).toEqual(SupportedChainId.ARBITRUM)
-    })
-
-    it('Generates unique IDs for SynapseBridge and SynapseCCTP quotes for USDC', async () => {
-      const allQuotes = await synapse.allBridgeQuotes(
-        SupportedChainId.ETH,
-        SupportedChainId.ARBITRUM,
-        ETH_USDC,
-        ARB_USDT,
-        BigNumber.from(10).pow(9)
-      )
-      expect(allQuotes[0].id).not.toEqual(allQuotes[1].id)
-    })
-
-    it('Fetches only SynapseBridge quotes for ETH', async () => {
-      const allQuotes = await synapse.allBridgeQuotes(
-        SupportedChainId.ETH,
-        SupportedChainId.ARBITRUM,
-        NATIVE_ADDRESS,
-        NATIVE_ADDRESS,
-        BigNumber.from(10).pow(18)
-      )
-      expect(allQuotes.length).toEqual(1)
-      expectCorrectBridgeQuote(allQuotes[0])
-      expect(allQuotes[0].bridgeModuleName).toEqual('SynapseBridge')
-      expect(allQuotes[0].gasDropAmount).toEqual(
-        EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
-      )
+        intentsSynapse.synapseBridgeAdapterModuleSet.modules[
+          SupportedChainId.DFK
+        ]
+      ).toBeDefined()
+      expect(
+        intentsSynapse.synapseBridgeAdapterModuleSet.modules[
+          SupportedChainId.HARMONY
+        ]
+      ).toBeDefined()
+      expect(
+        intentsSynapse.synapseBridgeAdapterModuleSet.modules[
+          SupportedChainId.KLAYTN
+        ]
+      ).toBeDefined()
+      expect(() =>
+        intentsSynapse.swapEngineSet.getTokenZap(SupportedChainId.DFK)
+      ).not.toThrow()
+      expect(
+        intentsSynapse.sirSet.getSirAddress(SupportedChainId.HARMONY)
+      ).toEqual(SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.HARMONY])
     })
   })
 
@@ -821,65 +217,58 @@ describe('SynapseSDK', () => {
       deadline: BigNumber.from(9),
       rawParams: '10',
     }
+    const moduleSet = synapse.fastBridgeRouterSet
 
-    const createApplySlippageTests = (moduleSet: SynapseModuleSet) => {
-      describe(`${moduleSet.moduleName} module`, () => {
-        beforeEach(() => {
-          jest.spyOn(moduleSet, 'applySlippage').mockImplementation(jest.fn())
-        })
-
-        it('Applies slippage', () => {
-          synapse.applyBridgeSlippage(
-            moduleSet.moduleName,
-            originQuery,
-            destQuery,
-            10,
-            100
-          )
-          expect(moduleSet.applySlippage).toHaveBeenCalledWith(
-            originQuery,
-            destQuery,
-            10,
-            100
-          )
-        })
-
-        it('Uses default denominator of 10000', () => {
-          synapse.applyBridgeSlippage(
-            moduleSet.moduleName,
-            originQuery,
-            destQuery,
-            10
-          )
-          expect(moduleSet.applySlippage).toHaveBeenCalledWith(
-            originQuery,
-            destQuery,
-            10,
-            10000
-          )
-        })
-
-        it('Uses default slippage of 10 bips', () => {
-          synapse.applyBridgeSlippage(
-            moduleSet.moduleName,
-            originQuery,
-            destQuery
-          )
-          expect(moduleSet.applySlippage).toHaveBeenCalledWith(
-            originQuery,
-            destQuery,
-            10,
-            10000
-          )
-        })
+    describe(`${moduleSet.moduleName} module`, () => {
+      beforeEach(() => {
+        jest.spyOn(moduleSet, 'applySlippage').mockImplementation(jest.fn())
       })
-    }
 
-    createApplySlippageTests(synapse.synapseRouterSet)
+      it('Applies slippage', () => {
+        synapse.applyBridgeSlippage(
+          moduleSet.moduleName,
+          originQuery,
+          destQuery,
+          10,
+          100
+        )
+        expect(moduleSet.applySlippage).toHaveBeenCalledWith(
+          originQuery,
+          destQuery,
+          10,
+          100
+        )
+      })
 
-    createApplySlippageTests(synapse.synapseCCTPRouterSet)
+      it('Uses default denominator of 10000', () => {
+        synapse.applyBridgeSlippage(
+          moduleSet.moduleName,
+          originQuery,
+          destQuery,
+          10
+        )
+        expect(moduleSet.applySlippage).toHaveBeenCalledWith(
+          originQuery,
+          destQuery,
+          10,
+          10000
+        )
+      })
 
-    createApplySlippageTests(synapse.fastBridgeRouterSet)
+      it('Uses default slippage of 10 bips', () => {
+        synapse.applyBridgeSlippage(
+          moduleSet.moduleName,
+          originQuery,
+          destQuery
+        )
+        expect(moduleSet.applySlippage).toHaveBeenCalledWith(
+          originQuery,
+          destQuery,
+          10,
+          10000
+        )
+      })
+    })
 
     it('Throws on unknown bridge module', () => {
       expect(() =>
@@ -1005,252 +394,37 @@ describe('SynapseSDK', () => {
 
   describe('Bridge Tx Status', () => {
     const synapse = new SynapseSDK(
-      [
-        SupportedChainId.ARBITRUM,
-        SupportedChainId.ETH,
-        SupportedChainId.OPTIMISM,
-      ],
-      [arbProvider, ethProvider, opProvider]
+      [SupportedChainId.ETH, SupportedChainId.OPTIMISM],
+      [ethProvider, opProvider]
     )
+    const sbaTxHash = '0x1234'
 
-    // https://etherscan.io/tx/0xe3f0f0c1d139c48730492c900f9978449d70c0939c654d5abbfd6b191f9c7b3d
-    // https://arbiscan.io/tx/0xb13d5c9156e2d88662fa2f252bd2e1d77d768f0de9d27ca60a79e40b493f6ef2
-    const bridgeEthToArbTx = {
-      txHash:
-        '0xe3f0f0c1d139c48730492c900f9978449d70c0939c654d5abbfd6b191f9c7b3d',
-      synapseTxId:
-        '0x2f223fb1509f04f777b5c9dd2287931b6e63d994a6a697db7a08cfbe784b5e90',
-    }
-
-    // https://arbiscan.io/tx/0xe226c7e38e4b83072aa9d947e533be32c8bb38120bbdd8f490c5c6a5894e62c9
-    // https://etherscan.io/tx/0xb88feb2a92690448b840851dff41dbc7cdc975c1fb740f0523b5c2e407ac9f38
-    const bridgeArbToEthTx = {
-      txHash:
-        '0xe226c7e38e4b83072aa9d947e533be32c8bb38120bbdd8f490c5c6a5894e62c9',
-      synapseTxId:
-        '0xf7b8085d96b1ea3f6bf7a07ad93d1861b8fcd551ef56665d6a22c9fb7633a097',
-    }
-
-    // https://etherscan.io/tx/0x1a25b0dfde1e2cc43f1dc659ba60f2b8e7ff8177555773fea0c4fba2d6e9c393
-    // https://arbiscan.io/tx/0x0166c1e99b0ec8942ed10527cd7ac9003111ee697e0c0519312228e669a61378
-    const cctpEthToArbTx = {
-      txHash:
-        '0x1a25b0dfde1e2cc43f1dc659ba60f2b8e7ff8177555773fea0c4fba2d6e9c393',
-      synapseTxId:
-        '0x492b923b5a0ace2715a8d0a80fb93c094bf6d35b142a010bdc3761b8613439fc',
-    }
-
-    // https://arbiscan.io/tx/0x2a6d04ba5a48331454f00d136b3666869d03f004395fea25d97d42715c119096
-    // https://etherscan.io/tx/0xefb946d2acf8343ac5526de66de498e0d5f70ae73c81b833181616ee058a22d7
-    const cctpArbToEthTx = {
-      txHash:
-        '0x2a6d04ba5a48331454f00d136b3666869d03f004395fea25d97d42715c119096',
-      synapseTxId:
-        '0xed98b02f712c940d3b37a1aa9005a5986ecefa5cdbb4505118a22ae65d4903af',
-    }
-
-    // https://optimistic.etherscan.io/tx/0xf8c736aa8f0455853e68fc4c26c251b6264d77e613efe1cde2a8400ec7a9355f
-    // https://arbiscan.io/tx/0x93287ed477a034a4b843088bd60affc78be7fa0a199ae1ae399e82ccebea8a43
-    const rfqOpToArbTx = {
-      txHash:
-        '0xf8c736aa8f0455853e68fc4c26c251b6264d77e613efe1cde2a8400ec7a9355f',
-      synapseTxId:
-        '0xfe7914246c17a5069024168fda5ceb8f31ed1b1c929da7f586b2a415f75fdc5e',
-    }
-
-    // https://arbiscan.io/tx/0xc93e4abbbad0e5c6f724928bf42ed9b8ea9c4ac70483c1a00e374a7f002cdb72
-    // https://optimistic.etherscan.io/tx/0xbd45074e933e68795e02c5b3b7378f1911972415aac6e00d33e29933f86b5462
-    const rfqArbToOpTx = {
-      txHash:
-        '0xc93e4abbbad0e5c6f724928bf42ed9b8ea9c4ac70483c1a00e374a7f002cdb72',
-      synapseTxId:
-        '0xd8e5d4b4658beccfa7ccd69d85c84181cd24b1f8f35d88993c033c0f732b1dd3',
-    }
+    afterEach(() => {
+      jest.restoreAllMocks()
+    })
 
     describe('getSynapseTxId', () => {
       describe('SynapseBridge', () => {
-        const ethSynBridge = '0x2796317b0fF8538F253012862c06787Adfb8cEb6'
-        const events =
-          'TokenDeposit, TokenDepositAndSwap, TokenRedeem, TokenRedeemAndRemove, TokenRedeemAndSwap, TokenRedeemV2'
-
-        it('ETH -> ARB', async () => {
-          const synapseTxId = await synapse.getSynapseTxId(
-            SupportedChainId.ETH,
-            'SynapseBridge',
-            bridgeEthToArbTx.txHash
-          )
-          expect(synapseTxId).toEqual(bridgeEthToArbTx.synapseTxId)
-        })
-
-        it('ARB -> ETH', async () => {
-          const synapseTxId = await synapse.getSynapseTxId(
-            SupportedChainId.ARBITRUM,
-            'SynapseBridge',
-            bridgeArbToEthTx.txHash
-          )
-          expect(synapseTxId).toEqual(bridgeArbToEthTx.synapseTxId)
-        })
-
-        it('Throws when given a txHash that does not exist', async () => {
-          // Use txHash for another chain
+        it('passes through the SBA origin tx hash', async () => {
           await expect(
             synapse.getSynapseTxId(
               SupportedChainId.ETH,
               'SynapseBridge',
-              bridgeArbToEthTx.txHash
+              sbaTxHash
             )
-          ).rejects.toThrow('Failed to get transaction receipt')
-        })
-
-        it('Throws when origin tx does not refer to SynapseBridge', async () => {
-          const errorMsg =
-            `Contract ${ethSynBridge} in transaction ${cctpEthToArbTx.txHash}` +
-            ` did not emit any of the expected events: ${events}`
-          await expect(
-            synapse.getSynapseTxId(
-              SupportedChainId.ETH,
-              'SynapseBridge',
-              cctpEthToArbTx.txHash
-            )
-          ).rejects.toThrow(errorMsg)
-        })
-
-        it('Throws when given a destination tx', async () => {
-          // Destination tx hash for ARB -> ETH
-          const txHash =
-            '0xefb946d2acf8343ac5526de66de498e0d5f70ae73c81b833181616ee058a22d7'
-          const errorMsg =
-            `Contract ${ethSynBridge} in transaction ${txHash}` +
-            ` did not emit any of the expected events: ${events}`
-          await expect(
-            synapse.getSynapseTxId(
-              SupportedChainId.ETH,
-              'SynapseBridge',
-              txHash
-            )
-          ).rejects.toThrow(errorMsg)
+          ).resolves.toEqual(sbaTxHash)
         })
       })
 
       describe('SynapseCCTP', () => {
-        const ethSynCCTP = '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
-        const events = 'CircleRequestSent'
-
-        it('ETH -> ARB', async () => {
-          const synapseTxId = await synapse.getSynapseTxId(
-            SupportedChainId.ETH,
-            'SynapseCCTP',
-            cctpEthToArbTx.txHash
-          )
-          expect(synapseTxId).toEqual(cctpEthToArbTx.synapseTxId)
-        })
-
-        it('ARB -> ETH', async () => {
-          const synapseTxId = await synapse.getSynapseTxId(
-            SupportedChainId.ARBITRUM,
-            'SynapseCCTP',
-            cctpArbToEthTx.txHash
-          )
-          expect(synapseTxId).toEqual(cctpArbToEthTx.synapseTxId)
-        })
-
-        it('Throws when given a txHash that does not exist', async () => {
-          // Use txHash for another chain
+        it('throws when the module set is not registered', async () => {
           await expect(
             synapse.getSynapseTxId(
               SupportedChainId.ETH,
               'SynapseCCTP',
-              cctpArbToEthTx.txHash
+              sbaTxHash
             )
-          ).rejects.toThrow('Failed to get transaction receipt')
-        })
-
-        it('Throws when origin tx does not refer to SynapseCCTP', async () => {
-          const errorMsg =
-            `Contract ${ethSynCCTP} in transaction ${bridgeEthToArbTx.txHash}` +
-            ` did not emit any of the expected events: ${events}`
-          await expect(
-            synapse.getSynapseTxId(
-              SupportedChainId.ETH,
-              'SynapseCCTP',
-              bridgeEthToArbTx.txHash
-            )
-          ).rejects.toThrow(errorMsg)
-        })
-
-        it('Throws when given a destination tx', async () => {
-          // Destination tx hash for ARB -> ETH
-          const txHash =
-            '0xefb946d2acf8343ac5526de66de498e0d5f70ae73c81b833181616ee058a22d7'
-          const errorMsg =
-            `Contract ${ethSynCCTP} in transaction ${txHash}` +
-            ` did not emit any of the expected events: ${events}`
-          await expect(
-            synapse.getSynapseTxId(SupportedChainId.ETH, 'SynapseCCTP', txHash)
-          ).rejects.toThrow(errorMsg)
-        })
-      })
-
-      describe.skip('SynapseRFQ', () => {
-        const arbSynRFQ = '0x6C0771aD91442D670159a8171C35F4828E19aFd2'
-        const events = 'BridgeRequested'
-
-        it('OP -> ARB', async () => {
-          const synapseTxId = await synapse.getSynapseTxId(
-            SupportedChainId.OPTIMISM,
-            'SynapseRFQ',
-            rfqOpToArbTx.txHash
-          )
-          expect(synapseTxId).toEqual(rfqOpToArbTx.synapseTxId)
-        })
-
-        it('ARB -> OP', async () => {
-          const synapseTxId = await synapse.getSynapseTxId(
-            SupportedChainId.ARBITRUM,
-            'SynapseRFQ',
-            rfqArbToOpTx.txHash
-          )
-          expect(synapseTxId).toEqual(rfqArbToOpTx.synapseTxId)
-        })
-
-        it('Throws when given a txHash that does not exist', async () => {
-          // Use txHash for another chain
-          await expect(
-            synapse.getSynapseTxId(
-              SupportedChainId.OPTIMISM,
-              'SynapseRFQ',
-              rfqArbToOpTx.txHash
-            )
-          ).rejects.toThrow('Failed to get transaction receipt')
-        })
-
-        it('Throws when origin tx does not refer to SynapseRFQ', async () => {
-          const errorMsg =
-            `Contract ${arbSynRFQ} in transaction ${bridgeArbToEthTx.txHash}` +
-            ` did not emit any of the expected events: ${events}`
-          await expect(
-            synapse.getSynapseTxId(
-              SupportedChainId.ARBITRUM,
-              'SynapseRFQ',
-              bridgeArbToEthTx.txHash
-            )
-          ).rejects.toThrow(errorMsg)
-        })
-
-        it('Throws when given a destination tx', async () => {
-          // Destination tx hash for OP -> ARB
-          const txHash =
-            '0x53a8e543bc0e3f0c1cae509e50d9435c3b62073eecf1aee7ece63c3be285db30'
-          const errorMsg =
-            `Contract ${arbSynRFQ} in transaction ${txHash}` +
-            ` did not emit any of the expected events: ${events}`
-          await expect(
-            synapse.getSynapseTxId(
-              SupportedChainId.ARBITRUM,
-              'SynapseRFQ',
-              txHash
-            )
-          ).rejects.toThrow(errorMsg)
+          ).rejects.toThrow('Unknown bridge module')
         })
       })
 
@@ -1259,7 +433,7 @@ describe('SynapseSDK', () => {
           synapse.getSynapseTxId(
             SupportedChainId.ETH,
             'SynapseSynapse',
-            bridgeEthToArbTx.txHash
+            sbaTxHash
           )
         ).rejects.toThrow('Unknown bridge module')
       })
@@ -1267,122 +441,45 @@ describe('SynapseSDK', () => {
 
     describe('getBridgeTxStatus', () => {
       describe('SynapseBridge', () => {
-        it('ETH -> ARB', async () => {
-          const txStatus = await synapse.getBridgeTxStatus(
-            SupportedChainId.ARBITRUM,
-            'SynapseBridge',
-            bridgeEthToArbTx.synapseTxId
-          )
-          expect(txStatus).toBe(true)
-        })
+        it('delegates status checks to the SBA module set', async () => {
+          jest
+            .spyOn(
+              synapse.synapseBridgeAdapterModuleSet.modules[
+                SupportedChainId.OPTIMISM
+              ],
+              'getBridgeTxStatus'
+            )
+            .mockResolvedValue(true)
 
-        it('ARB -> ETH', async () => {
-          const txStatus = await synapse.getBridgeTxStatus(
-            SupportedChainId.ETH,
-            'SynapseBridge',
-            bridgeArbToEthTx.synapseTxId
-          )
-          expect(txStatus).toBe(true)
+          await expect(
+            synapse.getBridgeTxStatus(
+              SupportedChainId.OPTIMISM,
+              'SynapseBridge',
+              sbaTxHash
+            )
+          ).resolves.toBe(true)
         })
 
         it('Returns false when unknown synapseTxId', async () => {
-          // Using txHash instead of synapseTxId
-          const txStatus = await synapse.getBridgeTxStatus(
-            SupportedChainId.ETH,
-            'SynapseBridge',
-            bridgeArbToEthTx.txHash
-          )
-          expect(txStatus).toBe(false)
-        })
-
-        it('Returns false when origin chain is used instead of destination', async () => {
-          // First argument should be destination chainId
-          const txStatus = await synapse.getBridgeTxStatus(
-            SupportedChainId.ETH,
-            'SynapseBridge',
-            bridgeEthToArbTx.synapseTxId
-          )
-          expect(txStatus).toBe(false)
+          await expect(
+            synapse.getBridgeTxStatus(
+              SupportedChainId.ETH,
+              'SynapseBridge',
+              sbaTxHash
+            )
+          ).resolves.toBe(false)
         })
       })
 
       describe('SynapseCCTP', () => {
-        it('ETH -> ARB', async () => {
-          const txStatus = await synapse.getBridgeTxStatus(
-            SupportedChainId.ARBITRUM,
-            'SynapseCCTP',
-            cctpEthToArbTx.synapseTxId
-          )
-          expect(txStatus).toBe(true)
-        })
-
-        it('ARB -> ETH', async () => {
-          const txStatus = await synapse.getBridgeTxStatus(
-            SupportedChainId.ETH,
-            'SynapseCCTP',
-            cctpArbToEthTx.synapseTxId
-          )
-          expect(txStatus).toBe(true)
-        })
-
-        it('Returns false when unknown synapseTxId', async () => {
-          // Using txHash instead of synapseTxId
-          const txStatus = await synapse.getBridgeTxStatus(
-            SupportedChainId.ETH,
-            'SynapseCCTP',
-            cctpArbToEthTx.txHash
-          )
-          expect(txStatus).toBe(false)
-        })
-
-        it('Returns false when origin chain is used instead of destination', async () => {
-          // First argument should be destination chainId
-          const txStatus = await synapse.getBridgeTxStatus(
-            SupportedChainId.ETH,
-            'SynapseCCTP',
-            cctpEthToArbTx.synapseTxId
-          )
-          expect(txStatus).toBe(false)
-        })
-      })
-
-      describe.skip('SynapseRFQ', () => {
-        it('OP -> ARB', async () => {
-          const txStatus = await synapse.getBridgeTxStatus(
-            SupportedChainId.ARBITRUM,
-            'SynapseRFQ',
-            rfqOpToArbTx.synapseTxId
-          )
-          expect(txStatus).toBe(true)
-        })
-
-        it('ARB -> OP', async () => {
-          const txStatus = await synapse.getBridgeTxStatus(
-            SupportedChainId.OPTIMISM,
-            'SynapseRFQ',
-            rfqArbToOpTx.synapseTxId
-          )
-          expect(txStatus).toBe(true)
-        })
-
-        it('Returns false when unknown synapseTxId', async () => {
-          // Using txHash instead of synapseTxId
-          const txStatus = await synapse.getBridgeTxStatus(
-            SupportedChainId.OPTIMISM,
-            'SynapseRFQ',
-            rfqArbToOpTx.txHash
-          )
-          expect(txStatus).toBe(false)
-        })
-
-        it('Returns false when origin chain is used instead of destination', async () => {
-          // First argument should be destination chainId
-          const txStatus = await synapse.getBridgeTxStatus(
-            SupportedChainId.OPTIMISM,
-            'SynapseRFQ',
-            rfqOpToArbTx.synapseTxId
-          )
-          expect(txStatus).toBe(false)
+        it('throws when the module set is not registered', async () => {
+          await expect(
+            synapse.getBridgeTxStatus(
+              SupportedChainId.OPTIMISM,
+              'SynapseCCTP',
+              sbaTxHash
+            )
+          ).rejects.toThrow('Unknown bridge module')
         })
       })
 
@@ -1391,7 +488,7 @@ describe('SynapseSDK', () => {
           synapse.getBridgeTxStatus(
             SupportedChainId.ETH,
             'SynapseSynapse',
-            bridgeEthToArbTx.txHash
+            sbaTxHash
           )
         ).rejects.toThrow('Unknown bridge module')
       })
@@ -1401,44 +498,14 @@ describe('SynapseSDK', () => {
   describe('getBridgeModuleName', () => {
     const synapse = new SynapseSDK([], [])
 
-    // https://github.com/synapsecns/synapse-contracts/blob/3f592a879baa4487a62ca8d2cfd44d329bc22e62/contracts/bridge/SynapseBridge.sol#L63-L121
-    describe('SynapseBridge events', () => {
-      const contractEvents = [
-        'TokenDeposit',
-        'TokenRedeem',
-        'TokenWithdraw',
-        'TokenMint',
-        'TokenDepositAndSwap',
-        'TokenMintAndSwap',
-        'TokenRedeemAndSwap',
-        'TokenRedeemAndRemove',
-        'TokenWithdrawAndRemove',
-        'TokenRedeemV2',
-      ]
-
-      contractEvents.forEach((contractEvent) => {
+    describe('SynapseBridge SBA events', () => {
+      ;['TokenSent', 'TokenReceived'].forEach((contractEvent) => {
         it(contractEvent, () => {
-          // Event naming in contract and explorer is a bit different
-          // schema: TokenDeposit => DepositEvent
-          const explorerEvent = `${contractEvent.slice(5)}Event`
-          expect(synapse.getBridgeModuleName(explorerEvent)).toEqual(
+          expect(synapse.getBridgeModuleName(contractEvent)).toEqual(
             'SynapseBridge'
           )
-        })
-      })
-    })
-
-    // https://github.com/synapsecns/synapse-contracts/blob/3f592a879baa4487a62ca8d2cfd44d329bc22e62/contracts/cctp/events/SynapseCCTPEvents.sol#L5-L45
-    describe('SynapseCCTP events', () => {
-      const contractEvents = ['CircleRequestSent', 'CircleRequestFulfilled']
-
-      contractEvents.forEach((contractEvent) => {
-        it(contractEvent, () => {
-          // Event naming in contract and explorer is a bit different
-          // schema: CircleRequestSent => CircleRequestSentEvent
-          const explorerEvent = `${contractEvent}Event`
-          expect(synapse.getBridgeModuleName(explorerEvent)).toEqual(
-            'SynapseCCTP'
+          expect(synapse.getBridgeModuleName(`${contractEvent}Event`)).toEqual(
+            'SynapseBridge'
           )
         })
       })
@@ -1451,33 +518,522 @@ describe('SynapseSDK', () => {
     })
   })
 
+  describe('SynapseBridgeAdapter V2 integration', () => {
+    const mockHarmonyProvider = mock<Provider>()
+    const mockDfkProvider = mock<Provider>()
+    const mockKlaytnProvider = mock<Provider>()
+    const sbaDirectOriginToken = '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB'
+    const sbaDirectRemoteToken = '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86'
+    const sbaNativeBridgeToken = sbaDirectOriginToken
+    const sbaNativeRemoteToken = sbaDirectRemoteToken
+    const sbaWrappedNativeOriginToken =
+      '0x97855Ba65aa7ed2F65Ed832a776537268158B78a'
+    const sbaWrappedNativeRemoteToken =
+      '0x5819b6af194A78511c79C85Ea68D2377a7e9335f'
+    const sbaFinalToken = '0x00000000000000000000000000000000000000c1'
+    const sender = '0x0000000000000000000000000000000000000f01'
+    const recipient = '0x0000000000000000000000000000000000000f02'
+
+    const createNoOpRoute = (chainId: number, token: string) => ({
+      engineID: EngineID.NoOp,
+      engineName: EngineID[EngineID.NoOp],
+      chainId,
+      fromToken: token,
+      fromAmount: BigNumber.from(1000),
+      toToken: token,
+      expectedToAmount: BigNumber.from(1000),
+      minToAmount: BigNumber.from(1000),
+      steps: [],
+    })
+
+    const destinationSwapRoute = {
+      engineID: EngineID.DefaultPools,
+      engineName: EngineID[EngineID.DefaultPools],
+      chainId: SupportedChainId.KLAYTN,
+      fromToken: sbaDirectRemoteToken,
+      fromAmount: BigNumber.from(1000),
+      toToken: sbaFinalToken,
+      expectedToAmount: BigNumber.from(900),
+      minToAmount: BigNumber.from(880),
+      steps: [
+        {
+          token: sbaDirectRemoteToken,
+          amount: BigNumber.from(1000),
+          msgValue: Zero,
+          zapData: '0x1234',
+        },
+      ],
+    }
+
+    const setupSynapse = () => {
+      const synapse = new SynapseSDK(
+        [SupportedChainId.HARMONY, SupportedChainId.KLAYTN],
+        [mockHarmonyProvider, mockKlaytnProvider]
+      )
+      synapse.allModuleSets = [synapse.synapseBridgeAdapterModuleSet]
+      jest
+        .spyOn(synapse.synapseBridgeAdapterModuleSet, 'getGasDropAmount')
+        .mockResolvedValue(Zero)
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[
+            SupportedChainId.HARMONY
+          ],
+          'getNativeFee'
+        )
+        .mockResolvedValue(BigNumber.from(77))
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[
+            SupportedChainId.HARMONY
+          ],
+          'getEstimatedTime'
+        )
+        .mockResolvedValue(42)
+      jest
+        .spyOn(synapse.swapEngineSet, 'getBestQuote')
+        .mockImplementation(async (input) => {
+          if (
+            input.chainId === SupportedChainId.HARMONY &&
+            input.fromToken.toLowerCase() ===
+              sbaDirectOriginToken.toLowerCase() &&
+            input.toToken.toLowerCase() === sbaDirectOriginToken.toLowerCase()
+          ) {
+            return createNoOpRoute(
+              SupportedChainId.HARMONY,
+              sbaDirectOriginToken
+            ) as any
+          }
+          if (
+            input.chainId === SupportedChainId.HARMONY &&
+            input.fromToken.toLowerCase() ===
+              sbaNativeBridgeToken.toLowerCase() &&
+            input.toToken.toLowerCase() === sbaNativeBridgeToken.toLowerCase()
+          ) {
+            return createNoOpRoute(
+              SupportedChainId.HARMONY,
+              sbaNativeBridgeToken
+            ) as any
+          }
+          if (
+            input.chainId === SupportedChainId.HARMONY &&
+            input.fromToken === ETH_NATIVE_TOKEN_ADDRESS &&
+            input.toToken.toLowerCase() === sbaNativeBridgeToken.toLowerCase()
+          ) {
+            return {
+              ...createNoOpRoute(
+                SupportedChainId.HARMONY,
+                sbaNativeBridgeToken
+              ),
+              engineID: EngineID.DefaultPools,
+              engineName: EngineID[EngineID.DefaultPools],
+              fromToken: ETH_NATIVE_TOKEN_ADDRESS,
+              expectedToAmount: BigNumber.from(1000),
+              minToAmount: BigNumber.from(950),
+              steps: [
+                {
+                  token: ETH_NATIVE_TOKEN_ADDRESS,
+                  amount: BigNumber.from(1000),
+                  msgValue: BigNumber.from(1000),
+                  zapData: '0x1234',
+                },
+              ],
+            } as any
+          }
+          if (
+            input.chainId === SupportedChainId.KLAYTN &&
+            input.fromToken.toLowerCase() ===
+              sbaDirectRemoteToken.toLowerCase() &&
+            input.toToken.toLowerCase() === sbaFinalToken.toLowerCase()
+          ) {
+            return destinationSwapRoute as any
+          }
+          return undefined as any
+        })
+      jest
+        .spyOn(synapse.swapEngineSet, 'generateRoute')
+        .mockImplementation(async (_input, quote) => quote as any)
+      jest
+        .spyOn(synapse.tokenMetadataFetcher, 'getTokenDecimals')
+        .mockResolvedValue(18)
+      return synapse
+    }
+
+    afterEach(() => {
+      jest.restoreAllMocks()
+    })
+
+    it('delegates getSynapseTxId to the SBA module set', async () => {
+      const synapse = setupSynapse()
+      const txHash = '0x1234'
+
+      await expect(
+        synapse.getSynapseTxId(
+          SupportedChainId.HARMONY,
+          'SynapseBridge',
+          txHash
+        )
+      ).resolves.toEqual(txHash)
+    })
+
+    it('delegates getBridgeTxStatus to the SBA module set', async () => {
+      const synapse = setupSynapse()
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[
+            SupportedChainId.KLAYTN
+          ],
+          'getBridgeTxStatus'
+        )
+        .mockResolvedValue(true)
+
+      await expect(
+        synapse.getBridgeTxStatus(
+          SupportedChainId.KLAYTN,
+          'SynapseBridge',
+          '0x1234'
+        )
+      ).resolves.toBe(true)
+    })
+
+    it('returns direct SBA bridgeV2 quotes without origin swap module names', async () => {
+      const synapse = setupSynapse()
+
+      const quotes: BridgeQuoteV2[] = await synapse.bridgeV2({
+        fromChainId: SupportedChainId.HARMONY,
+        toChainId: SupportedChainId.KLAYTN,
+        fromToken: sbaDirectOriginToken,
+        toToken: sbaDirectRemoteToken,
+        fromAmount: '1000',
+        fromSender: sender,
+        toRecipient: recipient,
+      })
+
+      expect(quotes).toHaveLength(1)
+      expect(quotes[0]).toMatchObject({
+        fromChainId: SupportedChainId.HARMONY,
+        toChainId: SupportedChainId.KLAYTN,
+        fromToken: sbaDirectOriginToken,
+        toToken: sbaDirectRemoteToken,
+        expectedToAmount: '1000',
+        minToAmount: '1000',
+        routerAddress:
+          SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.HARMONY],
+        moduleNames: ['SynapseBridge'],
+        nativeFee: '77',
+        gasDropAmount: '0',
+      })
+      expect(quotes[0].tx).toBeDefined()
+    })
+
+    it('returns no SBA quotes when either bridge chain is outside the temporary allowlist', async () => {
+      const synapse = new SynapseSDK(
+        [SupportedChainId.ETH, SupportedChainId.BASE],
+        [mock<Provider>(), mock<Provider>()]
+      )
+
+      synapse.allModuleSets = [synapse.synapseBridgeAdapterModuleSet]
+
+      await expect(
+        synapse.bridgeV2({
+          fromChainId: SupportedChainId.ETH,
+          toChainId: SupportedChainId.BASE,
+          fromToken: '0x0f2D719407FdBeFF09D87557AbB7232601FD9F29',
+          toToken: sbaDirectRemoteToken,
+          fromAmount: '1000',
+        })
+      ).resolves.toEqual([])
+    })
+
+    it('supports native-origin bridgeV2 quotes through the generic swap path', async () => {
+      const synapse = setupSynapse()
+
+      const quotes: BridgeQuoteV2[] = await synapse.bridgeV2({
+        fromChainId: SupportedChainId.HARMONY,
+        toChainId: SupportedChainId.KLAYTN,
+        fromToken: ETH_NATIVE_TOKEN_ADDRESS,
+        toToken: sbaNativeRemoteToken,
+        fromAmount: '1000',
+        fromSender: sender,
+        toRecipient: recipient,
+      })
+
+      expect(quotes).toHaveLength(1)
+      expect(quotes[0]).toMatchObject({
+        fromToken: ETH_NATIVE_TOKEN_ADDRESS,
+        toToken: sbaNativeRemoteToken,
+        expectedToAmount: '1000',
+        minToAmount: '950',
+        moduleNames: [EngineID[EngineID.DefaultPools], 'SynapseBridge'],
+        routerAddress:
+          SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.HARMONY],
+        nativeFee: '77',
+      })
+      expect(quotes[0].tx).toBeDefined()
+    })
+
+    it('surfaces native output when SBA unwraps a wrapped-native destination token', async () => {
+      const synapse = new SynapseSDK(
+        [SupportedChainId.DFK, SupportedChainId.KLAYTN],
+        [mockDfkProvider, mockKlaytnProvider]
+      )
+
+      synapse.allModuleSets = [synapse.synapseBridgeAdapterModuleSet]
+      jest
+        .spyOn(synapse.synapseBridgeAdapterModuleSet, 'getGasDropAmount')
+        .mockResolvedValue(Zero)
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.DFK],
+          'getNativeFee'
+        )
+        .mockResolvedValue(BigNumber.from(11))
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.DFK],
+          'getEstimatedTime'
+        )
+        .mockResolvedValue(33)
+      jest
+        .spyOn(synapse.swapEngineSet, 'getBestQuote')
+        .mockImplementation(async (input) => {
+          if (
+            input.chainId === SupportedChainId.DFK &&
+            input.fromToken.toLowerCase() ===
+              sbaWrappedNativeOriginToken.toLowerCase() &&
+            input.toToken.toLowerCase() ===
+              sbaWrappedNativeOriginToken.toLowerCase()
+          ) {
+            return createNoOpRoute(
+              SupportedChainId.DFK,
+              sbaWrappedNativeOriginToken
+            ) as any
+          }
+          return undefined as any
+        })
+      jest
+        .spyOn(synapse.swapEngineSet, 'generateRoute')
+        .mockImplementation(async (_input, quote) => quote as any)
+
+      const nativeQuotes = await synapse.bridgeV2({
+        fromChainId: SupportedChainId.DFK,
+        toChainId: SupportedChainId.KLAYTN,
+        fromToken: sbaWrappedNativeOriginToken,
+        toToken: ETH_NATIVE_TOKEN_ADDRESS,
+        fromAmount: '1000',
+        fromSender: sender,
+        toRecipient: recipient,
+      })
+
+      expect(nativeQuotes).toHaveLength(1)
+      expect(nativeQuotes[0]).toMatchObject({
+        fromToken: sbaWrappedNativeOriginToken,
+        toToken: ETH_NATIVE_TOKEN_ADDRESS,
+        expectedToAmount: '1000',
+        minToAmount: '1000',
+        moduleNames: ['SynapseBridge'],
+      })
+
+      await expect(
+        synapse.bridgeV2({
+          fromChainId: SupportedChainId.DFK,
+          toChainId: SupportedChainId.KLAYTN,
+          fromToken: sbaWrappedNativeOriginToken,
+          toToken: sbaWrappedNativeRemoteToken,
+          fromAmount: '1000',
+        })
+      ).resolves.toEqual([])
+    })
+
+    it('uses SBA as the bridge step inside multi-tx intents', async () => {
+      const synapse = setupSynapse()
+
+      const quotes: IntentQuote[] = await synapse.intent({
+        fromChainId: SupportedChainId.HARMONY,
+        toChainId: SupportedChainId.KLAYTN,
+        fromToken: sbaDirectOriginToken,
+        toToken: sbaFinalToken,
+        fromAmount: '1000',
+        fromSender: sender,
+        toRecipient: recipient,
+        allowMultipleTxs: true,
+      })
+
+      expect(quotes).toHaveLength(1)
+      expect(quotes[0].toToken).toEqual(sbaFinalToken)
+      expect(quotes[0].steps).toHaveLength(2)
+      expect(quotes[0].steps[0]).toMatchObject({
+        toToken: sbaDirectRemoteToken,
+        moduleNames: ['SynapseBridge'],
+        nativeFee: '77',
+      })
+      expect(quotes[0].steps[1]).toMatchObject({
+        toToken: sbaFinalToken,
+        moduleNames: [EngineID[EngineID.DefaultPools]],
+      })
+      expect(quotes[0].steps[0].tx).toBeDefined()
+      expect(quotes[0].steps[1].tx).toBeDefined()
+    })
+
+    it('supports Harmony as an SBA origin chain', async () => {
+      const harmonyProvider = mock<Provider>()
+      const klaytnProvider = mock<Provider>()
+      const harmonyToken = '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB'
+      const klaytnToken = '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86'
+      const harmonySender = '0x0000000000000000000000000000000000000f11'
+      const harmonyRecipient = '0x0000000000000000000000000000000000000f12'
+      const synapse = new SynapseSDK(
+        [SupportedChainId.HARMONY, SupportedChainId.KLAYTN],
+        [harmonyProvider, klaytnProvider]
+      )
+
+      synapse.allModuleSets = [synapse.synapseBridgeAdapterModuleSet]
+      jest
+        .spyOn(synapse.synapseBridgeAdapterModuleSet, 'getGasDropAmount')
+        .mockResolvedValue(Zero)
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[
+            SupportedChainId.HARMONY
+          ],
+          'getNativeFee'
+        )
+        .mockResolvedValue(BigNumber.from(11))
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[
+            SupportedChainId.HARMONY
+          ],
+          'getEstimatedTime'
+        )
+        .mockResolvedValue(33)
+      jest
+        .spyOn(synapse.swapEngineSet, 'getBestQuote')
+        .mockImplementation(async (input) => {
+          if (
+            input.chainId === SupportedChainId.HARMONY &&
+            input.fromToken.toLowerCase() === harmonyToken.toLowerCase() &&
+            input.toToken.toLowerCase() === harmonyToken.toLowerCase()
+          ) {
+            return createNoOpRoute(
+              SupportedChainId.HARMONY,
+              harmonyToken
+            ) as any
+          }
+          return undefined as any
+        })
+      jest
+        .spyOn(synapse.swapEngineSet, 'generateRoute')
+        .mockImplementation(async (_input, quote) => quote as any)
+
+      const quotes = await synapse.bridgeV2({
+        fromChainId: SupportedChainId.HARMONY,
+        toChainId: SupportedChainId.KLAYTN,
+        fromToken: harmonyToken,
+        toToken: klaytnToken,
+        fromAmount: '1000',
+        fromSender: harmonySender,
+        toRecipient: harmonyRecipient,
+      })
+
+      expect(quotes).toHaveLength(1)
+      expect(quotes[0].moduleNames).toEqual(['SynapseBridge'])
+      expect(quotes[0].routerAddress).toEqual(
+        SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.HARMONY]
+      )
+    })
+
+    it('supports Harmony as an SBA destination chain', async () => {
+      const klaytnProviderMock = mock<Provider>()
+      const harmonyProvider = mock<Provider>()
+      const klaytnToken = '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86'
+      const harmonyToken = '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB'
+      const synapse = new SynapseSDK(
+        [SupportedChainId.KLAYTN, SupportedChainId.HARMONY],
+        [klaytnProviderMock, harmonyProvider]
+      )
+
+      synapse.allModuleSets = [synapse.synapseBridgeAdapterModuleSet]
+      jest
+        .spyOn(synapse.synapseBridgeAdapterModuleSet, 'getGasDropAmount')
+        .mockResolvedValue(Zero)
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[
+            SupportedChainId.KLAYTN
+          ],
+          'getNativeFee'
+        )
+        .mockResolvedValue(BigNumber.from(22))
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[
+            SupportedChainId.KLAYTN
+          ],
+          'getEstimatedTime'
+        )
+        .mockResolvedValue(44)
+      jest
+        .spyOn(synapse.swapEngineSet, 'getBestQuote')
+        .mockImplementation(async (input) => {
+          if (
+            input.chainId === SupportedChainId.KLAYTN &&
+            input.fromToken.toLowerCase() === klaytnToken.toLowerCase() &&
+            input.toToken.toLowerCase() === klaytnToken.toLowerCase()
+          ) {
+            return createNoOpRoute(SupportedChainId.KLAYTN, klaytnToken) as any
+          }
+          return undefined as any
+        })
+      jest
+        .spyOn(synapse.swapEngineSet, 'generateRoute')
+        .mockImplementation(async (_input, quote) => quote as any)
+
+      const quotes = await synapse.bridgeV2({
+        fromChainId: SupportedChainId.KLAYTN,
+        toChainId: SupportedChainId.HARMONY,
+        fromToken: klaytnToken,
+        toToken: harmonyToken,
+        fromAmount: '1000',
+      })
+
+      expect(quotes).toHaveLength(1)
+      expect(quotes[0].moduleNames).toEqual(['SynapseBridge'])
+      expect(quotes[0].toToken).toEqual(harmonyToken)
+    })
+  })
+
   describe('getEstimatedTime', () => {
     const synapse = new SynapseSDK(
       [SupportedChainId.ETH, SupportedChainId.BSC],
       [ethProvider, bscProvider]
+    )
+    const expectedEthSbaEta = Math.ceil(
+      SBA_CHAIN_METADATA[SupportedChainId.ETH]!.originBlockConfirmations *
+        MEDIAN_TIME_BLOCK[SupportedChainId.ETH] +
+        SBA_EXECUTION_BUFFER_SECONDS
+    )
+    const expectedBscSbaEta = Math.ceil(
+      SBA_CHAIN_METADATA[SupportedChainId.BSC]!.originBlockConfirmations *
+        MEDIAN_TIME_BLOCK[SupportedChainId.BSC] +
+        SBA_EXECUTION_BUFFER_SECONDS
     )
 
     describe('Chain with a provider', () => {
       it('Returns estimated time for SynapseBridge', () => {
         expect(
           synapse.getEstimatedTime(SupportedChainId.ETH, 'SynapseBridge')
-        ).toEqual(MEDIAN_TIME_BRIDGE[SupportedChainId.ETH])
+        ).toEqual(expectedEthSbaEta)
 
         expect(
           synapse.getEstimatedTime(SupportedChainId.BSC, 'SynapseBridge')
-        ).toEqual(MEDIAN_TIME_BRIDGE[SupportedChainId.BSC])
+        ).toEqual(expectedBscSbaEta)
       })
 
-      it('Returns estimated time for SynapseCCTP', () => {
-        expect(
-          synapse.getEstimatedTime(SupportedChainId.ETH, 'SynapseCCTP')
-        ).toEqual(MEDIAN_TIME_CCTP[SupportedChainId.ETH])
-      })
-
-      it('Throws when bridge module does not exist on a chain', () => {
+      it('Throws when the bridge module is not registered', () => {
         expect(() =>
-          synapse.getEstimatedTime(SupportedChainId.BSC, 'SynapseCCTP')
-        ).toThrow('No estimated time for chain 56')
+          synapse.getEstimatedTime(SupportedChainId.ETH, 'SynapseCCTP')
+        ).toThrow('Unknown bridge module')
       })
 
       it('Throws when bridge module name is invalid', () => {
@@ -1491,267 +1047,18 @@ describe('SynapseSDK', () => {
       it('Returns estimated time for SynapseBridge', () => {
         expect(
           synapse.getEstimatedTime(SupportedChainId.BSC, 'SynapseBridge')
-        ).toEqual(MEDIAN_TIME_BRIDGE[SupportedChainId.BSC])
+        ).toEqual(expectedBscSbaEta)
       })
 
-      it('Returns estimated time for SynapseCCTP', () => {
-        expect(
-          synapse.getEstimatedTime(SupportedChainId.ARBITRUM, 'SynapseCCTP')
-        ).toEqual(MEDIAN_TIME_CCTP[SupportedChainId.ARBITRUM])
-      })
-
-      it('Throws when bridge module does not exist on a chain', () => {
+      it('Throws when the bridge module is not registered', () => {
         expect(() =>
-          synapse.getEstimatedTime(SupportedChainId.DOGECHAIN, 'SynapseCCTP')
-        ).toThrow('No estimated time for chain 2000')
+          synapse.getEstimatedTime(SupportedChainId.ARBITRUM, 'SynapseCCTP')
+        ).toThrow('Unknown bridge module')
       })
 
       it('Throws when bridge module name is invalid', () => {
         expect(() =>
           synapse.getEstimatedTime(SupportedChainId.BSC, 'SynapseSynapse')
-        ).toThrow('Unknown bridge module')
-      })
-    })
-  })
-
-  describe('Get bridge gas', () => {
-    const synapse = new SynapseSDK(
-      [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
-      [ethProvider, arbProvider]
-    )
-
-    it('Returns zero for ETH', async () => {
-      const gas = await synapse.getBridgeGas(SupportedChainId.ETH)
-      expect(gas).toEqual(Zero)
-    })
-
-    it('Returns non-zero for ARBITRUM', async () => {
-      const gas = await synapse.getBridgeGas(SupportedChainId.ARBITRUM)
-      expect(gas.gt(0)).toBe(true)
-    })
-  })
-
-  // TODO: improve tests
-  describe('Pool inspection', () => {
-    const synapse = new SynapseSDK([SupportedChainId.ARBITRUM], [arbProvider])
-
-    it('Get all pools', async () => {
-      const pools = await synapse.getAllPools(SupportedChainId.ARBITRUM)
-      expect(pools).toBeDefined()
-      expect(pools.length).toBeGreaterThan(0)
-      expect(pools[0]?.tokens?.[0]?.token?.length).toBeGreaterThan(0)
-    })
-
-    it('Get pool info', async () => {
-      const poolInfo = await synapse.getPoolInfo(
-        SupportedChainId.ARBITRUM,
-        ARB_POOL_NUSD
-      )
-      expect(poolInfo).toBeDefined()
-      expect(poolInfo.lpToken).toEqual(
-        '0xcFd72be67Ee69A0dd7cF0f846Fc0D98C33d60F16'
-      )
-      expect(poolInfo.tokens).toEqual(BigNumber.from(3))
-    })
-
-    it('Get pool tokens', async () => {
-      const poolTokens = await synapse.getPoolTokens(
-        SupportedChainId.ARBITRUM,
-        ARB_POOL_NUSD
-      )
-      expect(poolTokens).toBeDefined()
-      expect(poolTokens.length).toEqual(3)
-      expect(poolTokens[0].token).toEqual(ARB_NUSD)
-      expect(poolTokens[1].token).toEqual(ARB_USDC_E)
-      expect(poolTokens[2].token).toEqual(ARB_USDT)
-    })
-  })
-
-  describe('calculate add liquidity', () => {
-    const synapse = new SynapseSDK(
-      [SupportedChainId.ARBITRUM, SupportedChainId.ETH],
-      [arbProvider, ethProvider]
-    )
-
-    it('Arbitrum nETH pool', async () => {
-      const amounts: Record<string, BigNumber> = {}
-      amounts[ARB_NETH] = BigNumber.from(10).pow(18)
-      amounts[ARB_WETH] = BigNumber.from(10).pow(18).mul(2)
-      const result = await synapse.calculateAddLiquidity(
-        SupportedChainId.ARBITRUM,
-        ARB_POOL_NETH,
-        amounts
-      )
-      expect(result).toBeDefined()
-      expect(result.amount.gt(0)).toBe(true)
-      expect(result.routerAddress).toEqual(
-        ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
-      )
-    })
-
-    it('Handles lowercase token addresses', async () => {
-      const amounts: Record<string, BigNumber> = {}
-      amounts[ARB_NETH.toLowerCase()] = BigNumber.from(10).pow(18)
-      amounts[ARB_WETH.toLowerCase()] = BigNumber.from(10).pow(18).mul(2)
-      const result = await synapse.calculateAddLiquidity(
-        SupportedChainId.ARBITRUM,
-        ARB_POOL_NETH,
-        amounts
-      )
-      expect(result).toBeDefined()
-      expect(result.amount.gt(0)).toBe(true)
-      expect(result.routerAddress).toEqual(
-        ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
-      )
-    })
-
-    it('Handles uppercase token addresses', async () => {
-      const amounts: Record<string, BigNumber> = {}
-      amounts[ARB_NETH.toUpperCase()] = BigNumber.from(10).pow(18)
-      amounts[ARB_WETH.toLowerCase()] = BigNumber.from(10).pow(18).mul(2)
-      const result = await synapse.calculateAddLiquidity(
-        SupportedChainId.ARBITRUM,
-        ARB_POOL_NETH,
-        amounts
-      )
-      expect(result).toBeDefined()
-      expect(result.amount.gt(0)).toBe(true)
-      expect(result.routerAddress).toEqual(
-        ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
-      )
-    })
-
-    it('Handles single token: first one', async () => {
-      const amounts: Record<string, BigNumber> = {}
-      amounts[ARB_NETH] = BigNumber.from(10).pow(18)
-      const amountsFull: Record<string, BigNumber> = {}
-      amountsFull[ARB_NETH] = BigNumber.from(10).pow(18)
-      amountsFull[ARB_WETH] = Zero
-      const result = await synapse.calculateAddLiquidity(
-        SupportedChainId.ARBITRUM,
-        ARB_POOL_NETH,
-        amounts
-      )
-      const expectedResult = await synapse.calculateAddLiquidity(
-        SupportedChainId.ARBITRUM,
-        ARB_POOL_NETH,
-        amountsFull
-      )
-      expect(result).toBeDefined()
-      expect(expectedResult).toBeDefined()
-      expect(result).toEqual(expectedResult)
-    })
-
-    it('Handles single token: second one', async () => {
-      const amounts: Record<string, BigNumber> = {}
-      amounts[ARB_WETH] = BigNumber.from(10).pow(18)
-      const amountsFull: Record<string, BigNumber> = {}
-      amountsFull[ARB_NETH] = Zero
-      amountsFull[ARB_WETH] = BigNumber.from(10).pow(18)
-      const result = await synapse.calculateAddLiquidity(
-        SupportedChainId.ARBITRUM,
-        ARB_POOL_NETH,
-        amounts
-      )
-      const expectedResult = await synapse.calculateAddLiquidity(
-        SupportedChainId.ARBITRUM,
-        ARB_POOL_NETH,
-        amountsFull
-      )
-      expect(result).toBeDefined()
-      expect(expectedResult).toBeDefined()
-      expect(result).toEqual(expectedResult)
-    })
-
-    it('Ethereum nUSD pool', async () => {
-      const amounts: Record<string, BigNumber> = {}
-      amounts[ETH_USDC] = BigNumber.from(10).pow(6)
-      amounts[ETH_DAI] = BigNumber.from(10).pow(18).mul(2)
-      amounts[ETH_USDT] = BigNumber.from(10).pow(6).mul(3)
-      const result = await synapse.calculateAddLiquidity(
-        SupportedChainId.ETH,
-        ETH_POOL_NUSD,
-        amounts
-      )
-      expect(result).toBeDefined()
-      expect(result.amount.gt(0)).toBe(true)
-      expect(result.routerAddress).toEqual(
-        ROUTER_ADDRESS_MAP[SupportedChainId.ETH]
-      )
-    })
-  })
-
-  describe('calculate remove liquidity', () => {
-    const synapse = new SynapseSDK(
-      [SupportedChainId.ARBITRUM, SupportedChainId.ETH],
-      [arbProvider, ethProvider]
-    )
-
-    it('Arbitrum EthWrapper', async () => {
-      const result = await synapse.calculateRemoveLiquidity(
-        SupportedChainId.ARBITRUM,
-        ARB_POOL_ETH_WRAPPER,
-        BigNumber.from(10).pow(18)
-      )
-      expect(result).toBeDefined()
-      expect(result.amounts.length).toEqual(2)
-      expect(result.amounts[0].value.gt(0)).toBe(true)
-      expect(result.amounts[0].index).toEqual(0)
-      expect(result.amounts[1].value.gt(0)).toBe(true)
-      expect(result.amounts[1].index).toEqual(1)
-      expect(result.routerAddress).toEqual(
-        ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
-      )
-    })
-  })
-
-  describe('calculate remove liquidity one', () => {
-    const synapse = new SynapseSDK(
-      [SupportedChainId.ARBITRUM, SupportedChainId.ETH],
-      [arbProvider, ethProvider]
-    )
-
-    it('Arbitrum EthWrapper', async () => {
-      const poolIndex = 0
-      const result = await synapse.calculateRemoveLiquidityOne(
-        SupportedChainId.ARBITRUM,
-        ARB_POOL_ETH_WRAPPER,
-        BigNumber.from(10).pow(18),
-        poolIndex
-      )
-      expect(result).toBeDefined()
-      expect(result.amount.value.gt(0)).toBe(true)
-      expect(result.amount.index).toEqual(poolIndex)
-      expect(result.routerAddress).toEqual(
-        ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM]
-      )
-    })
-  })
-
-  describe('Internal functions', () => {
-    const synapse = new SynapseSDK(
-      [SupportedChainId.ARBITRUM, SupportedChainId.ETH],
-      [arbProvider, ethProvider]
-    )
-    describe('getModuleSet', () => {
-      it('Returns correct set for SynapseBridge', () => {
-        const routerSet = operations.getModuleSet.call(synapse, 'SynapseBridge')
-        expect(routerSet).toEqual(synapse.synapseRouterSet)
-      })
-
-      it('Returns correct set for SynapseCCTP', () => {
-        const routerSet = operations.getModuleSet.call(synapse, 'SynapseCCTP')
-        expect(routerSet).toEqual(synapse.synapseCCTPRouterSet)
-      })
-
-      it('Returns correct set for SynapseRFQ', () => {
-        const routerSet = operations.getModuleSet.call(synapse, 'SynapseRFQ')
-        expect(routerSet).toEqual(synapse.fastBridgeRouterSet)
-      })
-
-      it('Throws when bridge module name is invalid', () => {
-        expect(() =>
-          operations.getModuleSet.call(synapse, 'SynapseSynapse')
         ).toThrow('Unknown bridge module')
       })
     })

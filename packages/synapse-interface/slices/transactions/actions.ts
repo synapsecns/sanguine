@@ -10,14 +10,14 @@ export interface PendingBridgeTransaction {
   originToken: Token
   originValue: string
   destinationChain: Chain
-  destinationToken: Token
+  destinationToken?: Token
   transactionHash?: string
-  timestamp: number
+  timestamp?: number
   isSubmitted: boolean
-  estimatedTime: number
-  bridgeModuleName: string
-  routerAddress: string
-  destinationAddress: Address | null
+  estimatedTime?: number
+  bridgeModuleName?: string
+  routerAddress?: string
+  destinationAddress?: Address | null
 }
 
 export const addPendingBridgeTransaction =

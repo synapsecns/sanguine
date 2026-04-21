@@ -1,0 +1,35 @@
+config_version = "0"
+
+[file_types.generated]
+patterns = [
+  "**/*.abigen.go",
+  "**/*.gen.go",
+  "**/*.metadata.go",
+  "**/*.pb.go",
+  "**/*_gen.go",
+  "**/*._generated.go",
+  "**/grpc/client/rest/*",
+  "**/bundle/*",
+  "**/generated/*",
+]
+
+exclude_patterns = [
+  "**/*.abigen.go",
+  "**/*.gen.go",
+  "**/*.metadata.go",
+  "**/*.pb.go",
+  "**/*_gen.go",
+  "**/*._generated.go",
+  "**/grpc/client/rest/**",
+  "**/bundle/**",
+  "**/generated/**",
+]
+
+[[plugin]]
+name = "markdownlint"
+
+[[plugin]]
+name = "stylelint"
+
+[[plugin]]
+name = "tflint"

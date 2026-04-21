@@ -7,7 +7,7 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { getValidAddress, isValidAddress } from '@/utils/isValidAddress'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { CHAINS_BY_ID } from '@constants/chains'
-import {DATA_PLACEHOLDER} from '@/constants/placeholders'
+import { DATA_PLACEHOLDER } from '@/constants/placeholders'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { getSignificantDecimals } from '@/utils/getSignificantDecimals'
 import { formatSlippage } from '@/utils/formatSlippage'
@@ -15,6 +15,7 @@ import { useDefiLlamaPrice } from '@/utils/hooks/useDefiLlamaPrice'
 import { zeroAddress } from 'viem'
 import { calculateUsdValue } from '@/utils/calculateUsdValue'
 import { parseTokenAmount } from '@/utils/decimals'
+import { formatCompactDuration } from '@/utils/time'
 
 export const BridgeExchangeRateInfo = () => {
   /* TODO:
@@ -111,15 +112,11 @@ const Slippage = () => {
       <span className="text-zinc-500 dark:text-zinc-400">{t('Slippage')}</span>
       {shouldShow ? (
         <>
-          {error && (
-            <span className="text-zinc-400">{t(error)}</span>
-          )}
+          {error && <span className="text-zinc-400">{t(error)}</span>}
           {!error && slippage !== null && (
             <span className={textColor}>{formatSlippage(slippage)}</span>
           )}
-          {!error && slippage === null && (
-            DATA_PLACEHOLDER
-          )}
+          {!error && slippage === null && DATA_PLACEHOLDER}
         </>
       ) : (
         DATA_PLACEHOLDER
@@ -147,6 +144,10 @@ const EstimatedTime = () => {
   const { fromToken } = useBridgeState()
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
   const t = useTranslations('Time')
+  const compactDurationLabels = {
+    minute: t('m'),
+    second: t('s'),
+  }
 
   const shouldShow =
     !isLoading &&
@@ -156,19 +157,6 @@ const EstimatedTime = () => {
     typeof bridgeQuote.estimatedTime === 'number' &&
     Number.isFinite(bridgeQuote.estimatedTime)
 
-  let timeValue: number
-  let timeUnit: string
-
-  if (shouldShow) {
-    if (bridgeQuote.estimatedTime > 60) {
-      timeValue = bridgeQuote.estimatedTime / 60
-      timeUnit = t('minutes')
-    } else {
-      timeValue = bridgeQuote.estimatedTime
-      timeUnit = t('seconds')
-    }
-  }
-
   return (
     <div className="flex justify-between">
       <span className="text-zinc-500 dark:text-zinc-400">
@@ -176,7 +164,10 @@ const EstimatedTime = () => {
       </span>
       {shouldShow ? (
         <span>
-          {timeValue} {timeUnit}
+          {formatCompactDuration(
+            bridgeQuote.estimatedTime,
+            compactDurationLabels
+          )}
         </span>
       ) : (
         DATA_PLACEHOLDER

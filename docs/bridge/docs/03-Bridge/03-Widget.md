@@ -17,6 +17,12 @@ The Synapse Widget lets you quickly and easily add bridging to their DeFi applic
 
 Requires `React`, and the `npm` or `yarn` package manager.
 
+`@synapsecns` packages are published to [GitHub Packages](https://github.com/synapsecns/sanguine/packages). Add the following to your project's `.npmrc`:
+
+```
+@synapsecns:registry=https://npm.pkg.github.com
+```
+
 | Options |
 |-|
 | `npm install @synapsecns/widget`
