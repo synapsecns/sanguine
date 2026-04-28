@@ -726,9 +726,70 @@ describe('SynapseSDK', () => {
       expect(quotes[0].tx).toBeDefined()
     })
 
-    it('returns no SBA quotes when either bridge chain is outside the temporary allowlist', async () => {
+    it('returns SBA quotes when only the origin chain is outside the destination enablement set', async () => {
+      const ethNeth = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+      const opNeth = '0x809DC529f07651bD43A172e8dB6f4a7a0d771036'
       const synapse = new SynapseSDK(
-        [SupportedChainId.ETH, SupportedChainId.BASE],
+        [SupportedChainId.ETH, SupportedChainId.OPTIMISM],
+        [mock<Provider>(), mock<Provider>()]
+      )
+
+      synapse.allModuleSets = [synapse.synapseBridgeAdapterModuleSet]
+      jest
+        .spyOn(synapse.synapseBridgeAdapterModuleSet, 'getGasDropAmount')
+        .mockResolvedValue(Zero)
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.ETH],
+          'getNativeFee'
+        )
+        .mockResolvedValue(BigNumber.from(55))
+      jest
+        .spyOn(
+          synapse.synapseBridgeAdapterModuleSet.modules[SupportedChainId.ETH],
+          'getEstimatedTime'
+        )
+        .mockResolvedValue(66)
+      jest
+        .spyOn(synapse.swapEngineSet, 'getBestQuote')
+        .mockImplementation(async (input) => {
+          if (
+            input.chainId === SupportedChainId.ETH &&
+            input.fromToken.toLowerCase() === ethNeth.toLowerCase() &&
+            input.toToken.toLowerCase() === ethNeth.toLowerCase()
+          ) {
+            return createNoOpRoute(SupportedChainId.ETH, ethNeth) as any
+          }
+          return undefined as any
+        })
+      jest
+        .spyOn(synapse.swapEngineSet, 'generateRoute')
+        .mockImplementation(async (_input, quote) => quote as any)
+
+      const quotes = await synapse.bridgeV2({
+        fromChainId: SupportedChainId.ETH,
+        toChainId: SupportedChainId.OPTIMISM,
+        fromToken: ethNeth,
+        toToken: opNeth,
+        fromAmount: '1000',
+      })
+
+      expect(quotes).toHaveLength(1)
+      expect(quotes[0]).toMatchObject({
+        fromChainId: SupportedChainId.ETH,
+        toChainId: SupportedChainId.OPTIMISM,
+        fromToken: ethNeth,
+        toToken: opNeth,
+        expectedToAmount: '1000',
+        minToAmount: '1000',
+        moduleNames: ['SynapseBridge'],
+        nativeFee: '55',
+      })
+    })
+
+    it('returns no SBA quotes when the destination chain is outside the destination enablement set', async () => {
+      const synapse = new SynapseSDK(
+        [SupportedChainId.OPTIMISM, SupportedChainId.ETH],
         [mock<Provider>(), mock<Provider>()]
       )
 
@@ -736,10 +797,10 @@ describe('SynapseSDK', () => {
 
       await expect(
         synapse.bridgeV2({
-          fromChainId: SupportedChainId.ETH,
-          toChainId: SupportedChainId.BASE,
-          fromToken: '0x0f2D719407FdBeFF09D87557AbB7232601FD9F29',
-          toToken: sbaDirectRemoteToken,
+          fromChainId: SupportedChainId.OPTIMISM,
+          toChainId: SupportedChainId.ETH,
+          fromToken: '0x809DC529f07651bD43A172e8dB6f4a7a0d771036',
+          toToken: ETH_NATIVE_TOKEN_ADDRESS,
           fromAmount: '1000',
         })
       ).resolves.toEqual([])
