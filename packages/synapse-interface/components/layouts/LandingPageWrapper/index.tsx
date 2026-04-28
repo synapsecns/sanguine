@@ -56,23 +56,23 @@ const TODO_REMOVE_wrapperStyle = {
 const HypercallBannerContent = () => {
   return (
     <div>
-      We&apos;ve{' '}
+      Hypercall testnet is live:{' '}
+      <a
+        href="https://testnet.hypercall.xyz"
+        target="_blank"
+        rel="noopener"
+        className="underline hover:cursor hover:text-white/65"
+      >
+        testnet.hypercall.xyz
+      </a>
+      {' | '}
       <a
         href="https://x.com/SynapseProtocol/status/1993054780437205498"
         target="_blank"
-        rel="noopener  "
+        rel="noopener"
         className="underline hover:cursor hover:text-white/65"
       >
-        announced
-      </a>{' '}
-      our newest product: Hypercall. Check it out{' '}
-      <a
-        href="https://hypercall.xyz"
-        target="_blank"
-        rel="noopener  "
-        className="underline hover:cursor hover:text-white/65"
-      >
-        here
+        Announcement
       </a>
     </div>
   )

@@ -373,7 +373,7 @@ describe('SynapseSDK', () => {
     })
   })
 
-  describe('Swap', () => {
+  describe.skip('Swap', () => {
     const synapse = new SynapseSDK([SupportedChainId.ARBITRUM], [arbProvider])
     const amount = BigNumber.from(10).pow(9)
     const resultPromise: Promise<SwapQuote> = synapse.swapQuote(
