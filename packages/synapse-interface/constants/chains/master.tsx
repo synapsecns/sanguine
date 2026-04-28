@@ -602,8 +602,7 @@ export const WORLDCHAIN: Chain = {
   chainImg: worldchainImg,
   layer: 2,
   rpcUrls: {
-    primary:
-      'https://worldchain-mainnet.g.alchemy.com/v2/kThJADa4Pb6x6kTS--MoMQRI7d3OliUH',
+    primary: 'https://worldchain.drpc.org',
     fallback: 'https://worldchain-mainnet.g.alchemy.com/public',
   },
   explorerUrl: 'https://worldchain-mainnet.explorer.alchemy.com',

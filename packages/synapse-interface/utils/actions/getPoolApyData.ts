@@ -82,6 +82,17 @@ export const getPoolApyData = async (
     ],
   })
 
+  const allSucceeded = data.every((d) => d.status === 'success')
+  if (!allSucceeded) {
+    console.warn('getPoolApyData: RPC calls failed for chainId', chainId)
+    return {
+      fullCompoundedAPY: 0,
+      fullCompoundedAPYStr: '0.00',
+      weeklyAPR: 0,
+      yearlyAPRUnvested: 0,
+    }
+  }
+
   const synapsePerSecondResult: bigint = data[0].result
   const totalAllocPointsResult: bigint = data[1].result
   const poolInfoResult: PoolInfoResult = data[2].result
@@ -110,7 +121,12 @@ export const getPoolApyData = async (
     (Number(allocPoints) / Number(totalAllocPoints)) * rewardsPerWeek
 
   if (poolRewardsPerWeek === 0) {
-    return {}
+    return {
+      fullCompoundedAPY: 0,
+      fullCompoundedAPYStr: '0.00',
+      weeklyAPR: 0,
+      yearlyAPRUnvested: 0,
+    }
   }
 
   const synValueInUsd = synPriceData.synBalanceNumber * synPriceData.synPrice

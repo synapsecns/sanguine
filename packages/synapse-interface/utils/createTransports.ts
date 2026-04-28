@@ -10,6 +10,7 @@ export const createTransports = (chains: Chain[]): Transports => {
     const synapseChain = CHAINS_BY_ID[chain.id]
 
     acc[chain.id] = fallback([
+      http(`/api/rpc/${chain.id}`),
       http(synapseChain.rpcUrls.primary),
       http(synapseChain.rpcUrls.fallback),
     ])

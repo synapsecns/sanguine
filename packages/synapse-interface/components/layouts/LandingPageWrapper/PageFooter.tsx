@@ -88,6 +88,29 @@ const developersList: FooterDataProps[] = [
   },
 ]
 
+const productsList: FooterDataProps[] = [
+  {
+    text: 'Products',
+    type: null,
+    url: null,
+  },
+  {
+    text: 'Synapse',
+    type: FooterType.URL,
+    url: SYNAPSE_DOCS_URL,
+  },
+  {
+    text: 'Hypercall',
+    type: FooterType.URL,
+    url: 'https://hypercall.xyz/',
+  },
+  {
+    text: 'Cortex',
+    type: FooterType.URL,
+    url: 'https://cortexprotocol.com/',
+  },
+]
+
 const supportList: FooterDataProps[] = [
   {
     text: 'Support',
@@ -124,6 +147,7 @@ export function PageFooter() {
         <SynapseTitleLogo showText={true} />
         <div className="flex flex-wrap gap-8">
           <FooterBlock elements={functionsList} />
+          <FooterBlock elements={productsList} />
           <FooterBlock elements={developersList} />
           <FooterBlock elements={supportList} />
         </div>
