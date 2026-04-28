@@ -182,12 +182,23 @@ describe('SynapseBridgeAdapterModuleSet', () => {
     ).resolves.toEqual([])
   })
 
-  it('returns no candidates when the temporary SBA bridge allowlist excludes either chain', async () => {
+  it('returns candidates when only the origin chain is outside the destination enablement set', async () => {
     await expect(
       moduleSet.getBridgeTokenCandidates({
         fromChainId: SupportedChainId.ETH,
         toChainId: SupportedChainId.OPTIMISM,
         fromToken: ETH_NETH,
+      })
+    ).resolves.toContainEqual(bridgeToken)
+  })
+
+  it('returns no candidates when the destination chain is outside the destination enablement set', async () => {
+    await expect(
+      moduleSet.getBridgeTokenCandidates({
+        fromChainId: SupportedChainId.HARMONY,
+        toChainId: SupportedChainId.ETH,
+        fromToken: HARMONY_NETH,
+        toToken: ETH_NATIVE_TOKEN_ADDRESS,
       })
     ).resolves.toEqual([])
   })

@@ -28,7 +28,7 @@ import {
   SynapseBridgeAdapterModule,
 } from './synapseBridgeAdapterModule'
 
-const SBA_BRIDGE_SUPPORTED_CHAINS = new Set<SupportedChainId>([
+const SBA_BRIDGE_ENABLED_DESTINATION_CHAINS = new Set<SupportedChainId>([
   SupportedChainId.ARBITRUM,
   SupportedChainId.AVALANCHE,
   SupportedChainId.BASE,
@@ -94,8 +94,7 @@ export class SynapseBridgeAdapterModuleSet extends SynapseModuleSet {
     toToken,
   }: GetBridgeTokenCandidatesParameters): Promise<BridgeTokenCandidate[]> {
     if (
-      !SBA_BRIDGE_SUPPORTED_CHAINS.has(fromChainId as SupportedChainId) ||
-      !SBA_BRIDGE_SUPPORTED_CHAINS.has(toChainId as SupportedChainId)
+      !SBA_BRIDGE_ENABLED_DESTINATION_CHAINS.has(toChainId as SupportedChainId)
     ) {
       return []
     }
