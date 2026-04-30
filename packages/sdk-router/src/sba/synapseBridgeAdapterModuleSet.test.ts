@@ -19,9 +19,11 @@ import { SynapseBridgeAdapterModuleSet } from './synapseBridgeAdapterModuleSet'
 const ETH_AGEUR = '0x1a7e4e63778B4f12a199C062f3eFdD288afCBce8'
 const OP_AGEUR = '0xa0554607e477cdC9d0EE2A6b087F4b2DC2815C22'
 const ETH_DOG = '0xBAac2B4491727D78D2b78815144570b9f2Fe8899'
+const ETH_GOHM = '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f'
 const BSC_DOG = '0xaA88C603d142C371eA0eAC8756123c5805EdeE03'
 const BSC_BUSD = '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56'
 const ARB_GMX = '0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a'
+const ARB_GOHM = '0x8D9bA570D6cb60C7e3e0F31343Efe75AB8E65FB1'
 const ETH_NETH = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
 const OP_NETH = '0x809DC529f07651bD43A172e8dB6f4a7a0d771036'
 const OP_SYN = '0x5A5fFf6F753d7C11A56A52FE47a177a87e431655'
@@ -53,6 +55,7 @@ describe('SynapseBridgeAdapterModuleSet', () => {
   const ethProvider = mock<providers.Provider>()
   const opProvider = mock<providers.Provider>()
   const baseProvider = mock<providers.Provider>()
+  const arbProvider = mock<providers.Provider>()
   const dfkProvider = mock<providers.Provider>()
   const harmonyProvider = mock<providers.Provider>()
   const klaytnProvider = mock<providers.Provider>()
@@ -68,6 +71,10 @@ describe('SynapseBridgeAdapterModuleSet', () => {
     {
       chainId: SupportedChainId.BASE,
       provider: baseProvider,
+    },
+    {
+      chainId: SupportedChainId.ARBITRUM,
+      provider: arbProvider,
     },
     {
       chainId: SupportedChainId.DFK,
@@ -101,6 +108,13 @@ describe('SynapseBridgeAdapterModuleSet', () => {
     destChainId: SupportedChainId.KLAYTN,
     originToken: HARMONY_NETH,
     destToken: KLAYTN_NETH,
+  }
+
+  const arbToEthGohmBridgeToken: BridgeTokenCandidate = {
+    originChainId: SupportedChainId.ARBITRUM,
+    destChainId: SupportedChainId.ETH,
+    originToken: ARB_GOHM,
+    destToken: ETH_GOHM,
   }
 
   const dfkToKlaytnWrappedNativeBridgeToken: BridgeTokenCandidate = {
@@ -192,15 +206,15 @@ describe('SynapseBridgeAdapterModuleSet', () => {
     ).resolves.toContainEqual(bridgeToken)
   })
 
-  it('returns no candidates when the destination chain is outside the destination enablement set', async () => {
+  it('returns candidates for artifact-backed routes to Ethereum', async () => {
     await expect(
       moduleSet.getBridgeTokenCandidates({
-        fromChainId: SupportedChainId.HARMONY,
+        fromChainId: SupportedChainId.ARBITRUM,
         toChainId: SupportedChainId.ETH,
-        fromToken: HARMONY_NETH,
-        toToken: ETH_NATIVE_TOKEN_ADDRESS,
+        fromToken: ARB_GOHM,
+        toToken: ETH_GOHM,
       })
-    ).resolves.toEqual([])
+    ).resolves.toEqual([arbToEthGohmBridgeToken])
   })
 
   it('returns all artifact-backed candidates for supported pairs and ignores fromToken as a filter', async () => {
