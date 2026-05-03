@@ -112,7 +112,7 @@ jobs:
           - package: agents
     services:
       mariadb:
-        image: mariadb:10.11.3
+        image: mariadb:10.11.16
         ports:
           - 3306
         env:
