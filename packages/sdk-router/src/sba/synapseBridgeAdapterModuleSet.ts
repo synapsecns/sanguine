@@ -30,13 +30,19 @@ import {
 
 const SBA_BRIDGE_ENABLED_DESTINATION_CHAINS = new Set<SupportedChainId>([
   SupportedChainId.ARBITRUM,
+  SupportedChainId.AURORA,
   SupportedChainId.AVALANCHE,
   SupportedChainId.BASE,
+  SupportedChainId.BLAST,
   SupportedChainId.BSC,
+  SupportedChainId.CANTO,
+  SupportedChainId.CRONOS,
   SupportedChainId.DFK,
   SupportedChainId.HARMONY,
   SupportedChainId.KLAYTN,
   SupportedChainId.METIS,
+  SupportedChainId.MOONBEAM,
+  SupportedChainId.MOONRIVER,
   SupportedChainId.OPTIMISM,
   SupportedChainId.POLYGON,
 ])
