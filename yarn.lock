@@ -5242,10 +5242,10 @@
   resolved "https://registry.yarnpkg.com/@kamilkisiela/fast-url-parser/-/fast-url-parser-1.1.4.tgz#9d68877a489107411b953c54ea65d0658b515809"
   integrity sha512-gbkePEBupNydxCelHCESvFSFM8XPh1Zs/OAVRW/rKpEqPAl5PbOM90Si8mv9bvnR53uPD2s/FiRxdvSejpRJew==
 
-"@layerzerolabs/lz-evm-messagelib-v2@3.0.88":
-  version "3.0.88"
-  resolved "https://registry.yarnpkg.com/@layerzerolabs/lz-evm-messagelib-v2/-/lz-evm-messagelib-v2-3.0.88.tgz#b850de5e5e1ee76f393ff5c7a67787371720cd15"
-  integrity sha512-4Rt0U7wFUdixX4+VqtfWZ4TMh7xBsKG/4DhfxiHpmr7cMn9S6PuBqJUtL0BS7bbVOIVQrcXpns8vEBkCkXW58Q==
+"@layerzerolabs/lz-evm-messagelib-v2@3.0.168":
+  version "3.0.168"
+  resolved "https://registry.yarnpkg.com/@layerzerolabs/lz-evm-messagelib-v2/-/lz-evm-messagelib-v2-3.0.168.tgz#a76cb5050c08a85805c95edfcdaa4a26835f2317"
+  integrity sha512-tNrpfDu9nhB+/onG3Qzby0PFqi21HpW9dI9oa4HulW5/VfiMQllj2gKOX+BEemokdq2JQhAHvj8dTkp0euXPPg==
 
 "@layerzerolabs/lz-evm-protocol-v2@3.0.88":
   version "3.0.88"
