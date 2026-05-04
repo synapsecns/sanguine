@@ -18,8 +18,9 @@ export type SynapseBridgeAdapterChainMetadata = {
 // - ethereum -> SupportedChainId.ETH
 // - bnb -> SupportedChainId.BSC
 // - kaia -> SupportedChainId.KLAYTN
-// Current phase-1 deployments use the same SBA address on all supported chains.
 const SBA_DEPLOYMENT_ADDRESS = '0x5Ba000Bb06230E0582e111F08e1f2F2F200005BA'
+const CRONOS_SBA_DEPLOYMENT_ADDRESS =
+  '0xCDC0D28329E5e0b75cfe4E527A4082152C59Eeb5'
 
 export const SBA_CHAIN_METADATA: Partial<
   Record<SupportedChainId, SynapseBridgeAdapterChainMetadata>
@@ -32,6 +33,11 @@ export const SBA_CHAIN_METADATA: Partial<
   [SupportedChainId.OPTIMISM]: {
     adapterAddress: SBA_DEPLOYMENT_ADDRESS,
     lzEid: 30111,
+    originBlockConfirmations: 100,
+  },
+  [SupportedChainId.CRONOS]: {
+    adapterAddress: CRONOS_SBA_DEPLOYMENT_ADDRESS,
+    lzEid: 30359,
     originBlockConfirmations: 100,
   },
   [SupportedChainId.BSC]: {
@@ -52,6 +58,16 @@ export const SBA_CHAIN_METADATA: Partial<
   [SupportedChainId.METIS]: {
     adapterAddress: SBA_DEPLOYMENT_ADDRESS,
     lzEid: 30151,
+    originBlockConfirmations: 100,
+  },
+  [SupportedChainId.MOONBEAM]: {
+    adapterAddress: SBA_DEPLOYMENT_ADDRESS,
+    lzEid: 30126,
+    originBlockConfirmations: 100,
+  },
+  [SupportedChainId.MOONRIVER]: {
+    adapterAddress: SBA_DEPLOYMENT_ADDRESS,
+    lzEid: 30167,
     originBlockConfirmations: 100,
   },
   [SupportedChainId.CANTO]: {
@@ -84,14 +100,19 @@ export const SBA_CHAIN_METADATA: Partial<
     lzEid: 30115,
     originBlockConfirmations: 100,
   },
-  [SupportedChainId.HARMONY]: {
-    adapterAddress: SBA_DEPLOYMENT_ADDRESS,
-    lzEid: 30116,
-    originBlockConfirmations: 100,
-  },
   [SupportedChainId.BLAST]: {
     adapterAddress: SBA_DEPLOYMENT_ADDRESS,
     lzEid: 30243,
+    originBlockConfirmations: 100,
+  },
+  [SupportedChainId.AURORA]: {
+    adapterAddress: SBA_DEPLOYMENT_ADDRESS,
+    lzEid: 30211,
+    originBlockConfirmations: 100,
+  },
+  [SupportedChainId.HARMONY]: {
+    adapterAddress: SBA_DEPLOYMENT_ADDRESS,
+    lzEid: 30116,
     originBlockConfirmations: 100,
   },
 }
