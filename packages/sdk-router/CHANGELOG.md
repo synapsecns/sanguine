@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.23.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.23.1...@synapsecns/sdk-router@0.23.2) (2026-05-04)
+
+
+### Bug Fixes
+
+* **sdk-router:** SBA support on more chains ([#4038](https://github.com/synapsecns/sanguine/issues/4038)) ([92b44bc](https://github.com/synapsecns/sanguine/commit/92b44bce15ea52f5863fb84640349d387bdeea3c))
+
+
+
+
+
 ## [0.23.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.23.0...@synapsecns/sdk-router@0.23.1) (2026-04-28)
 
 
