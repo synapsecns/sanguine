@@ -159,18 +159,20 @@ describe('SynapseSDK', () => {
       ).toBe(true)
     })
 
-    it('builds the shared intent path for DFK, Harmony, and Klaytn', () => {
+    it('builds the shared intent path for DFK, Harmony, Klaytn, and Canto', () => {
       const dfkProvider = mock<Provider>()
       const harmonyProvider = mock<Provider>()
       const klaytnProvider = mock<Provider>()
+      const cantoProvider = mock<Provider>()
 
       const intentsSynapse = new SynapseSDK(
         [
           SupportedChainId.DFK,
           SupportedChainId.HARMONY,
           SupportedChainId.KLAYTN,
+          SupportedChainId.CANTO,
         ],
-        [dfkProvider, harmonyProvider, klaytnProvider]
+        [dfkProvider, harmonyProvider, klaytnProvider, cantoProvider]
       )
 
       expect(
@@ -188,12 +190,23 @@ describe('SynapseSDK', () => {
           SupportedChainId.KLAYTN
         ]
       ).toBeDefined()
+      expect(
+        intentsSynapse.synapseBridgeAdapterModuleSet.modules[
+          SupportedChainId.CANTO
+        ]
+      ).toBeDefined()
       expect(() =>
         intentsSynapse.swapEngineSet.getTokenZap(SupportedChainId.DFK)
+      ).not.toThrow()
+      expect(() =>
+        intentsSynapse.swapEngineSet.getTokenZap(SupportedChainId.CANTO)
       ).not.toThrow()
       expect(
         intentsSynapse.sirSet.getSirAddress(SupportedChainId.HARMONY)
       ).toEqual(SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.HARMONY])
+      expect(
+        intentsSynapse.sirSet.getSirAddress(SupportedChainId.CANTO)
+      ).toEqual(SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.CANTO])
     })
   })
 
