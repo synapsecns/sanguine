@@ -11,7 +11,7 @@ const ALLOWED_DOMAINS = [
   'hypercall.xyz',
 ]
 
-function isDomainAllowed(headerValue: string | null): boolean {
+const isDomainAllowed = (headerValue: string | null): boolean => {
   if (!headerValue) return false
   try {
     const { hostname } = new URL(headerValue)
@@ -23,7 +23,7 @@ function isDomainAllowed(headerValue: string | null): boolean {
   }
 }
 
-export default async function handler(req: Request) {
+const handler = async (req: Request) => {
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 })
   }
@@ -35,8 +35,7 @@ export default async function handler(req: Request) {
 
   const { env } = getRequestContext()
 
-  const adminBypass =
-    env.ADMIN_RPC_BYPASS && bypassKey === env.ADMIN_RPC_BYPASS
+  const adminBypass = env.ADMIN_RPC_BYPASS && bypassKey === env.ADMIN_RPC_BYPASS
   const isSameOrigin = origin === `https://${host}`
 
   if (
@@ -53,12 +52,16 @@ export default async function handler(req: Request) {
     return new Response('RPC proxy not configured', { status: 500 })
   }
 
-  const chainId = new URL(req.url).pathname.split('/').pop()
+  const requestUrl = new URL(req.url)
+  const safeChainId = requestUrl.pathname.split('/').pop()
+  if (!safeChainId || !/^\d+$/.test(safeChainId)) {
+    return new Response('Invalid chainId', { status: 400 })
+  }
 
   const body = await req.text()
 
   const resp = await fetch(
-    `https://edge.goldsky.com/standard/evm/${chainId}`,
+    `https://edge.goldsky.com/standard/evm/${safeChainId}`,
     {
       method: 'POST',
       headers: {
@@ -74,3 +77,5 @@ export default async function handler(req: Request) {
     headers: { 'Content-Type': 'application/json' },
   })
 }
+
+export default handler

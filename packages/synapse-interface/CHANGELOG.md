@@ -3,6 +3,42 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.44.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.44.1...@synapsecns/synapse-interface@0.44.2) (2026-05-05)
+
+
+### Bug Fixes
+
+* **synapse-interface:** validate RPC chain id ([#4041](https://github.com/synapsecns/sanguine/issues/4041)) ([a3d3b69](https://github.com/synapsecns/sanguine/commit/a3d3b69803328ef19df279ead28ad41167148312))
+
+
+
+
+
+## [0.44.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.44.0...@synapsecns/synapse-interface@0.44.1) (2026-05-04)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.44.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.51...@synapsecns/synapse-interface@0.44.0) (2026-04-28)
+
+
+### Bug Fixes
+
+* **synapse-interface:** pool APY status check ([#4009](https://github.com/synapsecns/sanguine/issues/4009)) ([4d9a7c9](https://github.com/synapsecns/sanguine/commit/4d9a7c940d79f19dd167e2c0fd7e9eaeb2f12b49))
+* **synapse-interface:** satisfy rpc proxy lint ([2fb4f4c](https://github.com/synapsecns/sanguine/commit/2fb4f4c3114884b6cc4fdef0e74accdc45576719))
+
+
+### Features
+
+* **synapse-interface:** Goldsky Edge RPC proxy ([#4008](https://github.com/synapsecns/sanguine/issues/4008)) ([d773085](https://github.com/synapsecns/sanguine/commit/d773085fe2bd5b878ed6de32ac2b651ec873c7b4))
+
+
+
+
+
 ## [0.43.51](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.43.50...@synapsecns/synapse-interface@0.43.51) (2026-04-01)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
