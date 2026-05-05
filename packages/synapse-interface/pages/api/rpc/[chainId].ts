@@ -52,18 +52,25 @@ const handler = async (req: Request) => {
     return new Response('RPC proxy not configured', { status: 500 })
   }
 
-  const chainId = new URL(req.url).pathname.split('/').pop()
+  const requestUrl = new URL(req.url)
+  const safeChainId = requestUrl.pathname.split('/').pop()
+  if (!safeChainId || !/^\d+$/.test(safeChainId)) {
+    return new Response('Invalid chainId', { status: 400 })
+  }
 
   const body = await req.text()
 
-  const resp = await fetch(`https://edge.goldsky.com/standard/evm/${chainId}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-ERPC-Secret-Token': secret,
-    },
-    body,
-  })
+  const resp = await fetch(
+    `https://edge.goldsky.com/standard/evm/${safeChainId}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-ERPC-Secret-Token': secret,
+      },
+      body,
+    }
+  )
 
   return new Response(resp.body, {
     status: resp.status,
