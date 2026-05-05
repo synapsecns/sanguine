@@ -54,7 +54,7 @@ const handler = async (req: Request) => {
 
   const requestUrl = new URL(req.url)
   const safeChainId = requestUrl.pathname.split('/').pop()
-  if (!safeChainId || !/^[0-9]+$/.test(safeChainId)) {
+  if (!safeChainId || !/^\d+$/.test(safeChainId)) {
     return new Response('Invalid chainId', { status: 400 })
   }
 
