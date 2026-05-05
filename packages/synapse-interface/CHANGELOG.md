@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.44.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.44.1...@synapsecns/synapse-interface@0.44.2) (2026-05-05)
+
+
+### Bug Fixes
+
+* **synapse-interface:** validate RPC chain id ([#4041](https://github.com/synapsecns/sanguine/issues/4041)) ([a3d3b69](https://github.com/synapsecns/sanguine/commit/a3d3b69803328ef19df279ead28ad41167148312))
+
+
+
+
+
 ## [0.44.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.44.0...@synapsecns/synapse-interface@0.44.1) (2026-05-04)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
