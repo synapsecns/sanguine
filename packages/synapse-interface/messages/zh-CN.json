@@ -14,7 +14,7 @@
     "Bridge": "桥接",
     "Send your assets across chains": "跨链发送您的资产。",
     "Bridge paused": "桥接已暂停",
-    "BridgeModulePauseWarningMessage": "{moduleNames} 已针对此路线暂停。报价可能有限，或不如预期优惠。",
+    "BridgeModulePauseWarningMessage": "此路线的桥接已暂停。报价可能不够优惠。",
     "Please select Origin Network": "请选择来源网络",
     "Please select Destination network": "请选择目标网络",
     "Please select an Origin token": "请选择来源代币",

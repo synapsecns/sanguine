@@ -29,12 +29,10 @@ export const BridgeModulePausedWarning = ({
     return null
   }
 
-  const moduleNames = pausedModuleNames.join(', ')
-
   return (
     <WarningMessage
       twClassName="mb-2 border border-amber-500/30 !bg-amber-50 !text-amber-950 dark:!bg-amber-950/30 dark:!text-amber-100"
-      message={t('BridgeModulePauseWarningMessage', { moduleNames })}
+      message={t('BridgeModulePauseWarningMessage')}
     />
   )
 }
