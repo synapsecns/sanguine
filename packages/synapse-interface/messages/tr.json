@@ -14,6 +14,7 @@
     "Bridge": "Köprü",
     "Send your assets across chains": "Varlıklarınızı zincirler arasında gönderin.",
     "Bridge paused": "Köprü duraklatıldı",
+    "BridgeModulePauseWarningMessage": "{moduleNames} bu rota için duraklatıldı. Teklifler sınırlı veya beklenenden daha az avantajlı olabilir.",
     "Please select Origin Network": "Lütfen Kaynak Ağı seçin",
     "Please select Destination network": "Lütfen Hedef ağı seçin",
     "Please select an Origin token": "Lütfen bir Kaynak token seçin",

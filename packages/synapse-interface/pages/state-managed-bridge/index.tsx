@@ -17,6 +17,7 @@ import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
 import { BridgeExchangeRateInfo } from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
+import { BridgeModulePausedWarning } from '@/components/StateManagedBridge/BridgeModulePausedWarning'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
 import { PageHeader } from '@/components/PageHeader'
@@ -520,6 +521,13 @@ const StateManagedBridge = () => {
               {!(
                 fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
               ) && <BridgeExchangeRateInfo />}
+              <BridgeModulePausedWarning
+                fromChainId={fromChainId}
+                toChainId={
+                  toChainId === HYPERLIQUID.id ? ARBITRUM.id : toChainId
+                }
+                pausedModulesList={pausedModulesList}
+              />
               {toChainId === HYPERLIQUID.id && (
                 <HyperliquidDepositInfo
                   fromChainId={fromChainId}

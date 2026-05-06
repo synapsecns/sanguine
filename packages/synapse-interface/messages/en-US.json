@@ -14,6 +14,7 @@
     "Bridge": "Bridge",
     "Send your assets across chains": "Send your assets across chains.",
     "Bridge paused": "Bridge paused",
+    "BridgeModulePauseWarningMessage": "{moduleNames} is paused for this route. Quotes may be limited or less favorable than expected.",
     "Please select Origin Network": "Please select Origin Network",
     "Please select Destination network": "Please select Destination network",
     "Please select an Origin token": "Please select an Origin token",

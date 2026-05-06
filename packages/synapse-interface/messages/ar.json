@@ -14,6 +14,7 @@
     "Bridge": "الجسر",
     "Send your assets across chains": "أرسل أصولك عبر السلاسل.",
     "Bridge paused": "الجسر متوقف مؤقتًا",
+    "BridgeModulePauseWarningMessage": "{moduleNames} متوقف مؤقتًا لهذا المسار. قد تكون عروض الأسعار محدودة أو أقل ملاءمة من المتوقع.",
     "Please select Origin Network": "يرجى اختيار شبكة المصدر",
     "Please select Destination network": "يرجى اختيار شبكة الوجهة",
     "Please select an Origin token": "يرجى اختيار رمز المصدر",

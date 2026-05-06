@@ -14,6 +14,7 @@
     "Bridge": "Bridge",
     "Send your assets across chains": "Envoyez vos actifs à travers les chaînes.",
     "Bridge paused": "Bridge en pause",
+    "BridgeModulePauseWarningMessage": "{moduleNames} est en pause pour cette route. Les offres peuvent être limitées ou moins favorables que prévu.",
     "Please select Origin Network": "Veuillez sélectionner le réseau d'origine",
     "Please select Destination network": "Veuillez sélectionner le réseau de destination",
     "Please select an Origin token": "Veuillez sélectionner un jeton d'origine",
