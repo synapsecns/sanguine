@@ -198,4 +198,30 @@ describe('fetchBridgeQuote quote filtering', () => {
     expect(state.bridgeQuote.bridgeModuleName).toBe('SynapseBridge')
     expect(state.bridgeQuote.nativeFee).toBe(12n)
   })
+
+  it('filters destination chain-specific paused bridge modules', async () => {
+    const { action, state } = await runFetchBridgeQuote({
+      nativeFee: '12',
+      pausedModules: [
+        {
+          bridgeModuleName: 'SynapseRFQ',
+          toChainId: 2,
+        },
+      ],
+      quotes: [
+        createSdkQuote({
+          moduleNames: ['SynapseRFQ'],
+          nativeFee: '77',
+        }),
+        createSdkQuote({
+          moduleNames: ['SynapseBridge'],
+          nativeFee: '12',
+        }),
+      ],
+    })
+
+    expect(fetchBridgeQuote.fulfilled.match(action)).toBe(true)
+    expect(state.bridgeQuote.bridgeModuleName).toBe('SynapseBridge')
+    expect(state.bridgeQuote.nativeFee).toBe(12n)
+  })
 })

@@ -1,5 +1,5 @@
 import toast from 'react-hot-toast'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Address, zeroAddress, isAddress } from 'viem'
 import { polygon } from 'viem/chains'
 import { useAccount } from 'wagmi'
@@ -126,6 +126,10 @@ const StateManagedBridge = () => {
     BridgeMaintenanceProgressBar,
     BridgeMaintenanceWarningMessage,
   } = useMaintenance()
+  const pausedModulesKey = useMemo(
+    () => JSON.stringify(pausedModulesList),
+    [pausedModulesList]
+  )
 
   useEffect(() => {
     segmentAnalyticsEvent(
@@ -151,7 +155,16 @@ const StateManagedBridge = () => {
     } else {
       dispatch(resetBridgeQuote())
     }
-  }, [fromChainId, toChainId, fromToken, toToken, debouncedFromValue, address, destinationAddress])
+  }, [
+    fromChainId,
+    toChainId,
+    fromToken,
+    toToken,
+    debouncedFromValue,
+    address,
+    destinationAddress,
+    pausedModulesKey,
+  ])
 
   const getAndSetBridgeQuote = async () => {
     currentSDKRequestID.current += 1

@@ -63,8 +63,10 @@ export const fetchBridgeQuote = createAsyncThunk(
 
     const pausedBridgeModules = new Set(
       pausedModulesList
-        .filter((module) =>
-          module.chainId ? module.chainId === fromChainId : true
+        .filter(
+          (module) =>
+            (module.chainId ? module.chainId === fromChainId : true) &&
+            (module.toChainId ? module.toChainId === toChainId : true)
         )
         .flatMap(getBridgeModuleNames)
     )

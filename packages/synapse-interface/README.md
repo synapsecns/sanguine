@@ -79,7 +79,7 @@ The shared artifacts are:
 Current repository state:
 
 - `paused-chains.json` is intentionally shipped as an empty array. This repository no longer maintains chain-specific pause records in the shared artifacts.
-- `paused-bridge-modules.json` remains the maintained pause artifact for bridge module filtering. Records must stay chain-scoped; do not add a global `ALL` pause record.
+- `paused-bridge-modules.json` remains the maintained pause artifact for bridge module filtering. Records must stay chain-scoped with `chainId`, `toChainId`, or both; do not add a global `ALL` pause record.
 - Example files under `public/pauses/v1/examples/` are intentionally empty arrays so they do not advertise removed chain-specific or global configs.
 
 When a shared pause artifact changes, the production webapp picks it up after:
@@ -100,7 +100,10 @@ Use `paused-bridge-modules.json` to pause a specific bridge module on a specific
 ### Bridge Module Pause Props
 
 `chainId`
-Chain ID of the chain where the bridge module should be paused.
+Origin chain ID where the bridge module should be paused.
+
+`toChainId`
+Destination chain ID where the bridge module should be paused.
 
 `bridgeModuleName`
 Accepts `SynapseRFQ`, `SynapseBridge`, or `SynapseCCTP`.
