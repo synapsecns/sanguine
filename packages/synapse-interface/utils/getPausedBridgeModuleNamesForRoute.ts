@@ -25,5 +25,5 @@ export const getPausedBridgeModuleNamesForRoute = ({
         )
         .flatMap(getBridgeModuleNames)
     )
-  ).sort()
+  ).sort((a, b) => a.localeCompare(b))
 }
