@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.44.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.44.2...@synapsecns/synapse-interface@0.44.3) (2026-05-06)
+
+
+### Bug Fixes
+
+* **synapse-interface:** bridge pauses ([#4049](https://github.com/synapsecns/sanguine/issues/4049)) ([1205938](https://github.com/synapsecns/sanguine/commit/120593869020d9973483ba4ca03433b7ef4c8d70))
+
+
+
+
+
 ## [0.44.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.44.1...@synapsecns/synapse-interface@0.44.2) (2026-05-05)
 
 
