@@ -1,0 +1,46 @@
+[
+  {
+    "toChainId": 1,
+    "bridgeModuleName": "SynapseBridge"
+  },
+  {
+    "toChainId": 25,
+    "bridgeModuleName": "SynapseBridge"
+  },
+  {
+    "toChainId": 250,
+    "bridgeModuleName": "SynapseBridge"
+  },
+  {
+    "toChainId": 288,
+    "bridgeModuleName": "SynapseBridge"
+  },
+  {
+    "toChainId": 1284,
+    "bridgeModuleName": "SynapseBridge"
+  },
+  {
+    "toChainId": 1285,
+    "bridgeModuleName": "SynapseBridge"
+  },
+  {
+    "toChainId": 2000,
+    "bridgeModuleName": "SynapseBridge"
+  },
+  {
+    "toChainId": 7700,
+    "bridgeModuleName": "SynapseBridge"
+  },
+  {
+    "toChainId": 53935,
+    "bridgeModuleName": "SynapseBridge"
+  },
+  {
+    "toChainId": 81457,
+    "bridgeModuleName": "SynapseBridge"
+  },
+  {
+    "toChainId": 1313161554,
+    "bridgeModuleName": "SynapseBridge"
+  }
+]

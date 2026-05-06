@@ -69,17 +69,19 @@ The interface renders maintenance UI from shared pause artifacts:
 2. Countdown Progress Bar at the top of Bridge / Swap cards.
 3. Warning Message below the input UI in Bridge / Swap cards.
 
-The widget still depends on these same pause artifact files and repository paths for its maintenance state, even though it fetches them through different remote URLs. Keep both files present at their current paths even when they are empty, because the widget is coupled to those artifact locations.
+The widget still depends on these same pause artifact files and repository paths for its maintenance state, even though it fetches them through different remote URLs. Keep shared artifact files present at their current paths even when they are empty, because consumers may be coupled to those artifact locations.
 
 The shared artifacts are:
 
 - [Pause Chains JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-chains.json)
 - [Pause Bridge Modules JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json)
+- [Pause Bridge Modules To Chain JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules-to-chain.json)
 
 Current repository state:
 
 - `paused-chains.json` is intentionally shipped as an empty array. This repository no longer maintains chain-specific pause records in the shared artifacts.
-- `paused-bridge-modules.json` remains the maintained pause artifact for bridge module filtering. Records must stay chain-scoped with `chainId`, `toChainId`, or both; do not add a global `ALL` pause record.
+- `paused-bridge-modules.json` remains the maintained pause artifact for origin chain bridge module filtering. Records must stay chain-scoped with `chainId`; do not add a global `ALL` pause record.
+- `paused-bridge-modules-to-chain.json` remains the maintained pause artifact for destination chain bridge module filtering. Records must stay chain-scoped with `toChainId`; do not add a global `ALL` pause record.
 - Example files under `public/pauses/v1/examples/` are intentionally empty arrays so they do not advertise removed chain-specific or global configs.
 
 When a shared pause artifact changes, the production webapp picks it up after:
@@ -91,7 +93,7 @@ This deployment flow applies to the interface only. After Step 1, the [Github Pa
 
 ## Bridge Module Pause
 
-Use `paused-bridge-modules.json` to pause a specific bridge module on a specific chain. Supported bridge modules are:
+Use `paused-bridge-modules.json` to pause a specific bridge module from a specific chain. Use `paused-bridge-modules-to-chain.json` to pause a specific bridge module to a specific chain. Supported bridge modules are:
 
 - `SynapseRFQ`
 - `SynapseCCTP`
@@ -100,10 +102,10 @@ Use `paused-bridge-modules.json` to pause a specific bridge module on a specific
 ### Bridge Module Pause Props
 
 `chainId`
-Origin chain ID where the bridge module should be paused.
+Origin chain ID where the bridge module should be paused. Use only in `paused-bridge-modules.json`.
 
 `toChainId`
-Destination chain ID where the bridge module should be paused.
+Destination chain ID where the bridge module should be paused. Use only in `paused-bridge-modules-to-chain.json`.
 
 `bridgeModuleName`
 Accepts `SynapseRFQ`, `SynapseBridge`, or `SynapseCCTP`.
