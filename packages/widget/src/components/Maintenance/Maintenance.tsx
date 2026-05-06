@@ -20,6 +20,7 @@ interface ChainPause {
 
 interface BridgeModulePause {
   chainId: number | undefined
+  toChainId?: number
   bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
 }
 

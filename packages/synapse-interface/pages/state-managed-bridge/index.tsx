@@ -1,5 +1,5 @@
 import toast from 'react-hot-toast'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Address, zeroAddress, isAddress } from 'viem'
 import { polygon } from 'viem/chains'
 import { useAccount } from 'wagmi'
@@ -17,6 +17,7 @@ import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
 import { BridgeExchangeRateInfo } from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
+import { BridgeModulePausedWarning } from '@/components/StateManagedBridge/BridgeModulePausedWarning'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
 import { PageHeader } from '@/components/PageHeader'
@@ -126,6 +127,10 @@ const StateManagedBridge = () => {
     BridgeMaintenanceProgressBar,
     BridgeMaintenanceWarningMessage,
   } = useMaintenance()
+  const pausedModulesKey = useMemo(
+    () => JSON.stringify(pausedModulesList),
+    [pausedModulesList]
+  )
 
   useEffect(() => {
     segmentAnalyticsEvent(
@@ -151,7 +156,16 @@ const StateManagedBridge = () => {
     } else {
       dispatch(resetBridgeQuote())
     }
-  }, [fromChainId, toChainId, fromToken, toToken, debouncedFromValue, address, destinationAddress])
+  }, [
+    fromChainId,
+    toChainId,
+    fromToken,
+    toToken,
+    debouncedFromValue,
+    address,
+    destinationAddress,
+    pausedModulesKey,
+  ])
 
   const getAndSetBridgeQuote = async () => {
     currentSDKRequestID.current += 1
@@ -507,6 +521,13 @@ const StateManagedBridge = () => {
               {!(
                 fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
               ) && <BridgeExchangeRateInfo />}
+              <BridgeModulePausedWarning
+                fromChainId={fromChainId}
+                toChainId={
+                  toChainId === HYPERLIQUID.id ? ARBITRUM.id : toChainId
+                }
+                pausedModulesList={pausedModulesList}
+              />
               {toChainId === HYPERLIQUID.id && (
                 <HyperliquidDepositInfo
                   fromChainId={fromChainId}

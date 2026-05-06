@@ -11,6 +11,7 @@ type BigIntLike = bigint | { toString(): string }
 
 type BridgeModulePauseLike = {
   chainId?: number
+  toChainId?: number
   bridgeModuleName: string
 }
 
@@ -381,6 +382,7 @@ export const useNativeSafeMax = ({
       const selectedQuote = selectBridgeQuote<BridgeQuoteLike>({
         quotes,
         originChainId,
+        destinationChainId,
         pausedModules: stablePausedModules,
       })
 

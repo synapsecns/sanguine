@@ -14,6 +14,7 @@
     "Bridge": "ブリッジ",
     "Send your assets across chains": "チェーン間でアセットを送信します。",
     "Bridge paused": "ブリッジ一時停止中",
+    "BridgeModulePauseWarningMessage": "このルートではブリッジが一時停止中です。見積もりが不利になる場合があります。",
     "Please select Origin Network": "オリジンネットワークを選択してください",
     "Please select Destination network": "宛先ネットワークを選択してください",
     "Please select an Origin token": "オリジントークンを選択してください",

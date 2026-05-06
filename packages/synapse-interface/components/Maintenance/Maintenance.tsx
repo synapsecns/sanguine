@@ -28,7 +28,8 @@ interface ChainPause {
 }
 
 export interface BridgeModulePause {
-  chainId?: number // If undefined, pause bridge module for all chains.
+  chainId?: number // Origin chain ID. If undefined, match any origin chain.
+  toChainId?: number // Destination chain ID. If undefined, match any destination chain.
   bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
 }
 

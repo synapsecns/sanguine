@@ -8,11 +8,14 @@ import {
 import { fetchJsonData } from '../functions/fetchJsonData'
 import pausedChains from '@/public/pauses/v1/paused-chains.json'
 import pausedBridgeModules from '@/public/pauses/v1/paused-bridge-modules.json'
+import pausedBridgeModulesToChain from '@/public/pauses/v1/paused-bridge-modules-to-chain.json'
 
 const PAUSED_CHAINS_URL =
   'https://synapsecns.github.io/sanguine/packages/synapse-interface/public/pauses/v1/paused-chains.json'
 const PAUSED_MODULES_URL =
   'https://synapsecns.github.io/sanguine/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
+const PAUSED_MODULES_TO_CHAIN_URL =
+  'https://synapsecns.github.io/sanguine/packages/synapse-interface/public/pauses/v1/paused-bridge-modules-to-chain.json'
 
 export const useSynapsePauseData = () => {
   const dispatch = useAppDispatch()
@@ -25,9 +28,17 @@ export const useSynapsePauseData = () => {
     try {
       const pausedChainsData = await fetchJsonData(PAUSED_CHAINS_URL)
       const pausedModulesData = await fetchJsonData(PAUSED_MODULES_URL)
+      const pausedModulesToChainData = await fetchJsonData(
+        PAUSED_MODULES_TO_CHAIN_URL
+      )
 
       dispatch(setPausedChainsData(pausedChainsData))
-      dispatch(setPausedModulesData(pausedModulesData))
+      dispatch(
+        setPausedModulesData([
+          ...pausedModulesData,
+          ...pausedModulesToChainData,
+        ])
+      )
     } catch (error) {
       console.error(
         'Using local source, failed to fetch paused chains/modules: ',
@@ -36,7 +47,12 @@ export const useSynapsePauseData = () => {
 
       /** Read local source if fetch fails as backup */
       dispatch(setPausedChainsData(pausedChains))
-      dispatch(setPausedModulesData(pausedBridgeModules))
+      dispatch(
+        setPausedModulesData([
+          ...pausedBridgeModules,
+          ...pausedBridgeModulesToChain,
+        ])
+      )
     } finally {
       setTimeout(() => {
         setIsFetching(false)
