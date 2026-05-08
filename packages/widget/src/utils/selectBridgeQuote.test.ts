@@ -13,6 +13,7 @@ describe('selectBridgeQuote', () => {
         createQuote('rfq', ['SynapseRFQ']),
       ],
       originChainId: 1,
+      destinationChainId: 10,
       pausedModules: [],
     })
 
@@ -26,6 +27,7 @@ describe('selectBridgeQuote', () => {
         createQuote('rfq', ['SynapseRFQ']),
       ],
       originChainId: 1,
+      destinationChainId: 10,
       pausedModules: [
         { bridgeModuleName: 'SynapseBridge', chainId: 1 },
         { bridgeModuleName: 'ALL' },
@@ -33,5 +35,33 @@ describe('selectBridgeQuote', () => {
     })
 
     expect(quote).toBeNull()
+  })
+
+  it('respects destination chain-specific paused-module entries', () => {
+    const quote = selectBridgeQuote({
+      quotes: [
+        createQuote('bridge', ['SynapseBridge']),
+        createQuote('rfq', ['SynapseRFQ']),
+      ],
+      originChainId: 1,
+      destinationChainId: 10,
+      pausedModules: [{ bridgeModuleName: 'SynapseRFQ', toChainId: 10 }],
+    })
+
+    expect(quote?.id).toBe('bridge')
+  })
+
+  it('does not apply destination chain-specific entries to other destinations', () => {
+    const quote = selectBridgeQuote({
+      quotes: [
+        createQuote('bridge', ['SynapseBridge']),
+        createQuote('rfq', ['SynapseRFQ']),
+      ],
+      originChainId: 1,
+      destinationChainId: 42161,
+      pausedModules: [{ bridgeModuleName: 'SynapseRFQ', toChainId: 10 }],
+    })
+
+    expect(quote?.id).toBe('rfq')
   })
 })

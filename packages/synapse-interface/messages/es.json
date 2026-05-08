@@ -14,6 +14,7 @@
     "Bridge": "Puente",
     "Send your assets across chains": "Envía tus activos entre cadenas.",
     "Bridge paused": "Puente en pausa",
+    "BridgeModulePauseWarningMessage": "El puente está en pausa para esta ruta. Las cotizaciones pueden ser menos favorables.",
     "Please select Origin Network": "Por favor, selecciona la Red de Origen",
     "Please select Destination network": "Por favor, selecciona la red de Destino",
     "Please select an Origin token": "Por favor, selecciona un token de Origen",

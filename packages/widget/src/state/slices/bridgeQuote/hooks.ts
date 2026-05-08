@@ -98,6 +98,7 @@ export const fetchBridgeQuote = createAsyncThunk(
     const quote = selectBridgeQuote<SelectedBridgeQuote>({
       quotes: validQuotes,
       originChainId,
+      destinationChainId,
       pausedModules,
     })
 

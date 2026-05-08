@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/widget-example",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "private": true,
   "description": "Minimal Next.js consumer app for the Synapse widget",
   "engines": {
@@ -18,7 +18,7 @@
     "build:slither": " "
   },
   "dependencies": {
-    "@synapsecns/widget": "^0.11.3",
+    "@synapsecns/widget": "^0.11.4",
     "ethers": "^6.9.1",
     "next": "^14.2.35",
     "react": "^18.2.0",

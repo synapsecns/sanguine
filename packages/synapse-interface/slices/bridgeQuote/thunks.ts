@@ -7,7 +7,7 @@ import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { stringToBigInt, formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
-import { getBridgeModuleNames } from '@/utils/getBridgeModuleNames'
+import { getPausedBridgeModuleNamesForRoute } from '@/utils/getPausedBridgeModuleNamesForRoute'
 import { Token } from '@/utils/types'
 import { BridgeModulePause } from '@/components/Maintenance/Maintenance'
 import { HYPERLIQUID } from '@/constants/chains/master'
@@ -62,11 +62,11 @@ export const fetchBridgeQuote = createAsyncThunk(
     })
 
     const pausedBridgeModules = new Set(
-      pausedModulesList
-        .filter((module) =>
-          module.chainId ? module.chainId === fromChainId : true
-        )
-        .flatMap(getBridgeModuleNames)
+      getPausedBridgeModuleNamesForRoute({
+        pausedModules: pausedModulesList,
+        fromChainId,
+        toChainId,
+      })
     )
     const activeQuotes = allQuotes.filter(
       (quote) => !quote.moduleNames.some((m) => pausedBridgeModules.has(m))
