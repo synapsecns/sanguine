@@ -61,6 +61,10 @@ type Config struct {
 	EnableAPIWithdrawals bool `yaml:"enable_api_withdrawals"`
 	// WithdrawalWhitelist is a list of addresses that are allowed to withdraw.
 	WithdrawalWhitelist []string `yaml:"withdrawal_whitelist"`
+	// WithdrawOnlyMode runs the relayer with only the submitter and API server, skipping
+	// inventory init, quoter, chain indexers, db selectors, CCTP relayer, guard, and rebalancing.
+	// Used to drain a relayer's funds when the rest of the pipeline is unhealthy.
+	WithdrawOnlyMode bool `yaml:"withdraw_only_mode"`
 	// UseEmbeddedGuard enables the embedded guard.
 	UseEmbeddedGuard bool `yaml:"enable_guard"`
 	// SubmitSingleQuotes enables submitting single quotes.

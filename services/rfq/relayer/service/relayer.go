@@ -73,6 +73,8 @@ var logger = log.Logger("relayer")
 // NewRelayer creates a new relayer.
 //
 // The relayer is the core of the application. It is responsible for starting the listener and quoter event loops.
+//
+//nolint:cyclop
 func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfig.Config) (*Relayer, error) {
 	omniClient := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricHandler, omniClient.WithCaptureReqRes())
 
@@ -86,6 +88,46 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 	if err != nil {
 		return nil, fmt.Errorf("could not make db: %w", err)
 	}
+
+	sg, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
+	if err != nil {
+		return nil, fmt.Errorf("could not get signer: %w", err)
+	}
+	fmt.Printf("loaded signer with address: %s\n", sg.Address().String())
+
+	sm := submitter.NewTransactionSubmitter(metricHandler, sg, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
+
+	otelRecorder, err := newOtelRecorder(metricHandler, store, sg)
+	if err != nil {
+		return nil, fmt.Errorf("could not get otel recorder: %w", err)
+	}
+
+	apiServer, err := relapi.NewRelayerAPI(ctx, cfg, metricHandler, omniClient, store, sm)
+	if err != nil {
+		return nil, fmt.Errorf("could not get api server: %w", err)
+	}
+
+	cache := ttlcache.New[common.Hash, bool](ttlcache.WithTTL[common.Hash, bool](time.Second * 30))
+
+	if cfg.WithdrawOnlyMode {
+		logger.Warn("starting relayer in withdraw-only mode: inventory, quoter, indexers, and rebalancing are disabled")
+		return &Relayer{
+			db:            store,
+			client:        omniClient,
+			metrics:       metricHandler,
+			claimCache:    cache,
+			decimalsCache: xsync.NewMapOf[*uint8](),
+			cfg:           cfg,
+			submitter:     sm,
+			signer:        sg,
+			apiServer:     apiServer,
+			semaphore:     semaphore.NewWeighted(maxConcurrentRequests),
+			handlerMtx:    mapmutex.NewStringMapMutex(),
+			balanceMtx:    mapmutex.NewStringMapMutex(),
+			otelRecorder:  otelRecorder,
+		}, nil
+	}
+
 	chainListeners := make(map[int]listener.ContractListener)
 
 	// setup chain listeners
@@ -114,14 +156,6 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		chainListeners[chainID] = chainListener
 	}
 
-	sg, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
-	if err != nil {
-		return nil, fmt.Errorf("could not get signer: %w", err)
-	}
-	fmt.Printf("loaded signer with address: %s\n", sg.Address().String())
-
-	sm := submitter.NewTransactionSubmitter(metricHandler, sg, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
-
 	im, err := inventory.NewInventoryManager(ctx, omniClient, metricHandler, cfg, sg.Address(), sm, store)
 	if err != nil {
 		return nil, fmt.Errorf("could not add imanager: %w", err)
@@ -140,17 +174,6 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not get quoter")
 	}
 
-	apiServer, err := relapi.NewRelayerAPI(ctx, cfg, metricHandler, omniClient, store, sm)
-	if err != nil {
-		return nil, fmt.Errorf("could not get api server: %w", err)
-	}
-
-	otelRecorder, err := newOtelRecorder(metricHandler, store, sg)
-	if err != nil {
-		return nil, fmt.Errorf("could not get otel recorder: %w", err)
-	}
-
-	cache := ttlcache.New[common.Hash, bool](ttlcache.WithTTL[common.Hash, bool](time.Second * 30))
 	rel := Relayer{
 		db:             store,
 		client:         omniClient,
@@ -185,6 +208,10 @@ const defaultPostInterval = 1
 // 4. Start the submitter: This will submit any transactions that need to be submitted.
 // nolint: cyclop
 func (r *Relayer) Start(ctx context.Context) (err error) {
+	if r.cfg.WithdrawOnlyMode {
+		return r.startWithdrawOnly(ctx)
+	}
+
 	err = r.inventory.ApproveAllTokens(ctx)
 	if err != nil {
 		return fmt.Errorf("could not approve all tokens: %w", err)
@@ -313,6 +340,37 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 		return fmt.Errorf("could not start: %w", err)
 	}
 
+	return nil
+}
+
+// startWithdrawOnly runs only the submitter and API server. This skips inventory init,
+// chain indexers, quoter, db selectors, CCTP relayer, guard, and rebalancing — used to
+// drain a relayer's funds when the rest of the pipeline is unhealthy.
+func (r *Relayer) startWithdrawOnly(ctx context.Context) error {
+	g, ctx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		if r.submitter.Started() {
+			return nil
+		}
+		err := r.submitter.Start(ctx)
+		if err != nil && !errors.Is(err, submitter.ErrSubmitterAlreadyStarted) {
+			return fmt.Errorf("could not start submitter: %w", err)
+		}
+		return nil
+	})
+
+	g.Go(func() error {
+		err := r.apiServer.Run(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start api server: %w", err)
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("could not start withdraw-only relayer: %w", err)
+	}
 	return nil
 }
 
