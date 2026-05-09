@@ -98,6 +98,7 @@ const (
 	getHealthRoute        = "/health"
 	getRetryRoute         = "/retry"
 	postWithdrawRoute     = "/withdraw"
+	postClaimRoute        = "/claim"
 	getTxHashByNonceRoute = "/tx_hash/by_nonce"
 	getRequestByTxID      = "/request/by_tx_id"
 	getRequestByTxHash    = "/request/by_tx_hash"
@@ -121,6 +122,7 @@ func (r *RelayerAPIServer) Run(ctx context.Context) error {
 
 	if r.cfg.EnableAPIWithdrawals {
 		engine.POST(postWithdrawRoute, h.Withdraw)
+		engine.POST(postClaimRoute, h.Claim)
 		engine.GET(getTxHashByNonceRoute, h.GetTxHashByNonce)
 	}
 

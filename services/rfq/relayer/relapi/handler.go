@@ -235,6 +235,59 @@ func (h *Handler) Withdraw(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"nonce": nonce})
 }
 
+// ClaimRequest is the request to claim a proven bridge transaction.
+type ClaimRequest struct {
+	// ChainID is the origin chain ID where claim() will be called.
+	ChainID uint32 `json:"chain_id"`
+	// RawRequest is the encoded BridgeTransaction bytes (the same payload originally passed to bridge()).
+	RawRequest string `json:"raw_request"`
+}
+
+// Claim calls FastBridge.claim() on the origin chain for a proven bridge tx. The claim
+// pulls the relayer's reimbursement (originAmount minus protocol fee) back to the relayer EOA.
+// Used to drain unclaimed RELAYER_PROVED positions when the rest of the relayer pipeline is offline.
+func (h *Handler) Claim(c *gin.Context) {
+	ctx, span := h.metrics.Tracer().Start(c, "claim")
+	var err error
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	var req ClaimRequest
+	if err = c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	chainHandler, ok := h.chains[req.ChainID]
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("no chain handler for chain %d", req.ChainID)})
+		return
+	}
+
+	rawRequest, err := hexutil.Decode(req.RawRequest)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("invalid raw_request hex: %s", err.Error())})
+		return
+	}
+
+	span.SetAttributes(
+		attribute.Int("chain_id", int(req.ChainID)),
+		attribute.Int("raw_request_len", len(rawRequest)),
+	)
+
+	nonce, err := h.submitter.SubmitTransaction(ctx, big.NewInt(int64(req.ChainID)), func(transactor *bind.TransactOpts) (*types.Transaction, error) {
+		// nolint: wrapcheck
+		return chainHandler.Bridge.Claim(transactor, rawRequest, transactor.From)
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not submit claim: %s", err.Error())})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"nonce": nonce})
+}
+
 // GetTxByNonceRequest is the request for getting a transaction hash by nonce.
 type GetTxByNonceRequest struct {
 	ChainID uint32 `json:"chain_id"`
