@@ -173,18 +173,11 @@ func (h *Handler) Withdraw(c *gin.Context) {
 		return
 	}
 
-	// validate the token address. Native gas tokens on non-ETH-gas chains (e.g. BERA on
-	// Berachain, MATIC/POL on Polygon) are not registered in quotable_tokens, so allow
-	// them through here — the address is the fixed 0xEeee sentinel and the destination
-	// is still gated by the withdrawal whitelist below.
-	isNonEthGasWithdraw := false
-	if util.IsGasToken(req.TokenAddress) {
-		nativeToken, nativeErr := h.cfg.GetNativeToken(int(req.ChainID))
-		if nativeErr == nil && nativeToken != "" && nativeToken != "ETH" {
-			isNonEthGasWithdraw = true
-		}
-	}
-	if !isNonEthGasWithdraw && !tokenIDExists(h.cfg, req.TokenAddress, int(req.ChainID)) {
+	// validate the token address. Gas-token withdraws use the fixed 0xEeee sentinel —
+	// no typo risk and not always present in quotable_tokens (e.g. BERA on Berachain,
+	// ETH on Worldchain). The withdrawal_whitelist below still gates the destination,
+	// so the quotable check is redundant for gas tokens.
+	if !util.IsGasToken(req.TokenAddress) && !tokenIDExists(h.cfg, req.TokenAddress, int(req.ChainID)) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("invalid token address %s for chain %d", req.TokenAddress.Hex(), req.ChainID)})
 		return
 	}
