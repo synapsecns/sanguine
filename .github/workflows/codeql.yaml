@@ -51,13 +51,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
+
+      - name: Skip Go analysis
+        if: ${{ matrix.language == 'go' && needs.changes.outputs.package_count == 0 }}
+        run: echo "No changed Go modules detected; skipping Go CodeQL build and analysis."
+
       - name: Install Go
-        if: ${{ matrix.language == 'go' }}
+        if: ${{ matrix.language == 'go' && needs.changes.outputs.package_count > 0 }}
         uses: actions/setup-go@v5
         with:
           go-version-file: 'go.work'
 
       - name: Initialize CodeQL
+        if: ${{ matrix.language != 'go' || needs.changes.outputs.package_count > 0 }}
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
@@ -65,12 +71,8 @@ jobs:
       - uses: github/codeql-action/autobuild@v3
         if: ${{ matrix.language != 'go' }}
 
-      - name: Autobuild (Go)
-        uses: github/codeql-action/autobuild@v3
-        if: ${{ matrix.language == 'go' && needs.changes.outputs.package_count == 0 }}
-
       - name: Go modules cache
-        if: ${{ matrix.language == 'go' }}
+        if: ${{ matrix.language == 'go' && needs.changes.outputs.package_count > 0 }}
         uses: actions/cache@v4
         with:
           # see https://github.com/mvdan/github-actions-golang
@@ -98,12 +100,14 @@ jobs:
           GOMEMLIMIT: 6GiB
 
       - name: Perform CodeQL Analysis
+        if: ${{ matrix.language != 'go' || needs.changes.outputs.package_count > 0 }}
         uses: github/codeql-action/analyze@v3
         with:
           upload: false # disable the upload here - we will upload in a different action
           output: sarif-results
 
       - name: filter-sarif
+        if: ${{ matrix.language != 'go' || needs.changes.outputs.package_count > 0 }}
         uses: advanced-security/filter-sarif@v1
         with:
           # filter out all test files unless they contain a sql-injection vulnerability
@@ -116,6 +120,7 @@ jobs:
           output: sarif-results/${{ matrix.language }}.sarif
 
       - name: Upload SARIF
+        if: ${{ matrix.language != 'go' || needs.changes.outputs.package_count > 0 }}
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: sarif-results/${{ matrix.language }}.sarif
