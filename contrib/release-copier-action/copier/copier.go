@@ -82,7 +82,7 @@ func (r *ReleaseCopier) CopyRelease(ctx context.Context, sourceOwner, sourceRepo
 		Tag:     &strippedTag,
 		Message: ogTag.Commit.Message,
 		Object: &github.GitObject{
-			Type: github.String("commit"),
+			Type: new("commit"),
 			SHA:  commits[0].SHA,
 			URL:  commits[0].URL,
 		},

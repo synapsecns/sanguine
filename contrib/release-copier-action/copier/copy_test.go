@@ -10,9 +10,9 @@ import (
 
 func makeRepoTags(count int) []github.RepositoryTag {
 	var tags []github.RepositoryTag
-	for i := 0; i < count; i++ {
+	for range count {
 		tags = append(tags, github.RepositoryTag{
-			Name: github.String(gofakeit.Name()),
+			Name: new(gofakeit.Name()),
 		})
 	}
 	return tags
@@ -30,9 +30,9 @@ func (c *CopierSuite) TestGetTagsForRelease() {
 			makeRepoTags(50),
 			[]github.RepositoryTag{
 				{
-					Name: github.String(targetTag),
+					Name: new(targetTag),
 					Commit: &github.Commit{
-						SHA: github.String(targetCommit),
+						SHA: new(targetCommit),
 					},
 				},
 			},
@@ -40,8 +40,8 @@ func (c *CopierSuite) TestGetTagsForRelease() {
 		mock.WithRequestMatch(
 			mock.GetReposGitCommitsByOwnerByRepoByCommitSha,
 			github.Commit{
-				SHA:     github.String(targetCommit),
-				Message: github.String(targetMessage),
+				SHA:     new(targetCommit),
+				Message: new(targetMessage),
 			},
 		))
 
@@ -52,7 +52,7 @@ func (c *CopierSuite) TestGetTagsForRelease() {
 	cp.SetClient(github.NewClient(mockedHTTPClient))
 
 	tag, err := cp.GetTagForRelease(c.GetTestContext(), &github.RepositoryRelease{
-		TagName: github.String("v1.0.0"),
+		TagName: new("v1.0.0"),
 	})
 
 	Nil(c.T(), err)
