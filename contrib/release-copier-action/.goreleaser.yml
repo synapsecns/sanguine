@@ -1,0 +1,78 @@
+project_name: release-copier-action
+
+monorepo:
+  tag_prefix: contrib/release-copier-action/
+  dir: contrib/release-copier-action/
+
+builds:
+  # Linux AMD64
+  - id: release-copier-action
+    binary: release-copier-action
+    ldflags: -installsuffix static
+    env:
+      - CGO_ENABLED=0
+    main: main.go
+    flags:
+      - -trimpath
+    tags:
+      - netgo
+      - osusergo
+    goos:
+      - linux
+    goarch:
+      - amd64
+
+# add a source archive at release time
+source:
+  enabled: true
+
+# Archives
+archives:
+  - format: tar.gz
+    wrap_in_directory: true
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: '{{.ProjectName}}-{{.Version}}_{{.Os}}_{{.Arch}}'
+    files:
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+# Add a changelog
+changelog:
+  sort: asc
+
+dockers:
+  # Docker AMD64
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - 'ghcr.io/synapsecns/sanguine/release-copier-action:latest'
+      - 'ghcr.io/synapsecns/sanguine/release-copier-action:{{ .FullCommit }}'
+      - 'ghcr.io/synapsecns/sanguine/release-copier-action:{{ .Tag }}'
+    build_flag_templates:
+      - '--label=org.opencontainers.image.created={{.Date}}'
+      - '--label=org.opencontainers.image.name={{.ProjectName}}'
+      - '--label=org.opencontainers.image.revision={{.FullCommit}}'
+      - '--label=org.opencontainers.image.version={{.Version}}'
+      - '--label=org.opencontainers.image.source={{.GitURL}}'
+    dockerfile: ../../docker/release-copier-action.Dockerfile
+    ids:
+      - release-copier-action
+
+# track sizes
+report_sizes: true
+
+# modified timestamps
+metadata:
+  # Set the modified timestamp on the metadata files.
+  #
+  # Templates: allowed.
+  mod_timestamp: '{{ .CommitTimestamp }}'
+
+# produce software bill of lading
+sboms:
+  - artifacts: archive
+
