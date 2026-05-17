@@ -91,6 +91,7 @@ flags:
     carryforward: true
 
 ignore:
+  - 'contrib/release-copier-action/main.go'
   - '**/*_generated.go'
   - '**/*.abigen.go'
   - '**/*_string.go'
