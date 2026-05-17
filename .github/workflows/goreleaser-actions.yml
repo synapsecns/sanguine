@@ -211,6 +211,7 @@ jobs:
           GOGC: 2000
           GOMEMLIMIT: 6GiB
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+          GOWORK: off
 
       # use this to determine if we need goreleaser for a workflow
       - name: Check For Docker Images
@@ -231,6 +232,7 @@ jobs:
           GOGC: 20
           GOMEMLIMIT: 6GiB
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+          GOWORK: off
 
       - name: Get Project Name
         id: project_id
@@ -287,4 +289,3 @@ jobs:
         run: |
           module_name=$(go mod edit -json | jq -r '.Module.Path')
           curl -X POST -F "repo=$module_name" https://goreportcard.com/checks
-

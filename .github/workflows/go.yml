@@ -105,8 +105,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        go-version:
-          - 1.22.x
         package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
         exclude:
           - package: agents
@@ -124,6 +122,8 @@ jobs:
     defaults:
       run:
         working-directory: ${{ matrix.package }}
+    env:
+      GOWORK: off
     steps:
       - uses: actions/checkout@v4
         with:
@@ -148,7 +148,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: ${{ matrix.package == 'contrib/terraform-provider-grafanaamg' && '1.26.x' || '1.22.x' }}
           cache: ${{ contains(runner.name, 'nsc') && 'false' || 'true' }}
 
       # TODO: consider setting up cache key, see: https://discord.com/channels/975088590705012777/1263347501721714793/1263534719954452560
@@ -282,8 +282,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        go-version:
-          - 1.22.x
+        package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.package }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -291,7 +293,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: ${{ matrix.package == 'contrib/terraform-provider-grafanaamg' && '1.26.x' || '1.22.x' }}
 
       - name: Go modules cache
         uses: actions/cache@v4
@@ -307,10 +309,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-build-
       - name: Build
-        # go build all workspaces
-        run: go build $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
+        run: GOWORK=off go build ./...
         # see: https://www.reddit.com/r/golang/comments/476pae/how_to_speed_up_go_compiler_and_many_other_go/
-        # this cannot use gomemlimit because we are running multiple builds in paralell
         env:
           GOGC: 2000
           GOMEMLIMIT: 6GiB
@@ -329,7 +329,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v5
         with:
-          go-version: 1.23.x
+          go-version: ${{ matrix.package == 'contrib/terraform-provider-grafanaamg' && '1.26.x' || '1.23.x' }}
 
       - uses: actions/checkout@v4
         with:
@@ -344,7 +344,7 @@ jobs:
         run: echo "version=v$(cat .golangci-version)" >> $GITHUB_OUTPUT
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
           working-directory: ${{matrix.package}}/
           version: ${{ steps.golangci_version.outputs.version }}
@@ -353,6 +353,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.WORKFLOW_PAT || secrets.GITHUB_TOKEN }}
           GOMEMLIMIT: 6GiB
           GOGC: -1
+          GOWORK: off
 
   pr_metadata:
     # this is needed to prevent us from hitting the github api rate limit
@@ -423,7 +424,7 @@ jobs:
       # Setup Go
       - uses: actions/setup-go@v5
         with:
-          go-version: 1.22.x
+          go-version: 1.26.x
 
       - name: Go modules cache
         uses: actions/cache@v4
@@ -545,7 +546,7 @@ jobs:
       # Setup Go
       - uses: actions/setup-go@v5
         with:
-          go-version: 1.22.x
+          go-version: 1.26.x
 
       - name: Go modules cache
         uses: actions/cache@v4
