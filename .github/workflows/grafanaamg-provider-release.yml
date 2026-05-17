@@ -109,3 +109,29 @@ jobs:
               --title "$RELEASE_TAG" \
               --notes-file "$BODY"
           fi
+
+      - name: Check Terraform Registry release
+        id: registry_release
+        env:
+          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN || secrets.WORKFLOW_PAT || github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+
+          TARGET_TAG="${RELEASE_TAG#contrib/terraform-provider-grafanaamg/}"
+          echo "target_tag=$TARGET_TAG" >> "$GITHUB_OUTPUT"
+
+          if gh release view "$TARGET_TAG" -R synapsecns/terraform-provider-grafanaamg >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Copy release to Terraform Registry repository
+        if: steps.registry_release.outputs.exists != 'true'
+        uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
+        with:
+          github_token: ${{ secrets.PUBLISH_TOKEN || secrets.WORKFLOW_PAT }}
+          destination_repo: synapsecns/terraform-provider-grafanaamg
+          tag_name: ${{ inputs.tag }}
+          strip_prefix: contrib/terraform-provider-grafanaamg/
