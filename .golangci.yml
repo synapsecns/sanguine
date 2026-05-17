@@ -1,150 +1,114 @@
+version: '2'
 run:
   tests: true
-  timeout: 15m
-
-linters-settings:
-  gofmt:
-    simplify: true
-  govet:
-    # Using proper analyzer name for shadow checking
-    enable:
-      - shadow
-  misspell:
-    locale: US
-  gocritic:
-    disabled-checks:
-      - appendAssign
-
 linters:
-  enable-all: true
+  default: all
   disable:
-    # Global variables are used in many places throughout the code base.
-    - gochecknoglobals
-
-    # Some lines are over 80 characters on purpose and we don't want to make them
-    # even longer by marking them as 'nolint'.
-    - lll
-
-    # We have long functions, especially in tests. Moving or renaming those would
-    # trigger funlen problems that we may not want to solve at that time.
-    - funlen
-
-    # Disable for now as we haven't yet tuned the sensitivity to our codebase
-    # yet.  Enabling by default for example, would also force new contributors to
-    # potentially extensively refactor code, when they want to smaller change to
-    # land.
-    - gocyclo
-
-    # Instances of table driven tests that don't pre-allocate shouldn't trigger
-    # the linter.
-    - prealloc
-
-    # Init functions are used by loggers throughout the codebase.
-    - gochecknoinits
-    # this messes with formatting
-    - goimports
-    # TODO implement paralell tests
-    - paralleltest
-    # remove
-    - wsl
-    # skip for post set
-    - exhaustruct
-    # we want to use todo
-    - godox
-    # skip new line return until autofix works for it
-    - nlreturn
-    # go 1.13 error
-    - err113 # renamed from goerr113
-    # disable gci
-    - gci
-    # disable gofumpt
-    - gofumpt
-    # allow magic numbers
-    - gomnd
-    # allow println
-    - forbidigo
-    # Allow nolint
-    - nolintlint
-    # we use external json tags
-    - tagliatelle
-    # var name len
-    - varnamelen
-    # allow replacements
-    - gomoddirectives
-    # no need to disallow returning interfaces
-    - ireturn
-    - nonamedreturns
     - contextcheck
     - depguard
-    # we use core/testsuite.Err() etc that don't get caught by this linter and result in false positives.
-    - testifylint
-    # we use metrics.EndSpan and metrics.EndSpanWithErr so this gets triggered falsely
-    - spancheck
-    # simply annoying
-    - perfsprint
-    # malfunctions on embedded structs
-    - typecheck
-    # magic numbers
-    - mnd
-    # constants
+    - err113
+    - exhaustruct
+    - forbidigo
+    - funlen
+    - funcorder
+    - gochecknoglobals
+    - gochecknoinits
     - goconst
-    # removed deprecated linters (added execinquery and exportloopref)
-    - execinquery
-    - exportloopref
-  fast: false
-
+    - gocyclo
+    - godox
+    - gomodguard
+    - gomoddirectives
+    - ireturn
+    - lll
+    - mnd
+    - nlreturn
+    - noinlineerr
+    - nolintlint
+    - nonamedreturns
+    - paralleltest
+    - perfsprint
+    - prealloc
+    - spancheck
+    - tagliatelle
+    - testpackage
+    - testifylint
+    - varnamelen
+    - wsl
+    - wsl_v5
+  settings:
+    gocritic:
+      disabled-checks:
+        - appendAssign
+    govet:
+      enable:
+        - shadow
+    misspell:
+      locale: US
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - dupl
+          - revive
+          - staticcheck
+        path: _test\.go
+      - linters:
+          - wrapcheck
+        path: export_test\.go
+        text: should not use dot imports
+      - linters:
+          - revive
+        path: contracts/
+        text: and that stutters; consider calling this
+      - linters:
+          - wrapcheck
+        path: ethergo/example/*
+      - linters:
+          - wrapcheck
+        path: testutil/*
+      - linters:
+          - staticcheck
+        path: ethergo/*
+        text: SA1019
+      - linters:
+          - cyclop
+        path: \.resolvers\.go
+      - linters:
+          - mnd
+          - staticcheck
+        path: signoz/*
+      - linters:
+          - cyclop
+          - forcetypeassert
+          - revive
+          - staticcheck
+          - wrapcheck
+        path: example/*
+    paths:
+      - .*\\.abigen\\.go$
+      - .*\\.metadata\\.go$
+      - .*\\.pb\\.go$
+      - .*_gen.go$
+      - grpc/client/rest/*
+      - bundle/*
+      - generated/*
+      - otelginmetrics/*
 issues:
-  # Moved from run section as per deprecation warnings
-  exclude-dirs:
-    - grpc/client/rest/*
-    - bundle/*
-    - generated/*
-    - otelginmetrics/*
-  exclude-dirs-use-default: false
-  exclude-files:
-    - '.*\\.abigen\\.go$'
-    - '.*\\.metadata\\.go$'
-    - '.*\\.pb\\.go$'
-    - '.*_gen.go$'
-  # We use dot imports extensively in tests. Usually for testify assertions
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - revive
-        - stylecheck
-        - dupl
-    # wrapping errors when exporting for testing is tedious
-    - path: export_test\.go
-      linters:
-        - wrapcheck
-      text: 'should not use dot imports'
-    - path: contracts/
-      linters:
-        - revive
-      text: 'and that stutters; consider calling this'
-    - path: ethergo/example/*
-      linters:
-        - wrapcheck
-    - path: testutil/*
-      linters:
-        - wrapcheck
-    - path: ethergo/*
-      linters:
-        - staticcheck
-      text: 'SA1019'
-    - path: \.resolvers\.go
-      linters:
-        - cyclop
-    - path: signoz/*
-      linters:
-        - gomnd
-        - stylecheck
-    - path: example/*
-      linters:
-        - revive
-        - cyclop
-        - forcetypeassert
-        - staticcheck
-        - wrapcheck
-  exclude-use-default: false
-  new-from-rev: 531916ba79df25bf4d2d0bb654124f8693a74f85
+  new-from-rev: f34c91245633f7fbf49ad95d6c70bf667ce53c23
+formatters:
+  enable:
+    - gofmt
+  settings:
+    gofmt:
+      simplify: true
+  exclusions:
+    generated: lax
+    paths:
+      - .*\\.abigen\\.go$
+      - .*\\.metadata\\.go$
+      - .*\\.pb\\.go$
+      - .*_gen.go$
+      - grpc/client/rest/*
+      - bundle/*
+      - generated/*
+      - otelginmetrics/*

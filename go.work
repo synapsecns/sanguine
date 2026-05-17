@@ -1,4 +1,4 @@
-go 1.22.4
+go 1.26.3
 
 // note: new paths should be added as flags to the .codecov.yaml
 use (
@@ -8,6 +8,7 @@ use (
 	./contrib/opbot
 	./contrib/promexporter
 	./contrib/screener-api
+	./contrib/terraform-provider-grafanaamg
 	./core
 	./ethergo
 	./services/cctp-relayer

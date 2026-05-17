@@ -1,0 +1,53 @@
+project_name: terraform-provider-grafanaamg
+
+monorepo:
+  tag_prefix: contrib/terraform-provider-grafanaamg/
+  dir: contrib/terraform-provider-grafanaamg/
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+      - GOWORK=off
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    flags:
+      - -trimpath
+    ldflags:
+      - '-s -w -X main.version={{.Version}}'
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    binary: '{{ .ProjectName }}_v{{ .Version }}'
+archives:
+  - format: zip
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+checksum:
+  extra_files:
+    - glob: 'terraform-registry-manifest.json'
+      name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
+  name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
+  algorithm: sha256
+signs:
+  - artifacts: checksum
+    args:
+      - '--batch'
+      - '--local-user'
+      - '{{ .Env.GPG_FINGERPRINT }}'
+      - '--output'
+      - '${signature}'
+      - '--detach-sign'
+      - '${artifact}'
+release:
+  extra_files:
+    - glob: 'terraform-registry-manifest.json'
+      name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
+
+report_sizes: true
+
+metadata:
+  mod_timestamp: '{{ .CommitTimestamp }}'
+
+sboms:
+  - artifacts: archive
