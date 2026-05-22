@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.23.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.23.2...@synapsecns/sdk-router@0.23.3) (2026-05-22)
+
+
+### Bug Fixes
+
+* **sdk-router:** enable ETH as SBA bridge destination ([#4063](https://github.com/synapsecns/sanguine/issues/4063)) ([6a1e522](https://github.com/synapsecns/sanguine/commit/6a1e5227584906f7d3110e25af837ab5198590a8))
+
+
+
+
+
 ## [0.23.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.23.1...@synapsecns/sdk-router@0.23.2) (2026-05-04)
 
 
