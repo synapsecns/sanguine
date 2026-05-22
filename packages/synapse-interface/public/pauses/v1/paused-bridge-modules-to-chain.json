@@ -1,9 +1,5 @@
 [
   {
-    "toChainId": 1,
-    "bridgeModuleName": "SynapseBridge"
-  },
-  {
     "toChainId": 25,
     "bridgeModuleName": "SynapseBridge"
   },
