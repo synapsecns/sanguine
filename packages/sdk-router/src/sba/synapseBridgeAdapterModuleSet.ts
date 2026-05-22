@@ -38,6 +38,7 @@ const SBA_BRIDGE_ENABLED_DESTINATION_CHAINS = new Set<SupportedChainId>([
   // SupportedChainId.CANTO,
   // SupportedChainId.CRONOS,
   SupportedChainId.DFK,
+  SupportedChainId.ETH,
   SupportedChainId.HARMONY,
   SupportedChainId.KLAYTN,
   SupportedChainId.METIS,
