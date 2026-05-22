@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.44.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.44.3...@synapsecns/synapse-interface@0.44.4) (2026-05-22)
+
+
+### Bug Fixes
+
+* **synapse-interface:** unpause SynapseBridge to Ethereum ([5a7d792](https://github.com/synapsecns/sanguine/commit/5a7d79271519a403f15f62490e2858d94e106316))
+
+
+
+
+
 ## [0.44.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.44.2...@synapsecns/synapse-interface@0.44.3) (2026-05-06)
 
 
