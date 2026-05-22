@@ -1,5 +1,12 @@
 name: Go Releaser
-on: [push]
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Go module path to release, for example contrib/terraform-provider-grafanaamg'
+        required: true
+        type: string
 
 jobs:
   # build the goreleaser container cgo cross compiler container. Note: this wil not be applied  until
@@ -86,10 +93,10 @@ jobs:
     name: Change Detection
     runs-on: ubuntu-latest
     # see: https://stackoverflow.com/a/68414395
-    if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[goreleaser]') }}
+    if: ${{ github.event_name == 'workflow_dispatch' || format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[goreleaser]') }}
     outputs:
       # Expose matched filters as job 'packages' output variable
-      packages: ${{ steps.filter_go.outputs.changed_modules_deps }}
+      packages: ${{ steps.length.outputs.PACKAGES }}
       package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
     steps:
       - uses: actions/checkout@v4
@@ -97,16 +104,25 @@ jobs:
           fetch-depth: 0
 
       - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
+        if: ${{ github.event_name != 'workflow_dispatch' }}
         id: filter_go
         with:
           github_token: ${{ secrets.WORKFLOW_PAT || secrets.GITHUB_TOKEN }}
 
       - id: length
         run: |
-          export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
-          echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
+          if [ -n "$DISPATCH_PACKAGE" ]; then
+            PACKAGES=$(jq -cn --arg package "$DISPATCH_PACKAGE" '[$package]')
+          else
+            PACKAGES=$FILTERED_PATHS
+          fi
+
+          FILTER_LENGTH=$(echo "$PACKAGES" | jq '. | length')
+          echo "PACKAGES=$PACKAGES" >> "$GITHUB_OUTPUT"
+          echo "FILTER_LENGTH=$FILTER_LENGTH" >> "$GITHUB_OUTPUT"
         env:
           FILTERED_PATHS: ${{ steps.filter_go.outputs.changed_modules_deps }}
+          DISPATCH_PACKAGE: ${{ inputs.package }}
 
   run-goreleaser:
     runs-on:
@@ -160,7 +176,7 @@ jobs:
       - name: Get branch name
         id: branch-name
         run: |
-          echo "is_default=$([ "$GITHUB_REF" == "refs/heads/${{ github.event.repository.default_branch }}" ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+          echo "is_default=$([ "$GITHUB_REF" = "refs/heads/${{ github.event.repository.default_branch }}" ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
           echo "current_branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
 
       - name: Bump version and push tag
@@ -211,6 +227,7 @@ jobs:
           GOGC: 2000
           GOMEMLIMIT: 6GiB
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+          GOWORK: off
 
       # use this to determine if we need goreleaser for a workflow
       - name: Check For Docker Images
@@ -231,6 +248,7 @@ jobs:
           GOGC: 20
           GOMEMLIMIT: 6GiB
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+          GOWORK: off
 
       - name: Get Project Name
         id: project_id
@@ -287,4 +305,3 @@ jobs:
         run: |
           module_name=$(go mod edit -json | jq -r '.Module.Path')
           curl -X POST -F "repo=$module_name" https://goreportcard.com/checks
-

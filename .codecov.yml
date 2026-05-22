@@ -34,6 +34,10 @@ flags:
     paths:
       - contrib/golang-ci-lint/
     carryforward: true
+  terraform-provider-grafanaamg:
+    paths:
+      - contrib/terraform-provider-grafanaamg/
+    carryforward: true
   opbot:
     paths:
       - contrib/opbot/
@@ -87,6 +91,7 @@ flags:
     carryforward: true
 
 ignore:
+  - 'contrib/release-copier-action/main.go'
   - '**/*_generated.go'
   - '**/*.abigen.go'
   - '**/*_string.go'
