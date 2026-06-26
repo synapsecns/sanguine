@@ -18,6 +18,12 @@ description: Setup nodejs using .nvmrc
 runs:
   using: composite
   steps:
+    - name: Debug checkout info
+      run: |
+        echo "CHECKOUT_TEST_REF=$(git rev-parse HEAD)"
+        echo "CHECKOUT_TEST_BRANCH=$(git branch --show-current)"
+        echo "CHECKOUT_TEST_LOG=$(git log --oneline -1)"
+      shell: bash
     - name: Read .nvmrc
       run: echo "##[set-output name=NVMRC;]$(cat ${{inputs.nvmrc_path}})"
       shell: bash
