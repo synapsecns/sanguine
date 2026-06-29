@@ -6,9 +6,5 @@
   {
     "chainId": 2000,
     "bridgeModuleName": "SynapseBridge"
-  },
-  {
-    "chainId": 53935,
-    "bridgeModuleName": "SynapseBridge"
   }
 ]

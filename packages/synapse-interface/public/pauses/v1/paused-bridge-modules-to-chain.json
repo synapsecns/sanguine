@@ -28,10 +28,6 @@
     "bridgeModuleName": "SynapseBridge"
   },
   {
-    "toChainId": 53935,
-    "bridgeModuleName": "SynapseBridge"
-  },
-  {
     "toChainId": 81457,
     "bridgeModuleName": "SynapseBridge"
   },
