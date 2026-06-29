@@ -226,7 +226,7 @@ export const DFK: Chain = {
   blockTime: 2000,
   rpcUrls: {
     primary: 'https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc',
-    fallback: 'https://avax-dfk.api.pocket.network',
+    fallback: 'https://rpc.dfkchain.com',
   },
   nativeCurrency: {
     name: 'Jewel',
