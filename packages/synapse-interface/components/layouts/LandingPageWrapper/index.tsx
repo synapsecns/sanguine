@@ -53,26 +53,75 @@ const TODO_REMOVE_wrapperStyle = {
 }
 
 
+const HypercallWordmark = ({ height = 16 }: { height?: number }) => (
+  <svg
+    viewBox="0 0 180 36"
+    height={height}
+    width={(180 / 36) * height}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ display: 'block' }}
+    aria-label="Hypercall"
+  >
+    <g fill="currentColor">
+      <path d="M169.741 28.5L174.221 0.179993H179.261L174.781 28.5H169.741Z" />
+      <path d="M174 24.5H177L176.5 28.5H173.5L174 24.5Z" />
+      <path d="M172.5 0.174988H175.5L175 4.17499H172L172.5 0.174988Z" />
+      <path d="M158.819 28.5L163.299 0.179993H168.339L163.859 28.5H158.819Z" />
+      <path d="M163 24.5H166L165.5 28.5H162.5L163 24.5Z" />
+      <path d="M161.5 0.174988H164.5L164 4.17499H161L161.5 0.174988Z" />
+      <path d="M133.25 19.46C133.25 16 134.75 12.48 137.25 10.25C139.75 8.02002 142.661 8.02002 145.341 8.02002C150.421 8.02002 153.261 11.46 153.261 16.58C153.261 23.66 148.581 28.82 142.021 28.82C139.461 28.82 137.25 27.25 136 26.25C134.75 25.25 133.25 22.92 133.25 19.46ZM143.601 24.46C147.121 24.46 149.681 21.54 149.681 17.38C149.681 14.38 148.001 12.38 145.201 12.38C141.521 12.38 138.801 15.3 138.801 19.46C138.801 22.46 140.641 24.46 143.601 24.46Z" />
+      <path d="M156.341 8.33997H151.301L148.097 28.5H153.137L156.341 8.33997Z" />
+      <path d="M152.5 24.5H155.5L155 28.5H152L152.5 24.5Z" />
+      <path d="M120.281 28.82C114.881 28.82 110.961 24.9 110.961 19.62C110.961 12.86 115.801 8.02002 122.641 8.02002C127.681 8.02002 131.321 11.06 131.401 15.3L126.241 16.18C126.201 14.02 124.481 12.38 122.121 12.38C118.561 12.38 116.281 15.1 116.281 19.18C116.281 22.22 118.081 24.46 120.761 24.46C123.161 24.46 124.921 23.18 125.441 21.06L130.361 22.06C129.361 26.18 125.521 28.82 120.281 28.82Z" />
+      <path d="M101.215 21.1001L100.055 28.5001H95.0146L98.2147 8.25H103.255H111L110.25 12.1401H102.655L101.215 21.1001Z" />
+      <path d="M93.0411 16.42C93.0411 17.46 92.8411 18.7 92.5611 19.66H77.6011C77.7211 22.78 79.4811 24.58 82.4411 24.58C84.7211 24.58 86.4011 23.5 87.0011 21.5L91.7611 22.78C90.6011 26.38 86.6411 28.82 81.8011 28.82C76.4011 28.82 72.6411 25.06 72.6411 19.62C72.6411 13.98 76.4411 8.02002 83.9611 8.02002C90.0011 8.02002 93.0411 12.22 93.0411 16.42ZM87.8411 16.06C88.0011 13.66 86.2811 11.86 83.3611 11.86C80.7211 11.86 78.8811 13.54 78.0811 16.06H87.8411Z" />
+      <path d="M46.8625 35.78L49.4557 19.46C49.4557 19.46 50 13.5 53 10.75C56 8.00003 59.5 7.75001 62.25 8.00001C66 8.25001 70.1826 11.46 70.1826 16.58C70.1826 23.66 65.5026 28.82 58.9426 28.82C56.3826 28.82 54.3426 27.9 53.3826 26.26L51.9026 35.78H46.8625ZM59.0226 24.46C62.5426 24.46 65.1026 21.54 65.1026 17.38C65.1026 14.38 63.4226 12.38 60.6226 12.38C56.9426 12.38 54.2226 15.3 54.2226 19.46C54.2226 22.46 56.0625 24.46 59.0226 24.46Z" />
+      <path d="M45.3174 8.34003H50.3174L35.3574 35.78H30.5174L35.0374 27.42L30.3574 8.34003H35.5574L38.3174 21.3L45.3174 8.34003Z" />
+      <path d="M34.5 31.78H40.5L40 35.78H34L34.5 31.78Z" />
+      <path d="M29.5 8.34998H35.5L35 12.35H29L29.5 8.34998Z" />
+      <path d="M23.2802 0.5H28.7202L24.2802 28.5H18.8402L20.7602 16.3H8.52016L6.60016 28.5H1.16016L5.60016 0.5H11.0402L9.28016 11.62H21.5202L23.2802 0.5Z" />
+      <path d="M3 0.5H6L5.5 4.5H2.5L3 0.5Z" />
+      <path d="M24.5 24.5H27.5L27 28.5H24L24.5 24.5Z" />
+    </g>
+  </svg>
+)
+
+const HYPERCALL_APP_URL = 'https://app.hypercall.xyz/'
+const HC_LIME = '#A9FA38'
+
 const HypercallBannerContent = () => {
   return (
-    <div>
-      Hypercall testnet is live:{' '}
+    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 px-2">
+      <span
+        className="inline-block w-2 h-2 rounded-full animate-pulse shrink-0"
+        style={{ background: HC_LIME, boxShadow: `0 0 8px ${HC_LIME}` }}
+        aria-hidden="true"
+      />
+      <span className="inline-flex items-baseline gap-2">
+        <span className="inline-flex text-white translate-y-[3px]">
+          <HypercallWordmark height={16} />
+        </span>
+        <span className="text-xs text-white/50 whitespace-nowrap">
+          by Synapse
+        </span>
+      </span>
+      <span className="font-medium text-white/90">
+        is live — options on anything, starting with{' '}
+        <span style={{ color: HC_LIME }}>SpaceX.</span>
+      </span>
+      <span className="text-white/60">
+        Defined risk. No liquidations. On Hyperliquid.
+      </span>
       <a
-        href="https://testnet.hypercall.xyz"
+        href={HYPERCALL_APP_URL}
         target="_blank"
-        rel="noopener"
-        className="underline hover:cursor hover:text-white/65"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-[10px] font-semibold whitespace-nowrap hover:opacity-90 transition-opacity"
+        style={{ background: HC_LIME, color: '#0b0f0a' }}
       >
-        testnet.hypercall.xyz
-      </a>
-      {' | '}
-      <a
-        href="https://x.com/SynapseProtocol/status/1993054780437205498"
-        target="_blank"
-        rel="noopener"
-        className="underline hover:cursor hover:text-white/65"
-      >
-        Announcement
+        Trade now
+        <span aria-hidden="true">→</span>
       </a>
     </div>
   )
@@ -86,9 +135,9 @@ export function LandingPageWrapper({ children }: { children: any }) {
         style={TODO_REMOVE_wrapperStyle}
       >
         <AnnouncementBanner
-          bannerId="11242024-hypercall-launch"
+          bannerId="07102026-hypercall-live"
           bannerContent={<HypercallBannerContent />}
-          startDate={new Date('2024-11-24T00:00:00+00:00')}
+          startDate={new Date('2026-07-10T00:00:00+00:00')}
           endDate={null}
         />
         <MaintenanceBanners />
