@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hypercall Announcement — standalone</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+  html, body { height: 100%; background: #0c0c0e; }
+  #root { min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* preview stage for placements that aren't full-width-in-flow */
+  .stage {
+    flex: 1; display: grid; place-items: center;
+    padding: 48px 24px 120px;
+    background:
+      radial-gradient(60% 50% at 50% 0%, rgba(172,143,255,0.05), transparent 70%),
+      #0c0c0e;
+    position: relative;
+  }
+  .stage::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 22px 22px; pointer-events: none;
+  }
+  .stage-hint {
+    position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(255,255,255,0.28);
+  }
+
+  /* control bar */
+  .bar {
+    position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%);
+    z-index: 200; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    max-width: calc(100vw - 24px);
+    padding: 10px 14px; border-radius: 14px;
+    background: rgba(20,18,24,0.92); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.8);
+    font-family: 'Matter', sans-serif;
+  }
+  .bar .grp { display: flex; align-items: center; gap: 4px; }
+  .bar .lbl { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-right: 4px; }
+  .seg { display: flex; background: rgba(255,255,255,0.05); border-radius: 8px; padding: 3px; gap: 2px; }
+  .seg button {
+    border: none; background: transparent; color: rgba(255,255,255,0.55);
+    font-family: inherit; font-size: 12.5px; padding: 5px 10px; border-radius: 6px; cursor: pointer;
+    white-space: nowrap; transition: background .12s, color .12s;
+  }
+  .seg button.on { background: var(--hc-lime); color: #0a1f06; font-weight: 600; }
+  .seg button:not(.on):hover { color: #fff; }
+  .bar .div { width: 1px; height: 26px; background: rgba(255,255,255,0.12); }
+  @media (max-width: 720px) { .bar .lbl { display: none; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="announcements.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+function Seg({ value, options, onChange }) {
+  return (
+    <div className="seg">
+      {options.map((o) => {
+        const v = typeof o === 'object' ? o.value : o;
+        const l = typeof o === 'object' ? o.label : o;
+        return (
+          <button key={v} className={value === v ? 'on' : ''} onClick={() => onChange(v)}>{l}</button>
+        );
+      })}
+    </div>
+  );
+}
+
+function App() {
+  const [placement, setPlacement] = useState('banner');
+  const [identity, setIdentity] = useState('cobrand');
+  const [loud, setLoud] = useState('medium');
+  const [motion, setMotion] = useState('subtle');
+  const [proof, setProof] = useState(true);
+  const [dismissed, setDismissed] = useState(false);
+
+  const cfg = {
+    identity, loud, motion, proof, dismissible: true,
+    ctaLabel: 'Trade on Hypercall',
+    onDismiss: () => setDismissed(true),
+  };
+
+  const Comp = ANNOUNCEMENTS[placement].Comp;
+  const place = ANNOUNCEMENTS[placement].placement;
+
+  const render = !dismissed;
+
+  return (
+    <div className={motion === 'off' ? '' : 'motion-on'} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* top placement: full-width in flow */}
+      {render && place === 'top' && <Comp cfg={cfg} />}
+
+      <div className="stage">
+        <div className="stage-hint">Hypercall announcement · isolated component</div>
+
+        {/* afterHero band: full-width inside the stage */}
+        {render && place === 'afterHero' && (
+          <div style={{ width: '100%', maxWidth: 1100 }}><Comp cfg={cfg} /></div>
+        )}
+
+        {/* hero callout: centered card */}
+        {render && place === 'hero' && (
+          <div style={{ width: '100%', maxWidth: 640 }}><Comp cfg={cfg} /></div>
+        )}
+
+        {/* floating: rendered relative inside stage corner */}
+        {render && place === 'fixed' && (
+          <div style={{ position: 'absolute', right: 24, bottom: 96 }}>
+            <Comp cfg={{ ...cfg, fixed: false }} />
+          </div>
+        )}
+
+        {!render && (
+          <button onClick={() => setDismissed(false)} style={{
+            display: 'inline-flex', alignItems: 'center', gap: 9,
+            padding: '11px 18px', borderRadius: 999, cursor: 'pointer',
+            background: 'rgba(22,19,25,0.95)', color: '#fff',
+            border: '1px solid rgba(169,250,56,0.4)', fontSize: 14, fontFamily: 'Matter, sans-serif',
+          }}>
+            <span className="hc-live-dot" style={{ background: 'var(--hc-lime)' }} />
+            Dismissed · click to restore
+          </button>
+        )}
+      </div>
+
+      {/* control bar */}
+      <div className="bar">
+        <div className="grp"><span className="lbl">Placement</span>
+          <Seg value={placement} onChange={(v) => { setPlacement(v); setDismissed(false); }}
+            options={[{ value: 'banner', label: 'Banner' }, { value: 'band', label: 'Band' }, { value: 'heroCallout', label: 'Hero' }, { value: 'floating', label: 'Float' }]} />
+        </div>
+        <div className="div" />
+        <div className="grp"><span className="lbl">Identity</span>
+          <Seg value={identity} onChange={setIdentity}
+            options={[{ value: 'cobrand', label: 'Co-brand' }, { value: 'hypercall', label: 'Lime' }, { value: 'synapse', label: 'Synapse' }]} />
+        </div>
+        <div className="div" />
+        <div className="grp"><span className="lbl">Loud</span>
+          <Seg value={loud} onChange={setLoud} options={['subtle', 'medium', 'bold']} />
+        </div>
+        <div className="div" />
+        <div className="grp"><span className="lbl">Motion</span>
+          <Seg value={motion} onChange={setMotion} options={['off', 'subtle', 'lively']} />
+        </div>
+        <div className="div" />
+        <div className="grp">
+          <Seg value={proof ? 'on' : 'off'} onChange={(v) => setProof(v === 'on')}
+            options={[{ value: 'on', label: 'Proof' }, { value: 'off', label: 'Clean' }]} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

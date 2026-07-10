@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hypercall Announcement — Options</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+  html, body { height: 100%; background: #e9e7e2; }
+  .ann-frame {
+    background: radial-gradient(60% 60% at 50% 0%, rgba(172,143,255,0.05), transparent 70%), #111111;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+  .nav-stub {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 22px;
+  }
+  .nav-stub .links { display: flex; gap: 16px; }
+  .nav-stub .links span { color: rgba(255,255,255,0.32); font-size: 13px; }
+  .hero-stub { text-align: center; padding: 30px 24px 38px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="announcements.jsx"></script>
+
+<script type="text/babel">
+const cfgBase = { identity: 'cobrand', loud: 'medium', motion: 'subtle', ctaLabel: 'Trade on Hypercall', proof: true, dismissible: true, onDismiss: () => {} };
+
+// a tiny synapse nav + hero stub so each treatment reads in context
+function NavStub() {
+  return (
+    <div className="nav-stub">
+      <img src="assets/synapse-logo.svg" alt="Synapse" style={{ height: 26 }} />
+      <div className="links">
+        <span style={{ color: '#fff', opacity: 1 }}>About</span><span>Bridge</span><span>Swap</span><span>Pools</span>
+      </div>
+    </div>
+  );
+}
+function HeroStub() {
+  return (
+    <div className="hero-stub" style={{ padding: '18px 24px 22px' }}>
+      <h1 style={{ margin: 0, fontSize: 30, fontWeight: 500, color: '#fff', letterSpacing: '-0.02em' }}>Secure cross-chain communication</h1>
+      <p style={{ margin: '10px auto 0', maxWidth: 360, color: 'var(--sy-secondary)', fontSize: 14 }}>Build truly cross-chain applications using the Synapse Protocol.</p>
+    </div>
+  );
+}
+
+function Frame({ ann, cfg, withHero, withNav, h }) {
+  const C = ANNOUNCEMENTS[ann].Comp;
+  return (
+    <div className="ann-frame motion-on" style={{ height: h || 'auto' }}>
+      {withNav && <NavStub />}
+      {ann === 'banner' && <C cfg={cfg} />}
+      {ann === 'band' && <C cfg={cfg} />}
+      {withHero && <HeroStub />}
+      {ann === 'heroCallout' && <div style={{ padding: '4px 22px 30px' }}><C cfg={cfg} /></div>}
+      {ann === 'floating' && (
+        <div style={{ position: 'relative', minHeight: 220, padding: 22 }}>
+          <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: 13, fontFamily: 'var(--mono)' }}>…page content scrolls underneath…</div>
+          <div style={{ position: 'absolute', right: 18, bottom: 18 }}>
+            <C cfg={{ ...cfg, fixed: false }} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="placements" title="Four placements" subtitle="All co-branded · medium loudness · Hypercall stays a clear product, Synapse stays the page">
+        <DCArtboard id="banner" label="1 · Top banner — replaces today's thin strip" width={920} height={132}>
+          <Frame ann="banner" cfg={cfgBase} />
+        </DCArtboard>
+        <DCArtboard id="band" label="2 · Dedicated band — the hero moment under Synapse's hero" width={920} height={328}>
+          <Frame ann="band" cfg={cfgBase} />
+        </DCArtboard>
+        <DCArtboard id="hero" label="3 · Hero callout — woven into the hero column" width={720} height={470}>
+          <Frame ann="heroCallout" cfg={cfgBase} withNav withHero />
+        </DCArtboard>
+        <DCArtboard id="floating" label="4 · Floating card — follows on scroll, dismissible" width={520} height={320}>
+          <Frame ann="floating" cfg={cfgBase} />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="identity" title="Identity options" subtitle="Same banner, three palettes — pick how much Hypercall reads as its own product">
+        <DCArtboard id="cobrand" label="Co-brand · Synapse gradient rule + Hypercall lime CTA" width={920} height={140}>
+          <Frame ann="banner" cfg={{ ...cfgBase, identity: 'cobrand' }} />
+        </DCArtboard>
+        <DCArtboard id="lime" label="Hypercall lime — fully its own brand" width={920} height={140}>
+          <Frame ann="banner" cfg={{ ...cfgBase, identity: 'hypercall' }} />
+        </DCArtboard>
+        <DCArtboard id="syngrad" label="Synapse gradient — stays in the host palette" width={920} height={140}>
+          <Frame ann="banner" cfg={{ ...cfgBase, identity: 'synapse' }} />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="loudness" title="Loudness" subtitle="The dedicated band, dialed from subtle to bold">
+        <DCArtboard id="subtle" label="Subtle" width={920} height={300}>
+          <Frame ann="band" cfg={{ ...cfgBase, loud: 'subtle' }} />
+        </DCArtboard>
+        <DCArtboard id="bold" label="Bold" width={920} height={350}>
+          <Frame ann="band" cfg={{ ...cfgBase, loud: 'bold' }} />
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
