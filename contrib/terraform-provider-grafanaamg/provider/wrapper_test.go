@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/grafana"
@@ -41,6 +42,14 @@ type fakeGrafanaClient struct {
 	createErr   error
 	deleteInput *grafana.DeleteWorkspaceServiceAccountTokenInput
 	deleteErr   error
+	// deletedTokenIDs records every delete, in order (deleteInput only
+	// keeps the last one).
+	deletedTokenIDs []string
+	// listOuts are returned in order, one per ListWorkspaceServiceAccountTokens
+	// call, so tests can exercise pagination.
+	listOuts  []*grafana.ListWorkspaceServiceAccountTokensOutput
+	listErr   error
+	listCalls int
 }
 
 func (f *fakeGrafanaClient) CreateWorkspaceServiceAccountToken(_ context.Context, input *grafana.CreateWorkspaceServiceAccountTokenInput, _ ...func(*grafana.Options)) (*grafana.CreateWorkspaceServiceAccountTokenOutput, error) {
@@ -51,8 +60,25 @@ func (f *fakeGrafanaClient) CreateWorkspaceServiceAccountToken(_ context.Context
 
 func (f *fakeGrafanaClient) DeleteWorkspaceServiceAccountToken(_ context.Context, input *grafana.DeleteWorkspaceServiceAccountTokenInput, _ ...func(*grafana.Options)) (*grafana.DeleteWorkspaceServiceAccountTokenOutput, error) {
 	f.deleteInput = input
+	f.deletedTokenIDs = append(f.deletedTokenIDs, aws.ToString(input.TokenId))
 
 	return &grafana.DeleteWorkspaceServiceAccountTokenOutput{}, f.deleteErr
+}
+
+func (f *fakeGrafanaClient) ListWorkspaceServiceAccountTokens(_ context.Context, _ *grafana.ListWorkspaceServiceAccountTokensInput, _ ...func(*grafana.Options)) (*grafana.ListWorkspaceServiceAccountTokensOutput, error) {
+	f.listCalls++
+	if f.listErr != nil {
+		return nil, f.listErr
+	}
+
+	if len(f.listOuts) == 0 {
+		return &grafana.ListWorkspaceServiceAccountTokensOutput{}, nil
+	}
+
+	out := f.listOuts[0]
+	f.listOuts = f.listOuts[1:]
+
+	return out, nil
 }
 
 func withGrafanaClient(t *testing.T, client grafanaAPI) {
@@ -122,6 +148,129 @@ func TestConfigureProviderCreatesTokenAndDelegates(t *testing.T) {
 	}
 	if os.Getenv(envGrafanaAuth) != "" {
 		t.Fatal("expected GRAFANA_AUTH to be restored after configure")
+	}
+}
+
+func TestSweepDeletesOnlyExpiredPrefixMatchedTokens(t *testing.T) {
+	past := time.Now().Add(-time.Hour)
+	future := time.Now().Add(time.Hour)
+	client := &fakeGrafanaClient{
+		listOuts: []*grafana.ListWorkspaceServiceAccountTokensOutput{{
+			ServiceAccountTokens: []types.ServiceAccountTokenSummary{
+				// Expired + prefix match: swept.
+				{Id: aws.String("expired-ours"), Name: aws.String("terraform-provider-grafanaamg-1"), ExpiresAt: &past},
+				// Expired but foreign name: never touched.
+				{Id: aws.String("expired-foreign"), Name: aws.String("human-created"), ExpiresAt: &past},
+				// Prefix match but still live (e.g. a concurrent run): kept.
+				{Id: aws.String("live-ours"), Name: aws.String("terraform-provider-grafanaamg-2"), ExpiresAt: &future},
+				// Defensive: no expiry recorded -> kept.
+				{Id: aws.String("no-expiry"), Name: aws.String("terraform-provider-grafanaamg-3")},
+			},
+		}},
+	}
+	withGrafanaClient(t, client)
+
+	sweepExpiredTokens(context.Background(), amgConfig{
+		workspaceID:      "g-123",
+		serviceAccountID: "sa-123",
+		tokenNamePrefix:  defaultTokenNamePrefix,
+		sweepExpired:     true,
+	})
+
+	if len(client.deletedTokenIDs) != 1 || client.deletedTokenIDs[0] != "expired-ours" {
+		t.Fatalf("expected exactly [expired-ours] deleted, got %v", client.deletedTokenIDs)
+	}
+}
+
+func TestSweepFollowsPagination(t *testing.T) {
+	past := time.Now().Add(-time.Hour)
+	client := &fakeGrafanaClient{
+		listOuts: []*grafana.ListWorkspaceServiceAccountTokensOutput{
+			{
+				ServiceAccountTokens: []types.ServiceAccountTokenSummary{
+					{Id: aws.String("page1"), Name: aws.String("terraform-provider-grafanaamg-1"), ExpiresAt: &past},
+				},
+				NextToken: aws.String("more"),
+			},
+			{
+				ServiceAccountTokens: []types.ServiceAccountTokenSummary{
+					{Id: aws.String("page2"), Name: aws.String("terraform-provider-grafanaamg-2"), ExpiresAt: &past},
+				},
+			},
+		},
+	}
+	withGrafanaClient(t, client)
+
+	sweepExpiredTokens(context.Background(), amgConfig{
+		workspaceID:      "g-123",
+		serviceAccountID: "sa-123",
+		tokenNamePrefix:  defaultTokenNamePrefix,
+		sweepExpired:     true,
+	})
+
+	if client.listCalls != 2 {
+		t.Fatalf("expected 2 list calls, got %d", client.listCalls)
+	}
+	if len(client.deletedTokenIDs) != 2 {
+		t.Fatalf("expected 2 deletions across pages, got %v", client.deletedTokenIDs)
+	}
+}
+
+func TestConfigureProviderSweepFailureDoesNotFailRun(t *testing.T) {
+	t.Setenv(envWorkspaceID, "g-123")
+	t.Setenv(envServiceAccountID, "sa-123")
+	t.Setenv(envGrafanaAuth, "")
+
+	client := &fakeGrafanaClient{
+		listErr: errors.New("list boom"),
+		createOut: &grafana.CreateWorkspaceServiceAccountTokenOutput{
+			ServiceAccountToken: &types.ServiceAccountTokenSummaryWithKey{
+				Id:  aws.String("token-123"),
+				Key: aws.String("secret"),
+			},
+		},
+	}
+	withGrafanaClient(t, client)
+
+	upstream := &fakeProviderServer{configureResp: &tfprotov5.ConfigureProviderResponse{}}
+	resp, err := New(upstream).ConfigureProvider(context.Background(), &tfprotov5.ConfigureProviderRequest{})
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if hasErrors(resp) {
+		t.Fatal("a failed sweep must not fail provider configuration")
+	}
+	if client.listCalls != 1 {
+		t.Fatalf("expected the sweep to have been attempted, got %d list calls", client.listCalls)
+	}
+	if upstream.configureCalls != 1 {
+		t.Fatalf("expected one configure call, got %d", upstream.configureCalls)
+	}
+}
+
+func TestConfigureProviderSweepDisabled(t *testing.T) {
+	t.Setenv(envWorkspaceID, "g-123")
+	t.Setenv(envServiceAccountID, "sa-123")
+	t.Setenv(envGrafanaAuth, "")
+	t.Setenv(envSweepExpired, "false")
+
+	client := &fakeGrafanaClient{
+		createOut: &grafana.CreateWorkspaceServiceAccountTokenOutput{
+			ServiceAccountToken: &types.ServiceAccountTokenSummaryWithKey{
+				Id:  aws.String("token-123"),
+				Key: aws.String("secret"),
+			},
+		},
+	}
+	withGrafanaClient(t, client)
+
+	upstream := &fakeProviderServer{configureResp: &tfprotov5.ConfigureProviderResponse{}}
+	_, err := New(upstream).ConfigureProvider(context.Background(), &tfprotov5.ConfigureProviderRequest{})
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if client.listCalls != 0 {
+		t.Fatalf("expected no list calls with sweep disabled, got %d", client.listCalls)
 	}
 }
 
@@ -242,6 +391,7 @@ func TestLoadAMGConfigDefaults(t *testing.T) {
 	t.Setenv(envTokenTTLSeconds, "")
 	t.Setenv(envTokenNamePrefix, "")
 	t.Setenv(envDeleteToken, "")
+	t.Setenv(envSweepExpired, "")
 
 	cfg, enabled, err := loadAMGConfig()
 	if err != nil {
@@ -265,6 +415,9 @@ func TestLoadAMGConfigDefaults(t *testing.T) {
 	if !cfg.deleteToken {
 		t.Fatal("expected token cleanup to default to true")
 	}
+	if !cfg.sweepExpired {
+		t.Fatal("expected expired-token sweep to default to true")
+	}
 }
 
 func TestLoadAMGConfigOverrides(t *testing.T) {
@@ -274,6 +427,7 @@ func TestLoadAMGConfigOverrides(t *testing.T) {
 	t.Setenv(envTokenTTLSeconds, "120")
 	t.Setenv(envTokenNamePrefix, "ci")
 	t.Setenv(envDeleteToken, "false")
+	t.Setenv(envSweepExpired, "false")
 
 	cfg, enabled, err := loadAMGConfig()
 	if err != nil {
@@ -293,6 +447,23 @@ func TestLoadAMGConfigOverrides(t *testing.T) {
 	}
 	if cfg.deleteToken {
 		t.Fatal("expected token cleanup override to be false")
+	}
+	if cfg.sweepExpired {
+		t.Fatal("expected expired-token sweep override to be false")
+	}
+}
+
+func TestLoadAMGConfigRejectsInvalidSweepExpired(t *testing.T) {
+	t.Setenv(envWorkspaceID, "g-123")
+	t.Setenv(envServiceAccountID, "sa-123")
+	t.Setenv(envSweepExpired, "not-bool")
+
+	_, enabled, err := loadAMGConfig()
+	if err == nil {
+		t.Fatal("expected an error")
+	}
+	if enabled {
+		t.Fatal("expected AMG config to be disabled on invalid input")
 	}
 }
 

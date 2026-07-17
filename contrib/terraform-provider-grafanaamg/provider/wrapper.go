@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/grafana"
+	"github.com/aws/aws-sdk-go-v2/service/grafana/types"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 )
 
@@ -26,6 +27,7 @@ const (
 	envTokenTTLSeconds  = "GRAFANA_AMG_TOKEN_TTL_SECONDS"    // #nosec G101 -- environment variable name, not a credential.
 	envTokenNamePrefix  = "GRAFANA_AMG_TOKEN_NAME_PREFIX"    // #nosec G101 -- environment variable name, not a credential.
 	envDeleteToken      = "GRAFANA_AMG_DELETE_TOKEN_ON_STOP" // #nosec G101 -- environment variable name, not a credential.
+	envSweepExpired     = "GRAFANA_AMG_SWEEP_EXPIRED_TOKENS" // #nosec G101 -- environment variable name, not a credential.
 
 	defaultTokenTTLSeconds = int32(3600)
 	defaultTokenNamePrefix = "terraform-provider-grafanaamg" // #nosec G101 -- token name prefix, not a credential.
@@ -53,11 +55,13 @@ type amgConfig struct {
 	tokenTTLSeconds  int32
 	tokenNamePrefix  string
 	deleteToken      bool
+	sweepExpired     bool
 }
 
 type grafanaAPI interface {
 	CreateWorkspaceServiceAccountToken(ctx context.Context, input *grafana.CreateWorkspaceServiceAccountTokenInput, optFns ...func(*grafana.Options)) (*grafana.CreateWorkspaceServiceAccountTokenOutput, error)
 	DeleteWorkspaceServiceAccountToken(ctx context.Context, input *grafana.DeleteWorkspaceServiceAccountTokenInput, optFns ...func(*grafana.Options)) (*grafana.DeleteWorkspaceServiceAccountTokenOutput, error)
+	ListWorkspaceServiceAccountTokens(ctx context.Context, input *grafana.ListWorkspaceServiceAccountTokensInput, optFns ...func(*grafana.Options)) (*grafana.ListWorkspaceServiceAccountTokensOutput, error)
 }
 
 var newGrafanaClient = grafanaClient
@@ -81,6 +85,10 @@ func (s *Server) ConfigureProvider(ctx context.Context, req *tfprotov5.Configure
 		}
 
 		return resp, nil
+	}
+
+	if cfg.sweepExpired {
+		sweepExpiredTokens(ctx, cfg)
 	}
 
 	token, err := s.createToken(ctx, cfg)
@@ -194,6 +202,80 @@ func (s *Server) createToken(ctx context.Context, cfg amgConfig) (mintedToken, e
 	}, nil
 }
 
+// sweepExpiredTokens best-effort deletes expired tokens previously minted by
+// this provider (matched by the configured name prefix). AMG counts expired
+// tokens against the workspace's service-account token quota until they are
+// explicitly deleted, so tokens leaked by interrupted runs (a crash or kill
+// between ConfigureProvider and StopProvider) accumulate until every
+// subsequent run fails token creation with ServiceQuotaExceededException.
+// Sweeping before each mint keeps the account at one live token per
+// concurrent run. Failures are logged, never fatal: the sweep must not break
+// a run that would otherwise succeed.
+func sweepExpiredTokens(ctx context.Context, cfg amgConfig) {
+	client, err := newGrafanaClient(ctx, cfg.region)
+	if err != nil {
+		log.Printf("skipping expired AMG token sweep: %v", err)
+		return
+	}
+
+	now := time.Now()
+	swept := 0
+
+	var nextToken *string
+	for {
+		out, listErr := client.ListWorkspaceServiceAccountTokens(ctx, &grafana.ListWorkspaceServiceAccountTokensInput{
+			ServiceAccountId: aws.String(cfg.serviceAccountID),
+			WorkspaceId:      aws.String(cfg.workspaceID),
+			NextToken:        nextToken,
+		})
+		if listErr != nil {
+			log.Printf("skipping expired AMG token sweep: list tokens: %v", listErr)
+			return
+		}
+
+		for _, token := range out.ServiceAccountTokens {
+			if !isSweepable(token, cfg.tokenNamePrefix, now) {
+				continue
+			}
+
+			_, deleteErr := client.DeleteWorkspaceServiceAccountToken(ctx, &grafana.DeleteWorkspaceServiceAccountTokenInput{
+				ServiceAccountId: aws.String(cfg.serviceAccountID),
+				TokenId:          token.Id,
+				WorkspaceId:      aws.String(cfg.workspaceID),
+			})
+			if deleteErr != nil {
+				log.Printf("failed to sweep expired AMG token %s: %v", aws.ToString(token.Id), deleteErr)
+				continue
+			}
+			swept++
+		}
+
+		if aws.ToString(out.NextToken) == "" {
+			break
+		}
+		nextToken = out.NextToken
+	}
+
+	if swept > 0 {
+		log.Printf("swept %d expired AMG service account token(s) minted by this provider", swept)
+	}
+}
+
+// isSweepable reports whether a token is an expired leftover minted by this
+// provider. Only prefix-matched tokens are considered so other tokens on a
+// shared service account (human-created, other tooling) are never touched.
+func isSweepable(token types.ServiceAccountTokenSummary, namePrefix string, now time.Time) bool {
+	if token.Id == nil || token.ExpiresAt == nil {
+		return false
+	}
+
+	if !token.ExpiresAt.Before(now) {
+		return false
+	}
+
+	return strings.HasPrefix(aws.ToString(token.Name), namePrefix)
+}
+
 func deleteToken(ctx context.Context, token createdToken) error {
 	client, err := newGrafanaClient(ctx, token.region)
 	if err != nil {
@@ -243,7 +325,12 @@ func loadAMGConfig() (amgConfig, bool, error) {
 		return amgConfig{}, false, err
 	}
 
-	deleteOnStop, err := parseDeleteOnStop()
+	deleteOnStop, err := parseBoolEnv(envDeleteToken, true)
+	if err != nil {
+		return amgConfig{}, false, err
+	}
+
+	sweepExpired, err := parseBoolEnv(envSweepExpired, true)
 	if err != nil {
 		return amgConfig{}, false, err
 	}
@@ -260,6 +347,7 @@ func loadAMGConfig() (amgConfig, bool, error) {
 		tokenTTLSeconds:  ttl,
 		tokenNamePrefix:  prefix,
 		deleteToken:      deleteOnStop,
+		sweepExpired:     sweepExpired,
 	}, true, nil
 }
 
@@ -277,18 +365,18 @@ func parseTokenTTL() (int32, error) {
 	return int32(parsedTTL), nil
 }
 
-func parseDeleteOnStop() (bool, error) {
-	rawDelete := strings.TrimSpace(os.Getenv(envDeleteToken))
-	if rawDelete == "" {
-		return true, nil
+func parseBoolEnv(name string, defaultValue bool) (bool, error) {
+	raw := strings.TrimSpace(os.Getenv(name))
+	if raw == "" {
+		return defaultValue, nil
 	}
 
-	parsedDelete, err := strconv.ParseBool(rawDelete)
+	parsed, err := strconv.ParseBool(raw)
 	if err != nil {
-		return false, fmt.Errorf("%s must be a boolean", envDeleteToken)
+		return false, fmt.Errorf("%s must be a boolean", name)
 	}
 
-	return parsedDelete, nil
+	return parsed, nil
 }
 
 func diagnosticResponse(summary string, err string) *tfprotov5.ConfigureProviderResponse {
