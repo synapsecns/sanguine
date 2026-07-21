@@ -9,8 +9,67 @@ on:
         type: string
 
 jobs:
+  refresh-signing-key:
+    name: Refresh terraform-provider-grafanaamg signing key
+    if: startsWith(inputs.tag, 'refresh-signing-key/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@111c56156bcc6918c056dbef52164cfa583dc549
+        id: import_gpg
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Extend and persist signing key
+        env:
+          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN || secrets.WORKFLOW_PAT }}
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          REFRESH_REQUEST: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+
+          EXPIRATION="${REFRESH_REQUEST#refresh-signing-key/}"
+          if [[ ! "$EXPIRATION" =~ ^20[0-9]{2}-[0-9]{2}-[0-9]{2}$ ]]; then
+            echo "Expected refresh-signing-key/YYYY-MM-DD, got: $REFRESH_REQUEST" >&2
+            exit 1
+          fi
+          if [ -z "$GH_TOKEN" ]; then
+            echo "PUBLISH_TOKEN or WORKFLOW_PAT is required to persist the refreshed key" >&2
+            exit 1
+          fi
+
+          gpg --batch --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
+            --quick-set-expire "$GPG_FINGERPRINT" "$EXPIRATION"
+          gpg --batch --armor --export "$GPG_FINGERPRINT" \
+            > grafanaamg-provider-signing-key.asc
+
+          printf 'grafanaamg signing key refresh\n' \
+            | gpg --batch --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
+                --local-user "$GPG_FINGERPRINT" --detach-sign --output /tmp/signature-test.sig
+
+          gpg --batch --armor --export-secret-keys "$GPG_FINGERPRINT" \
+            | gh secret set GPG_PRIVATE_KEY --repo "$GITHUB_REPOSITORY"
+
+          {
+            echo '### Refreshed Grafana AMG provider signing key'
+            echo
+            echo "- Fingerprint: \`$GPG_FINGERPRINT\`"
+            echo "- Expiration: \`$EXPIRATION\`"
+            echo '- Updated secret: `GPG_PRIVATE_KEY`'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload refreshed public key
+        uses: actions/upload-artifact@v4
+        with:
+          name: grafanaamg-provider-signing-key
+          path: grafanaamg-provider-signing-key.asc
+          retention-days: 1
+
   release:
     name: Release terraform-provider-grafanaamg
+    if: startsWith(inputs.tag, 'contrib/terraform-provider-grafanaamg/v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
