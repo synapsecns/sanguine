@@ -49,7 +49,8 @@ jobs:
             | gpg --batch --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
                 --local-user "$GPG_FINGERPRINT" --detach-sign --output /tmp/signature-test.sig
 
-          gpg --batch --armor --export-secret-keys "$GPG_FINGERPRINT" \
+          gpg --batch --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
+            --armor --export-secret-keys "$GPG_FINGERPRINT" \
             | gh secret set GPG_PRIVATE_KEY --repo "$GITHUB_REPOSITORY"
 
           {
