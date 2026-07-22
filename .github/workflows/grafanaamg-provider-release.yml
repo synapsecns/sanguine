@@ -151,6 +151,11 @@ jobs:
           fi
 
           if gh release view "$TARGET_TAG" --repo "$DESTINATION" >/dev/null 2>&1; then
+            RELEASE_IS_DRAFT="$(gh release view "$TARGET_TAG" --repo "$DESTINATION" --json isDraft --jq .isDraft)"
+            if [ "$RELEASE_IS_DRAFT" != "true" ]; then
+              echo "Registry release $TARGET_TAG is already published and cannot be changed" >&2
+              exit 1
+            fi
             gh release upload "$TARGET_TAG" "${ASSETS[@]}" --clobber --repo "$DESTINATION"
           else
             gh release create "$TARGET_TAG" "${ASSETS[@]}" \
