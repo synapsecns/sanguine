@@ -32,6 +32,23 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
+      - name: Validate GPG signing key
+        env:
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$GPG_FINGERPRINT" ]; then
+            echo "GPG import did not return a signing-key fingerprint" >&2
+            exit 1
+          fi
+
+          SIGNATURE_TEST="$(mktemp "${RUNNER_TEMP:-/tmp}/grafanaamg-signing-preflight.XXXXXX")"
+          trap 'rm -f "$SIGNATURE_TEST"' EXIT
+          printf 'terraform-provider-grafanaamg release signing preflight\n' \
+            | gpg --batch --local-user "$GPG_FINGERPRINT" \
+                --yes --detach-sign --output "$SIGNATURE_TEST"
+
       - name: Build release assets
         env:
           RELEASE_TAG: ${{ inputs.tag }}
@@ -110,28 +127,42 @@ jobs:
               --notes-file "$BODY"
           fi
 
-      - name: Check Terraform Registry release
-        id: registry_release
+      - name: Publish release to Terraform Registry repository
         env:
-          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN || secrets.WORKFLOW_PAT || github.token }}
+          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN || secrets.WORKFLOW_PAT }}
           RELEASE_TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
 
           TARGET_TAG="${RELEASE_TAG#contrib/terraform-provider-grafanaamg/}"
-          echo "target_tag=$TARGET_TAG" >> "$GITHUB_OUTPUT"
+          PROJECT="terraform-provider-grafanaamg"
+          DIST="$PWD/dist/$PROJECT"
+          DESTINATION="synapsecns/terraform-provider-grafanaamg"
+          mapfile -t ASSETS < <(find "$DIST" -maxdepth 1 -type f | sort)
 
-          if gh release view "$TARGET_TAG" -R synapsecns/terraform-provider-grafanaamg >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
+          if [ "${#ASSETS[@]}" -eq 0 ]; then
+            echo "No release assets found in $DIST" >&2
+            exit 1
           fi
 
-      - name: Copy release to Terraform Registry repository
-        if: steps.registry_release.outputs.exists != 'true'
-        uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
-        with:
-          github_token: ${{ secrets.PUBLISH_TOKEN || secrets.WORKFLOW_PAT }}
-          destination_repo: synapsecns/terraform-provider-grafanaamg
-          tag_name: ${{ inputs.tag }}
-          strip_prefix: contrib/terraform-provider-grafanaamg/
+          if [ -z "$GH_TOKEN" ]; then
+            echo "PUBLISH_TOKEN or WORKFLOW_PAT is required to publish the registry release" >&2
+            exit 1
+          fi
+
+          if gh release view "$TARGET_TAG" --repo "$DESTINATION" >/dev/null 2>&1; then
+            RELEASE_IS_DRAFT="$(gh release view "$TARGET_TAG" --repo "$DESTINATION" --json isDraft --jq .isDraft)"
+            if [ "$RELEASE_IS_DRAFT" != "true" ]; then
+              echo "Registry release $TARGET_TAG is already published and cannot be changed" >&2
+              exit 1
+            fi
+            gh release upload "$TARGET_TAG" "${ASSETS[@]}" --clobber --repo "$DESTINATION"
+          else
+            gh release create "$TARGET_TAG" "${ASSETS[@]}" \
+              --draft \
+              --repo "$DESTINATION" \
+              --title "$TARGET_TAG" \
+              --notes "Release ${PROJECT} ${TARGET_TAG#v}."
+          fi
+
+          gh release edit "$TARGET_TAG" --draft=false --repo "$DESTINATION"
