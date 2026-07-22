@@ -9,68 +9,8 @@ on:
         type: string
 
 jobs:
-  refresh-signing-key:
-    name: Refresh terraform-provider-grafanaamg signing key
-    if: startsWith(inputs.tag, 'refresh-signing-key/')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@111c56156bcc6918c056dbef52164cfa583dc549
-        id: import_gpg
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
-
-      - name: Extend and persist signing key
-        env:
-          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN || secrets.WORKFLOW_PAT }}
-          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          REFRESH_REQUEST: ${{ inputs.tag }}
-        run: |
-          set -euo pipefail
-
-          EXPIRATION="${REFRESH_REQUEST#refresh-signing-key/}"
-          if [[ ! "$EXPIRATION" =~ ^20[0-9]{2}-[0-9]{2}-[0-9]{2}$ ]]; then
-            echo "Expected refresh-signing-key/YYYY-MM-DD, got: $REFRESH_REQUEST" >&2
-            exit 1
-          fi
-          if [ -z "$GH_TOKEN" ]; then
-            echo "PUBLISH_TOKEN or WORKFLOW_PAT is required to persist the refreshed key" >&2
-            exit 1
-          fi
-
-          gpg --batch --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
-            --quick-set-expire "$GPG_FINGERPRINT" "$EXPIRATION"
-          gpg --batch --armor --export "$GPG_FINGERPRINT" \
-            > grafanaamg-provider-signing-key.asc
-
-          printf 'grafanaamg signing key refresh\n' \
-            | gpg --batch --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
-                --local-user "$GPG_FINGERPRINT" --detach-sign --output /tmp/signature-test.sig
-
-          gpg --batch --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
-            --armor --export-secret-keys "$GPG_FINGERPRINT" \
-            | gh secret set GPG_PRIVATE_KEY --repo "$GITHUB_REPOSITORY"
-
-          {
-            echo '### Refreshed Grafana AMG provider signing key'
-            echo
-            echo "- Fingerprint: \`$GPG_FINGERPRINT\`"
-            echo "- Expiration: \`$EXPIRATION\`"
-            echo '- Updated secret: `GPG_PRIVATE_KEY`'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload refreshed public key
-        uses: actions/upload-artifact@v4
-        with:
-          name: grafanaamg-provider-signing-key
-          path: grafanaamg-provider-signing-key.asc
-          retention-days: 1
-
   release:
     name: Release terraform-provider-grafanaamg
-    if: startsWith(inputs.tag, 'contrib/terraform-provider-grafanaamg/v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -91,6 +31,16 @@ jobs:
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Validate GPG signing key
+        env:
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+        run: |
+          set -euo pipefail
+
+          printf 'terraform-provider-grafanaamg release signing preflight\n' \
+            | gpg --batch --local-user "$GPG_FINGERPRINT" \
+                --detach-sign --output /tmp/grafanaamg-signing-preflight.sig
 
       - name: Build release assets
         env:
@@ -170,28 +120,32 @@ jobs:
               --notes-file "$BODY"
           fi
 
-      - name: Check Terraform Registry release
-        id: registry_release
+      - name: Publish release to Terraform Registry repository
         env:
-          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN || secrets.WORKFLOW_PAT || github.token }}
+          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN || secrets.WORKFLOW_PAT }}
           RELEASE_TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
 
           TARGET_TAG="${RELEASE_TAG#contrib/terraform-provider-grafanaamg/}"
-          echo "target_tag=$TARGET_TAG" >> "$GITHUB_OUTPUT"
+          PROJECT="terraform-provider-grafanaamg"
+          DIST="$PWD/dist/$PROJECT"
+          DESTINATION="synapsecns/terraform-provider-grafanaamg"
+          mapfile -t ASSETS < <(find "$DIST" -maxdepth 1 -type f | sort)
 
-          if gh release view "$TARGET_TAG" -R synapsecns/terraform-provider-grafanaamg >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
+          if [ -z "$GH_TOKEN" ]; then
+            echo "PUBLISH_TOKEN or WORKFLOW_PAT is required to publish the registry release" >&2
+            exit 1
           fi
 
-      - name: Copy release to Terraform Registry repository
-        if: steps.registry_release.outputs.exists != 'true'
-        uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
-        with:
-          github_token: ${{ secrets.PUBLISH_TOKEN || secrets.WORKFLOW_PAT }}
-          destination_repo: synapsecns/terraform-provider-grafanaamg
-          tag_name: ${{ inputs.tag }}
-          strip_prefix: contrib/terraform-provider-grafanaamg/
+          if gh release view "$TARGET_TAG" --repo "$DESTINATION" >/dev/null 2>&1; then
+            gh release upload "$TARGET_TAG" "${ASSETS[@]}" --clobber --repo "$DESTINATION"
+          else
+            gh release create "$TARGET_TAG" "${ASSETS[@]}" \
+              --draft \
+              --repo "$DESTINATION" \
+              --title "$TARGET_TAG" \
+              --notes "Release ${PROJECT} ${TARGET_TAG#v}."
+          fi
+
+          gh release edit "$TARGET_TAG" --draft=false --repo "$DESTINATION"
