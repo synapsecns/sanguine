@@ -38,9 +38,16 @@ jobs:
         run: |
           set -euo pipefail
 
+          if [ -z "$GPG_FINGERPRINT" ]; then
+            echo "GPG import did not return a signing-key fingerprint" >&2
+            exit 1
+          fi
+
+          SIGNATURE_TEST="$(mktemp "${RUNNER_TEMP:-/tmp}/grafanaamg-signing-preflight.XXXXXX")"
+          trap 'rm -f "$SIGNATURE_TEST"' EXIT
           printf 'terraform-provider-grafanaamg release signing preflight\n' \
             | gpg --batch --local-user "$GPG_FINGERPRINT" \
-                --detach-sign --output /tmp/grafanaamg-signing-preflight.sig
+                --yes --detach-sign --output "$SIGNATURE_TEST"
 
       - name: Build release assets
         env:
@@ -132,6 +139,11 @@ jobs:
           DIST="$PWD/dist/$PROJECT"
           DESTINATION="synapsecns/terraform-provider-grafanaamg"
           mapfile -t ASSETS < <(find "$DIST" -maxdepth 1 -type f | sort)
+
+          if [ "${#ASSETS[@]}" -eq 0 ]; then
+            echo "No release assets found in $DIST" >&2
+            exit 1
+          fi
 
           if [ -z "$GH_TOKEN" ]; then
             echo "PUBLISH_TOKEN or WORKFLOW_PAT is required to publish the registry release" >&2
