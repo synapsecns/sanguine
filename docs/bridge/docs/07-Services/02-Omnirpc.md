@@ -60,6 +60,8 @@ refreshInterval: 60
 
 In this example, any request to ethereum (chain id: 1) will need at least 5 rpcs to agree on the data before it is considered valid, but op will only need 1.
 
+Note: several public endpoints in the example above (including `gateway.pokt.network` and `linkpool.io` paths) are now deprecated. For live health status and latency measurements of alternative public RPC endpoints across chains, see [OpenChainBench](https://openchainbench.com/rpc), an independent open-source project probing endpoints every minute from three regions under a CC BY 4.0 license.
+
 Data can be fetched like so, where the last character is the chain id:
 
 ```bash
