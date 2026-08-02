@@ -22,7 +22,7 @@ contract SynapseHyperCoreComposer is ISynapseHyperCoreComposer {
     address public constant CORE_USER_EXISTS_PRECOMPILE = 0x0000000000000000000000000000000000000810;
     address public constant BASE_ASSET_BRIDGE = 0x2000000000000000000000000000000000000000;
 
-    bytes4 public constant SPOT_SEND_HEADER = 0x01000006;
+    bytes4 public constant SPOT_SEND_HEADER = 0x0100_0006;
 
     address public immutable override adapter;
     address public immutable override token;
@@ -73,6 +73,8 @@ contract SynapseHyperCoreComposer is ISynapseHyperCoreComposer {
         _requireCoreUser(recipient);
 
         uint64 available = _spotBalance(assetBridge, coreIndex);
+        // The equality deliberately selects this HyperEVM block's reservation epoch; it is not a value comparison.
+        // slither-disable-next-line incorrect-equality
         uint64 reserved = block.number == reservationBlock ? reservedCoreAmount : 0;
         uint256 required = uint256(reserved) + coreAmount;
         if (required > available) revert SHCC__AssetBridgeCapacityInsufficient(available, required);
@@ -88,16 +90,24 @@ contract SynapseHyperCoreComposer is ISynapseHyperCoreComposer {
         ICoreWriter(CORE_WRITER)
             .sendRawAction(abi.encodePacked(SPOT_SEND_HEADER, abi.encode(recipient, coreIndex, coreAmount)));
 
+        // The immutable adapter is the only caller, reservation state is committed above, and SYN has no callback.
+        // slither-disable-next-line reentrancy-events
         emit HyperCoreTransferQueued(recipient, amount, coreAmount, coreIndex);
     }
 
     function _requireCoreUser(address user) internal view {
+        // HyperEVM exposes this precompile without a Solidity ABI. Raw staticcall lets us fail closed on malformed
+        // data.
+        // slither-disable-next-line low-level-calls
         (bool success, bytes memory result) = CORE_USER_EXISTS_PRECOMPILE.staticcall(abi.encode(user));
         if (!success || result.length != 32) revert SHCC__PrecompileReadFailed(CORE_USER_EXISTS_PRECOMPILE);
         if (!abi.decode(result, (bool))) revert SHCC__CoreUserNotActivated(user);
     }
 
     function _spotBalance(address user, uint64 tokenIndex) internal view returns (uint64 total) {
+        // HyperEVM exposes this precompile without a Solidity ABI. Raw staticcall lets us fail closed on malformed
+        // data.
+        // slither-disable-next-line low-level-calls
         (bool success, bytes memory result) = SPOT_BALANCE_PRECOMPILE.staticcall(abi.encode(user, tokenIndex));
         if (!success || result.length != 96) revert SHCC__PrecompileReadFailed(SPOT_BALANCE_PRECOMPILE);
         (total,,) = abi.decode(result, (uint64, uint64, uint64));

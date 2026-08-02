@@ -131,6 +131,8 @@ contract SynapseBridgeAdapterV2 is
             gasLimit: gasLimit,
             message: BridgeMessage.encodeBridgeMessage(to, token, amount)
         });
+        // All custody and messaging calls have completed, and this function writes no state afterward.
+        // slither-disable-next-line reentrancy-events
         emit TokenSent(dstEid, to, token, amount, guid);
     }
 
@@ -153,7 +155,10 @@ contract SynapseBridgeAdapterV2 is
             gasLimit: gasLimit,
             message: HyperCoreMessage.encodeHyperCoreMessage(to, token, amount)
         });
+        // All custody and messaging calls have completed, and this function writes no state afterward.
+        // slither-disable-next-line reentrancy-events
         emit TokenSent(dstEid, to, token, amount, guid);
+        // slither-disable-next-line reentrancy-events
         emit TokenSentToHyperCore(dstEid, to, token, amount, guid);
     }
 
@@ -206,6 +211,8 @@ contract SynapseBridgeAdapterV2 is
     function _receiveBridgeMessage(uint32 srcEid, bytes32 guid, bytes calldata message) internal {
         (address to, address srcToken, uint256 amount) = BridgeMessage.decodeBridgeMessage(message);
         address token = _mintOrWithdraw(srcEid, srcToken, to, amount, guid);
+        // Only the authenticated LayerZero endpoint can enter this path, and no state is written after the bridge call.
+        // slither-disable-next-line reentrancy-events
         emit TokenReceived(srcEid, to, token, amount, guid);
     }
 
@@ -217,7 +224,10 @@ contract SynapseBridgeAdapterV2 is
 
         _mintOrWithdraw(token, composer, amount, guid);
         ISynapseHyperCoreComposer(composer).bridgeToHyperCore(to, amount);
+        // Only the authenticated LayerZero endpoint can enter this path, and no state is written after these calls.
+        // slither-disable-next-line reentrancy-events
         emit TokenReceivedOnHyperCore(srcEid, to, token, amount, guid);
+        // slither-disable-next-line reentrancy-events
         emit TokenReceived(srcEid, to, token, amount, guid);
     }
 
