@@ -158,10 +158,42 @@ contract SynapseBridgeAdapterDstTest is SynapseBridgeAdapterTest {
             data: abi.encodeCall(SynapseBridgeMock.mint, (address(composer), address(token), amount, 0, MOCK_GUID))
         });
         vm.expectCall(composer.CORE_WRITER(), abi.encodeCall(ICoreWriter.sendRawAction, (payload)));
+        expectEventTokenReceivedOnHyperCore(SRC_EID, recipient, address(token), amount, MOCK_GUID);
+        expectEventTokenReceived(SRC_EID, recipient, address(token), amount, MOCK_GUID);
 
         endpointCallsLzReceive();
 
         assertEq(token.totalSupply(), amount);
+        assertEq(token.balanceOf(address(composer)), 0);
+        assertEq(token.balanceOf(composer.assetBridge()), amount);
+        assertEq(token.balanceOf(recipient), 0);
+    }
+
+    function test_receiveHyperCore_withdrawDeposit()
+        public
+        withBridgeSet
+        withWithdrawTokenAdded
+        withHyperCoreComposerSet
+    {
+        useHyperCoreMessage();
+        token.mintTestTokens(bridge, amount);
+        mockCoreUser(address(composer), true);
+        mockCoreUser(recipient, true);
+        mockSpotBalance(type(uint64).max);
+
+        bytes memory payload =
+            abi.encodePacked(composer.SPOT_SEND_HEADER(), abi.encode(recipient, CORE_INDEX, CORE_AMOUNT));
+        vm.expectCall({
+            callee: bridge,
+            data: abi.encodeCall(SynapseBridgeMock.withdraw, (address(composer), address(token), amount, 0, MOCK_GUID))
+        });
+        vm.expectCall(composer.CORE_WRITER(), abi.encodeCall(ICoreWriter.sendRawAction, (payload)));
+        expectEventTokenReceivedOnHyperCore(SRC_EID, recipient, address(token), amount, MOCK_GUID);
+        expectEventTokenReceived(SRC_EID, recipient, address(token), amount, MOCK_GUID);
+
+        endpointCallsLzReceive();
+
+        assertEq(token.balanceOf(bridge), 0);
         assertEq(token.balanceOf(address(composer)), 0);
         assertEq(token.balanceOf(composer.assetBridge()), amount);
         assertEq(token.balanceOf(recipient), 0);
@@ -239,6 +271,7 @@ contract SynapseBridgeAdapterDstTest is SynapseBridgeAdapterTest {
     // ═══════════════════════════════════════ TEST: WITHDRAW-DEPOSIT TOKEN ════════════════════════════════════════════
 
     function test_receive_withdrawDeposit() public withBridgeSet withWithdrawTokenAdded {
+        token.mintTestTokens(bridge, amount);
         // Expected action: bridge.withdraw
         vm.expectCall({
             callee: bridge,
@@ -247,6 +280,8 @@ contract SynapseBridgeAdapterDstTest is SynapseBridgeAdapterTest {
         // Expected event
         expectEventTokenReceived(SRC_EID, recipient, address(token), amount, MOCK_GUID);
         endpointCallsLzReceive();
+        assertEq(token.balanceOf(bridge), 0);
+        assertEq(token.balanceOf(recipient), amount);
     }
 
     function test_receive_withdrawDeposit_revert_bridgeNotSet() public withWithdrawTokenAdded {

@@ -27,8 +27,9 @@ SYN does not become an OFT.
 2. The source adapter burns mint-and-burn SYN, or escrows an underlying token in `SynapseBridge`.
 3. LayerZero delivers the versioned message to the authenticated destination adapter peer.
 4. The HyperEVM `SynapseBridge` mints or withdraws SYN to `SynapseHyperCoreComposer`.
-5. The Composer checks its immutable adapter and token bindings, both required HyperCore accounts, exact decimal
-   representation, `uint64` bounds, and current asset-bridge capacity.
+5. The Composer accepts the call only from its immutable adapter, then checks both required HyperCore accounts,
+   exact decimal representation, `uint64` bounds, and current asset-bridge capacity. The adapter and token bindings
+   are fixed at construction and verified once by `setHyperCoreComposer`.
 6. The Composer transfers HyperEVM SYN to the token system address, then submits the versioned spot-send action to
    [CoreWriter](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/hyperevm/interacting-with-hypercore).
 
@@ -72,9 +73,12 @@ Do not deploy or link the HIP-1 token until each gate is resolved:
    nonce required by `finalizeEvmContract`.
 3. **Full bridge capacity:** fund the HyperCore asset bridge with the complete intended circulatable supply during
    genesis. Do not partially top it up later.
-4. **Composer activation:** activate the deployed Composer account on HyperCore before enabling any source route.
-5. **Peer isolation:** V2 peers used for HyperCore delivery must point only to the reviewed V2 deployments.
-6. **Independent review:** audit the token authority, source custody action, message codec, destination mint,
+4. **Core index verification:** independently confirm that the immutable Composer `coreIndex` matches the HIP-1
+   index linked to its immutable `token` before deployment. The derived `assetBridge` is also immutable. A wrong
+   index cannot be repaired in place and requires a new Composer and V2 adapter deployment.
+5. **Composer activation:** activate the deployed Composer account on HyperCore before enabling any source route.
+6. **Peer isolation:** V2 peers used for HyperCore delivery must point only to the reviewed V2 deployments.
+7. **Independent review:** audit the token authority, source custody action, message codec, destination mint,
    precompile reads, system-address transfer, and CoreWriter encoding as one supply path.
 
 The HyperCore token index, HyperEVM SYN address, SynapseBridge address, Composer address, and all LayerZero security

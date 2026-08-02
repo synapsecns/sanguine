@@ -398,6 +398,16 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
         adapter.setHyperCoreComposer(address(hyperCoreToken), address(composer));
     }
 
+    function test_setHyperCoreComposer_revert_invalidTokenBinding() public {
+        addToken(address(hyperCoreToken), ISynapseBridgeAdapter.TokenType.MintBurn, firstRemoteToken);
+        TestToken differentToken = new TestToken();
+        SynapseHyperCoreComposer composer =
+            new SynapseHyperCoreComposer(address(adapter), address(differentToken), 1337);
+        vm.expectRevert(abi.encodeWithSelector(SBAV2__HyperCoreComposerInvalid.selector, address(composer)));
+        vm.prank(owner);
+        adapter.setHyperCoreComposer(address(hyperCoreToken), address(composer));
+    }
+
     function test_setHyperCoreComposer_revert_notContract() public {
         addToken(address(hyperCoreToken), ISynapseBridgeAdapter.TokenType.MintBurn, firstRemoteToken);
         address composer = makeAddr("Composer");

@@ -215,10 +215,16 @@ contract SynapseBridgeAdapterV2 is
         address composer = getHyperCoreComposer[token];
         if (composer == address(0)) revert SBAV2__HyperCoreComposerNotSet(token);
 
-        _mintOrWithdraw(srcEid, srcToken, composer, amount, guid);
+        _mintOrWithdraw(token, composer, amount, guid);
         ISynapseHyperCoreComposer(composer).bridgeToHyperCore(to, amount);
         emit TokenReceivedOnHyperCore(srcEid, to, token, amount, guid);
         emit TokenReceived(srcEid, to, token, amount, guid);
+    }
+
+    function _mintOrWithdraw(address token, address recipient, uint256 amount, bytes32 guid) internal {
+        address cachedBridge = bridge;
+        if (cachedBridge == address(0)) revert SBA__BridgeNotSet();
+        _mintOrWithdraw(cachedBridge, token, recipient, amount, guid);
     }
 
     function _mintOrWithdraw(uint32 srcEid, address srcToken, address recipient, uint256 amount, bytes32 guid)
@@ -228,6 +234,12 @@ contract SynapseBridgeAdapterV2 is
         address cachedBridge = bridge;
         if (cachedBridge == address(0)) revert SBA__BridgeNotSet();
         token = _checkAndGetLocalAddress(srcEid, srcToken);
+        _mintOrWithdraw(cachedBridge, token, recipient, amount, guid);
+    }
+
+    function _mintOrWithdraw(address cachedBridge, address token, address recipient, uint256 amount, bytes32 guid)
+        internal
+    {
         TokenType tokenType = _checkAndGetTokenType(token);
         if (tokenType == TokenType.MintBurn) {
             ISynapseBridge(cachedBridge).mint(recipient, token, amount, 0, guid);

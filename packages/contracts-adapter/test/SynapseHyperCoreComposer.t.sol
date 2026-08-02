@@ -154,6 +154,19 @@ contract SynapseHyperCoreComposerTest is Test {
         assertEq(token.balanceOf(composer.assetBridge()), EVM_AMOUNT);
     }
 
+    function test_bridgeToHyperCore_sameBlockAggregateCapacity() public {
+        mockCoreUser(address(composer), true);
+        mockCoreUser(recipient, true);
+        mockSpotBalance(CORE_AMOUNT * 2);
+
+        composer.bridgeToHyperCore(recipient, EVM_AMOUNT);
+        token.mintTestTokens(address(composer), EVM_AMOUNT);
+        composer.bridgeToHyperCore(recipient, EVM_AMOUNT);
+
+        assertEq(token.balanceOf(address(composer)), 0);
+        assertEq(token.balanceOf(composer.assetBridge()), EVM_AMOUNT * 2);
+    }
+
     function test_bridgeToHyperCore_reservationResetsNextBlock() public {
         mockCoreUser(address(composer), true);
         mockCoreUser(recipient, true);
