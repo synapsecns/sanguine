@@ -4,8 +4,8 @@ pragma solidity 0.8.24;
 import {IBurnableToken} from "./interfaces/IBurnableToken.sol";
 import {ISynapseBridge} from "./interfaces/ISynapseBridge.sol";
 import {ISynapseBridgeAdapter} from "./interfaces/ISynapseBridgeAdapter.sol";
-import {ISynapseBridgeAdapterV2} from "./interfaces/ISynapseBridgeAdapterV2.sol";
 import {ISynapseBridgeAdapterErrors} from "./interfaces/ISynapseBridgeAdapterErrors.sol";
+import {ISynapseBridgeAdapterV2} from "./interfaces/ISynapseBridgeAdapterV2.sol";
 import {ISynapseBridgeAdapterV2Errors} from "./interfaces/ISynapseBridgeAdapterV2Errors.sol";
 import {ISynapseHyperCoreComposer} from "./interfaces/ISynapseHyperCoreComposer.sol";
 import {BridgeMessage} from "./libs/BridgeMessage.sol";
@@ -137,7 +137,13 @@ contract SynapseBridgeAdapterV2 is
     }
 
     /// @inheritdoc ISynapseBridgeAdapterV2
-    function bridgeERC20ToHyperCore(uint32 dstEid, address to, address token, uint256 amount, uint64 gasLimit)
+    function bridgeERC20ToHyperCore(
+        uint32 dstEid,
+        address to,
+        address token,
+        uint256 amount,
+        uint64 gasLimit
+    )
         external
         payable
     {
@@ -177,7 +183,11 @@ contract SynapseBridgeAdapterV2 is
     }
 
     /// @inheritdoc ISynapseBridgeAdapterV2
-    function getNativeFeeToHyperCore(uint32 dstEid, address token, uint64 gasLimit)
+    function getNativeFeeToHyperCore(
+        uint32 dstEid,
+        address token,
+        uint64 gasLimit
+    )
         external
         view
         returns (uint256 nativeFee)
@@ -197,7 +207,13 @@ contract SynapseBridgeAdapterV2 is
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
-    function _lzReceive(Origin calldata origin, bytes32 guid, bytes calldata message, address, bytes calldata)
+    function _lzReceive(
+        Origin calldata origin,
+        bytes32 guid,
+        bytes calldata message,
+        address,
+        bytes calldata
+    )
         internal
         override
     {
@@ -237,7 +253,13 @@ contract SynapseBridgeAdapterV2 is
         _mintOrWithdraw(cachedBridge, token, recipient, amount, guid);
     }
 
-    function _mintOrWithdraw(uint32 srcEid, address srcToken, address recipient, uint256 amount, bytes32 guid)
+    function _mintOrWithdraw(
+        uint32 srcEid,
+        address srcToken,
+        address recipient,
+        uint256 amount,
+        bytes32 guid
+    )
         internal
         returns (address token)
     {
@@ -247,7 +269,13 @@ contract SynapseBridgeAdapterV2 is
         _mintOrWithdraw(cachedBridge, token, recipient, amount, guid);
     }
 
-    function _mintOrWithdraw(address cachedBridge, address token, address recipient, uint256 amount, bytes32 guid)
+    function _mintOrWithdraw(
+        address cachedBridge,
+        address token,
+        address recipient,
+        uint256 amount,
+        bytes32 guid
+    )
         internal
     {
         TokenType tokenType = _checkAndGetTokenType(token);
@@ -265,7 +293,10 @@ contract SynapseBridgeAdapterV2 is
         uint256 amount,
         uint64 gasLimit,
         bytes memory message
-    ) internal returns (bytes32 guid) {
+    )
+        internal
+        returns (bytes32 guid)
+    {
         if (to == address(0)) revert SBA__ZeroAddress();
         if (amount == 0) revert SBA__ZeroAmount();
         if (gasLimit < MIN_GAS_LIMIT) revert SBA__GasLimitBelowMinimum();

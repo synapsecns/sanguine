@@ -21,7 +21,7 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     address internal user = makeAddr("User");
     address internal recipient = makeAddr("Recipient");
     uint256 internal initialBalance = 1 ether;
-    uint256 internal amount = 0.123456 ether;
+    uint256 internal amount = 0.123_456 ether;
     uint64 internal gasLimit = 234_567;
     uint256 internal nativeFee = 123_456_789 wei;
     uint64 internal minGasLimit;

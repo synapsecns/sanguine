@@ -12,12 +12,22 @@ interface ISynapseBridgeAdapterV2 is ISynapseBridgeAdapter {
     function setHyperCoreComposer(address token, address composer) external;
 
     /// @notice Bridges an ERC20 token to a recipient on HyperCore through the destination composer.
-    function bridgeERC20ToHyperCore(uint32 dstEid, address to, address token, uint256 amount, uint64 gasLimit)
+    function bridgeERC20ToHyperCore(
+        uint32 dstEid,
+        address to,
+        address token,
+        uint256 amount,
+        uint64 gasLimit
+    )
         external
         payable;
 
     /// @notice Returns the native fee for a HyperCore delivery message.
-    function getNativeFeeToHyperCore(uint32 dstEid, address token, uint64 gasLimit)
+    function getNativeFeeToHyperCore(
+        uint32 dstEid,
+        address token,
+        uint64 gasLimit
+    )
         external
         view
         returns (uint256 nativeFee);

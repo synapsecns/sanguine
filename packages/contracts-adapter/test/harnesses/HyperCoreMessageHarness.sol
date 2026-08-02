@@ -7,7 +7,11 @@ import {HyperCoreMessage} from "../../src/libs/HyperCoreMessage.sol";
 contract HyperCoreMessageHarness {
     function testHyperCoreMessageHarness() external {}
 
-    function encodeHyperCoreMessage(address recipient, address srcToken, uint256 amount)
+    function encodeHyperCoreMessage(
+        address recipient,
+        address srcToken,
+        uint256 amount
+    )
         public
         pure
         returns (bytes memory)

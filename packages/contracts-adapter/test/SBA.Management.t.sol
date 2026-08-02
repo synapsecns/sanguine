@@ -42,7 +42,10 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
         address token_,
         ISynapseBridgeAdapter.TokenType tokenType_,
         ISynapseBridgeAdapter.RemoteToken[] memory remoteTokens_
-    ) internal view {
+    )
+        internal
+        view
+    {
         // Check token type by address
         ISynapseBridgeAdapter.TokenType adapterTokenType = adapter.getTokenType(token_);
         assertEq(uint8(adapterTokenType), uint8(tokenType_));
@@ -73,7 +76,9 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
         address token_,
         ISynapseBridgeAdapter.TokenType tokenType_,
         ISynapseBridgeAdapter.RemoteToken[] memory remoteTokens_
-    ) internal {
+    )
+        internal
+    {
         vm.prank(owner);
         adapter.addToken(token_, tokenType_, remoteTokens_);
     }

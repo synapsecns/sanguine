@@ -71,7 +71,9 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors,
         address token,
         ISynapseBridgeAdapter.TokenType tokenType,
         ISynapseBridgeAdapter.RemoteToken[] memory remoteTokens
-    ) internal {
+    )
+        internal
+    {
         vm.expectEmit(address(adapter));
         emit TokenAdded(token, tokenType, remoteTokens);
     }
@@ -81,7 +83,13 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors,
         emit TokenSent(dstEid, to, token, amount, guid);
     }
 
-    function expectEventTokenSentToHyperCore(uint32 dstEid, address to, address token, uint256 amount, bytes32 guid)
+    function expectEventTokenSentToHyperCore(
+        uint32 dstEid,
+        address to,
+        address token,
+        uint256 amount,
+        bytes32 guid
+    )
         internal
     {
         vm.expectEmit(address(adapter));
@@ -93,7 +101,13 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors,
         emit TokenReceived(srcEid, to, token, amount, guid);
     }
 
-    function expectEventTokenReceivedOnHyperCore(uint32 srcEid, address to, address token, uint256 amount, bytes32 guid)
+    function expectEventTokenReceivedOnHyperCore(
+        uint32 srcEid,
+        address to,
+        address token,
+        uint256 amount,
+        bytes32 guid
+    )
         internal
     {
         vm.expectEmit(address(adapter));
@@ -173,7 +187,10 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors,
         arr[0] = a;
     }
 
-    function toArray(ISynapseBridgeAdapter.RemoteToken memory a, ISynapseBridgeAdapter.RemoteToken memory b)
+    function toArray(
+        ISynapseBridgeAdapter.RemoteToken memory a,
+        ISynapseBridgeAdapter.RemoteToken memory b
+    )
         internal
         pure
         returns (ISynapseBridgeAdapter.RemoteToken[] memory arr)

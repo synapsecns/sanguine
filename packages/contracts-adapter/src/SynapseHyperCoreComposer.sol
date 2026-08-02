@@ -4,8 +4,8 @@ pragma solidity 0.8.24;
 import {ICoreWriter} from "./interfaces/ICoreWriter.sol";
 import {ISynapseHyperCoreComposer} from "./interfaces/ISynapseHyperCoreComposer.sol";
 
-import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @notice Moves SYN received by SynapseBridgeAdapter from HyperEVM to its linked HIP-1 asset.
 /// @dev This contract is intentionally fixed to SYN's 18 EVM decimals and 8 HyperCore wei decimals.
@@ -22,7 +22,9 @@ contract SynapseHyperCoreComposer is ISynapseHyperCoreComposer {
     address public constant CORE_USER_EXISTS_PRECOMPILE = 0x0000000000000000000000000000000000000810;
     address public constant BASE_ASSET_BRIDGE = 0x2000000000000000000000000000000000000000;
 
-    bytes4 public constant SPOT_SEND_HEADER = 0x0100_0006;
+    // The exact 4-byte Hyperliquid CoreWriter version and action header is intentionally kept as one literal.
+    // slither-disable-next-line too-many-digits
+    bytes4 public constant SPOT_SEND_HEADER = 0x01000006;
 
     address public immutable override adapter;
     address public immutable override token;

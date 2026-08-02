@@ -8,7 +8,11 @@ library HyperCoreMessage {
     error HyperCoreMessage__InvalidPayload();
     error HyperCoreMessage__UnsupportedVersion(uint8 version);
 
-    function encodeHyperCoreMessage(address recipient, address srcToken, uint256 amount)
+    function encodeHyperCoreMessage(
+        address recipient,
+        address srcToken,
+        uint256 amount
+    )
         internal
         pure
         returns (bytes memory)
