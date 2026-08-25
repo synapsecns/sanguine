@@ -175,7 +175,7 @@ Once the message has been authenticated, the authorization of the sender/signer 
 
 ## Running the API:
 
-Users and relayers **are not** expected to run their own version of the Quoter API. Rather, they are expected to use a Quoter API that is hosted by the the interface they are quoting for. For example, the Quoter API used by the Synapse bridge interface is hosted at the URL above.
+Users and relayers **are not** expected to run their own version of the Quoter API. Rather, they are expected to use a Quoter API that is hosted by the interface they are quoting for. For example, the Quoter API used by the Synapse bridge interface is hosted at the URL above.
 
 
 ### Configuration
