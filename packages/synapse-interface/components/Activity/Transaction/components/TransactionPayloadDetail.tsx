@@ -11,6 +11,7 @@ import { Chain, Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { formatAmount } from '@/utils/formatAmount'
+import { isActiveChainId } from '@/constants/chains'
 
 function isObject(object): boolean {
   return typeof object === 'object' && object !== null
@@ -34,19 +35,20 @@ export const TransactionPayloadDetail = ({
   disabled: boolean
 }) => {
   const dispatch = useAppDispatch()
+  const isChainSelectable = Boolean(chain && isActiveChainId(chain.id))
 
   const handleSelectChainCallback = useCallback(() => {
-    if (!disabled) {
+    if (!disabled && isChainSelectable) {
       if (isOrigin) {
         dispatch(setFromChainId(chain?.id as number))
       } else {
         dispatch(setToChainId(chain?.id as number))
       }
     }
-  }, [isOrigin, chain, disabled])
+  }, [isOrigin, chain, disabled, isChainSelectable])
 
   const handleSelectTokenCallback = useCallback(() => {
-    if (!disabled) {
+    if (!disabled && isChainSelectable) {
       if (isOrigin && chain && token) {
         dispatch(setFromChainId(chain?.id as number))
         dispatch(setFromToken(token as Token))
@@ -55,7 +57,7 @@ export const TransactionPayloadDetail = ({
         dispatch(setToToken(token as Token))
       }
     }
-  }, [isOrigin, token, chain, disabled])
+  }, [isOrigin, token, chain, disabled, isChainSelectable])
 
   const tokenDecimals = useMemo(() => {
     if (token && chain) {
@@ -65,14 +67,18 @@ export const TransactionPayloadDetail = ({
     return null
   }, [tokenAmount, token, chain])
 
-  const buttonStyle =
-    'flex gap-1.5 pl-1.5 pr-2.5 py-0.5 -my-0.5 items-center cursor-pointer rounded border border-transparent hover:border-surface hover:bg-tint active:opacity-70 w-fit'
+  const buttonStyle = `flex gap-1.5 pl-1.5 pr-2.5 py-0.5 -my-0.5 items-center rounded border border-transparent w-fit ${
+    disabled || !isChainSelectable
+      ? 'cursor-default'
+      : 'cursor-pointer hover:border-surface hover:bg-tint active:opacity-70'
+  }`
 
   return (
     <div data-test-id="transaction-payload-detail" className={className}>
       {chain && showChain && (
         <div
           data-test-id="transaction-payload-network"
+          aria-disabled={disabled || !isChainSelectable}
           onClick={handleSelectChainCallback}
           className={buttonStyle}
         >
@@ -88,6 +94,7 @@ export const TransactionPayloadDetail = ({
       {token && tokenAmount && (
         <div
           data-test-id="transaction-payload-token"
+          aria-disabled={disabled || !isChainSelectable}
           onClick={handleSelectTokenCallback}
           className={buttonStyle}
         >

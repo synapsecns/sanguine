@@ -22,7 +22,6 @@ import {
 } from '@wagmi/core/chains'
 
 import {
-  dfk,
   dogechain,
   worldchain,
   unichain,
@@ -44,7 +43,6 @@ export const supportedChains = [
   linea,
   blast,
   metis,
-  dfk,
   bsc,
   polygon,
   aurora,

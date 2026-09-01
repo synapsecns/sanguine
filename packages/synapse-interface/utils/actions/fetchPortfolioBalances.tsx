@@ -6,6 +6,7 @@ import {
   NON_BRIDGEABLE_GAS_TOKENS,
 } from '@/constants/tokens'
 import { FetchState } from '@/slices/portfolio/actions'
+import { isActiveChainId } from '@/constants/chains'
 
 export interface TokenAndBalance {
   token: Token
@@ -47,7 +48,7 @@ export const fetchPortfolioBalances = async (
   const poolTokenBalances = {}
 
   const availableChains: string[] = Object.keys(BRIDGABLE_TOKENS).filter(
-    (id) => id !== '2000'
+    (id) => id !== '2000' && isActiveChainId(id)
   )
   const isSingleNetworkCall: boolean = typeof chainId === 'number'
 

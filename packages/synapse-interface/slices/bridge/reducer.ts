@@ -12,6 +12,7 @@ import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
 import { getToTokens } from '@/utils/routeMaker/getToTokens'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 import { findValidToken } from '@/utils/findValidToken'
+import { isActiveChainId } from '@/constants/chains'
 
 export interface BridgeState {
   fromChainId: number
@@ -67,6 +68,13 @@ export const bridgeSlice = createSlice({
   reducers: {
     setFromChainId: (state, action: PayloadAction<number>) => {
       const incomingFromChainId = action.payload
+
+      if (
+        incomingFromChainId !== null &&
+        !isActiveChainId(incomingFromChainId)
+      ) {
+        return
+      }
 
       const validFromTokens = getFromTokens({
         fromChainId: incomingFromChainId ?? null,
@@ -171,6 +179,10 @@ export const bridgeSlice = createSlice({
         toTokenRouteSymbol: null,
       })
 
+      if (!incomingFromToken || !validFromChainIds?.length) {
+        return
+      }
+
       const validToChainIds = getToChainIds({
         fromChainId: state.fromChainId ?? null,
         fromTokenRouteSymbol: incomingFromToken?.routeSymbol ?? null,
@@ -245,6 +257,10 @@ export const bridgeSlice = createSlice({
     },
     setToChainId: (state, action: PayloadAction<number>) => {
       const incomingToChainId = action.payload
+
+      if (incomingToChainId !== null && !isActiveChainId(incomingToChainId)) {
+        return
+      }
 
       const validFromChainIds = getFromChainIds({
         fromChainId: state.fromChainId ?? null,
@@ -365,6 +381,10 @@ export const bridgeSlice = createSlice({
         toChainId: state.toChainId ?? null,
         toTokenRouteSymbol: incomingToToken?.routeSymbol ?? null,
       })
+
+      if (!incomingToToken || !validToChainIds?.length) {
+        return
+      }
 
       let validFromChainId
       let validFromToken

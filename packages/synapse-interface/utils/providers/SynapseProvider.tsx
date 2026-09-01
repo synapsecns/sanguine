@@ -9,13 +9,11 @@ import {
 
 export const SynapseContext = createContext(null)
 
-const DFK_CHAIN_ID = 53935
-
 export const SynapseProvider = memo(
   ({ children, chains }: { children: React.ReactNode; chains: any[] }) => {
     const synapseProviders = chains.map((chain) => {
       const providerUrls = [
-        ...(chain.id === DFK_CHAIN_ID ? [] : [`/api/rpc/${chain.id}`]),
+        `/api/rpc/${chain.id}`,
         chain?.configRpc,
         chain?.fallbackRpc,
       ]
