@@ -15,7 +15,7 @@ require (
 	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3
 	github.com/Soft/iter v0.1.0
 	github.com/brianvoe/gofakeit/v6 v6.27.0
-	github.com/buger/jsonparser v1.1.1
+	github.com/buger/jsonparser v1.1.2
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/ethereum/go-ethereum v1.13.8
 	github.com/flowchartsman/swaggerui v0.0.0-20221017034628-909ed4f3701b
