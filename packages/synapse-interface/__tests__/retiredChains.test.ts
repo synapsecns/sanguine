@@ -39,7 +39,11 @@ const {
   ORDERED_CHAINS_BY_ID,
 } = require('../constants/chains')
 const { supportedChains } = require('../constants/chains/supportedChains')
-const { EXISTING_BRIDGE_ROUTES } = require('../constants/existingBridgeRoutes')
+const {
+  EXISTING_BRIDGE_ROUTES,
+}: {
+  EXISTING_BRIDGE_ROUTES: Record<string, string[]>
+} = require('../constants/existingBridgeRoutes')
 const { tokenAddressToToken } = require('../constants/tokens')
 const { WJEWEL } = require('../constants/tokens/bridgeable')
 const {
