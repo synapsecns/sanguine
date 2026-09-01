@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { type Token, type ActionTypes } from '@/utils/types'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { CHAINS_BY_ID } from '@/constants/chains'
+import { CHAINS_BY_ID, isActiveChainId } from '@/constants/chains'
 import { findChainIdsWithPausedToken } from '@/constants/tokens'
 import { getActiveStyleForButton, getHoverStyleForButton } from '@/styles/hover'
 import { joinClassNames } from '@/utils/joinClassNames'
@@ -147,7 +147,10 @@ const TokenBalance = ({ parsedBalance }: { parsedBalance?: string }) => {
 
 const AvailableChains = ({ token }: { token: Token }) => {
   const pausedChainIds = findChainIdsWithPausedToken(token.routeSymbol)
-  const chainIds = _.difference(Object.keys(token.addresses), pausedChainIds)
+  const chainIds = _.difference(
+    Object.keys(token.addresses).filter(isActiveChainId),
+    pausedChainIds
+  )
   const hasOneChain = chainIds.length > 0
   const hasMultipleChains = chainIds.length > 1
   const numOverTwoChains = chainIds.length - 2 > 0 ? chainIds.length - 2 : 0
