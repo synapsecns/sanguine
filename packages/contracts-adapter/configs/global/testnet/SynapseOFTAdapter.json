@@ -11,5 +11,21 @@
         "hyperevm_testnet": "0x8921aDABBE9D4743DD8dA936aa09a35bBA3C7838"
       }
     }
+  },
+  "wiring": {
+    "chains": {
+      "ethereum_sepolia": {
+        "eid": 40161,
+        "sendUln302": "0xcc1ae8cf5d3904cef3360a9532b477529b177cce",
+        "receiveUln302": "0xdaf00f5ee2158dd58e0d3857851c432e34a3a851"
+      },
+      "hyperevm_testnet": {
+        "eid": 40362,
+        "sendUln302": "0x43e505ba192aac7babdc1a796c87844171011684",
+        "receiveUln302": "0x012f6eae2a0bf5916f48b5f37c62bcfb7c1ffda1"
+      }
+    },
+    "blockConfirmations": {},
+    "requiredDVNs": {}
   }
 }

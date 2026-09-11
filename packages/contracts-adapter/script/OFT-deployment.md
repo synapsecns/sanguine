@@ -58,3 +58,25 @@ npx fsr-str script/DeploySynapseOFTAdapter.s.sol ethereum_sepolia <walletName> S
 ```
 
 Use `hyperevm_testnet` for the other testnet. Append `--broadcast` to submit transactions after simulation.
+
+## Wiring
+
+After deploying the adapters on each chain and saving their artifacts, run:
+
+```bash
+npx fsr-str script/WireSynapseOFTAdapter.s.sol <chain> <walletName> SYN
+```
+
+`DEPLOY_ENVIRONMENT` selects the same global config used for deployment. The script wires only chains in `tokens.SYN.addresses`, resolving peers from their saved `SynapseOFTAdapter.SYN` artifacts. Peer changes are skipped when a remote deployment is missing; unsupported LayerZero routes are skipped entirely. Append `--broadcast` to submit transactions after simulation.
+
+The global config's `wiring` object contains:
+
+- `chains`: LayerZero endpoint IDs (`eid`) and `sendUln302` / `receiveUln302` library addresses, keyed by chain.
+- `blockConfirmations`: source-chain confirmation counts, keyed by chain. A send configuration uses the local count; a receive configuration uses the remote chain's count.
+- `requiredDVNs`: arrays of required DVN addresses on each chain. The script sorts these addresses before configuring ULN.
+
+The checked-in `blockConfirmations` and `requiredDVNs` maps are intentionally empty in both environments. Fill in the chosen policy before wiring: confirmation counts for every selected chain and required DVNs for the active chain. OFT wiring explicitly disables optional DVNs instead of inheriting the library defaults. A chain with no configured required DVNs or confirmation count is rejected. Library addresses and endpoint IDs are taken from LayerZero's [deployment metadata](https://metadata.layerzero-api.com/v1/metadata/deployments).
+
+Matching configuration is skipped on reruns. When the wallet is not the app owner, peer changes are printed as calldata; when it is not the endpoint delegate, library and security changes are printed as calldata. Submit that calldata through the corresponding owner or delegate account.
+
+The wiring script configures peers, libraries, and ULN security. OFT send callers still supply their LayerZero execution options.

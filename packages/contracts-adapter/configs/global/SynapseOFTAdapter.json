@@ -3,5 +3,21 @@
     "ethereum": "0x1a44076050125825900e736c501f859c50fe728c",
     "hyperevm": "0x3a73033c0b1407574c76bdbac67f126f6b4a9aa9"
   },
-  "tokens": {}
+  "tokens": {},
+  "wiring": {
+    "chains": {
+      "ethereum": {
+        "eid": 30101,
+        "sendUln302": "0xbb2ea70c9e858123480642cf96acbcce1372dce1",
+        "receiveUln302": "0xc02ab410f0734efa3f14628780e6e695156024c2"
+      },
+      "hyperevm": {
+        "eid": 30367,
+        "sendUln302": "0xfd76d9cb0bac839725ab79127e7411fe71b1e3ca",
+        "receiveUln302": "0x7cacbe439ead55fa1c22790330b12835c6884a91"
+      }
+    },
+    "blockConfirmations": {},
+    "requiredDVNs": {}
+  }
 }
