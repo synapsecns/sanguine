@@ -44,7 +44,9 @@ contract SynapseOFTAdapterTest is Test {
     function setUp() public {
         token = new MintableTestToken();
         endpoint = new EndpointMock();
-        SynapseOFTAdapterFactory factory = new SynapseOFTAdapterFactory(delegate, address(endpoint));
+        SynapseOFTAdapterFactory factory = new SynapseOFTAdapterFactory(delegate);
+        vm.prank(delegate);
+        factory.initialize(address(endpoint));
         vm.prank(delegate);
         adapter = SynapseOFTAdapter(factory.deploy(address(token), bytes32(0)));
 

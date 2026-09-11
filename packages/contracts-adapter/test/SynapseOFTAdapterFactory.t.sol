@@ -22,26 +22,79 @@ contract SynapseOFTAdapterFactoryTest is Test {
     address internal user = makeAddr("User");
 
     event AdapterDeployed(address indexed token, address indexed adapter, bytes32 salt);
+    event EndpointInitialized(address indexed endpoint);
 
     function setUp() public {
         endpoint = new EndpointMock();
         token = new TestToken();
         otherToken = new TestToken();
-        factory = new SynapseOFTAdapterFactory(owner, address(endpoint));
+        factory = new SynapseOFTAdapterFactory(owner);
+        vm.prank(owner);
+        factory.initialize(address(endpoint));
     }
 
-    function testFactoryCreate2AddressIncludesConstructorArguments() public {
+    function testFactoryCreate2AddressIncludesOnlyOwnerConstructorArgument() public {
         bytes32 salt = keccak256("Factory salt");
-        bytes memory initCode =
-            abi.encodePacked(type(SynapseOFTAdapterFactory).creationCode, abi.encode(owner, address(endpoint)));
+        bytes memory initCode = abi.encodePacked(type(SynapseOFTAdapterFactory).creationCode, abi.encode(owner));
         bytes32 digest = keccak256(abi.encodePacked(bytes1(0xff), address(this), salt, keccak256(initCode)));
         address predictedFactory = address(uint160(uint256(digest)));
 
-        SynapseOFTAdapterFactory deployedFactory = new SynapseOFTAdapterFactory{salt: salt}(owner, address(endpoint));
+        SynapseOFTAdapterFactory deployedFactory = new SynapseOFTAdapterFactory{salt: salt}(owner);
 
         assertEq(address(deployedFactory), predictedFactory);
         assertEq(deployedFactory.owner(), owner);
+        assertEq(deployedFactory.endpoint(), address(0));
+
+        vm.prank(owner);
+        deployedFactory.initialize(address(endpoint));
         assertEq(deployedFactory.endpoint(), address(endpoint));
+    }
+
+    function testInitializeSetsEndpointAndEmitsEvent() public {
+        SynapseOFTAdapterFactory uninitializedFactory = new SynapseOFTAdapterFactory(owner);
+
+        vm.expectEmit(true, false, false, true, address(uninitializedFactory));
+        emit EndpointInitialized(address(endpoint));
+        vm.prank(owner);
+        uninitializedFactory.initialize(address(endpoint));
+
+        assertEq(uninitializedFactory.endpoint(), address(endpoint));
+    }
+
+    function testInitializeRevertsForNonOwner() public {
+        SynapseOFTAdapterFactory uninitializedFactory = new SynapseOFTAdapterFactory(owner);
+
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, user));
+        vm.prank(user);
+        uninitializedFactory.initialize(address(endpoint));
+
+        assertEq(uninitializedFactory.endpoint(), address(0));
+    }
+
+    function testInitializeRevertsForZeroEndpoint() public {
+        SynapseOFTAdapterFactory uninitializedFactory = new SynapseOFTAdapterFactory(owner);
+
+        vm.expectRevert(SynapseOFTAdapterFactory.InvalidEndpoint.selector);
+        vm.prank(owner);
+        uninitializedFactory.initialize(address(0));
+
+        assertEq(uninitializedFactory.endpoint(), address(0));
+    }
+
+    function testInitializeRevertsWhenAlreadyInitialized() public {
+        EndpointMock replacementEndpoint = new EndpointMock();
+
+        vm.expectRevert(SynapseOFTAdapterFactory.AlreadyInitialized.selector);
+        vm.prank(owner);
+        factory.initialize(address(replacementEndpoint));
+    }
+
+    function testDeployRevertsBeforeInitialization() public {
+        SynapseOFTAdapterFactory uninitializedFactory = new SynapseOFTAdapterFactory(owner);
+
+        vm.expectRevert(SynapseOFTAdapterFactory.NotInitialized.selector);
+        vm.prank(owner);
+        uninitializedFactory.deploy(address(token), keccak256("Uninitialized salt"));
     }
 
     function testDeployUsesExactCreate2AddressAndConstructorParams() public {
@@ -121,23 +174,41 @@ contract SynapseOFTAdapterFactoryTest is Test {
         assertEq(SynapseOFTAdapter(adapter).token(), address(token));
     }
 
-    function testSameFactoryAndSaltDeploySameAddressWithDifferentTokensAcrossChains() public {
-        bytes32 salt = keccak256("Cross-chain salt");
+    function testSameFactoryAndAdapterAddressesAcrossChainsWithDifferentEndpointsAndTokens() public {
+        EndpointMock firstEndpoint = new EndpointMock();
+        EndpointMock secondEndpoint = new EndpointMock();
+        TestToken firstToken = new TestToken();
+        TestToken secondToken = new TestToken();
+        bytes32 factorySalt = keccak256("Cross-chain factory salt");
+        bytes32 adapterSalt = keccak256("Cross-chain adapter salt");
         uint256 snapshot = vm.snapshotState();
 
-        vm.prank(owner);
-        address firstAdapter = factory.deploy(address(token), salt);
-        assertEq(SynapseOFTAdapter(firstAdapter).token(), address(token));
+        SynapseOFTAdapterFactory firstFactory = new SynapseOFTAdapterFactory{salt: factorySalt}(owner);
+        vm.startPrank(owner);
+        firstFactory.initialize(address(firstEndpoint));
+        address firstAdapter = firstFactory.deploy(address(firstToken), adapterSalt);
+        vm.stopPrank();
+
+        assertEq(address(SynapseOFTAdapter(firstAdapter).endpoint()), address(firstEndpoint));
+        assertEq(SynapseOFTAdapter(firstAdapter).token(), address(firstToken));
 
         assertTrue(vm.revertToState(snapshot));
 
-        vm.prank(owner);
-        address secondAdapter = factory.deploy(address(otherToken), salt);
+        SynapseOFTAdapterFactory secondFactory = new SynapseOFTAdapterFactory{salt: factorySalt}(owner);
+        vm.startPrank(owner);
+        secondFactory.initialize(address(secondEndpoint));
+        address secondAdapter = secondFactory.deploy(address(secondToken), adapterSalt);
+        vm.stopPrank();
+
+        assertNotEq(address(firstEndpoint), address(secondEndpoint));
+        assertNotEq(address(firstToken), address(secondToken));
+        assertEq(address(secondFactory), address(firstFactory));
         assertEq(secondAdapter, firstAdapter);
-        assertEq(SynapseOFTAdapter(secondAdapter).token(), address(otherToken));
+        assertEq(address(SynapseOFTAdapter(secondAdapter).endpoint()), address(secondEndpoint));
+        assertEq(SynapseOFTAdapter(secondAdapter).token(), address(secondToken));
     }
 
-    function testConstructorSetsOwnerAndEndpoint() public view {
+    function testConstructorSetsOwnerAndInitializeSetsEndpoint() public view {
         assertEq(factory.owner(), owner);
         assertEq(factory.endpoint(), address(endpoint));
     }
