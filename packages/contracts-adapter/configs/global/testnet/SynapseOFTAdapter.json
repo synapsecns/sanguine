@@ -1,0 +1,15 @@
+{
+  "endpoints": {
+    "ethereum_sepolia": "0x6edce65403992e310a62460808c4b910d972f10f",
+    "hyperevm_testnet": "0xf9e1815f151024bde4b7c10bac10e8ba9f6b53e1"
+  },
+  "tokens": {
+    "SYN": {
+      "salt": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "addresses": {
+        "ethereum_sepolia": "0x259A84D683033D54c81d69bB4D5a7880f4f03C2E",
+        "hyperevm_testnet": "0x8921aDABBE9D4743DD8dA936aa09a35bBA3C7838"
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "endpoints": {
+    "ethereum": "0x1a44076050125825900e736c501f859c50fe728c",
+    "hyperevm": "0x3a73033c0b1407574c76bdbac67f126f6b4a9aa9"
+  },
+  "tokens": {}
+}
