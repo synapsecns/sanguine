@@ -30,8 +30,11 @@ canto = "${CANTO_RPC}"
 cronos = "${CRONOS_RPC}"
 dfk = "${DFK_RPC}"
 ethereum = "${ETHEREUM_RPC}"
+ethereum_sepolia = "${ETHEREUM_SEPOLIA_RPC}"
 fantom = "${FANTOM_RPC}"
 harmony = "${HARMONY_RPC}"
+hyperevm = "${HYPEREVM_RPC}"
+hyperevm_testnet = "${HYPEREVM_TESTNET_RPC}"
 kaia = "${KAIA_RPC}"
 metis = "${METIS_RPC}"
 moonbeam = "${MOONBEAM_RPC}"
@@ -51,8 +54,10 @@ bnb = { key = "${ETHERSCAN_KEY}", chain = 56 }
 # cronos = { key = "${ETHERSCAN_KEY}", chain = 25 }
 # dfk = { key = "${DFK_VERIFIER_KEY}", chain = 53935 }
 ethereum = { key = "${ETHERSCAN_KEY}", chain = 1 }
+ethereum_sepolia = { key = "${ETHERSCAN_KEY}", chain = 11155111 }
 # fantom = { key = "${FANTOM_VERIFIER_KEY}", chain = 250 }
 # harmony = { key = "${HARMONY_VERIFIER_KEY}", chain = 1666600000 }
+hyperevm = { key = "${ETHERSCAN_KEY}", chain = 999 }
 # kaia = { key = "${KAIA_VERIFIER_KEY}", chain = 8217 }
 # metis = { key = "${METIS_VERIFIER_KEY}", chain = 1088 }
 moonbeam = { key = "${ETHERSCAN_KEY}", chain = 1284 }
