@@ -2,6 +2,7 @@
 pragma solidity 0.8.24;
 
 import {SynapseOFTAdapter} from "../src/SynapseOFTAdapter.sol";
+import {SynapseOFTAdapterFactory} from "../src/SynapseOFTAdapterFactory.sol";
 
 import {EndpointMock} from "./mocks/EndpointMock.sol";
 import {TestToken} from "./mocks/TestToken.sol";
@@ -43,7 +44,9 @@ contract SynapseOFTAdapterTest is Test {
     function setUp() public {
         token = new MintableTestToken();
         endpoint = new EndpointMock();
-        adapter = new SynapseOFTAdapter(address(token), address(endpoint), delegate);
+        SynapseOFTAdapterFactory factory = new SynapseOFTAdapterFactory(delegate, address(endpoint));
+        vm.prank(delegate);
+        adapter = SynapseOFTAdapter(factory.deploy(address(token), bytes32(0)));
 
         vm.prank(delegate);
         adapter.setPeer(DST_EID, PEER);
