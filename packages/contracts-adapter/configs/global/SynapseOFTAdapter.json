@@ -1,9 +1,28 @@
 {
   "endpoints": {
     "ethereum": "0x1a44076050125825900e736c501f859c50fe728c",
-    "hyperevm": "0x3a73033c0b1407574c76bdbac67f126f6b4a9aa9"
+    "hyperevm": "0x3a73033c0b1407574c76bdbac67f126f6b4a9aa9",
+    "arbitrum": "0x1a44076050125825900e736c501f859c50fe728c",
+    "avalanche": "0x1a44076050125825900e736c501f859c50fe728c",
+    "base": "0x1a44076050125825900e736c501f859c50fe728c",
+    "bnb": "0x1a44076050125825900e736c501f859c50fe728c",
+    "optimism": "0x1a44076050125825900e736c501f859c50fe728c",
+    "polygon": "0x1a44076050125825900e736c501f859c50fe728c"
   },
-  "tokens": {},
+  "tokens": {
+    "SYN": {
+      "salt": "0x000000cb731c0fc35e0100000000000000000000000000000000000000000044",
+      "addresses": {
+        "ethereum": "0x0f2D719407FdBeFF09D87557AbB7232601FD9F29",
+        "hyperevm": "0x6Cd6C5fDE1621053eD4BC7C09ADc76612D8C663f"
+      },
+      "composer": {
+        "coreIndexId": 873,
+        "assetDecimalDiff": 10,
+        "recoveryAddress": "0xF741246D2e0ADD4EFa7e88BE0961cccf3562b502"
+      }
+    }
+  },
   "wiring": {
     "chains": {
       "ethereum": {
@@ -15,9 +34,81 @@
         "eid": 30367,
         "sendUln302": "0xfd76d9cb0bac839725ab79127e7411fe71b1e3ca",
         "receiveUln302": "0x7cacbe439ead55fa1c22790330b12835c6884a91"
+      },
+      "arbitrum": {
+        "eid": 30110,
+        "sendUln302": "0x975bcd720be66659e3eb3c0e4f1866a3020e493a",
+        "receiveUln302": "0x7b9e184e07a6ee1ac23eae0fe8d6be2f663f05e6"
+      },
+      "avalanche": {
+        "eid": 30106,
+        "sendUln302": "0x197d1333dea5fe0d6600e9b396c7f1b1cfcc558a",
+        "receiveUln302": "0xbf3521d309642fa9b1c91a08609505ba09752c61"
+      },
+      "base": {
+        "eid": 30184,
+        "sendUln302": "0xb5320b0b3a13cc860893e2bd79fcd7e13484dda2",
+        "receiveUln302": "0xc70ab6f32772f59fbfc23889caf4ba3376c84baf"
+      },
+      "bnb": {
+        "eid": 30102,
+        "sendUln302": "0x9f8c645f2d0b2159767bd6e0839de4be49e823de",
+        "receiveUln302": "0xb217266c3a98c8b2709ee26836c98cf12f6ccec1"
+      },
+      "optimism": {
+        "eid": 30111,
+        "sendUln302": "0x1322871e4ab09bc7f5717189434f97bbd9546e95",
+        "receiveUln302": "0x3c4962ff6258dcfcafd23a814237b7d6eb712063"
+      },
+      "polygon": {
+        "eid": 30109,
+        "sendUln302": "0x6c26c61a97006888ea9e4fa36584c7df57cd9da3",
+        "receiveUln302": "0x1322871e4ab09bc7f5717189434f97bbd9546e95"
       }
     },
-    "blockConfirmations": {},
-    "requiredDVNs": {}
+    "blockConfirmations": {
+      "ethereum": 64,
+      "hyperevm": 100,
+      "arbitrum": 100,
+      "avalanche": 100,
+      "base": 100,
+      "bnb": 100,
+      "optimism": 100,
+      "polygon": 200
+    },
+    "requiredDVNs": {
+      "ethereum": [
+        "0x589dedbd617e0cbcb916a9223f4d1300c294236b",
+        "0xa59ba433ac34d2927232918ef5b2eaafcf130ba5"
+      ],
+      "hyperevm": [
+        "0xc097ab8cd7b053326dfe9fb3e3a31a0cce3b526f",
+        "0x8e49ef1dfae17e547ca0e7526ffda81fbaca810a"
+      ],
+      "arbitrum": [
+        "0x2f55c492897526677c5b68fb199ea31e2c126416",
+        "0xa7b5189bca84cd304d8553977c7c614329750d99"
+      ],
+      "avalanche": [
+        "0x962f502a63f5fbeb44dc9ab932122648e8352959",
+        "0xa59ba433ac34d2927232918ef5b2eaafcf130ba5"
+      ],
+      "base": [
+        "0x9e059a54699a285714207b43b055483e78faac25",
+        "0xcd37ca043f8479064e10635020c65ffc005d36f6"
+      ],
+      "bnb": [
+        "0xfd6865c841c2d64565562fcc7e05e619a30615f0",
+        "0x31f748a368a893bdb5abb67ec95f232507601a73"
+      ],
+      "optimism": [
+        "0x6a02d83e8d433304bba74ef1c427913958187142",
+        "0xa7b5189bca84cd304d8553977c7c614329750d99"
+      ],
+      "polygon": [
+        "0x23de2fe932d9043291f870324b74f820e11dc81a",
+        "0x31f748a368a893bdb5abb67ec95f232507601a73"
+      ]
+    }
   }
 }

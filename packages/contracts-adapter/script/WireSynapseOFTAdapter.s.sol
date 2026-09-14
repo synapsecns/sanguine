@@ -21,7 +21,8 @@ contract WireSynapseOFTAdapter is LayerZeroWiring {
         string memory config = readGlobalDeployConfig("SynapseOFTAdapter", environment, true);
         string memory tokenPath = string.concat(".tokens.", tokenId, ".addresses");
         address token = config.readAddress(string.concat(tokenPath, ".", activeChain));
-        allChains = vm.parseJsonKeys(config, tokenPath);
+        // Configure routes before remote tokens and adapters are deployed; missing peers are skipped.
+        allChains = vm.parseJsonKeys(config, ".wiring.chains");
         chainsConfig = config;
         securityConfig = config;
         chainsConfigRoot = ".wiring.chains";

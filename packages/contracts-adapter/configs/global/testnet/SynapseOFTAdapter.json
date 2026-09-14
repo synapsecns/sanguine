@@ -9,6 +9,11 @@
       "addresses": {
         "ethereum_sepolia": "0x259A84D683033D54c81d69bB4D5a7880f4f03C2E",
         "hyperevm_testnet": "0x8921aDABBE9D4743DD8dA936aa09a35bBA3C7838"
+      },
+      "composer": {
+        "coreIndexId": 3071,
+        "assetDecimalDiff": 10,
+        "recoveryAddress": "0xb73AcB429Ba868984c0236bdf940D4FE1E643F27"
       }
     }
   },
@@ -25,7 +30,19 @@
         "receiveUln302": "0x012f6eae2a0bf5916f48b5f37c62bcfb7c1ffda1"
       }
     },
-    "blockConfirmations": {},
-    "requiredDVNs": {}
+    "blockConfirmations": {
+      "ethereum_sepolia": 5,
+      "hyperevm_testnet": 5
+    },
+    "requiredDVNs": {
+      "ethereum_sepolia": [
+        "0x6943872cfc48f6b18f8b81d57816733d4545eca3",
+        "0x8eebf8b423b73bfca51a1db4b7354aa0bfca9193"
+      ],
+      "hyperevm_testnet": [
+        "0x003bd8adc7ba8a7353b950541904b61011e38dae",
+        "0x91e698871030d0e1b6c9268c20bb57e2720618dd"
+      ]
+    }
   }
 }
