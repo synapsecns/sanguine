@@ -1,0 +1,946 @@
+{
+  "address": "0x944753BbC3FA5581b1fc5F3ee6EFFB06299ec1D3",
+  "constructorArgs": "0x00000000000000000000000050000064684a225e32216c4fc4f17b32060000050000000000000000000000000000000000000000000000000000000000000369000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000f741246d2e0add4efa7e88be0961cccf3562b502",
+  "receipt": {
+    "hash": "0xd813c7fb42091a60b3ed9f75714d657167335518029524d47475f58a4e193cfe",
+    "blockNumber": 45828237
+  },
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "oft",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "coreIndexId",
+          "type": "uint64",
+          "internalType": "uint64"
+        },
+        {
+          "name": "assetDecimalDiff",
+          "type": "int8",
+          "internalType": "int8"
+        },
+        {
+          "name": "recoveryAddress",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "receive",
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "ENDPOINT",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "ERC20",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "ERC20_ASSET_BRIDGE",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "ERC20_CORE_INDEX_ID",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "ERC20_DECIMAL_DIFF",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "int8",
+          "internalType": "int8"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "FULL_TRANSFER",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "MAX_DECIMAL_DIFF",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "int8",
+          "internalType": "int8"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "MIN_DECIMAL_DIFF",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "int8",
+          "internalType": "int8"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "MIN_GAS",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "MIN_GAS_WITH_VALUE",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "NATIVE_ASSET_BRIDGE",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "NATIVE_CORE_INDEX_ID",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "NATIVE_DECIMAL_DIFF",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "int8",
+          "internalType": "int8"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "OFT",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "RECOVERY_ADDRESS",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "SPOT_SEND_HEADER",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes4",
+          "internalType": "bytes4"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "USDC_CORE_INDEX",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "VALID_COMPOSE_MSG_LEN",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "coreUserExists",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct CoreUserExists",
+          "components": [
+            {
+              "name": "exists",
+              "type": "bool",
+              "internalType": "bool"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "decodeMessage",
+      "inputs": [
+        {
+          "name": "_composeMessage",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "minMsgValue",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "to",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "pure"
+    },
+    {
+      "type": "function",
+      "name": "failedMessages",
+      "inputs": [
+        {
+          "name": "guid",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "refundSendParam",
+          "type": "tuple",
+          "internalType": "struct SendParam",
+          "components": [
+            {
+              "name": "dstEid",
+              "type": "uint32",
+              "internalType": "uint32"
+            },
+            {
+              "name": "to",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "amountLD",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "minAmountLD",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "extraOptions",
+              "type": "bytes",
+              "internalType": "bytes"
+            },
+            {
+              "name": "composeMsg",
+              "type": "bytes",
+              "internalType": "bytes"
+            },
+            {
+              "name": "oftCmd",
+              "type": "bytes",
+              "internalType": "bytes"
+            }
+          ]
+        },
+        {
+          "name": "msgValue",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "handleTransfersToHyperCore",
+      "inputs": [
+        {
+          "name": "_to",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_amountLD",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "lzCompose",
+      "inputs": [
+        {
+          "name": "_oft",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_guid",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "_message",
+          "type": "bytes",
+          "internalType": "bytes"
+        },
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "quoteHyperCoreAmount",
+      "inputs": [
+        {
+          "name": "_coreIndexId",
+          "type": "uint64",
+          "internalType": "uint64"
+        },
+        {
+          "name": "_decimalDiff",
+          "type": "int8",
+          "internalType": "int8"
+        },
+        {
+          "name": "_bridgeAddress",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_amountLD",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct IHyperAssetAmount",
+          "components": [
+            {
+              "name": "evm",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "core",
+              "type": "uint64",
+              "internalType": "uint64"
+            },
+            {
+              "name": "coreBalanceAssetBridge",
+              "type": "uint64",
+              "internalType": "uint64"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "recoverEvmERC20",
+      "inputs": [
+        {
+          "name": "_evmAmount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "recoverEvmNative",
+      "inputs": [
+        {
+          "name": "_evmAmount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "refundToSrc",
+      "inputs": [
+        {
+          "name": "_guid",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "retrieveCoreERC20",
+      "inputs": [
+        {
+          "name": "_coreAmount",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "retrieveCoreHYPE",
+      "inputs": [
+        {
+          "name": "_coreAmount",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "spotBalance",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "token",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct SpotBalance",
+          "components": [
+            {
+              "name": "total",
+              "type": "uint64",
+              "internalType": "uint64"
+            },
+            {
+              "name": "hold",
+              "type": "uint64",
+              "internalType": "uint64"
+            },
+            {
+              "name": "entryNtl",
+              "type": "uint64",
+              "internalType": "uint64"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "event",
+      "name": "CompleteRefund",
+      "inputs": [],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "FailedMessageDecode",
+      "inputs": [
+        {
+          "name": "guid",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "sender",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "msgValue",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "composeMessage",
+          "type": "bytes",
+          "indexed": false,
+          "internalType": "bytes"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Recovered",
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RefundHyperEVM",
+      "inputs": [
+        {
+          "name": "receiver",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "amountERC20",
+          "type": "uint256",
+          "indexed": true,
+          "internalType": "uint256"
+        },
+        {
+          "name": "amountHYPE",
+          "type": "uint256",
+          "indexed": true,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RefundSuccessful",
+      "inputs": [
+        {
+          "name": "guid",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Retrieved",
+      "inputs": [
+        {
+          "name": "coreIndexId",
+          "type": "uint64",
+          "indexed": true,
+          "internalType": "uint64"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "to",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "AddressEmptyCode",
+      "inputs": [
+        {
+          "name": "target",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "AddressInsufficientBalance",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ComposeMsgLengthNot64Bytes",
+      "inputs": [
+        {
+          "name": "length",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "CoreUserNotActivated",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "FailedInnerCall",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "FailedMessageNotFound",
+      "inputs": [
+        {
+          "name": "guid",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InsufficientGas",
+      "inputs": [
+        {
+          "name": "gasLeft",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "minGas",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InsufficientMsgValue",
+      "inputs": [
+        {
+          "name": "msgValue",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "requiredValue",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InvalidComposeCaller",
+      "inputs": [
+        {
+          "name": "internalOFTAddress",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "receivedOFTAddress",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InvalidDecimalDiff",
+      "inputs": [
+        {
+          "name": "decimalDiff",
+          "type": "int8",
+          "internalType": "int8"
+        },
+        {
+          "name": "minDecimalDiff",
+          "type": "int8",
+          "internalType": "int8"
+        },
+        {
+          "name": "maxDecimalDiff",
+          "type": "int8",
+          "internalType": "int8"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InvalidOFTAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "InvalidRecoveryAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "MaxRetrieveAmountExceeded",
+      "inputs": [
+        {
+          "name": "maxAmount",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "requestedAmount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "NativeTransferFailed",
+      "inputs": [
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "NotRecoveryAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "OnlyEndpoint",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "OnlySelf",
+      "inputs": [
+        {
+          "name": "caller",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ReentrancyGuardReentrantCall",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "SafeERC20FailedOperation",
+      "inputs": [
+        {
+          "name": "token",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "SpotBalanceReadFailed",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "tokenId",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "TransferAmtExceedsAssetBridgeBalance",
+      "inputs": [
+        {
+          "name": "amt",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "maxAmt",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "TransferFailed",
+      "inputs": []
+    }
+  ]
+}
