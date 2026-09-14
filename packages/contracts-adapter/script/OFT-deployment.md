@@ -1,111 +1,120 @@
-# OFT deployment scripts
+# SYN OFT deployment and configuration
 
-Run these commands from `packages/contracts-adapter`. Both scripts use `SynapseScript` and the existing `fsr` deployment runner, which selects the chain and wallet and saves deployment artifacts. Configure the wallet and `<CHAIN>_RPC` variables using `.env.example`; optional verifier variables follow the same conventions. Run without `--broadcast` to simulate first.
+Run commands from `packages/contracts-adapter`. The scripts use `SynapseScript` and the existing deployment runners: `fsr` calls `run()`, and `fsr-str` calls `run(string)` with a token identifier such as `SYN`. Configure the wallet and chain RPC variables using `.env.example`. Run without `--broadcast` to simulate; append it to submit transactions.
+
+`DEPLOY_ENVIRONMENT` in `.env` selects the configuration:
+
+| Environment | Config | Deployment chains with SYN token addresses |
+| --- | --- | --- |
+| `production` (default) | `configs/global/SynapseOFTAdapter.json` | `ethereum`, `hyperevm` |
+| `testnet` | `configs/global/testnet/SynapseOFTAdapter.json` | `ethereum_sepolia`, `hyperevm_testnet` |
+
+Production also includes security routes for Arbitrum, Avalanche, Base, BNB, Optimism, and Polygon. Those route entries do not imply token or adapter deployments on those chains. Saved deployment artifacts live under `deployments/<chain>/`.
 
 ## Factory
 
-Both scripts read `DEPLOY_ENVIRONMENT` from `.env`, defaulting to `production`. Production uses `configs/global/SynapseOFTAdapter.json`; `testnet` uses `configs/global/testnet/SynapseOFTAdapter.json`. Its `endpoints` map contains the LayerZero EndpointV2 address for each chain. Factory deployment uses `endpoints[activeChain]`.
-
 ```bash
 npx fsr script/DeploySynapseOFTAdapterFactory.s.sol <chain> <walletName>
-npx fsr script/DeploySynapseOFTAdapterFactory.s.sol <chain> <walletName> --broadcast
 ```
 
-This deploys the factory with zero salt and `msg.sender` (the broadcast wallet) as its initial owner via the repository's CREATE2 deployer, saves it as `SynapseOFTAdapterFactory`, and initializes its endpoint. A saved deployment is reused, with its address and owner checked against the deployment parameters and its endpoint checked against the configuration. An uninitialized saved factory is initialized on rerun.
+The script deploys `SynapseOFTAdapterFactory` through the repository's CREATE2 deployer, with zero salt and the broadcast wallet as initial owner. It then initializes the factory's endpoint from `endpoints[activeChain]`. A saved factory is reused and checked against the predicted address and owner; its endpoint is initialized if unset, otherwise checked against the config.
 
-For matching factory addresses across chains, use the same broadcast wallet, CREATE2 deployer address, and compiled creation bytecode. The factory salt is always zero. The endpoint can differ. The CREATE2 deployer must already exist on each chain; the existing `Create2Factory` deployment artifact or `CREATE2_FACTORY` environment variable can select it.
+Matching factory addresses across chains require the same initial owner, CREATE2 deployer, and compiled creation bytecode. The endpoint can differ because initialization happens after deployment. The CREATE2 deployer must already exist on each chain; select it through a `Create2Factory` deployment artifact or `CREATE2_FACTORY`.
 
 ## Adapter
 
-Add each token to the corresponding environment's global config under `tokens`. The salt is shared across chains; `addresses` maps each chain to its token address. For example:
-
-```json
-{
-  "endpoints": {
-    "ethereum": "0x1a44076050125825900e736c501f859c50fe728c"
-  },
-  "tokens": {
-    "SYN": {
-      "salt": "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "addresses": {
-        "ethereum": "<SynapseERC20 token address>"
-      }
-    }
-  }
-}
-```
-
-The mainnet config includes Ethereum and HyperEVM endpoints; the testnet config includes Ethereum Sepolia and HyperEVM testnet endpoints. Token entries must be populated before running the adapter script.
-
 ```bash
 npx fsr-str script/DeploySynapseOFTAdapter.s.sol <chain> <walletName> SYN
-npx fsr-str script/DeploySynapseOFTAdapter.s.sol <chain> <walletName> SYN --broadcast
 ```
 
-Use the factory owner's wallet. The script loads the saved `SynapseOFTAdapterFactory`, calls its owner-only `deploy(token, salt)`, and saves the adapter as `SynapseOFTAdapter.SYN` with empty constructor arguments. Reruns reuse the saved adapter and check its predicted address, token, endpoint, and owner.
+Use the factory owner's wallet. The script reads `tokens.SYN.addresses[activeChain]` and `tokens.SYN.salt`, calls the saved factory's `deploy(token, salt)`, and saves `SynapseOFTAdapter.SYN` with empty constructor arguments. The adapter obtains its token, endpoint, and initial owner through the factory callback.
 
-Use the same adapter salt for the same token across chains, and a distinct salt for each token served by a factory. Matching addresses require the same factory address and adapter creation bytecode; token and endpoint addresses can differ.
+The adapter salt is configured separately from the factory's fixed zero salt. Use the checked-in salt for existing deployments. Matching adapter addresses require the same factory address, adapter salt, and compiled adapter creation bytecode; token and endpoint addresses can differ. Different tokens deployed through the same factory need distinct salts.
 
-After deployment, grant the adapter the token's mint permission and configure its LayerZero peers and messaging settings before bridging.
+Reruns reuse the saved adapter and check its predicted address, token, endpoint, and ownership. The script requires both factory and adapter ownership to match the broadcast wallet, so it is not a post-handoff verification command once the adapter belongs to a multisig.
 
-## Testnet commands
+Grant the adapter permission to call the underlying token's `mint(address,uint256)`. Senders must approve the adapter for `burnFrom`. Configure the LayerZero routes before bridging.
 
-Set `DEPLOY_ENVIRONMENT=testnet` in `.env`, then use the same entry points:
+For testnet, set `DEPLOY_ENVIRONMENT=testnet` and use the same commands with `ethereum_sepolia` and `hyperevm_testnet`.
+
+## Wiring and security
+
+Run on each chain where the local adapter is deployed and its token address is configured:
 
 ```bash
-npx fsr script/DeploySynapseOFTAdapterFactory.s.sol ethereum_sepolia <walletName>
-npx fsr-str script/DeploySynapseOFTAdapter.s.sol ethereum_sepolia <walletName> SYN
+npx fsr-str script/WireSynapseOFTAdapter.s.sol ethereum <walletName> SYN
+npx fsr-str script/WireSynapseOFTAdapter.s.sol hyperevm <walletName> SYN
 ```
 
-Use `hyperevm_testnet` for the other testnet. Append `--broadcast` to submit transactions after simulation.
+The script selects routes from `wiring.chains`, independently of remote token addresses. It configures send and receive libraries and ULN security even when a remote adapter has not been deployed. Peer addresses come from saved `SynapseOFTAdapter.SYN` artifacts; missing remote artifacts skip only the peer step. Routes unsupported by either local message library are skipped entirely.
 
-## Wiring
+The config contains:
 
-After deploying the adapters on each chain and saving their artifacts, run:
+- `endpoints`: local LayerZero EndpointV2 addresses.
+- `wiring.chains`: endpoint IDs (`eid`) and local `sendUln302` / `receiveUln302` library addresses.
+- `wiring.blockConfirmations`: confirmation requirements for messages originating on each chain.
+- `wiring.requiredDVNs`: local addresses of the required DVNs. The script sorts them and rejects empty, duplicate, or zero-address entries. All required DVNs must verify a message; optional DVNs are explicitly disabled.
 
-```bash
-npx fsr-str script/WireSynapseOFTAdapter.s.sol <chain> <walletName> SYN
-```
+The checked-in production policy requires **LayerZero Labs and Nethermind** on all eight chains:
 
-`DEPLOY_ENVIRONMENT` selects the same global config used for deployment. The script wires only chains in `tokens.SYN.addresses`, resolving peers from their saved `SynapseOFTAdapter.SYN` artifacts. Peer changes are skipped when a remote deployment is missing; unsupported LayerZero routes are skipped entirely. Append `--broadcast` to submit transactions after simulation.
+| Source chain | Confirmations |
+| --- | ---: |
+| Ethereum | 64 |
+| HyperEVM | 100 |
+| Arbitrum | 100 |
+| Avalanche | 100 |
+| Base | 100 |
+| BNB | 100 |
+| Optimism | 100 |
+| Polygon | 200 |
 
-The global config's `wiring` object contains:
+Testnet requires **LayerZero Labs and Mantle01**, with **5 confirmations** from either Ethereum Sepolia or HyperEVM testnet. Library addresses, endpoint IDs, and DVN addresses are based on [LayerZero deployment metadata](https://metadata.layerzero-api.com/v1/metadata/deployments).
 
-- `chains`: LayerZero endpoint IDs (`eid`) and `sendUln302` / `receiveUln302` library addresses, keyed by chain.
-- `blockConfirmations`: source-chain confirmation counts, keyed by chain. A send configuration uses the local count; a receive configuration uses the remote chain's count.
-- `requiredDVNs`: arrays of required DVN addresses on each chain. The script sorts these addresses before configuring ULN.
+Send configuration uses the local chain's confirmation count. Receive configuration uses the remote source chain's count. For example, HyperEVM's receive configuration for Ethereum requires 64 confirmations, while Ethereum's receive configuration for HyperEVM requires 100.
 
-The checked-in `blockConfirmations` and `requiredDVNs` maps are intentionally empty in both environments. Fill in the chosen policy before wiring: confirmation counts for every selected chain and required DVNs for the active chain. OFT wiring explicitly disables optional DVNs instead of inheriting the library defaults. A chain with no configured required DVNs or confirmation count is rejected. Library addresses and endpoint IDs are taken from LayerZero's [deployment metadata](https://metadata.layerzero-api.com/v1/metadata/deployments).
+Matching settings are skipped on reruns. If the wallet is not the adapter owner, peer changes are printed as multisig calldata. If it is not the endpoint delegate, library and security changes are printed as multisig calldata. Submit that calldata through the corresponding authority.
 
-Matching configuration is skipped on reruns. When the wallet is not the app owner, peer changes are printed as calldata; when it is not the endpoint delegate, library and security changes are printed as calldata. Submit that calldata through the corresponding owner or delegate account.
-
-The wiring script configures peers, libraries, and ULN security. OFT send callers still supply their LayerZero execution options.
+Wiring does not configure enforced execution options. Ordinary OFT send callers must provide appropriate execution options unless the adapter owner has configured them separately.
 
 ## HyperCore composer
 
-`SynapseComposer` extends LayerZero's recovery-enabled Hyperliquid composer. Deploy it on HyperEVM with the OFT adapter address, linked HyperCore token index, ERC20 decimals minus HyperCore `weiDecimals`, and the recovery address. Link the underlying SynapseERC20 token to HyperCore, fund its native asset bridge, and activate the composer's HyperCore account before use. The base flow also requires activated recipients.
+`SynapseComposer` extends LayerZero's recovery-enabled Hyperliquid composer. It uses the underlying SynapseERC20 token, its linked HyperCore index, the difference between ERC20 decimals and Core `weiDecimals`, and an authorized recovery address.
 
-`DeploySynapseComposer` reads the same environment's global `SynapseOFTAdapter.json` and loads the saved `SynapseOFTAdapter.<tokenId>` deployment. Add a `composer` object under the token entry:
+These parameters are already populated under `tokens.SYN.composer` in each environment's config:
 
-```json
-"composer": {
-  "coreIndexId": null,
-  "assetDecimalDiff": null,
-  "recoveryAddress": null
-}
-```
+| Environment | Core token index | Decimal difference |
+| --- | ---: | ---: |
+| Production | 873 | 10 |
+| Testnet | 3071 | 10 |
 
-Replace every `null` with the linked token's Core index, signed decimal difference, and the authorized recovery address. The testnet SYN entry is configured with Core token index `3071` and decimal difference `10` (18 ERC20 decimals minus 8 Core wei decimals). Production uses the same fields under its own token entry. The script rejects chains other than HyperEVM mainnet (999) and testnet (998), and verifies that the saved adapter matches the configured token and endpoint.
-
-With `DEPLOY_ENVIRONMENT=testnet` in `.env`, run:
+The decimal difference is 18 ERC20 decimals minus 8 Core wei decimals. `recoveryAddress` is configured separately in each environment and controls recovery of composer-held assets.
 
 ```bash
-npx fsr-str script/DeploySynapseComposer.s.sol hyperevm_testnet <walletName> SYN
-npx fsr-str script/DeploySynapseComposer.s.sol hyperevm_testnet <walletName> SYN --broadcast
+npx fsr-str script/DeploySynapseComposer.s.sol hyperevm <walletName> SYN
 ```
 
-For production, select `hyperevm` and set `DEPLOY_ENVIRONMENT=production` or omit it. Deployment uses regular CREATE and saves `SynapseComposer.SYN`, including constructor arguments for verification. Reruns reuse the saved deployment and check its constructor settings. Deployment does not perform Core linking, bridge funding, account activation, or OFT wiring.
+For testnet, set `DEPLOY_ENVIRONMENT=testnet` and select `hyperevm_testnet`. The script uses regular CREATE, loads the saved `SynapseOFTAdapter.SYN`, and saves `SynapseComposer.SYN` with constructor arguments for verification. It rejects chains other than HyperEVM mainnet and testnet, verifies the adapter's token and endpoint, and checks the composer settings when reusing an existing deployment.
 
-The constructor approves the adapter to burn composer-held tokens when a malformed compose message is refunded to its source. Source refunds need a wired reverse route, sufficient native messaging fees, and enforced `SEND` receive options because the parent supplies no extra execution options. The recovery address can retrieve composer-held Core assets and withdraw its EVM tokens and native funds; choose an account trusted with those balances.
+Before use, link the underlying token to HyperCore, fund its asset bridge, and activate the composer and recipient accounts on HyperCore. Deployment does not perform these steps. See the [LayerZero Hyperliquid guide](https://docs.layerzero.network/v2/developers/hyperliquid/hyperliquid-oft-deployment) for token setup and linking.
 
-For inbound HyperCore transfers, send the OFT to the composer with `composeMsg = abi.encode(uint256(0), recipient)` and options funding both `lzReceive` and `lzCompose` at index 0. The plain SYN send script above does not invoke the composer. Outbound HyperCore transfers still require a native transfer to HyperEVM followed by an OFT send. See the [LayerZero Hyperliquid guide](https://docs.layerzero.network/v2/developers/hyperliquid/hyperliquid-oft-deployment) for the Core token setup and linking steps.
+For inbound transfers, use the composer as the OFT destination and encode `composeMsg = abi.encode(uint256(0), recipient)`. Supply options funding both `lzReceive` and `lzCompose` at index 0. A synchronous Core transfer failure can refund the tokens to the recipient on HyperEVM. Outbound HyperCore transfers require a native transfer to HyperEVM followed by an OFT send.
+
+### Source refunds and manual recovery
+
+If the compose payload cannot be decoded, the composer records `failedMessages[guid]` and keeps the tokens on HyperEVM. Its `refundToSrc(guid)` method sends them back through the adapter, using the constructor's token allowance. This path requires a wired reverse route, sufficient native messaging fees, and enforced `SEND` receive-gas options on the HyperEVM adapter for the source endpoint. The composer supplies empty extra options, and adding native funds alone cannot replace the missing options.
+
+Without enforced options, the recovery address can call `recoverEvmERC20(amount)` to withdraw the affected tokens, then transfer them to the user on HyperEVM or approve the adapter and bridge them back with explicit execution options. Manual recovery does not clear `failedMessages[guid]`: track settled GUIDs to prevent a later source-refund call from consuming other composer-held funds. Core asset retrieval is also available through the inherited recovery functions.
+
+## Ownership and endpoint delegate
+
+After deployment and configuration, transfer both authorities to the chain's multisig:
+
+```bash
+npx fsr-str script/TransferOwnershipSynapseOFTAdapter.s.sol <chain> <currentOwnerWallet> SYN
+```
+
+The script reads `multisig[activeChain]` from the selected environment's `SynapseOFTAdapter.json`. Production has entries for Ethereum and HyperEVM. Testnet multisig entries must be added before using this script there. The target must be a nonzero contract address.
+
+The script verifies the adapter's token and endpoint, sets the endpoint delegate through `adapter.setDelegate(multisig)`, then transfers adapter ownership. Delegate transfer comes first because `setDelegate` is owner-only. These are separate transactions when both changes are needed; reruns skip completed settings and verify the final state. If both authorities already match, the script exits without changes.
+
+Factory ownership and the composer's immutable recovery address are separate from this handoff. Future peer and enforced-option updates require the adapter owner; the wiring script’s endpoint library and ULN updates require the endpoint delegate.
