@@ -14,6 +14,7 @@ contract DeploySynapseComposer is SynapseScript {
     string public constant NAME = "SynapseComposer";
 
     /// @notice Excludes this script from coverage reports.
+    // solhint-disable-next-line no-empty-blocks
     function testDeploySynapseComposer() external {}
 
     /// @param tokenId The token identifier used in the config and deployment alias, e.g. SYN.

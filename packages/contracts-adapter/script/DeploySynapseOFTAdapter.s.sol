@@ -15,6 +15,7 @@ contract DeploySynapseOFTAdapter is SynapseScript {
     bytes32 internal salt;
 
     /// @notice Excludes this script from coverage reports.
+    // solhint-disable-next-line no-empty-blocks
     function testDeploySynapseOFTAdapter() external {}
 
     /// @param tokenId The token identifier used in the config and deployment alias, e.g. SYN.

@@ -153,9 +153,7 @@ abstract contract LayerZeroWiring is SynapseScript {
         address delegate = endpoint.delegates(address(app));
         if (msg.sender != delegate) {
             printMultisigTxs = true;
-            printInfo(
-                "Broadcast wallet is not the app delegate, printing endpoint multisig calldata instead of submitting txs"
-            );
+            printInfo("Wallet is not the app delegate; printing endpoint multisig calldata instead of submitting txs");
             printAuthorityInfo(delegate, "Delegate");
         }
     }

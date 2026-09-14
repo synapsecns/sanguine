@@ -14,6 +14,7 @@ contract TransferOwnershipSynapseOFTAdapter is SynapseScript {
     using stdJson for string;
 
     /// @notice Excludes this script from coverage reports.
+    // solhint-disable-next-line no-empty-blocks
     function testTransferOwnershipSynapseOFTAdapter() external {}
 
     /// @param tokenId The token identifier used in the config and deployment alias, e.g. SYN.

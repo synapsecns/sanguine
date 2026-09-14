@@ -5,7 +5,7 @@ import {SynapseOFTAdapter} from "../src/SynapseOFTAdapter.sol";
 import {SynapseOFTAdapterFactory} from "../src/SynapseOFTAdapterFactory.sol";
 
 import {EndpointMock} from "./mocks/EndpointMock.sol";
-import {TestToken} from "./mocks/TestToken.sol";
+import {MintableTestToken} from "./mocks/MintableTestToken.sol";
 
 import {
     ILayerZeroEndpointV2,
@@ -19,12 +19,6 @@ import {IOFT, OFTReceipt, SendParam} from "@layerzerolabs/oft-evm/contracts/inte
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20Errors} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
 import {Test} from "forge-std/Test.sol";
-
-contract MintableTestToken is TestToken {
-    function mint(address to, uint256 amount) external {
-        mintTestTokens(to, amount);
-    }
-}
 
 contract SynapseOFTAdapterTest is Test {
     uint32 internal constant SRC_EID = 1;
@@ -54,22 +48,13 @@ contract SynapseOFTAdapterTest is Test {
         adapter.setPeer(DST_EID, PEER);
     }
 
-    function test_constructor_setsMetadataAndOwner() public view {
-        assertEq(adapter.token(), address(token));
-        assertEq(adapter.owner(), delegate);
-        assertEq(address(adapter.endpoint()), address(endpoint));
-        assertEq(adapter.sharedDecimals(), 6);
-        assertEq(adapter.decimalConversionRate(), CONVERSION_RATE);
-        assertTrue(adapter.approvalRequired());
-    }
-
-    function test_setPeer_revertsForNonOwner() public {
+    function testSetPeerRevertsForNonOwner() public {
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, user));
         vm.prank(user);
         adapter.setPeer(SRC_EID, PEER);
     }
 
-    function test_send_burnsApprovedAmountAndRemovesDust() public {
+    function testSendBurnsApprovedAmountAndRemovesDust() public {
         uint256 amountLD = 1 ether + 123;
         uint256 expectedAmountLD = 1 ether;
         token.mint(user, amountLD);
@@ -91,7 +76,7 @@ contract SynapseOFTAdapterTest is Test {
         assertEq(token.balanceOf(address(adapter)), 0);
     }
 
-    function test_send_revertsWithoutBurnAllowance() public {
+    function testSendRevertsWithoutBurnAllowance() public {
         uint256 amountLD = 1 ether;
         token.mint(user, amountLD);
 
@@ -105,7 +90,7 @@ contract SynapseOFTAdapterTest is Test {
         assertEq(token.totalSupply(), amountLD);
     }
 
-    function test_send_revertsWhenDustCausesSlippage() public {
+    function testSendRevertsWhenDustCausesSlippage() public {
         uint256 amountLD = 1 ether + 123;
         token.mint(user, amountLD);
         vm.prank(user);
@@ -119,7 +104,7 @@ contract SynapseOFTAdapterTest is Test {
         assertEq(token.totalSupply(), amountLD);
     }
 
-    function test_lzReceive_mintsTokensAndIncreasesSupply() public {
+    function testLzReceiveMintsTokensAndIncreasesSupply() public {
         uint64 amountSD = 123_456;
         uint256 amountLD = uint256(amountSD) * CONVERSION_RATE;
         _setSourcePeer();
@@ -132,7 +117,7 @@ contract SynapseOFTAdapterTest is Test {
         assertEq(token.balanceOf(address(adapter)), 0);
     }
 
-    function test_lzReceive_mapsZeroRecipientToDeadAddress() public {
+    function testLzReceiveMapsZeroRecipientToDeadAddress() public {
         uint64 amountSD = 7;
         uint256 amountLD = uint256(amountSD) * CONVERSION_RATE;
         _setSourcePeer();
@@ -145,7 +130,7 @@ contract SynapseOFTAdapterTest is Test {
         assertEq(token.totalSupply(), amountLD);
     }
 
-    function test_lzReceive_revertsForNonEndpoint() public {
+    function testLzReceiveRevertsForNonEndpoint() public {
         _setSourcePeer();
 
         vm.expectRevert(abi.encodeWithSelector(OAppReceiver.OnlyEndpoint.selector, user));
@@ -153,13 +138,22 @@ contract SynapseOFTAdapterTest is Test {
         adapter.lzReceive(_origin(PEER), GUID, _message(recipient, 1), address(0), "");
     }
 
-    function test_lzReceive_revertsForUntrustedPeer() public {
+    function testLzReceiveRevertsForUntrustedPeer() public {
         bytes32 unknownPeer = keccak256("Unknown Peer");
         _setSourcePeer();
 
         vm.expectRevert(abi.encodeWithSelector(IOAppCore.OnlyPeer.selector, SRC_EID, unknownPeer));
         vm.prank(address(endpoint));
         adapter.lzReceive(_origin(unknownPeer), GUID, _message(recipient, 1), address(0), "");
+    }
+
+    function testConstructorSetsMetadataAndOwner() public view {
+        assertEq(adapter.token(), address(token));
+        assertEq(adapter.owner(), delegate);
+        assertEq(address(adapter.endpoint()), address(endpoint));
+        assertEq(adapter.sharedDecimals(), 6);
+        assertEq(adapter.decimalConversionRate(), CONVERSION_RATE);
+        assertTrue(adapter.approvalRequired());
     }
 
     function _setSourcePeer() internal {

@@ -12,6 +12,7 @@ contract DeploySynapseOFTAdapterFactory is SynapseScript {
     string public constant NAME = "SynapseOFTAdapterFactory";
 
     /// @notice Excludes this script from coverage reports.
+    // solhint-disable-next-line no-empty-blocks
     function testDeploySynapseOFTAdapterFactory() external {}
 
     function run() external broadcastWithHooks {

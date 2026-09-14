@@ -12,6 +12,7 @@ contract WireSynapseOFTAdapter is LayerZeroWiring {
     using stdJson for string;
 
     /// @notice Excludes this script from coverage reports.
+    // solhint-disable-next-line no-empty-blocks
     function testWireSynapseOFTAdapter() external {}
 
     /// @param tokenId The token identifier used in the global config and deployment alias, e.g. SYN.
