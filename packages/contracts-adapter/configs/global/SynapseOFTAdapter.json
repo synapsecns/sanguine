@@ -9,6 +9,10 @@
     "optimism": "0x1a44076050125825900e736c501f859c50fe728c",
     "polygon": "0x1a44076050125825900e736c501f859c50fe728c"
   },
+  "multisig": {
+    "ethereum": "0x67F60b0891EBD842Ebe55E4CCcA1098d7Aac1A55",
+    "hyperevm": "0xF741246D2e0ADD4EFa7e88BE0961cccf3562b502"
+  },
   "tokens": {
     "SYN": {
       "salt": "0x000000cb731c0fc35e0100000000000000000000000000000000000000000044",
