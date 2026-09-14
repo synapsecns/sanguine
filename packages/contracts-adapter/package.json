@@ -8,6 +8,7 @@
     "src/**/*.sol"
   ],
   "dependencies": {
+    "@layerzerolabs/hyperliquid-composer": "2.0.8",
     "@layerzerolabs/lz-evm-messagelib-v2": "3.0.88",
     "@layerzerolabs/lz-evm-protocol-v2": "3.0.88",
     "@layerzerolabs/oapp-evm": "0.3.2",
