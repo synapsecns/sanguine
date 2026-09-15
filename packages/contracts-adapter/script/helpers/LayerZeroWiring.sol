@@ -50,6 +50,10 @@ abstract contract LayerZeroWiring is SynapseScript {
     string internal securityConfigRoot;
     address[] internal requiredDVNs;
 
+    /// @notice Excludes this script helper from coverage reports.
+    // solhint-disable-next-line no-empty-blocks
+    function testLayerZeroWiring() external {}
+
     function loadConfigs() internal virtual {
         dvnsConfig = readGlobalDeployProdConfig("dvns", true);
 
