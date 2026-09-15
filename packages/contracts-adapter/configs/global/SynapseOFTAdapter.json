@@ -113,6 +113,40 @@
         "0x23de2fe932d9043291f870324b74f820e11dc81a",
         "0x31f748a368a893bdb5abb67ec95f232507601a73"
       ]
+    },
+    "enforcedOptions": {
+      "ethereum": {
+        "lzReceiveGas": 200000,
+        "lzComposeGas": 0
+      },
+      "hyperevm": {
+        "lzReceiveGas": 200000,
+        "lzComposeGas": 250000
+      },
+      "arbitrum": {
+        "lzReceiveGas": 200000,
+        "lzComposeGas": 0
+      },
+      "avalanche": {
+        "lzReceiveGas": 200000,
+        "lzComposeGas": 0
+      },
+      "base": {
+        "lzReceiveGas": 200000,
+        "lzComposeGas": 0
+      },
+      "bnb": {
+        "lzReceiveGas": 200000,
+        "lzComposeGas": 0
+      },
+      "optimism": {
+        "lzReceiveGas": 200000,
+        "lzComposeGas": 0
+      },
+      "polygon": {
+        "lzReceiveGas": 200000,
+        "lzComposeGas": 0
+      }
     }
   }
 }

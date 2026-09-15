@@ -74,7 +74,9 @@ Send configuration uses the local chain's confirmation count. Receive configurat
 
 Matching settings are skipped on reruns. If the wallet is not the adapter owner, peer changes are printed as multisig calldata. If it is not the endpoint delegate, library and security changes are printed as multisig calldata. Submit that calldata through the corresponding authority.
 
-Wiring does not configure enforced execution options. Ordinary OFT send callers must provide appropriate execution options unless the adapter owner has configured them separately.
+Wiring configures execution budgets from `wiring.enforcedOptions`, keyed by destination chain. Both `SEND` and `SEND_AND_CALL` enforce 200,000 `lzReceive` gas. Sends with composition to HyperEVM also enforce 250,000 `lzCompose` gas at index 0; other destinations have no enforced compose budget. Native value is zero. The testnet config uses the same budgets for Sepolia and HyperEVM testnet. These updates require the adapter owner; the script prints multisig calldata when run by another wallet and skips settings that already match.
+
+Caller-supplied `extraOptions` add to these enforced budgets. Use empty extra options when the configured budget is sufficient, and supply additional compose gas for composers on other destinations.
 
 ## HyperCore composer
 

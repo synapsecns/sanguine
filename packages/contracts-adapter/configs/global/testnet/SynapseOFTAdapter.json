@@ -43,6 +43,16 @@
         "0x003bd8adc7ba8a7353b950541904b61011e38dae",
         "0x91e698871030d0e1b6c9268c20bb57e2720618dd"
       ]
+    },
+    "enforcedOptions": {
+      "ethereum_sepolia": {
+        "lzReceiveGas": 200000,
+        "lzComposeGas": 0
+      },
+      "hyperevm_testnet": {
+        "lzReceiveGas": 200000,
+        "lzComposeGas": 250000
+      }
     }
   }
 }
