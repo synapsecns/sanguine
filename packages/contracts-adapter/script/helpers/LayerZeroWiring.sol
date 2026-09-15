@@ -112,11 +112,11 @@ abstract contract LayerZeroWiring is SynapseScript {
         }
         loadSkippedEids();
         setPrintMultisigTxs();
-        setPeers();
         setSendLibrary();
         setReceiveLibrary();
         setSendConfig();
         setReceiveConfig();
+        setPeers();
     }
 
     function loadSkippedEids() internal {
