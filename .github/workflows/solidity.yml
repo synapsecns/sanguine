@@ -78,7 +78,7 @@ jobs:
         with:
           version: v1.3.6
       - name: Install Vercel CLI
-        run: npm install --global vercel@30.1.0
+        run: npm install --global vercel@59.17.0
       - name: Get Project ID
         id: project_id
         # see: https://stackoverflow.com/a/75231888 for details
