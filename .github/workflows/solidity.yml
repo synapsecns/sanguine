@@ -68,6 +68,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
+        env:
+          NODE_ENV: 'development'
         with:
           cache: 'npm'
           cache-path: ''
