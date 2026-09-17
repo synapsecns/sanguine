@@ -1,0 +1,58 @@
+{
+  "endpoints": {
+    "ethereum_sepolia": "0x6edce65403992e310a62460808c4b910d972f10f",
+    "hyperevm_testnet": "0xf9e1815f151024bde4b7c10bac10e8ba9f6b53e1"
+  },
+  "tokens": {
+    "SYN": {
+      "salt": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "addresses": {
+        "ethereum_sepolia": "0x259A84D683033D54c81d69bB4D5a7880f4f03C2E",
+        "hyperevm_testnet": "0x8921aDABBE9D4743DD8dA936aa09a35bBA3C7838"
+      },
+      "composer": {
+        "coreIndexId": 3071,
+        "assetDecimalDiff": 10,
+        "recoveryAddress": "0xb73AcB429Ba868984c0236bdf940D4FE1E643F27"
+      }
+    }
+  },
+  "wiring": {
+    "chains": {
+      "ethereum_sepolia": {
+        "eid": 40161,
+        "sendUln302": "0xcc1ae8cf5d3904cef3360a9532b477529b177cce",
+        "receiveUln302": "0xdaf00f5ee2158dd58e0d3857851c432e34a3a851"
+      },
+      "hyperevm_testnet": {
+        "eid": 40362,
+        "sendUln302": "0x43e505ba192aac7babdc1a796c87844171011684",
+        "receiveUln302": "0x012f6eae2a0bf5916f48b5f37c62bcfb7c1ffda1"
+      }
+    },
+    "blockConfirmations": {
+      "ethereum_sepolia": 5,
+      "hyperevm_testnet": 5
+    },
+    "requiredDVNs": {
+      "ethereum_sepolia": [
+        "0x6943872cfc48f6b18f8b81d57816733d4545eca3",
+        "0x8eebf8b423b73bfca51a1db4b7354aa0bfca9193"
+      ],
+      "hyperevm_testnet": [
+        "0x003bd8adc7ba8a7353b950541904b61011e38dae",
+        "0x91e698871030d0e1b6c9268c20bb57e2720618dd"
+      ]
+    },
+    "enforcedOptions": {
+      "ethereum_sepolia": {
+        "lzReceiveGas": 200000,
+        "lzComposeGas": 0
+      },
+      "hyperevm_testnet": {
+        "lzReceiveGas": 200000,
+        "lzComposeGas": 250000
+      }
+    }
+  }
+}

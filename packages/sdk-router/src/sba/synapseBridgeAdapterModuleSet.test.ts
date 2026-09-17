@@ -26,6 +26,7 @@ const ETH_NETH = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
 const OP_NETH = '0x809DC529f07651bD43A172e8dB6f4a7a0d771036'
 const OP_SYN = '0x5A5fFf6F753d7C11A56A52FE47a177a87e431655'
 const HARMONY_NETH = '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB'
+const BLAST_NETH = '0xce971282fAAc9faBcF121944956da7142cccC855'
 const KLAYTN_NETH = '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86'
 const DFK_KLAY = '0x97855Ba65aa7ed2F65Ed832a776537268158B78a'
 const KLAYTN_KLAY = '0x5819b6af194A78511c79C85Ea68D2377a7e9335f'
@@ -55,6 +56,7 @@ describe('SynapseBridgeAdapterModuleSet', () => {
   const baseProvider = mock<providers.Provider>()
   const dfkProvider = mock<providers.Provider>()
   const harmonyProvider = mock<providers.Provider>()
+  const blastProvider = mock<providers.Provider>()
   const klaytnProvider = mock<providers.Provider>()
   const moduleSet = new SynapseBridgeAdapterModuleSet([
     {
@@ -76,6 +78,10 @@ describe('SynapseBridgeAdapterModuleSet', () => {
     {
       chainId: SupportedChainId.HARMONY,
       provider: harmonyProvider,
+    },
+    {
+      chainId: SupportedChainId.BLAST,
+      provider: blastProvider,
     },
     {
       chainId: SupportedChainId.KLAYTN,
@@ -193,12 +199,19 @@ describe('SynapseBridgeAdapterModuleSet', () => {
   })
 
   it('returns no candidates when the destination chain is outside the destination enablement set', async () => {
+    expect(
+      getSbaSupportedTokens(
+        SupportedChainId.HARMONY,
+        SupportedChainId.BLAST,
+        BLAST_NETH
+      )
+    ).not.toEqual([])
     await expect(
       moduleSet.getBridgeTokenCandidates({
         fromChainId: SupportedChainId.HARMONY,
-        toChainId: SupportedChainId.ETH,
+        toChainId: SupportedChainId.BLAST,
         fromToken: HARMONY_NETH,
-        toToken: ETH_NATIVE_TOKEN_ADDRESS,
+        toToken: BLAST_NETH,
       })
     ).resolves.toEqual([])
   })

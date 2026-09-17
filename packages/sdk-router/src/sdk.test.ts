@@ -10,7 +10,6 @@ import {
   SupportedChainId,
   SYNAPSE_INTENT_ROUTER_ADDRESS_MAP,
 } from './constants'
-import { getTestProvider } from './constants/testProviders'
 import {
   ARB_USDC,
   ARB_USDC_E,
@@ -53,11 +52,11 @@ const createSwapQuoteTests = (
   chainId: number,
   token: string,
   amount: BigNumber,
-  resultPromise: Promise<SwapQuote>
+  getResult: () => Promise<SwapQuote>
 ) => {
   let result: SwapQuote
   beforeAll(async () => {
-    result = await resultPromise
+    result = await getResult()
   })
 
   it('Fetches a swap quote', async () => {
@@ -81,13 +80,13 @@ const createSwapQuoteTests = (
 }
 
 describe('SynapseSDK', () => {
-  const ethProvider: Provider = getTestProvider(SupportedChainId.ETH)
+  const ethProvider = mock<Provider>()
 
-  const arbProvider: Provider = getTestProvider(SupportedChainId.ARBITRUM)
+  const arbProvider = mock<Provider>()
 
-  const opProvider: Provider = getTestProvider(SupportedChainId.OPTIMISM)
+  const opProvider = mock<Provider>()
 
-  const bscProvider: Provider = getTestProvider(SupportedChainId.BSC)
+  const bscProvider = mock<Provider>()
 
   describe('#constructor', () => {
     const synapse = new SynapseSDK(
@@ -389,19 +388,19 @@ describe('SynapseSDK', () => {
   describe.skip('Swap', () => {
     const synapse = new SynapseSDK([SupportedChainId.ARBITRUM], [arbProvider])
     const amount = BigNumber.from(10).pow(9)
-    const resultPromise: Promise<SwapQuote> = synapse.swapQuote(
-      SupportedChainId.ARBITRUM,
-      ARB_USDC,
-      ARB_USDC_E,
-      amount
-    )
 
     createSwapQuoteTests(
       synapse,
       SupportedChainId.ARBITRUM,
       ARB_USDC,
       amount,
-      resultPromise
+      () =>
+        synapse.swapQuote(
+          SupportedChainId.ARBITRUM,
+          ARB_USDC,
+          ARB_USDC_E,
+          amount
+        )
     )
   })
 
@@ -802,7 +801,7 @@ describe('SynapseSDK', () => {
 
     it('returns no SBA quotes when the destination chain is outside the destination enablement set', async () => {
       const synapse = new SynapseSDK(
-        [SupportedChainId.OPTIMISM, SupportedChainId.ETH],
+        [SupportedChainId.OPTIMISM, SupportedChainId.BLAST],
         [mock<Provider>(), mock<Provider>()]
       )
 
@@ -811,9 +810,9 @@ describe('SynapseSDK', () => {
       await expect(
         synapse.bridgeV2({
           fromChainId: SupportedChainId.OPTIMISM,
-          toChainId: SupportedChainId.ETH,
+          toChainId: SupportedChainId.BLAST,
           fromToken: '0x809DC529f07651bD43A172e8dB6f4a7a0d771036',
-          toToken: ETH_NATIVE_TOKEN_ADDRESS,
+          toToken: '0xce971282fAAc9faBcF121944956da7142cccC855',
           fromAmount: '1000',
         })
       ).resolves.toEqual([])
@@ -1143,9 +1142,8 @@ describe('Paused Chain Tests', () => {
   let synapseSDK: SynapseSDK
 
   beforeEach(() => {
-    // Setup SDK with test providers
     const chainIds = [SupportedChainId.ETH, SupportedChainId.BOBA] // Include a paused chain
-    const providers = chainIds.map((chainId) => getTestProvider(chainId))
+    const providers = chainIds.map(() => mock<Provider>())
     synapseSDK = new SynapseSDK(chainIds, providers)
   })
 
