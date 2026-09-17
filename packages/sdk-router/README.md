@@ -277,3 +277,38 @@ const status: boolean = await synapseSDK.getBridgeTxStatus(
   synapseTxId
 )
 ```
+
+### SYN bridging
+
+`bridgeV2` and `intent` support SYN on Ethereum → HyperEVM, HyperEVM → Ethereum,
+and Ethereum → HyperCore under module `SYN`. These routes require SYN
+on both sides; swaps, HyperCore-origin routes, and legacy V1 APIs are unsupported.
+
+Initialize providers for Ethereum (1) and HyperEVM (999). `HYPERCORE_CHAIN_ID`
+(1337) identifies the non-EVM mainnet destination: do not supply an RPC provider.
+Its `SYN_ADDRESS_MAP` entry is the native token ID
+`0xf5f05eb8b9aa92365465f06daf5889c9`, with **8-decimal quote units**. Origin
+amounts and OFT transaction amounts remain in SYN's 18-decimal EVM units.
+
+```ts
+const quotes = await sdk.bridgeV2({
+  fromChainId: 1,
+  toChainId: HYPERCORE_CHAIN_ID,
+  fromToken: SYN_ADDRESS_MAP[1],
+  toToken: SYN_ADDRESS_MAP[HYPERCORE_CHAIN_ID],
+  fromAmount: '1000000000000000000', // 1 SYN
+  fromSender: walletAddress,
+  toRecipient: walletAddress,
+})
+```
+
+The adapter enforces receive/compose options; the SDK supplies empty extra options.
+Quotes include `nativeFee` in the transaction value, round output to OFT shared
+decimals, and refund source dust. Approve the quote's `routerAddress` as usual.
+Inactive HyperCore recipients reject with `HYPERCORE_ACCOUNT_INACTIVE`;
+disconnected quotes omit calldata. Composer capacity is checked at quote time,
+but can change before execution; failed Core transfers can refund on HyperEVM.
+
+Completion requires finalized LayerZero delivery and, for HyperCore, successful
+composition plus the matching CoreWriter SpotSend. It excludes composer refunds
+but does not independently verify the subsequent HyperCore balance update.
