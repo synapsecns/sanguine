@@ -13,7 +13,9 @@ export const SynapseProvider = memo(
   ({ children, chains }: { children: React.ReactNode; chains: any[] }) => {
     const synapseProviders = chains.map((chain) => {
       const providerUrls = [
-        `/api/rpc/${chain.id}`,
+        ...(process.env.NODE_ENV === 'development'
+          ? []
+          : [`/api/rpc/${chain.id}`]),
         chain?.configRpc,
         chain?.fallbackRpc,
       ]

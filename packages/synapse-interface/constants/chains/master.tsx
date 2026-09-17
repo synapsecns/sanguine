@@ -44,9 +44,8 @@ export const ETH: Chain = {
   chainImg: ethImg,
   layer: 1,
   rpcUrls: {
-    primary:
-      'https://eth-mainnet.g.alchemy.com/v2/rJ3f0IWjZbpgEwnzrRS6yYO3WNH0jGle',
-    fallback: 'https://eth.llamarpc.com',
+    primary: 'https://ethereum-rpc.publicnode.com',
+    fallback: 'https://eth.drpc.org',
   },
   explorerUrl: 'https://etherscan.io',
   explorerName: 'Etherscan',
