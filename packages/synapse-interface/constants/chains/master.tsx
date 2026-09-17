@@ -621,7 +621,7 @@ export const WORLDCHAIN: Chain = {
 
 export const HYPERLIQUID: Chain = {
   priorityRank: 99,
-  id: 998, // this is Hyperliquid Testnet from their docs
+  id: 1337, // HyperCore routing identifier, not an EVM RPC chain ID.
   chainSymbol: 'HYPERLIQUID',
   name: 'Hyperliquid',
   chainImg: hyperliquidImg,

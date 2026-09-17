@@ -595,6 +595,8 @@ export const ONEETH = new Token({
 export const SYN = new Token({
   addresses: {
     [CHAINS.ETH.id]: '0x0f2d719407fdbeff09d87557abb7232601fd9f29',
+    [CHAINS.HYPEREVM.id]: '0x6Cd6C5fDE1621053eD4BC7C09ADc76612D8C663f',
+    [CHAINS.HYPERLIQUID.id]: '0xf5f05eb8b9aa92365465f06daf5889c9',
     [CHAINS.BNB.id]: '0xa4080f1778e69467e905b8d6f72f6e441f9e9484',
     [CHAINS.POLYGON.id]: '0xf8f9efc0db77d8881500bb06ff5d6abc3070e695',
     [CHAINS.FANTOM.id]: '0xE55e19Fb4F2D85af758950957714292DAC1e25B2',
@@ -613,7 +615,12 @@ export const SYN = new Token({
     [CHAINS.BASE.id]: '0x432036208d2717394d2614d6697c46DF3Ed69540',
     [CHAINS.BLAST.id]: '0x9592f08387134e218327E6E8423400eb845EdE0E',
   },
-  decimals: 18,
+  decimals: Object.fromEntries(
+    Object.values(CHAINS).map(({ id }) => [
+      id,
+      id === CHAINS.HYPERLIQUID.id ? 8 : 18,
+    ])
+  ),
   symbol: 'SYN',
   name: 'Synapse',
   logo: synapseLogo,

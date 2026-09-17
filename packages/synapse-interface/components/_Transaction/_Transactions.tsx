@@ -8,6 +8,7 @@ import { ALL_TOKENS } from '@/constants/tokens/master'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { HYPERLIQUID } from '@/constants/chains/master'
+import { isHyperliquidUsdcDeposit } from '@/utils/hyperliquid'
 
 /** TODO: Update naming once refactoring of previous Activity/Tx flow is done */
 export const _Transactions = ({
@@ -40,7 +41,10 @@ export const _Transactions = ({
             (token) => token.routeSymbol === tx.originToken?.routeSymbol
           )
 
-          const destinationChain = CHAINS_BY_ID[tx.destinationChain?.id]
+          const destinationChain =
+            tx.destinationChain?.chainSymbol === HYPERLIQUID.chainSymbol
+              ? HYPERLIQUID
+              : CHAINS_BY_ID[tx.destinationChain?.id]
           const destinationToken = _(ALL_TOKENS).find(
             (token) => token.routeSymbol === tx.destinationToken?.routeSymbol
           )
@@ -63,7 +67,11 @@ export const _Transactions = ({
               timestamp={tx.timestamp}
               currentTime={currentTime}
               status={
-                tx.destinationChain.id === HYPERLIQUID.id
+                !tx.bridgeModuleName &&
+                isHyperliquidUsdcDeposit(
+                  destinationChain?.id,
+                  destinationToken
+                )
                   ? 'completed'
                   : tx.status
               }

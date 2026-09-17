@@ -13,7 +13,7 @@ import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useConfirmNewBridgePrice } from './hooks/useConfirmNewBridgePrice'
-import { HYPERLIQUID } from '@/constants/chains/master'
+import { isHyperliquidUsdcDeposit } from '@/utils/hyperliquid'
 import { HYPERLIQUID_MINIMUM_DEPOSIT } from '@/constants'
 
 export const BridgeTransactionButton = ({
@@ -59,12 +59,9 @@ export const BridgeTransactionButton = ({
   const { showDestinationWarning, isDestinationWarningAccepted } =
     useBridgeDisplayState()
 
+  const isUsdcDeposit = isHyperliquidUsdcDeposit(toChainId, toToken)
   const hasHyperliquidMinDeposit =
-    toChainId === HYPERLIQUID.id
-      ? Number(debouncedFromValue) > HYPERLIQUID_MINIMUM_DEPOSIT
-        ? true
-        : false
-      : true
+    !isUsdcDeposit || Number(debouncedFromValue) > HYPERLIQUID_MINIMUM_DEPOSIT
 
   const {
     hasValidInput,
@@ -84,7 +81,7 @@ export const BridgeTransactionButton = ({
     (isConnected && !hasValidQuote) ||
     (isConnected && !hasSufficientBalance) ||
     (isConnected && isQuoteStale) ||
-    (destinationAddress && !isAddress(destinationAddress)) ||
+    (!isUsdcDeposit && destinationAddress && !isAddress(destinationAddress)) ||
     !hasHyperliquidMinDeposit
 
   let buttonProperties
@@ -167,11 +164,19 @@ export const BridgeTransactionButton = ({
       destinationTokenAddressForState: toToken.addresses[toChainId],
       bridgeQuote,
     })
-  } else if (destinationAddress && !isAddress(destinationAddress)) {
+  } else if (
+    !isUsdcDeposit &&
+    destinationAddress &&
+    !isAddress(destinationAddress)
+  ) {
     buttonProperties = {
       label: t('Invalid Destination address'),
     }
-  } else if (showDestinationWarning && !isDestinationWarningAccepted) {
+  } else if (
+    !isUsdcDeposit &&
+    showDestinationWarning &&
+    !isDestinationWarningAccepted
+  ) {
     buttonProperties = {
       label: t('Confirm destination address'),
       onClick: () => dispatch(setIsDestinationWarningAccepted(true)),

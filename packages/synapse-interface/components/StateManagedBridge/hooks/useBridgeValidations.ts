@@ -8,7 +8,7 @@ import { BridgeQuoteState } from '@/slices/bridgeQuote/reducer'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 import { useBridgeSelections } from './useBridgeSelections'
-import { ARBITRUM, HYPERLIQUID } from '@/constants/chains/master'
+import { getBridgeDestinationChainId } from '@/utils/hyperliquid'
 
 export const useBridgeValidations = () => {
   const { chainId } = useAccount()
@@ -67,7 +67,7 @@ export const useBridgeValidations = () => {
       debouncedFromValue,
       fromChainId,
       fromToken,
-      toChainId === HYPERLIQUID.id ? ARBITRUM.id : toChainId,
+      getBridgeDestinationChainId(toChainId, toToken),
       toToken
     )
   }, [debouncedFromValue, fromChainId, fromToken, toChainId, toToken])

@@ -98,6 +98,7 @@ Use `paused-bridge-modules.json` to pause a specific bridge module from a specif
 - `SynapseRFQ`
 - `SynapseCCTP`
 - `SynapseBridge`
+- `SYN`
 
 ### Bridge Module Pause Props
 
@@ -108,7 +109,7 @@ Origin chain ID where the bridge module should be paused. Use only in `paused-br
 Destination chain ID where the bridge module should be paused. Use only in `paused-bridge-modules-to-chain.json`.
 
 `bridgeModuleName`
-Accepts `SynapseRFQ`, `SynapseBridge`, or `SynapseCCTP`.
+Accepts `SynapseRFQ`, `SynapseBridge`, `SynapseCCTP`, or `SYN`.
 
 ### Example
 
@@ -121,3 +122,7 @@ Accepts `SynapseRFQ`, `SynapseBridge`, or `SynapseCCTP`.
 1. Add the new locale code to `next.config.js`.
 2. Include the new locale in the `LanguageSelector`.
 3. Populate `/messages/{locale.json}` translations for the new locale. The keys in this should match `en-US.json`. See some of the other language files for reference.
+
+## SYN bridging
+
+SYN uses the existing bridge UI for Ethereum ↔ HyperEVM and Ethereum → HyperCore. Select **Hyperliquid** for HyperCore (non-EVM routing identifier `1337`); HyperEVM is `999`. HyperCore SYN uses its native 16-byte token ID and 8-decimal amounts. HyperCore recipients must already be activated. SYN uses the composer in one source transaction, while USDC retains its Arbitrum deposit flow. Module pauses can target `SYN`, including destination `1337`. See the [SDK integration notes](../sdk-router/README.md#syn-bridging) for quote units, fees, and tracking.

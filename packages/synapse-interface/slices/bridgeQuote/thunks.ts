@@ -10,7 +10,6 @@ import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { getPausedBridgeModuleNamesForRoute } from '@/utils/getPausedBridgeModuleNamesForRoute'
 import { Token } from '@/utils/types'
 import { BridgeModulePause } from '@/components/Maintenance/Maintenance'
-import { HYPERLIQUID } from '@/constants/chains/master'
 
 export const fetchBridgeQuote = createAsyncThunk(
   'bridgeQuote/fetchBridgeQuote',
@@ -131,7 +130,7 @@ export const fetchBridgeQuote = createAsyncThunk(
       tx,
     } = quote
 
-    if (!(expectedToAmount && minToAmount && toChainId !== HYPERLIQUID.id)) {
+    if (!(expectedToAmount && minToAmount)) {
       const msg = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken?.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
       return rejectWithValue(msg)
     }
