@@ -13,6 +13,7 @@ import { getSwapToTokens } from '@/utils/swapFinder/getSwapToTokens'
 import { getSwapFromChainIds } from '@/utils/swapFinder/getSwapFromChainIds'
 import { findValidToken } from '@/utils/findValidToken'
 import { flattenPausedTokens } from '@/utils/flattenPausedTokens'
+import { isActiveChainId } from '@/constants/chains'
 
 export interface SwapState {
   swapChainId: number
@@ -57,6 +58,10 @@ export const swapSlice = createSlice({
     },
     setSwapChainId: (state, action: PayloadAction<number>) => {
       const incomingFromChainId = action.payload
+
+      if (!isActiveChainId(incomingFromChainId)) {
+        return
+      }
 
       const validFromTokens = _(
         getSwapFromTokens({
@@ -148,6 +153,10 @@ export const swapSlice = createSlice({
         toTokenRouteSymbol: null,
       })
 
+      if (!incomingFromToken || !validFromChainIds?.length) {
+        return
+      }
+
       const validToTokens = _(
         getSwapToTokens({
           fromChainId: state.swapChainId ?? null,
@@ -215,6 +224,10 @@ export const swapSlice = createSlice({
         toChainId: state.swapChainId ?? null,
         toTokenRouteSymbol: incomingToToken?.routeSymbol ?? null,
       })
+
+      if (!incomingToToken || !validFromChainIds?.length) {
+        return
+      }
 
       const validFromTokens = _(
         getSwapFromTokens({

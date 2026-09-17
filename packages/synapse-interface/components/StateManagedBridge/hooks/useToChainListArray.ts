@@ -2,15 +2,14 @@ import _ from 'lodash'
 import Fuse from 'fuse.js'
 import { useTranslations } from 'next-intl'
 
-import * as ALL_CHAINS from '@/constants/chains/master'
-import { CHAINS_BY_ID, sortChains } from '@/constants/chains'
+import { ACTIVE_CHAINS_BY_ID, sortChains } from '@/constants/chains'
 import { useBridgeState } from '@/slices/bridge/hooks'
 
 export const useToChainListArray = (searchStr: string = '') => {
   const { toChainIds } = useBridgeState()
   const t = useTranslations('Bridge')
 
-  let possibleChains = _(ALL_CHAINS)
+  let possibleChains = _(ACTIVE_CHAINS_BY_ID)
     .pickBy((value) => _.includes(toChainIds, value.id))
     .values()
     .value()
@@ -19,8 +18,8 @@ export const useToChainListArray = (searchStr: string = '') => {
 
   let remainingChains = sortChains(
     _.difference(
-      Object.keys(CHAINS_BY_ID).map((id) => CHAINS_BY_ID[id]),
-      toChainIds?.map((id) => CHAINS_BY_ID[id])
+      Object.keys(ACTIVE_CHAINS_BY_ID).map((id) => ACTIVE_CHAINS_BY_ID[id]),
+      toChainIds?.map((id) => ACTIVE_CHAINS_BY_ID[id])
     )
   )
 
