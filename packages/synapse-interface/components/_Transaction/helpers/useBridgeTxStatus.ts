@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { HYPERLIQUID } from '@/constants/chains/master'
 
 interface UseBridgeTxStatusProps {
   originChainId: number
@@ -23,10 +24,11 @@ export const useBridgeTxStatus = ({
   kappa,
   checkStatus = false,
   currentTime,
-}: UseBridgeTxStatusProps): [boolean, string] => {
+}: UseBridgeTxStatusProps): [boolean, string, number?] => {
   const { synapseSDK } = useSynapseContext()
   const [isComplete, setIsComplete] = useState<boolean>(false)
   const [fetchedKappa, setFetchedKappa] = useState<string>(kappa ?? null)
+  const [deliveryChainId, setDeliveryChainId] = useState<number>()
 
   useEffect(() => {
     if (!checkStatus) return
@@ -43,6 +45,19 @@ export const useBridgeTxStatus = ({
       }
 
       if (fetchedKappa) {
+        if (
+          bridgeModuleName === 'SYN' &&
+          destinationChainId === HYPERLIQUID.id
+        ) {
+          const deliveredToChainId = await getSynDeliveryChainId(
+            synapseSDK,
+            destinationChainId,
+            fetchedKappa
+          )
+          setDeliveryChainId(deliveredToChainId)
+          setIsComplete(deliveredToChainId !== undefined)
+          return
+        }
         const txStatus = await getBridgeTxStatus(
           synapseSDK,
           destinationChainId,
@@ -59,7 +74,23 @@ export const useBridgeTxStatus = ({
     })()
   }, [currentTime, checkStatus, fetchedKappa])
 
-  return [isComplete, fetchedKappa]
+  return [isComplete, fetchedKappa, deliveryChainId]
+}
+
+const getSynDeliveryChainId = async (
+  synapseSDK: any,
+  destinationChainId: number,
+  txHash: string
+): Promise<number | undefined> => {
+  try {
+    return await synapseSDK?.synModuleSet?.getBridgeDeliveryChainId(
+      destinationChainId,
+      txHash
+    )
+  } catch (error) {
+    console.error('Error in getBridgeDeliveryChainId:', error)
+    return undefined
+  }
 }
 
 const getKappa = async (

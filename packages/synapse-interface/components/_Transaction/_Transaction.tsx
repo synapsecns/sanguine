@@ -90,7 +90,7 @@ export const _Transaction = ({
     isCheckTxForRefund = isEstimatedTimeReached
   }
 
-  const [isTxCompleted, _kappa] = useBridgeTxStatus({
+  const [isTxCompleted, _kappa, deliveryChainId] = useBridgeTxStatus({
     originChainId: originChain?.id,
     destinationChainId: destinationChain?.id,
     originTxHash,
@@ -122,7 +122,8 @@ export const _Transaction = ({
     originTxHash,
     isTxCompleted,
     isTxReverted,
-    isTxRefunded
+    isTxRefunded,
+    deliveryChainId
   )
 
   // Show transaction support if the transaction is delayed by more than 5 minutes and not finalized or reverted

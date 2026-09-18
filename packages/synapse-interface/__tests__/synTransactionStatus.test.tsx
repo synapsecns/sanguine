@@ -2,6 +2,10 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { _Transactions } from '@/components/_Transaction/_Transactions'
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { SYN, USDC } from '@/constants/tokens/bridgeable'
+import transactionsReducer, {
+  completeTransaction,
+} from '@/slices/_transactions/reducer'
+import { ETH, HYPEREVM, HYPERLIQUID } from '@/constants/chains/master'
 
 jest.mock('../slices/_transactions/hooks', () => ({
   use_TransactionsState: jest.fn(),
@@ -48,4 +52,34 @@ describe('HyperCore transaction display', () => {
       ).toContain(`<span data-chain="1337">${displayedStatus}</span>`)
     }
   )
+
+  it('persists an observed HyperEVM fallback as the completed destination', () => {
+    const originTxHash = '0xfallback'
+    const state = {
+      transactions: [
+        {
+          originTxHash,
+          originChain: ETH,
+          originToken: SYN,
+          destinationChain: HYPERLIQUID,
+          destinationToken: SYN,
+          status: 'pending',
+        },
+      ],
+    }
+
+    const nextState = transactionsReducer(
+      state,
+      completeTransaction({
+        originTxHash,
+        kappa: originTxHash,
+        destinationChain: HYPEREVM,
+      })
+    )
+
+    expect(nextState.transactions[0]).toMatchObject({
+      status: 'completed',
+      destinationChain: HYPEREVM,
+    })
+  })
 })

@@ -64,15 +64,22 @@ export const transactionsSlice = createSlice({
     },
     completeTransaction: (
       state,
-      action: PayloadAction<{ originTxHash: string; kappa: string }>
+      action: PayloadAction<{
+        originTxHash: string
+        kappa: string
+        destinationChain?: Chain
+      }>
     ) => {
-      const { originTxHash } = action.payload
+      const { originTxHash, destinationChain } = action.payload
 
       const txIndex = state.transactions.findIndex(
         (tx) => tx.originTxHash === originTxHash
       )
       if (txIndex !== -1) {
         state.transactions[txIndex].status = 'completed'
+        if (destinationChain) {
+          state.transactions[txIndex].destinationChain = destinationChain
+        }
       }
     },
     revertTransaction: (

@@ -11,6 +11,7 @@ import {
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { type Chain } from '@/utils/types'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 /**
  * Hook that updates bridge transaction in state.
@@ -29,7 +30,8 @@ export const useBridgeTxUpdater = (
   originTxHash: string,
   isTxComplete: boolean,
   isTxReverted: boolean,
-  isTxRefunded: boolean
+  isTxRefunded: boolean,
+  deliveryChainId?: number
 ) => {
   const dispatch = useAppDispatch()
   const { transactions } = use_TransactionsState()
@@ -63,16 +65,33 @@ export const useBridgeTxUpdater = (
     if (isTxComplete && originTxHash && kappa) {
       /** Check that we have not already marked tx as complete */
       if (storedTx.status !== 'completed') {
-        dispatch(completeTransaction({ originTxHash, kappa }))
+        const deliveredToChain = deliveryChainId
+          ? CHAINS_BY_ID[deliveryChainId]
+          : destinationChain
+        dispatch(
+          completeTransaction({
+            originTxHash,
+            kappa,
+            destinationChain: deliveredToChain,
+          })
+        )
 
         /** Update Destination Chain token balances after tx is marked complete  */
         dispatch(
           fetchAndStoreSingleNetworkPortfolioBalances({
             address: connectedAddress,
-            chainId: destinationChain.id,
+            chainId: deliveredToChain.id,
           })
         )
       }
     }
-  }, [isTxComplete, dispatch, transactions, originTxHash, kappa])
+  }, [
+    isTxComplete,
+    dispatch,
+    transactions,
+    originTxHash,
+    kappa,
+    destinationChain,
+    deliveryChainId,
+  ])
 }
