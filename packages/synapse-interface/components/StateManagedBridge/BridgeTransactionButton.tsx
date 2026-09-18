@@ -23,6 +23,7 @@ export const BridgeTransactionButton = ({
   isBridgePaused,
   isTyping,
   isQuoteStale,
+  isRecipientWarningAccepted,
 }) => {
   const dispatch = useAppDispatch()
   const { openConnectModal } = useConnectModal()
@@ -72,6 +73,7 @@ export const BridgeTransactionButton = ({
   } = useBridgeValidations()
 
   const isButtonDisabled =
+    !isRecipientWarningAccepted ||
     isBridgePaused ||
     isTyping ||
     isLoading ||

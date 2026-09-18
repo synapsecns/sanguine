@@ -4,6 +4,7 @@ import { Address, isAddress, zeroAddress } from 'viem'
 
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
+import { HYPERLIQUID } from '@/constants/chains/master'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { stringToBigInt, formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
@@ -137,6 +138,17 @@ export const fetchBridgeQuote = createAsyncThunk(
 
     const toValueBigInt = BigInt(expectedToAmount) ?? 0n
     const bridgeModuleName = moduleNames[moduleNames.length - 1]
+    // Only a confirmed inactive SYN recipient needs the HyperEVM acknowledgement.
+    // Let a failed check reject the quote rather than treating it as active.
+    const hyperCoreRecipient =
+      bridgeModuleName === 'SYN' && toChainId === HYPERLIQUID.id && toRecipient
+        ? {
+            address: toRecipient,
+            isActive: await synapseSDK.synModuleSet.isHyperCoreAccountActive(
+              toRecipient
+            ),
+          }
+        : undefined
 
     const isUnsupported = AcceptedChainId[fromChainId] ? false : true
 
@@ -171,6 +183,7 @@ export const fetchBridgeQuote = createAsyncThunk(
       delta: toValueBigInt,
       estimatedTime,
       bridgeModuleName,
+      hyperCoreRecipient,
       gasDropAmount: BigInt(gasDropAmount),
       timestamp: currentTimestamp,
       originChainId,

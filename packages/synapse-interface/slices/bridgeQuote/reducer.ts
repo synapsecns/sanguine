@@ -8,6 +8,7 @@ export interface BridgeQuoteState {
   bridgeQuote: BridgeQuote
   previousBridgeQuote: BridgeQuote | null
   isLoading: boolean
+  currentRequestId?: string
 }
 
 export const initialState: BridgeQuoteState = {
@@ -25,6 +26,8 @@ export const bridgeQuoteSlice = createSlice({
     },
     resetBridgeQuote: (state) => {
       state.bridgeQuote = initialState.bridgeQuote
+      state.currentRequestId = undefined
+      state.isLoading = false
     },
     setPreviousBridgeQuote: (state, action: PayloadAction<any>) => {
       state.previousBridgeQuote = action.payload
@@ -32,17 +35,17 @@ export const bridgeQuoteSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchBridgeQuote.pending, (state) => {
+      .addCase(fetchBridgeQuote.pending, (state, action) => {
         state.isLoading = true
+        state.currentRequestId = action.meta.requestId
       })
-      .addCase(
-        fetchBridgeQuote.fulfilled,
-        (state, action: PayloadAction<BridgeQuote>) => {
-          state.bridgeQuote = action.payload
-          state.isLoading = false
-        }
-      )
-      .addCase(fetchBridgeQuote.rejected, (state) => {
+      .addCase(fetchBridgeQuote.fulfilled, (state, action) => {
+        if (state.currentRequestId !== action.meta.requestId) return
+        state.bridgeQuote = action.payload
+        state.isLoading = false
+      })
+      .addCase(fetchBridgeQuote.rejected, (state, action) => {
+        if (state.currentRequestId !== action.meta.requestId) return
         state.bridgeQuote = EMPTY_BRIDGE_QUOTE
         state.isLoading = false
       })

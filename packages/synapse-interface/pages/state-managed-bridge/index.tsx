@@ -25,7 +25,10 @@ import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver
 import Button from '@/components/ui/tailwind/Button'
 import { SettingsToggle } from '@/components/StateManagedBridge/SettingsToggle'
 import { BridgeCard } from '@/components/ui/BridgeCard'
-import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
+import {
+  ConfirmDestinationAddressWarning,
+  SynHyperCoreRecipientWarning,
+} from '@/components/StateManagedBridge/BridgeWarnings'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -124,6 +127,30 @@ const StateManagedBridge = () => {
   )
 
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
+  const [acceptedSynRecipient, setAcceptedSynRecipient] = useState<string>(null)
+  const synRecipient = (
+    destinationAddress && isAddress(destinationAddress)
+      ? destinationAddress
+      : address
+  )?.toLowerCase()
+  const isSynHyperCore =
+    toChainId === HYPERLIQUID.id &&
+    fromToken?.routeSymbol === 'SYN' &&
+    toToken?.routeSymbol === 'SYN'
+  const checkedRecipient = bridgeQuote.hyperCoreRecipient
+  const hasCheckedSynRecipient =
+    !!synRecipient && checkedRecipient?.address.toLowerCase() === synRecipient
+  const showSynRecipientWarning =
+    isSynHyperCore && hasCheckedSynRecipient && !checkedRecipient.isActive
+  const isRecipientWarningAccepted =
+    !isSynHyperCore ||
+    !synRecipient ||
+    (hasCheckedSynRecipient &&
+      (checkedRecipient.isActive || acceptedSynRecipient === synRecipient))
+
+  useEffect(() => {
+    setAcceptedSynRecipient(null)
+  }, [synRecipient, fromChainId, toChainId, fromToken, toToken])
 
   const isApproved = useIsBridgeApproved()
 
@@ -168,6 +195,7 @@ const StateManagedBridge = () => {
       console.log('trying to set bridge quote')
       getAndSetBridgeQuote()
     } else {
+      currentSDKRequestID.current += 1
       dispatch(resetBridgeQuote())
     }
   }, [
@@ -207,6 +235,7 @@ const StateManagedBridge = () => {
           })
         )
 
+        if (thisRequestId !== currentSDKRequestID.current) return
         toast.dismiss(quoteToastRef.current.id)
 
         if (fetchBridgeQuote.fulfilled.match(result)) {
@@ -225,19 +254,16 @@ const StateManagedBridge = () => {
         }
 
         if (fetchBridgeQuote.rejected.match(result) && !isDirectUsdcDeposit) {
-          const message =
-            result.error.code === 'HYPERCORE_ACCOUNT_INACTIVE'
-              ? result.error.message
-              : t(
-                  'No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}',
-                  {
-                    debouncedFromValue: debouncedFromValue,
-                    fromToken: fromToken?.symbol,
-                    fromChainId: CHAINS_BY_ID[fromChainId]?.name,
-                    toToken: toToken?.symbol,
-                    toChainId: CHAINS_BY_ID[toChainId]?.name,
-                  }
-                )
+          const message = t(
+            'No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}',
+            {
+              debouncedFromValue: debouncedFromValue,
+              fromToken: fromToken?.symbol,
+              fromChainId: CHAINS_BY_ID[fromChainId]?.name,
+              toToken: toToken?.symbol,
+              toChainId: CHAINS_BY_ID[toChainId]?.name,
+            }
+          )
 
           quoteToastRef.current.id = toast(message, { duration: 3000 })
         }
@@ -304,6 +330,7 @@ const StateManagedBridge = () => {
   }
 
   const executeBridge = async () => {
+    if (!isRecipientWarningAccepted) return
     let pendingPopup: any
 
     const pendingTransactionId: number = getUnixTimeSecondsNow()
@@ -543,6 +570,14 @@ const StateManagedBridge = () => {
                 />
               )}
               {!isUsdcDeposit && <ConfirmDestinationAddressWarning />}
+              {showSynRecipientWarning && (
+                <SynHyperCoreRecipientWarning
+                  accepted={acceptedSynRecipient === synRecipient}
+                  onAccept={(accepted) =>
+                    setAcceptedSynRecipient(accepted ? synRecipient : null)
+                  }
+                />
+              )}
               <div className="relative flex items-center">
                 {isDirectUsdcDeposit ? (
                   <HyperliquidTransactionButton
@@ -558,6 +593,7 @@ const StateManagedBridge = () => {
                     executeBridge={executeBridge}
                     isBridgePaused={isBridgePaused}
                     isQuoteStale={isQuoteStale}
+                    isRecipientWarningAccepted={isRecipientWarningAccepted}
                   />
                 )}
                 <div className="absolute flex items-center !right-10 pointer-events-none">

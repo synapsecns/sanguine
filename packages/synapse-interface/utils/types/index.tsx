@@ -79,6 +79,7 @@ export type BridgeQuote = {
   originChainId: number
   destChainId: number
   requestId: number
+  hyperCoreRecipient?: { address: string; isActive: boolean }
   tx?: any
 }
 
