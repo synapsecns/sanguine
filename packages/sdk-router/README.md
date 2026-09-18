@@ -305,10 +305,15 @@ const quotes = await sdk.bridgeV2({
 The adapter enforces receive/compose options; the SDK supplies empty extra options.
 Quotes include `nativeFee` in the transaction value, round output to OFT shared
 decimals, and refund source dust. Approve the quote's `routerAddress` as usual.
-Inactive HyperCore recipients reject with `HYPERCORE_ACCOUNT_INACTIVE`;
-disconnected quotes omit calldata. Composer capacity is checked at quote time,
-but can change before execution; failed Core transfers can refund on HyperEVM.
+Use `sdk.synModuleSet.isHyperCoreAccountActive(recipient)` to check activation
+before submitting. Inactive recipients may still bridge: the composer automatically
+returns SYN to the same recipient on HyperEVM when the Core transfer fails. The
+interface requires acknowledgement of that fallback. Disconnected quotes omit
+calldata. Composer availability and capacity are checked at quote time.
 
 Completion requires finalized LayerZero delivery and, for HyperCore, successful
-composition plus the matching CoreWriter SpotSend. It excludes composer refunds
-but does not independently verify the subsequent HyperCore balance update.
+composition plus either the matching CoreWriter SpotSend or the exact SYN fallback
+transfer on HyperEVM. `sdk.synModuleSet.getBridgeDeliveryChainId(destChainId, txHash)`
+returns the verified destination (1337 for Core submission, 999 for fallback), or
+`undefined` while pending. The existing boolean status reports completion of either
+outcome. Core submission does not independently verify the subsequent balance update.

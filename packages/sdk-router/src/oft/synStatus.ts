@@ -5,6 +5,7 @@ import { BigNumber, utils } from 'ethers'
 import {
   HYPERCORE_CHAIN_ID,
   LZ_EID_MAP,
+  SYN_ADDRESS_MAP,
   SYN_COMPOSER_ADDRESS,
   SYN_CORE_TOKEN_INDEX,
   SupportedChainId,
@@ -17,6 +18,9 @@ const CORE_WRITER = '0x3333333333333333333333333333333333333333'
 const SPOT_SEND_HEADER = '0x01000006'
 const coreWriterInterface = new Interface([
   'event RawAction(address indexed user, bytes data)',
+])
+const tokenInterface = new Interface([
+  'event Transfer(address indexed from, address indexed to, uint256 value)',
 ])
 
 interface LzMessage {
@@ -34,18 +38,18 @@ interface LzResponse {
 }
 
 /**
- * Checks finalized OFT receipt. For HyperCore, also verifies that compose submitted
- * the matching SpotSend action. HyperCore processes that action after the EVM block.
+ * Checks finalized OFT receipt. For HyperCore, verifies the matching SpotSend
+ * submission or automatic SYN fallback to the same recipient on HyperEVM.
  */
-export const getSynBridgeStatus = async (
+export const getSynBridgeDeliveryChainId = async (
   destChainId: number,
   txHash: string,
   hyperEvmProvider?: Provider
-): Promise<boolean> => {
+): Promise<number | undefined> => {
   const isCore = destChainId === HYPERCORE_CHAIN_ID
   const dstEid = LZ_EID_MAP[isCore ? SupportedChainId.HYPEREVM : destChainId]
   if (!dstEid) {
-    return false
+    return undefined
   }
 
   const response = await getWithTimeout(
@@ -54,7 +58,7 @@ export const getSynBridgeStatus = async (
     LZ_API_TIMEOUT
   )
   if (!response) {
-    return false
+    return undefined
   }
 
   try {
@@ -68,34 +72,47 @@ export const getSynBridgeStatus = async (
         continue
       }
       if (!isCore) {
-        return true
+        return destChainId
       }
       if (
         hyperEvmProvider &&
-        message.destination.lzCompose?.status === 'SUCCEEDED' &&
-        (await hasMatchingSpotSend(message, hyperEvmProvider))
+        message.destination.lzCompose?.status === 'SUCCEEDED'
       ) {
-        return true
+        const deliveryChainId = await getComposeDeliveryChainId(
+          message,
+          hyperEvmProvider
+        )
+        if (deliveryChainId !== undefined) {
+          return deliveryChainId
+        }
       }
     }
   } catch {
     // A malformed API response or unavailable destination RPC is not delivery.
   }
-  return false
+  return undefined
 }
 
-/** A successful lzCompose can refund to HyperEVM; require its exact CoreWriter action. */
-const hasMatchingSpotSend = async (
+export const getSynBridgeStatus = async (
+  destChainId: number,
+  txHash: string,
+  hyperEvmProvider?: Provider
+): Promise<boolean> =>
+  (await getSynBridgeDeliveryChainId(destChainId, txHash, hyperEvmProvider)) !==
+  undefined
+
+/** A successful lzCompose must submit the Core action or return the full amount on HyperEVM. */
+const getComposeDeliveryChainId = async (
   message: LzMessage,
   provider: Provider
-): Promise<boolean> => {
+): Promise<number | undefined> => {
   const payload = message.source?.tx?.payload
   if (
     !payload ||
     !utils.isHexString(payload) ||
     utils.hexDataLength(payload) !== 136
   ) {
-    return false
+    return undefined
   }
 
   const composerWord = utils.hexDataSlice(payload, 0, 32)
@@ -103,20 +120,24 @@ const hasMatchingSpotSend = async (
     composerWord.toLowerCase() !==
     utils.hexZeroPad(SYN_COMPOSER_ADDRESS, 32).toLowerCase()
   ) {
-    return false
+    return undefined
   }
   // OFT payload: bytes32 composer, uint64 amountSD, bytes32 sender,
   // abi.encode(uint256 minMsgValue, address Core recipient).
-  if (!BigNumber.from(utils.hexDataSlice(payload, 72, 104)).isZero()) {
-    return false
+  const [minMsgValue, recipient] = utils.defaultAbiCoder.decode(
+    ['uint256', 'address'],
+    utils.hexDataSlice(payload, 72)
+  )
+  if (!BigNumber.from(minMsgValue).isZero()) {
+    return undefined
   }
   const amountSD = BigNumber.from(utils.hexDataSlice(payload, 32, 40))
   if (amountSD.isZero()) {
-    return false
+    return undefined
   }
-  const recipient = utils.getAddress(utils.hexDataSlice(payload, 116, 136))
   // SYN has 6 shared decimals and 8 HyperCore weiDecimals.
   const expectedCoreAmount = amountSD.mul(100)
+  const expectedEvmAmount = amountSD.mul(BigNumber.from(10).pow(12))
 
   for (const { txHash } of message.destination?.lzCompose?.txs ?? []) {
     if (!txHash) {
@@ -127,10 +148,25 @@ const hasMatchingSpotSend = async (
       continue
     }
     for (const log of receipt.logs) {
-      if (log.address.toLowerCase() !== CORE_WRITER) {
-        continue
-      }
       try {
+        if (
+          log.address.toLowerCase() ===
+          SYN_ADDRESS_MAP[SupportedChainId.HYPEREVM].toLowerCase()
+        ) {
+          const transfer = tokenInterface.parseLog(log)
+          if (
+            transfer.args.from.toLowerCase() ===
+              SYN_COMPOSER_ADDRESS.toLowerCase() &&
+            transfer.args.to.toLowerCase() === recipient.toLowerCase() &&
+            BigNumber.from(transfer.args.value).eq(expectedEvmAmount)
+          ) {
+            return SupportedChainId.HYPEREVM
+          }
+          continue
+        }
+        if (log.address.toLowerCase() !== CORE_WRITER) {
+          continue
+        }
         const parsed = coreWriterInterface.parseLog(log)
         if (
           parsed.name !== 'RawAction' ||
@@ -139,7 +175,10 @@ const hasMatchingSpotSend = async (
           continue
         }
         const action: string = parsed.args.data
-        if (utils.hexDataSlice(action, 0, 4) !== SPOT_SEND_HEADER) {
+        if (
+          utils.hexDataLength(action) !== 100 ||
+          utils.hexDataSlice(action, 0, 4) !== SPOT_SEND_HEADER
+        ) {
           continue
         }
         const [to, index, amount] = utils.defaultAbiCoder.decode(
@@ -151,12 +190,12 @@ const hasMatchingSpotSend = async (
           BigNumber.from(index).eq(SYN_CORE_TOKEN_INDEX) &&
           BigNumber.from(amount).eq(expectedCoreAmount)
         ) {
-          return true
+          return HYPERCORE_CHAIN_ID
         }
       } catch {
         // Ignore unrelated or malformed logs in the compose receipt.
       }
     }
   }
-  return false
+  return undefined
 }

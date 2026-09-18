@@ -27,6 +27,7 @@ const oftInterface = UsdtModule.oftInterface
 // Mock the RPC boundary, preserving ABI encoding/decoding, routing, SIR and zap construction.
 const setup = () => {
   let active = true
+  let composerActive = true
   let capacity = true
   const quoteSendParams: any[] = []
   const providersByChain = [1, 999].map((chainId) => {
@@ -47,7 +48,11 @@ const setup = () => {
           data: String(await tx.data),
         })
         if (parsed.name === 'coreUserExists') {
-          return composerInterface.encodeFunctionResult(parsed.name, [[active]])
+          const exists =
+            parsed.args[0].toLowerCase() === SYN_COMPOSER_ADDRESS.toLowerCase()
+              ? composerActive
+              : active
+          return composerInterface.encodeFunctionResult(parsed.name, [[exists]])
         }
         if (parsed.name === 'ERC20_ASSET_BRIDGE') {
           return composerInterface.encodeFunctionResult(parsed.name, [
@@ -111,6 +116,9 @@ const setup = () => {
     quoteSendParams,
     setActive: (value: boolean) => {
       active = value
+    },
+    setComposerActive: (value: boolean) => {
+      composerActive = value
     },
     setCapacity: (value: boolean) => {
       capacity = value
@@ -234,13 +242,38 @@ it('rejects the former 998 destination and the linked EVM token as a Core token 
   ).resolves.toEqual([])
 })
 
-it('rejects an inactive HyperCore recipient with an actionable error before building calldata', async () => {
+it('exposes recipient activation while allowing a quote with the automatic HyperEVM fallback', async () => {
   const { sdk, params, setActive, quoteSendParams } = setup()
+  await expect(
+    sdk.synModuleSet.isHyperCoreAccountActive(recipient)
+  ).resolves.toBe(true)
   setActive(false)
-  await expect(sdk.bridgeV2(params(1, HYPERCORE_CHAIN_ID))).rejects.toThrow(
-    'Activate the recipient account on HyperCore'
+  await expect(
+    sdk.synModuleSet.isHyperCoreAccountActive(recipient)
+  ).resolves.toBe(false)
+  const [quote] = await sdk.bridgeV2(params(1, HYPERCORE_CHAIN_ID))
+  expect(quote.tx).toBeDefined()
+  expect(quoteSendParams[0][5]).toBe(
+    utils.defaultAbiCoder.encode(['uint256', 'address'], [0, recipient])
   )
-  expect(quoteSendParams).toHaveLength(0)
+})
+
+it('rejects unavailable activation checks and an inactive composer', async () => {
+  const { sdk, params, setComposerActive } = setup()
+  ;(
+    sdk.synModuleSet.composer!.provider.call as jest.Mock
+  ).mockRejectedValueOnce(new Error('RPC unavailable'))
+  await expect(
+    sdk.synModuleSet.isHyperCoreAccountActive(recipient)
+  ).rejects.toThrow('RPC unavailable')
+  setComposerActive(false)
+  await expect(sdk.bridgeV2(params(1, HYPERCORE_CHAIN_ID))).rejects.toThrow(
+    'temporarily unavailable'
+  )
+  sdk.synModuleSet.composer = undefined
+  await expect(
+    sdk.synModuleSet.isHyperCoreAccountActive(recipient)
+  ).rejects.toThrow('HyperEVM provider is required')
 })
 
 it('omits zero-after-dust amounts and capacity failures', async () => {

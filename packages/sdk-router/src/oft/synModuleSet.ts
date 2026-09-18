@@ -32,7 +32,7 @@ import {
   SynModule,
   SynSendParams,
 } from './synModule'
-import { getSynBridgeStatus } from './synStatus'
+import { getSynBridgeDeliveryChainId } from './synStatus'
 
 export class SynModuleSet extends SynapseModuleSet {
   public readonly moduleName = 'SYN'
@@ -61,15 +61,34 @@ export class SynModuleSet extends SynapseModuleSet {
     ]
   }
 
-  public getBridgeTxStatus(
+  public async getBridgeTxStatus(
     destChainId: number,
     txHash: string
   ): Promise<boolean> {
-    return getSynBridgeStatus(
+    return (
+      (await this.getBridgeDeliveryChainId(destChainId, txHash)) !== undefined
+    )
+  }
+
+  public getBridgeDeliveryChainId(
+    destChainId: number,
+    txHash: string
+  ): Promise<number | undefined> {
+    return getSynBridgeDeliveryChainId(
       destChainId,
       txHash,
       this.modules[SupportedChainId.HYPEREVM]?.oftContract.provider
     )
+  }
+
+  public async isHyperCoreAccountActive(recipient: string): Promise<boolean> {
+    if (!this.composer) {
+      throw new Error(
+        'HyperEVM provider is required to check HyperCore activation.'
+      )
+    }
+    const account = await this.composer.coreUserExists(recipient)
+    return account.exists
   }
 
   public getEstimatedTime(fromChainId: number): number {
@@ -136,20 +155,8 @@ export class SynModuleSet extends SynapseModuleSet {
     }
     const hyperCore = bridgeToken.destChainId === HYPERCORE_CHAIN_ID
     const recipient = toRecipient || USER_SIMULATED_ADDRESS
-    if (hyperCore && toRecipient) {
-      const [user, composer] = await Promise.all([
-        this.composer!.coreUserExists(toRecipient),
-        this.composer!.coreUserExists(SYN_COMPOSER_ADDRESS),
-      ])
-      if (!user.exists) {
-        throw Object.assign(
-          new Error(
-            'Activate the recipient account on HyperCore before bridging SYN.'
-          ),
-          { code: 'HYPERCORE_ACCOUNT_INACTIVE' }
-        )
-      }
-      if (!composer.exists) {
+    if (hyperCore) {
+      if (!(await this.isHyperCoreAccountActive(SYN_COMPOSER_ADDRESS))) {
         throw new Error('SYN bridging to HyperCore is temporarily unavailable.')
       }
     }
