@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.23.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.23.3...@synapsecns/sdk-router@0.23.4) (2026-09-21)
+
+
+### Bug Fixes
+
+* restore Aurora and Cronos outbound quotes and RPC fallback ([#4132](https://github.com/synapsecns/sanguine/issues/4132)) ([3e98c89](https://github.com/synapsecns/sanguine/commit/3e98c89c98fb3b6dfe6766b713add604be85619e))
+
+
+
+
+
 ## [0.23.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.23.2...@synapsecns/sdk-router@0.23.3) (2026-05-22)
 
 

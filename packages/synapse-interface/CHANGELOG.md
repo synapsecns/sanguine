@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.45.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.45.0...@synapsecns/synapse-interface@0.45.1) (2026-09-21)
+
+
+### Bug Fixes
+
+* restore Aurora and Cronos outbound quotes and RPC fallback ([#4132](https://github.com/synapsecns/sanguine/issues/4132)) ([3e98c89](https://github.com/synapsecns/sanguine/commit/3e98c89c98fb3b6dfe6766b713add604be85619e))
+
+
+
+
+
 # [0.45.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.44.5...@synapsecns/synapse-interface@0.45.0) (2026-09-17)
 
 
