@@ -24,16 +24,13 @@ import lineaImg from '@assets/chains/linea.svg'
 import worldchainImg from '@assets/chains/worldchain.svg'
 import unichainImg from '@assets/chains/unichain.svg'
 import berachainImg from '@assets/chains/berachain.svg'
-
 import ethExplorerImg from '@assets/explorer/etherscan.svg'
 import arbitrumExplorerImg from '@assets/explorer/arbiscan.svg'
 import bnbExplorerImg from '@assets/explorer/bscscan.svg'
 import baseExplorerImg from '@assets/explorer/basescan.svg'
 import avalancheExplorerImg from '@assets/explorer/snowscan.svg'
 import fantomExplorerImg from '@assets/explorer/ftmscan.svg'
-
 import { zeroAddress } from 'viem'
-
 import { Chain } from '@types'
 
 export const ETH: Chain = {
@@ -44,9 +41,8 @@ export const ETH: Chain = {
   chainImg: ethImg,
   layer: 1,
   rpcUrls: {
-    primary:
-      'https://eth-mainnet.g.alchemy.com/v2/rJ3f0IWjZbpgEwnzrRS6yYO3WNH0jGle',
-    fallback: 'https://eth.llamarpc.com',
+    primary: 'https://ethereum-rpc.publicnode.com',
+    fallback: 'https://eth.drpc.org',
   },
   explorerUrl: 'https://etherscan.io',
   explorerName: 'Etherscan',
@@ -71,8 +67,7 @@ export const ARBITRUM: Chain = {
   layer: 2,
   blockTime: 300,
   rpcUrls: {
-    primary:
-      'https://arb-mainnet.g.alchemy.com/v2/7kjdkqKTh1zQ1mRYGi4nJJbxbyJXHkef',
+    primary: 'https://arbitrum-one-rpc.publicnode.com',
     fallback: 'https://arb1.arbitrum.io/rpc',
   },
   nativeCurrency: {
@@ -173,8 +168,7 @@ export const OPTIMISM: Chain = {
   layer: 2,
   blockTime: 2000,
   rpcUrls: {
-    primary:
-      'https://opt-mainnet.g.alchemy.com/v2/x1--EvECmiLCc4IRpo1granp1S7xxbxQ',
+    primary: 'https://optimism-rpc.publicnode.com',
     fallback: 'https://gateway.tenderly.co/public/optimism',
   },
   nativeCurrency: {
@@ -199,8 +193,7 @@ export const POLYGON: Chain = {
   layer: 2,
   blockTime: 2000,
   rpcUrls: {
-    primary:
-      'https://polygon-mainnet.g.alchemy.com/v2/mN1t8Oc6E912QF28iPHaRvVEmv6EpYSs',
+    primary: 'https://polygon-bor-rpc.publicnode.com',
     fallback: 'https://polygon.drpc.org',
   },
   nativeCurrency: {
@@ -250,7 +243,7 @@ export const KLAYTN: Chain = {
   layer: 1,
   blockTime: 1000,
   rpcUrls: {
-    primary: 'https://kaia.blockpi.network/v1/rpc/public',
+    primary: 'https://public-en.node.kaia.io',
     fallback: 'https://internal.klaytn.rpc.defikingdoms.com/api=654302102',
   },
   nativeCurrency: {
@@ -499,8 +492,7 @@ export const BASE: Chain = {
   chainImg: baseImg,
   layer: 2,
   rpcUrls: {
-    primary:
-      'https://base-mainnet.g.alchemy.com/v2/_YKy-Vm3LsknT8JKSa2ZTSmKu9Qp01Vd',
+    primary: 'https://base-rpc.publicnode.com',
     fallback: 'https://mainnet.base.org',
   },
   explorerUrl: 'https://basescan.org',
