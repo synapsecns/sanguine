@@ -2,10 +2,11 @@
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { createContext, useContext, memo, useMemo } from 'react'
 import {
-  StaticJsonRpcProvider,
   FallbackProvider,
   FallbackProviderConfig,
 } from '@ethersproject/providers'
+
+import { TransportAwareJsonRpcProvider } from './TransportAwareJsonRpcProvider'
 
 export const SynapseContext = createContext(null)
 
@@ -13,9 +14,7 @@ export const SynapseProvider = memo(
   ({ children, chains }: { children: React.ReactNode; chains: any[] }) => {
     const synapseProviders = chains.map((chain) => {
       const providerUrls = [
-        ...(process.env.NODE_ENV === 'development'
-          ? []
-          : [`/api/rpc/${chain.id}`]),
+        `/api/rpc/${chain.id}`,
         chain?.configRpc,
         chain?.fallbackRpc,
       ]
@@ -23,7 +22,7 @@ export const SynapseProvider = memo(
       // Set priority based on list order
       const providerConfigs: FallbackProviderConfig[] = providerUrls.map(
         (url, index) => ({
-          provider: new StaticJsonRpcProvider(url, chain.id),
+          provider: new TransportAwareJsonRpcProvider(url, chain.id),
           priority: index,
           stallTimeout: 750,
         })

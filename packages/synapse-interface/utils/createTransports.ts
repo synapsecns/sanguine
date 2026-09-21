@@ -10,9 +10,7 @@ export const createTransports = (chains: Chain[]): Transports => {
     const synapseChain = CHAINS_BY_ID[chain.id]
 
     const rpcUrls = [
-      ...(process.env.NODE_ENV === 'development'
-        ? []
-        : [`/api/rpc/${chain.id}`]),
+      `/api/rpc/${chain.id}`,
       synapseChain.rpcUrls.primary,
       synapseChain.rpcUrls.fallback,
     ]
