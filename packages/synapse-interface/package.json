@@ -13,6 +13,7 @@
     "lint": "next lint",
     "cypress:run": "echo 'No cypress tests defined.'",
     "test:coverage": "echo 'No tests defined.'",
+    "test:rpc": "node --test utils/providers/TransportAwareJsonRpcProvider.test.cjs",
     "lint:fix": "npm run lint -- --fix",
     "lint:check": "eslint . --max-warnings=0",
     "lint:find-string-literals": "npx eslint -c .eslintrc-i18n.js './**/*.{js,jsx,ts,tsx}'",
