@@ -5,6 +5,7 @@ import {
   FallbackProvider,
   FallbackProviderConfig,
 } from '@ethersproject/providers'
+
 import { TransportAwareJsonRpcProvider } from './TransportAwareJsonRpcProvider'
 
 export const SynapseContext = createContext(null)

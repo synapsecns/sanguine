@@ -47,8 +47,8 @@ describe('SBA origin routes omitted from the original token snapshot', () => {
       const quotes = await sdk.bridgeV2({
         fromChainId: chainId,
         toChainId: SupportedChainId.ETH,
-        fromToken: fromToken,
-        toToken: toToken,
+        fromToken,
+        toToken,
         fromAmount: AMOUNT,
       })
 
@@ -68,8 +68,8 @@ describe('SBA origin routes omitted from the original token snapshot', () => {
       const connectedQuotes = await sdk.bridgeV2({
         fromChainId: chainId,
         toChainId: SupportedChainId.ETH,
-        fromToken: fromToken,
-        toToken: toToken,
+        fromToken,
+        toToken,
         fromAmount: AMOUNT,
         fromSender: sender,
         toRecipient: sender,
