@@ -53,11 +53,11 @@ const createSwapQuoteTests = (
   chainId: number,
   token: string,
   amount: BigNumber,
-  resultPromise: Promise<SwapQuote>
+  getResult: () => Promise<SwapQuote>
 ) => {
   let result: SwapQuote
   beforeAll(async () => {
-    result = await resultPromise
+    result = await getResult()
   })
 
   it('Fetches a swap quote', async () => {
@@ -389,19 +389,19 @@ describe('SynapseSDK', () => {
   describe.skip('Swap', () => {
     const synapse = new SynapseSDK([SupportedChainId.ARBITRUM], [arbProvider])
     const amount = BigNumber.from(10).pow(9)
-    const resultPromise: Promise<SwapQuote> = synapse.swapQuote(
-      SupportedChainId.ARBITRUM,
-      ARB_USDC,
-      ARB_USDC_E,
-      amount
-    )
 
     createSwapQuoteTests(
       synapse,
       SupportedChainId.ARBITRUM,
       ARB_USDC,
       amount,
-      resultPromise
+      () =>
+        synapse.swapQuote(
+          SupportedChainId.ARBITRUM,
+          ARB_USDC,
+          ARB_USDC_E,
+          amount
+        )
     )
   })
 
