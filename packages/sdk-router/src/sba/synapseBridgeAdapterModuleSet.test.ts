@@ -193,12 +193,19 @@ describe('SynapseBridgeAdapterModuleSet', () => {
   })
 
   it('returns no candidates when the destination chain is outside the destination enablement set', async () => {
+    const restrictedModuleSet = new SynapseBridgeAdapterModuleSet([
+      { chainId: SupportedChainId.ETH, provider: ethProvider },
+      {
+        chainId: SupportedChainId.AURORA,
+        provider: mock<providers.Provider>(),
+      },
+    ])
     await expect(
-      moduleSet.getBridgeTokenCandidates({
-        fromChainId: SupportedChainId.HARMONY,
-        toChainId: SupportedChainId.ETH,
-        fromToken: HARMONY_NETH,
-        toToken: ETH_NATIVE_TOKEN_ADDRESS,
+      restrictedModuleSet.getBridgeTokenCandidates({
+        fromChainId: SupportedChainId.ETH,
+        toChainId: SupportedChainId.AURORA,
+        fromToken: '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F',
+        toToken: '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c',
       })
     ).resolves.toEqual([])
   })

@@ -26,7 +26,7 @@ type SupportedTokenRemoteLookup = Partial<
 >
 
 const EXPECTED_TOKEN_ID_COUNT = 37
-const EXPECTED_ORIGIN_ENTRY_COUNT = 149
+const EXPECTED_ORIGIN_ENTRY_COUNT = 155
 
 // wrappedNativeChainId marks the snapshot chain entry confirmed to be the local
 // wrapped native token via live on-chain research on March 18, 2026.
@@ -224,12 +224,14 @@ const SBA_SUPPORTED_TOKEN_SNAPSHOT: readonly SupportedTokenSnapshotEntry[] = [
     tokenId: 'SYN',
     chains: {
       [SupportedChainId.ARBITRUM]: '0x080F6AEd32Fc474DD5717105Dba5ea57268F46eb',
+      [SupportedChainId.AURORA]: '0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445',
       [SupportedChainId.AVALANCHE]:
         '0x1f1E7c893855525b303f99bDF5c3c05Be09ca251',
       [SupportedChainId.BASE]: '0x432036208d2717394d2614d6697c46DF3Ed69540',
       [SupportedChainId.BLAST]: '0x9592f08387134e218327E6E8423400eb845EdE0E',
       [SupportedChainId.BSC]: '0xa4080f1778e69467E905B8d6F72f6e441f9e9484',
       [SupportedChainId.CANTO]: '0x555982d2E211745b96736665e19D9308B615F78e',
+      [SupportedChainId.CRONOS]: '0xFD0F80899983b8D46152aa1717D76cba71a31616',
       [SupportedChainId.ETH]: '0x0f2D719407FdBeFF09D87557AbB7232601FD9F29',
       [SupportedChainId.FANTOM]: '0xE55e19Fb4F2D85af758950957714292DAC1e25B2',
       [SupportedChainId.HARMONY]: '0xE55e19Fb4F2D85af758950957714292DAC1e25B2',
@@ -266,6 +268,7 @@ const SBA_SUPPORTED_TOKEN_SNAPSHOT: readonly SupportedTokenSnapshotEntry[] = [
     tokenId: 'UST',
     chains: {
       [SupportedChainId.ARBITRUM]: '0x13780E6d5696DD91454F6d3BbC2616687fEa43d0',
+      [SupportedChainId.AURORA]: '0xb1Da21B0531257a7E5aEfa0cd3CbF23AfC674cE1',
       [SupportedChainId.AVALANCHE]:
         '0xE97097dE8d6A17Be3c39d53AE63347706dCf8f43',
       [SupportedChainId.BSC]: '0xb7A6c5f0cc98d24Cf4B2011842e64316Ff6d042c',
@@ -318,6 +321,7 @@ const SBA_SUPPORTED_TOKEN_SNAPSHOT: readonly SupportedTokenSnapshotEntry[] = [
       [SupportedChainId.AVALANCHE]:
         '0x321E7092a180BB43555132ec53AaA65a5bF84251',
       [SupportedChainId.BSC]: '0x88918495892BAF4536611E38E75D771Dc6Ec0863',
+      [SupportedChainId.CRONOS]: '0xbB0A63A6CA2071c6C4bcAC11a1A317b20E3E999C',
       [SupportedChainId.ETH]: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
       [SupportedChainId.FANTOM]: '0x91fa20244Fb509e8289CA630E5db3E9166233FDc',
       [SupportedChainId.HARMONY]: '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
@@ -349,11 +353,13 @@ const SBA_SUPPORTED_TOKEN_SNAPSHOT: readonly SupportedTokenSnapshotEntry[] = [
     tokenId: 'nUSD',
     chains: {
       [SupportedChainId.ARBITRUM]: '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688',
+      [SupportedChainId.AURORA]: '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c',
       [SupportedChainId.AVALANCHE]:
         '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46',
       [SupportedChainId.BLAST]: '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0',
       [SupportedChainId.BSC]: '0x23b891e5C62E0955ae2bD185990103928Ab817b3',
       [SupportedChainId.CANTO]: '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80',
+      [SupportedChainId.CRONOS]: '0x396c9c192dd323995346632581BEF92a31AC623b',
       [SupportedChainId.DFK]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
       [SupportedChainId.ETH]: '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F',
       [SupportedChainId.FANTOM]: '0xED2a7edd7413021d440b09D654f3b87712abAB66',
