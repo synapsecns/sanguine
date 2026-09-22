@@ -162,6 +162,20 @@ describe('SYN bridge status', () => {
     ).toBe(true)
   })
 
+  it('ignores malformed logs before a matching fallback in the same receipt', async () => {
+    ;(provider.getTransactionReceipt as jest.Mock).mockResolvedValueOnce({
+      status: 1,
+      logs: [
+        { ...fallbackLog(), data: '0x' },
+        { ...rawActionLog(), data: '0x' },
+        fallbackLog(),
+      ],
+    })
+    expect(
+      await getSynBridgeDeliveryChainId(HYPERCORE_CHAIN_ID, sourceTx, provider)
+    ).toBe(SupportedChainId.HYPEREVM)
+  })
+
   it.each([
     { token: recipient },
     { from: recipient },

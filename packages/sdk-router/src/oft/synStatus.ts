@@ -1,5 +1,5 @@
 import { Interface } from '@ethersproject/abi'
-import { Provider } from '@ethersproject/abstract-provider'
+import { Log, Provider } from '@ethersproject/abstract-provider'
 import { BigNumber, utils } from 'ethers'
 
 import {
@@ -106,7 +106,41 @@ const getComposeDeliveryChainId = async (
   message: LzMessage,
   provider: Provider
 ): Promise<number | undefined> => {
-  const payload = message.source?.tx?.payload
+  const details = getComposePayloadDetails(message.source?.tx?.payload)
+  if (!details) {
+    return undefined
+  }
+  const { recipient, amountSD } = details
+  // SYN has 6 shared decimals and 8 HyperCore weiDecimals.
+  const expectedCoreAmount = amountSD.mul(100)
+  const expectedEvmAmount = amountSD.mul(BigNumber.from(10).pow(12))
+
+  for (const { txHash } of message.destination?.lzCompose?.txs ?? []) {
+    if (!txHash) {
+      continue
+    }
+    const receipt = await provider.getTransactionReceipt(txHash)
+    if (receipt?.status !== 1) {
+      continue
+    }
+    for (const log of receipt.logs) {
+      const deliveryChainId = getComposeLogDeliveryChainId(
+        log,
+        recipient,
+        expectedCoreAmount,
+        expectedEvmAmount
+      )
+      if (deliveryChainId !== undefined) {
+        return deliveryChainId
+      }
+    }
+  }
+  return undefined
+}
+
+const getComposePayloadDetails = (
+  payload?: string
+): { recipient: string; amountSD: BigNumber } | undefined => {
   if (
     !payload ||
     !utils.isHexString(payload) ||
@@ -135,67 +169,61 @@ const getComposeDeliveryChainId = async (
   if (amountSD.isZero()) {
     return undefined
   }
-  // SYN has 6 shared decimals and 8 HyperCore weiDecimals.
-  const expectedCoreAmount = amountSD.mul(100)
-  const expectedEvmAmount = amountSD.mul(BigNumber.from(10).pow(12))
+  return { recipient, amountSD }
+}
 
-  for (const { txHash } of message.destination?.lzCompose?.txs ?? []) {
-    if (!txHash) {
-      continue
-    }
-    const receipt = await provider.getTransactionReceipt(txHash)
-    if (receipt?.status !== 1) {
-      continue
-    }
-    for (const log of receipt.logs) {
-      try {
-        if (
-          log.address.toLowerCase() ===
-          SYN_ADDRESS_MAP[SupportedChainId.HYPEREVM].toLowerCase()
-        ) {
-          const transfer = tokenInterface.parseLog(log)
-          if (
-            transfer.args.from.toLowerCase() ===
-              SYN_COMPOSER_ADDRESS.toLowerCase() &&
-            transfer.args.to.toLowerCase() === recipient.toLowerCase() &&
-            BigNumber.from(transfer.args.value).eq(expectedEvmAmount)
-          ) {
-            return SupportedChainId.HYPEREVM
-          }
-          continue
-        }
-        if (log.address.toLowerCase() !== CORE_WRITER) {
-          continue
-        }
-        const parsed = coreWriterInterface.parseLog(log)
-        if (
-          parsed.name !== 'RawAction' ||
-          parsed.args.user.toLowerCase() !== SYN_COMPOSER_ADDRESS.toLowerCase()
-        ) {
-          continue
-        }
-        const action: string = parsed.args.data
-        if (
-          utils.hexDataLength(action) !== 100 ||
-          utils.hexDataSlice(action, 0, 4) !== SPOT_SEND_HEADER
-        ) {
-          continue
-        }
-        const [to, index, amount] = utils.defaultAbiCoder.decode(
-          ['address', 'uint64', 'uint64'],
-          utils.hexDataSlice(action, 4)
-        )
-        if (
-          to.toLowerCase() === recipient.toLowerCase() &&
-          BigNumber.from(index).eq(SYN_CORE_TOKEN_INDEX) &&
-          BigNumber.from(amount).eq(expectedCoreAmount)
-        ) {
-          return HYPERCORE_CHAIN_ID
-        }
-      } catch {
-        // Ignore unrelated or malformed logs in the compose receipt.
+const getComposeLogDeliveryChainId = (
+  log: Log,
+  recipient: string,
+  expectedCoreAmount: BigNumber,
+  expectedEvmAmount: BigNumber
+): number | undefined => {
+  try {
+    if (
+      log.address.toLowerCase() ===
+      SYN_ADDRESS_MAP[SupportedChainId.HYPEREVM].toLowerCase()
+    ) {
+      const transfer = tokenInterface.parseLog(log)
+      if (
+        transfer.args.from.toLowerCase() ===
+          SYN_COMPOSER_ADDRESS.toLowerCase() &&
+        transfer.args.to.toLowerCase() === recipient.toLowerCase() &&
+        BigNumber.from(transfer.args.value).eq(expectedEvmAmount)
+      ) {
+        return SupportedChainId.HYPEREVM
       }
+      return undefined
     }
+    if (log.address.toLowerCase() !== CORE_WRITER) {
+      return undefined
+    }
+    const parsed = coreWriterInterface.parseLog(log)
+    if (
+      parsed.name !== 'RawAction' ||
+      parsed.args.user.toLowerCase() !== SYN_COMPOSER_ADDRESS.toLowerCase()
+    ) {
+      return undefined
+    }
+    const action: string = parsed.args.data
+    if (
+      utils.hexDataLength(action) !== 100 ||
+      utils.hexDataSlice(action, 0, 4) !== SPOT_SEND_HEADER
+    ) {
+      return undefined
+    }
+    const [to, index, amount] = utils.defaultAbiCoder.decode(
+      ['address', 'uint64', 'uint64'],
+      utils.hexDataSlice(action, 4)
+    )
+    if (
+      to.toLowerCase() === recipient.toLowerCase() &&
+      BigNumber.from(index).eq(SYN_CORE_TOKEN_INDEX) &&
+      BigNumber.from(amount).eq(expectedCoreAmount)
+    ) {
+      return HYPERCORE_CHAIN_ID
+    }
+  } catch {
+    // Ignore unrelated or malformed logs in the compose receipt.
   }
   return undefined
 }
