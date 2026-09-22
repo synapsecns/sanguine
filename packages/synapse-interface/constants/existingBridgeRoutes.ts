@@ -73,10 +73,12 @@ const synRoutes: BridgeRoutes = {
 }
 Object.entries(synRoutes).forEach(([origin, destinations]) => {
   if (PAUSED_TOKENS.includes(origin)) return
-  EXISTING_BRIDGE_ROUTES[origin] = _.uniq([
-    ...(EXISTING_BRIDGE_ROUTES[origin] ?? []),
-    ...destinations.filter(
-      (destination) => !PAUSED_TOKENS.includes(destination)
-    ),
-  ])
+  EXISTING_BRIDGE_ROUTES[origin] = [
+    ...new Set([
+      ...(EXISTING_BRIDGE_ROUTES[origin] ?? []),
+      ...destinations.filter(
+        (destination) => !PAUSED_TOKENS.includes(destination)
+      ),
+    ]),
+  ]
 })

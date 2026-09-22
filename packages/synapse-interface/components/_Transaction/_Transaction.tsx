@@ -115,16 +115,16 @@ export const _Transaction = ({
       ['SynapseRFQ', 'Gas.zip'].includes(bridgeModuleName)
   )
 
-  useBridgeTxUpdater(
+  useBridgeTxUpdater({
     connectedAddress,
     destinationChain,
-    _kappa,
+    kappa: _kappa,
     originTxHash,
-    isTxCompleted,
+    isTxComplete: isTxCompleted,
     isTxReverted,
     isTxRefunded,
-    deliveryChainId
-  )
+    deliveryChainId,
+  })
 
   // Show transaction support if the transaction is delayed by more than 5 minutes and not finalized or reverted
   const showTransactionSupport =

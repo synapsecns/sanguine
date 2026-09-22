@@ -13,26 +13,28 @@ import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { type Chain } from '@/utils/types'
 import { CHAINS_BY_ID } from '@/constants/chains'
 
-/**
- * Hook that updates bridge transaction in state.
- *
- * @param {string} connectedAddress - The signer executing bridge transactions.
- * @param {Chain} destinationChain - The destination chain of bridge transaction.
- * @param {string} kappa - The Synapse transaction ID queried from SDK.
- * @param {string} originTxHash - The transaction hash returned when initiating the bridge transaction.
- * @param {boolean} isTxComplete - Whether bridge transaction has completed, queried from SDK.
- * @param {boolean} isTxReverted - Whether bridge transaction was reverted, queried on-chain.
- */
-export const useBridgeTxUpdater = (
-  connectedAddress: string,
-  destinationChain: Chain,
-  kappa: string,
-  originTxHash: string,
-  isTxComplete: boolean,
-  isTxReverted: boolean,
-  isTxRefunded: boolean,
+interface UseBridgeTxUpdaterProps {
+  connectedAddress: string
+  destinationChain: Chain
+  kappa: string
+  originTxHash: string
+  isTxComplete: boolean
+  isTxReverted: boolean
+  isTxRefunded: boolean
   deliveryChainId?: number
-) => {
+}
+
+/** Updates the stored bridge transaction and destination balances. */
+export const useBridgeTxUpdater = ({
+  connectedAddress,
+  destinationChain,
+  kappa,
+  originTxHash,
+  isTxComplete,
+  isTxReverted,
+  isTxRefunded,
+  deliveryChainId,
+}: UseBridgeTxUpdaterProps) => {
   const dispatch = useAppDispatch()
   const { transactions } = use_TransactionsState()
   const storedTx: _TransactionDetails = transactions.find(

@@ -261,10 +261,12 @@ export const getToChainIds = ({
   }
 
   if (fromChainId && fromTokenRouteSymbol && toChainId && toTokenRouteSymbol) {
-    return _.uniq(
-      EXISTING_BRIDGE_ROUTES[`${fromTokenRouteSymbol}-${fromChainId}`]
-        ?.filter((token) => token.startsWith(`${toTokenRouteSymbol}-`))
-        .map((token) => getTokenAndChainId(token).chainId)
-    )
+    return [
+      ...new Set(
+        EXISTING_BRIDGE_ROUTES[`${fromTokenRouteSymbol}-${fromChainId}`]
+          ?.filter((token) => token.startsWith(`${toTokenRouteSymbol}-`))
+          .map((token) => getTokenAndChainId(token).chainId)
+      ),
+    ]
   }
 }

@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
-import { _Transactions } from '@/components/_Transaction/_Transactions'
+
+import { _Transactions as Transactions } from '@/components/_Transaction/_Transactions'
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { SYN, USDC } from '@/constants/tokens/bridgeable'
 import transactionsReducer, {
@@ -48,7 +49,7 @@ describe('HyperCore transaction display', () => {
         ],
       } as any)
       expect(
-        renderToStaticMarkup(<_Transactions connectedAddress="0xabc" />)
+        renderToStaticMarkup(<Transactions connectedAddress="0xabc" />)
       ).toContain(`<span data-chain="1337">${displayedStatus}</span>`)
     }
   )
