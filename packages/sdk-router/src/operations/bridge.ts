@@ -1,7 +1,11 @@
 import { BigNumber, BigNumberish, PopulatedTransaction, utils } from 'ethers'
 import invariant from 'tiny-invariant'
 
-import { areIntentsSupported, isChainIdSupported } from '../constants/chainIds'
+import {
+  areIntentsSupported,
+  HYPERCORE_CHAIN_ID,
+  isChainIdSupported,
+} from '../constants/chainIds'
 import {
   SynapseModuleSet,
   Query,
@@ -148,6 +152,7 @@ async function _collectV2Quotes(
   bridgeV2Modules: SynapseModuleSet[]
 ): Promise<BridgeQuoteV2[]> {
   const isBridgeV2DestinationSupported =
+    params.toChainId === HYPERCORE_CHAIN_ID ||
     isChainIdSupported(params.toChainId) ||
     areIntentsSupported(params.toChainId)
   // The origin must support the shared intent path, while destinations may be

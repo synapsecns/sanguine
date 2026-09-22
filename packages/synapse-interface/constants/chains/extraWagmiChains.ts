@@ -125,8 +125,8 @@ export const hyperEVM = {
   },
   blockExplorers: {
     default: {
-      name: 'Purrsec',
-      url: 'https://purrsec.com',
+      name: 'Hyperscan',
+      url: 'https://hyperscan.com',
     },
   },
   contracts: {

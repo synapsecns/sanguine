@@ -5,7 +5,10 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { useSwapState } from '@/slices/swap/hooks'
 import { useMaintenanceState } from '@/slices/maintenance/hooks'
 import { isChainIncluded } from '@/utils/isChainIncluded'
-import { isValidBridgeModule } from './functions/isValidBridgeModule'
+import {
+  BridgeModuleName,
+  isValidBridgeModule,
+} from './functions/isValidBridgeModule'
 import { getFurthestFutureDate } from './functions/getFurthestFutureDate'
 import { useTranslations } from 'next-intl'
 
@@ -30,7 +33,7 @@ interface ChainPause {
 export interface BridgeModulePause {
   chainId?: number // Origin chain ID. If undefined, match any origin chain.
   toChainId?: number // Destination chain ID. If undefined, match any destination chain.
-  bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
+  bridgeModuleName: BridgeModuleName
 }
 
 const useMaintenanceData = () => {
@@ -63,11 +66,6 @@ const useMaintenanceData = () => {
 
         return {
           ...route,
-          bridgeModuleName: route.bridgeModuleName as
-            | 'SynapseBridge'
-            | 'SynapseRFQ'
-            | 'SynapseCCTP'
-            | 'ALL',
         }
       })
     : []

@@ -14,6 +14,35 @@ const mockToken = {
 } as any
 
 describe('getPendingBridgeTransactionTrackingData', () => {
+  it('tracks SYN composer deposits as pending bridge transactions', () => {
+    const transaction = {
+      id: 111,
+      originChain: mockChain,
+      originToken: { routeSymbol: 'SYN', symbol: 'SYN' } as any,
+      originValue: '1',
+      destinationChain: HYPERLIQUID,
+      transactionHash: '0xsyn',
+      isSubmitted: true,
+      estimatedTime: 840,
+      bridgeModuleName: 'SYN',
+      routerAddress: zeroAddress,
+    }
+    expect(
+      getPendingBridgeTransactionTrackingData(transaction, zeroAddress)
+    ).toBeNull()
+    expect(
+      getPendingBridgeTransactionTrackingData(
+        { ...transaction, timestamp: 222 },
+        zeroAddress
+      )
+    ).toMatchObject({
+      destinationChain: HYPERLIQUID,
+      bridgeModuleName: 'SYN',
+      timestamp: 222,
+      status: 'pending',
+    })
+  })
+
   it('does not promote regular bridge transactions until a tracked timestamp exists', () => {
     const trackedTransaction = getPendingBridgeTransactionTrackingData(
       {
@@ -62,14 +91,14 @@ describe('getPendingBridgeTransactionTrackingData', () => {
     })
   })
 
-  it('keeps the Hyperliquid path working without an explicit tracked timestamp', () => {
+  it('keeps saved Hyperliquid deposits working without an explicit tracked timestamp', () => {
     const trackedTransaction = getPendingBridgeTransactionTrackingData(
       {
         id: 333,
         originChain: mockChain,
         originToken: mockToken,
         originValue: '5',
-        destinationChain: HYPERLIQUID,
+        destinationChain: { ...HYPERLIQUID, id: 998 },
         transactionHash: '0xhyper',
         isSubmitted: true,
       },
@@ -78,6 +107,7 @@ describe('getPendingBridgeTransactionTrackingData', () => {
 
     expect(trackedTransaction).toMatchObject({
       originTxHash: '0xhyper',
+      destinationChain: HYPERLIQUID,
       estimatedTime: 0,
       timestamp: 333,
       bridgeModuleName: '',

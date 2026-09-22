@@ -1,3 +1,6 @@
+// Mainnet HyperCore routing identifier (Relay/LI.FI), not an EVM chain or RPC network.
+export const HYPERCORE_CHAIN_ID = 1337
+
 export enum SupportedChainId {
   ETH = 1,
   OPTIMISM = 10,

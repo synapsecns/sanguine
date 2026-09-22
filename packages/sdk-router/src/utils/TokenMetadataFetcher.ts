@@ -2,6 +2,7 @@ import { Provider } from '@ethersproject/abstract-provider'
 import { Contract } from '@ethersproject/contracts'
 
 import { isNativeToken } from './addressUtils'
+import { HYPERCORE_CHAIN_ID, SYN_ADDRESS_MAP } from '../constants'
 import { logger } from './logger'
 import erc20ABI from '../abi/IERC20Metadata.json'
 import { marshallChainToken } from '../rfq/ticker'
@@ -33,6 +34,13 @@ export class TokenMetadataFetcher {
     chainId: number,
     token: string
   ): Promise<number> {
+    // HyperCore SYN uses its native token identifier and 8-decimal balance units.
+    if (
+      chainId === HYPERCORE_CHAIN_ID &&
+      token.toLowerCase() === SYN_ADDRESS_MAP[HYPERCORE_CHAIN_ID].toLowerCase()
+    ) {
+      return 8
+    }
     if (isNativeToken(token)) {
       return 18
     }

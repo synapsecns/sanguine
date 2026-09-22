@@ -1,6 +1,7 @@
 import {
   CCTP_SUPPORTED_CHAIN_IDS,
   GASZIP_SUPPORTED_CHAIN_IDS,
+  HYPERCORE_CHAIN_ID,
   INTENTS_SUPPORTED_CHAIN_IDS,
   RELAY_SUPPORTED_CHAIN_IDS,
   RFQ_SUPPORTED_CHAIN_IDS,
@@ -135,6 +136,19 @@ export const LZ_EID_MAP: Record<number, number> = {
   [SupportedChainId.POLYGON]: 30109,
   [SupportedChainId.UNICHAIN]: 30320,
 }
+
+// Mainnet deployments from contracts-adapter on feat/syn-adapter.
+export const SYN_ADDRESS_MAP: AddressMap = {
+  [SupportedChainId.ETH]: '0x0f2D719407FdBeFF09D87557AbB7232601FD9F29',
+  [SupportedChainId.HYPEREVM]: '0x6Cd6C5fDE1621053eD4BC7C09ADc76612D8C663f',
+  [HYPERCORE_CHAIN_ID]: '0xf5f05eb8b9aa92365465f06daf5889c9',
+}
+export const SYN_OFT_ADDRESS_MAP: AddressMap = {
+  [SupportedChainId.ETH]: '0x50000064684A225e32216c4FC4f17B3206000005',
+  [SupportedChainId.HYPEREVM]: '0x50000064684A225e32216c4FC4f17B3206000005',
+}
+export const SYN_COMPOSER_ADDRESS = '0x944753BbC3FA5581b1fc5F3ee6EFFB06299ec1D3'
+export const SYN_CORE_TOKEN_INDEX = 873
 
 /**
  * SynapseIntentRouter contract address for all chains except ones from SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP.

@@ -613,7 +613,7 @@ export const WORLDCHAIN: Chain = {
 
 export const HYPERLIQUID: Chain = {
   priorityRank: 99,
-  id: 998, // this is Hyperliquid Testnet from their docs
+  id: 1337, // HyperCore routing identifier, not an EVM RPC chain ID.
   chainSymbol: 'HYPERLIQUID',
   name: 'Hyperliquid',
   chainImg: hyperliquidImg,
@@ -631,9 +631,9 @@ export const HYPERLIQUID: Chain = {
     address: zeroAddress,
     icon: ethImg,
   },
-  explorerUrl: 'https://arbiscan.io',
-  explorerName: 'Arbiscan',
-  explorerImg: arbitrumExplorerImg,
+  explorerUrl: 'https://app.hyperliquid.xyz/explorer',
+  explorerName: 'Hyperliquid',
+  explorerImg: hyperliquidImg,
   color: 'gray',
 }
 
@@ -701,8 +701,8 @@ export const HYPEREVM: Chain = {
     primary: 'https://rpc.hyperliquid.xyz/evm',
     fallback: 'https://hyperliquid.drpc.org',
   },
-  explorerUrl: 'https://purrsec.com',
-  explorerName: 'Purrsec',
+  explorerUrl: 'https://hyperscan.com',
+  explorerName: 'Hyperscan',
   explorerImg: hyperliquidImg,
   blockTime: 2000,
   nativeCurrency: {

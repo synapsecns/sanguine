@@ -2,7 +2,7 @@ import _ from 'lodash'
 
 import { BRIDGE_MAP } from '@/constants/bridgeMap'
 import { flattenPausedTokens } from '@/utils/flattenPausedTokens'
-import { HYPERLIQUID } from './chains/master'
+import { ETH, HYPEREVM, HYPERLIQUID } from './chains/master'
 
 export type BridgeRoutes = Record<string, string[]>
 
@@ -65,3 +65,20 @@ const PAUSED_TOKENS = flattenPausedTokens()
 export const EXISTING_BRIDGE_ROUTES: BridgeRoutes = addUSDCHyperLiquid(
   constructJSON(BRIDGE_MAP, PAUSED_TOKENS)
 )
+
+// Separate from the legacy SYN graph, which would advertise every SYN chain.
+const synRoutes: BridgeRoutes = {
+  [`SYN-${ETH.id}`]: [`SYN-${HYPEREVM.id}`, `SYN-${HYPERLIQUID.id}`],
+  [`SYN-${HYPEREVM.id}`]: [`SYN-${ETH.id}`],
+}
+Object.entries(synRoutes).forEach(([origin, destinations]) => {
+  if (PAUSED_TOKENS.includes(origin)) return
+  EXISTING_BRIDGE_ROUTES[origin] = [
+    ...new Set([
+      ...(EXISTING_BRIDGE_ROUTES[origin] ?? []),
+      ...destinations.filter(
+        (destination) => !PAUSED_TOKENS.includes(destination)
+      ),
+    ]),
+  ]
+})

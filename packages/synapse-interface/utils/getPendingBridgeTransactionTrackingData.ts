@@ -1,6 +1,7 @@
 import { zeroAddress } from 'viem'
 
 import { HYPERLIQUID } from '@/constants/chains/master'
+import { isHyperliquidUsdcDeposit } from '@/utils/hyperliquid'
 import { PendingBridgeTransaction } from '@/slices/transactions/actions'
 
 export const getPendingBridgeTransactionTrackingData = (
@@ -11,7 +12,17 @@ export const getPendingBridgeTransactionTrackingData = (
     return null
   }
 
-  const isHyperliquidDeposit = tx.destinationChain?.id === HYPERLIQUID.id
+  // Resolve saved Hyperliquid activity by its stable symbol after an ID change.
+  const destinationChain =
+    tx.destinationChain?.chainSymbol === HYPERLIQUID.chainSymbol
+      ? HYPERLIQUID
+      : tx.destinationChain
+  const isHyperliquidDeposit =
+    !tx.bridgeModuleName &&
+    isHyperliquidUsdcDeposit(
+      destinationChain?.id,
+      tx.destinationToken ?? tx.originToken
+    )
   const hasTrackedTimestamp = typeof tx.timestamp === 'number'
 
   if (!hasTrackedTimestamp && !isHyperliquidDeposit) {
@@ -25,7 +36,7 @@ export const getPendingBridgeTransactionTrackingData = (
     originValue: tx.originValue,
     originChain: tx.originChain,
     originToken: tx.originToken,
-    destinationChain: tx.destinationChain,
+    destinationChain,
     destinationToken: tx.destinationToken ?? tx.originToken,
     bridgeModuleName: tx.bridgeModuleName ?? '',
     routerAddress: tx.routerAddress ?? zeroAddress,

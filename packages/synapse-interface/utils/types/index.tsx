@@ -79,6 +79,7 @@ export type BridgeQuote = {
   originChainId: number
   destChainId: number
   requestId: number
+  hyperCoreRecipient?: { address: string; isActive: boolean }
   tx?: any
 }
 
@@ -356,6 +357,14 @@ const validateAddresses = (addresses: {
 }): { [x: number]: string } => {
   const reformatted: { [x: number]: string } = {}
   for (const chainId in addresses) {
+    // HyperCore's native 16-byte token IDs do not use EVM address checksums.
+    if (
+      Number(chainId) === CHAINS.HYPERLIQUID.id &&
+      /^0x[0-9a-fA-F]{32}$/.test(addresses[chainId])
+    ) {
+      reformatted[chainId] = addresses[chainId].toLowerCase()
+      continue
+    }
     reformatted[chainId] = addresses[chainId]
       ? getAddress(addresses[chainId])
       : ''

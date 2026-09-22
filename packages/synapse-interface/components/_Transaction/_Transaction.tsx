@@ -20,7 +20,6 @@ import { RightArrow } from '@/components/icons/RightArrow'
 import { Address } from 'viem'
 import { useIsTxReverted } from './helpers/useIsTxReverted'
 import { useTxRefundStatus } from './helpers/useTxRefundStatus'
-import { HYPERLIQUID } from '@/constants/chains/master'
 import { DISCORD_URL } from '@/constants/urls'
 
 interface _TransactionProps {
@@ -91,7 +90,7 @@ export const _Transaction = ({
     isCheckTxForRefund = isEstimatedTimeReached
   }
 
-  const [isTxCompleted, _kappa] = useBridgeTxStatus({
+  const [isTxCompleted, _kappa, deliveryChainId] = useBridgeTxStatus({
     originChainId: originChain?.id,
     destinationChainId: destinationChain?.id,
     originTxHash,
@@ -116,15 +115,16 @@ export const _Transaction = ({
       ['SynapseRFQ', 'Gas.zip'].includes(bridgeModuleName)
   )
 
-  useBridgeTxUpdater(
+  useBridgeTxUpdater({
     connectedAddress,
     destinationChain,
-    _kappa,
+    kappa: _kappa,
     originTxHash,
-    isTxCompleted,
+    isTxComplete: isTxCompleted,
     isTxReverted,
-    isTxRefunded
-  )
+    isTxRefunded,
+    deliveryChainId,
+  })
 
   // Show transaction support if the transaction is delayed by more than 5 minutes and not finalized or reverted
   const showTransactionSupport =
@@ -190,15 +190,13 @@ export const _Transaction = ({
                 iconUrl={originChain?.explorerImg}
               />
             )}
-            {destinationChain.id !== HYPERLIQUID.id &&
-              !isNull(destExplorerAddressLink) &&
-              !isTxReverted && (
-                <MenuItem
-                  text={destExplorerName}
-                  link={destExplorerAddressLink}
-                  iconUrl={destinationChain?.explorerImg}
-                />
-              )}
+            {!isNull(destExplorerAddressLink) && !isTxReverted && (
+              <MenuItem
+                text={destExplorerName}
+                link={destExplorerAddressLink}
+                iconUrl={destinationChain?.explorerImg}
+              />
+            )}
             <MenuItem
               text={t('Contact Support (Discord)')}
               link={DISCORD_URL}
