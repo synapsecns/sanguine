@@ -7,6 +7,7 @@ import {
 } from '@/constants/tokens'
 import { FetchState } from '@/slices/portfolio/actions'
 import { isActiveChainId } from '@/constants/chains'
+import { HYPERLIQUID } from '@/constants/chains/master'
 
 export interface TokenAndBalance {
   token: Token
@@ -48,7 +49,9 @@ export const fetchPortfolioBalances = async (
   const poolTokenBalances = {}
 
   const availableChains: string[] = Object.keys(BRIDGABLE_TOKENS).filter(
-    (id) => id !== '2000' && isActiveChainId(id)
+    // HyperCore is a virtual destination and has no EVM balance provider.
+    (id) =>
+      id !== '2000' && isActiveChainId(id) && Number(id) !== HYPERLIQUID.id
   )
   const isSingleNetworkCall: boolean = typeof chainId === 'number'
 

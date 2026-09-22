@@ -25,7 +25,10 @@ import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver
 import Button from '@/components/ui/tailwind/Button'
 import { SettingsToggle } from '@/components/StateManagedBridge/SettingsToggle'
 import { BridgeCard } from '@/components/ui/BridgeCard'
-import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
+import {
+  ConfirmDestinationAddressWarning,
+  SynHyperCoreRecipientWarning,
+} from '@/components/StateManagedBridge/BridgeWarnings'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -79,6 +82,10 @@ import { USDC } from '@/constants/tokens/bridgeable'
 import { CheckCircleIcon } from '@heroicons/react/outline'
 import Image from 'next/image'
 import { HyperliquidDepositInfo } from '@/components/HyperliquidDepositInfo'
+import {
+  getBridgeDestinationChainId,
+  isHyperliquidUsdcDeposit,
+} from '@/utils/hyperliquid'
 
 const StateManagedBridge = () => {
   const dispatch = useAppDispatch()
@@ -109,7 +116,41 @@ const StateManagedBridge = () => {
     destinationAddress,
   }: BridgeState = useBridgeState()
 
+  const isUsdcDeposit = isHyperliquidUsdcDeposit(toChainId, toToken)
+  const isDirectUsdcDeposit = fromChainId === ARBITRUM.id && isUsdcDeposit
+  const bridgeDestinationAddress = isUsdcDeposit
+    ? undefined
+    : destinationAddress
+  const bridgeDestinationChainId = getBridgeDestinationChainId(
+    toChainId,
+    toToken
+  )
+
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
+  const [acceptedSynRecipient, setAcceptedSynRecipient] = useState<string>(null)
+  const synRecipient = (
+    destinationAddress && isAddress(destinationAddress)
+      ? destinationAddress
+      : address
+  )?.toLowerCase()
+  const isSynHyperCore =
+    toChainId === HYPERLIQUID.id &&
+    fromToken?.routeSymbol === 'SYN' &&
+    toToken?.routeSymbol === 'SYN'
+  const checkedRecipient = bridgeQuote.hyperCoreRecipient
+  const hasCheckedSynRecipient =
+    !!synRecipient && checkedRecipient?.address.toLowerCase() === synRecipient
+  const showSynRecipientWarning =
+    isSynHyperCore && hasCheckedSynRecipient && !checkedRecipient.isActive
+  const isRecipientWarningAccepted =
+    !isSynHyperCore ||
+    !synRecipient ||
+    (hasCheckedSynRecipient &&
+      (checkedRecipient.isActive || acceptedSynRecipient === synRecipient))
+
+  useEffect(() => {
+    setAcceptedSynRecipient(null)
+  }, [synRecipient, fromChainId, toChainId, fromToken, toToken])
 
   const isApproved = useIsBridgeApproved()
 
@@ -154,6 +195,7 @@ const StateManagedBridge = () => {
       console.log('trying to set bridge quote')
       getAndSetBridgeQuote()
     } else {
+      currentSDKRequestID.current += 1
       dispatch(resetBridgeQuote())
     }
   }, [
@@ -181,18 +223,19 @@ const StateManagedBridge = () => {
           fetchBridgeQuote({
             synapseSDK,
             fromChainId,
-            toChainId: toChainId === HYPERLIQUID.id ? ARBITRUM.id : toChainId,
+            toChainId: bridgeDestinationChainId,
             fromToken,
             toToken,
             debouncedFromValue,
             requestId: thisRequestId,
             currentTimestamp,
             address,
-            destinationAddress,
+            destinationAddress: bridgeDestinationAddress,
             pausedModulesList,
           })
         )
 
+        if (thisRequestId !== currentSDKRequestID.current) return
         toast.dismiss(quoteToastRef.current.id)
 
         if (fetchBridgeQuote.fulfilled.match(result)) {
@@ -210,10 +253,7 @@ const StateManagedBridge = () => {
           quoteToastRef.current.id = toast(message, { duration: 3000 })
         }
 
-        if (
-          fetchBridgeQuote.rejected.match(result) &&
-          !(fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id)
-        ) {
+        if (fetchBridgeQuote.rejected.match(result) && !isDirectUsdcDeposit) {
           const message = t(
             'No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}',
             {
@@ -290,12 +330,13 @@ const StateManagedBridge = () => {
   }
 
   const executeBridge = async () => {
+    if (!isRecipientWarningAccepted) return
     let pendingPopup: any
 
     const pendingTransactionId: number = getUnixTimeSecondsNow()
 
-    if (destinationAddress) {
-      const isRisky = await screenAddress(destinationAddress)
+    if (bridgeDestinationAddress) {
+      const isRisky = await screenAddress(bridgeDestinationAddress)
       if (isRisky) {
         return
       }
@@ -306,8 +347,7 @@ const StateManagedBridge = () => {
       {
         id: bridgeQuote.id,
         originChainId: fromChainId,
-        destinationChainId:
-          toChainId === HYPERLIQUID.id ? ARBITRUM.id : toChainId,
+        destinationChainId: bridgeDestinationChainId,
         inputAmount: debouncedFromValue,
         expectedReceivedAmount: bridgeQuote.outputAmountString,
         slippage: bridgeQuote.exchangeRate,
@@ -326,15 +366,14 @@ const StateManagedBridge = () => {
         originChain: CHAINS_BY_ID[fromChainId],
         originToken: fromToken,
         originValue: debouncedFromValue,
-        destinationChain:
-          CHAINS_BY_ID[toChainId === HYPERLIQUID.id ? ARBITRUM.id : toChainId],
+        destinationChain: CHAINS_BY_ID[bridgeDestinationChainId],
         destinationToken: toToken,
         transactionHash: undefined,
         timestamp: undefined,
         isSubmitted: false,
         estimatedTime: bridgeQuote.estimatedTime,
         bridgeModuleName: bridgeQuote.bridgeModuleName,
-        destinationAddress: destinationAddress,
+        destinationAddress: bridgeDestinationAddress,
         routerAddress: bridgeQuote.routerAddress,
       })
     )
@@ -378,8 +417,7 @@ const StateManagedBridge = () => {
       segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
         id: bridgeQuote.id,
         originChainId: fromChainId,
-        destinationChainId:
-          toChainId === HYPERLIQUID.id ? ARBITRUM.id : toChainId,
+        destinationChainId: bridgeDestinationChainId,
         inputAmount: debouncedFromValue,
         expectedReceivedAmount: bridgeQuote.outputAmountString,
         slippage: bridgeQuote.exchangeRate,
@@ -434,7 +472,7 @@ const StateManagedBridge = () => {
         timeout: 60_000,
       })
 
-      if (toChainId === HYPERLIQUID.id) {
+      if (isUsdcDeposit) {
         dispatch(setFromChainId(ARBITRUM.id))
         dispatch(setFromToken(USDC))
         dispatch(setToChainId(HYPERLIQUID.id))
@@ -514,30 +552,34 @@ const StateManagedBridge = () => {
                   dispatch(setToChainId(fromChainId))
                   dispatch(setToToken(fromToken))
                 }}
-                disabled={isWalletPending}
+                disabled={isWalletPending || toChainId === HYPERLIQUID.id}
               />
               <OutputContainer isQuoteStale={isQuoteStale} />
               <BridgeMaintenanceWarningMessage />
-              {!(
-                fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
-              ) && <BridgeExchangeRateInfo />}
+              {!isDirectUsdcDeposit && <BridgeExchangeRateInfo />}
               <BridgeModulePausedWarning
                 fromChainId={fromChainId}
-                toChainId={
-                  toChainId === HYPERLIQUID.id ? ARBITRUM.id : toChainId
-                }
+                toChainId={bridgeDestinationChainId}
                 pausedModulesList={pausedModulesList}
               />
-              {toChainId === HYPERLIQUID.id && (
+              {isUsdcDeposit && (
                 <HyperliquidDepositInfo
                   fromChainId={fromChainId}
                   isOnArbitrum={connectedChain?.id === ARBITRUM.id}
                   hasDepositedOnHyperliquid={hasDepositedOnHyperliquid}
                 />
               )}
-              <ConfirmDestinationAddressWarning />
+              {!isUsdcDeposit && <ConfirmDestinationAddressWarning />}
+              {showSynRecipientWarning && (
+                <SynHyperCoreRecipientWarning
+                  accepted={acceptedSynRecipient === synRecipient}
+                  onAccept={(accepted) =>
+                    setAcceptedSynRecipient(accepted ? synRecipient : null)
+                  }
+                />
+              )}
               <div className="relative flex items-center">
-                {fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id ? (
+                {isDirectUsdcDeposit ? (
                   <HyperliquidTransactionButton
                     isTyping={isTyping}
                     hasDepositedOnHyperliquid={hasDepositedOnHyperliquid}
@@ -551,6 +593,7 @@ const StateManagedBridge = () => {
                     executeBridge={executeBridge}
                     isBridgePaused={isBridgePaused}
                     isQuoteStale={isQuoteStale}
+                    isRecipientWarningAccepted={isRecipientWarningAccepted}
                   />
                 )}
                 <div className="absolute flex items-center !right-10 pointer-events-none">

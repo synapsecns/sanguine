@@ -16,7 +16,8 @@ import { useWalletState } from '@/slices/wallet/hooks'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { useTranslations } from 'next-intl'
-import { ARBITRUM, HYPERLIQUID } from '@/constants/chains/master'
+import { ARBITRUM } from '@/constants/chains/master'
+import { isHyperliquidUsdcDeposit } from '@/utils/hyperliquid'
 import { useUsdDisplay } from '@hooks/useUsdDisplay'
 import { formatInlineUsdDifference } from '@utils/calculateUsdValue'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
@@ -37,6 +38,8 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
   const { hasValidInput, hasValidQuote } = useBridgeValidations()
   const { debouncedFromValue, fromChainId, toChainId, toToken } =
     useBridgeState()
+  const isUsdcDeposit = isHyperliquidUsdcDeposit(toChainId, toToken)
+  const isDirectUsdcDeposit = fromChainId === ARBITRUM.id && isUsdcDeposit
 
   const showValue = useMemo(() => {
     if (!hasValidInput) {
@@ -51,10 +54,7 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
   const inputClassName = isQuoteStale ? 'opacity-50' : undefined
 
   // Fetch token price and calculate USD value
-  const outputValue =
-    fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
-      ? debouncedFromValue
-      : showValue
+  const outputValue = isDirectUsdcDeposit ? debouncedFromValue : showValue
   const usdValue = useUsdDisplay(toToken, outputValue)
 
   // Convert input amount to bigint for slippage calculation
@@ -93,7 +93,7 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
     <BridgeSectionContainer>
       <div className="flex items-center justify-between">
         <ToChainSelector />
-        {showDestinationAddress && toChainId !== HYPERLIQUID.id ? (
+        {showDestinationAddress && !isUsdcDeposit ? (
           <DestinationAddressInput connectedAddress={address} />
         ) : null}
       </div>
@@ -103,11 +103,7 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
         <div className="flex flex-col w-full">
           <AmountInput
             disabled={true}
-            showValue={
-              fromChainId === ARBITRUM.id && toChainId === HYPERLIQUID.id
-                ? debouncedFromValue
-                : showValue
-            }
+            showValue={outputValue}
             isLoading={isLoading}
             className={inputClassName}
           />

@@ -195,7 +195,9 @@ const GasDropLabel = () => {
     significantDecimals
   )
 
-  const price = useDefiLlamaPrice({ addresses: { [toChainId]: zeroAddress } })
+  const price = useDefiLlamaPrice(
+    gasDropAmount > 0n ? { addresses: { [toChainId]: zeroAddress } } : null
+  )
   const airdropInDollars = calculateUsdValue(formattedGasDropAmount, price)
 
   if (isLoading || gasDropAmount === EMPTY_BRIDGE_QUOTE.gasDropAmount) {

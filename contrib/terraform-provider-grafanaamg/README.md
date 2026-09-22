@@ -34,7 +34,7 @@ export GRAFANA_AMG_SERVICE_ACCOUNT_ID="sa-000000000000000000000"
 export GRAFANA_AMG_REGION="us-east-1"
 ```
 
-The provider uses the default AWS SDK credential chain. The AWS principal must be allowed to call `grafana:CreateWorkspaceServiceAccountToken` and `grafana:DeleteWorkspaceServiceAccountToken` for the configured workspace and service account.
+The provider uses the default AWS SDK credential chain. The AWS principal must be allowed to call `grafana:CreateWorkspaceServiceAccountToken`, `grafana:DeleteWorkspaceServiceAccountToken`, and `grafana:ListWorkspaceServiceAccountTokens` for the configured workspace and service account.
 
 If `GRAFANA_AUTH` is already set, the wrapper does not create an AMG token and delegates directly to the upstream Grafana provider.
 
@@ -48,6 +48,7 @@ If `GRAFANA_AUTH` is already set, the wrapper does not create an AMG token and d
 | `GRAFANA_AMG_TOKEN_TTL_SECONDS` | No | `3600` | Lifetime for each generated service account token. |
 | `GRAFANA_AMG_TOKEN_NAME_PREFIX` | No | `terraform-provider-grafanaamg` | Prefix for generated token names. |
 | `GRAFANA_AMG_DELETE_TOKEN_ON_STOP` | No | `true` | Delete generated tokens when Terraform stops the provider. Tokens still expire by TTL if cleanup is interrupted. |
+| `GRAFANA_AMG_SWEEP_EXPIRED_TOKENS` | No | `true` | Before minting, delete **expired** tokens whose name matches the token name prefix. AMG counts expired tokens against the workspace service-account token quota until they are deleted, so tokens leaked by interrupted runs otherwise accumulate until every run fails with `ServiceQuotaExceededException`. The sweep never touches unexpired tokens or tokens without the prefix, and a sweep failure is logged but never fails the run. |
 
 ## Release
 

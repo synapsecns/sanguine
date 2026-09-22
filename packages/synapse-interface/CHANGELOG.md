@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.45.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.45.0...@synapsecns/synapse-interface@0.45.1) (2026-09-21)
+
+
+### Bug Fixes
+
+* restore Aurora and Cronos outbound quotes and RPC fallback ([#4132](https://github.com/synapsecns/sanguine/issues/4132)) ([3e98c89](https://github.com/synapsecns/sanguine/commit/3e98c89c98fb3b6dfe6766b713add604be85619e))
+
+
+
+
+
+# [0.45.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.44.5...@synapsecns/synapse-interface@0.45.0) (2026-09-17)
+
+
+### Bug Fixes
+
+* **synapse-interface:** retire DFK chain ([#4118](https://github.com/synapsecns/sanguine/issues/4118)) ([caad5f9](https://github.com/synapsecns/sanguine/commit/caad5f9a8a03150329a586a7d40eebae154ec2a8))
+
+
+### Features
+
+* **synapse-interface:** redesign Hypercall announcement banner ([#4072](https://github.com/synapsecns/sanguine/issues/4072))sl ([c27fd95](https://github.com/synapsecns/sanguine/commit/c27fd95b14021396d208b7693b00a75f09dd4d6f))
+
+
+
+
+
 ## [0.44.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.44.4...@synapsecns/synapse-interface@0.44.5) (2026-05-22)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface

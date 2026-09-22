@@ -19,7 +19,7 @@ const TIMEOUT_MS = 10000
 const CONCURRENCY = 10
 
 // Chains where chain ID mismatch is expected (deliberate choice)
-const IGNORE_CHAIN_ID_MISMATCH = [998] // Hyperliquid
+const IGNORE_CHAIN_ID_MISMATCH = [1337] // Hyperliquid's USDC deposit uses Arbitrum
 
 const PACKAGE_PATHS = {
   'synapse-interface': '../constants/chains/master.tsx',

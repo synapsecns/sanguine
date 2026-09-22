@@ -3,6 +3,38 @@ import { useTranslations } from 'next-intl'
 import { useAppDispatch } from '@/store/hooks'
 import { useBridgeDisplayState } from '@/slices/bridge/hooks'
 import { setIsDestinationWarningAccepted } from '@/slices/bridgeDisplaySlice'
+import { WarningMessage } from '@/components/Warning'
+
+export const SynHyperCoreRecipientWarning = ({
+  accepted,
+  onAccept,
+}: {
+  accepted: boolean
+  onAccept: (accepted: boolean) => void
+}) => {
+  const t = useTranslations('Bridge')
+
+  return (
+    <WarningMessage
+      twClassName="mb-2 border border-amber-500/30 !bg-amber-50 !text-amber-950 dark:!bg-amber-950/30 dark:!text-amber-100"
+      header={t('SynHyperCoreRecipientWarningTitle')}
+      message={
+        <>
+          <p>{t('SynHyperCoreRecipientWarningMessage')}</p>
+          <label className="flex items-start gap-2 mt-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={accepted}
+              onChange={(event) => onAccept(event.target.checked)}
+              className="mt-0.5 rounded border-amber-500/50 text-amber-500 bg-transparent focus:ring-amber-500"
+            />
+            <span>{t('SynHyperCoreRecipientWarningAccept')}</span>
+          </label>
+        </>
+      }
+    />
+  )
+}
 
 export const ConfirmDestinationAddressWarning = () => {
   const dispatch = useAppDispatch()
