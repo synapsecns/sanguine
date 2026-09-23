@@ -47,30 +47,39 @@ const handler = async (req: Request) => {
     return new Response('Forbidden', { status: 403 })
   }
 
-  const secret = env.GOLDSKY_RPC_SECRET as string
-  if (!secret) {
-    return new Response('RPC proxy not configured', { status: 500 })
-  }
-
   const requestUrl = new URL(req.url)
   const safeChainId = requestUrl.pathname.split('/').pop()
   if (!safeChainId || !/^\d+$/.test(safeChainId)) {
     return new Response('Invalid chainId', { status: 400 })
   }
 
-  const body = await req.text()
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+  let upstreamUrl: string
 
-  const resp = await fetch(
-    `https://edge.goldsky.com/standard/evm/${safeChainId}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-ERPC-Secret-Token': secret,
-      },
-      body,
+  if (safeChainId === '999') {
+    // Use QuickNode's /evm endpoint for live HyperCore precompile reads.
+    // The full URL includes its auth token and must remain server-side.
+    upstreamUrl = env.QUICKNODE_HYPEREVM_RPC_URL as string
+    if (!upstreamUrl) {
+      return new Response('RPC proxy not configured', { status: 500 })
     }
-  )
+  } else {
+    const secret = env.GOLDSKY_RPC_SECRET as string
+    if (!secret) {
+      return new Response('RPC proxy not configured', { status: 500 })
+    }
+    upstreamUrl = `https://edge.goldsky.com/standard/evm/${safeChainId}`
+    headers['X-ERPC-Secret-Token'] = secret
+  }
+
+  const body = await req.text()
+  const resp = await fetch(upstreamUrl, {
+    method: 'POST',
+    headers,
+    body,
+  })
 
   return new Response(resp.body, {
     status: resp.status,
