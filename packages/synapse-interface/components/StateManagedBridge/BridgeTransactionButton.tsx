@@ -13,8 +13,6 @@ import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useConfirmNewBridgePrice } from './hooks/useConfirmNewBridgePrice'
-import { HYPERLIQUID } from '@/constants/chains/master'
-import { HYPERLIQUID_MINIMUM_USDC_AMOUNT } from '@/constants'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -64,15 +62,6 @@ export const BridgeTransactionButton = ({
     isDestinationWarningAccepted,
   } = useBridgeDisplayState()
 
-  const isHyperliquidUsdc =
-    toChainId === HYPERLIQUID.id && toToken?.routeSymbol === 'USDC'
-  const hasHyperliquidMinimum =
-    !isHyperliquidUsdc ||
-    bridgeQuote.bridgeModuleName === null ||
-    bridgeQuote.outputAmount >=
-      BigInt(HYPERLIQUID_MINIMUM_USDC_AMOUNT) *
-        BigInt(10 ** toToken.decimals[toChainId])
-
   const {
     hasValidInput,
     hasValidQuote,
@@ -92,8 +81,7 @@ export const BridgeTransactionButton = ({
     (isConnected && !hasValidQuote) ||
     (isConnected && !hasSufficientBalance) ||
     (isConnected && isQuoteStale) ||
-    (destinationAddress && !isAddress(destinationAddress)) ||
-    !hasHyperliquidMinimum
+    (destinationAddress && !isAddress(destinationAddress))
 
   let buttonProperties
 
@@ -141,11 +129,6 @@ export const BridgeTransactionButton = ({
     buttonProperties = {
       label: t('Bridge {symbol}', { symbol: fromToken?.symbol }),
       pendingLabel: t('Bridge {symbol}', { symbol: fromToken?.symbol }),
-      onClick: null,
-    }
-  } else if (!hasHyperliquidMinimum) {
-    buttonProperties = {
-      label: `${HYPERLIQUID_MINIMUM_USDC_AMOUNT} USDC Minimum`,
       onClick: null,
     }
   } else if (!isConnected && hasValidInput) {
