@@ -13,8 +13,8 @@ import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useConfirmNewBridgePrice } from './hooks/useConfirmNewBridgePrice'
-import { isHyperliquidUsdcDeposit } from '@/utils/hyperliquid'
-import { HYPERLIQUID_MINIMUM_DEPOSIT } from '@/constants'
+import { HYPERLIQUID } from '@/constants/chains/master'
+import { HYPERLIQUID_MINIMUM_USDC_AMOUNT } from '@/constants'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -53,16 +53,25 @@ export const BridgeTransactionButton = ({
     debouncedFromValue,
   } = useBridgeState()
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
-  const { isPendingConfirmChange, onUserAcceptChange } =
-    useConfirmNewBridgePrice()
+  const {
+    isPendingConfirmChange,
+    onUserAcceptChange,
+  } = useConfirmNewBridgePrice()
 
   const { isWalletPending } = useWalletState()
-  const { showDestinationWarning, isDestinationWarningAccepted } =
-    useBridgeDisplayState()
+  const {
+    showDestinationWarning,
+    isDestinationWarningAccepted,
+  } = useBridgeDisplayState()
 
-  const isUsdcDeposit = isHyperliquidUsdcDeposit(toChainId, toToken)
-  const hasHyperliquidMinDeposit =
-    !isUsdcDeposit || Number(debouncedFromValue) > HYPERLIQUID_MINIMUM_DEPOSIT
+  const isHyperliquidUsdc =
+    toChainId === HYPERLIQUID.id && toToken?.routeSymbol === 'USDC'
+  const hasHyperliquidMinimum =
+    !isHyperliquidUsdc ||
+    bridgeQuote.bridgeModuleName === null ||
+    bridgeQuote.outputAmount >=
+      BigInt(HYPERLIQUID_MINIMUM_USDC_AMOUNT) *
+        BigInt(10 ** toToken.decimals[toChainId])
 
   const {
     hasValidInput,
@@ -83,8 +92,8 @@ export const BridgeTransactionButton = ({
     (isConnected && !hasValidQuote) ||
     (isConnected && !hasSufficientBalance) ||
     (isConnected && isQuoteStale) ||
-    (!isUsdcDeposit && destinationAddress && !isAddress(destinationAddress)) ||
-    !hasHyperliquidMinDeposit
+    (destinationAddress && !isAddress(destinationAddress)) ||
+    !hasHyperliquidMinimum
 
   let buttonProperties
 
@@ -134,15 +143,15 @@ export const BridgeTransactionButton = ({
       pendingLabel: t('Bridge {symbol}', { symbol: fromToken?.symbol }),
       onClick: null,
     }
+  } else if (!hasHyperliquidMinimum) {
+    buttonProperties = {
+      label: `${HYPERLIQUID_MINIMUM_USDC_AMOUNT} USDC Minimum`,
+      onClick: null,
+    }
   } else if (!isConnected && hasValidInput) {
     buttonProperties = {
       label: t('Connect Wallet to Bridge'),
       onClick: openConnectModal,
-    }
-  } else if (!hasHyperliquidMinDeposit) {
-    buttonProperties = {
-      label: `${HYPERLIQUID_MINIMUM_DEPOSIT} USDC Minimum`,
-      onClick: null,
     }
   } else if (
     bridgeQuote.bridgeModuleName !== null &&
@@ -166,19 +175,11 @@ export const BridgeTransactionButton = ({
       destinationTokenAddressForState: toToken.addresses[toChainId],
       bridgeQuote,
     })
-  } else if (
-    !isUsdcDeposit &&
-    destinationAddress &&
-    !isAddress(destinationAddress)
-  ) {
+  } else if (destinationAddress && !isAddress(destinationAddress)) {
     buttonProperties = {
       label: t('Invalid Destination address'),
     }
-  } else if (
-    !isUsdcDeposit &&
-    showDestinationWarning &&
-    !isDestinationWarningAccepted
-  ) {
+  } else if (showDestinationWarning && !isDestinationWarningAccepted) {
     buttonProperties = {
       label: t('Confirm destination address'),
       onClick: () => dispatch(setIsDestinationWarningAccepted(true)),

@@ -3,4 +3,4 @@ export const MAX_UINT256 =
 
 export const ETHEREUM_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 
-export const HYPERLIQUID_MINIMUM_DEPOSIT = 5
+export const HYPERLIQUID_MINIMUM_USDC_AMOUNT = 5
