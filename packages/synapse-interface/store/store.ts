@@ -16,7 +16,11 @@ const checkVersionAndResetCache = (): boolean => {
       const persistedState = JSON.parse(persistedStateRaw)
       const persistedVersion = JSON.parse(persistedState._persist)
 
-      if (persistedVersion.version !== persistConfig.version) {
+      // Version 3 has a targeted migration that preserves unrelated activity.
+      if (
+        persistedVersion.version !== persistConfig.version &&
+        !(persistedVersion.version === 3 && persistConfig.version === 4)
+      ) {
         return true
       }
     }
