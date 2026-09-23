@@ -125,4 +125,17 @@ Accepts `SynapseRFQ`, `SynapseBridge`, `SynapseCCTP`, or `SYN`.
 
 ## SYN bridging
 
+### Production RPC configuration
+
+The Cloudflare Pages RPC proxy routes HyperEVM (`/api/rpc/999`) to QuickNode
+for live HyperCore precompile reads used by SYN quotes. Configure the encrypted
+server-side binding `QUICKNODE_HYPEREVM_RPC_URL` with the complete authenticated
+QuickNode Hyperliquid Mainnet URL ending in `/evm`. Set it in each Cloudflare
+Pages environment that runs this app before deploying this change. Do not use
+a `NEXT_PUBLIC_` variable or commit the URL, since it contains the endpoint token.
+Other chains continue to use `GOLDSKY_RPC_SECRET`. Chain 999 does not require
+the Goldsky secret; without its QuickNode binding, the proxy returns HTTP 500.
+
+### Routes
+
 SYN uses the existing bridge UI for Ethereum ↔ HyperEVM and Ethereum → HyperCore. Select **Hyperliquid** for HyperCore (non-EVM routing identifier `1337`); HyperEVM is `999`. HyperCore SYN uses its native 16-byte token ID and 8-decimal amounts. HyperCore recipients must already be activated. SYN uses the composer in one source transaction, while USDC uses Relay directly to Hyperliquid Perps. Module pauses can target `SYN`, including destination `1337`. See the [SDK integration notes](../sdk-router/README.md#syn-bridging) for quote units, fees, and tracking.
