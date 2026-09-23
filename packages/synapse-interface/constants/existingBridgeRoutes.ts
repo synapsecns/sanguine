@@ -82,6 +82,5 @@ Object.entries(synRoutes).forEach(([origin, destinations]) => {
   ]
 })
 
-export const EXISTING_BRIDGE_ROUTES: BridgeRoutes = addUSDCHyperLiquid(
-  bridgeRoutes
-)
+export const EXISTING_BRIDGE_ROUTES: BridgeRoutes =
+  addUSDCHyperLiquid(bridgeRoutes)

@@ -24,9 +24,10 @@ export const migratePersistedState = createMigrate({
       ...(transactions && {
         transactions: {
           ...transactions,
-          pendingBridgeTransactions: transactions.pendingBridgeTransactions.filter(
-            (tx) => !isLegacyHyperliquidDeposit(tx)
-          ),
+          pendingBridgeTransactions:
+            transactions.pendingBridgeTransactions.filter(
+              (tx) => !isLegacyHyperliquidDeposit(tx)
+            ),
         },
       }),
       ...(_transactions && {
