@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {ISynapseBridgeAdapter, SynapseBridgeAdapter, SynapseBridgeAdapterTest} from "./SBA.t.sol";
+import {ISynapseBridgeAdapter, SynapseBridgeAdapterTest, SynapseBridgeAdapterV2} from "./SBA.t.sol";
 
 import {SynapseBridgeMock} from "./mocks/SynapseBridgeMock.sol";
 import {ERC20, TestToken} from "./mocks/TestToken.sol";
@@ -21,7 +21,7 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     address internal user = makeAddr("User");
     address internal recipient = makeAddr("Recipient");
     uint256 internal initialBalance = 1 ether;
-    uint256 internal amount = 0.123456 ether;
+    uint256 internal amount = 0.123_456 ether;
     uint64 internal gasLimit = 234_567;
     uint256 internal nativeFee = 123_456_789 wei;
     uint64 internal minGasLimit;
@@ -31,6 +31,7 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     bytes internal expectedOptions = hex"00030100110100000000000000000000000000039447";
 
     bytes internal expectedBridgeMessage;
+    bytes internal expectedHyperCoreMessage;
 
     modifier withBridgeSet() {
         adapter.setBridge(bridge);
@@ -55,6 +56,11 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
         _;
     }
 
+    modifier withHyperCoreDecimalsSet() {
+        adapter.setHyperCoreDecimals(DST_EID, address(token), 8);
+        _;
+    }
+
     function afterAdapterDeployed() internal virtual override {
         adapter.setPeer(DST_EID, REMOTE_ADAPTER);
         minGasLimit = adapter.MIN_GAS_LIMIT();
@@ -67,17 +73,23 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
         token.approve(address(adapter), type(uint256).max);
 
         expectedBridgeMessage = bridgeMessageLib.encodeBridgeMessage(recipient, address(token), amount);
+        expectedHyperCoreMessage = hyperCoreMessageLib.encodeHyperCoreMessage(recipient, address(token), amount);
 
         mockSendReceipt();
     }
 
-    function deployAdapter() internal virtual override returns (SynapseBridgeAdapter) {
-        return new SynapseBridgeAdapter(endpoint, address(this));
+    function deployAdapter() internal virtual override returns (SynapseBridgeAdapterV2) {
+        return new SynapseBridgeAdapterV2(endpoint, address(this));
     }
 
     function userBridgesToken() internal {
         vm.prank({msgSender: user, txOrigin: user});
         adapter.bridgeERC20{value: nativeFee}(DST_EID, recipient, address(token), amount, gasLimit);
+    }
+
+    function userBridgesTokenToHyperCore() internal {
+        vm.prank({msgSender: user, txOrigin: user});
+        adapter.bridgeERC20ToHyperCore{value: nativeFee}(DST_EID, recipient, address(token), amount, gasLimit);
     }
 
     function mockSendReceipt() internal {
@@ -194,13 +206,112 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
         adapter.bridgeERC20{value: nativeFee}(DST_EID, recipient, address(token), amount, minGasLimit - 1);
     }
 
+    // ═════════════════════════════════════════ TEST: HYPERCORE DELIVERY ═════════════════════════════════════════════
+
+    function test_bridgeToHyperCore_mintBurn() public withBridgeSet withMintTokenAdded withHyperCoreDecimalsSet {
+        vm.expectCall({callee: address(token), data: abi.encodeCall(TestToken.burnFrom, (user, amount))});
+        vm.expectCall({
+            callee: endpoint,
+            msgValue: nativeFee,
+            data: abi.encodeCall(
+                ILayerZeroEndpointV2.send,
+                (
+                    MessagingParams({
+                        dstEid: DST_EID,
+                        receiver: REMOTE_ADAPTER,
+                        message: expectedHyperCoreMessage,
+                        options: expectedOptions,
+                        payInLzToken: false
+                    }),
+                    user
+                )
+            )
+        });
+        expectEventTokenSent(DST_EID, recipient, address(token), amount, MOCK_GUID);
+        expectEventTokenSentToHyperCore(DST_EID, recipient, address(token), amount, MOCK_GUID);
+
+        userBridgesTokenToHyperCore();
+
+        assertEq(token.balanceOf(user), initialBalance - amount);
+        assertEq(token.totalSupply(), initialBalance - amount);
+    }
+
+    function test_bridgeToHyperCore_withdrawDeposit()
+        public
+        withBridgeSet
+        withWithdrawTokenAdded
+        withHyperCoreDecimalsSet
+    {
+        vm.expectCall({
+            callee: address(token), data: abi.encodeCall(ERC20.transferFrom, (user, address(bridge), amount))
+        });
+        vm.expectCall({
+            callee: endpoint,
+            msgValue: nativeFee,
+            data: abi.encodeCall(
+                ILayerZeroEndpointV2.send,
+                (
+                    MessagingParams({
+                        dstEid: DST_EID,
+                        receiver: REMOTE_ADAPTER,
+                        message: expectedHyperCoreMessage,
+                        options: expectedOptions,
+                        payInLzToken: false
+                    }),
+                    user
+                )
+            )
+        });
+        expectEventTokenSent(DST_EID, recipient, address(token), amount, MOCK_GUID);
+        expectEventTokenSentToHyperCore(DST_EID, recipient, address(token), amount, MOCK_GUID);
+
+        userBridgesTokenToHyperCore();
+
+        assertEq(token.balanceOf(user), initialBalance - amount);
+        assertEq(token.balanceOf(bridge), amount);
+        assertEq(token.totalSupply(), initialBalance);
+    }
+
+    function test_bridgeToHyperCore_revert_decimalsNotSet() public withBridgeSet withMintTokenAdded {
+        expectRevertHyperCoreDecimalsNotSet(DST_EID, address(token));
+        userBridgesTokenToHyperCore();
+        assertEq(token.balanceOf(user), initialBalance);
+        assertEq(token.totalSupply(), initialBalance);
+    }
+
+    function test_bridgeToHyperCore_revert_dustBeforeBurn()
+        public
+        withBridgeSet
+        withMintTokenAdded
+        withHyperCoreDecimalsSet
+    {
+        amount += 1;
+        expectRevertHyperCoreAmountNotRepresentable(amount, 1e10);
+        userBridgesTokenToHyperCore();
+        assertEq(token.balanceOf(user), initialBalance);
+        assertEq(token.totalSupply(), initialBalance);
+    }
+
+    function test_bridgeToHyperCore_revert_amountExceedsUint64BeforeBurn()
+        public
+        withBridgeSet
+        withMintTokenAdded
+        withHyperCoreDecimalsSet
+    {
+        uint256 coreAmount = uint256(type(uint64).max) + 1;
+        amount = coreAmount * 1e10;
+        vm.expectRevert(abi.encodeWithSelector(SBAV2__HyperCoreAmountExceedsUint64.selector, coreAmount));
+        userBridgesTokenToHyperCore();
+        assertEq(token.balanceOf(user), initialBalance);
+        assertEq(token.totalSupply(), initialBalance);
+    }
+
     // ═══════════════════════════════════════ TEST: WITHDRAW-DEPOSIT TOKEN ════════════════════════════════════════════
 
     function test_bridge_withdrawDeposit() public withBridgeSet withWithdrawTokenAdded {
         // Expected token action: transfer from user to bridge
         vm.expectCall({
-            callee: address(token),
-            data: abi.encodeCall(ERC20.transferFrom, (user, address(bridge), amount))
+            callee: address(token), data: abi.encodeCall(ERC20.transferFrom, (user, address(bridge), amount))
         });
         // Expected bridge message
         vm.expectCall({
@@ -269,11 +380,7 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
         adapter.bridgeERC20{value: nativeFee}(UNKNOWN_EID, recipient, address(token), amount, gasLimit);
     }
 
-    function test_bridge_withdrawDeposit_revert_eidUnknown_withPeerAdded()
-        public
-        withBridgeSet
-        withWithdrawTokenAdded
-    {
+    function test_bridge_withdrawDeposit_revert_eidUnknown_withPeerAdded() public withBridgeSet withWithdrawTokenAdded {
         adapter.setPeer(UNKNOWN_EID, REMOTE_ADAPTER);
         expectRevertRemotePairNotSet(UNKNOWN_EID, address(token));
         vm.prank({msgSender: user, txOrigin: user});
@@ -336,5 +443,41 @@ contract SynapseBridgeAdapterSrcTest is SynapseBridgeAdapterTest {
     function test_getNativeFee_revert_gasLimitBelowMinimum() public {
         expectRevertGasLimitBelowMinimum();
         adapter.getNativeFee(DST_EID, minGasLimit - 1);
+    }
+
+    function test_getNativeFeeToHyperCore() public withMintTokenAdded withHyperCoreDecimalsSet {
+        bytes memory mockMessage = hyperCoreMessageLib.encodeHyperCoreMessage(address(0), address(token), 0);
+        vm.mockCall({
+            callee: endpoint,
+            data: abi.encodeCall(
+                ILayerZeroEndpointV2.quote,
+                (
+                    MessagingParams({
+                        dstEid: DST_EID,
+                        receiver: REMOTE_ADAPTER,
+                        message: mockMessage,
+                        options: expectedOptions,
+                        payInLzToken: false
+                    }),
+                    address(adapter)
+                )
+            ),
+            returnData: abi.encode(MessagingFee({nativeFee: nativeFee, lzTokenFee: 0}))
+        });
+        assertEq(adapter.getNativeFeeToHyperCore(DST_EID, address(token), gasLimit), nativeFee);
+    }
+
+    function test_getNativeFeeToHyperCore_revert_decimalsNotSet() public {
+        expectRevertHyperCoreDecimalsNotSet(DST_EID, address(token));
+        adapter.getNativeFeeToHyperCore(DST_EID, address(token), gasLimit);
+    }
+
+    function test_getNativeFeeToHyperCore_revert_gasLimitBelowMinimum()
+        public
+        withMintTokenAdded
+        withHyperCoreDecimalsSet
+    {
+        expectRevertGasLimitBelowMinimum();
+        adapter.getNativeFeeToHyperCore(DST_EID, address(token), minGasLimit - 1);
     }
 }
