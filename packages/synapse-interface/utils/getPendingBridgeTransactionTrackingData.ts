@@ -1,7 +1,6 @@
 import { zeroAddress } from 'viem'
 
 import { HYPERLIQUID } from '@/constants/chains/master'
-import { isHyperliquidUsdcDeposit } from '@/utils/hyperliquid'
 import { PendingBridgeTransaction } from '@/slices/transactions/actions'
 
 export const getPendingBridgeTransactionTrackingData = (
@@ -17,15 +16,9 @@ export const getPendingBridgeTransactionTrackingData = (
     tx.destinationChain?.chainSymbol === HYPERLIQUID.chainSymbol
       ? HYPERLIQUID
       : tx.destinationChain
-  const isHyperliquidDeposit =
-    !tx.bridgeModuleName &&
-    isHyperliquidUsdcDeposit(
-      destinationChain?.id,
-      tx.destinationToken ?? tx.originToken
-    )
   const hasTrackedTimestamp = typeof tx.timestamp === 'number'
 
-  if (!hasTrackedTimestamp && !isHyperliquidDeposit) {
+  if (!hasTrackedTimestamp) {
     return null
   }
 
@@ -41,7 +34,7 @@ export const getPendingBridgeTransactionTrackingData = (
     bridgeModuleName: tx.bridgeModuleName ?? '',
     routerAddress: tx.routerAddress ?? zeroAddress,
     estimatedTime: tx.estimatedTime ?? 0,
-    timestamp: tx.timestamp ?? tx.id,
+    timestamp: tx.timestamp,
     status: 'pending' as const,
   }
 }

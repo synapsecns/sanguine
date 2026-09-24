@@ -20,6 +20,7 @@ import wallet from '@/slices/wallet/reducer'
 import bridgeQuote from '@/slices/bridgeQuote/reducer'
 import { api } from '@/slices/api/slice'
 import { RootActions } from '@/slices/application/actions'
+import { migratePersistedState } from './migrations'
 
 const persistedReducers = {
   application,
@@ -30,10 +31,11 @@ const persistedReducers = {
 export const storageKey: string = 'synapse-interface'
 
 export const persistConfig: PersistConfig<AppState> = {
-  version: 3, // upgrade to reset cache when updated data structures throw errors
+  version: 4,
   key: storageKey,
   storage,
   whitelist: Object.keys(persistedReducers),
+  migrate: migratePersistedState,
 }
 
 export const appReducer = combineReducers({

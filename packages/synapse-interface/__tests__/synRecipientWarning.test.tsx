@@ -72,9 +72,6 @@ jest.mock(
     }),
   })
 )
-jest.mock('../utils/hyperliquid', () => ({
-  isHyperliquidUsdcDeposit: () => false,
-}))
 jest.mock('../contexts/SegmentAnalyticsProvider', () => ({
   segmentAnalyticsEvent: jest.fn(),
 }))

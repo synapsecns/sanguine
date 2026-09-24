@@ -91,28 +91,20 @@ describe('getPendingBridgeTransactionTrackingData', () => {
     })
   })
 
-  it('keeps saved Hyperliquid deposits working without an explicit tracked timestamp', () => {
-    const trackedTransaction = getPendingBridgeTransactionTrackingData(
-      {
-        id: 333,
-        originChain: mockChain,
-        originToken: mockToken,
-        originValue: '5',
-        destinationChain: { ...HYPERLIQUID, id: 998 },
-        transactionHash: '0xhyper',
-        isSubmitted: true,
-      },
-      zeroAddress
-    )
-
-    expect(trackedTransaction).toMatchObject({
-      originTxHash: '0xhyper',
-      destinationChain: HYPERLIQUID,
-      estimatedTime: 0,
-      timestamp: 333,
-      bridgeModuleName: '',
-      routerAddress: zeroAddress,
-      destinationToken: mockToken,
-    })
+  it('does not promote legacy Hyperliquid deposits without a tracked timestamp', () => {
+    expect(
+      getPendingBridgeTransactionTrackingData(
+        {
+          id: 333,
+          originChain: mockChain,
+          originToken: mockToken,
+          originValue: '5',
+          destinationChain: { ...HYPERLIQUID, id: 998 },
+          transactionHash: '0xhyper',
+          isSubmitted: true,
+        },
+        zeroAddress
+      )
+    ).toBeNull()
   })
 })
