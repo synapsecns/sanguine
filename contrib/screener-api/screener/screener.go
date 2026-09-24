@@ -4,11 +4,13 @@ package screener
 import (
 	"bytes"
 	"context"
+	"crypto/hmac"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -42,6 +44,10 @@ const (
 	okResponse  = "OK"
 	errResponse = "ERROR"
 	meterName   = "github.com/synapsecns/sanguine/contrib/screener-api"
+	// maxSignatureSkew is how far X-Signature-timestamp may drift from server time.
+	// Timestamp and nonce are part of the signed message; without a freshness check
+	// a captured sync request can be replayed indefinitely.
+	maxSignatureSkew = 5 * time.Minute
 )
 
 // Screener is the interface for the screener.
@@ -363,6 +369,19 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 	}
 }
 
+// signatureTimestampFresh reports whether timestamp (unix seconds) is within maxSkew of now.
+func signatureTimestampFresh(timestamp string, now time.Time, maxSkew time.Duration) bool {
+	ts, err := strconv.ParseInt(timestamp, 10, 64)
+	if err != nil {
+		return false
+	}
+	skew := now.Sub(time.Unix(ts, 0))
+	if skew < 0 {
+		skew = -skew
+	}
+	return skew <= maxSkew
+}
+
 // This function takes the HTTP headers and the body of the request and reconstructs the signature to
 // compare it with the signature provided. If they match, the request is allowed to pass through.
 // nolint: canonicalheader
@@ -376,6 +395,20 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 		nonce := c.Request.Header.Get("X-Signature-nonce")
 		signature := c.Request.Header.Get("X-Signature-signature")
 		queryString := c.Request.URL.RawQuery
+
+		if appID == "" || appID != cfg.AppID {
+			span.AddEvent("error", trace.WithAttributes(attribute.String("error", "Invalid app id")))
+			c.JSON(http.StatusUnauthorized, gin.H{"error": errResponse})
+			c.Abort()
+			return
+		}
+
+		if !signatureTimestampFresh(timestamp, time.Now(), maxSignatureSkew) {
+			span.AddEvent("error", trace.WithAttributes(attribute.String("error", "Stale or invalid signature timestamp")))
+			c.JSON(http.StatusUnauthorized, gin.H{"error": errResponse})
+			c.Abort()
+			return
+		}
 
 		bodyBz, err := io.ReadAll(c.Request.Body)
 		if err != nil {
@@ -419,7 +452,7 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 			attribute.String("message", message),
 		)
 
-		if expectedSignature != signature {
+		if !hmac.Equal([]byte(expectedSignature), []byte(signature)) {
 			span.AddEvent(
 				"error",
 				trace.WithAttributes(attribute.String("error", "Invalid signature"+expectedSignature)),
