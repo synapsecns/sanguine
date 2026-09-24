@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -19,6 +20,10 @@ import (
 // i.e. signature (hex encoded) = keccak(bytes.concat("\x19Ethereum Signed Message:\n", len(strconv.Itoa(time.Now().Unix()), strconv.Itoa(time.Now().Unix())))
 // so that full auth header string: auth = strconv.Itoa(time.Now().Unix()) + ":" + signature
 // see: https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_sign
+//
+// deadline is the earliest accepted timestamp (typically now - authAge). Timestamps
+// newer than now + (now - deadline) are rejected so far-future signed auths cannot
+// remain valid for years.
 func EIP191Auth(c *gin.Context, deadline int64) (accountRecovered common.Address, err error) {
 	auth := c.Request.Header.Get(AuthorizationHeader)
 
@@ -30,16 +35,29 @@ func EIP191Auth(c *gin.Context, deadline int64) (accountRecovered common.Address
 		return common.Address{}, err
 	}
 
-	// check timestamp is not older than given deadline
+	// check timestamp is within [deadline, now+(now-deadline)] of wall clock.
+	// Callers pass deadline = now - authAge (e.g. 1000s). Without an upper bound,
+	// a far-future signed timestamp remains valid until that future time ages in.
 	var timestamp int64
 	timestamp, err = strconv.ParseInt(s[0], 10, 64)
 	if err != nil {
 		err = fmt.Errorf("invalid timestamp in authorization")
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
 		return common.Address{}, err
-	} else if timestamp < deadline {
+	}
+	now := time.Now().Unix()
+	maxAge := now - deadline
+	if maxAge < 0 {
+		maxAge = 0
+	}
+	if timestamp < deadline {
 		err = fmt.Errorf("authorization too old")
 		c.JSON(http.StatusUnauthorized, gin.H{"msg": err}) // Unauthorized
+		return common.Address{}, err
+	}
+	if timestamp > now+maxAge {
+		err = fmt.Errorf("authorization timestamp too far in the future")
+		c.JSON(http.StatusUnauthorized, gin.H{"msg": err})
 		return common.Address{}, err
 	}
 
