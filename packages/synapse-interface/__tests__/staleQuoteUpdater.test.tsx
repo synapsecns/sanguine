@@ -1,4 +1,5 @@
 import { act, renderHook } from '@testing-library/react'
+
 import { useStaleQuoteUpdater } from '@/components/StateManagedBridge/hooks/useStaleQuoteUpdater'
 
 const quote = (requestId: number) => ({ requestId } as any)
@@ -56,15 +57,9 @@ describe('interface stale quote refresh', () => {
     expect(latest).toHaveBeenCalledTimes(1)
   })
 
-  it('invalidates callbacks from replaced quotes and prevents overlapping refreshes', async () => {
+  it('invalidates callbacks from replaced quotes', async () => {
     const added = jest.spyOn(document, 'addEventListener')
-    let finish: () => void
-    const refresh = jest.fn().mockImplementation(
-      () =>
-        new Promise<void>((done) => {
-          finish = done
-        })
-    )
+    const refresh = jest.fn().mockResolvedValue(undefined)
     const { rerender } = renderHook(
       ({ currentQuote }) =>
         useStaleQuoteUpdater(currentQuote, refresh, true, 15000, 0),
@@ -73,9 +68,9 @@ describe('interface stale quote refresh', () => {
     await act(async () => {
       jest.advanceTimersByTime(15000)
     })
-    const obsolete = added.mock.calls
-      .filter(([name]) => name === 'mousemove')
-      .at(-1)[1] as () => void
+    const obsolete = added.mock.calls.findLast(
+      ([name]) => name === 'mousemove'
+    )[1] as () => void
     rerender({ currentQuote: quote(2) })
     await act(async () => {
       obsolete()
@@ -86,14 +81,84 @@ describe('interface stale quote refresh', () => {
       document.dispatchEvent(new MouseEvent('mousemove'))
     })
     expect(refresh).toHaveBeenCalledTimes(1)
-    rerender({ currentQuote: quote(3) })
+    added.mockRestore()
+  })
+
+  it('lets replacement quotes become stale and refresh while an older refresh never settles', async () => {
+    const refresh = jest
+      .fn()
+      .mockReturnValue(new Promise<void>(() => undefined))
+    const { rerender, result } = renderHook(
+      ({ currentQuote }) =>
+        useStaleQuoteUpdater(currentQuote, refresh, true, 15000, 0),
+      { initialProps: { currentQuote: quote(1) } }
+    )
     await act(async () => {
       jest.advanceTimersByTime(15000)
       document.dispatchEvent(new MouseEvent('mousemove'))
     })
     expect(refresh).toHaveBeenCalledTimes(1)
+
+    rerender({ currentQuote: quote(2) })
     await act(async () => {
-      finish()
+      jest.advanceTimersByTime(15000)
+    })
+    expect(result.current).toBe(true)
+    await act(async () => {
+      document.dispatchEvent(new MouseEvent('mousemove'))
+      document.dispatchEvent(new MouseEvent('mousemove'))
+    })
+    expect(refresh).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not let an old completion clear the replacement cycle pending refresh', async () => {
+    const added = jest.spyOn(document, 'addEventListener')
+    let finishOld: () => void
+    let finishCurrent: () => void
+    const refresh = jest
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise<void>((done) => {
+            finishOld = done
+          })
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise<void>((done) => {
+            finishCurrent = done
+          })
+      )
+      .mockResolvedValue(undefined)
+    const { rerender } = renderHook(
+      ({ currentQuote }) =>
+        useStaleQuoteUpdater(currentQuote, refresh, true, 15000, 0),
+      { initialProps: { currentQuote: quote(1) } }
+    )
+    await act(async () => {
+      jest.advanceTimersByTime(15000)
+      document.dispatchEvent(new MouseEvent('mousemove'))
+    })
+    rerender({ currentQuote: quote(2) })
+    await act(async () => {
+      jest.advanceTimersByTime(15000)
+    })
+    const currentRefresh = added.mock.calls.findLast(
+      ([name]) => name === 'mousemove'
+    )[1] as () => void
+    await act(async () => {
+      currentRefresh()
+    })
+    expect(refresh).toHaveBeenCalledTimes(2)
+    await act(async () => {
+      finishOld()
+    })
+    await act(async () => {
+      currentRefresh()
+    })
+    expect(refresh).toHaveBeenCalledTimes(2)
+    await act(async () => {
+      finishCurrent()
     })
     added.mockRestore()
   })

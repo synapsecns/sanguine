@@ -12,7 +12,6 @@ export const useStaleQuoteUpdater = (
   const [isStale, setIsStale] = useState(false)
   const refreshRef = useRef(refreshQuoteCallback)
   const enabledRef = useRef(enabled)
-  const refreshInFlightRef = useRef(false)
   const cycleRef = useRef(0)
   const autoRefreshStartTimeRef = useRef<number | null>(null)
   const mouseMovedRef = useRef(false)
@@ -39,6 +38,8 @@ export const useStaleQuoteUpdater = (
 
   useEffect(() => {
     const cycle = ++cycleRef.current
+    // A replaced quote must not wait for the previous cycle's refresh to settle.
+    let refreshInFlight = false
     let listener: (() => void) | undefined
     let timer: ReturnType<typeof setTimeout> | undefined
     setIsStale(false)
@@ -54,13 +55,13 @@ export const useStaleQuoteUpdater = (
       if (
         !enabledRef.current ||
         cycle !== cycleRef.current ||
-        refreshInFlightRef.current
+        refreshInFlight
       ) {
         return
       }
       removeListener()
       setIsStale(false)
-      refreshInFlightRef.current = true
+      refreshInFlight = true
       Promise.resolve()
         .then(() => {
           if (enabledRef.current && cycle === cycleRef.current) {
@@ -69,7 +70,7 @@ export const useStaleQuoteUpdater = (
         })
         .catch(() => undefined)
         .finally(() => {
-          refreshInFlightRef.current = false
+          refreshInFlight = false
           if (enabledRef.current && cycle === cycleRef.current) {
             scheduleRefresh()
           }
@@ -81,7 +82,7 @@ export const useStaleQuoteUpdater = (
         Date.now() - autoRefreshStartTimeRef.current < autoRefreshDuration
       timer = setTimeout(() => {
         if (!enabledRef.current || cycle !== cycleRef.current) return
-        if (refreshInFlightRef.current) {
+        if (refreshInFlight) {
           scheduleRefresh()
         } else if (autoRefresh) {
           refresh()
