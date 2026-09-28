@@ -302,6 +302,7 @@ const StateManagedBridge = () => {
     hasSufficientBalance &&
     isApproved &&
     !isBridgePaused &&
+    !isLoading &&
     !isWalletPending
 
   const isQuoteStale = useStaleQuoteUpdater(
