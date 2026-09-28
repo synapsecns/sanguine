@@ -34,7 +34,7 @@ export class SynModuleSet extends SynapseModuleSet {
   public readonly allEvents = []
   public readonly isBridgeV2Supported = true
   public modules: { [chainId: number]: SynModule } = {}
-  private hyperCoreAccounts = new HyperCoreAccountClient()
+  private readonly hyperCoreAccounts = new HyperCoreAccountClient()
 
   constructor(chains: ChainProvider[]) {
     super()

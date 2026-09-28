@@ -22,7 +22,7 @@ const CORE_CONVERSION_RATE = BigNumber.from(10).pow(
 const MAX_UINT64 = BigNumber.from(2).pow(64).sub(1)
 
 export class SynModule extends UsdtModule {
-  private pendingNativeFees = new Map<string, Promise<BigNumber>>()
+  private readonly pendingNativeFees = new Map<string, Promise<BigNumber>>()
 
   public async getDestinationQuote(params: SynSendParams): Promise<BigNumber> {
     const amount = BigNumber.from(params.amount)
