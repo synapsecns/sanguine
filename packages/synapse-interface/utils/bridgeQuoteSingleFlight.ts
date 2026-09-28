@@ -8,7 +8,7 @@ export const bridgeQuoteSingleFlight = <T extends Record<string, unknown>>(
 ): Promise<any> => {
   const key = JSON.stringify(
     Object.keys(params)
-      .sort()
+      .sort((left, right) => left.localeCompare(right))
       .map((field) => [field, typeof params[field], params[field]])
   )
   let sdkRequests = requests.get(sdk)
@@ -17,7 +17,7 @@ export const bridgeQuoteSingleFlight = <T extends Record<string, unknown>>(
     requests.set(sdk, sdkRequests)
   }
   const existing = sdkRequests.get(key)
-  if (existing) return existing
+  if (existing !== undefined) return existing
 
   const request = Promise.resolve().then(() => sdk.bridgeV2(params))
   sdkRequests.set(key, request)
