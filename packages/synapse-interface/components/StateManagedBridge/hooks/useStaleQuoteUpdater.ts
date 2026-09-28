@@ -1,111 +1,114 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { BridgeQuote } from '@/utils/types'
+import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
 export const useStaleQuoteUpdater = (
   quote: BridgeQuote,
   refreshQuoteCallback: () => Promise<void>,
   enabled: boolean,
-  staleTimeout: number = 15000,
-  autoRefreshDuration: number = 30000
+  staleTimeout: number = 15000, // in ms
+  autoRefreshDuration: number = 30000 // in ms
 ) => {
-  const [isStale, setIsStale] = useState(false)
-  const refreshRef = useRef(refreshQuoteCallback)
-  const enabledRef = useRef(enabled)
-  const refreshInFlightRef = useRef(false)
-  const cycleRef = useRef(0)
-  const autoRefreshStartTimeRef = useRef<number | null>(null)
-  const mouseMovedRef = useRef(false)
+  const [isStale, setIsStale] = useState<boolean>(false)
+  const autoRefreshIntervalRef = useRef<null | NodeJS.Timeout>(null)
+  const autoRefreshStartTimeRef = useRef<null | number>(null)
+  const mouseMoveListenerRef = useRef<null | (() => void)>(null)
+  const manualRefreshRef = useRef<null | NodeJS.Timeout>(null)
 
-  useLayoutEffect(() => {
-    refreshRef.current = refreshQuoteCallback
-    enabledRef.current = enabled
-  }, [refreshQuoteCallback, enabled])
+  useIntervalTimer(staleTimeout, !enabled)
 
-  useEffect(() => {
-    const onMove = () => {
-      mouseMovedRef.current = true
+  const [mouseMoved, resetMouseMove] = useTrackMouseMove()
+
+  const clearManualRefreshTimeout = () => {
+    if (manualRefreshRef.current) {
+      clearTimeout(manualRefreshRef.current)
     }
-    document.addEventListener('mousemove', onMove)
-    return () => document.removeEventListener('mousemove', onMove)
-  }, [])
+  }
+
+  const clearAutoRefreshInterval = () => {
+    if (autoRefreshIntervalRef.current) {
+      clearInterval(autoRefreshIntervalRef.current)
+    }
+  }
+
+  const clearMouseMoveListener = () => {
+    if (mouseMoveListenerRef.current) {
+      mouseMoveListenerRef.current = null
+    }
+  }
 
   useEffect(() => {
-    if (mouseMovedRef.current && autoRefreshStartTimeRef.current !== null) {
+    if (mouseMoved && autoRefreshStartTimeRef.current) {
       autoRefreshStartTimeRef.current = null
-      mouseMovedRef.current = false
+      resetMouseMove()
     }
   }, [quote])
 
+  // Start auto-refresh logic for ${autoRefreshDuration}ms seconds
   useEffect(() => {
-    const cycle = ++cycleRef.current
-    let listener: (() => void) | undefined
-    let timer: ReturnType<typeof setTimeout> | undefined
-    setIsStale(false)
-
-    const removeListener = () => {
-      if (listener) {
-        document.removeEventListener('mousemove', listener)
-        listener = undefined
-      }
-    }
-
-    const refresh = () => {
-      if (
-        !enabledRef.current ||
-        cycle !== cycleRef.current ||
-        refreshInFlightRef.current
-      ) {
-        return
-      }
-      removeListener()
-      setIsStale(false)
-      refreshInFlightRef.current = true
-      Promise.resolve()
-        .then(() => {
-          if (enabledRef.current && cycle === cycleRef.current) {
-            return refreshRef.current()
-          }
-        })
-        .catch(() => undefined)
-        .finally(() => {
-          refreshInFlightRef.current = false
-          if (enabledRef.current && cycle === cycleRef.current) {
-            scheduleRefresh()
-          }
-        })
-    }
-
-    const scheduleRefresh = () => {
-      const autoRefresh =
-        Date.now() - autoRefreshStartTimeRef.current < autoRefreshDuration
-      timer = setTimeout(() => {
-        if (!enabledRef.current || cycle !== cycleRef.current) return
-        if (refreshInFlightRef.current) {
-          scheduleRefresh()
-        } else if (autoRefresh) {
-          refresh()
-        } else {
-          setIsStale(true)
-          listener = refresh
-          document.addEventListener('mousemove', listener)
-        }
-      }, staleTimeout)
-    }
-
     if (enabled) {
+      // If auto-refresh has not started yet, initialize the start time
       if (autoRefreshStartTimeRef.current === null) {
         autoRefreshStartTimeRef.current = Date.now()
       }
-      scheduleRefresh()
+
+      const elapsedTime = Date.now() - autoRefreshStartTimeRef.current
+
+      // If ${autoRefreshDuration}ms hasn't passed, keep auto-refreshing
+      if (elapsedTime < autoRefreshDuration) {
+        clearManualRefreshTimeout()
+        clearAutoRefreshInterval()
+
+        autoRefreshIntervalRef.current = setInterval(() => {
+          refreshQuoteCallback()
+        }, staleTimeout)
+      } else {
+        // If more than ${autoRefreshDuration}ms have passed, stop auto-refreshing and switch to mousemove logic
+        clearAutoRefreshInterval()
+
+        manualRefreshRef.current = setTimeout(() => {
+          clearMouseMoveListener()
+          setIsStale(true)
+
+          const handleMouseMove = () => {
+            refreshQuoteCallback()
+            clearMouseMoveListener()
+            setIsStale(false)
+          }
+
+          document.addEventListener('mousemove', handleMouseMove, {
+            once: true,
+          })
+
+          mouseMoveListenerRef.current = handleMouseMove
+        }, staleTimeout)
+      }
     }
 
     return () => {
-      cycleRef.current += 1
-      if (timer !== undefined) clearTimeout(timer)
-      removeListener()
+      clearManualRefreshTimeout()
+      clearAutoRefreshInterval()
+      setIsStale(false)
     }
-  }, [quote, enabled, staleTimeout, autoRefreshDuration])
+  }, [quote, enabled])
 
   return isStale
+}
+
+export const useTrackMouseMove = (): [boolean, () => void] => {
+  const [moved, setMoved] = useState<boolean>(false)
+
+  const onMove = () => setMoved(true)
+  const onReset = () => setMoved(false)
+
+  useEffect(() => {
+    document.addEventListener('mousemove', onMove)
+
+    return () => {
+      document.removeEventListener('mousemove', onMove)
+    }
+  }, [])
+
+  return [moved, onReset]
 }

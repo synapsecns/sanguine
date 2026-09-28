@@ -12,67 +12,38 @@ export const SynapseContext = createContext(null)
 
 export const SynapseProvider = memo(
   ({ children, chains }: { children: React.ReactNode; chains: any[] }) => {
-    const configurationKey = JSON.stringify(
-      chains.map(({ id, configRpc, fallbackRpc }) => ({
-        id,
-        configRpc,
-        fallbackRpc,
-      }))
-    )
-    const configuration = useMemo(
-      () => JSON.parse(configurationKey),
-      [configurationKey]
-    )
-    const synapseProviders = useMemo(
-      () =>
-        configuration.map((chain) => {
-          const providerUrls = [
-            `/api/rpc/${chain.id}`,
-            chain?.configRpc,
-            chain?.fallbackRpc,
-          ]
+    const synapseProviders = chains.map((chain) => {
+      const providerUrls = [
+        `/api/rpc/${chain.id}`,
+        chain?.configRpc,
+        chain?.fallbackRpc,
+      ]
 
-          // Set priority based on list order
-          const providerConfigs: FallbackProviderConfig[] = providerUrls.map(
-            (url, index) => ({
-              provider: new TransportAwareJsonRpcProvider(url, chain.id),
-              priority: index,
-              stallTimeout: 750,
-            })
-          )
+      // Set priority based on list order
+      const providerConfigs: FallbackProviderConfig[] = providerUrls.map(
+        (url, index) => ({
+          provider: new TransportAwareJsonRpcProvider(url, chain.id),
+          priority: index,
+          stallTimeout: 750,
+        })
+      )
 
-          // Use quorum of 1
-          return new FallbackProvider(providerConfigs, 1)
-        }),
-      [configuration]
-    )
+      // Use quorum of 1
+      return new FallbackProvider(providerConfigs, 1)
+    })
 
-    const providerMap = useMemo(
-      () =>
-        configuration.reduce((map, chain) => {
-          map[chain.id] = synapseProviders.find(
-            (provider) => provider.network.chainId === chain.id
-          )
-          return map
-        }, {}),
-      [configuration, synapseProviders]
-    )
+    const providerMap = chains.reduce((map, chain) => {
+      map[chain.id] = synapseProviders.find(
+        (provider) => provider.network.chainId === chain.id
+      )
+      return map
+    }, {})
 
-    const synapseSDK = useMemo(
-      () =>
-        new SynapseSDK(
-          configuration.map((chain) => chain.id),
-          synapseProviders
-        ),
-      [configuration, synapseProviders]
-    )
-    const context = useMemo(
-      () => ({ synapseSDK, providerMap }),
-      [synapseSDK, providerMap]
-    )
+    const chainIds = chains.map((chain) => chain.id)
+    const synapseSDK = new SynapseSDK(chainIds, synapseProviders)
 
     return (
-      <SynapseContext.Provider value={context}>
+      <SynapseContext.Provider value={{ synapseSDK, providerMap }}>
         {children}
       </SynapseContext.Provider>
     )

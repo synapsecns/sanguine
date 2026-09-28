@@ -11,7 +11,6 @@ import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { getPausedBridgeModuleNamesForRoute } from '@/utils/getPausedBridgeModuleNamesForRoute'
 import { Token } from '@/utils/types'
 import { BridgeModulePause } from '@/components/Maintenance/Maintenance'
-import { bridgeQuoteSingleFlight } from '@/utils/bridgeQuoteSingleFlight'
 
 export const fetchBridgeQuote = createAsyncThunk(
   'bridgeQuote/fetchBridgeQuote',
@@ -48,7 +47,7 @@ export const fetchBridgeQuote = createAsyncThunk(
         ? destinationAddress
         : address
 
-    const allQuotes = await bridgeQuoteSingleFlight(synapseSDK, {
+    const allQuotes = await synapseSDK.bridgeV2({
       fromChainId,
       toChainId,
       fromToken: fromToken.addresses[fromChainId],

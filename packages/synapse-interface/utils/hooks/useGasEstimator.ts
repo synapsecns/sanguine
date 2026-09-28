@@ -14,7 +14,6 @@ import { calculateGasCost } from '../calculateGasCost'
 import { stringToBigInt, formatBigIntToString } from '../bigint/format'
 import { Token } from '../types'
 import { wagmiConfig } from '@/wagmiConfig'
-import { bridgeQuoteSingleFlight } from '@/utils/bridgeQuoteSingleFlight'
 import {
   fetchGasData,
   setGasLimit,
@@ -155,7 +154,7 @@ const getBridgePayload = async (
   userAddress: string
 ) => {
   try {
-    const quotes = await bridgeQuoteSingleFlight(synapseSDK, {
+    const quotes = await synapseSDK.bridgeV2({
       fromChainId,
       toChainId,
       fromToken: fromToken.addresses[fromChainId],

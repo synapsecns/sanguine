@@ -207,7 +207,6 @@ const StateManagedBridge = () => {
     address,
     destinationAddress,
     pausedModulesKey,
-    synapseSDK,
   ])
 
   const getAndSetBridgeQuote = async () => {
@@ -302,7 +301,6 @@ const StateManagedBridge = () => {
     hasSufficientBalance &&
     isApproved &&
     !isBridgePaused &&
-    !isLoading &&
     !isWalletPending
 
   const isQuoteStale = useStaleQuoteUpdater(

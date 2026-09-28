@@ -19,25 +19,21 @@ export const SynapseProvider = memo(
     chains: Chain[]
     customRpcs?: CustomRpcs
   }) => {
-    const configurationKey = JSON.stringify(
-      chains.map((chain) => ({
-        id: chain.id,
-        urls: customRpcs?.[chain.id]
-          ? [
-              customRpcs[chain.id],
-              chain.rpcUrls.primary,
-              chain.rpcUrls.fallback,
-            ]
-          : [chain.rpcUrls.primary, chain.rpcUrls.fallback],
-      }))
-    )
-    const configuration = useMemo(
-      () => JSON.parse(configurationKey),
-      [configurationKey]
-    )
     const synapseProviders = useMemo(() => {
-      return configuration.map((chain) => {
-        const providerConfigs: FallbackProviderConfig[] = chain.urls.map(
+      return chains.map((chain) => {
+        let providerUrls
+
+        if (customRpcs && customRpcs[chain.id]) {
+          providerUrls = [
+            customRpcs[chain.id],
+            chain?.rpcUrls.primary,
+            chain?.rpcUrls.fallback,
+          ]
+        } else {
+          providerUrls = [chain?.rpcUrls.primary, chain?.rpcUrls.fallback]
+        }
+
+        const providerConfigs: FallbackProviderConfig[] = providerUrls.map(
           (url, index) => ({
             provider: new StaticJsonRpcProvider(url, chain.id),
             priority: index,
@@ -47,31 +43,26 @@ export const SynapseProvider = memo(
 
         return new FallbackProvider(providerConfigs, 1)
       })
-    }, [configuration])
+    }, [chains])
 
     const providerMap = useMemo(() => {
-      return configuration.reduce((map, chain) => {
+      return chains.reduce((map, chain) => {
         map[chain.id] = synapseProviders.find(
           (provider) => provider.network.chainId === chain.id
         )
         return map
       }, {})
-    }, [configuration, synapseProviders])
+    }, [chains, synapseProviders])
 
+    const chainIds = chains.map((chain) => chain.id)
     const synapseSDK = useMemo(
-      () =>
-        new SynapseSDK(
-          configuration.map((chain) => chain.id),
-          synapseProviders
-        ),
-      [configuration, synapseProviders]
-    )
-    const context = useMemo(
-      () => ({ synapseSDK, providerMap, synapseProviders }),
-      [synapseSDK, providerMap, synapseProviders]
+      () => new SynapseSDK(chainIds, synapseProviders),
+      [chainIds, synapseProviders]
     )
     return (
-      <SynapseContext.Provider value={context}>
+      <SynapseContext.Provider
+        value={{ synapseSDK, providerMap, synapseProviders }}
+      >
         {children}
       </SynapseContext.Provider>
     )
