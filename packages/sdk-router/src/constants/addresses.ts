@@ -99,6 +99,9 @@ export const RELAY_ADDRESS_MAP: AddressMap = generateAddressMap(
   RELAY_EXCEPTION_MAP
 )
 
+// Relay's native USDC currency identifier on HyperCore (Perps).
+export const HYPERCORE_USDC_ADDRESS = '0x00000000000000000000000000000000'
+
 /**
  * USDT0 contract address for supported chains.
  * Note: for Ethereum this is actually native USDT.

@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import { RELAY_SUPPORTED_CHAIN_IDS } from '@synapsecns/sdk-router'
 
 import { BRIDGE_MAP } from '@/constants/bridgeMap'
 import { flattenPausedTokens } from '@/utils/flattenPausedTokens'
@@ -49,22 +50,20 @@ const constructJSON = (swappableMap, exclusionList) => {
   return result
 }
 
-const addUSDCHyperLiquid = (routes) => {
+const addUSDCHyperLiquid = (routes: BridgeRoutes): BridgeRoutes => {
   const usdcHyperliquid = `USDC-${HYPERLIQUID.id}`
 
   return _.mapValues(routes, (innerList, key) => {
-    // If the key is USDC-42161 OR if the innerList includes USDC-42161
-    if (key === 'USDC-42161' || innerList.includes('USDC-42161')) {
-      return [...innerList, usdcHyperliquid]
+    const originChainId = Number(key.slice(key.lastIndexOf('-') + 1))
+    if (RELAY_SUPPORTED_CHAIN_IDS.includes(originChainId)) {
+      return [...new Set([...innerList, usdcHyperliquid])]
     }
     return innerList
   })
 }
 const PAUSED_TOKENS = flattenPausedTokens()
 
-export const EXISTING_BRIDGE_ROUTES: BridgeRoutes = addUSDCHyperLiquid(
-  constructJSON(BRIDGE_MAP, PAUSED_TOKENS)
-)
+const bridgeRoutes: BridgeRoutes = constructJSON(BRIDGE_MAP, PAUSED_TOKENS)
 
 // Separate from the legacy SYN graph, which would advertise every SYN chain.
 const synRoutes: BridgeRoutes = {
@@ -73,12 +72,15 @@ const synRoutes: BridgeRoutes = {
 }
 Object.entries(synRoutes).forEach(([origin, destinations]) => {
   if (PAUSED_TOKENS.includes(origin)) return
-  EXISTING_BRIDGE_ROUTES[origin] = [
+  bridgeRoutes[origin] = [
     ...new Set([
-      ...(EXISTING_BRIDGE_ROUTES[origin] ?? []),
+      ...(bridgeRoutes[origin] ?? []),
       ...destinations.filter(
         (destination) => !PAUSED_TOKENS.includes(destination)
       ),
     ]),
   ]
 })
+
+export const EXISTING_BRIDGE_ROUTES: BridgeRoutes =
+  addUSDCHyperLiquid(bridgeRoutes)

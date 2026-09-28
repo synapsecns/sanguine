@@ -1,7 +1,12 @@
-import { Zero } from '@ethersproject/constants'
+import { AddressZero, Zero } from '@ethersproject/constants'
 import { BigNumber } from 'ethers'
 
-import { RELAY_ADDRESS_MAP, TOKEN_ZAP_V1_ADDRESS_MAP } from '../constants'
+import {
+  HYPERCORE_CHAIN_ID,
+  HYPERCORE_USDC_ADDRESS,
+  RELAY_ADDRESS_MAP,
+  TOKEN_ZAP_V1_ADDRESS_MAP,
+} from '../constants'
 import {
   BridgeRoute,
   BridgeRouteV2,
@@ -18,6 +23,7 @@ import { ChainProvider } from '../router'
 import {
   ETH_NATIVE_TOKEN_ADDRESS,
   isNativeToken,
+  isSameAddress,
   logExecutionTime,
 } from '../utils'
 import {
@@ -50,6 +56,11 @@ export class RelayModuleSet extends SynapseModuleSet {
       }
       this.modules[chainId] = new RelayModule(chainId, address)
     })
+    // HyperCore is a Relay destination, but has no EVM provider or contract.
+    this.modules[HYPERCORE_CHAIN_ID] = new RelayModule(
+      HYPERCORE_CHAIN_ID,
+      AddressZero
+    )
   }
 
   public getModule(chainId: number): SynapseModule | undefined {
@@ -71,17 +82,25 @@ export class RelayModuleSet extends SynapseModuleSet {
     toToken,
     fromToken,
   }: GetBridgeTokenCandidatesParameters): Promise<BridgeTokenCandidate[]> {
+    const hyperCore = toChainId === HYPERCORE_CHAIN_ID
     // Check that both chains are supported
-    if (!this.getModule(fromChainId) || !this.getModule(toChainId)) {
+    if (
+      !this.getModule(fromChainId) ||
+      !this.getModule(toChainId) ||
+      (hyperCore && toToken !== undefined && !this.isHyperCoreUsdc(toToken))
+    ) {
       return []
     }
-    // Relay supports origin swaps natively
     return [
       {
         originChainId: fromChainId,
         destChainId: toChainId,
         originToken: fromToken,
-        destToken: toToken ?? ETH_NATIVE_TOKEN_ADDRESS,
+        destToken:
+          toToken ??
+          (toChainId === HYPERCORE_CHAIN_ID
+            ? HYPERCORE_USDC_ADDRESS
+            : ETH_NATIVE_TOKEN_ADDRESS),
       },
     ]
   }
@@ -91,7 +110,12 @@ export class RelayModuleSet extends SynapseModuleSet {
     params: GetBridgeRouteV2Parameters
   ): Promise<BridgeRouteV2 | undefined> {
     const tokenZap = TOKEN_ZAP_V1_ADDRESS_MAP[params.bridgeToken.originChainId]
-    if (!this.validateBridgeRouteV2Params(params) || !tokenZap) {
+    if (
+      !this.validateBridgeRouteV2Params(params) ||
+      !tokenZap ||
+      (params.bridgeToken.destChainId === HYPERCORE_CHAIN_ID &&
+        !this.isHyperCoreUsdc(params.toToken))
+    ) {
       return undefined
     }
     const quoteRequest: QuoteRequest = {
@@ -99,7 +123,10 @@ export class RelayModuleSet extends SynapseModuleSet {
       originChainId: params.bridgeToken.originChainId,
       destinationChainId: params.bridgeToken.destChainId,
       originCurrency: addressToCurrency(params.originSwapRoute.toToken),
-      destinationCurrency: addressToCurrency(params.toToken),
+      destinationCurrency:
+        params.bridgeToken.destChainId === HYPERCORE_CHAIN_ID
+          ? HYPERCORE_USDC_ADDRESS
+          : addressToCurrency(params.toToken),
       amount: params.originSwapRoute.expectedToAmount.toString(),
       tradeType: TradeType.ExactInput,
       recipient: params.toRecipient ?? USER_SIMULATED_ADDRESS,
@@ -200,5 +227,9 @@ export class RelayModuleSet extends SynapseModuleSet {
       target: relayData.to,
       payload: relayData.data,
     })
+  }
+
+  private isHyperCoreUsdc(token: string): boolean {
+    return isSameAddress(token, HYPERCORE_USDC_ADDRESS)
   }
 }

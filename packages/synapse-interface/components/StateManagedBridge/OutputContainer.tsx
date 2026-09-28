@@ -16,8 +16,6 @@ import { useWalletState } from '@/slices/wallet/hooks'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { useTranslations } from 'next-intl'
-import { ARBITRUM } from '@/constants/chains/master'
-import { isHyperliquidUsdcDeposit } from '@/utils/hyperliquid'
 import { useUsdDisplay } from '@hooks/useUsdDisplay'
 import { formatInlineUsdDifference } from '@utils/calculateUsdValue'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
@@ -36,10 +34,7 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
   const { showDestinationAddress } = useBridgeDisplayState()
   const { hasValidInput, hasValidQuote } = useBridgeValidations()
-  const { debouncedFromValue, fromChainId, toChainId, toToken } =
-    useBridgeState()
-  const isUsdcDeposit = isHyperliquidUsdcDeposit(toChainId, toToken)
-  const isDirectUsdcDeposit = fromChainId === ARBITRUM.id && isUsdcDeposit
+  const { fromChainId, toChainId, toToken } = useBridgeState()
 
   const showValue = useMemo(() => {
     if (!hasValidInput) {
@@ -54,8 +49,7 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
   const inputClassName = isQuoteStale ? 'opacity-50' : undefined
 
   // Fetch token price and calculate USD value
-  const outputValue = isDirectUsdcDeposit ? debouncedFromValue : showValue
-  const usdValue = useUsdDisplay(toToken, outputValue)
+  const usdValue = useUsdDisplay(toToken, showValue)
 
   // Convert input amount to bigint for slippage calculation
   const inputAmount = parseTokenAmount(
@@ -87,13 +81,15 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
       ? getParsedBalance(toTokenBalance, toTokenDecimals)
       : '0.0'
   const formattedBalance = formatAmount(parsedBalance)
-  const formattedUsdValue = `${usdValue}${formatInlineUsdDifference(usdDifference)}`
+  const formattedUsdValue = `${usdValue}${formatInlineUsdDifference(
+    usdDifference
+  )}`
 
   return (
     <BridgeSectionContainer>
       <div className="flex items-center justify-between">
         <ToChainSelector />
-        {showDestinationAddress && !isUsdcDeposit ? (
+        {showDestinationAddress ? (
           <DestinationAddressInput connectedAddress={address} />
         ) : null}
       </div>
@@ -103,7 +99,7 @@ export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
         <div className="flex flex-col w-full">
           <AmountInput
             disabled={true}
-            showValue={outputValue}
+            showValue={showValue}
             isLoading={isLoading}
             className={inputClassName}
           />

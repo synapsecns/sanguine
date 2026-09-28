@@ -317,3 +317,14 @@ transfer on HyperEVM. `sdk.synModuleSet.getBridgeDeliveryChainId(destChainId, tx
 returns the verified destination (1337 for Core submission, 999 for fallback), or
 `undefined` while pending. The existing boolean status reports completion of either
 outcome. Core submission does not independently verify the subsequent balance update.
+
+### HyperCore USDC deposits
+
+`bridgeV2` requests Relay deposits to HyperCore Perps from Relay-supported EVM
+origins, including HyperEVM. Pass `HYPERCORE_CHAIN_ID` (1337) and
+`HYPERCORE_USDC_ADDRESS`
+(`0x00000000000000000000000000000000`) as the destination; no HyperCore RPC
+provider is needed. Output amounts use 8 decimals. Relay receives the selected
+source token as the origin currency and quotes any conversion needed. A route is
+available when Relay returns a usable quote. `toRecipient` sets the credited
+HyperCore address. Track completion through the `Relay` module.

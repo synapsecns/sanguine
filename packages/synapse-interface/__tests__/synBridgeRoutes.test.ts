@@ -1,7 +1,10 @@
-import { HYPERCORE_CHAIN_ID } from '@synapsecns/sdk-router'
+import {
+  HYPERCORE_CHAIN_ID,
+  RELAY_SUPPORTED_CHAIN_IDS,
+} from '@synapsecns/sdk-router'
 
 import { EXISTING_BRIDGE_ROUTES } from '@/constants/existingBridgeRoutes'
-import { SYN } from '@/constants/tokens/bridgeable'
+import { SYN, USDC } from '@/constants/tokens/bridgeable'
 import { Token } from '@/utils/types'
 import { HYPERLIQUID } from '@/constants/chains/master'
 import { getFromChainIds } from '@/utils/routeMaker/getFromChainIds'
@@ -9,10 +12,6 @@ import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
 import { getToTokens } from '@/utils/routeMaker/getToTokens'
 import { getPausedBridgeModuleNamesForRoute } from '@/utils/getPausedBridgeModuleNamesForRoute'
 import { isValidBridgeModule } from '@/components/Maintenance/functions/isValidBridgeModule'
-import {
-  getBridgeDestinationChainId,
-  isHyperliquidUsdcDeposit,
-} from '@/utils/hyperliquid'
 
 describe('SYN routes in the existing bridge selectors', () => {
   it('supports module and ALL pauses on the virtual destination', () => {
@@ -53,8 +52,6 @@ describe('SYN routes in the existing bridge selectors', () => {
       ).toContain(`SYN-${toChainId}`)
       expect(SYN.addresses[toChainId]).toBeDefined()
       expect(SYN.decimals[toChainId]).toBe(toChainId === 1337 ? 8 : 18)
-      expect(getBridgeDestinationChainId(toChainId, SYN)).toBe(toChainId)
-      expect(isHyperliquidUsdcDeposit(toChainId, SYN)).toBe(false)
     }
   )
 
@@ -86,7 +83,7 @@ describe('SYN routes in the existing bridge selectors', () => {
       })
     ).toEqual([1])
     expect(EXISTING_BRIDGE_ROUTES['SYN-1337']).toBeUndefined()
-    expect(EXISTING_BRIDGE_ROUTES['SYN-999']).toEqual(['SYN-1'])
+    expect(EXISTING_BRIDGE_ROUTES['SYN-999']).toContain('SYN-1')
   })
 
   it('keeps HyperCore in the destination selector after all fields are selected', () => {
@@ -112,11 +109,25 @@ describe('SYN routes in the existing bridge selectors', () => {
     expect(EXISTING_BRIDGE_ROUTES['SYN-1']).toContain('SYN-42161')
   })
 
-  it('preserves the USDC deposit routing through Arbitrum', () => {
-    expect(getBridgeDestinationChainId(1337, { routeSymbol: 'USDC' })).toBe(
-      42161
-    )
-    expect(isHyperliquidUsdcDeposit(1337, { routeSymbol: 'USDC' })).toBe(true)
-    expect(EXISTING_BRIDGE_ROUTES['USDC-42161']).toContain('USDC-1337')
+  it('offers Hyperliquid USDC from every Relay origin token', () => {
+    expect(USDC.addresses[1337]).toBe('0x00000000000000000000000000000000')
+    expect(USDC.decimals[1337]).toBe(8)
+    Object.entries(EXISTING_BRIDGE_ROUTES).forEach(([origin, destinations]) => {
+      const originChainId = Number(origin.split('-').at(-1))
+      expect(destinations.includes('USDC-1337')).toBe(
+        RELAY_SUPPORTED_CHAIN_IDS.includes(originChainId)
+      )
+    })
+    expect(EXISTING_BRIDGE_ROUTES['DAI-8453']).toContain('USDC-1337')
+    expect(EXISTING_BRIDGE_ROUTES['HYPE-999']).toContain('USDC-1337')
+    expect(
+      getToTokens({
+        fromChainId: 999,
+        fromTokenRouteSymbol: 'HYPE',
+        toChainId: 1337,
+        toTokenRouteSymbol: null,
+      })
+    ).toContain('USDC-1337')
+    expect(EXISTING_BRIDGE_ROUTES['USDC-25'] ?? []).not.toContain('USDC-1337')
   })
 })

@@ -27,8 +27,7 @@ describe('HyperCore transaction display', () => {
   it.each([
     [SYN, 'SYN', 'pending', 'pending', 1337],
     [SYN, 'SYN', 'completed', 'completed', 1337],
-    [USDC, '', 'pending', 'completed', 1337],
-    [USDC, '', 'pending', 'completed', 998],
+    [USDC, 'Relay', 'pending', 'pending', 1337],
   ])(
     'uses the tracked status for %s through %s (%s)',
     (token, bridgeModuleName, storedStatus, displayedStatus, storedChainId) => {
