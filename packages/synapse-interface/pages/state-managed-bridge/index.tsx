@@ -207,6 +207,7 @@ const StateManagedBridge = () => {
     address,
     destinationAddress,
     pausedModulesKey,
+    synapseSDK,
   ])
 
   const getAndSetBridgeQuote = async () => {
