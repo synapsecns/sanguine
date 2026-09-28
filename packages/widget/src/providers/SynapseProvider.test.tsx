@@ -1,6 +1,7 @@
 import { renderHook } from '@testing-library/react'
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { FallbackProvider } from '@ethersproject/providers'
+
 import { SynapseProvider, useSynapseContext } from './SynapseProvider'
 
 jest.mock('@synapsecns/sdk-router', () => ({ SynapseSDK: jest.fn() }))
