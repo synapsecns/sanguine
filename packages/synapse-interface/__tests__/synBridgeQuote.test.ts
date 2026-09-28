@@ -35,12 +35,14 @@ const runQuote = ({
   toChainId = 1337,
   address = sender,
   destinationAddress,
+  requestId = 1,
 }: {
   synapseSDK: any
   fromChainId?: number
   toChainId?: number
   address?: string | null
   destinationAddress?: string
+  requestId?: number
 }) =>
   fetchBridgeQuote({
     synapseSDK,
@@ -49,7 +51,7 @@ const runQuote = ({
     fromToken: SYN,
     toToken: SYN,
     debouncedFromValue: '1',
-    requestId: 1,
+    requestId,
     currentTimestamp: 123,
     address: address as any,
     destinationAddress: destinationAddress as any,
@@ -58,6 +60,22 @@ const runQuote = ({
 
 describe('SYN bridge quote state', () => {
   beforeEach(() => jest.clearAllMocks())
+
+  it('shares simultaneous SDK quotes while preserving each caller request ID', async () => {
+    const synapseSDK = {
+      bridgeV2: jest.fn().mockResolvedValue([quote()]),
+      synModuleSet: {
+        isHyperCoreAccountActive: jest.fn().mockResolvedValue(true),
+      },
+    }
+    const [first, second] = await Promise.all([
+      runQuote({ synapseSDK, requestId: 1 }),
+      runQuote({ synapseSDK, requestId: 2 }),
+    ])
+    expect(synapseSDK.bridgeV2).toHaveBeenCalledTimes(1)
+    expect(first.payload).toMatchObject({ requestId: 1 })
+    expect(second.payload).toMatchObject({ requestId: 2 })
+  })
 
   it.each([
     ['inactive custom recipient', recipient, false],
