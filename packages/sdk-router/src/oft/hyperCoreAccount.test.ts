@@ -48,18 +48,40 @@ it('normalizes the address and shares cached results across quote amounts', asyn
   )
 })
 
-it.each([
-  ['user', 60 * 60 * 1000],
-  ['missing', 30_000],
-])('expires cached %s results after %i ms', async (role, ttl) => {
-  fetchMock.mockResolvedValue(response({ role }))
+it.each(['user', 'vault', 'subAccount'])(
+  'keeps confirmed %s activation for the client lifetime',
+  async (role) => {
+    fetchMock.mockResolvedValueOnce(response({ role }))
+    const client = new HyperCoreAccountClient()
+    await client.isAccountActive(recipient)
+    jest.setSystemTime(365 * 24 * 60 * 60 * 1000)
+    expect(await client.isAccountActive(recipient)).toBe(true)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  }
+)
+
+it.each(['missing', 'agent'])(
+  'rechecks cached %s results after 30 seconds and remembers activation',
+  async (role) => {
+    fetchMock.mockResolvedValueOnce(response({ role }))
+    const client = new HyperCoreAccountClient()
+    expect(await client.isAccountActive(recipient)).toBe(false)
+    jest.setSystemTime(29_999)
+    expect(await client.isAccountActive(recipient)).toBe(false)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    jest.setSystemTime(30_001)
+    expect(await client.isAccountActive(recipient)).toBe(true)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    jest.setSystemTime(365 * 24 * 60 * 60 * 1000)
+    expect(await client.isAccountActive(recipient)).toBe(true)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  }
+)
+
+it('keeps activation caches independent between clients', async () => {
   const client = new HyperCoreAccountClient()
   await client.isAccountActive(recipient)
-  jest.setSystemTime(ttl - 1)
-  await client.isAccountActive(recipient)
-  expect(fetchMock).toHaveBeenCalledTimes(1)
-  jest.setSystemTime(ttl)
-  await client.isAccountActive(recipient)
+  await new HyperCoreAccountClient().isAccountActive(recipient)
   expect(fetchMock).toHaveBeenCalledTimes(2)
 })
 
@@ -142,7 +164,7 @@ it.each(['', '0x1234', 'not-an-address', '0x' + 'z'.repeat(40)])(
   }
 )
 
-it('bounds completed cache entries by evicting the oldest result', async () => {
+it('does not evict confirmed activation as more accounts are checked', async () => {
   const client = new HyperCoreAccountClient()
   const address = (index: number) => '0x' + index.toString(16).padStart(40, '0')
   for (let index = 1; index <= 1001; index++) {
@@ -151,5 +173,5 @@ it('bounds completed cache entries by evicting the oldest result', async () => {
   await client.isAccountActive(address(1001))
   expect(fetchMock).toHaveBeenCalledTimes(1001)
   await client.isAccountActive(address(1))
-  expect(fetchMock).toHaveBeenCalledTimes(1002)
+  expect(fetchMock).toHaveBeenCalledTimes(1001)
 })

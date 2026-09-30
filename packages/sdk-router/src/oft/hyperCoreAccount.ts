@@ -1,16 +1,13 @@
 import { getAddress } from '@ethersproject/address'
+import NodeCache from 'node-cache'
 
 const INFO_URL = 'https://api.hyperliquid.xyz/info'
 const REQUEST_TIMEOUT_MS = 10_000
-const ACTIVE_TTL_MS = 60 * 60 * 1000
-const INACTIVE_TTL_MS = 30_000
-const MAX_CACHE_ENTRIES = 1000
-
-type AccountCacheEntry = { active: boolean; expiresAt: number }
+const INACTIVE_TTL_SECONDS = 30
 
 /** Mainnet HyperCore account roles, cached independently of quote amounts. */
 export class HyperCoreAccountClient {
-  private readonly cache = new Map<string, AccountCacheEntry>()
+  private readonly cache = new NodeCache({ checkperiod: 0 })
   private readonly pending = new Map<string, Promise<boolean>>()
 
   public async isAccountActive(recipient: string): Promise<boolean> {
@@ -18,27 +15,18 @@ export class HyperCoreAccountClient {
       throw new Error('Invalid HyperCore account address.')
     }
     const user = getAddress(recipient).toLowerCase()
-    const cached = this.cache.get(user)
-    if (cached && cached.expiresAt > Date.now()) {
-      return cached.active
+    const cached = this.cache.get<boolean>(user)
+    if (cached !== undefined) {
+      return cached
     }
-    this.cache.delete(user)
     const inFlight = this.pending.get(user)
     if (inFlight) {
       return inFlight
     }
     const request = this.fetchAccountActive(user)
       .then((active) => {
-        this.cache.set(user, {
-          active,
-          expiresAt: Date.now() + (active ? ACTIVE_TTL_MS : INACTIVE_TTL_MS),
-        })
-        if (this.cache.size > MAX_CACHE_ENTRIES) {
-          const oldest = this.cache.keys().next().value
-          if (oldest !== undefined) {
-            this.cache.delete(oldest)
-          }
-        }
+        // Activation is permanent; only inactive accounts need another check.
+        this.cache.set(user, active, active ? 0 : INACTIVE_TTL_SECONDS)
         return active
       })
       .finally(() => this.pending.delete(user))

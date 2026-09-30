@@ -315,8 +315,9 @@ at execution.
 
 Use `sdk.synModuleSet.isHyperCoreAccountActive(recipient)` to check activation
 before submitting. This uses Hyperliquid's `userRole` API, with results cached per
-SDK instance for one hour when active and 30 seconds when inactive. Concurrent checks
-for the same address share a request; failed checks reject and are not cached.
+SDK instance. Active results stay cached for the instance's lifetime; inactive
+results expire after 30 seconds. Concurrent checks for the same address share a
+request; failed checks reject and are not cached.
 Inactive recipients may still bridge: the composer automatically
 returns SYN to the same recipient on HyperEVM when the Core transfer fails. The
 interface requires acknowledgement of that fallback. Disconnected quotes omit
