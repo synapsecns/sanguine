@@ -7,7 +7,7 @@ const INACTIVE_TTL_SECONDS = 30
 
 /** Mainnet HyperCore account roles, cached independently of quote amounts. */
 export class HyperCoreAccountClient {
-  private readonly cache = new NodeCache({ checkperiod: 0 })
+  private readonly cache = new NodeCache()
   private readonly pending = new Map<string, Promise<boolean>>()
 
   public async isAccountActive(recipient: string): Promise<boolean> {
