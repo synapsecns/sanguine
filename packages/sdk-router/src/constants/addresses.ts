@@ -149,6 +149,9 @@ export const SYN_OFT_ADDRESS_MAP: AddressMap = {
 }
 export const SYN_COMPOSER_ADDRESS = '0x944753BbC3FA5581b1fc5F3ee6EFFB06299ec1D3'
 export const SYN_CORE_TOKEN_INDEX = 873
+export const SYN_EVM_DECIMALS = 18
+export const SYN_SHARED_DECIMALS = 6
+export const SYN_CORE_DECIMALS = 8
 
 /**
  * SynapseIntentRouter contract address for all chains except ones from SYNAPSE_INTENT_ROUTER_EXCEPTION_MAP.

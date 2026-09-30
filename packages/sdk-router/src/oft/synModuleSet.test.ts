@@ -1,4 +1,4 @@
-import { BigNumber, providers, utils } from 'ethers'
+import { BigNumber, constants, providers, utils } from 'ethers'
 
 import {
   HYPERCORE_CHAIN_ID,
@@ -11,7 +11,7 @@ import {
 import { SynapseSDK } from '../sdk'
 import { SynapseIntentRouterSet } from '../sir/synapseIntentRouterSet'
 import { AMOUNT_NOT_PRESENT, decodeZapData, NoOpEngine } from '../swap'
-import { SYN_COMPOSER_ABI } from './synModule'
+import { quoteSynHyperCore } from './synModule'
 import { UsdtModule } from './usdtModule'
 
 const sender = '0x1111111111111111111111111111111111111111'
@@ -21,16 +21,12 @@ const coreUnit = BigNumber.from(10).pow(10)
 const amount = utils.parseEther('1.123456789')
 const rounded = amount.div(unit).mul(unit)
 const nativeFee = BigNumber.from(12345)
-const composerInterface = new utils.Interface(SYN_COMPOSER_ABI)
 const oftInterface = UsdtModule.oftInterface
 
 // Mock the RPC boundary, preserving ABI encoding/decoding, routing, SIR and zap construction.
-const setup = () => {
-  let active = true
-  let composerActive = true
-  let capacity = true
+const setup = (chainIds = [1, 999]) => {
   const quoteSendParams: any[] = []
-  const providersByChain = [1, 999].map((chainId) => {
+  const providersByChain = chainIds.map((chainId) => {
     const provider = new providers.StaticJsonRpcProvider(
       'http://localhost:1',
       chainId
@@ -38,52 +34,11 @@ const setup = () => {
     jest.spyOn(provider, 'call').mockImplementation(async (tx) => {
       if (
         (await tx.to)?.toLowerCase() ===
-          SYN_ADDRESS_MAP[chainId].toLowerCase() &&
-        (await tx.data) === '0x313ce567'
-      ) {
-        return utils.defaultAbiCoder.encode(['uint8'], [18])
-      }
-      if ((await tx.to)?.toLowerCase() === SYN_COMPOSER_ADDRESS.toLowerCase()) {
-        const parsed = composerInterface.parseTransaction({
-          data: String(await tx.data),
-        })
-        if (parsed.name === 'coreUserExists') {
-          const exists =
-            parsed.args[0].toLowerCase() === SYN_COMPOSER_ADDRESS.toLowerCase()
-              ? composerActive
-              : active
-          return composerInterface.encodeFunctionResult(parsed.name, [[exists]])
-        }
-        if (parsed.name === 'ERC20_ASSET_BRIDGE') {
-          return composerInterface.encodeFunctionResult(parsed.name, [
-            recipient,
-          ])
-        }
-        if (parsed.name === 'quoteHyperCoreAmount') {
-          if (!capacity) {
-            throw new Error('TransferAmtExceedsAssetBridgeBalance')
-          }
-          const value = BigNumber.from(parsed.args[3])
-          return composerInterface.encodeFunctionResult(parsed.name, [
-            [value, value.div(coreUnit), 1000000000],
-          ])
-        }
-      }
-      if (
-        (await tx.to)?.toLowerCase() ===
         SYN_OFT_ADDRESS_MAP[chainId].toLowerCase()
       ) {
         const parsed = oftInterface.parseTransaction({
           data: String(await tx.data),
         })
-        if (parsed.name === 'quoteOFT') {
-          const value = BigNumber.from(parsed.args[0][2]).div(unit).mul(unit)
-          return oftInterface.encodeFunctionResult(parsed.name, [
-            [0, utils.parseEther('100')],
-            [],
-            [value, value],
-          ])
-        }
         if (parsed.name === 'quoteSend') {
           quoteSendParams.push(parsed.args[0])
           return oftInterface.encodeFunctionResult(parsed.name, [
@@ -95,7 +50,7 @@ const setup = () => {
     })
     return provider
   })
-  const sdk = new SynapseSDK([1, 999], providersByChain)
+  const sdk = new SynapseSDK(chainIds, providersByChain)
   expect(sdk.allModuleSets).toContain(sdk.synModuleSet)
   sdk.allModuleSets = [sdk.synModuleSet]
   // Other swap engines cannot improve a SYN->SYN identity route.
@@ -114,19 +69,129 @@ const setup = () => {
     sdk,
     params,
     quoteSendParams,
-    setActive: (value: boolean) => {
-      active = value
-    },
-    setComposerActive: (value: boolean) => {
-      composerActive = value
-    },
-    setCapacity: (value: boolean) => {
-      capacity = value
-    },
+    providersByChain,
   }
 }
 
 afterEach(() => jest.restoreAllMocks())
+
+it('quotes HyperCore with only an Ethereum provider and one fee read per refresh', async () => {
+  const { sdk, params, providersByChain } = setup([1])
+  const fetchMock = jest
+    .spyOn(global, 'fetch')
+    .mockRejectedValue(
+      new Error('Quoting must not fetch Core account or balance data')
+    )
+  for (let i = 0; i < 2; i++) {
+    const [quote] = await sdk.bridgeV2(params(1, HYPERCORE_CHAIN_ID))
+    expect(quote.expectedToAmount).toBe('112345600')
+    expect(quote.tx).toBeDefined()
+  }
+  expect(providersByChain[0].call).toHaveBeenCalledTimes(2)
+  expect(sdk.providers[999]).toBeUndefined()
+  expect(fetchMock).not.toHaveBeenCalled()
+  // Keep destination-provider requirements for the other existing SYN paths.
+  await expect(sdk.bridgeV2(params(1, 999))).resolves.toEqual([])
+})
+
+it('shares identical concurrent fee quotes without caching settled fees', async () => {
+  const { sdk, params, providersByChain } = setup([1])
+  const quotes = await Promise.all([
+    sdk.bridgeV2(params(1, HYPERCORE_CHAIN_ID)),
+    sdk.bridgeV2(params(1, HYPERCORE_CHAIN_ID)),
+  ])
+  expect(quotes[0][0].expectedToAmount).toBe(quotes[1][0].expectedToAmount)
+  expect(providersByChain[0].call).toHaveBeenCalledTimes(1)
+  await sdk.bridgeV2(params(1, HYPERCORE_CHAIN_ID))
+  expect(providersByChain[0].call).toHaveBeenCalledTimes(2)
+})
+
+it('keeps concurrent fee requests separate when the amount or recipient changes', async () => {
+  const { sdk, params, providersByChain } = setup([1])
+  const input = params(1, HYPERCORE_CHAIN_ID)
+  const quotes = await Promise.all([
+    sdk.bridgeV2(input),
+    sdk.bridgeV2({ ...input, fromAmount: amount.add(unit).toString() }),
+    sdk.bridgeV2({ ...input, toRecipient: sender }),
+  ])
+  expect(quotes.every((routes) => routes.length === 1)).toBe(true)
+  expect(providersByChain[0].call).toHaveBeenCalledTimes(3)
+})
+
+it('retries fee reads after a shared request fails', async () => {
+  const { sdk, params, providersByChain } = setup([1])
+  ;(providersByChain[0].call as jest.Mock).mockRejectedValueOnce(
+    new Error('Fee RPC unavailable')
+  )
+  const failed = await Promise.all([
+    sdk.bridgeV2(params(1, HYPERCORE_CHAIN_ID)),
+    sdk.bridgeV2(params(1, HYPERCORE_CHAIN_ID)),
+  ])
+  expect(failed).toEqual([[], []])
+  expect(providersByChain[0].call).toHaveBeenCalledTimes(1)
+  expect(await sdk.bridgeV2(params(1, HYPERCORE_CHAIN_ID))).toHaveLength(1)
+  expect(providersByChain[0].call).toHaveBeenCalledTimes(2)
+})
+
+it.each([
+  [unit, '100'],
+  [unit.add(1), '100'],
+  [unit.mul(2).sub(1), '100'],
+  [unit.mul(2), '200'],
+])(
+  'preserves dust rounding at the OFT boundary for %s',
+  async (input, core) => {
+    const { sdk, params, quoteSendParams } = setup([1])
+    const [quote] = await sdk.bridgeV2({
+      ...params(1, HYPERCORE_CHAIN_ID),
+      fromAmount: input.toString(),
+    })
+    expect(quote.expectedToAmount).toBe(core)
+    expect(quoteSendParams[0][2]).toEqual(input)
+    expect(quoteSendParams[0][3]).toEqual(input.div(unit).mul(unit))
+  }
+)
+
+it('rejects uint64 overflow in Core units before quoting a fee', async () => {
+  const { sdk, params, providersByChain } = setup([1])
+  await expect(
+    sdk.bridgeV2({
+      ...params(1, HYPERCORE_CHAIN_ID),
+      fromAmount: BigNumber.from(2).pow(64).mul(coreUnit).add(unit).toString(),
+    })
+  ).resolves.toEqual([])
+  expect(providersByChain[0].call).not.toHaveBeenCalled()
+})
+
+it('rejects unrepresentable input and minimum amounts during local OFT calculation', async () => {
+  const { sdk } = setup([1])
+  const module = sdk.synModuleSet.modules[1]
+  const sendParams = {
+    toEid: 30367,
+    toRecipient: recipient,
+    fromSender: sender,
+  }
+  for (const invalid of [BigNumber.from(-1), constants.MaxUint256.add(1)]) {
+    await expect(
+      module.getDestinationQuote({ ...sendParams, amount: invalid })
+    ).rejects.toThrow('uint256')
+    await expect(
+      module.getDestinationQuote({ ...sendParams, amount, minAmount: invalid })
+    ).rejects.toThrow('uint256')
+  }
+  expect(() => quoteSynHyperCore(BigNumber.from(-1))).toThrow(
+    'HyperCore amount range'
+  )
+  await expect(
+    module.getDestinationQuote({
+      ...sendParams,
+      amount: BigNumber.from(2).pow(64).mul(unit),
+    })
+  ).rejects.toThrow('shared amount range')
+  await expect(
+    module.getDestinationQuote({ ...sendParams, amount, minAmount: amount })
+  ).rejects.toThrow('minimum received amount')
+})
 
 it.each([
   [1, 999],
@@ -135,8 +200,14 @@ it.each([
 ])(
   'quotes and builds executable SYN route %i -> %i through public bridgeV2',
   async (from, to) => {
-    const { sdk, params, quoteSendParams } = setup()
+    const { sdk, params, quoteSendParams, providersByChain } = setup()
     const [quote] = await sdk.bridgeV2(params(from, to))
+    expect(sdk.providers[from].call).toHaveBeenCalledTimes(1)
+    for (const provider of providersByChain) {
+      if (provider !== sdk.providers[from]) {
+        expect(provider.call).not.toHaveBeenCalled()
+      }
+    }
     expect(quote.moduleNames).toEqual(['SYN'])
     expect(quote.toChainId).toBe(to)
     expect(quote.toToken).toBe(SYN_ADDRESS_MAP[to])
@@ -203,7 +274,7 @@ it('returns estimates without calldata when disconnected, including HyperCore me
 })
 
 it('returns native HyperCore token units and decimals through public intent without changing OFT calldata', async () => {
-  const { sdk, params } = setup()
+  const { sdk, params, providersByChain } = setup()
   const [quote] = await sdk.intent(params(1, HYPERCORE_CHAIN_ID))
   expect(quote.toChainId).toBe(1337)
   expect(quote.toToken).toBe('0xf5f05eb8b9aa92365465f06daf5889c9')
@@ -227,6 +298,8 @@ it('returns native HyperCore token units and decimals through public intent with
   expect(send.args[0][3]).toEqual(rounded)
   expect(send.args[0][4]).toBe('0x')
   expect(sdk.providers[HYPERCORE_CHAIN_ID]).toBeUndefined()
+  expect(providersByChain[0].call).toHaveBeenCalledTimes(1)
+  expect(providersByChain[1].call).not.toHaveBeenCalled()
 })
 
 it('rejects the former 998 destination and the linked EVM token as a Core token ID', async () => {
@@ -243,11 +316,11 @@ it('rejects the former 998 destination and the linked EVM token as a Core token 
 })
 
 it('exposes recipient activation while allowing a quote with the automatic HyperEVM fallback', async () => {
-  const { sdk, params, setActive, quoteSendParams } = setup()
-  await expect(
-    sdk.synModuleSet.isHyperCoreAccountActive(recipient)
-  ).resolves.toBe(true)
-  setActive(false)
+  const { sdk, params, quoteSendParams, providersByChain } = setup([1])
+  const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue({
+    ok: true,
+    json: async () => ({ role: 'missing' }),
+  } as Response)
   await expect(
     sdk.synModuleSet.isHyperCoreAccountActive(recipient)
   ).resolves.toBe(false)
@@ -256,33 +329,32 @@ it('exposes recipient activation while allowing a quote with the automatic Hyper
   expect(quoteSendParams[0][5]).toBe(
     utils.defaultAbiCoder.encode(['uint256', 'address'], [0, recipient])
   )
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(providersByChain[0].call).toHaveBeenCalledTimes(1)
 })
 
-it('rejects unavailable activation checks and an inactive composer', async () => {
-  const { sdk, params, setComposerActive } = setup()
-  ;(
-    sdk.synModuleSet.composer!.provider.call as jest.Mock
-  ).mockRejectedValueOnce(new Error('RPC unavailable'))
+it('rejects unavailable recipient API checks without requiring a HyperEVM provider', async () => {
+  const { sdk } = setup([1])
+  jest.spyOn(global, 'fetch').mockRejectedValue(new Error('API unavailable'))
   await expect(
     sdk.synModuleSet.isHyperCoreAccountActive(recipient)
-  ).rejects.toThrow('RPC unavailable')
-  setComposerActive(false)
-  await expect(sdk.bridgeV2(params(1, HYPERCORE_CHAIN_ID))).rejects.toThrow(
-    'temporarily unavailable'
-  )
-  sdk.synModuleSet.composer = undefined
-  await expect(
-    sdk.synModuleSet.isHyperCoreAccountActive(recipient)
-  ).rejects.toThrow('HyperEVM provider is required')
+  ).rejects.toThrow('API unavailable')
 })
 
-it('omits zero-after-dust amounts and capacity failures', async () => {
-  const { sdk, params, setCapacity } = setup()
+it('omits zero-after-dust amounts without any RPC read', async () => {
+  const { sdk, params, providersByChain } = setup()
   await expect(
     sdk.bridgeV2({ ...params(1, 999), fromAmount: unit.sub(1).toString() })
   ).resolves.toEqual([])
-  setCapacity(false)
-  await expect(sdk.bridgeV2(params(1, HYPERCORE_CHAIN_ID))).resolves.toEqual([])
+  await expect(
+    sdk.bridgeV2({
+      ...params(1, HYPERCORE_CHAIN_ID),
+      fromAmount: unit.sub(1).toString(),
+    })
+  ).resolves.toEqual([])
+  providersByChain.forEach((provider) =>
+    expect(provider.call).not.toHaveBeenCalled()
+  )
 })
 
 it('does not request a dust refund when the complete input is bridged', async () => {

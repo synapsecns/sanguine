@@ -284,8 +284,9 @@ const status: boolean = await synapseSDK.getBridgeTxStatus(
 and Ethereum → HyperCore under module `SYN`. These routes require SYN
 on both sides; swaps, HyperCore-origin routes, and legacy V1 APIs are unsupported.
 
-Initialize providers for Ethereum (1) and HyperEVM (999). `HYPERCORE_CHAIN_ID`
-(1337) identifies the non-EVM mainnet destination: do not supply an RPC provider.
+Ethereum → HyperCore quotes require only an Ethereum (1) provider. Add a
+HyperEVM (999) provider for the other SYN routes and HyperCore delivery tracking.
+`HYPERCORE_CHAIN_ID` (1337) identifies the non-EVM mainnet destination: do not supply an RPC provider.
 Its `SYN_ADDRESS_MAP` entry is the native token ID
 `0xf5f05eb8b9aa92365465f06daf5889c9`, with **8-decimal quote units**. Origin
 amounts and OFT transaction amounts remain in SYN's 18-decimal EVM units.
@@ -305,11 +306,22 @@ const quotes = await sdk.bridgeV2({
 The adapter enforces receive/compose options; the SDK supplies empty extra options.
 Quotes include `nativeFee` in the transaction value, round output to OFT shared
 decimals, and refund source dust. Approve the quote's `routerAddress` as usual.
+SYN amount conversion uses the fixed deployment metadata (18 EVM, 6 shared, and
+8 Core decimals). Each quote reads only the origin adapter's `quoteSend` fee;
+identical concurrent fee requests share a read, while later refreshes fetch a new fee.
+The configured composer is already activated and its Core bridge reserve exceeds
+SYN's maximum supply, so quotes skip those checks. The composer still checks capacity
+at execution.
+
 Use `sdk.synModuleSet.isHyperCoreAccountActive(recipient)` to check activation
-before submitting. Inactive recipients may still bridge: the composer automatically
+before submitting. This uses Hyperliquid's `userRole` API, with results cached per
+SDK instance. Active results stay cached for the instance's lifetime; inactive
+results expire after 30 seconds. Concurrent checks for the same address share a
+request; failed checks reject and are not cached.
+Inactive recipients may still bridge: the composer automatically
 returns SYN to the same recipient on HyperEVM when the Core transfer fails. The
 interface requires acknowledgement of that fallback. Disconnected quotes omit
-calldata. Composer availability and capacity are checked at quote time.
+calldata.
 
 Completion requires finalized LayerZero delivery and, for HyperCore, successful
 composition plus either the matching CoreWriter SpotSend or the exact SYN fallback

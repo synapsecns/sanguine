@@ -1,12 +1,11 @@
 import { Zero } from '@ethersproject/constants'
-import { BigNumber, Contract } from 'ethers'
+import { BigNumber } from 'ethers'
 
 import {
   HYPERCORE_CHAIN_ID,
   LZ_EID_MAP,
   SupportedChainId,
   SYN_ADDRESS_MAP,
-  SYN_COMPOSER_ADDRESS,
   SYN_OFT_ADDRESS_MAP,
 } from '../constants'
 import {
@@ -26,12 +25,8 @@ import {
   USER_SIMULATED_ADDRESS,
 } from '../swap'
 import { isSameAddress, logger } from '../utils'
-import {
-  getSynComposer,
-  quoteSynHyperCore,
-  SynModule,
-  SynSendParams,
-} from './synModule'
+import { HyperCoreAccountClient } from './hyperCoreAccount'
+import { quoteSynHyperCore, SynModule, SynSendParams } from './synModule'
 import { getSynBridgeDeliveryChainId } from './synStatus'
 
 export class SynModuleSet extends SynapseModuleSet {
@@ -39,7 +34,7 @@ export class SynModuleSet extends SynapseModuleSet {
   public readonly allEvents = []
   public readonly isBridgeV2Supported = true
   public modules: { [chainId: number]: SynModule } = {}
-  public composer?: Contract
+  private readonly hyperCoreAccounts = new HyperCoreAccountClient()
 
   constructor(chains: ChainProvider[]) {
     super()
@@ -48,14 +43,11 @@ export class SynModuleSet extends SynapseModuleSet {
       if (address) {
         this.modules[chainId] = new SynModule(chainId, provider, address)
       }
-      if (chainId === SupportedChainId.HYPEREVM) {
-        this.composer = getSynComposer(provider)
-      }
     })
   }
 
   public getModule(chainId: number): SynModule | undefined {
-    // HyperCore uses the HyperEVM adapter/provider, never its own EVM RPC.
+    // HyperCore delivery tracking uses HyperEVM; quoting needs only the origin.
     return this.modules[
       chainId === HYPERCORE_CHAIN_ID ? SupportedChainId.HYPEREVM : chainId
     ]
@@ -81,14 +73,8 @@ export class SynModuleSet extends SynapseModuleSet {
     )
   }
 
-  public async isHyperCoreAccountActive(recipient: string): Promise<boolean> {
-    if (!this.composer) {
-      throw new Error(
-        'HyperEVM provider is required to check HyperCore activation.'
-      )
-    }
-    const account = await this.composer.coreUserExists(recipient)
-    return account.exists
+  public isHyperCoreAccountActive(recipient: string): Promise<boolean> {
+    return this.hyperCoreAccounts.isAccountActive(recipient)
   }
 
   public getEstimatedTime(fromChainId: number): number {
@@ -117,7 +103,7 @@ export class SynModuleSet extends SynapseModuleSet {
     if (
       !supported ||
       !this.getModule(fromChainId) ||
-      !this.getModule(toChainId) ||
+      (toChainId !== HYPERCORE_CHAIN_ID && !this.getModule(toChainId)) ||
       !isSameAddress(fromToken, originToken) ||
       (toToken && !isSameAddress(toToken, destToken))
     ) {
@@ -131,6 +117,27 @@ export class SynModuleSet extends SynapseModuleSet {
         destToken,
       },
     ]
+  }
+
+  protected validateBridgeRouteV2Params(
+    params: GetBridgeRouteV2Parameters
+  ): boolean {
+    if (params.bridgeToken.destChainId !== HYPERCORE_CHAIN_ID) {
+      return super.validateBridgeRouteV2Params(params)
+    }
+    // HyperCore has no destination EVM quote to perform. Preserve the shared
+    // token/amount checks while allowing an SDK configured with just Ethereum.
+    const { bridgeToken, originSwapRoute, toToken, allowMultipleTxs } = params
+    return (
+      !!this.getModule(bridgeToken.originChainId) &&
+      isSameAddress(bridgeToken.originToken, originSwapRoute.toToken) &&
+      isSameAddress(
+        bridgeToken.destToken,
+        SYN_ADDRESS_MAP[HYPERCORE_CHAIN_ID]
+      ) &&
+      (allowMultipleTxs || isSameAddress(bridgeToken.destToken, toToken)) &&
+      !originSwapRoute.expectedToAmount.isZero()
+    )
   }
 
   public async getBridgeRouteV2(
@@ -155,11 +162,8 @@ export class SynModuleSet extends SynapseModuleSet {
     }
     const hyperCore = bridgeToken.destChainId === HYPERCORE_CHAIN_ID
     const recipient = toRecipient || USER_SIMULATED_ADDRESS
-    if (hyperCore) {
-      if (!(await this.isHyperCoreAccountActive(SYN_COMPOSER_ADDRESS))) {
-        throw new Error('SYN bridging to HyperCore is temporarily unavailable.')
-      }
-    }
+    // The configured SYN composer is already activated. Its existence and the
+    // oversized bridge reserve are deployment invariants, not per-quote reads.
     const module = this.modules[bridgeToken.originChainId]
     const sendParams: SynSendParams = {
       toEid:
@@ -177,7 +181,7 @@ export class SynModuleSet extends SynapseModuleSet {
         return undefined
       }
       const expectedToAmount = hyperCore
-        ? await quoteSynHyperCore(this.composer!, expectedOftAmount)
+        ? quoteSynHyperCore(expectedOftAmount)
         : expectedOftAmount
       if (expectedToAmount.isZero()) {
         return undefined
