@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
+import {SynapseHyperCoreComposer} from "../src/SynapseHyperCoreComposer.sol";
 import {ISynapseBridgeAdapter} from "../src/interfaces/ISynapseBridgeAdapter.sol";
-import {SynapseBridgeAdapter, SynapseBridgeAdapterTest} from "./SBA.t.sol";
+import {SynapseBridgeAdapterTest, SynapseBridgeAdapterV2} from "./SBA.t.sol";
+
+import {TestToken} from "./mocks/TestToken.sol";
+import {TestTokenDecimals} from "./mocks/TestTokenDecimals.sol";
 
 // solhint-disable func-name-mixedcase, ordering
 contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
@@ -13,6 +17,7 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
     bytes31 internal symbol = "SYMBOL";
     bytes31 internal anotherSymbol = "ANOTHERSYMBOL";
     string internal readableSymbol = "SYMBOL";
+    TestToken internal hyperCoreToken;
 
     mapping(uint32 eid => address token) internal mockRemoteAddressMap;
     ISynapseBridgeAdapter.RemoteToken[] internal allRemoteTokens;
@@ -26,10 +31,11 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
         allRemoteTokens.push(ISynapseBridgeAdapter.RemoteToken(OTHER_DST_EID, mockRemoteAddressMap[OTHER_DST_EID]));
         firstRemoteToken.push(allRemoteTokens[0]);
         secondRemoteToken.push(allRemoteTokens[1]);
+        hyperCoreToken = new TestToken();
     }
 
-    function deployAdapter() internal virtual override returns (SynapseBridgeAdapter) {
-        return new SynapseBridgeAdapter(endpoint, owner);
+    function deployAdapter() internal virtual override returns (SynapseBridgeAdapterV2) {
+        return new SynapseBridgeAdapterV2(endpoint, owner);
     }
 
     function checkTokenAdded(
@@ -59,6 +65,9 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
         assertEq(adapter.owner(), owner);
         assertEq(adapter.bridge(), address(0));
         assertEq(adapter.MIN_GAS_LIMIT(), 200_000);
+        assertEq(adapter.SYN_EVM_DECIMALS(), 18);
+        assertEq(adapter.SYN_CORE_DECIMALS(), 8);
+        assertEq(adapter.SYN_AMOUNT_SCALE(), 1e10);
     }
 
     // ═════════════════════════════════════════════════ ADD TOKEN ═════════════════════════════════════════════════════
@@ -319,5 +328,117 @@ contract SynapseBridgeAdapterManagementTest is SynapseBridgeAdapterTest {
         expectRevertZeroAddress();
         vm.prank(owner);
         adapter.setBridge(address(0));
+    }
+
+    // ══════════════════════════════════════════ SET HYPERCORE DECIMALS ══════════════════════════════════════════════
+
+    function test_setHyperCoreDecimals() public {
+        addToken(address(hyperCoreToken), ISynapseBridgeAdapter.TokenType.MintBurn, firstRemoteToken);
+        vm.expectEmit(address(adapter));
+        emit HyperCoreDecimalsSet(DST_EID, address(hyperCoreToken), 18, 8, 1e10);
+        vm.prank(owner);
+        adapter.setHyperCoreDecimals(DST_EID, address(hyperCoreToken), 8);
+        assertEq(adapter.getHyperCoreAmountScale(DST_EID, address(hyperCoreToken)), 1e10);
+    }
+
+    function test_setHyperCoreDecimals_revert_invalidDecimals() public {
+        addToken(address(hyperCoreToken), ISynapseBridgeAdapter.TokenType.MintBurn, firstRemoteToken);
+        vm.expectRevert(abi.encodeWithSelector(SBAV2__HyperCoreDecimalsInvalid.selector, 18, 19));
+        vm.prank(owner);
+        adapter.setHyperCoreDecimals(DST_EID, address(hyperCoreToken), 19);
+    }
+
+    function test_setHyperCoreDecimals_revert_invalidTokenDecimals() public {
+        TestTokenDecimals invalidToken = new TestTokenDecimals(6);
+        addToken(address(invalidToken), ISynapseBridgeAdapter.TokenType.MintBurn, firstRemoteToken);
+        vm.expectRevert(abi.encodeWithSelector(SBAV2__HyperCoreDecimalsInvalid.selector, 6, 8));
+        vm.prank(owner);
+        adapter.setHyperCoreDecimals(DST_EID, address(invalidToken), 8);
+    }
+
+    function test_setHyperCoreDecimals_revert_alreadySet() public {
+        addToken(address(hyperCoreToken), ISynapseBridgeAdapter.TokenType.MintBurn, firstRemoteToken);
+        vm.startPrank(owner);
+        adapter.setHyperCoreDecimals(DST_EID, address(hyperCoreToken), 8);
+        vm.expectRevert(
+            abi.encodeWithSelector(SBAV2__HyperCoreDecimalsAlreadySet.selector, DST_EID, address(hyperCoreToken))
+        );
+        adapter.setHyperCoreDecimals(DST_EID, address(hyperCoreToken), 8);
+        vm.stopPrank();
+    }
+
+    function test_setHyperCoreDecimals_revert_remotePairNotSet() public {
+        addToken(address(hyperCoreToken), ISynapseBridgeAdapter.TokenType.MintBurn, firstRemoteToken);
+        expectRevertRemotePairNotSet(OTHER_DST_EID, address(hyperCoreToken));
+        vm.prank(owner);
+        adapter.setHyperCoreDecimals(OTHER_DST_EID, address(hyperCoreToken), 8);
+    }
+
+    function test_setHyperCoreDecimals_revert_notOwner(address caller) public {
+        vm.assume(caller != owner);
+        addToken(address(hyperCoreToken), ISynapseBridgeAdapter.TokenType.MintBurn, firstRemoteToken);
+        expectRevertCallerNotOwner(caller);
+        vm.prank(caller);
+        adapter.setHyperCoreDecimals(DST_EID, address(hyperCoreToken), 8);
+    }
+
+    // ══════════════════════════════════════════ SET HYPERCORE COMPOSER ══════════════════════════════════════════════
+
+    function test_setHyperCoreComposer() public {
+        addToken(address(hyperCoreToken), ISynapseBridgeAdapter.TokenType.MintBurn, firstRemoteToken);
+        SynapseHyperCoreComposer composer =
+            new SynapseHyperCoreComposer(address(adapter), address(hyperCoreToken), 1337);
+        vm.expectEmit(address(adapter));
+        emit HyperCoreComposerSet(address(hyperCoreToken), address(composer));
+        vm.prank(owner);
+        adapter.setHyperCoreComposer(address(hyperCoreToken), address(composer));
+        assertEq(adapter.getHyperCoreComposer(address(hyperCoreToken)), address(composer));
+    }
+
+    function test_setHyperCoreComposer_revert_invalidBinding() public {
+        addToken(address(hyperCoreToken), ISynapseBridgeAdapter.TokenType.MintBurn, firstRemoteToken);
+        SynapseHyperCoreComposer composer = new SynapseHyperCoreComposer(address(this), address(hyperCoreToken), 1337);
+        vm.expectRevert(abi.encodeWithSelector(SBAV2__HyperCoreComposerInvalid.selector, address(composer)));
+        vm.prank(owner);
+        adapter.setHyperCoreComposer(address(hyperCoreToken), address(composer));
+    }
+
+    function test_setHyperCoreComposer_revert_invalidTokenBinding() public {
+        addToken(address(hyperCoreToken), ISynapseBridgeAdapter.TokenType.MintBurn, firstRemoteToken);
+        TestToken differentToken = new TestToken();
+        SynapseHyperCoreComposer composer =
+            new SynapseHyperCoreComposer(address(adapter), address(differentToken), 1337);
+        vm.expectRevert(abi.encodeWithSelector(SBAV2__HyperCoreComposerInvalid.selector, address(composer)));
+        vm.prank(owner);
+        adapter.setHyperCoreComposer(address(hyperCoreToken), address(composer));
+    }
+
+    function test_setHyperCoreComposer_revert_notContract() public {
+        addToken(address(hyperCoreToken), ISynapseBridgeAdapter.TokenType.MintBurn, firstRemoteToken);
+        address composer = makeAddr("Composer");
+        vm.expectRevert(abi.encodeWithSelector(SBAV2__HyperCoreComposerInvalid.selector, composer));
+        vm.prank(owner);
+        adapter.setHyperCoreComposer(address(hyperCoreToken), composer);
+    }
+
+    function test_setHyperCoreComposer_revert_alreadySet() public {
+        addToken(address(hyperCoreToken), ISynapseBridgeAdapter.TokenType.MintBurn, firstRemoteToken);
+        SynapseHyperCoreComposer composer =
+            new SynapseHyperCoreComposer(address(adapter), address(hyperCoreToken), 1337);
+        vm.startPrank(owner);
+        adapter.setHyperCoreComposer(address(hyperCoreToken), address(composer));
+        vm.expectRevert(abi.encodeWithSelector(SBAV2__HyperCoreComposerAlreadySet.selector, address(hyperCoreToken)));
+        adapter.setHyperCoreComposer(address(hyperCoreToken), address(composer));
+        vm.stopPrank();
+    }
+
+    function test_setHyperCoreComposer_revert_notOwner(address caller) public {
+        vm.assume(caller != owner);
+        addToken(address(hyperCoreToken), ISynapseBridgeAdapter.TokenType.MintBurn, firstRemoteToken);
+        SynapseHyperCoreComposer composer =
+            new SynapseHyperCoreComposer(address(adapter), address(hyperCoreToken), 1337);
+        expectRevertCallerNotOwner(caller);
+        vm.prank(caller);
+        adapter.setHyperCoreComposer(address(hyperCoreToken), address(composer));
     }
 }

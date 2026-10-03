@@ -1,18 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {SynapseBridgeAdapter} from "../src/SynapseBridgeAdapter.sol";
+import {SynapseBridgeAdapterV2} from "../src/SynapseBridgeAdapterV2.sol";
 import {ISynapseBridgeAdapter} from "../src/interfaces/ISynapseBridgeAdapter.sol";
 import {ISynapseBridgeAdapterErrors} from "../src/interfaces/ISynapseBridgeAdapterErrors.sol";
+import {ISynapseBridgeAdapterV2Errors} from "../src/interfaces/ISynapseBridgeAdapterV2Errors.sol";
 
 import {BridgeMessageHarness} from "./harnesses/BridgeMessageHarness.sol";
+import {HyperCoreMessageHarness} from "./harnesses/HyperCoreMessageHarness.sol";
 import {EndpointMock} from "./mocks/EndpointMock.sol";
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Test} from "forge-std/Test.sol";
 
 // solhint-disable no-empty-blocks
-abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors {
+abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors, ISynapseBridgeAdapterV2Errors {
     uint32 internal constant SRC_EID = 1;
     uint32 internal constant DST_EID = 2;
     uint32 internal constant OTHER_DST_EID = 3;
@@ -22,26 +24,38 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
 
     address internal remoteToken = makeAddr("Remote Token");
 
-    SynapseBridgeAdapter internal adapter;
+    SynapseBridgeAdapterV2 internal adapter;
     address internal endpoint;
 
     BridgeMessageHarness internal bridgeMessageLib;
+    HyperCoreMessageHarness internal hyperCoreMessageLib;
 
     event BridgeSet(address bridge);
+    event HyperCoreComposerSet(address indexed token, address indexed composer);
+    event HyperCoreDecimalsSet(
+        uint32 indexed dstEid, address indexed token, uint8 tokenDecimals, uint8 coreDecimals, uint256 amountScale
+    );
     event TokenAdded(
         address token, ISynapseBridgeAdapter.TokenType tokenType, ISynapseBridgeAdapter.RemoteToken[] remoteTokens
     );
     event TokenSent(uint32 indexed dstEid, address indexed to, address indexed token, uint256 amount, bytes32 guid);
+    event TokenSentToHyperCore(
+        uint32 indexed dstEid, address indexed to, address indexed token, uint256 amount, bytes32 guid
+    );
     event TokenReceived(uint32 indexed srcEid, address indexed to, address indexed token, uint256 amount, bytes32 guid);
+    event TokenReceivedOnHyperCore(
+        uint32 indexed srcEid, address indexed to, address indexed token, uint256 amount, bytes32 guid
+    );
 
     function setUp() public virtual {
         endpoint = deployEndpoint();
         adapter = deployAdapter();
         bridgeMessageLib = new BridgeMessageHarness();
+        hyperCoreMessageLib = new HyperCoreMessageHarness();
         afterAdapterDeployed();
     }
 
-    function deployAdapter() internal virtual returns (SynapseBridgeAdapter);
+    function deployAdapter() internal virtual returns (SynapseBridgeAdapterV2);
     function afterAdapterDeployed() internal virtual {}
 
     function deployEndpoint() internal virtual returns (address) {
@@ -69,7 +83,25 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
         emit TokenSent(dstEid, to, token, amount, guid);
     }
 
-    function expectEventTokenReceived(
+    function expectEventTokenSentToHyperCore(
+        uint32 dstEid,
+        address to,
+        address token,
+        uint256 amount,
+        bytes32 guid
+    )
+        internal
+    {
+        vm.expectEmit(address(adapter));
+        emit TokenSentToHyperCore(dstEid, to, token, amount, guid);
+    }
+
+    function expectEventTokenReceived(uint32 srcEid, address to, address token, uint256 amount, bytes32 guid) internal {
+        vm.expectEmit(address(adapter));
+        emit TokenReceived(srcEid, to, token, amount, guid);
+    }
+
+    function expectEventTokenReceivedOnHyperCore(
         uint32 srcEid,
         address to,
         address token,
@@ -79,7 +111,7 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
         internal
     {
         vm.expectEmit(address(adapter));
-        emit TokenReceived(srcEid, to, token, amount, guid);
+        emit TokenReceivedOnHyperCore(srcEid, to, token, amount, guid);
     }
 
     function expectRevertCallerNotOwner(address caller) internal {
@@ -96,6 +128,18 @@ abstract contract SynapseBridgeAdapterTest is Test, ISynapseBridgeAdapterErrors 
 
     function expectRevertGasLimitBelowMinimum() internal {
         vm.expectRevert(SBA__GasLimitBelowMinimum.selector);
+    }
+
+    function expectRevertHyperCoreAmountNotRepresentable(uint256 amount, uint256 scale) internal {
+        vm.expectRevert(abi.encodeWithSelector(SBAV2__HyperCoreAmountNotRepresentable.selector, amount, scale));
+    }
+
+    function expectRevertHyperCoreComposerNotSet(address token) internal {
+        vm.expectRevert(abi.encodeWithSelector(SBAV2__HyperCoreComposerNotSet.selector, token));
+    }
+
+    function expectRevertHyperCoreDecimalsNotSet(uint32 eid, address token) internal {
+        vm.expectRevert(abi.encodeWithSelector(SBAV2__HyperCoreDecimalsNotSet.selector, eid, token));
     }
 
     function expectRevertLocalPairAlreadyExists(uint32 eid, address remoteAddr) internal {
