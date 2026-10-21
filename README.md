@@ -115,11 +115,55 @@ Key features:
 
 ### Install the Correct Version of NodeJS
 
-Using `nvm`, install the correct version of NodeJS.
+Use Node.js **22.23.4** or a newer patched release in the 22.x line. Using `nvm`, install and select the pinned version of NodeJS.
 
 ```
+nvm install
 nvm use
 ```
+
+### Runtime security updates
+
+The Node.js pins and application `engines.node` ranges address the
+[October 21, 2026 security release](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases).
+Node 20 and older are end of life and do not receive these upstream fixes.
+The root and package `.nvmrc` files, `.node-version`, dev container, CI setup,
+and Node-based Docker build stages use 22.23.4. Published library engine ranges
+still describe API compatibility; build and run this repository with the pinned runtime.
+
+Before rollout, rebuild the GoReleaser and application images with fresh base
+images and package indexes (`--pull --no-cache`), then redeploy affected
+applications. Recreate existing dev containers as well.
+[Vercel selects a major version and manages patch updates](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions),
+so confirm its build and server runtimes report 22.23.4 or newer within 22.x.
+For Cloudflare Pages, select the same Node version for builds; its Workers runtime
+is managed separately by Cloudflare. Changing repository pins does not patch
+existing deployments, provider runtimes, or the Node runtimes embedded in third-party GitHub Actions.
+
+Go builds use **1.26.10**, including the
+[October 19 X.509 security fix](https://go.dev/doc/devel/release).
+CI reads `go.work`; individual modules select the same toolchain when built
+outside the workspace. Existing library language-version directives are retained.
+Go binaries must be rebuilt: updating a container's CA bundle alone does not
+update the Go standard library compiled into a binary.
+
+The distroless base image checked on October 21 still included the affected
+emSign root. These Dockerfiles now copy a CA bundle from Ubuntu 24.04 with
+`ca-certificates >= 20260816ubuntu0.24.04.1`, the
+[USN-8944-1 fix](https://ubuntu.com/security/notices/USN-8944-1).
+GoReleaser also refreshes the hashed CA directory used by other TLS clients.
+Devnet images move from Ubuntu 20.04 to 24.04 so the fix is available without ESM.
+Alpine stages explicitly upgrade their CA package. Host trust stores, custom
+certificate mounts and managed service runtimes need separate verification.
+
+The legacy Jaeger UI build is blocked by its existing upstream clone:
+`https://github.com/pyroscope-io/jaeger-ui.git` returned repository-not-found
+when checked on October 21. Its Node/CA settings are updated, but a successful
+build still requires restoring access to that pinned source revision.
+
+The PHP advisory linked from the original warning does not have a repository
+patch here: no tracked PHP source, Composer manifests, or PHP runtime images
+were found. Any PHP installation outside this repository needs a separate inventory.
 
 ### Building the TypeScript packages
 

@@ -1,4 +1,13 @@
+# USN-8944-1 removes trust in the compromised eMudhra CA chain.
+FROM ubuntu:24.04 AS certificates
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
+    && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' ca-certificates)" ge 20260816ubuntu0.24.04.1 \
+    && rm -rf /var/lib/apt/lists/*
+
 FROM gcr.io/distroless/static:latest
+
+# The base image may still carry a stale trust bundle.
+COPY --from=certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 LABEL org.label-schema.description="Explorer Docker Image"
 LABEL org.label-schema.name="ghcr.io/synapsecns/sanguine/services/explorer"

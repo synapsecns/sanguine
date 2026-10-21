@@ -1,4 +1,7 @@
 {
+  "engines": {
+    "node": "^22.23.4"
+  },
   "name": "sanguine",
   "version": "1.0.0",
   "private": "true",

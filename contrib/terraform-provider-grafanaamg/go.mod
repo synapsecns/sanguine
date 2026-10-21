@@ -1,6 +1,6 @@
 module github.com/synapsecns/sanguine/contrib/terraform-provider-grafanaamg
 
-go 1.26.3
+go 1.26.10
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.41.7

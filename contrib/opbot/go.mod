@@ -2,6 +2,8 @@ module github.com/synapsecns/sanguine/contrib/opbot
 
 go 1.22.4
 
+toolchain go1.26.10
+
 require (
 	github.com/dubonzi/otelresty v1.3.0
 	github.com/dustin/go-humanize v1.0.1

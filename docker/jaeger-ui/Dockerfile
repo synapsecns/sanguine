@@ -1,6 +1,6 @@
-FROM node:14.17.6-alpine3.12 as builder
+FROM node:22.23.4-alpine AS builder
 
-RUN apk add --no-cache git
+RUN apk add --no-cache --upgrade git ca-certificates
 
 WORKDIR /opt/jaeger-ui
 
@@ -14,6 +14,8 @@ RUN sed -i s/localhost/jaeger/ ./packages/jaeger-ui/src/setupProxy.js
 RUN yarn build
 
 FROM nginx:stable-alpine
+
+RUN apk add --no-cache --upgrade ca-certificates
 
 LABEL org.label-schema.description="Jaeger UI Pyroscope Docker Image"
 LABEL org.label-schema.name="ghcr.io/synapsecns/sanguine/docker"

@@ -2,7 +2,7 @@ module github.com/synapsecns/sanguine/agents
 
 go 1.22.1
 
-toolchain go1.22.4
+toolchain go1.26.10
 
 require (
 	github.com/BurntSushi/toml v1.4.0

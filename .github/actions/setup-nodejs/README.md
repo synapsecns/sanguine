@@ -11,7 +11,7 @@ This action sets up NodeJS using a specified `.nvmrc` file. It supports using ei
 
 ### Outputs
 
-This action doesn't provide any outputs.
+* `node-version`: the installed Node.js version, for tools that install their own runtime (such as Slither).
 
 ### Example usage
 

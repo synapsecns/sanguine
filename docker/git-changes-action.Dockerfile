@@ -1,6 +1,6 @@
 FROM alpine:latest as builder
 
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache --upgrade ca-certificates
 RUN update-ca-certificates
 
 # add a user here because addgroup and adduser are not available in scratch

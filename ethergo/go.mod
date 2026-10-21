@@ -2,7 +2,7 @@ module github.com/synapsecns/sanguine/ethergo
 
 go 1.22.1
 
-toolchain go1.22.4
+toolchain go1.26.10
 
 require (
 	cloud.google.com/go/kms v1.17.1

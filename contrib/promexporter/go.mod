@@ -2,7 +2,7 @@ module github.com/synapsecns/sanguine/contrib/promexporter
 
 go 1.22.1
 
-toolchain go1.22.4
+toolchain go1.26.10
 
 replace (
 	github.com/Yamashou/gqlgenc => github.com/synapsecns/gqlgenc v0.10.0-hotfix

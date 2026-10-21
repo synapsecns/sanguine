@@ -1,4 +1,7 @@
 {
+  "engines": {
+    "node": "^22.23.4"
+  },
   "name": "with-next",
   "version": "0.1.0",
   "private": true,

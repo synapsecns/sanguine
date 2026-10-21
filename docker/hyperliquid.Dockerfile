@@ -11,7 +11,8 @@ ARG PUB_KEY_URL=https://raw.githubusercontent.com/hyperliquid-dex/node/refs/head
 # Create user and install dependencies
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
-    && apt-get update -y && apt-get install -y curl gnupg \
+    && apt-get update -y && apt-get install -y curl gnupg ca-certificates \
+    && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' ca-certificates)" ge 20260816ubuntu0.24.04.1 \
     && apt-get clean && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /home/$USERNAME/hl/data && chown -R $USERNAME:$USERNAME /home/$USERNAME/hl
 
