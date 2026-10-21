@@ -15,22 +15,23 @@ inputs:
     description: Set to a relative path (from WORKING_DIRECTORY) to use a different cache path
 
 description: Setup nodejs using .nvmrc
+outputs:
+  node-version:
+    description: The installed Node.js version
+    value: ${{ steps.node.outputs.node-version }}
+
 runs:
   using: composite
   steps:
-    - name: Read .nvmrc
-      run: echo "##[set-output name=NVMRC;]$(cat ${{inputs.nvmrc_path}})"
-      shell: bash
-      id: nvmrc
-
     - name: Setup Globals
       shell: bash
       run: |
         echo "enableGlobalCache true" >> ~/.yarnrc
 
     - uses: actions/setup-node@v3
+      id: node
       with:
-        node-version: '${{ steps.nvmrc.outputs.NVMRC }}'
+        node-version-file: ${{ inputs.nvmrc_path }}
         cache: ${{ inputs.cache }}
         cache-dependency-path: ${{ inputs.cache-path }}
 

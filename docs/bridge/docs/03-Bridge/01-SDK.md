@@ -19,7 +19,7 @@ The Synapse Bridge SDK is built on top of the [Synapse Router](/docs/Routers/Syn
 
 :::note requires Node v16+
 
-The SDK has only been fully tested on Node 16+ or greater. Earlier versions are not guaranteed to work.
+For development and production, use the patched Node.js version pinned in the repository’s `.nvmrc` (22.23.4), or a newer patched release in the 22.x line.
 
 :::
 

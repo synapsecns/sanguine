@@ -150,6 +150,7 @@ jobs:
           submodules: 'recursive'
 
       - name: Setup NodeJS
+        id: setup_node
         uses: ./.github/actions/setup-nodejs
 
       - name: Install Foundry
@@ -174,7 +175,7 @@ jobs:
         continue-on-error: true
         id: slither
         with:
-          node-version: '${{steps.nvmrc.outputs.NVMRC}}'
+          node-version: '${{ steps.setup_node.outputs.node-version }}'
           target: './packages/${{matrix.package}}'
           slither-config: './packages/${{matrix.package}}/slither.config.json'
           ignore-compile: true

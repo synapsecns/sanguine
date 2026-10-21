@@ -115,11 +115,33 @@ Key features:
 
 ### Install the Correct Version of NodeJS
 
-Using `nvm`, install the correct version of NodeJS.
+Use Node.js **22.23.4** or a newer patched release in the 22.x line. Using `nvm`, install and select the pinned version of NodeJS.
 
 ```
+nvm install
 nvm use
 ```
+
+### Runtime security updates
+
+The Node.js pins and application `engines.node` ranges address the
+[October 21, 2026 security release](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases).
+Node 20 and older are end of life and do not receive these upstream fixes.
+The root and package `.nvmrc` files, `.node-version`, dev container, CI setup,
+and Node-based Docker build stages use 22.23.4. Published library engine ranges
+still describe API compatibility; build and run this repository with the pinned runtime.
+
+After deploying this change, rebuild the GoReleaser and Jaeger UI images and
+redeploy affected applications. Recreate existing dev containers as well.
+[Vercel selects a major version and manages patch updates](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions),
+so confirm its build and server runtimes report 22.23.4 or newer within 22.x.
+For Cloudflare Pages, select the same Node version for builds; its Workers runtime
+is managed separately by Cloudflare. Changing repository pins does not patch
+existing deployments, provider runtimes, or the Node runtimes embedded in third-party GitHub Actions.
+
+The PHP advisory linked from the original warning does not have a repository
+patch here: no tracked PHP source, Composer manifests, or PHP runtime images
+were found. Any PHP installation outside this repository needs a separate inventory.
 
 ### Building the TypeScript packages
 

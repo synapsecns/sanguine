@@ -1,3 +1,5 @@
+FROM --platform=linux/amd64 node:22.23.4-bookworm-slim AS node
+
 FROM --platform=linux/amd64 debian:12-slim
 
 ARG VERSION_ARG=1.24.0-pro
@@ -33,7 +35,7 @@ RUN apt-get update && apt-get install -y build-essential wget git cmake \
 	gcc-mingw-w64 g++-mingw-w64 \
   # install snappy deps
 	gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libbz2-dev libgflags-dev libsnappy-dev libzstd-dev zlib1g-dev \
-  # node 20 deps
+  # tooling dependencies
   curl ca-certificates gnupg zip jq \
   # utils
   make tar wget && \
@@ -103,17 +105,12 @@ RUN \
 
 ENV PATH=${PATH}:/etc/musl/x86_64-linux-musl-native/bin:/etc/musl/aarch64-linux-musl-cross/bin:/usr/local/go/bin
 
-# Install node 20
-
-RUN mkdir -p /etc/apt/keyrings
-
-RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key |  gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
-
-ENV NODE_MAJOR=20
-
-RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" |  tee /etc/apt/sources.list.d/nodesource.list
-
-RUN apt-get update && apt-get install -y nodejs sudo
+# Use the patched Node runtime and npm from the official Debian 12 image.
+COPY --from=node /usr/local/bin/node /usr/local/bin/node
+COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+    && ln -s ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx \
+    && apt-get update && apt-get install -y sudo
 
 # Install syft
 
