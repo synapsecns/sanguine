@@ -2,7 +2,7 @@ module github.com/synapsecns/sanguine/contrib/screener-api
 
 go 1.22.1
 
-toolchain go1.22.4
+toolchain go1.26.10
 
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1

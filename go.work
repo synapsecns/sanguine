@@ -1,4 +1,4 @@
-go 1.26.3
+go 1.26.10
 
 // note: new paths should be added as flags to the .codecov.yaml
 use (

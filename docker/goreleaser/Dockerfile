@@ -1,3 +1,9 @@
+# USN-8944-1 removes trust in the compromised eMudhra CA chain.
+FROM ubuntu:24.04 AS certificates
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
+    && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' ca-certificates)" ge 20260816ubuntu0.24.04.1 \
+    && rm -rf /var/lib/apt/lists/*
+
 FROM --platform=linux/amd64 node:22.23.4-bookworm-slim AS node
 
 FROM --platform=linux/amd64 debian:12-slim
@@ -14,8 +20,8 @@ ENV GORELEASER_DOWNLOAD_FILE=$FILE_ARG
 ENV GORELEASER_DOWNLOAD_URL=$DOWNLOAD_ARG
 
 # Golang
-ENV GOLANG_VERSION=1.26.3
-ENV GOLANG_SHA=2b2cfc7148493da5e73981bffbf3353af381d5f93e789c82c79aff64962eb556
+ENV GOLANG_VERSION=1.26.10
+ENV GOLANG_SHA=ccfe7ae822d2c2f41f4fe7c956199967a4dac22d0ee0d2b2bfdb440aab3b20c5
 ENV GOLANG_DOWNLOAD_FILE=go${GOLANG_VERSION}.linux-amd64.tar.gz
 ENV GOLANG_DOWNLOAD_URL=https://dl.google.com/go/${GOLANG_DOWNLOAD_FILE}
 
@@ -41,6 +47,11 @@ RUN apt-get update && apt-get install -y build-essential wget git cmake \
   make tar wget && \
 	apt-get -y autoremove
 
+
+# Refresh both the bundle and hashed certificates used by TLS clients.
+COPY --from=certificates /usr/share/ca-certificates /usr/share/ca-certificates
+COPY --from=certificates /etc/ca-certificates.conf /etc/ca-certificates.conf
+RUN update-ca-certificates --fresh
 
 # Download yq
 # TODO: sha256sum

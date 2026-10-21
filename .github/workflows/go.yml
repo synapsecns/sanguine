@@ -148,7 +148,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.package == 'contrib/terraform-provider-grafanaamg' && '1.26.x' || '1.22.x' }}
+          go-version-file: go.work
           cache: ${{ contains(runner.name, 'nsc') && 'false' || 'true' }}
 
       # TODO: consider setting up cache key, see: https://discord.com/channels/975088590705012777/1263347501721714793/1263534719954452560
@@ -293,7 +293,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.package == 'contrib/terraform-provider-grafanaamg' && '1.26.x' || '1.22.x' }}
+          go-version-file: go.work
 
       - name: Go modules cache
         uses: actions/cache@v4
@@ -327,13 +327,13 @@ jobs:
       matrix:
         package: ${{ needs.changes.outputs.golangci_changed == 'true' && fromJSON(needs.changes.outputs.all_packages) || fromJSON(needs.changes.outputs.packages_nodeps) }}
     steps:
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.package == 'contrib/terraform-provider-grafanaamg' && '1.26.x' || '1.23.x' }}
-
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.work
 
       # workaround for: https://github.com/golangci/golangci-lint-action/issues/479
       - name: Setup cache key
@@ -424,7 +424,7 @@ jobs:
       # Setup Go
       - uses: actions/setup-go@v5
         with:
-          go-version: 1.26.x
+          go-version-file: go.work
 
       - name: Go modules cache
         uses: actions/cache@v4
@@ -546,7 +546,7 @@ jobs:
       # Setup Go
       - uses: actions/setup-go@v5
         with:
-          go-version: 1.26.x
+          go-version-file: go.work
 
       - name: Go modules cache
         uses: actions/cache@v4

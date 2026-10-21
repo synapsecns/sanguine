@@ -55,6 +55,7 @@ jobs:
           context: .
           file: ./docker/hyperliquid.Dockerfile
           push: true
+          pull: true
           platforms: linux/amd64,linux/arm64
           tags: |
             ghcr.io/synapsecns/hyperliquid:testnet-latest
@@ -105,6 +106,7 @@ jobs:
           context: .
           file: ./docker/hyperliquid.Dockerfile
           push: true
+          pull: true
           platforms: linux/amd64,linux/arm64
           tags: |
             ghcr.io/synapsecns/hyperliquid:latest
