@@ -6,9 +6,10 @@ export type ChainsByChainID = {
 }
 
 // Retired chains remain in CHAINS_BY_ID so historical activity can still render.
-export const RETIRED_CHAIN_IDS = new Set([all.DFK.id, all.BLAST.id])
+export const RETIRED_CHAIN_IDS = new Set([all.DFK.id])
 
 export const isActiveChainId = (chainId: number | string) =>
+  Object.values(all).some(({ id }) => id === Number(chainId)) &&
   !RETIRED_CHAIN_IDS.has(Number(chainId))
 
 export const sortChains = (chains: Chain[]) =>

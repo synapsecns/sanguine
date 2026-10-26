@@ -10,7 +10,3 @@ Connect with other developers and the Synapse team
 ## Frequently Asked Questions
 
 * [Transaction Support FAQ](Transaction-Support)
-
-## Retired networks
-
-* [Blast wind-down and recovery](Blast-Wind-Down.md)

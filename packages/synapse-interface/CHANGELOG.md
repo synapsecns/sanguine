@@ -1133,7 +1133,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **synapse-interface:** hide Blast WETH ([#3033](https://github.com/synapsecns/sanguine/issues/3033)) ([8da405f](https://github.com/synapsecns/sanguine/commit/8da405f81183817f6564e859914d2dc02a49735f))
 
 
 
@@ -1288,7 +1287,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Features
 
-* **synapse-interface:** adds BSC, Blast, Linea to RFQ ([#2905](https://github.com/synapsecns/sanguine/issues/2905)) ([8fde07a](https://github.com/synapsecns/sanguine/commit/8fde07aaf790a33c114b246169355e8a6d467ae0))
+* **synapse-interface:** adds BSC, Linea to RFQ ([#2905](https://github.com/synapsecns/sanguine/issues/2905)) ([8fde07a](https://github.com/synapsecns/sanguine/commit/8fde07aaf790a33c114b246169355e8a6d467ae0))
 
 
 
@@ -1866,7 +1865,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Features
 
-* **synapse-interface:** remove blast swap pause banner ([#2381](https://github.com/synapsecns/sanguine/issues/2381)) ([c49c60d](https://github.com/synapsecns/sanguine/commit/c49c60d3b8eaf0c555e84e114e92584945bd567a))
 
 
 
@@ -1877,7 +1875,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Features
 
-* **synapse-interface:** unpause blast ([#2364](https://github.com/synapsecns/sanguine/issues/2364)) ([a2bd1c4](https://github.com/synapsecns/sanguine/commit/a2bd1c4ac5ed3004ccd19aa21abb3ac7d83b8397))
 
 
 
