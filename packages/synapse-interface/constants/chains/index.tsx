@@ -6,7 +6,7 @@ export type ChainsByChainID = {
 }
 
 // Retired chains remain in CHAINS_BY_ID so historical activity can still render.
-export const RETIRED_CHAIN_IDS = new Set([all.DFK.id])
+export const RETIRED_CHAIN_IDS = new Set([all.DFK.id, all.BLAST.id])
 
 export const isActiveChainId = (chainId: number | string) =>
   !RETIRED_CHAIN_IDS.has(Number(chainId))
@@ -65,7 +65,6 @@ export const ChainId = {
   ARBITRUM: 42161,
   BASE: 8453,
   BERACHAIN: 80094,
-  BLAST: 81457,
   LINEA: 59144,
   SCROLL: 534352,
   AVALANCHE: 43114,

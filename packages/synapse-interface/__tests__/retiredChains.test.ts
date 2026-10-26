@@ -44,8 +44,16 @@ const {
 }: {
   EXISTING_BRIDGE_ROUTES: Record<string, string[]>
 } = require('../constants/existingBridgeRoutes')
-const { tokenAddressToToken } = require('../constants/tokens')
-const { WJEWEL } = require('../constants/tokens/bridgeable')
+const {
+  DISPLAY_POOLS_BY_CHAIN,
+  POOL_BY_ROUTER_INDEX,
+  tokenAddressToToken,
+} = require('../constants/tokens')
+const {
+  EXISTING_SWAP_ROUTES,
+  SWAP_CHAIN_IDS,
+} = require('../constants/existingSwapRoutes')
+const { USDB, WJEWEL } = require('../constants/tokens/bridgeable')
 const {
   default: bridgeReducer,
   setFromChainId,
@@ -60,69 +68,109 @@ const {
   setSwapToToken,
 } = require('../slices/swap/reducer')
 
-const DFK_CHAIN_ID = 53935
-const DFK_ROUTE_SUFFIX = `-${DFK_CHAIN_ID}`
-const DFK_USDC_ADDRESS = '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a'
+describe.each([
+  {
+    chainId: 53935,
+    name: 'DFK Chain',
+    tokenAddress: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
+    symbol: 'USDC',
+    exclusiveToken: WJEWEL,
+  },
+  {
+    chainId: 81457,
+    name: 'Blast',
+    tokenAddress: '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0',
+    symbol: 'nUSD',
+    exclusiveToken: USDB,
+  },
+])(
+  'retired chain: $name',
+  ({ chainId, name, tokenAddress, symbol, exclusiveToken }) => {
+    it('excludes retired chain from active frontend registries', () => {
+      expect(isActiveChainId(chainId)).toBe(false)
+      expect(CHAINS_ARR.some(({ id }) => id === chainId)).toBe(false)
+      expect(ACTIVE_CHAINS_BY_ID[chainId]).toBeUndefined()
+      expect(Object.values(CHAIN_IDS)).not.toContain(chainId)
+      expect(ORDERED_CHAINS_BY_ID).not.toContain(String(chainId))
+      expect(AcceptedChainId[chainId]).toBeUndefined()
+      expect(supportedChains.some(({ id }) => id === chainId)).toBe(false)
+    })
 
-describe('retired chains', () => {
-  it('excludes DFK Chain from active frontend registries', () => {
-    expect(isActiveChainId(DFK_CHAIN_ID)).toBe(false)
-    expect(CHAINS_ARR.some(({ id }) => id === DFK_CHAIN_ID)).toBe(false)
-    expect(ACTIVE_CHAINS_BY_ID[DFK_CHAIN_ID]).toBeUndefined()
-    expect(Object.values(CHAIN_IDS)).not.toContain(DFK_CHAIN_ID)
-    expect(ORDERED_CHAINS_BY_ID).not.toContain(String(DFK_CHAIN_ID))
-    expect(AcceptedChainId[DFK_CHAIN_ID]).toBeUndefined()
-    expect(supportedChains.some(({ id }) => id === DFK_CHAIN_ID)).toBe(false)
-  })
+    it('excludes retired chain from bridge maps and real routes', () => {
+      expect(Object.keys(BRIDGE_MAP)).not.toContain(String(chainId))
+      expect(
+        Object.keys(EXISTING_BRIDGE_ROUTES).some((route) =>
+          route.endsWith(`-${chainId}`)
+        )
+      ).toBe(false)
+      expect(
+        Object.values(EXISTING_BRIDGE_ROUTES)
+          .flat()
+          .some((route) => route.endsWith(`-${chainId}`))
+      ).toBe(false)
+    })
 
-  it('excludes DFK Chain from bridge maps and real routes', () => {
-    expect(Object.keys(BRIDGE_MAP)).not.toContain(String(DFK_CHAIN_ID))
-    expect(
-      Object.keys(EXISTING_BRIDGE_ROUTES).some((route) =>
-        route.endsWith(DFK_ROUTE_SUFFIX)
+    it('excludes retired chains from swap routes and URL chain choices', () => {
+      expect(SWAP_CHAIN_IDS).not.toContain(chainId)
+      expect(
+        Object.keys(EXISTING_SWAP_ROUTES).some((route) =>
+          route.endsWith(`-${chainId}`)
+        )
+      ).toBe(false)
+      expect(
+        Object.values(EXISTING_SWAP_ROUTES)
+          .flat()
+          .some((route: string) => route.endsWith(`-${chainId}`))
+      ).toBe(false)
+    })
+
+    it('retains retired chain metadata for historical transactions', () => {
+      expect(CHAINS_BY_ID[chainId]).toMatchObject({
+        id: chainId,
+        name,
+      })
+      expect(tokenAddressToToken(chainId, tokenAddress)).toMatchObject({
+        symbol,
+      })
+    })
+
+    it('rejects retired chain as a new bridge or swap selection', () => {
+      const initialBridgeState = bridgeReducer(undefined, { type: '@@INIT' })
+      const initialSwapState = swapReducer(undefined, { type: '@@INIT' })
+
+      expect(
+        bridgeReducer(initialBridgeState, setFromChainId(chainId))
+      ).toEqual(initialBridgeState)
+      expect(bridgeReducer(initialBridgeState, setToChainId(chainId))).toEqual(
+        initialBridgeState
       )
-    ).toBe(false)
-    expect(
-      Object.values(EXISTING_BRIDGE_ROUTES)
-        .flat()
-        .some((route) => route.endsWith(DFK_ROUTE_SUFFIX))
-    ).toBe(false)
-  })
-
-  it('retains DFK Chain metadata for historical transactions', () => {
-    expect(CHAINS_BY_ID[DFK_CHAIN_ID]).toMatchObject({
-      id: DFK_CHAIN_ID,
-      name: 'DFK Chain',
+      expect(
+        bridgeReducer(initialBridgeState, setFromToken(exclusiveToken))
+      ).toEqual(initialBridgeState)
+      expect(
+        bridgeReducer(initialBridgeState, setToToken(exclusiveToken))
+      ).toEqual(initialBridgeState)
+      expect(swapReducer(initialSwapState, setSwapChainId(chainId))).toEqual(
+        initialSwapState
+      )
+      expect(
+        swapReducer(initialSwapState, setSwapFromToken(exclusiveToken))
+      ).toEqual(initialSwapState)
+      expect(
+        swapReducer(initialSwapState, setSwapToToken(exclusiveToken))
+      ).toEqual(initialSwapState)
     })
-    expect(tokenAddressToToken(DFK_CHAIN_ID, DFK_USDC_ADDRESS)).toMatchObject({
-      symbol: 'USDC',
+  }
+)
+
+describe('retired Blast pools', () => {
+  it('hides pool promotion while preserving pool and LP recovery metadata', () => {
+    expect(DISPLAY_POOLS_BY_CHAIN[81457]).toBeUndefined()
+    expect(POOL_BY_ROUTER_INDEX.blast2pool).toMatchObject({
+      chainId: 81457,
+      swapAddresses: { 81457: '0xa4bd1AAD7cF04567c10f38FC4355E91bba32aC9c' },
+      addresses: { 81457: '0xb758FF41E0A811b9eB0Ff973D373c354588524b6' },
     })
-  })
-
-  it('rejects DFK Chain as a new bridge or swap selection', () => {
-    const initialBridgeState = bridgeReducer(undefined, { type: '@@INIT' })
-    const initialSwapState = swapReducer(undefined, { type: '@@INIT' })
-
-    expect(
-      bridgeReducer(initialBridgeState, setFromChainId(DFK_CHAIN_ID))
-    ).toEqual(initialBridgeState)
-    expect(
-      bridgeReducer(initialBridgeState, setToChainId(DFK_CHAIN_ID))
-    ).toEqual(initialBridgeState)
-    expect(bridgeReducer(initialBridgeState, setFromToken(WJEWEL))).toEqual(
-      initialBridgeState
-    )
-    expect(bridgeReducer(initialBridgeState, setToToken(WJEWEL))).toEqual(
-      initialBridgeState
-    )
-    expect(swapReducer(initialSwapState, setSwapChainId(DFK_CHAIN_ID))).toEqual(
-      initialSwapState
-    )
-    expect(swapReducer(initialSwapState, setSwapFromToken(WJEWEL))).toEqual(
-      initialSwapState
-    )
-    expect(swapReducer(initialSwapState, setSwapToToken(WJEWEL))).toEqual(
-      initialSwapState
-    )
+    expect(POOL_BY_ROUTER_INDEX.blastethpool).toMatchObject({ chainId: 81457 })
   })
 })

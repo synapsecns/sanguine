@@ -30,8 +30,8 @@ const FastBridgeRouterAddress = '0x00cD000000003f7F682BE4813200893d4e690000'
 
 // Chain IDs where SynapseBridge is allowed
 const allowedChainIdsForSynapseBridge = [
-  1, 10, 25, 56, 137, 250, 288, 1088, 1284, 1285, 2000, 7700, 8217, 8453, 81457,
-  42161, 43114, 1313161554, 1666600000,
+  1, 10, 25, 56, 137, 250, 288, 1088, 1284, 1285, 2000, 7700, 8217, 8453, 42161,
+  43114, 1313161554, 1666600000,
 ]
 
 // Chain IDs where SynapseCCTPRouter is allowed
@@ -39,7 +39,7 @@ const allowedChainIdsForSynapseCCTPRouter = [1, 10, 137, 8453, 42161, 43114]
 
 // Chain IDs where RFQ is allowed
 const allowedChainIdsForRfq = [
-  1, 10, 56, 130, 480, 8453, 42161, 59144, 80094, 81457, 534352,
+  1, 10, 56, 130, 480, 8453, 42161, 59144, 80094, 534352,
 ]
 
 const allChainIds = Array.from(
