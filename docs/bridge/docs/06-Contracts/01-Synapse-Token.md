@@ -18,7 +18,6 @@ $SYN is the governance token for Synapse Protocol and is listed on major exchang
 | Aurora    | `0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445` [↗](https://explorer.mainnet.aurora.dev/address/0xd80d8688b02B3FD3afb81cDb124F188BB5aD0445/transactions)|
 | Avalanche | `0x1f1E7c893855525b303f99bDF5c3c05Be09ca251` [↗](https://snowtrace.io/address/0x1f1E7c893855525b303f99bDF5c3c05Be09ca251)|
 | Base      | `0x432036208d2717394d2614d6697c46DF3Ed69540` [↗](https://basescan.org/address/0x432036208d2717394d2614d6697c46DF3Ed69540)|
-| Blast     | `0x9592f08387134e218327E6E8423400eb845EdE0E` [↗](https://blastscan.io/address/0x9592f08387134e218327E6E8423400eb845EdE0E)|
 | Boba      | `0xb554A55358fF0382Fb21F0a478C3546d1106Be8c` [↗](https://blockexplorer.boba.network/tokens/0xb554A55358fF0382Fb21F0a478C3546d1106Be8c/token-transfers)|
 | BSC       | `0xa4080f1778e69467e905b8d6f72f6e441f9e9484` [↗](https://bscscan.com/token/0xa4080f1778e69467e905b8d6f72f6e441f9e9484)|
 | Canto     | `0x555982d2E211745b96736665e19D9308B615F78e` [↗](https://canto.dex.guru/address/0x555982d2e211745b96736665e19d9308b615f78e)|

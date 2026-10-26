@@ -1871,59 +1871,6 @@ export const BRIDGE_MAP = {
       swappable: [],
     },
   },
-  '81457': {
-    '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
-      decimals: 18,
-      symbol: 'nUSD',
-      origin: ['nUSD'],
-      destination: ['nUSD'],
-      swappable: ['0x4300000000000000000000000000000000000003'],
-    },
-    '0x4300000000000000000000000000000000000003': {
-      decimals: 18,
-      symbol: 'USDB',
-      origin: ['nUSD'],
-      destination: ['nUSD'],
-      swappable: ['0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0'],
-    },
-    '0x4300000000000000000000000000000000000004': {
-      decimals: 18,
-      symbol: 'WETH',
-      origin: ['RFQ.ETH', 'nETH'],
-      destination: ['nETH'],
-      swappable: [
-        '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-        '0xce971282fAAc9faBcF121944956da7142cccC855',
-      ],
-    },
-    '0x9592f08387134e218327E6E8423400eb845EdE0E': {
-      decimals: 18,
-      symbol: 'SYN',
-      origin: ['SYN'],
-      destination: ['SYN'],
-      swappable: [],
-    },
-    '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
-      decimals: 18,
-      symbol: 'ETH',
-      origin: ['Gas.zip', 'RFQ.ETH', 'nETH'],
-      destination: ['Gas.zip', 'RFQ.ETH', 'nETH'],
-      swappable: [
-        '0x4300000000000000000000000000000000000004',
-        '0xce971282fAAc9faBcF121944956da7142cccC855',
-      ],
-    },
-    '0xce971282fAAc9faBcF121944956da7142cccC855': {
-      decimals: 18,
-      symbol: 'nETH',
-      origin: ['RFQ.ETH', 'nETH'],
-      destination: ['nETH'],
-      swappable: [
-        '0x4300000000000000000000000000000000000004',
-        '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-      ],
-    },
-  },
   '534352': {
     '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
       decimals: 6,

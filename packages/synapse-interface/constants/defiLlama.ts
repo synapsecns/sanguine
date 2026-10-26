@@ -29,7 +29,6 @@ export const CHAIN_ID_TO_DEFILLAMA_NAME: Record<number, string> = {
   59144: 'linea',
   534352: 'scroll',
   80094: 'berachain',
-  81457: 'blast',
   1313161554: 'aurora',
   1666600000: 'harmony',
 }

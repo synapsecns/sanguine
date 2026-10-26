@@ -28,7 +28,6 @@ RFQ transactions primarily interact with the Router Address, which is responsibl
 | Scroll   | `0xAABBCC` [↗](https://scrollscan.com/address/0xAABBCC)          |
 | Linea    | `0xAABBCC` [↗](https://lineascan.build/address/0xAABBCC)         |
 | BNB Chain| `0xAABBCC` [↗](https://bscscan.com/address/0xAABBCC)             |
-| Blast    | `0xAABBCC` [↗](https://blastscan.io/address/0xAABBCC)            |
 | World    | `0xAABBCC` [↗](https://worldscan.org/address/0xAABBCC)           |
 
 
@@ -47,5 +46,4 @@ RFQ transactions primarily interact with the Router Address, which is responsibl
 | Scroll   | `0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E` [↗](https://scrollscan.com/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E)          |
 | Linea    | `0x34F52752975222d5994C206cE08C1d5B329f24dD` [↗](https://lineascan.build/address/0x34F52752975222d5994C206cE08C1d5B329f24dD)         |
 | BNB Chain| `0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E` [↗](https://bscscan.com/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E)             |
-| Blast    | `0x34F52752975222d5994C206cE08C1d5B329f24dD` [↗](https://blastscan.io/address/0x34F52752975222d5994C206cE08C1d5B329f24dD)            |
 | World    | `0x05c62156c7c47e76223a560210ea648de5e6b53b` [↗](https://worldscan.org/address/0x05c62156c7c47e76223a560210ea648de5e6b53b)           |

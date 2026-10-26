@@ -26,7 +26,6 @@ Contracts in the `deployments` folder of each chain's `SynapseBridge.json` file 
 | Aurora    | `0xaeD5b25BE1c3163c907a471082640450F928DDFE` [↗](https://explorer.mainnet.aurora.dev/address/0xaeD5b25BE1c3163c907a471082640450F928DDFE/transactions) |
 | Avalanche | `0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE` [↗](https://snowtrace.io/address/0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE) |
 | Base      | `0xf07d1C752fAb503E47FEF309bf14fbDD3E867089` [↗](https://basescan.org/address/0xf07d1C752fAb503E47FEF309bf14fbDD3E867089) |
-| Blast     | `0x55769baf6ec39b3bf4aae948eb890ea33307ef3c` [↗](https://blastscan.io/address/0x55769baf6ec39b3bf4aae948eb890ea33307ef3c) |
 | Boba      | `0x432036208d2717394d2614d6697c46DF3Ed69540` [↗](https://blockexplorer.boba.network/address/0x432036208d2717394d2614d6697c46DF3Ed69540/transactions) |
 | BSC       | `0xd123f70AE324d34A9E76b67a27bf77593bA8749f` [↗](https://bscscan.com/address/0xd123f70AE324d34A9E76b67a27bf77593bA8749f) |
 | Canto     | `0xDde5BEC4815E1CeCf336fb973Ca578e8D83606E0` [↗](https://evm.explorer.canto.io/address/0xDde5BEC4815E1CeCf336fb973Ca578e8D83606E0) |

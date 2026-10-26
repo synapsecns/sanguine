@@ -16,7 +16,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **omnirpc:** replace defunct Blast API references with Chainstack ([#3985](https://github.com/synapsecns/sanguine/issues/3985)) ([502d5b8](https://github.com/synapsecns/sanguine/commit/502d5b8504a225075f151b87259df3a00db03d4b)), closes [#3806](https://github.com/synapsecns/sanguine/issues/3806)
 
 
 

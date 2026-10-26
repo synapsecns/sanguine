@@ -22,7 +22,6 @@ jest.mock('@wagmi/core/chains', () => ({
   arbitrum: { id: 42161 },
   avalanche: { id: 43114 },
   linea: { id: 59144 },
-  blast: { id: 81457 },
   scroll: { id: 534352 },
   aurora: { id: 1313161554 },
   harmonyOne: { id: 1666600000 },
@@ -124,5 +123,19 @@ describe('retired chains', () => {
     expect(swapReducer(initialSwapState, setSwapToToken(WJEWEL))).toEqual(
       initialSwapState
     )
+  })
+})
+
+describe('unknown chain selections', () => {
+  const chainId = Number.MAX_SAFE_INTEGER
+
+  it('rejects IDs missing from chain metadata', () => {
+    expect(isActiveChainId(chainId)).toBe(false)
+    expect(isActiveChainId(String(chainId))).toBe(false)
+    const bridge = bridgeReducer(undefined, { type: '@@INIT' })
+    const swap = swapReducer(undefined, { type: '@@INIT' })
+    expect(bridgeReducer(bridge, setFromChainId(chainId))).toEqual(bridge)
+    expect(bridgeReducer(bridge, setToChainId(chainId))).toEqual(bridge)
+    expect(swapReducer(swap, setSwapChainId(chainId))).toEqual(swap)
   })
 })

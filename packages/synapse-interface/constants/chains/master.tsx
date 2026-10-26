@@ -2,7 +2,6 @@ import arbitrumImg from '@assets/chains/arbitrum.svg'
 import auroraImg from '@assets/chains/aurora.svg'
 import avalancheImg from '@assets/chains/avalanche.svg'
 import baseImg from '@assets/chains/base.svg'
-import blastImg from '@assets/chains/blast.svg'
 import bobaImg from '@assets/chains/boba.svg'
 import bscImg from '@assets/chains/bnb.svg'
 import cantoImg from '@assets/chains/canto.svg'
@@ -507,32 +506,6 @@ export const BASE: Chain = {
     icon: baseImg,
   },
   color: 'blue',
-}
-
-export const BLAST: Chain = {
-  priorityRank: 90,
-  id: 81457,
-  chainSymbol: 'BLAST',
-  name: 'Blast',
-  chainImg: blastImg,
-  layer: 2,
-  rpcUrls: {
-    primary:
-      'https://lingering-indulgent-replica.blast-mainnet.quiknode.pro/6667a8f4be701cb6549b415d567bc706fb2f13a8/',
-    fallback: 'https://blast.drpc.org',
-  },
-  explorerUrl: 'https://blastscan.io',
-  explorerName: 'Blastscan',
-  explorerImg: blastImg,
-  blockTime: 3000,
-  nativeCurrency: {
-    name: 'Ethereum',
-    symbol: 'ETH',
-    decimals: 18,
-    address: zeroAddress,
-    icon: blastImg,
-  },
-  color: 'yellow',
 }
 
 export const SCROLL: Chain = {

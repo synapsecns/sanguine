@@ -9,6 +9,7 @@ export type ChainsByChainID = {
 export const RETIRED_CHAIN_IDS = new Set([all.DFK.id])
 
 export const isActiveChainId = (chainId: number | string) =>
+  Object.values(all).some(({ id }) => id === Number(chainId)) &&
   !RETIRED_CHAIN_IDS.has(Number(chainId))
 
 export const sortChains = (chains: Chain[]) =>
@@ -65,7 +66,6 @@ export const ChainId = {
   ARBITRUM: 42161,
   BASE: 8453,
   BERACHAIN: 80094,
-  BLAST: 81457,
   LINEA: 59144,
   SCROLL: 534352,
   AVALANCHE: 43114,

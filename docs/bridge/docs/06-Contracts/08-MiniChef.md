@@ -16,7 +16,6 @@ The canonical list is hosted within the SynapseCNS on [Github](https://github.co
 | Aurora    | `0x809DC529f07651bD43A172e8dB6f4a7a0d771036` [↗](https://explorer.mainnet.aurora.dev/address/0x809DC529f07651bD43A172e8dB6f4a7a0d771036/transactions) |
 | Avalanche | `0x3a01521F8E7F012eB37eAAf1cb9490a5d9e18249` [↗](https://snowtrace.io/address/0x3a01521F8E7F012eB37eAAf1cb9490a5d9e18249) |
 | Base      | `0xfFC2d603fde1F99ad94026c00B6204Bb9b8c36E9` [↗](https://basescan.org/address/0xfFC2d603fde1F99ad94026c00B6204Bb9b8c36E9) |
-| Blast     | `0x3100dC8464A8523306c3C5034de24a8927d6E590` [↗](https://blastscan.io/address/0x3100dC8464A8523306c3C5034de24a8927d6E590) |
 | Boba      | `0xd5609cD0e1675331E4Fb1d43207C8d9D83AAb17C` [↗](https://blockexplorer.boba.network/address/0xd5609cD0e1675331E4Fb1d43207C8d9D83AAb17C/transactions) |
 | BSC       | `0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280` [↗](https://bscscan.com/address/0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280) |
 | Canto     | `0x93124c923dA389Bc0f13840fB822Ce715ca67ED6` [↗](https://canto.dex.guru/address/0x93124c923dA389Bc0f13840fB822Ce715ca67ED6) |
