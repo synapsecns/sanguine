@@ -2,7 +2,7 @@ import { Zero } from '@ethersproject/constants'
 import { BigNumber, BigNumberish } from 'ethers'
 
 import { GASZIP_SUPPORTED_CHAIN_IDS } from '../constants'
-import { getWithTimeout } from '../utils'
+import { getWithTimeout, logger } from '../utils'
 
 const GAS_ZIP_API_URL = 'https://backend.gas.zip/v2'
 const GAS_ZIP_API_TIMEOUT = 2000
@@ -34,7 +34,7 @@ interface QuoteResponse {
     chain: number
     expected: string
     gas: string
-    speed: number
+    speed?: number
     usd: number
   }[]
 }
@@ -118,18 +118,30 @@ export const getGasZipQuote = async (
   if (!response) {
     return EMPTY_GAS_ZIP_QUOTE
   }
-  // Get response as text to handle large numbers properly
-  const text = await response.text()
-  // Wrap large numbers (> MAX_SAFE_INTEGER) in quotes to preserve precision
-  const processedText = text.replace(/:(\d{16,})/g, ':"$1"')
-  const data: QuoteResponse = JSON.parse(processedText)
-  if (data.quotes.length === 0 || !data.quotes[0].expected) {
+  try {
+    // Get response as text to handle large numbers properly
+    const text = await response.text()
+    // Wrap large numbers (> MAX_SAFE_INTEGER) in quotes to preserve precision
+    const processedText = text.replace(/(:\s*)(\d{16,})(?=\s*[,}])/g, '$1"$2"')
+    const data: QuoteResponse | null = JSON.parse(processedText)
+    const quotes = data?.quotes
+    // Gas.zip can return HTTP 200 with an error object when quoting is disabled.
+    if (!Array.isArray(quotes) || !quotes[0]?.expected) {
+      return EMPTY_GAS_ZIP_QUOTE
+    }
+    const quote = quotes[0]
+    // Zero lets quote finalization use the module's default estimated time.
+    const speed = quote.speed === undefined ? 0 : quote.speed
+    if (!Number.isFinite(speed) || speed < 0) {
+      return EMPTY_GAS_ZIP_QUOTE
+    }
+    return {
+      amountOut: BigNumber.from(quote.expected),
+      speed,
+      usd: quote.usd,
+    }
+  } catch (error) {
+    logger.warn('Gas.Zip API: invalid quote response', error)
     return EMPTY_GAS_ZIP_QUOTE
-  }
-  const quote = data.quotes[0]
-  return {
-    amountOut: BigNumber.from(quote.expected),
-    speed: quote.speed,
-    usd: quote.usd,
   }
 }
