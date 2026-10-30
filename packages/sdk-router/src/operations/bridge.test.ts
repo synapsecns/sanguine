@@ -26,7 +26,12 @@ describe('bridgeV2 candidate failures', () => {
 
   afterEach(() => jest.restoreAllMocks())
 
-  it.each(['route', 'transaction finalization', 'quote finalization'])(
+  it.each([
+    'candidate discovery',
+    'route',
+    'transaction finalization',
+    'quote finalization',
+  ])(
     'preserves the SBA native ETH quote when Gas.zip fails during %s',
     async (failureStage) => {
       const sdk = new SynapseSDK(
@@ -48,9 +53,19 @@ describe('bridgeV2 candidate failures', () => {
         originToken: ETH_NATIVE_TOKEN_ADDRESS,
         destToken: ETH_NATIVE_TOKEN_ADDRESS,
       }
-      jest
-        .spyOn(gasZip, 'getBridgeTokenCandidates')
-        .mockResolvedValue([gasZipBridgeToken])
+      if (failureStage === 'candidate discovery') {
+        // Exercise Gas.zip's /chains parsing while keeping SBA discovery real.
+        jest.spyOn(global, 'fetch').mockResolvedValue({
+          ok: true,
+          json: async () => {
+            throw new SyntaxError('Unexpected token in Gas.zip chains response')
+          },
+        } as unknown as Response)
+      } else {
+        jest
+          .spyOn(gasZip, 'getBridgeTokenCandidates')
+          .mockResolvedValue([gasZipBridgeToken])
+      }
       const gasZipRoute: BridgeRouteV2 = {
         bridgeToken: gasZipBridgeToken,
         toToken: ETH_NATIVE_TOKEN_ADDRESS,
@@ -91,7 +106,7 @@ describe('bridgeV2 candidate failures', () => {
             }
             return finalize(...args)
           })
-      } else {
+      } else if (failureStage === 'quote finalization') {
         jest.spyOn(gasZip, 'finalizeBridgeQuoteV2').mockRejectedValue(failure)
       }
 
@@ -115,7 +130,11 @@ describe('bridgeV2 candidate failures', () => {
           SYNAPSE_INTENT_ROUTER_ADDRESS_MAP[SupportedChainId.ARBITRUM],
       })
       expect(logger.error).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to get Gas.zip bridge quote')
+        expect.stringContaining(
+          failureStage === 'candidate discovery'
+            ? 'Failed to get Gas.zip bridge token candidates'
+            : 'Failed to get Gas.zip bridge quote'
+        )
       )
     }
   )

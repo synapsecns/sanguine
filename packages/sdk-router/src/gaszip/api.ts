@@ -34,7 +34,7 @@ interface QuoteResponse {
     chain: number
     expected: string
     gas: string
-    speed: number
+    speed?: number
     usd: number
   }[]
 }
@@ -122,7 +122,7 @@ export const getGasZipQuote = async (
     // Get response as text to handle large numbers properly
     const text = await response.text()
     // Wrap large numbers (> MAX_SAFE_INTEGER) in quotes to preserve precision
-    const processedText = text.replace(/:(\d{16,})/g, ':"$1"')
+    const processedText = text.replace(/(:\s*)(\d{16,})(?=\s*[,}])/g, '$1"$2"')
     const data: QuoteResponse | null = JSON.parse(processedText)
     const quotes = data?.quotes
     // Gas.zip can return HTTP 200 with an error object when quoting is disabled.
@@ -130,9 +130,14 @@ export const getGasZipQuote = async (
       return EMPTY_GAS_ZIP_QUOTE
     }
     const quote = quotes[0]
+    // Zero lets quote finalization use the module's default estimated time.
+    const speed = quote.speed === undefined ? 0 : quote.speed
+    if (!Number.isFinite(speed) || speed < 0) {
+      return EMPTY_GAS_ZIP_QUOTE
+    }
     return {
       amountOut: BigNumber.from(quote.expected),
-      speed: quote.speed,
+      speed,
       usd: quote.usd,
     }
   } catch (error) {

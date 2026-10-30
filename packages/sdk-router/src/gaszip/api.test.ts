@@ -24,19 +24,43 @@ describe('getGasZipQuote', () => {
     fetchMock.disableMocks()
   })
 
-  it('preserves integer quote amounts above Number.MAX_SAFE_INTEGER', async () => {
-    fetchMock.mockResponseOnce(
-      '{"quotes":[{"chain":1,"expected":987654321098765432,"speed":30,"usd":1}]}'
-    )
+  it.each(['', ' ', '\t', '\r\n  '])(
+    'preserves large integer quote amounts with JSON whitespace %j',
+    async (whitespace) => {
+      fetchMock.mockResponseOnce(
+        `{"quotes":[{"chain":1,"expected":${whitespace}987654321098765432,"speed":30,"usd":1}]}`
+      )
 
-    await expect(
-      getGasZipQuote(42161, 1, '10000000000000000')
-    ).resolves.toEqual({
-      amountOut: BigNumber.from('987654321098765432'),
-      speed: 30,
+      await expect(
+        getGasZipQuote(42161, 1, '10000000000000000')
+      ).resolves.toEqual({
+        amountOut: BigNumber.from('987654321098765432'),
+        speed: 30,
+        usd: 1,
+      })
+    }
+  )
+
+  it('keeps quotes with missing speed eligible for the default estimated time', async () => {
+    fetchMock.mockResponseOnce('{"quotes":[{"expected":"100","usd":1}]}')
+
+    await expect(getGasZipQuote(42161, 1, '100')).resolves.toEqual({
+      amountOut: BigNumber.from(100),
+      speed: 0,
       usd: 1,
     })
   })
+
+  it.each(['"fast"', '"30"', '-1', 'null', '1e309'])(
+    'returns no quote for invalid speed %s',
+    async (speed) => {
+      fetchMock.mockResponseOnce(
+        `{"quotes":[{"expected":"100","speed":${speed},"usd":1}]}`
+      )
+
+      await expect(getGasZipQuote(42161, 1, '100')).resolves.toEqual(emptyQuote)
+    }
+  )
 
   it.each([
     ['the HTTP 200 disabled response', '{"error":"Temporarily Disabled"}'],

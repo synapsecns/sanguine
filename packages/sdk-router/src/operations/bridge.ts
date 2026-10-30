@@ -166,14 +166,21 @@ async function _collectV2Quotes(
   }
   const slippage = slippageFromPercentage(params.slippagePercentage)
   const candidates = await Promise.all(
-    bridgeV2Modules.map(async (set) =>
-      set.getBridgeTokenCandidates({
-        fromChainId: params.fromChainId,
-        toChainId: params.toChainId,
-        fromToken: params.fromToken,
-        toToken: params.allowMultipleTxs ? undefined : params.toToken,
-      })
-    )
+    bridgeV2Modules.map(async (set) => {
+      try {
+        return await set.getBridgeTokenCandidates({
+          fromChainId: params.fromChainId,
+          toChainId: params.toChainId,
+          fromToken: params.fromToken,
+          toToken: params.allowMultipleTxs ? undefined : params.toToken,
+        })
+      } catch (error) {
+        logger.error(
+          `Failed to get ${set.moduleName} bridge token candidates for ${params.fromChainId} -> ${params.toChainId}: ${error}`
+        )
+        return []
+      }
+    })
   )
   // Flatten and remove duplicates
   const originCandidates = candidates
