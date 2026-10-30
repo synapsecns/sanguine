@@ -25,6 +25,7 @@ import {
   handleNativeToken,
   handleParams,
   isSameAddress,
+  logger,
   Prettify,
   stringifyPopulatedTransaction,
 } from '../utils'
@@ -219,34 +220,44 @@ async function _collectV2Quotes(
           if (!originSwapRoute) {
             return
           }
-          const bridgeRoute = await moduleSet.getBridgeRouteV2({
-            originSwapRoute,
-            bridgeToken,
-            toToken: params.toToken,
-            fromSender: params.fromSender,
-            toRecipient: params.toRecipient || params.fromSender,
-            slippage,
-            allowMultipleTxs: params.allowMultipleTxs,
-          })
-          // Check that a route was found.
-          if (!bridgeRoute) {
+          try {
+            const bridgeRoute = await moduleSet.getBridgeRouteV2({
+              originSwapRoute,
+              bridgeToken,
+              toToken: params.toToken,
+              fromSender: params.fromSender,
+              toRecipient: params.toRecipient || params.fromSender,
+              slippage,
+              allowMultipleTxs: params.allowMultipleTxs,
+            })
+            // Check that a route was found.
+            if (!bridgeRoute) {
+              return
+            }
+            // For single-tx params we need to check that the route matches the destination token.
+            if (
+              !params.allowMultipleTxs &&
+              !isSameAddress(bridgeRoute.toToken, params.toToken)
+            ) {
+              return
+            }
+            const bridgeQuoteV2 = await this.sirSet.finalizeBridgeRouteV2(
+              params.fromToken,
+              params.fromAmount,
+              originSwapRoute,
+              bridgeRoute,
+              params.deadline
+            )
+            return await moduleSet.finalizeBridgeQuoteV2(
+              bridgeToken,
+              bridgeQuoteV2
+            )
+          } catch (error) {
+            logger.error(
+              `Failed to get ${moduleSet.moduleName} bridge quote for ${bridgeToken.originChainId}:${bridgeToken.originToken} -> ${bridgeToken.destChainId}:${bridgeToken.destToken}: ${error}`
+            )
             return
           }
-          // For single-tx params we need to check that the route matches the destination token.
-          if (
-            !params.allowMultipleTxs &&
-            !isSameAddress(bridgeRoute.toToken, params.toToken)
-          ) {
-            return
-          }
-          const bridgeQuoteV2 = await this.sirSet.finalizeBridgeRouteV2(
-            params.fromToken,
-            params.fromAmount,
-            originSwapRoute,
-            bridgeRoute,
-            params.deadline
-          )
-          return moduleSet.finalizeBridgeQuoteV2(bridgeToken, bridgeQuoteV2)
         })
       )
     )
